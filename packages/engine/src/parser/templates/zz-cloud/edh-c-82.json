@@ -1,0 +1,265 @@
+[
+  {
+    "id": "eff.edhv82.switch.possessive.dur",
+    "kind": "effect",
+    "since": 82,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4d"
+    ],
+    "pattern": "switch {o:Objs} 's power and toughness {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7d",
+              "switchPT": true
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Switch each creature's power and toughness until end of turn."
+      },
+      {
+        "text": "Switch each creature you control's power and toughness until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Switch each creature's power and toughness.",
+      "Switch each land's power and toughness until end of turn.",
+      "Switch each creature's power until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhv82.rule.toughnessDamage.self",
+    "kind": "static",
+    "since": 82,
+    "status": "stable",
+    "cr": [
+      "CR 510.1a",
+      "CR 604.1",
+      "CR 613.11"
+    ],
+    "pattern": "~ assigns combat damage equal to its toughness rather than its power",
+    "build": {
+      "s": "rule",
+      "rule": "combatDamageUsesToughness",
+      "of": {
+        "is": {
+          "ref": "self"
+        }
+      }
+    },
+    "consumes": [
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "This creature assigns combat damage equal to its toughness rather than its power. This creature has vigilance."
+      },
+      {
+        "text": "This creature assigns combat damage equal to its toughness rather than its power. This creature can't block."
+      }
+    ],
+    "counterExamples": [
+      "~ assigns combat damage equal to its power rather than its toughness.",
+      "~ assigns combat damage equal to its toughness.",
+      "~ deals combat damage equal to its toughness rather than its power."
+    ]
+  },
+  {
+    "id": "eff.edhv82.prevent.dealt.byObjs.dur",
+    "kind": "effect",
+    "since": 82,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 120.1",
+      "CR 510.2"
+    ],
+    "pattern": "prevent all damage {o:Objs} would deal {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage one or two target green creatures would deal this turn."
+      },
+      {
+        "text": "Prevent all damage up to three target artifact creatures would deal this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage one or two target creatures would deal.",
+      "Prevent all damage one or two target creatures would take this turn.",
+      "Prevent all damage one or two target green creatures would deal until your next turn."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv82.each.become.pl.ptSubtypes.inAddition.dur",
+    "kind": "effect",
+    "since": 82,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Objs} each become {pt:BasePT} {st:Subtypes} creatures in addition to their other types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Up to three target Forests each become 2/2 Elemental Warrior creatures in addition to their other types until end of turn."
+      },
+      {
+        "text": "{T}: Up to two target Plains each become 4/4 Angel creatures in addition to their other types until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Up to two target Swamps each become 3/5 Treefolk Warrior creatures in addition to their other types.",
+      "{T}: Up to two target Swamps each become 3/5 Treefolk Warrior creatures until end of turn.",
+      "{T}: Up to two target Swamps each become 3/5 Treefolk Warrior artifacts in addition to their other types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhv82.attached.getsPT.forEachParty.has",
+    "kind": "static",
+    "since": 82,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 700.8",
+      "CR 301.5a",
+      "CR 303.4a"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} for each creature in your party and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "partySize",
+                "of": {
+                  "ref": "you"
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "partySize",
+                "of": {
+                  "ref": "you"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +1/+0 for each creature in your party and has menace."
+      },
+      {
+        "text": "Enchanted creature gets +2/+2 for each creature in your party and has vigilance."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+0 for each creature in an opponent's party and has menace.",
+      "Equipped creature gets +1/+0 for each creature in your party.",
+      "Equipped creature gets +1/+0 for each creature in your party and has menace until end of turn."
+    ]
+  }
+]

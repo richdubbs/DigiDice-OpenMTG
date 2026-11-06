@@ -1,0 +1,8 @@
+# edh-c-86 (Commander lane edh-c, EDHREC ranks 16,001-16,500, later pass): "the creature you control" after two announced targets, Bird and/or Cleric permanent cards, an opponent's creatures entering this turn, lesser power, a created token's own "another creature", every creature becomes the chosen type, a Hero entering with counters. After editing: npm run cards -- fixtures
+Outmuscle
+Celestial Gatekeeper
+Heroic Return
+Standardize
+Whiplash Trap
+Rite of Belzenlok
+Rangers of Ithilien

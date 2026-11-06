@@ -100,7 +100,7 @@
       "When you next cast a creature spell, copy that spell for each time you've cast your commander from the command zone this game.",
       "When you next cast a creature spell this turn, copy that spell for each time you've cast your commander this game."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {
@@ -139,7 +139,7 @@
       "Equip commanders {2}",
       "Equip noncommander {2}"
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {
@@ -203,7 +203,7 @@
       "As long as you control a Forest, ~ gets +1/+1 and other Elves you control get +1/+1 and have reach until end of turn.",
       "As long as you control a Forest, ~ gets +1/+1 and other Elves you control get +1/+1 and lose reach."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {
@@ -262,7 +262,7 @@
       "As long as you control an Island, ~ gets +1/+0 and creatures you control have ward {1} until end of turn.",
       "As long as you control an Island, ~ gets +1/+0 and creatures you control lose flying."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {
@@ -305,7 +305,7 @@
       "Destroy all artifacts and creatures except for tokens.",
       "Destroy target creature except for commanders."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {
@@ -357,7 +357,7 @@
       "Target player draws X cards for each time they've cast a commander from the command zone this game.",
       "Each player draws X cards plus an additional card for each time they've cast a commander from the command zone this game."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {
@@ -397,7 +397,7 @@
       "Rather than pay {2} for each previous time you've cast ~ from the command zone this game, pay 2 life.",
       "Rather than pay {3} for each previous time you've cast ~ from the command zone this game, pay 2 life that many times."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   }
 ]

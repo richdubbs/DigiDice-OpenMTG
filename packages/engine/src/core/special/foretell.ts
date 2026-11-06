@@ -51,8 +51,29 @@ export function installForetell(f: ForetellImpl | null): void {
  * foretell has foretell. Its foretell cost is ...", Dream Devourer) has no printed cost to cast it for, so it is not offered (fail closed: never exile a card
  * that then can't be cast).
  */
+/** edh-d-73 (CR 702.143a; Dream Devourer): the generic mana off the mana cost when the card has foretell granted with "its foretell cost is equal to its mana cost reduced by {2}"; undefined otherwise or when it prints foretell itself. */
+export function grantedForetellLess(s: GameState, o: GameObject): number | undefined {
+  const printed = (s.defs[o.defId]?.faces[0]?.abilities ?? []).some((a) => a.kind === 'keyword' && a.keyword === 'foretell' && a.cost !== undefined);
+  if (printed) return undefined;
+  const kw = charsOfObject(s, o).keywords.find((k) => k.keyword === 'foretell' && k.cost === undefined && typeof k.costIsManaCostLess === 'number');
+  return kw?.costIsManaCostLess;
+}
+
+/** The `chosen` key of the generic mana a granted foretell took off the mana cost, kept on the foretold card (the granted keyword is gone once the card has left the hand, ruling 2021-02-05). */
+export const FORETELL_LESS_KEY = 'foretellLess';
+
 const hasForetell = (s: GameState, o: GameObject): boolean => charsOfObject(s, o).keywords.some((k) => k.keyword === 'foretell')
-  && (s.defs[o.defId]?.faces[0]?.abilities ?? []).some((a) => a.kind === 'keyword' && a.keyword === 'foretell' && a.cost !== undefined);
+  && ((s.defs[o.defId]?.faces[0]?.abilities ?? []).some((a) => a.kind === 'keyword' && a.keyword === 'foretell' && a.cost !== undefined)
+    || (grantedForetellLess(s, o) !== undefined && grantedCostWorks(s.defs[o.defId]))); // edh-d-73: granted, with a plain mana cost to take the generic mana off
+
+/**
+ * edh-d-73 (fail closed; review): the granted cost is worked out for a single-faced card with a plain mana cost (generic, colored, colorless or snow symbols). A card with several faces
+ * (the cost is that of the face cast, ruling 2021-02-05), with {X} or a hybrid symbol, or with no mana cost is not offered, so no card is exiled that could not be cast for the right cost.
+ */
+function grantedCostWorks(def: GameState['defs'][string] | undefined): boolean {
+  const mana = def?.faces[0]?.manaCost ?? null;
+  return def !== undefined && def.faces.length === 1 && mana !== null && mana.every((x) => x.kind === 'generic' || x.kind === 'colored' || x.kind === 'colorless' || x.kind === 'snow');
+}
 
 function listed(g: Game, player: PlayerId): { object: ObjectId; label: string; cost: CostDef }[] {
   if (!impl) return []; // fail closed: nothing to perform it with

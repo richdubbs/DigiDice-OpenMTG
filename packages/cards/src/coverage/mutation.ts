@@ -47,6 +47,11 @@ const WORD = /[A-Za-z][A-Za-z'-]*[A-Za-z]|[A-Za-z]/g;
 export function mutableWords(text: string, names: readonly string[]): { start: number; end: number; word: string }[] {
   const reminder: [number, number][] = [];
   for (const m of text.matchAll(/\([^)]*\)/g)) reminder.push([m.index!, m.index! + m[0].length]);
+  // edh-next-2: the name of a legendary token is an open class like a name after "named": "Create Ashaya, the Awoken World, a legendary 4/4 ..." (design 6.11)
+  const tokenNames: [number, number][] = [];
+  for (const m of text.matchAll(/\b[Cc]reate ([A-Z][^,.:]*(?:, (?:the|of) [^,.:]*)?), (?=an? )/g)) tokenNames.push([m.index! + m[0].indexOf(m[1]!), m.index! + m[0].indexOf(m[1]!) + m[1]!.length]);
+  // edh-next-50: a multi-word name after "named" is one open class ("a card named The Animus", "tokens named Cordyceps Infected"), not only its first word (design 6.11)
+  for (const m of text.matchAll(/\bnamed ([A-Z][A-Za-z'-]*(?: (?:of |the )?[A-Z][A-Za-z'-]*)*)/g)) tokenNames.push([m.index! + 6, m.index! + 6 + m[1]!.length]);
   const nameWords = new Set(names.flatMap((n) => n.split(/[\s,/]+/)).map((w) => w.toLowerCase()).filter((w) => w.length > 0));
   const out: { start: number; end: number; word: string }[] = [];
   const words = [...text.matchAll(WORD)].map((m) => ({ start: m.index!, end: m.index! + m[0].length, word: m[0] }));
@@ -54,6 +59,7 @@ export function mutableWords(text: string, names: readonly string[]): { start: n
     if (w.word.length < 3) return;
     if (reminder.some(([a, b]) => w.start >= a && w.end <= b)) return;
     if (nameWords.has(w.word.toLowerCase())) return;
+    if (tokenNames.some(([a, b]) => w.start >= a && w.end <= b)) return;
     const prev = words[i - 1]?.word.toLowerCase();
     const next = words[i + 1]?.word.toLowerCase();
     if (prev === 'named' || next === 'counter' || next === 'counters') return; // open classes (design 6.11)
@@ -199,13 +205,35 @@ export function exampleTypeLines(t: Pick<Template, 'kind'>, text: string): strin
   // precon combined copy (CR 301.5, 303.4): "Equipped creature ..." is an Equipment's static ability; on an Aura the renderer says "enchanted creature", so such an
   // example never parsed fully there and a template whose examples all begin "Equipped" had no near miss tried
   if (t.kind === 'static' && /^equipped\b/i.test(text)) return ['Artifact — Equipment'];
+  // edh-d-17 (CR 607.2d, 614.12a; Brass Herald): an effect example that starts with the linked "As this creature enters, choose a creature type." is a creature's two abilities (the choice and the trigger that reads it)
+  if (/^as this creature enters, choose a creature type\./i.test(text)) return ['Artifact Creature — Golem'];
+  // edh-d-72 (CR 614.12a, 607.2d, 603.4; Callous Oppressor, Tablet of the Guilds): an example whose entering choice is "this artifact"'s ("an opponent chooses a creature type") or that reads the two colors it chose in a cast trigger is an artifact creature's abilities
+  if (/^as this (artifact|creature) enters, an opponent chooses a creature type\./i.test(text) || /^as this (artifact|creature) enters, choose two colors\.\nwhenever you cast\b/i.test(text)) return ['Artifact Creature — Golem'];
+  // edh-fix-3 (CR 701.43a, 508.1): "If ~ hasn't been exerted this turn, you may exert it as it attacks." is a creature's own static ability: "this creature" and
+  // an attack need a creature (edh-combat-1; on an Enchantment the example never parsed and its template had no near miss tried)
+  if (t.kind === 'static' && /\b(this creature|as (it|he|she) attacks)\b/i.test(text)) return ['Creature — Spirit'];
+  // edh-zones-16 (CR 107.3, 601.2b; Open the Way): "X can't be greater than the number of players in the game." is a line of a sorcery: the largest X the spell may announce
+  if (t.kind === 'static' && /^x can't be greater than\b/i.test(text)) return ['Sorcery'];
+  // edh-b-6 (CR 601.3, 513.1; Necrologia): "Cast ~ only during your end step." is a restriction of a spell on itself: an instant (on an Enchantment it never parsed and the template had no near miss tried)
+  if (t.kind === 'static' && /^cast (~|example subject) only\b/i.test(text)) return ['Instant'];
+  // edh-next-90 (CR 702.61a, 113.6; Molten Disaster): "If this spell was kicked, it has split second." is a static ability of a spell on the stack (a line of a sorcery)
+  if (t.kind === 'static' && /(^|\n)if [^\n]*, it has split second\./i.test(text)) return ['Sorcery'];
   if (t.kind === 'static') return [/^(enchant|equip)/i.test(text) ? 'Enchantment — Aura' : 'Enchantment'];
+  // edh-perms-4 (CR 303.4a): an effect example that is a whole enters trigger of an Aura or an enchantment ("When this Aura enters, it loses ...") is an ability of that permanent, not spell text
+  if (/^when this aura\b/i.test(text)) return ['Enchantment — Aura'];
+  if (/^when this enchantment\b/i.test(text)) return ['Enchantment'];
+  // edh-c-90 (CR 205.1b, 306.5): "~ becomes a 3/3 ... creature that's still a land" is the ability of a land itself, "... that's still a planeswalker" of a planeswalker's loyalty ability
+  if (/\bthat's still a land\b/i.test(text)) return ['Land'];
+  if (/\bthat's still a planeswalker\b/i.test(text)) return ['Legendary Planeswalker — Example'];
   return [...new Set(['Instant', 'Sorcery', guessTypeLine(text)])];
 }
 
 /** A synthetic card in which an example of `t` is an ability of the right kind (invented name, design 6.10), under `typeLine` (default: the first of `exampleTypeLines`). */
 export function exampleCard(t: Pick<Template, 'kind'>, text: string, typeLine: string = exampleTypeLines(t, text)[0]!): OracleCard {
-  const oracle = text.replace(/~/g, 'Example Subject');
+  let oracle = text.replace(/~/g, 'Example Subject');
+  // edh-perms-4: an Aura that enchants a card in a graveyard has its enchant line (the example's own quoted "enchant <type> card in a graveyard" names the type)
+  const grave = /^Enchantment — Aura/.test(typeLine) ? /enchant (\w+) card in a graveyard/i.exec(oracle) : null;
+  if (grave) oracle = `Enchant ${grave[1]!} card in a graveyard\n${oracle}`;
   const c = { name: 'Example Subject', layout: 'normal', type_line: typeLine, oracle_text: t.kind === 'cost' && !oracle.includes(':') ? `${oracle}: Draw a card.` : oracle, mana_cost: '{1}', colors: [], keywords: [] } as OracleCard;
   if (/\bCreature\b/.test(typeLine)) Object.assign(c, { power: '2', toughness: '2' });
   // r4-repl (CR 107.3, 601.2b): an instant or sorcery example that reads X without defining it ("Draw X cards. If X is 6 or more, ...") is a spell with {X} in its cost

@@ -1,0 +1,10 @@
+# edh-c-103 (Commander EDHREC ranks 21,501-22,000, third pass): "counter ... unless its controller pays {B} or {3}", X cards revealed as a cost, a target chosen by the player whose upkeep it is, "if it's enchanted", "the number of cards revealed this way", "you return a nonland card to your hand this way", "If the player can't, sacrifice ~", "exile all creatures and graveyards", "only your opponents may activate this ability". After editing: npm run cards -- fixtures
+Thrull Wizard
+Martyr of Frost
+The Abyss
+Krond the Dawn-Clad
+Madcap Experiment
+Vengeful Rebirth
+Woebringer Demon
+Ultimate Nullification
+Detention Vortex

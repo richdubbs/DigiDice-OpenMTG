@@ -40,9 +40,9 @@ export function nestedLists(step: Rec, path: string): { list: Rec[]; path: strin
     case 'may': add('do'); add('otherwise'); break;
     case 'pay': add('then'); add('else'); break;
     case 'forEach': case 'repeat': case 'delay': case 'reflexive': add('do'); break;
-    case 'flipCoin': add('onWin'); add('onLose'); break;
+    case 'flipCoin': add('onWin'); add('onLose'); add('onTails'); break;
     case 'clash': add('onWin'); add('onLose'); break; // p2-player-rules-2 (CR 701.30)
-    case 'rollDie': arr(step['table']).forEach((row, j) => { if (Array.isArray(row['do'])) out.push({ list: row['do'] as Rec[], path: `${path}/table/${j}/do` }); }); break;
+    case 'rollDie': add('afterRoll'); arr(step['table']).forEach((row, j) => { if (Array.isArray(row['do'])) out.push({ list: row['do'] as Rec[], path: `${path}/table/${j}/do` }); }); break;
     default:
   }
   return out;
@@ -67,7 +67,7 @@ export function ownReferences(step: Rec, path: string): Taint {
     else if ((n.def === 'ObjRef' || n.def === 'PlayerRef') && v['ref'] === 'linked') links.add(v['link'] as string);
     else if ((n.def === 'ObjectFilter.chosen' || (n.def === 'Condition' && v['cond'] === 'chosen')) && typeof v['link'] === 'string') links.add(v['link']);
     else if (n.def === 'Condition' && v['cond'] === 'did') names.add(v['step'] as string);
-    else if (n.def === 'Quantity' && (v['q'] === 'resultCount' || v['q'] === 'excessDamage' || v['q'] === 'lifeLost' || v['q'] === 'countersRemoved' || v['q'] === 'countersPut' || v['q'] === 'votes' || v['q'] === 'damageDealt')) names.add(v['step'] as string); // FAST5X E16: excessDamage
+    else if (n.def === 'Quantity' && (v['q'] === 'resultCount' || v['q'] === 'excessDamage' || v['q'] === 'lifeLost' || v['q'] === 'countersRemoved' || v['q'] === 'countersPut' || v['q'] === 'votes' || v['q'] === 'votesFor' || v['q'] === 'damageDealt')) names.add(v['step'] as string); // FAST5X E16: excessDamage
     else if (n.def === 'Quantity' && v['q'] === 'var') vars.add(v['name'] as string);
     return undefined;
   }, { path });

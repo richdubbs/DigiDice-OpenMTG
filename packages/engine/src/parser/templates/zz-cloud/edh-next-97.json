@@ -1,0 +1,347 @@
+[
+  {
+    "id": "eff.edhn97.dur.permit.free.fromHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 611.2a",
+      "CR 604.1"
+    ],
+    "pattern": "{d:Dur} , you may cast {f:Filter} from your hand without paying their mana costs",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "anyOf": [
+              "$f"
+            ],
+            "castFrom": "hand"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, you may cast creature spells from your hand without paying their mana costs."
+      },
+      {
+        "text": "Until your next turn, you may cast artifact spells from your hand without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, you may cast creature spells from your graveyard without paying their mana costs.",
+      "Until end of turn, target player may cast creature spells from their hand without paying their mana costs.",
+      "You may cast creature spells from your hand without paying their mana costs until end of turn and draw a card."
+    ]
+  },
+  {
+    "id": "sta.edhn97.firstKind.casualty",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 702.153a",
+      "CR 613.1f",
+      "CR 604.1",
+      "CR 707.10"
+    ],
+    "pattern": "the first {f:Filter} you cast each turn has casualty {n:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "firstCastOf": "$f",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "casualty",
+              "text": "casualty",
+              "amount": "$n"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "The first artifact spell you cast each turn has casualty 3."
+      },
+      {
+        "text": "The first red instant or sorcery spell you cast each turn has casualty 1."
+      }
+    ],
+    "counterExamples": [
+      "The second artifact spell you cast each turn has casualty 3.",
+      "The first artifact spell your opponents cast each turn has casualty 3.",
+      "The first artifact spell you cast each turn has flash."
+    ]
+  },
+  {
+    "id": "sta.edhn97.firstKind.convoke",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 702.51a",
+      "CR 613.1f",
+      "CR 604.1"
+    ],
+    "pattern": "the first {f:Filter} you cast each turn has convoke",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "firstCastOf": "$f",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "convoke",
+              "text": "convoke"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "The first green creature spell you cast each turn has convoke."
+      },
+      {
+        "text": "The first artifact or enchantment spell you cast each turn has convoke."
+      }
+    ],
+    "counterExamples": [
+      "The second green creature spell you cast each turn has convoke.",
+      "The first green creature spell you cast each turn has flash."
+    ]
+  },
+  {
+    "id": "sta.edhn97.firstKind.improvise",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 702.126a",
+      "CR 613.1f",
+      "CR 604.1"
+    ],
+    "pattern": "the first {f:Filter} you cast each turn has improvise",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "firstCastOf": "$f",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "improvise",
+              "text": "improvise"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "The first creature spell you cast each turn has improvise."
+      },
+      {
+        "text": "The first blue sorcery spell you cast each turn has improvise."
+      }
+    ],
+    "counterExamples": [
+      "The first creature spell you cast each turn has flash.",
+      "The second creature spell you cast each turn has improvise."
+    ]
+  },
+  {
+    "id": "sta.edhn97.firstKind.demonstrate",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 702.144a",
+      "CR 613.1f",
+      "CR 604.1"
+    ],
+    "pattern": "the first {f:Filter} you cast each turn has demonstrate",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "firstCastOf": "$f",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "demonstrate",
+              "text": "demonstrate"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "The first red creature spell you cast each turn has demonstrate."
+      },
+      {
+        "text": "The first instant spell you cast each turn has demonstrate."
+      }
+    ],
+    "counterExamples": [
+      "The second red creature spell you cast each turn has demonstrate.",
+      "The first red creature spell you cast each turn has flash."
+    ]
+  },
+  {
+    "id": "eff.edhn97.delay.untappedOrLoseControl.self",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 108.4",
+      "CR 701.3d",
+      "CR 502.3"
+    ],
+    "pattern": "when ~ becomes untapped or you lose control of ~ , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "becomes",
+          "what": "untapped",
+          "object": {
+            "self": true
+          }
+        },
+        "or": [
+          {
+            "ev": "controlChange",
+            "object": {
+              "is": {
+                "ref": "self"
+              }
+            },
+            "from": "you"
+          }
+        ]
+      },
+      "do": "$x"
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "lose control"
+    ],
+    "examples": [
+      {
+        "text": "Gain control of target creature. When ~ becomes untapped or you lose control of ~, tap that creature."
+      },
+      {
+        "text": "Return target creature card from a graveyard to the battlefield. When ~ becomes untapped or you lose control of ~, sacrifice that creature."
+      }
+    ],
+    "counterExamples": [
+      "Gain control of target creature. When ~ becomes untapped, tap that creature.",
+      "Gain control of target creature. When ~ becomes untapped or an opponent loses control of ~, tap that creature.",
+      "Gain control of target creature. Whenever ~ becomes untapped or you lose control of ~, tap that creature."
+    ]
+  }
+]

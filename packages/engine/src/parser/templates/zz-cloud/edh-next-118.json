@@ -1,0 +1,54 @@
+[
+  {
+    "id": "eff.edhn118.eachOfThem.getGain",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 608.2c"
+    ],
+    "pattern": "each of {o:Them} gets {pt:PT} and gains {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Untap two target creatures. Each of them gets +2/+2 and gains haste until end of turn."
+      },
+      {
+        "text": "Tap up to two target creatures. Each of them gets -1/-0 and gains defender until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Untap two target creatures. Each of them gets +2/+2 and gains haste.",
+      "Untap two target creatures. Each of them gets +2/+2 and loses haste until end of turn.",
+      "Each of them gets +2/+2 and gains haste until end of turn."
+    ]
+  }
+]

@@ -1,0 +1,265 @@
+[
+  {
+    "id": "eff.edhd39.cantPhaseIn.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.26b",
+      "CR 702.26c",
+      "CR 611.2b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't phase in {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "phaseIn"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target nonland permanent phases out. It can't phase in for as long as you control ~."
+      },
+      {
+        "text": "{1}{W}, {T}: Untap another target nonland permanent, then it phases out. It can't phase in for as long as ~ remains tapped."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target nonland permanent phases out. It can't phase out for as long as you control ~.",
+      "When ~ enters, target nonland permanent can't phase in.",
+      "When ~ enters, target nonland permanent phases out. It can't untap for as long as you control ~."
+    ]
+  },
+  {
+    "id": "eff.edhd39.player.protectionEverythingLifeFixed.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 119.7",
+      "CR 119.8",
+      "CR 611.2b",
+      "CR 614.1a",
+      "CR 615.1",
+      "CR 615.12",
+      "CR 702.16j"
+    ],
+    "pattern": "{d:Dur} , {p:Player} gain[s] protection from everything and their life total can't change",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "gainLife"
+        },
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "loseLife"
+        },
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "beEnchanted"
+        },
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "beTargeted"
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "$p"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Choose target opponent. Until that player's next turn, they gain protection from everything and their life total can't change."
+      },
+      {
+        "text": "Choose target player. Until end of turn, they gain protection from everything and their life total can't change."
+      }
+    ],
+    "counterExamples": [
+      "Choose target opponent. Until that player's next turn, they gain protection from everything and your life total can't change.",
+      "Choose target opponent. Until that player's next turn, they gain protection from everything and their life total can change.",
+      "Choose target opponent. Until that player's next turn, they gain hexproof and their life total can't change."
+    ]
+  },
+  {
+    "id": "eff.edhd39.exileAllPile.manifest",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 701.40a",
+      "CR 701.40e",
+      "CR 701.24a",
+      "CR 608.2c"
+    ],
+    "pattern": "exile all {f:Filter} in a face-down pile , shuffle that pile , then manifest those cards",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        },
+        "as": "exiledPile"
+      },
+      {
+        "op": "action",
+        "action": "manifest",
+        "who": {
+          "ref": "you"
+        },
+        "subject": {
+          "ref": "bound",
+          "name": "exiledPile"
+        },
+        "arg": "shuffle"
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:manifest",
+      "feature:action.manifest.shuffle"
+    ],
+    "consumes": [
+      "all",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Exile all creature cards from target player's graveyard in a face-down pile, shuffle that pile, then manifest those cards."
+      },
+      {
+        "text": "Exile all artifact cards from your graveyard in a face-down pile, shuffle that pile, then manifest those cards."
+      }
+    ],
+    "counterExamples": [
+      "Exile all creature cards from target player's graveyard in a face-down pile, then manifest those cards.",
+      "Exile all creature cards from target player's graveyard in a face-down pile, shuffle that pile, then cloak those cards.",
+      "Exile up to two creature cards from target player's graveyard in a face-down pile, shuffle that pile, then manifest those cards."
+    ]
+  },
+  {
+    "id": "eff.edhd39.exileItAndTop.pile.manifest",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 701.40a",
+      "CR 701.40e",
+      "CR 701.24a",
+      "CR 608.2c"
+    ],
+    "pattern": "exile {o:Obj} and the top card of your library in a face-down pile , shuffle that pile , then manifest those cards",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        },
+        "as": "exiledPile"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": 1
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        },
+        "as": "exiledTop"
+      },
+      {
+        "op": "action",
+        "action": "manifest",
+        "who": {
+          "ref": "you"
+        },
+        "subject": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "exiledPile"
+            },
+            {
+              "ref": "bound",
+              "name": "exiledTop"
+            }
+          ]
+        },
+        "arg": "shuffle"
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:manifest",
+      "feature:action.manifest.shuffle"
+    ],
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ deals combat damage to a player, exile it and the top card of your library in a face-down pile, shuffle that pile, then manifest those cards."
+      },
+      {
+        "text": "{2}{U}, {T}: Exile target creature you control and the top card of your library in a face-down pile, shuffle that pile, then manifest those cards."
+      }
+    ],
+    "counterExamples": [
+      "When ~ deals combat damage to a player, exile it and the top card of your library in a face-down pile, then manifest those cards.",
+      "When ~ deals combat damage to a player, exile it and the top card of your library in a face-down pile, shuffle that pile, then cloak those cards.",
+      "When ~ deals combat damage to a player, exile it and the top two cards of your library in a face-down pile, shuffle that pile, then manifest those cards."
+    ]
+  }
+]

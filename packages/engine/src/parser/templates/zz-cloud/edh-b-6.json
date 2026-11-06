@@ -1,0 +1,310 @@
+[
+  {
+    "id": "rst.edhb6.cast.self.yourEndStep",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 513.1",
+      "CR 102.1"
+    ],
+    "pattern": "cast ~ only during your end step",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "you",
+            "step": [
+              "end"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Cast Example Subject only during your end step.\nYou gain 3 life and draw a card."
+      },
+      {
+        "text": "Cast Example Subject only during your end step.\nYou gain 2 life, then target player loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Cast Example Subject only during an opponent's end step.\nYou gain 3 life and draw a card.",
+      "Cast Example Subject only during your upkeep.\nYou gain 3 life and draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhb6.setLife.itStartingLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.5",
+      "CR 103.4",
+      "CR 608.2c"
+    ],
+    "pattern": "it becomes equal to your starting life total",
+    "build": {
+      "op": "setLife",
+      "who": {
+        "ref": "you"
+      },
+      "value": {
+        "q": "startingLife"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature dies, if your life total is less than your starting life total, it becomes equal to your starting life total."
+      },
+      {
+        "text": "Whenever you cast a spell, if your life total is less than your starting life total, it becomes equal to your starting life total."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, if your life total is less than your starting life total, it becomes equal to half your starting life total.",
+      "When this creature dies, if your life total is less than your starting life total, it becomes equal to your starting life total instead."
+    ]
+  },
+  {
+    "id": "rep.edhb6.scry.plus",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 701.22a",
+      "CR 614.6"
+    ],
+    "pattern": "if you would scry a number of cards , scry that many cards plus {n:Qty} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "scry",
+        "actor": "you"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would scry a number of cards, scry that many cards plus two instead."
+      },
+      {
+        "text": "If you would scry a number of cards, scry that many cards plus three instead."
+      }
+    ],
+    "counterExamples": [
+      "If an opponent would scry a number of cards, they scry that many cards plus one instead.",
+      "If you would scry a number of cards, scry twice that many cards instead.",
+      "If you would surveil a number of cards, surveil that many cards plus one instead."
+    ]
+  },
+  {
+    "id": "cm.edhb6.spells.less.ifHasKeyword",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.1",
+      "CR 702.19b"
+    ],
+    "pattern": "each {f:Filter} you cast costs {m:ManaCost} less to cast if it has {k:Keyword}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "types": "$f.types",
+              "subtypes": "$f.subtypes",
+              "supertypes": "$f.supertypes",
+              "colors": "$f.colors",
+              "stackKind": "spell",
+              "zone": "stack",
+              "keyword": "$k.keyword"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Each creature spell you cast costs {1} less to cast if it has flying."
+      },
+      {
+        "text": "Each creature spell you cast costs {2} less to cast if it has trample."
+      }
+    ],
+    "counterExamples": [
+      "Each creature spell you cast costs {1} more to cast if it has flying.",
+      "Each creature spell your opponents cast costs {1} less to cast if it has flying.",
+      "Each creature spell you cast costs {1} less to cast if it has flying and you control a land."
+    ]
+  },
+  {
+    "id": "sta.edhb6.asLongAs.selfAndGroup.pt",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "as long as {c:Cond} , ~ and {f:Filter} get {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "self"
+              },
+              {
+                "ref": "each",
+                "filter": "$f"
+              }
+            ]
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "priority": -1,
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control seven or more lands, this creature and Elf creatures you control get +1/+1."
+      },
+      {
+        "text": "As long as it's your turn, this creature and other Goblin creatures you control get +1/+0."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control seven or more lands, this creature and Elf creatures you control get +1/+1 until end of turn.",
+      "As long as you control seven or more lands, this creature and Elf creatures you control get +1/+1 and lose flying.",
+      "Unless you control seven or more lands, this creature and Elf creatures you control get +1/+1."
+    ]
+  },
+  {
+    "id": "sta.edhb6.asLongAs.selfAndGroup.ptAbilities",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as {c:Cond} , ~ and {f:Filter} get {pt:PT} and have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "self"
+              },
+              {
+                "ref": "each",
+                "filter": "$f"
+              }
+            ]
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "priority": -1,
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as the top card of your library is black, this creature and other Goblin creatures you control get +1/+1 and have haste."
+      },
+      {
+        "text": "As long as it's your turn, this creature and Elf creatures you control get +1/+0 and have trample."
+      }
+    ],
+    "counterExamples": [
+      "As long as it's your turn, this creature and Elf creatures you control get +1/+0 and have trample until end of turn.",
+      "As long as it's your turn, this creature and Elf creatures you control get +1/+0 and lose trample.",
+      "Unless it's your turn, this creature and Elf creatures you control get +1/+0 and have trample."
+    ]
+  }
+]

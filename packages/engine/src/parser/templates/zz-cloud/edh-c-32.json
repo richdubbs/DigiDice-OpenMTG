@@ -1,0 +1,272 @@
+[
+  {
+    "id": "eff.edhv32.player.sacrifices.object",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 2,
+    "cr": [
+      "CR 701.21a",
+      "CR 109.4",
+      "CR 118.12a"
+    ],
+    "pattern": "{p:Player} sacrifices {o:Obj}",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": {
+        "is": "$o"
+      },
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "sacrifices"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each upkeep, enchanted creature's controller sacrifices that creature."
+      },
+      {
+        "text": "At the beginning of your end step, enchanted creature's controller sacrifices enchanted creature."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of the upkeep of enchanted creature's controller, that player sacrifices a creature.",
+      "At the beginning of the upkeep of enchanted creature's controller, that player sacrifices that creature's controller.",
+      "At the beginning of the upkeep of enchanted creature's controller, sacrifices that creature."
+    ]
+  },
+  {
+    "id": "rst.edhv32.cast.self.opponentUpkeep",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 503.1",
+      "CR 500.1"
+    ],
+    "pattern": "cast ~ only during an opponent 's upkeep",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "opponent",
+            "step": [
+              "upkeep"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Cast Example Subject only during an opponent's upkeep."
+      },
+      {
+        "text": "Cast Example Subject only during an opponent's upkeep.\nExample Subject can't block."
+      }
+    ],
+    "counterExamples": [
+      "Cast Example Subject only during your upkeep.",
+      "Cast Example Subject only during an opponent's draw step.",
+      "Cast Example Subject only during an opponent's turn."
+    ]
+  },
+  {
+    "id": "sta.edhv32.self.everyCreatureType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 604.3",
+      "CR 613.1d",
+      "CR 702.73a"
+    ],
+    "pattern": "~ is every creature type",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield",
+        "hand",
+        "library",
+        "graveyard",
+        "stack",
+        "exile",
+        "command"
+      ],
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "all": true
+              }
+            }
+          ],
+          "cda": true
+        }
+      ]
+    },
+    "consumes": [
+      "every"
+    ],
+    "examples": [
+      {
+        "text": "Example Subject is every creature type."
+      },
+      {
+        "text": "Example Subject is every creature type.\nExample Subject can't block."
+      }
+    ],
+    "counterExamples": [
+      "Example Subject is every creature type until end of turn.",
+      "Example Subject is every land type.",
+      "Example Subject is also every creature type."
+    ]
+  },
+  {
+    "id": "eff.edhv32.player.revealsHandDiscardsAll",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.9a",
+      "CR 402.3"
+    ],
+    "pattern": "{p:Player} reveal[s] their hand and discard[s] all nonland cards",
+    "build": [
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        }
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "hand",
+        "filter": {
+          "notTypes": [
+            "Land"
+          ]
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "reveals",
+      "discards",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent reveals their hand and discards all nonland cards."
+      },
+      {
+        "text": "Target opponent reveals their hand and discards all nonland cards.\nScry 2."
+      }
+    ],
+    "counterExamples": [
+      "Target player reveals their hand and discards a nonland card.",
+      "Target player reveals their hand and discards all land cards.",
+      "Target player reveals their library and discards all nonland cards."
+    ]
+  },
+  {
+    "id": "eff.edhv32.search.playerZones.allSameName.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 201.2",
+      "CR 608.2h",
+      "CR 406.1"
+    ],
+    "pattern": "search {p:Player} 's graveyard , hand [,] and library for all cards with the same name as {o:Obj} and exile them",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "owner": "$p",
+        "zone": "graveyard",
+        "alsoZones": [
+          "hand",
+          "library"
+        ],
+        "allZones": true,
+        "publicRequired": true,
+        "filter": {
+          "sharesWith": {
+            "with": "$o",
+            "quality": "name"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "Exile target Equipment. Search its controller's graveyard, hand, and library for all cards with the same name as that Equipment and exile them. Then that player shuffles."
+      },
+      {
+        "text": "Destroy target enchantment. Search its owner's graveyard, hand and library for all cards with the same name as that enchantment and exile them. Then that player shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Exile target Equipment. Search its controller's graveyard, hand, and library for each card with the same name as that Equipment and exile them. Then that player shuffles.",
+      "Exile target artifact. Search its controller's graveyard, hand, and library for all cards with the same name as that artifact and put them into your hand. Then that player shuffles.",
+      "Exile target artifact. Search its controller's graveyard and library for all cards with the same name as that artifact and exile them. Then that player shuffles."
+    ]
+  }
+]

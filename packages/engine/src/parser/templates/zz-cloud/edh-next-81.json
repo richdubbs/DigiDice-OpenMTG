@@ -1,0 +1,130 @@
+[
+  {
+    "id": "kw.edhn81.suspend.x.notZero",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.62a",
+      "CR 107.3a",
+      "CR 107.3b"
+    ],
+    "pattern": "suspend x -- {m:ManaCost} . x can't be 0",
+    "build": {
+      "kind": "keyword",
+      "keyword": "suspend",
+      "amount": {
+        "q": "X"
+      },
+      "cost": {
+        "mana": "$m"
+      },
+      "xMin": 1
+    },
+    "examples": [
+      {
+        "text": "Suspend X--{X}{1}{U}. X can't be 0."
+      },
+      {
+        "text": "Suspend X--{X}{G}{G}. X can't be 0."
+      }
+    ],
+    "counterExamples": [
+      "Suspend X--{X}{3}{U}.",
+      "Suspend 3--{X}{3}{U}. X can't be 0.",
+      "Suspend X--{X}{3}{U}. X can't be 1."
+    ],
+    "consumes": [
+      "can't"
+    ]
+  },
+  {
+    "id": "sta.edhn81.countersRemain.self",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.2",
+      "CR 400.7",
+      "CR 113.6"
+    ],
+    "pattern": "counters remain on ~ as it moves to any zone other than a player 's hand or library",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield",
+        "graveyard",
+        "exile",
+        "stack",
+        "command"
+      ],
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "countersRemain"
+        }
+      ]
+    },
+    "consumes": [
+      "remain",
+      "moves",
+      "any",
+      "zone",
+      "other",
+      "than"
+    ],
+    "examples": [
+      {
+        "text": "Counters remain on this permanent as it moves to any zone other than a player's hand or library."
+      },
+      {
+        "text": "Counters remain on this Wizard as it moves to any zone other than a player's hand or library."
+      }
+    ],
+    "counterExamples": [
+      "Counters remain on ~ as it moves to any zone.",
+      "Counters remain on ~ as it moves to any zone other than a player's graveyard or library.",
+      "Counters remain on ~ as it moves to the graveyard.",
+      "Counters remain on target creature as it moves to any zone other than a player's hand or library."
+    ]
+  },
+  {
+    "id": "eff.edhn81.mayPay.manaAnyNumberOfTimes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 608.2d",
+      "CR 603.12"
+    ],
+    "pattern": "you may pay {m:ManaCost} any number of times",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "mana": "$m"
+      },
+      "anyAmount": true
+    },
+    "consumes": [
+      "may",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, you may pay {1}{W} any number of times. When you pay this cost one or more times, put that many +1/+1 counters on this creature."
+      },
+      {
+        "text": "When this creature enters, you may pay {2}{B} any number of times. When you pay this cost one or more times, draw that many cards."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, you may pay {1}{W} any number of times. When you do, you gain 2 life.",
+      "When this creature enters, each opponent may pay {1}{W} any number of times. When you pay this cost one or more times, you gain that much life.",
+      "When this creature enters, you may pay {1}{W} twice. When you pay this cost one or more times, you gain that much life."
+    ]
+  }
+]

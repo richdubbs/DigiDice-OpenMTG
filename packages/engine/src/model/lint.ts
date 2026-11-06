@@ -6,19 +6,30 @@
  * level's) is its own scope: names, target ids and X do not cross the boundary.
  */
 import type { Issue, ValidateAbility, ValidateContext } from './api';
-import { lintFlow } from './lint-flow';
+import { allNamesOf, lintFlow } from './lint-flow';
 import { lintNodes } from './lint-nodes';
 import { ancestors, type WalkNode } from './walk';
 
-function lintScope(def: unknown, base: string, ctx: ValidateContext, issues: Issue[]): void {
+function lintScope(def: unknown, base: string, ctx: ValidateContext, issues: Issue[], outer?: ReadonlySet<string>): void {
   const nested: WalkNode[] = [];
   lintNodes(def, base, ctx, issues, (n) => nested.push(n));
-  lintFlow(def, base, issues);
+  lintFlow(def, base, issues, outer);
   const isStatic = typeof def === 'object' && def !== null && (def as { kind?: unknown }).kind === 'static';
   for (const n of nested) {
     const { grantedScope: _outer, ...inner } = ctx;
-    lintScope(n.value, n.path, isStatic && grantedByLayer6(n) ? { ...inner, grantedScope: true } : inner, issues);
+    // edh-d-91 (CR 607.2a, 613.1f; Timothar): an ability a RESOLVED effect grants (layer 6 `add` inside an effect step) may read the names its granting resolution bound (lasting-fix.ts#fixOuterNames)
+    lintScope(n.value, n.path, isStatic && grantedByLayer6(n) ? { ...inner, grantedScope: true } : inner, issues, !isStatic && grantedByEffect(n) ? allNamesOf(def) : undefined);
   }
+}
+
+/** edh-d-91: the nested ability is in the `add` of a layer 6 modification of an `effect` step (a resolved effect's grant). */
+function grantedByEffect(n: WalkNode): boolean {
+  let layer6 = false;
+  for (const a of ancestors(n)) {
+    if (a.value['layer'] === 6 && n.path.startsWith(`${a.path}/add/`)) layer6 = true;
+    if (a.def === 'EffectStep') return layer6 && a.value['op'] === 'effect';
+  }
+  return false;
 }
 
 /** r4-static: the nested ability is in the `add` of a layer 6 modification, with no effect step between (a static ability's grant, not a resolved effect's). */

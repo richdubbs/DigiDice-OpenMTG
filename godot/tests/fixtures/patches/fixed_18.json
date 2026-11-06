@@ -1,0 +1,1 @@
+{"name":"__proto__ stays a plain key","before":{"defs":{"x":1}},"ops":[{"op":"set","path":["defs","__proto__"],"value":{"polluted":true}}],"after":{"defs":{"x":1,"__proto__":{"polluted":true}}}}

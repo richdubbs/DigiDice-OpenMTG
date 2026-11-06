@@ -29,9 +29,10 @@ describe('"A or B" descriptions with modifiers of their own (CR 205.2a, 205.4)',
   it('keeps the reading of the plain coordination of card types where it exists ("creature or planeswalker"): one description, the same JSON as before', () => {
     expect(json('Destroy target artifact or enchantment.')).toContain('"filter":{"types":["Artifact","Enchantment"]}');
   });
-  it('a bare type beside a description of several type words has two readings, so neither is chosen ("artifact creature or land", "Adventure instant or sorcery spell")', () => {
+  it('a bare type beside a description of several type words has two readings, so neither is chosen ("artifact creature or land"; edh-d-6 reads "Adventure instant or sorcery spell" because the spell types are shared by both card types)', () => {
     expect(fullyAutomated(spell('Destroy target artifact creature or land.'))).toBe(false);
-    expect(fullyAutomated(creature('Whenever you cast an Adventure instant or sorcery spell, you gain 1 life.'))).toBe(false);
+    expect(fullyAutomated(creature('Whenever you cast an Adventure instant or sorcery spell, you gain 1 life.'))).toBe(true); // edh-d-6 (Lucky Clover): CR 205.3k
+    expect(fullyAutomated(creature('Whenever you cast a Goblin instant or sorcery spell, you gain 1 life.'))).toBe(false);
   });
   it('a "with ..." or other modifier after the whole coordination may belong to the last half only, so it is not read ("legendary creature or creature with mana value 1")', () => {
     expect(fullyAutomated(creature('Whenever another legendary creature or creature with mana value 1 enters under your control, you gain 1 life.'))).toBe(false);
@@ -88,8 +89,13 @@ describe('"each of those creatures you don\'t control" (CR 608.2c, 109.4)', () =
     expect(fullyAutomated(parse(card('Example Maze', 'Enchantment', tap('Put a stun counter on each of those creatures an opponent controls.'))))).toBe(true);
     expect(fullyAutomated(parse(card('Example Maze', 'Enchantment', tap('Put a +1/+1 counter on each of those creatures you control.'))))).toBe(true);
   });
-  it('nothing else is read after the group ("with flying" may name a different set)', () => {
-    expect(fullyAutomated(parse(card('Example Maze', 'Enchantment', tap('Put a stun counter on each of those creatures with flying.'))))).toBe(false);
+  it('nothing else is read after the group, except edh-c-94\'s description of the same group ("with flying" is the part of those creatures that has flying: Winter Blast, ruling 2007-09-16); a controller is never read with it', () => {
+    // edh-c-94 (CR 608.2c): the creatures of the earlier targets that have flying (`is` the targets of the earlier step); before it this stayed manual because "with flying" may name another set
+    const flying = parse(card('Example Maze', 'Enchantment', tap('Put a stun counter on each of those creatures with flying.')));
+    expect(fullyAutomated(flying)).toBe(true);
+    expect(JSON.stringify(flying.abilities)).toContain('"is":{"ref":"target","id":"t0"}');
+    expect(fullyAutomated(parse(card('Example Maze', 'Enchantment', tap("Put a stun counter on each of those creatures with flying you don't control."))))).toBe(false);
+    expect(fullyAutomated(parse(card('Example Maze', 'Enchantment', tap('Put a stun counter on each of those creatures with flying an opponent controls.'))))).toBe(false);
   });
 });
 

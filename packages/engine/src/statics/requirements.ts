@@ -54,6 +54,14 @@ export interface RequirementHit {
    * by); absent when it has no `other` (anything obeys it). Never empty.
    */
   among?: ObjectId[];
+  /** edh-d-38 (CR 509.1c; Gorm the Great): with `beBlocked` only, the attacker must be blocked by at least this many creatures (two or more); absent: at least one. */
+  min?: number;
+  /** edh-d-75 (CR 508.1d; Seeker of Slaanesh): an `attack` requirement of a player's whole group (`RestrictionDef.atLeastOne`): obeyed when any of these creatures attacks (`subject` is the first). */
+  group?: ObjectId[];
+  /** edh-d-75 (CR 509.1c; Nacatl War-Pride): with `beBlocked` only, the attacker must be blocked by exactly this many creatures. */
+  exactly?: number;
+  /** edh-d-88 (CR 508.1d; War's Toll): with `group`, an `attack` requirement of `subject` that applies only when a creature of `group` attacks (`RestrictionDef.allIfAny`). */
+  allIfAny?: true;
   /** Set when part of it can't be evaluated (the declaration is not checked against it; the players settle it by hand). */
   unenforced?: string;
 }
@@ -80,7 +88,11 @@ function unenforcedWhy(r: RestrictionDef): string | undefined {
   // r5-static (CR 102.3, 508.1d): or "a player other than you", read as each opponent of the effect's controller ("you", CR 109.5), who stay the same players
   // for the effect's duration (a player who left can't be attacked and is dropped below)
   const opponents = r.otherPlayer !== undefined && r.otherPlayer.ref === 'each' && 'who' in r.otherPlayer && r.otherPlayer.who === 'opponent' && Object.keys(r.otherPlayer).length === 2;
-  if (r.otherPlayer !== undefined && (!(REQUIREMENT_PLAYER_ACTIONS as readonly string[]).includes(r.action) || (r.otherPlayer.ref !== 'fixed' && !opponents))) return "the player it names can't be evaluated";
+  // edh-d-75 (CR 508.1d, 109.5; Trove of Temptation): or "you", the controller of the effect's source, for the group form ("attack you or a planeswalker you control with at least one creature")
+  const you = r.atLeastOne === true && r.otherPlayer !== undefined && r.otherPlayer.ref === 'you' && Object.keys(r.otherPlayer).length === 1;
+  // edh-d-85 (CR 119.1, 508.1d; Galactus): or "an opponent with the most life among your opponents", read as attackers are declared (statics/match.ts#playersOf)
+  const mostLife = r.otherPlayer !== undefined && r.otherPlayer.ref === 'mostLife' && r.otherPlayer.who === 'opponent' && Object.keys(r.otherPlayer).length === 2;
+  if (r.otherPlayer !== undefined && (!(REQUIREMENT_PLAYER_ACTIONS as readonly string[]).includes(r.action) || (r.otherPlayer.ref !== 'fixed' && !opponents && !you && !mostLife))) return "the player it names can't be evaluated";
   if (r.max !== undefined) return 'it has a limit';
   if (r.when !== undefined && !staticallyEvaluable(r.when)) return "its condition can't be evaluated";
   return undefined;
@@ -144,6 +156,36 @@ function sourceHits(s: GameState, action: RequirementAction, subjects: readonly 
     const cx = cxOf(ctx, src);
     const why = unenforcedWhy(e) ?? (thisTurnInLaterCombat(s, src) ? 'it lasts this turn and this is not the first combat of the turn' : undefined);
     if (why === undefined && e.when !== undefined && !evalCondition(cx, e.when)) continue; // "as long as ..." (CR 611.3a)
+    // edh-d-88 (CR 508.1d; War's Toll): "if a creature an opponent controls attacks, all creatures that opponent controls attack if able": one requirement for each creature it names,
+    // with the group of its controller's creatures it names (the condition: one of them attacks); one that names another creature or player is left to the players
+    if (e.allIfAny === true) {
+      const byController = new Map<string, ObjectId[]>();
+      for (const id of subjects) if (refIncludes(cx, e.subject, id)) {
+        const c = s.objects[id]?.controller;
+        if (c !== undefined) byController.set(c, [...(byController.get(c) ?? []), id]);
+      }
+      const odd = why ?? (e.other !== undefined || e.otherPlayer !== undefined || e.atLeastOne !== undefined ? 'it names another creature or player' : undefined);
+      for (const [controller, group] of byController) for (const id of group) {
+        out.push({ action, subject: id, group, allIfAny: true, key: `${src.order.join('.')}:ifany:${controller}:${id}`, sourceName: src.name, text: src.text, ...(odd !== undefined ? { unenforced: odd } : {}) });
+      }
+      continue;
+    }
+    // edh-d-75 (CR 508.1d; Seeker of Slaanesh, Trove of Temptation): the group form is ONE requirement for each player whose creatures it names, obeyed by any of them
+    if (e.atLeastOne === true) {
+      const byController = new Map<string, ObjectId[]>();
+      for (const id of subjects) if (refIncludes(cx, e.subject, id)) {
+        const c = s.objects[id]?.controller;
+        if (c !== undefined) byController.set(c, [...(byController.get(c) ?? []), id]);
+      }
+      for (const [controller, group] of byController) {
+        let among: ObjectId[] | undefined;
+        if (e.other !== undefined && why === undefined) among = others.filter((o) => objectMatches(cx, o, e.other!) === true);
+        if (e.otherPlayer !== undefined && why === undefined) among = [...(among ?? []), ...playersOf(cx, e.otherPlayer).filter((p) => p !== controller && s.players.some((x) => x.id === p && !x.hasLost))];
+        if (among !== undefined && among.length === 0) continue; // CR 508.1d: a requirement that can't be obeyed is not counted
+        out.push({ action, subject: group[0]!, group, key: `${src.order.join('.')}:group:${controller}`, sourceName: src.name, text: src.text, ...(among !== undefined ? { among } : {}), ...(why !== undefined ? { unenforced: why } : {}) });
+      }
+      continue;
+    }
     for (const id of subjects) {
       if (!refIncludes(cx, e.subject, id)) continue;
       let among: ObjectId[] | undefined;
@@ -158,7 +200,7 @@ function sourceHits(s: GameState, action: RequirementAction, subjects: readonly 
       if (among !== undefined && among.length === 0) continue; // CR 508.1d, 509.1c: a requirement that can't be obeyed is not counted
       out.push({
         action, subject: id, key: `${src.order.join('.')}:${id}`, sourceName: src.name, text: src.text,
-        ...(among !== undefined ? { among } : {}), ...(why !== undefined ? { unenforced: why } : {}),
+        ...(among !== undefined ? { among } : {}), ...(action === 'beBlocked' && e.min !== undefined && e.min >= 2 ? { min: e.min } : {}), ...(action === 'beBlocked' && e.exactly !== undefined ? { exactly: e.exactly } : {}), ...(why !== undefined ? { unenforced: why } : {}),
       });
     }
   }

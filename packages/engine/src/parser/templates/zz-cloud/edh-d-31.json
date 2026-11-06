@@ -1,0 +1,277 @@
+[
+  {
+    "id": "eff.edhd31.mana.chooseColorOf.one",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.2",
+      "CR 106.1b",
+      "CR 106.5",
+      "CR 605.1a"
+    ],
+    "pattern": "choose a color of {f:Filter} . add one mana of that color",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "colorsOf",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "count": 1
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Choose a color of a creature you control. Add one mana of that color."
+      },
+      {
+        "text": "{1}, {T}: Choose a color of an artifact you control. Add one mana of that color."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Choose a color of a creature you control. Add two mana of that color.",
+      "{T}: Choose a color of a creature you control. Add one mana of any color.",
+      "{T}: Choose a color. Add one mana of that color."
+    ]
+  },
+  {
+    "id": "eff.edhd31.nextCast.entersWith.it.additional",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7a",
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 611.2c"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} this turn , it enters with an additional {k:CounterKind} counter on it",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "permanent"
+          },
+          "effects": [
+            {
+              "s": "replace",
+              "replaces": {
+                "ev": "zoneChange",
+                "subject": {
+                  "is": {
+                    "ref": "event",
+                    "role": "spell"
+                  }
+                },
+                "to": "battlefield"
+              },
+              "body": {
+                "b": "enters",
+                "counters": [
+                  {
+                    "kind": "$k",
+                    "count": 1
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {W}. When you next cast a Spirit creature spell this turn, it enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "{T}: Add {R}. When you next cast a creature spell this turn, it enters with an additional +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {G}. When you next cast a creature spell, it enters with an additional +1/+1 counter on it.",
+      "{T}: Add {G}. Whenever you next cast a creature spell this turn, it enters with an additional +1/+1 counter on it.",
+      "{T}: Add {G}. When you next cast a creature spell this turn, it enters with two additional +1/+1 counters on it."
+    ]
+  },
+  {
+    "id": "eff.edhd31.nextCast.entersWith.that.nAdditional",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7a",
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 611.2c"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} this turn , that creature enters with {n:Count} additional {k:CounterKind} counters on it",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "permanent"
+          },
+          "effects": [
+            {
+              "s": "replace",
+              "replaces": {
+                "ev": "zoneChange",
+                "subject": {
+                  "is": {
+                    "ref": "event",
+                    "role": "spell"
+                  }
+                },
+                "to": "battlefield"
+              },
+              "body": {
+                "b": "enters",
+                "counters": [
+                  {
+                    "kind": "$k",
+                    "count": "$n"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {G}. When you next cast a creature spell this turn, that creature enters with two additional +1/+1 counters on it."
+      },
+      {
+        "text": "{T}: Add {B}. When you next cast a Zombie creature spell this turn, that creature enters with three additional +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {G}. When you next cast a creature spell this turn, that creature enters with an additional +1/+1 counter on it.",
+      "{T}: Add {G}. When you next cast a creature spell, that creature enters with two additional +1/+1 counters on it.",
+      "{T}: Add {G}. Whenever you next cast a creature spell this turn, that creature enters with two additional +1/+1 counters on it."
+    ]
+  },
+  {
+    "id": "eff.edhd31.nextCast.drawGainHalfX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7a",
+      "CR 603.7b",
+      "CR 107.3e",
+      "CR 107.1a",
+      "CR 119.3"
+    ],
+    "pattern": "when you next cast a spell with {X} in its mana cost this turn , you draw a card and gain half x life , rounded down",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+            "manaCostHasX": true
+          }
+        }
+      },
+      "do": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": {
+            "q": "math",
+            "op": "floorDiv",
+            "args": [
+              {
+                "q": "spellX"
+              },
+              2
+            ]
+          }
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {R}{R}. When you next cast a spell with {X} in its mana cost this turn, you draw a card and gain half X life, rounded down."
+      },
+      {
+        "text": "{1}, {T}: Add {G}{G}. When you next cast a spell with {X} in its mana cost this turn, you draw a card and gain half X life, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {C}{C}. When you next cast a spell with {X} in its mana cost, you draw a card and gain half X life, rounded down.",
+      "{T}: Add {C}{C}. When you next cast a spell with {X} in its mana cost this turn, you draw a card and gain half X life, rounded up.",
+      "{T}: Add {C}{C}. Whenever you next cast a spell with {X} in its mana cost this turn, you draw a card and gain half X life, rounded down.",
+      "{T}: Add {C}{C}. When you next cast a creature spell this turn, you draw a card and gain half X life, rounded down."
+    ]
+  }
+]

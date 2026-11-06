@@ -1,0 +1,1 @@
+{"name":"work_08","before":{"a":{"b":{"c":[1,2,3]}}},"ops":[{"op":"set","path":["a","b","c",1],"value":5},{"op":"splice","path":["a","b","c"],"at":0,"del":1,"add":[]}],"maxWork":22,"after":{"a":{"b":{"c":[5,3]}}}}

@@ -205,21 +205,21 @@ describe('CR 113.6j, 113.6m: abilities that function outside the battlefield are
     expect(offered(onField, find(onField, 'Reassembling Skeleton', 'battlefield'))).toEqual([]);
   });
 
-  it.skipIf(real('Simian Spirit Guide') === undefined)('CR 605.1a, 605.3a, 113.6j: Simian Spirit Guide stays a manual mana ability that functions in the hand; nothing offers it from the battlefield', () => {
+  it.skipIf(real('Simian Spirit Guide') === undefined)('CR 605.1a, 605.3a, 113.6j: Simian Spirit Guide is a mana ability that functions in the hand (full since edh-mana-keywords-1); nothing offers it from the battlefield', () => {
     const def = compileCard(real('Simian Spirit Guide')!);
-    expect(def.automation.level).toBe('manual');
-    expect(abilities(def)[0]).toMatchObject({ kind: 'manual', shape: 'activated', mana: true, zone: ['hand'] });
+    expect(def.automation.level).toBe('full');
+    expect(abilities(def)[0]).toMatchObject({ kind: 'activated', isMana: true, zone: ['hand'] });
     const s = scenario(['Island'], { p1: { battlefield: ['Simian Spirit Guide'] }, defs: [def] });
     expect(offered(s, find(s, 'Simian Spirit Guide', 'battlefield'))).toEqual([]);
   });
 
-  it('CR 605.1a, 113.6j: a synthetic "Exile this card from your hand: Add {R}." is a manual mana ability of the hand, not run by hand on the battlefield', () => {
+  it('CR 605.1a, 113.6j: a synthetic "Exile this card from your hand: Add {R}." is a mana ability of the hand (edh-mana-keywords-1), not run on the battlefield', () => {
     const def = compileCard(creature('Exile this card from your hand: Add {R}.', { name: 'Test Spirit Guide' }));
-    expect(abilities(def)[0]).toMatchObject({ kind: 'manual', shape: 'activated', mana: true, zone: ['hand'] });
+    expect(abilities(def)[0]).toMatchObject({ kind: 'activated', isMana: true, zone: ['hand'] });
     const s = scenario(['Island'], { p1: { battlefield: ['Test Spirit Guide'] }, defs: [def] });
     const id = find(s, 'Test Spirit Guide', 'battlefield');
     expect(offered(s, id)).toEqual([]);
-    expect(reject(s, { type: 'activate', player: 'p1', source: id, ability: 'p:0:0' }).rules).toEqual(['CR 113.6', 'CR 113.6j']);
+    expect(reject(s, { type: 'activate', player: 'p1', source: id, ability: 'p:0:0' }).rules).toEqual(['CR 113.6']);
   });
 
   it('CR 100.7, 113.6j: an unsanctioned card\'s abilities become manual but keep the zones they function in (and their restrictions), as the degrade pass does', () => {

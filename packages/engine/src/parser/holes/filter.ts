@@ -15,7 +15,7 @@
 import type { NumberCmp, ObjectFilter, ObjRef, PlayerPred, Quantity, ZoneName } from '../../types/ability';
 import type { Alt, HoleCtx, HoleFn } from './core';
 import { attachedWithAt } from './trek9'; // trek-9
-import { P, anaphorObj, anyPhraseAt, cmpAt, dedupe, mergeFilter, multiAt, phraseAt, predOf } from './core';
+import { P, anaphorObj, anyPhraseAt, cmpAt, dedupe, mergeFilter, multiAt, normAt, numberAt, phraseAt, predOf } from './core';
 import type { PlayerRef } from '../../types/ability';
 import { MOVED_MARK, movedFragAt } from './moved-words';
 
@@ -50,6 +50,7 @@ const STATUS: Record<string, ObjectFilter> = {
   unblocked: { blocked: false }, 'face-down': { faceDown: true }, 'face-up': { faceDown: false }, transformed: { transformed: true },
   multicolored: { multicolored: true }, monocolored: { monocolored: true }, colorless: { colorless: true }, activated: { stackKind: 'activatedAbility' },
   triggered: { stackKind: 'triggeredAbility' },
+  loyalty: { stackKind: 'activatedAbility', loyaltyAbility: true }, // edhd36 (CR 606.2): "target loyalty ability"
   // M6-6 (CR 722.3a, 719.3b): the designations "prepared" ("if this creature isn't prepared") and "solved" ("as long as this Case is solved")
   prepared: { prepared: true }, solved: { solved: true },
   // FAST4 T33 (CR 700.9): "modified creatures you control" (counters, equipped, or enchanted by an Aura its controller controls)
@@ -70,26 +71,50 @@ const STATUS: Record<string, ObjectFilter> = {
   warped: { warped: true },
 };
 for (const w of Object.keys(STATUS)) P(w);
+const NOT_LEGENDARY: ObjectFilter = { notSupertypes: ['Legendary'] }; // edh-zones-3
+const NOT_HISTORIC: ObjectFilter = { notTypes: ['Artifact'], notSupertypes: ['Legendary'], notSubtypes: ['Saga'] }; // edh-zones-3
 const HISTORIC: ObjectFilter = { anyOf: [{ types: ['Artifact'] }, { supertypes: ['Legendary'] }, { subtypes: ['Saga'] }] };
-P('historic'); P('attacking or blocking'); P('another'); P('other'); P('non');
+P('historic'); P('kicked'); P('attacking or blocking'); P('another'); P('other'); P('non');
 /** FAST5X E1, CR 700.12: "outlaw" is the word for an object with the Assassin, Mercenary, Pirate, Rogue and/or Warlock creature types. */
 export const OUTLAW_SUBTYPES: readonly string[] = ['Assassin', 'Mercenary', 'Pirate', 'Rogue', 'Warlock'];
 P('outlaw');
 const W_ATTACKING_EQUIPPED = P('attacking equipped'); // FAST4 T33
 const W_EQUIPPED_ATTACKING = P('equipped attacking'); // std-hob
 const W_ACTIVATED_OR_TRIGGERED = P('activated or triggered'); // FAST5 T45
+const W_EACH_HAVE_TGP = P('each have toughness greater than their power'); // edh-next-76
 const W_THATS = P("that's"); // FAST5 T57
+const W_THAT_ARE_COLORS = P('that are'); // edh-c-45
+const W_ISNT = [P("isn't"), P('is not')]; // edh-perms-7
+const W_MIN_CARD_TYPES: readonly [readonly string[], number][] = [[P('with two or more card types'), 2], [P('with three or more card types'), 3], [P('with four or more card types'), 4]]; // edh-d-86
+const W_NOT_ALL_COLORS = [P("that isn't all colors"), P("that aren't all colors"), P('that is not all colors'), P('that are not all colors')]; // edh-d-51
 const W_ONE_OR_MORE_COLORS = P('one or more colors'); // CLOUD std-misc
+const W_ARE_ONE_OR_MORE_COLORS = P('are one or more colors'); // edh-players-2
 const W_OTHER_THAN_ATTACHED = [P('other than enchanted creature'), P('other than equipped creature')]; // FAST4 T33
 const W_ATTACHED_TO = P('attached to'); // CLOUD std-msh
+const W_THATS_ATTACHED_TO = [P("that's attached to"), P('that is attached to'), P('that are attached to')]; // edh-perms-2 (Sage's Reverie)
 const W_BLOCKING = P('blocking'); // p2-combat-flow-1
+/** edh-d-24 (CR 303.4a, 702.5a; Sovereigns of Lost Alara, Auratouched Mage): "an Aura card that could enchant it". */
+const W_COULD_ENCHANT = [P('that could enchant')];
+const W_THATS_BLOCKING = [P("that's blocking"), P('that is blocking')]; // edh-d-12
 const W_BLOCKED_BY = P('blocked by'); // p2-combat-flow-1
+const W_SELF_BLOCKING = [P('~ is blocking'), P('that ~ is blocking')]; // edh-c-34 (Wall of Corpses): "target creature this creature is blocking", the object itself
+const W_IT_BLOCKING = [P("it's blocking"), P("that it's blocking"), P('it is blocking'), P('that it is blocking')]; // edh-top-3
 const W_BLOCKING_OR_BLOCKED_BY = [P('blocking or blocked by'), P('blocking or being blocked by')]; // p2-combat-flow-1
+const W_THATS_ATTACKING_OR_BLOCKING = [P("that's attacking or blocking"), P('that is attacking or blocking'), P('that are attacking or blocking')]; // edh-c-69
 const W_ATTACKING_ALONE = [P("that's attacking alone"), P('that is attacking alone')]; // CLOUD std-msh (CR 506.5)
 // p2-combat-flow-1 (CR 506.3, 508.1b): "target creature without flying that's attacking you" (Hunting Kavu): attacking you, the player (never a planeswalker you control)
 const W_ATTACKING_YOU = [P("that's attacking you"), P('that is attacking you'), P('that are attacking you'), P('attacking you')];
+// edh-next-23 (CR 303.4, 508.1b, 506.3; Curse of Hospitality): "creatures attacking enchanted player": attacking the player the source Aura is attached to (never a planeswalker they control)
+const W_ATTACKING_ENCHANTED = [P("that's attacking enchanted player"), P('that is attacking enchanted player'), P('that are attacking enchanted player'), P('attacking enchanted player')];
 const W_ATTACKING_YOU_OR_WALKER = [P("that's attacking you or a planeswalker you control"), P('that is attacking you or a planeswalker you control'), P('that are attacking you or a planeswalker you control'), P('attacking you or a planeswalker you control')]; // pc-combat-3
-const W_ATTACKING_OPPONENT = [P("that's attacking one of your opponents"), P('that is attacking one of your opponents'), P('that are attacking one of your opponents')]; // r4-static
+// edh-players-12 (CR 506.3, 508.1b; Within Range): "creatures attacking them / that player": attacking the player a group's step is read for (a pronoun, parser/lower/anaphora.ts#groupChooser)
+const W_ATTACKING_THEM: [ReturnType<typeof P>, string][] = [
+  [P('attacking them'), 'them'], [P("that's attacking them"), 'them'], [P('that is attacking them'), 'them'], [P('that are attacking them'), 'them'],
+  [P('attacking that player'), 'that player'], [P("that's attacking that player"), 'that player'], [P('that is attacking that player'), 'that player'], [P('that are attacking that player'), 'that player'],
+];
+// edh-next-84 (CR 506.3, 508.1b, 508.5; Roar of Resistance): "creatures attacking your opponents and/or planeswalkers they control": a player who is an opponent or a planeswalker such a player controls
+const W_ATTACKING_OPPONENT_OR_WALKER = [P('attacking your opponents and/or planeswalkers they control'), P('that are attacking your opponents and/or planeswalkers they control')];
+const W_ATTACKING_OPPONENT = [P("that's attacking one of your opponents"), P('that is attacking one of your opponents'), P('that are attacking one of your opponents'), P('attacking your opponents'), P('attacking one of your opponents') /* edh-combat-7 (CR 508.1b; Blast-Furnace Hellkite, ruling 2022-10-14: whoever controls the creature) */]; // r4-static
 
 /**
  * CLOUD std-msh (CR 301.5, 303.4): the one object "attached to <it>" may name in a description: this object, an object the sentence refers back to (an
@@ -135,7 +160,8 @@ function negated(ctx: HoleCtx, word: string): ObjectFilter | null {
   return null;
 }
 
-const COLOR_SEPS = [P('or'), P(', or'), P(',')];
+const KW_LIST_CLOSERS = [P('and/or'), P(', or'), P(', and/or')]; // edh-b-2
+const COLOR_SEPS = [P('or'), P(', or'), P(','), P('and/or'), P(', and/or')]; // edh-replace-2: "and/or" is "or" (CR 105.2)
 
 function colorMod(ctx: HoleCtx, pos: number): { end: number; frag: ObjectFilter }[] {
   const out: { end: number; frag: ObjectFilter }[] = [];
@@ -146,6 +172,14 @@ function colorMod(ctx: HoleCtx, pos: number): { end: number; frag: ObjectFilter 
     const next = [...acc, c];
     out.push({ end: p + 1, frag: { colors: next as never } });
     for (const sep of COLOR_SEPS) { const e = phraseAt(ctx, p + 1, sep); if (e >= 0) walk(e, next); }
+    // edh-next-47 (CR 105.2, 205.2a; Soldevi Adnate): "a black or artifact creature": the colors, then "or" and a card type that another card type follows (the noun): an object of
+    // the noun that is one of the colors or has the type (`anyOf`, each option beside the noun's own `types`, design 3.3)
+    for (const sep of [P('or')]) {
+      const e = phraseAt(ctx, p + 1, sep);
+      const ty = e >= 0 && ctx.toks[e]?.kind === 'WORD' ? ctx.vocab.types.get(ctx.toks[e]!.norm) : undefined;
+      const noun = e >= 0 && ctx.toks[e + 1]?.kind === 'WORD' ? ctx.vocab.types.get(ctx.toks[e + 1]!.norm) : undefined;
+      if (ty !== undefined && !ty.plural && noun !== undefined && !noun.plural && ty.name !== noun.name) out.push({ end: e + 1, frag: { anyOf: [{ colors: next as never }, { types: [ty.name] }] } });
+    }
   };
   walk(pos, []);
   return out;
@@ -156,6 +190,7 @@ const LISTED_STATUS: readonly string[] = ['attacking', 'blocking', 'tapped', 'un
 const STATUS_CLASH: readonly (readonly string[])[] = [['tapped', 'untapped'], ['blocked', 'unblocked']];
 const STATUS_LIST_SEPS = [P('or'), P(', or'), P(',')];
 const W_OR = P('or');
+const W_AND_OR_F134 = P('and/or'); // edh-next-134
 
 /**
  * std-blb (CR 506.4, 508.1k, 509.1g, 110.5): "attacking or tapped creature", "attacking, blocking, or tapped creature": a status that any of two or three listed
@@ -189,6 +224,12 @@ function statusList(ctx: HoleCtx, pos: number): { end: number; frag: ObjectFilte
 function modAt(ctx: HoleCtx, pos: number): { end: number; frag: ObjectFilter }[] {
   const out: { end: number; frag: ObjectFilter }[] = [];
   const t = ctx.toks[pos];
+  // edh-next-7 (CR 208.1, 202.3; The Seedcore): "target 1/1 creature" is a creature whose power and toughness are those numbers (digits only: "X/X" and "*/*" stay manual)
+  const pt = t !== undefined && t.kind === 'PT' ? /^(\d+)\/(\d+)$/.exec(t.norm) : null;
+  if (pt !== null) {
+    out.push({ end: pos + 1, frag: { power: { op: '==', value: Number(pt[1]) }, toughness: { op: '==', value: Number(pt[2]) } } });
+    return out;
+  }
   if (t === undefined || t.kind !== 'WORD') return out;
   const w = t.norm;
   if (w === 'colorless' || w === 'multicolored' || w === 'monocolored') out.push({ end: pos + 1, frag: STATUS[w]! });
@@ -196,6 +237,12 @@ function modAt(ctx: HoleCtx, pos: number): { end: number; frag: ObjectFilter }[]
     out.push(...colorMod(ctx, pos));
     const s = STATUS[w];
     if (s !== undefined && w !== 'colorless') out.push({ end: pos + 1, frag: s });
+  }
+  // edh-next-134 (CR 701.15b, 701.60b; Hot Pursuit): "all goaded and/or suspected creatures": a creature that is goaded, suspected or both (the two designations, either one)
+  if (w === 'goaded' || w === 'suspected') {
+    const other = w === 'goaded' ? 'suspected' : 'goaded';
+    const e = phraseAt(ctx, pos + 1, W_AND_OR_F134);
+    if (e >= 0 && ctx.toks[e]?.norm === other) out.push({ end: e + 1, frag: { anyOf: [{ ...STATUS[w]! }, { ...STATUS[other]! }] } });
   }
   // FAST4 T33 (CR 301.5): "target attacking equipped creature": an Equipment is attached to it. Only after "attacking": a bare "equipped creature" is the
   // object the source Equipment is attached to (parser/holes/object.ts), never a description
@@ -216,7 +263,10 @@ function modAt(ctx: HoleCtx, pos: number): { end: number; frag: ObjectFilter }[]
     const art = ctx.toks[pos - 1]?.norm;
     // std-ry6 (CR 303.4b, 115.1; Ramses Overdark): ... and "enchanted" after "target", "destroy target enchanted creature" (a target is always described; the source's
     // own host is never announced as a target, design 6.4). "target equipped creature" stays manual (FAST4 T33 pins it)
-    if (head !== undefined && !head.plural && (art === 'a' || art === 'an' || (art === 'target' && w === 'enchanted'))) out.push({ end: pos + 1, frag: w === 'enchanted' ? { enchanted: true } : { equipped: true } });
+    // edh-next-64 (CR 303.4b; Estrid, the Masked, Preston Garvey): ... and after "each", "untap each enchanted permanent you control" (a group of every permanent an Aura is attached to)
+    if (head !== undefined && !head.plural && (art === 'a' || art === 'an' || (art === 'target' && w === 'enchanted') || (art === 'each' && w === 'enchanted'))) out.push({ end: pos + 1, frag: w === 'enchanted' ? { enchanted: true } : { equipped: true } });
+    // edh-c-75 (CR 303.4b, 115.1; Cut the Earthly Bond): ... and "target enchanted permanent", the bare noun "permanent" being no type (a target is always described)
+    if (w === 'enchanted' && nx?.norm === 'permanent' && (art === 'target' || art === 'each')) out.push({ end: pos + 1, frag: { enchanted: true } });
   }
   // FAST5 T45 (CR 113.3b-c, 603.1): "target activated or triggered ability" is either kind of ability on the stack
   const aot = phraseAt(ctx, pos, W_ACTIVATED_OR_TRIGGERED);
@@ -227,6 +277,7 @@ function modAt(ctx: HoleCtx, pos: number): { end: number; frag: ObjectFilter }[]
   const neg = negated(ctx, w);
   if (neg !== null) out.push({ end: pos + 1, frag: neg });
   if (w === 'historic') out.push({ end: pos + 1, frag: HISTORIC });
+  if (w === 'kicked') out.push({ end: pos + 1, frag: { kicked: true } }); // edh-next-13 (CR 702.33d): "kicked spells"
   if (w === 'outlaw') out.push({ end: pos + 1, frag: { subtypes: [...OUTLAW_SUBTYPES] } }); // FAST5X E1, CR 700.12
   const su = ctx.vocab.supertypes.get(w);
   if (su !== undefined) out.push({ end: pos + 1, frag: { supertypes: [su.name] } });
@@ -346,6 +397,7 @@ const W_PERMANENT_SPELLS = P('permanent spells');
 const PERMANENT_TYPES = ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'];
 const W_SPELL_OR_ABILITY = P('spell or ability');
 const W_SPELLS_OR_ABILITIES = P('spells or abilities');
+const W_SPELLS_AND_OR_ABILITIES = P('spells and/or abilities'); // edh-d-51
 // MX3 (CR 701.54b, 701.54e): "a Ring-bearer", "Ring-bearers": a permanent with the Ring-bearer designation (of any player; "you control" may follow)
 const W_SUSPENDED_CARD = P('suspended card'); // p2-modal-1
 const W_SUSPENDED_CARDS = P('suspended cards');
@@ -358,7 +410,9 @@ const W_OUTLAWS = P('outlaws');
  * `or`: FAST5 T59, the head is two descriptions joined by "or": only who controls or owns them may follow (a "with ..." after it may belong to the second one only).
  * `list`: FAST5X E27, a list of several kinds ("artifact, enchantment, or creature", "creature or Vehicle"), any of which the object is (see `shape`).
  */
-interface HeadAlt { end: number; frag: ObjectFilter; number: 'singular' | 'plural'; head: HeadKind; or?: true; list?: true }
+// edh-next-125: `postAll`, a coordination whose post-modifier of mana value goes with both halves ("non-Equipment artifact and non-Aura enchantment you control with
+// mana value 4 or greater": no half is a bare noun the comparison could belong to alone)
+interface HeadAlt { end: number; frag: ObjectFilter; number: 'singular' | 'plural'; head: HeadKind; or?: true; list?: true; postAll?: true }
 
 function headWord(ctx: HoleCtx, pos: number, allow: HeadKind[]): { end: number; head: HeadKind; plural: boolean }[] {
   const out: { end: number; head: HeadKind; plural: boolean }[] = [];
@@ -386,10 +440,19 @@ function headAt(ctx: HoleCtx, pos: number): HeadAlt[] {
         out.push({ end: it.end, frag: f, number: it.item.plural ? 'plural' : 'singular', head: 'type', ...list });
         for (const h of headWord(ctx, it.end, ['card', 'spell', 'token', 'permanent', 'source'])) out.push({ end: h.end, frag: f, number: h.plural ? 'plural' : 'singular', head: h.head, ...list });
         // FAST2 T10: "a Goblin permanent card": a card with the subtype and a permanent type (CR 110.4, 205.3), as "permanent card" alone (below)
-        if (f.subtypes !== undefined && f.subtypes.length === 1 && f.types === undefined) {
+        // edh-c-86 (Celestial Gatekeeper): also a list of subtypes joined by "or" / "and/or" (any of them), "Bird and/or Cleric permanent cards"
+        if (f.subtypes !== undefined && f.subtypes.length >= 1 && f.types === undefined && (f.subtypes.length === 1 || (f.allTypes === undefined && f.allSubtypes === undefined && f.anyOf === undefined))) {
           for (const [ws, plural] of [[W_PERMANENT_CARD, false], [W_PERMANENT_CARDS, true]] as const) {
             const e = phraseAt(ctx, it.end, ws);
             if (e >= 0) out.push({ end: e, frag: { ...f, types: PERMANENT_TYPES }, number: plural ? 'plural' : 'singular', head: 'card' });
+          }
+        }
+        // edh-cast-8 (CR 110.4b, 205.3; Archmage of Echoes): "a Faerie or Wizard permanent spell": a spell with any of the subtypes (one or several joined by "or") and a permanent
+        // type (a Tribal instant has the subtype and is no permanent spell, a land is never cast, CR 305.9)
+        if (f.subtypes !== undefined && f.subtypes.length >= 1 && f.types === undefined && f.allTypes === undefined && f.allSubtypes === undefined && f.anyOf === undefined) {
+          for (const [ws, plural] of [[W_PERMANENT_SPELL, false], [W_PERMANENT_SPELLS, true]] as const) {
+            const e = phraseAt(ctx, it.end, ws);
+            if (e >= 0) out.push({ end: e, frag: { ...f, types: PERMANENT_TYPES }, number: plural ? 'plural' : 'singular', head: 'spell' });
           }
         }
       }
@@ -401,6 +464,36 @@ function headAt(ctx: HoleCtx, pos: number): HeadAlt[] {
     }
   };
   walk(pos, [], [], 0);
+  // edh-d-11 (CR 205.4a, 205.3m, 205.2a; Narfi, Betrayer King): "snow and Zombie creatures": a supertype, then "and"/"or" and subtypes with a card type said once: creatures that
+  // have the supertype or are one of the subtypes (the supertype belongs to the first half only; "legendary and Elf creatures")
+  {
+    const sw = ctx.toks[pos];
+    const sup = sw !== undefined && sw.kind === 'WORD' ? ctx.vocab.supertypes.get(sw.norm) : undefined;
+    if (sup !== undefined) {
+      for (const sep of [P('and'), P('or'), P('and/or')]) {
+        const e = phraseAt(ctx, pos + 1, sep);
+        if (e < 0) continue;
+        for (const h of headAt(ctx, e)) {
+          const f = h.frag;
+          if (h.head !== 'type' || h.number !== 'plural' || h.list === true || h.or === true || Object.keys(f).length !== 2 || f.types?.length !== 1 || f.subtypes === undefined || f.subtypes.length !== 1) continue;
+          out.push({ end: h.end, frag: { types: f.types, anyOf: [{ supertypes: [sup.name] }, { subtypes: f.subtypes }] }, number: h.number, head: 'type' });
+        }
+      }
+    }
+  }
+  // edhd60 (CR 205.4, 205.3m, 700.6-style any-of; Nashi, Moon's Legacy): "legendary or Rat card": a supertype, "or", then ONE subtype with the generic head "card" (singular): a card that is legendary or has the subtype
+  {
+    const sw = ctx.toks[pos];
+    const sup = sw !== undefined && sw.kind === 'WORD' ? ctx.vocab.supertypes.get(sw.norm) : undefined;
+    const e = sup !== undefined ? phraseAt(ctx, pos + 1, P('or')) : -1;
+    if (sup !== undefined && e >= 0) {
+      for (const h of headAt(ctx, e)) {
+        const f = h.frag;
+        if (h.head !== 'card' || h.number !== 'singular' || h.list === true || h.or === true || Object.keys(f).join() !== 'subtypes' || f.subtypes?.length !== 1) continue;
+        out.push({ end: h.end, frag: { anyOf: [{ supertypes: [sup.name] }, { subtypes: f.subtypes }] }, number: 'singular', head: 'card' });
+      }
+    }
+  }
   for (const h of headWord(ctx, pos, ['permanent', 'card', 'spell', 'token', 'ability', 'source'])) out.push({ end: h.end, frag: {}, number: h.plural ? 'plural' : 'singular', head: h.head });
   // 'permanent card': a card of a permanent type (CR 110.4)
   for (const [ws, plural] of [[W_PERMANENT_CARD, false], [W_PERMANENT_CARDS, true]] as const) {
@@ -412,7 +505,7 @@ function headAt(ctx: HoleCtx, pos: number): HeadAlt[] {
     const e = phraseAt(ctx, pos, ws);
     if (e >= 0) out.push({ end: e, frag: { types: PERMANENT_TYPES }, number: plural ? 'plural' : 'singular', head: 'spell' });
   }
-  for (const [ws, plural] of [[W_SPELL_OR_ABILITY, false], [W_SPELLS_OR_ABILITIES, true]] as const) {
+  for (const [ws, plural] of [[W_SPELL_OR_ABILITY, false], [W_SPELLS_OR_ABILITIES, true], [W_SPELLS_AND_OR_ABILITIES, true]] as const) {
     const e = phraseAt(ctx, pos, ws);
     if (e >= 0) out.push({ end: e, frag: {}, number: plural ? 'plural' : 'singular', head: 'stackObject' });
   }
@@ -447,20 +540,38 @@ function headAt(ctx: HoleCtx, pos: number): HeadAlt[] {
 type Frag = { end: number; frag: ObjectFilter; flags?: string[]; weak?: number };
 
 const W_WITH = P('with');
+const W_AND_WITH = P('and with'); // edh-next-126
+const W_THAT_HAS = P('that has'); // edh-b-4
+const W_THAT_DOESNT_HAVE = P("that doesn't have"); // edh-c-52
 const W_WITHOUT = P('without');
+const W_THAT_DONT_HAVE = P("that don't have"); // edh-next-92
 const W_EACH_WITH = P('each with'); // Cloud r3-repl
 const W_NAMED = P('named');
+const W_NOT_NAMED = P('not named'); // edh-zones-13
 const W_THAT = P('that');
+const W_BARE_DEALT_DAMAGE = P('dealt damage this turn'); // edh-c-61
+const W_YOU_CONTROLLED_ATTACHED = P('you controlled that was attached to'); // edh-perms-20
+const W_NOT_LEGENDARY = P('not legendary'); // edh-zones-3
+const W_LEGENDARY_WORD = P('legendary'); // edh-next-116
+const W_NOT_HISTORIC = P('not historic'); // edh-zones-3
 /** FAST5 T68 (CR 303.4b): an Aura the ability's controller controls is attached to the object (ObjectFilter.enchantedBy), plural and singular wordings. */
-const W_ENCHANTED_BY_YOUR_AURA = [P('that are enchanted by auras you control'), P("that's enchanted by an aura you control"), P('that is enchanted by an aura you control')];
+const W_ENCHANTED_BY_YOUR_AURA = [P('that are enchanted by auras you control'), P('that are enchanted by an aura you control'), P("that's enchanted by an aura you control"), P('that is enchanted by an aura you control')];
 const W_DEALT_DAMAGE_BY_SELF = P('dealt damage by ~ this turn');
+const W_DEALT_DAMAGE_BY_EQUIPPED = P('dealt damage by equipped creature this turn'); // edh-c-113
+const W_DEALT_DAMAGE_BY_YOUR_SOURCE = P('dealt damage this turn by a source you controlled'); // edh-c-48
+const W_DEALT_DAMAGE_THIS_TURN_BY = [P('dealt damage this turn by a'), P('dealt damage this turn by an')]; // edh-next-130
+const W_YOU_CONTROLLED = P('you controlled'); // edh-next-130
 const W_CREWED_BY_SELF = P('crewed by ~ this turn'); // Standard round 5, r5-trig
 /** FAST4 T19: the participle of the objects a damage step dealt damage to (lower/mentions.ts gives the step's mention this verb). */
 export const DEALT_DAMAGE_THIS_WAY = 'dealt damage this way';
+/** trek-22: the participle of the creatures a fight step made fight (lower/mentions.ts gives the step's mention this verb; render/np.ts says it "that fought this way"). */
+export const FOUGHT_THIS_WAY = 'fought this way';
 /** Cloud std-eoe: the participle of the cards a destroy or sacrifice step put into graveyards (lower/mentions.ts, render/np.ts). */
 export const PUT_INTO_GRAVEYARD_THIS_WAY = 'put into a graveyard this way';
 const W_PUT_INTO_A_GRAVEYARD_THIS_WAY = P('put into a graveyard this way');
+const W_PUT_INTO_GRAVEYARDS_THIS_WAY = P('put into graveyards this way'); // edh-next-127 (Danse Macabre): the plural, cards of several players' graveyards
 const W_PUT_INTO_YOUR_GRAVEYARD_THIS_WAY = P('put into your graveyard this way');
+const W_PUT_INTO_THEIR_GRAVEYARD_THIS_WAY = P('put into their graveyard this way'); // edh-c-100 (Coerced Confession)
 const W_DEALT_DAMAGE_THIS_WAY = P(DEALT_DAMAGE_THIS_WAY);
 /** std-lci: the participle of the objects an earlier step of the ability exiled ("for each card exiled this way"; lower/mentions.ts gives exiling moves this verb). */
 export const EXILED_THIS_WAY = 'exiled this way';
@@ -484,20 +595,36 @@ const W_NO_COUNTERS_ON = [P('no counters on it'), P('no counters on them')];
 const W_ONE_OR_MORE_COUNTERS_ON_IT = P('one or more counters on it');
 const W_COUNTERS_ON_IT_ANY = P('counters on it'); // r4-static
 const W_SHARES = [P('shares'), P('share')];
+const W_EACH_CREATURE_TAPPED_THIS_WAY = P('each creature tapped this way'); // edh-next-145
 const W_SAME_NAME_AS = P('the same name as');
-const KINDS: [string[], 'creatureType' | 'color' | 'cardType' | 'name' | 'landType'][] = [
-  [P('creature type'), 'creatureType'], [P('color'), 'color'], [P('card type'), 'cardType'], [P('name'), 'name'], [P('land type'), 'landType'],
+const W_SAME_MV_AS = P('the same mana value as'); // edh-b-14
+const W_SAME_MV = P('the same mana value'); // edh-next-139
+const W_DIFFERENT_NAME_THAN = P('a different name than'); // edh-zones-26
+const KINDS: [string[], 'creatureType' | 'color' | 'cardType' | 'name' | 'landType' | 'permanentType'][] = [
+  [P('creature type'), 'creatureType'], [P('color'), 'color'], [P('card type'), 'cardType'], [P('name'), 'name'], [P('land type'), 'landType'], [P('permanent type'), 'permanentType'],
 ];
 const W_OF_THAT_TYPE = P('of that type'); // FAST5 T67
+const W_OF_THAT_COLOR = P('of that color'); // edh-players-8
+const W_EVEN_MV = [P('even mana value'), P('even mana values'), P('an even mana value')]; // edh-cast-4; edh-players-10: "with an even mana value" (Desecrate Reality); edh-zones-13: the article (Gyruda)
+const W_ODD_MV = [P('odd mana value'), P('odd mana values'), P('an odd mana value')]; // edh-cast-4; edh-players-10; edh-zones-13: the article
 const W_MV_CHOSEN_QUALITY = P('with mana value of the chosen quality'); // Cloud std-eoe
-const CHOSEN: [string[], 'color' | 'creatureType' | 'cardType' | 'landType' | 'cardName'][] = [
+const W_MV_NOT_CHOSEN_QUALITY = P('without mana value of the chosen quality'); // edh-c-78 (Ashling's Prerogative)
+const W_POWER_CHOSEN_QUALITY = P('with power of the chosen quality'); // edh-d-95 (Zimone's Hypothesis)
+const W_MV_THAT_QUALITY = P('with mana value of that quality'); // edh-next-40 (Twins of Discord)
+const CHOSEN: [string[], 'color' | 'creatureType' | 'cardType' | 'landType' | 'cardName' | 'landOrNonland'][] = [
   // CLOUD C5 (CR 607.2d): "the chosen type" is the type the linked ability chose, of whatever kind (lower/links.ts reads '$chosenType' against the producer)
   [P('type'), '$chosenType' as never], [P('creature type'), 'creatureType'], [P('color'), 'color'], [P('card type'), 'cardType'], [P('land type'), 'landType'], [P('basic land type'), 'landType'],
   [P('card name'), 'cardName'],
+  [P('kind'), 'landOrNonland'], // edh-zones-16 (CR 205.2a): "a card of the chosen kind" after "choose land or nonland"
 ];
 
+const W_YOUR_TEAM = P('your team'); // edh-next-35
 function plainPlayerForm(ctx: HoleCtx, pos: number): { end: number; pred: PlayerPred; neg: boolean; verb: 'control' | 'own' }[] {
   const out: { end: number; pred: PlayerPred; neg: boolean; verb: 'control' | 'own' }[] = [];
+  // edh-next-35 (CR 102.3, 810.1; Thrasher Brute, Khorvath Brightflame; family team-controls beside edh-c-68's condition): "Warriors your team controls": the game has no team of several
+  // players (CR 810 is not played, as edh-c-17 and edh-c-68 read "your team"), so your team is you, and its controller phrase is "you control"
+  const team = phraseAt(ctx, pos, W_YOUR_TEAM);
+  if (team >= 0 && (ctx.toks[team]?.norm === 'control' || ctx.toks[team]?.norm === 'controls')) out.push({ end: team + 1, pred: 'you', neg: false, verb: 'control' });
   for (const p of ctx.call('Player', pos)) {
     const ref = p.value as PlayerRef;
     const pred = predOf(ref);
@@ -515,41 +642,85 @@ function plainPlayerForm(ctx: HoleCtx, pos: number): { end: number; pred: Player
 }
 
 const W_POWER_OR_TOUGHNESS = P('power or toughness');
+const W_BASE_POWER_OR_TOUGHNESS = P('base power or toughness'); // edh-perms-11
+const W_BASE_POWER = P('base power'); // edh-next-23
+const W_BASE_POWER_AND_TOUGHNESS = P('base power and toughness'); // edh-next-19
 const W_MV_POWER_OR_TOUGHNESS = P('mana value , power , or toughness'); // std-rx5
 const W_LESSER_MANA_VALUE = P('lesser mana value');
+const W_LESSER_POWER = P('lesser power'); // edh-c-86
+const W_LESSER_TOUGHNESS = P('lesser toughness'); // edh-next-86 (Colfenor, the Last Yew)
+const W_EQUAL_OR_LESSER_TOUGHNESS = P('equal or lesser toughness'); // edh-next-103 (Bane, Lord of Darkness)
+const W_LESSER_MANA_VALUE_THAN_DIED = P('lesser mana value than the creature that died'); // edh-c-45
 const W_EQUAL_OR_LESSER_MANA_VALUE = P('equal or lesser mana value'); // std-rx28
+const W_POWER_LESS_THAN_OWN = P("power less than ~ 's"); // edh-next-32
+const W_EQUAL_OR_LESSER_POWER = P('equal or lesser power'); // edh-next-32
+const W_MV_AT_MOST_OF = P('mana value less than or equal to'); // edh-next-126
+const W_MV_AT_MOST_CONTROLLER_GRAVEYARD = P("mana value less than or equal to the number of cards in its controller 's graveyard"); // edh-cast-12
+const W_THAT_SPELLS_MANA_VALUE = P("that spell 's mana value"); // edh-c-66
 const W_DIFFERENT_NAMES = P('different names');
 const W_SHARE_A_CREATURE_TYPE = P('share a creature type'); // CLOUD std-ecl
+const W_OF_THE_CREATURE_TYPE_OF_YOUR_CHOICE = P('of the creature type of your choice'); // edh-d-59 (Aphetto Dredging)
+const W_OF_THE_OTHER_TYPE = P('of the other type'); // edh-d-96 (Gale, Waterdeep Prodigy)
+const W_EACH_HAVE_A_DIFFERENT_MV = P('each have a different mana value'); // edh-top-3
+const W_HAVE_A_DIFFERENT_MV = P('have a different mana value'); // edh-top-3
 const W_NO_ABILITIES = P('no abilities');
+const W_ABILITIES = P('abilities'); // edh-d-22
 /** std-sos (CR 107.3, 202.1): "a spell with {X} in its mana cost", "cards with {X} in their mana costs" (Oracle also prints the plural "in their mana cost"). */
 /** Standard round 5, r5-trig (CR 107.4): "blue mana symbols in its mana cost", per color. */
-const W_COLOR_SYMBOLS_IN_COST: readonly (readonly ['W' | 'U' | 'B' | 'R' | 'G', string[]])[] = [
+const W_COLOR_SYMBOLS_IN_COST: readonly (readonly ['W' | 'U' | 'B' | 'R' | 'G' | 'colored', string[]])[] = [
   ['W', P('white mana symbols in its mana cost')], ['U', P('blue mana symbols in its mana cost')], ['B', P('black mana symbols in its mana cost')],
   ['R', P('red mana symbols in its mana cost')], ['G', P('green mana symbols in its mana cost')],
+  ['colored', P('colored mana symbols in its mana cost')], // edh-next-142 (CR 105.1, 107.4; Omnath, Locus of All): symbols of any color
 ];
-const W_X_IN_MANA_COST = [P('{x} in its mana cost'), P('{x} in their mana costs'), P('{x} in their mana cost')];
+const W_X_IN_MANA_COST = [P('{x} in its mana cost'), P('{x} in their mana costs'), P('{x} in their mana cost'), P('a mana cost that contains {x}') /* edh-next-74: Unbound Flourishing */];
 const W_NO_COUNTERS = P('no counters on it'); // FAST5 T59
 const W_A_BASIC_LAND_TYPE = P('a basic land type'); // edh-zones-1
 const W_THE_MOST = P('the greatest'); // FAST5X E15: "with the greatest power among ..."
+const W_THE_LEAST = P('the least'); // edh-next-23 (CR 208.1, 608.2d; Witch-king, Bringer of Ruin): "with the least power among ..."
 const W_POWER_GREATER_THAN_BASE = [P('power greater than its base power'), P('power greater than their base power')]; // std-rx11
 const W_CHOSEN_NAME = [P('the chosen name'), P('that name')]; // CLOUD std-misc
 
+const BASIC_WALKS: ReadonlySet<string> = new Set(['plainswalk', 'islandwalk', 'swampwalk', 'mountainwalk', 'forestwalk']); // edh-combat-2
+
 /** "with <feature>" / "that has <feature>" (positive) or "without <feature>" (negated). */
+/** The features of `featureAtAll` that stand alone: a bare "with the greatest <stat>" needs its noun phrase to fill the set it compares with (`fillHeadSet`), so other readers never see it. */
 export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: number; frag: ObjectFilter; weak?: number }[] {
+  return featureAtAll(ctx, pos, negate).filter((f) => !JSON.stringify(f.frag).includes(HEAD_SET));
+}
+
+function featureAtAll(ctx: HoleCtx, pos: number, negate: boolean): { end: number; frag: ObjectFilter; weak?: number }[] {
   const out: { end: number; frag: ObjectFilter; weak?: number }[] = [];
   const wrap = (f: ObjectFilter): ObjectFilter => (negate ? { not: f } : f);
   // keyword list: "flying", "flying or reach"
-  const kwWalk = (p: number, acc: string[]): void => {
-    for (const m of multiAt(ctx, p, ctx.vocab.keywords)) {
+  const kwWalk = (p: number, acc: string[], canEmit = true): void => {
+    // edh-combat-2 (CR 702.14a; Stormtide Leviathan): "without flying or islandwalk": a landwalk by its land word ("islandwalk": a landwalk whose quality is that basic land
+    // type; statics/match.ts#hasNamedKeyword), the five basic land types only
+    const walkWord = ctx.toks[p]?.kind === 'WORD' ? ctx.toks[p]!.norm : '';
+    const walks: { end: number; entry: { name: string } }[] = BASIC_WALKS.has(walkWord) ? [{ end: p + 1, entry: { name: walkWord } }] : [];
+    for (const m of [...multiAt(ctx, p, ctx.vocab.keywords), ...walks]) {
       const names = [...acc, m.entry.name];
-      if (negate) out.push({ end: m.end, frag: { notKeyword: names.length === 1 ? names[0]! : names } });
-      else out.push({ end: m.end, frag: { keyword: names.length === 1 ? names[0]! : names } });
+      if (negate) { if (canEmit) out.push({ end: m.end, frag: { notKeyword: names.length === 1 ? names[0]! : names } }); }
+      else if (canEmit) out.push({ end: m.end, frag: { keyword: names.length === 1 ? names[0]! : names } });
       // p2-attack-block-1 (CR 702.9b, 702.17b): "without flying or reach" is a creature with neither (`notKeyword` with both: rules/filter.ts excludes an object
       // with any of them), as render/np.ts says it
       { const e = phraseAt(ctx, m.end, P('or')); if (e >= 0) kwWalk(e, names); }
+      // edh-b-2 (CR 702; Henrika Domnathi): "with flying, deathtouch, and/or lifelink" is a list closed by "or" / "and/or" (any of them); a list with commas only ("flying, deathtouch")
+      // is no filter of its own (it has to be closed), "and" is not "or" (fail closed)
+      // edh-c-78 (CR 702, 205.3; Grand Master of Flowers): "without first strike, double strike, or vigilance" is the same list closed by ", or": a creature with none of them (`notKeyword`)
+      {
+        for (const sep of KW_LIST_CLOSERS) { const e = phraseAt(ctx, m.end, sep); if (e >= 0) kwWalk(e, names); }
+        const comma = phraseAt(ctx, m.end, P(','));
+        if (comma >= 0) kwWalk(comma, names, false);
+      }
     }
   };
   kwWalk(pos, []);
+  // edh-c-14 (CR 702.29a, 702.29f; Zenith Flare): "cards with a cycling ability": cycling and every typecycling ("Any effect that looks for a card with cycling will find a card with typecycling")
+  if (!negate) { const cyc = anyPhraseAt(ctx, pos, [P('a cycling ability'), P('cycling abilities') /* edh-next-90: Herald of the Forgotten, plural cards */]); if (cyc >= 0) out.push({ end: cyc, frag: { keyword: ['cycling', 'typecycling'] } }); }
+  // edh-c-77 (CR 702.33a, 702.33c; Coralhelm Chronicler, ruling 2020-09-25 "A kicker ability includes the multikicker variant"): "cards with a kicker ability": kicker or multikicker
+  if (!negate) { const kick = phraseAt(ctx, pos, P('a kicker ability')); if (kick >= 0) out.push({ end: kick, frag: { keyword: ['kicker', 'multikicker'] } }); }
+  // edh-c-57 (CR 702.37a; Master of the Veil): "creature with a morph ability" is the keyword filter morph ("with morph")
+  if (!negate) { const mo = phraseAt(ctx, pos, P('a morph ability')); if (mo >= 0) out.push({ end: mo, frag: { keyword: ['morph', 'megamorph'] } }); }  // (CR 702.37b: megamorph is a variant of the morph ability)
   // trek-9 (CR 301.5, 303.4): "with a Communicator attached to them"
   if (!negate) for (const a of attachedWithAt(ctx, pos)) out.push(a);
   // edh-zones-1 (CR 205.3i, 305.6; Boseiju, Who Endures): "a land card with a basic land type" is a land that has Plains, Island, Swamp, Mountain or Forest among its
@@ -560,19 +731,44 @@ export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: nu
   // "that shares a name with it", the object named by an Obj ("that creature", "target creature"); only "with", never "without"
   const same = negate ? -1 : phraseAt(ctx, pos, W_SAME_NAME_AS);
   if (same >= 0) for (const o of ctx.call('Obj', same)) out.push({ end: o.end, frag: { sharesWith: { with: o.value as never, quality: 'name' } } });
+  // edh-b-14 (CR 202.3; Mists of Lórien): "with the same mana value as that permanent": the mana value of the object an Obj names; only "with"
+  const sameMv = negate || ctx.toks[pos - 1]?.norm !== 'with' ? -1 : phraseAt(ctx, pos, W_SAME_MV_AS); // only after "with": "it has the same mana value as" is a condition (edh-cast-9)
+  if (sameMv >= 0) for (const o of ctx.call('Obj', sameMv)) out.push({ end: o.end, frag: { sharesWith: { with: o.value as never, quality: 'manaValue' } } });
+  // edh-next-139 (CR 202.3, 603.2, 608.2c; Boxing Ring): "Whenever a creature you control enters, it fights up to one target creature you don't control with the same mana value.": the comparison
+  // left unsaid is with the fighter, the sentence's "it", which in a trigger's first sentence is the object of the triggering event (`{ref:'event', role:'subject'}`; outside a triggered
+  // ability the lint refuses that reference). Only in a sentence "it fights ...", after "with" and at its end
+  const sameMvBare = negate || ctx.toks[pos - 1]?.norm !== 'with' || ctx.toks[0]?.norm !== 'it' || ctx.toks[1]?.norm !== 'fights' || ctx.discourse?.first !== true ? -1 : phraseAt(ctx, pos, W_SAME_MV); // review fix: the first sentence only (no earlier sentence of the ability)
+  if (sameMvBare >= 0 && sameMvBare === ctx.toks.length) out.push({ end: sameMvBare, frag: { sharesWith: { with: { ref: 'event', role: 'subject' } as never, quality: 'manaValue' } } });
+  // edh-zones-26 (CR 201.2; Tibalt's Trickery): "a nonland card with a different name than that spell": the object shares no name with the object named by an Obj; only "with"
+  const diffName = negate ? -1 : phraseAt(ctx, pos, W_DIFFERENT_NAME_THAN);
+  if (diffName >= 0) for (const o of ctx.call('Obj', diffName)) out.push({ end: o.end, frag: { not: { sharesWith: { with: o.value as never, quality: 'name' } } }, ...(o.flags ? { flags: o.flags } : {}) });
+  // edh-next-126 (CR 201.2; Light-Paws, Emperor's Voice): "with a different name than each Aura you control": the object shares a name with none of the permanents of that description
+  // (rules/filter.ts: `sharesWith` reads a set as "some object of it", so its negation is "each of them has another name"); "each" and a singular description only
+  if (diffName >= 0 && ctx.toks[diffName]?.norm === 'each') {
+    for (const n of npAlts(ctx, diffName + 1)) {
+      if (n.number !== 'singular' || n.flags.some((x) => x !== 'zone-unstated')) continue;
+      out.push({ end: n.end, frag: { not: { sharesWith: { with: { ref: 'each', filter: n.filter }, quality: 'name' } } }, ...(n.weak ? { weak: n.weak } : {}) });
+    }
+  }
   // std-hob (CR 201.2): "a legendary card with the same name as a legendary permanent you control": the name of any one object of that description (rules/filter.ts:
   // `sharesWith` reads a set as "some object of it")
   const sameT = same >= 0 ? ctx.toks[same]?.norm : undefined;
   if (same >= 0 && (sameT === 'a' || sameT === 'an')) {
     for (const n of npAlts(ctx, same + 1)) {
       if (n.number !== 'singular' || n.flags.some((x) => x !== 'zone-unstated')) continue;
+      if (JSON.stringify(n.filter).includes('"text":"their"')) continue; // edh-next-32: "a card in their graveyard" is the object's own ObjectFilter.nameInGraveyard (below), not a set whose owner is a pronoun
+      out.push({ end: n.end, frag: { sharesWith: { with: { ref: 'each', filter: n.filter }, quality: 'name' } }, ...(n.weak ? { weak: n.weak } : {}) });
+    }
+    // edh-next-112 (CR 607.2a, 201.2; Circu, Dimir Lobotomist): and "a card exiled with ~", the cards the source's linked exile holds (the flag the target phrase reading marks, asked for here)
+    for (const n of npAlts(ctx, same + 1, { differentNames: true })) {
+      if (n.number !== 'singular' || !n.flags.includes('linked-exiled-target') || n.flags.some((x) => x !== 'zone-unstated' && x !== 'linked-exiled-target')) continue;
       out.push({ end: n.end, frag: { sharesWith: { with: { ref: 'each', filter: n.filter }, quality: 'name' } }, ...(n.weak ? { weak: n.weak } : {}) });
     }
   }
   // FAST5X E15 (CR 208.1, 202.3): "with the greatest power among creatures they control": a value at least the greatest one of the set (at most the least
   // one), so the matching objects are the tied greatest; the player who chooses picks among them (CR 608.2d). Only "with", never "without". The set takes
   // every word it can ("among creatures they control"): a shorter set would leave "they control" to the outer noun, a different reading (guard G5).
-  if (!negate && phraseAt(ctx, pos, W_THE_MOST) >= 0) {
+  if (!negate && (phraseAt(ctx, pos, W_THE_MOST) >= 0 || phraseAt(ctx, pos, W_THE_LEAST) >= 0)) {
     const sets = ctx.call('Qty', pos).filter((q) => {
       const v = q.value as Quantity;
       return typeof v === 'object' && v.q === 'stat' && v.agg !== undefined && (v.stat === 'power' || v.stat === 'toughness' || v.stat === 'manaValue');
@@ -584,6 +780,15 @@ export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: nu
       out.push({ end: q.end, frag: { [v.stat]: { op: v.agg === 'max' ? '>=' : '<=', value: v } } });
     }
   }
+  // edh-c-83 (CR 208.1, 202.3, 608.2d; Favor of the Mighty): "each creature with the greatest mana value": the set compared with is the noun phrase itself (the creatures, here those that
+  // the other words describe too), said with no "among": a placeholder set (`HEAD_SET`) that the noun phrase fills with its own description (`fillHeadSet`). Only "with", only "the greatest"
+  if (!negate && phraseAt(ctx, pos, W_THE_MOST) >= 0) {
+    for (const [ws, field] of [[P('power'), 'power'], [P('toughness'), 'toughness'], [P('mana value'), 'manaValue']] as const) {
+      const e = phraseAt(ctx, phraseAt(ctx, pos, W_THE_MOST), ws);
+      if (e < 0 || ctx.toks[e]?.norm === 'among') continue;
+      out.push({ end: e, frag: { [field]: { op: '>=', value: { q: 'stat', stat: field, of: { ref: 'each', filter: { [HEAD_SET]: true } as never }, agg: 'max' } } }, weak: 1 });
+    }
+  }
   // CLOUD std-misc (CR 607.2d, 608.2c-d; The Clone Saga, Ancient Vendetta): "with the chosen name", "with that name": the card name an earlier "Choose a card name."
   // of the same ability chose (the links pass, parser/lower/links.ts, replaces the placeholder; with no such choice it survives and the sentence is manual). Only "with".
   const chosenName = negate ? -1 : anyPhraseAt(ctx, pos, W_CHOSEN_NAME);
@@ -592,23 +797,91 @@ export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: nu
   const stats: [string[], 'power' | 'toughness' | 'manaValue'][] = [[P('power'), 'power'], [P('toughness'), 'toughness'], [P('mana value'), 'manaValue']];
   // Standard round 4, r4-trig (CR 208.1): "toughness greater than its power" is the object's own comparison (below), never a comparison with what "its" names
   const ownTgp = negate ? -1 : phraseAt(ctx, pos, P('toughness greater than its power'));
+  const ownPet = negate ? -1 : phraseAt(ctx, pos, P('power equal to its toughness')); // edh-next-32: the object's own comparison (below)
+  const ownGy = negate ? -1 : phraseAt(ctx, pos, W_MV_AT_MOST_CONTROLLER_GRAVEYARD); // edh-cast-12: the object's own comparison (below), never a quantity with an "its" to resolve
   for (const [ws, field] of stats) {
     const e = phraseAt(ctx, pos, ws);
-    if (e >= 0) for (const c of cmpAt(ctx, e)) if (!(field === 'toughness' && c.end === ownTgp)) out.push({ end: c.end, frag: wrap({ [field]: c.cmp }), ...(c.weak ? { weak: c.weak } : {}) });
+    if (e >= 0) for (const c of cmpAt(ctx, e)) if (!(field === 'toughness' && c.end === ownTgp) && !(field === 'power' && c.end === ownPet) && !(field === 'manaValue' && c.end === ownGy)) out.push({ end: c.end, frag: wrap({ [field]: c.cmp }), ...(c.weak ? { weak: c.weak } : {}) });
   }
+  // edh-next-32 (CR 208.1, 109.1; Mirko, Obsessive Theorist, Body Launderer): the object's own power stands for "its power" in two shortened comparisons: "power less than Mirko's" (the
+  // possessive alone) and "equal or lesser power" (not more than the object's)
+  const ownPower = { q: 'stat', stat: 'power', of: { ref: 'self' } } as const;
+  const lessThanOwn = phraseAt(ctx, pos, W_POWER_LESS_THAN_OWN);
+  if (lessThanOwn >= 0) out.push({ end: lessThanOwn, frag: wrap({ power: { op: '<', value: ownPower } }) });
+  const equalOrLesser = negate ? -1 : phraseAt(ctx, pos, W_EQUAL_OR_LESSER_POWER);
+  if (equalOrLesser >= 0) out.push({ end: equalOrLesser, frag: { power: { op: '<=', value: ownPower } } });
+  // edh-perms-8 (CR 202.3; Kozilek's Unsealing): "with mana value 4, 5, or 6", "with mana value 1 or 2": any one of several exact mana values (numbers separated by
+  // commas, the last after "or"; a list that does not end with "or" is not read, the comma then ends the clause)
+  // edh-next-86 (CR 208.1; Sarkhan's Unsealing): the same list of exact values for power and toughness ("a creature spell with power 4, 5, or 6")
+  for (const [listWord, listField] of [[P('mana value'), 'manaValue'], [P('power'), 'power'], [P('toughness'), 'toughness']] as const) {
+  const mvList = negate ? -1 : phraseAt(ctx, pos, listWord);
+  if (mvList >= 0) {
+    const nums: number[] = [];
+    for (let p = mvList; ; ) {
+      const n = numberAt(ctx, p);
+      if (n === undefined) break;
+      nums.push(n);
+      const sep = normAt(ctx, p + 1) === ',' && normAt(ctx, p + 2) === 'or' ? 2 : normAt(ctx, p + 1) === 'or' ? 1 : normAt(ctx, p + 1) === ',' ? 0 : -1;
+      if (sep < 0) break;
+      if (sep === 0) { p += 2; continue; }
+      const last = numberAt(ctx, p + 1 + sep);
+      if (last !== undefined && new Set([...nums, last]).size === nums.length + 1 && nums.length >= 1) {
+        out.push({ end: p + 2 + sep, frag: { anyOf: [...nums, last].map((v) => ({ [listField]: { op: '==', value: v } })) } as never });
+      }
+      break;
+    }
+  }
+  }
+  // edh-cast-4 (CR 202.3; Void Winnower): "with even mana value(s)", "with odd mana value(s)": the parity of the mana value (zero is even)
+  for (const [ws, parity] of [[W_EVEN_MV, 'even'], [W_ODD_MV, 'odd']] as const) for (const w of ws) { const e = phraseAt(ctx, pos, w); if (e >= 0) out.push({ end: e, frag: wrap({ manaValueParity: parity }) }); }
   // FAST5 T42 (CR 113.1): "creature cards with no abilities" (Rise from the Wreck): not one ability of any kind; a keyword is an ability (rules/filter.ts#hasAbilityOfKind),
   // a card with an ability of unknown kind is unevaluable there, so it is never offered as having none
   const noAbilities = negate ? -1 : phraseAt(ctx, pos, W_NO_ABILITIES);
   if (noAbilities >= 0) out.push({ end: noAbilities, frag: { not: { anyOf: [{ hasAbility: 'activated' }, { hasAbility: 'triggered' }, { hasAbility: 'static' }] } } });
+  // edh-d-22 (CR 113.1; Jasmine Boreal of the Seven): "creatures with abilities": at least one ability of some kind (the opposite of "no abilities"; same kinds)
+  const withAbilities = negate ? -1 : phraseAt(ctx, pos, W_ABILITIES);
+  if (withAbilities >= 0) out.push({ end: withAbilities, frag: { anyOf: [{ hasAbility: 'activated' }, { hasAbility: 'triggered' }, { hasAbility: 'static' }] } });
   // FAST5 T42 (CR 202.3): "with lesser mana value" (Jackdaw Savior, Clement, the Worrywort): a mana value lower than that of the object the trigger's event is about
   // (the creature that died or entered, role `subject`); only "with", and only where the ability has such an event (otherwise the sentence is manual)
   const lesser = negate ? -1 : phraseAt(ctx, pos, W_LESSER_MANA_VALUE);
   if (lesser >= 0) out.push({ end: lesser, frag: { manaValue: { op: '<', value: { q: 'stat', stat: 'manaValue', of: { ref: 'event', role: 'subject' } } } } });
+  // edh-c-86 (CR 208.1; Rangers of Ithilien, Gyrus, Shadowfax): "with lesser power" is a power lower than that of the object the trigger's event is about (the object itself in its own enters or attacks trigger), as "with lesser mana value" above; no event, no reading (an ability with none leaves it unresolved: manual)
+  const lesserPower = negate || ctx.discourse === undefined ? -1 : phraseAt(ctx, pos, W_LESSER_POWER); // (only in an instruction of an effect: in a trigger's event pattern the event's subject is not yet known, No Quarter)
+  if (lesserPower >= 0) out.push({ end: lesserPower, frag: { power: { op: '<', value: { q: 'stat', stat: 'power', of: { ref: 'event', role: 'subject' } } } } });
+  // edh-next-86 (CR 208.1, 603.10a; Colfenor, the Last Yew): "with lesser toughness" is a toughness lower than that of the object the trigger's event is about, as "lesser power" above
+  const lesserToughness = negate || ctx.discourse === undefined ? -1 : phraseAt(ctx, pos, W_LESSER_TOUGHNESS);
+  if (lesserToughness >= 0) out.push({ end: lesserToughness, frag: { toughness: { op: '<', value: { q: 'stat', stat: 'toughness', of: { ref: 'event', role: 'subject' } } } } });
+  // edh-next-103 (CR 208.1, 603.10a; Bane, Lord of Darkness): "with equal or lesser toughness" is a toughness at most that of the object the trigger's event is about (the creature that died), as "lesser toughness" above
+  const equalOrLesserToughness = negate || ctx.discourse === undefined ? -1 : phraseAt(ctx, pos, W_EQUAL_OR_LESSER_TOUGHNESS);
+  if (equalOrLesserToughness >= 0) out.push({ end: equalOrLesserToughness, frag: { toughness: { op: '<=', value: { q: 'stat', stat: 'toughness', of: { ref: 'event', role: 'subject' } } } } });
+  // edh-c-45 (CR 202.3, 700.4; Death's Oasis): "with lesser mana value than the creature that died": the same comparison, the creature that died being the event's subject (render/np.ts says it
+  // so only in a trigger about a creature dying)
+  const lesserDied = negate ? -1 : phraseAt(ctx, pos, W_LESSER_MANA_VALUE_THAN_DIED);
+  if (lesserDied >= 0) out.push({ end: lesserDied, frag: { manaValue: { op: '<', value: { q: 'stat', stat: 'manaValue', of: { ref: 'event', role: 'subject' } } } } });
   // std-rx28 (CR 202.3, 601.2i; Kellan, the Kid): "with equal or lesser mana value" in the effect of a cast trigger: a mana value at most that of the spell the
   // trigger's cast event is about (role `spell`); only "with". Where the ability has no such event (a dies or enters trigger, a spell) the lint refuses the role
   // (model/lint-roles.ts), so the sentence stays manual (fail closed)
   const eqLesser = negate ? -1 : phraseAt(ctx, pos, W_EQUAL_OR_LESSER_MANA_VALUE);
   if (eqLesser >= 0) out.push({ end: eqLesser, frag: { manaValue: { op: '<=', value: { q: 'stat', stat: 'manaValue', of: { ref: 'event', role: 'spell' } } } } });
+  // edh-c-66 (CR 202.3, 601.2i; Celestial Kirin): "with that spell's mana value" is the mana value of the spell the cast trigger's event is about (role `spell`), as
+  // "with mana value equal to that spell's mana value" says; only "with". Where the ability has no such event the lint refuses the role (model/lint-roles.ts), so the sentence stays manual
+  const thatSpellMv = negate ? -1 : phraseAt(ctx, pos, W_THAT_SPELLS_MANA_VALUE);
+  if (thatSpellMv >= 0) out.push({ end: thatSpellMv, frag: { manaValue: { op: '==', value: { q: 'stat', stat: 'manaValue', of: { ref: 'event', role: 'spell' } } } } });
+  // edh-cast-12 (CR 202.3, 404.1, 608.2b; Drown in the Loch): "with mana value less than or equal to the number of cards in its controller's graveyard": "its" is the object
+  // described, so the comparison is the object's own (ObjectFilter.manaValueVsGraveyard) and names no antecedent; only "with"
+  const mvGy = negate ? -1 : phraseAt(ctx, pos, W_MV_AT_MOST_CONTROLLER_GRAVEYARD);
+  if (mvGy >= 0) out.push({ end: mvGy, frag: { manaValueVsGraveyard: { op: '<=', of: 'controller' } } });
+  // edh-next-32 (CR 201.2, 404.1; Dragonlord Kolaghan): "with the same name as a card in their graveyard": the object's own name against its controller's graveyard; only "with"
+  const nameGy = negate ? -1 : phraseAt(ctx, pos, P('the same name as a card in their graveyard'));
+  if (nameGy >= 0) out.push({ end: nameGy, frag: { nameInGraveyard: { of: 'controller' } } });
+  // edh-next-126 (CR 202.3, 608.2h; Light-Paws, Emperor's Voice): "with mana value less than or equal to that Aura": at most the mana value of one object the sentence names (an
+  // object it refers back to), as "with lesser mana value than that creature" is less than it; only right after "with"
+  const mvAtMostOf = negate || ctx.toks[pos - 1]?.norm !== 'with' ? -1 : phraseAt(ctx, pos, W_MV_AT_MOST_OF);
+  if (mvAtMostOf >= 0) {
+    for (const o of ctx.call('Obj', mvAtMostOf)) {
+      if (isAttachHost(o.value) && (o.value as { ref?: string }).ref === 'bound') out.push({ end: o.end, frag: { manaValue: { op: '<=', value: { q: 'stat', stat: 'manaValue', of: o.value } } } as ObjectFilter });
+    }
+  }
   // CLOUD std-msh (CR 202.3, 208.1): "with greater mana value than that creature" (Evil's Thrall), "with greater power than ~": more than the statistic of one object
   // the sentence names (this object, or one it refers back to); only "with"
   for (const [w, op] of [['greater', '>'], ['lesser', '<']] as const) {
@@ -617,6 +890,11 @@ export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: nu
       const e = phraseAt(ctx, pos + 1, ws);
       if (e >= 0) for (const o of ctx.call('Obj', e)) if (isAttachHost(o.value) && (o.value as { ref?: string }).ref !== 'attachedTo') out.push({ end: o.end, frag: { [stat]: { op, value: { q: 'stat', stat, of: o.value } } } as ObjectFilter });
     }
+  }
+  // edh-players-15 (CR 208.1; Éowyn, Fearless Knight): "with greater power" (nothing after it) is more power than this object's own (the object whose ability it is); only "with"
+  if (!negate && ctx.toks[pos]?.norm === 'greater' && ctx.toks[pos + 1]?.norm === 'power' && ctx.toks[pos + 2]?.norm !== 'than' && ctx.toks[pos + 2]?.norm !== 'or') {
+    // ($greaterBare: lower/links.ts#lowerLinks keeps the reading only in a triggered ability of a creature, where "greater power" is more than that creature's; elsewhere the marker leaves the sentence manual)
+    out.push({ end: pos + 2, frag: { power: { op: '>', value: { q: 'stat', stat: 'power', of: { ref: 'self' }, $greaterBare: true } } } as never, weak: 1 }); // weak (design 6.3 rule 2): the templates that own "with greater power" (zz-fast3/t16.json, "~ can't be blocked by creatures with greater power") keep it
   }
   // Standard round 4, r4-trig (CR 702.100a-b, 208.1; Hulkling, Burgeoning Bruiser and evolve's own words): "greater power or toughness than ~" is more power than
   // that object's power OR more toughness than its toughness, each statistic compared with its own (the filter keyword evolve expands to, keywords/data/evolve.json);
@@ -634,13 +912,36 @@ export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: nu
   // Standard round 4, r4-trig (CR 208.1; Fecund Greenshell): "with toughness greater than its power" (its own two values); only "with"
   const tgp = negate ? -1 : phraseAt(ctx, pos, P('toughness greater than its power'));
   if (tgp >= 0) out.push({ end: tgp, frag: { toughnessGreaterThanPower: true } });
+  // edh-next-32 (CR 208.1; Symmetry Matrix): "with power equal to its toughness" (its own two values, never a comparison with what "its" names); only "with"
+  const pet = negate ? -1 : phraseAt(ctx, pos, P('power equal to its toughness'));
+  if (pet >= 0) out.push({ end: pet, frag: { powerEqualsToughness: true } });
   // std-rx10 (CR 208.1; Meek Attack): "with total power and toughness 5 or less", the sum of the object's own power and toughness; only "with"
   const tpt = negate ? -1 : phraseAt(ctx, pos, P('total power and toughness'));
   if (tpt >= 0) for (const c of cmpAt(ctx, tpt)) out.push({ end: c.end, frag: { totalPowerToughness: c.cmp } });
+  // edh-next-112 (CR 208.1, 201.2; Wild Pair): "with the same total power and toughness" as the creature the trigger's event is about: its power plus its toughness, equal; only "with" and only the bare
+  // wording (the event's subject; a spell or a trigger with no subject reads nothing there)
+  const stpt = negate ? -1 : phraseAt(ctx, pos, P('the same total power and toughness'));
+  if (stpt >= 0) {
+    const of = { ref: 'event', role: 'subject' } as ObjRef;
+    out.push({ end: stpt, frag: { totalPowerToughness: { op: '==', value: { q: 'math', op: '+', args: [{ q: 'stat', stat: 'power', of }, { q: 'stat', stat: 'toughness', of }] } } } as never });
+  }
   // std-rx11 (CR 208.1, 613.4; Kutzil, Malamet Exemplar; Ms. Marvel, Elastic Ally): "with power greater than its base power" (its own power against its own base
   // power); "their" after a plural noun; only "with"
   const pgb = negate ? -1 : anyPhraseAt(ctx, pos, W_POWER_GREATER_THAN_BASE);
   if (pgb >= 0) out.push({ end: pgb, frag: { powerGreaterThanBase: true } });
+  // edh-perms-11 (CR 208.1, 613.4a-b; Sword of the Squeak): "with base power or toughness 1": either base value (after layer 7b) meets the one comparison; only "with"
+  const bpt = negate ? -1 : phraseAt(ctx, pos, W_BASE_POWER_OR_TOUGHNESS);
+  if (bpt >= 0) for (const c of cmpAt(ctx, bpt)) out.push({ end: c.end, frag: { basePowerOrToughness: c.cmp } });
+  // edh-next-23 (CR 208.1, 613.4a-b; Rapid Augmenter): "with base power 1": the base power alone (never beside "base power or toughness", which is read above); only "with"
+  const bp1 = negate || bpt >= 0 ? -1 : phraseAt(ctx, pos, W_BASE_POWER);
+  if (bp1 >= 0) for (const c of cmpAt(ctx, bp1)) out.push({ end: c.end, frag: { basePower: c.cmp } });
+  // edh-next-19 (CR 208.1, 613.4b; Duskana, the Rage Mother): "with base power and toughness 2/2": both base values (after layer 7b) are those numbers (digits only); only "with"
+  const bpat = negate ? -1 : phraseAt(ctx, pos, W_BASE_POWER_AND_TOUGHNESS);
+  if (bpat >= 0) {
+    const t = ctx.toks[bpat];
+    const m = t !== undefined && t.kind === 'PT' ? /^(\d+)\/(\d+)$/.exec(t.norm) : null;
+    if (m !== null) out.push({ end: bpat + 1, frag: { basePowerAndToughness: { power: Number(m[1]), toughness: Number(m[2]) } } });
+  }
   // FAST4 T25: "with power or toughness 4 or greater" (Repel Calamity): either statistic meets the one comparison (CR 208.1); only "with", never "without"
   const pot = negate ? -1 : phraseAt(ctx, pos, W_POWER_OR_TOUGHNESS);
   if (pot >= 0) for (const c of cmpAt(ctx, pot)) out.push({ end: c.end, frag: { anyOf: [{ power: c.cmp }, { toughness: c.cmp }] } });
@@ -650,9 +951,22 @@ export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: nu
   // FAST5 T45 (CR 115.9a): "a spell with a single target" (the number of times anything was chosen as a target); only "with", never "without"
   const st1 = negate ? -1 : phraseAt(ctx, pos, P('a single target'));
   if (st1 >= 0) out.push({ end: st1, frag: { targetCount: { op: '==', value: 1 } } });
+  // edh-next-121 (CR 115.9a, 115.1; Wyll's Reversal): "target spell or ability with one or more targets": it chose at least one target; only "with", never "without"
+  const st2 = negate ? -1 : phraseAt(ctx, pos, P('one or more targets'));
+  if (st2 >= 0) out.push({ end: st2, frag: { targetCount: { op: '>=', value: 1 } } });
   // abilities by kind
   const abil: [string[], 'activated' | 'triggered' | 'mana' | 'static'][] = [[P('an activated ability'), 'activated'], [P('a triggered ability'), 'triggered'], [P('a mana ability'), 'mana']];
   for (const [ws, v] of abil) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: wrap({ hasAbility: v }) }); }
+  // edh-d-4 (CR 605.1a; Midnight Arsonist): "artifacts without mana abilities" (the plural, negative only: "with mana abilities" is not printed)
+  // edhd36 (CR 605.1a; Power Sink): and positive, "tap all lands with mana abilities they control"
+  const manaPlural = phraseAt(ctx, pos, P('mana abilities'));
+  if (manaPlural >= 0) out.push({ end: manaPlural, frag: wrap({ hasAbility: 'mana' }) });
+  // edh-perms-8 (CR 602.1, 107.5; Magewright's Stone): "an activated ability with {T} in its cost": an activated ability whose cost has the tap symbol (positive only)
+  const tapAbil = negate ? -1 : phraseAt(ctx, pos, P('an activated ability with {t} in its cost'));
+  if (tapAbil >= 0) out.push({ end: tapAbil, frag: { hasAbility: 'activated', abilityTapCost: true } });
+  // edh-c-44 (CR 602.1, 605.1a; Ravager Wurm): "an activated ability that isn't a mana ability" (positive only)
+  const notMana = negate ? -1 : phraseAt(ctx, pos, P("an activated ability that isn't a mana ability"));
+  if (notMana >= 0) out.push({ end: notMana, frag: { hasAbility: 'activated', abilityNotMana: true } });
   // counters: "a +1/+1 counter on it", "three or more +1/+1 counters on it", "no +1/+1 counters on it"
   const counterCmp = (p: number, cmp: NumberCmp | null): void => {
     if (p < 0) return;
@@ -670,6 +984,8 @@ export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: nu
   counterCmp(phraseAt(ctx, pos, P('an')) >= 0 ? pos + 1 : -1, null);
   // FAST4 T33 (CR 122.1): "creatures you control with +1/+1 counters on them": one or more counters of that kind (no article, plural, only with "on them")
   if (!negate) for (const k of ctx.call('CounterKind', pos)) { const e = phraseAt(ctx, k.end, W_COUNTERS_ON_THEM); if (e >= 0) out.push({ end: e, frag: { counters: { kind: k.value as string } } }); }
+  // edh-c-53 (CR 122.1; Cinderslash Ravager): "permanents you control with oil counters on it": one or more counters of that kind (singular "it", bare plural)
+  if (!negate) for (const k of ctx.call('CounterKind', pos)) { const e = phraseAt(ctx, k.end, W_COUNTERS_ON_IT_ANY); if (e >= 0) out.push({ end: e, frag: { counters: { kind: k.value as string } } }); }
   // FAST5 T41 (CR 122.1): "creatures you control with counters on them": a counter of any kind on each (plural, no article)
   if (!negate) { const anyOnThem = phraseAt(ctx, pos, W_COUNTERS_ON_THEM); if (anyOnThem >= 0) out.push({ end: anyOnThem, frag: { counters: { kind: 'any' } } }); }
   // FAST4 T27 (CR 122.1): "a creature with a counter on it": a counter of any kind (kind 'any', rules/filter.ts)
@@ -679,6 +995,9 @@ export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: nu
   // FAST5 T59 (CR 122.1): "creature with no counters on it" (Heartless Act): not one counter of any kind (the sum over every kind is 0, rules/filter.ts)
   const noAnyCounter = negate ? -1 : phraseAt(ctx, pos, W_NO_COUNTERS);
   if (noAnyCounter >= 0) out.push({ end: noAnyCounter, frag: { counters: { kind: 'any', cmp: { op: '==', value: 0 } } } });
+  // edh-d-48 (CR 122.1; Ayara's Oathsworn): "exactly four +1/+1 counters on it": exactly that many counters of the kind (a number, never a bare number)
+  const exactly = phraseAt(ctx, pos, P('exactly'));
+  if (exactly >= 0 && !negate) for (const q of ctx.call('Qty', exactly)) if (typeof q.value === 'number') counterCmp(q.end, { op: '==', value: q.value });
   // an explicit comparison ("three or more"); a bare number is not read as "exactly"
   for (const c of cmpAt(ctx, pos)) if (c.cmp.op !== '==') counterCmp(c.end, c.cmp);
   // r4-static (CR 122.1): "three or more counters on it" (Warden of the Inner Sky): counters of any kind together, every counter on it counts (rules/filter.ts)
@@ -691,6 +1010,8 @@ export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: nu
   // FAST5X E21 (CR 122.1): counters of any kind on one object: "with no counters on it" (none of any kind) and "with one or more counters on it" (at
   // least one of any kind, the same as "a counter on it")
   for (const w of W_NO_COUNTERS_ON) { const e = phraseAt(ctx, pos, w); if (e >= 0) out.push({ end: e, frag: wrap({ counters: { kind: 'any', cmp: { op: '==', value: 0 } } }) }); }
+  // edhn63 (CR 122.1; Cleopatra, Exiled Pharaoh): "a legendary creature with counters on it": a counter of any kind, as "one or more counters on it"
+  if (!negate) { const bare = phraseAt(ctx, pos, W_COUNTERS_ON_IT_ANY); if (bare >= 0) out.push({ end: bare, frag: { counters: { kind: 'any' } } }); }
   if (!negate) {
     const oneOrMore = phraseAt(ctx, pos, W_ONE_OR_MORE_COUNTERS_ON_IT);
     if (oneOrMore >= 0) out.push({ end: oneOrMore, frag: { counters: { kind: 'any' } } });
@@ -707,10 +1028,27 @@ export function featureAt(ctx: HoleCtx, pos: number, negate: boolean): { end: nu
       if (e >= 0) out.push({ end: e, frag: { manaSymbols: { color, cmp: c.cmp as NumberCmp } } });
     }
   }
+  // edh-zones-6 (CR 202.1, 202.1b; Urza's Saga): "with mana cost {0} or {1}": the printed cost is exactly one of the listed ones (a land has none); only "with"
+  if (!negate) {
+    const at = phraseAt(ctx, pos, P('mana cost'));
+    if (at >= 0) {
+      const costs: string[] = [];
+      let p = at;
+      for (;;) {
+        let cost = '';
+        while (ctx.toks[p]?.kind === 'MANA' && ctx.toks[p]!.norm !== '{e}') cost += ctx.toks[p++]!.norm.toUpperCase();
+        if (cost === '' || costs.includes(cost)) break;
+        costs.push(cost);
+        if (phraseAt(ctx, p, P('or')) >= 0) p++;
+        else break;
+      }
+      if (costs.length > 0 && costs.length <= 2 && costs.every((c) => /^(\{[0-9WUBRGCSX]\})+$/.test(c))) out.push({ end: p, frag: { manaCostIs: costs } });
+    }
+  }
   return out;
 }
 
-function playerOfSharing(ctx: HoleCtx, pos: number): Frag[] {
+export function playerOfSharing(ctx: HoleCtx, pos: number): Frag[] {
   const out: Frag[] = [];
   for (const s of W_SHARES) {
     const sh = phraseAt(ctx, pos, s);
@@ -722,28 +1060,84 @@ function playerOfSharing(ctx: HoleCtx, pos: number): Frag[] {
       const w = e >= 0 ? phraseAt(ctx, e, P('with')) : -1;
       if (w < 0) continue;
       for (const o of ctx.call('Obj', w)) out.push({ end: o.end, frag: { sharesWith: { with: o.value as never, quality } }, ...(o.flags ? { flags: o.flags } : {}) });
+      // edh-next-145 (CR 205.3m, 602.2b, 608.2c; Cryptic Gateway): "shares a creature type with each creature tapped this way": with every creature the ability's tap cost tapped
+      // (`costTapped`; model/lint-nodes.ts keeps it to an activated ability whose cost taps untapped creatures)
+      const eachTapped = phraseAt(ctx, w, W_EACH_CREATURE_TAPPED_THIS_WAY);
+      if (eachTapped >= 0 && quality !== 'name') out.push({ end: eachTapped, frag: { sharesWith: { with: { ref: 'costTapped' }, quality, each: true } } });
       // pc-keywords-mana-2 (CR 903.3d, 903.3e, 205.3m; Path of Ancestry): "shares a creature type with your commander": a commander you own (either one with two), the set form of
       // `sharesWith` ("some object of it", rules/filter.ts) over the commander wherever it is (the command zone most of the time, CR 903.6); no commander, no match
+      // edh-zones-5 (CR 105.2c, 205.2, 608.2b; Ringsight): "a card that shares a color with a legendary creature you control": with some one object of a described set ("a <noun phrase>",
+      // as std-hob's "the same name as a legendary permanent you control"; rules/filter.ts reads a set as "some object of it", so a colorless card shares no color with anything)
+      const wt = ctx.toks[w]?.norm;
+      if ((wt === 'a' || wt === 'an') && quality !== 'name') {
+        for (const n of npAlts(ctx, w + 1)) {
+          if (n.number !== 'singular' || n.flags.some((x) => x !== 'zone-unstated')) continue;
+          out.push({ end: n.end, frag: { sharesWith: { with: { ref: 'each', filter: n.filter }, quality } }, ...(n.weak ? { weak: n.weak } : {}) });
+        }
+      }
       for (const c of yourCommanderAt(ctx, w)) if (c.number === 'singular') out.push({ end: c.end, frag: { sharesWith: { with: { ref: 'each', filter: { ...c.filter, zone: ['battlefield', 'command', 'stack', 'exile', 'hand', 'graveyard', 'library'] } }, quality } } });
     }
   }
   return out;
 }
 
+/** edh-combat-2: an Aura (CR 303.4b) or an Equipment (CR 301.5) is attached to it; src/render/np.ts says it "that's enchanted or equipped". */
+const ENCHANTED_OR_EQUIPPED: ObjectFilter = { anyOf: [{ enchanted: true }, { equipped: true }] };
+
+/** edh-c-18 (CR 509.1h): a creature that blocked or was blocked; render/np.ts says it "that blocked or was blocked this turn". */
+const BLOCKED_OR_WAS_BLOCKED: ObjectFilter = { anyOf: [{ blockedThisTurn: true }, { wasBlockedThisTurn: true }] };
+
 const REL: [string[], ObjectFilter][] = [
+  // edh-next-100 (CR 601.2a, 707.10; Wash Away): "target spell that wasn't cast from its owner's hand": not cast from a hand (a copy of a spell was never cast, so it counts); render/np.ts says it
+  [P("wasn't cast from its owner 's hand"), { not: { castFrom: 'hand' } }],
   [P('was dealt damage this turn'), { dealtDamageThisTurn: true }], [P('were dealt damage this turn'), { dealtDamageThisTurn: true }],
+  // edh-c-61 (CR 120.1, 120.3; Giant Shark): the perfect, "a creature that has been dealt damage this turn" (family dealt-damage-participle)
+  [P('has been dealt damage this turn'), { dealtDamageThisTurn: true }], [P('have been dealt damage this turn'), { dealtDamageThisTurn: true }],
   [P('dealt damage this turn'), { dealtDamageAsSourceThisTurn: true }], // std-mkm (CR 120.1): "a creature that dealt damage this turn" (the object as the damage's source)
+  // edh-players-9 (CR 120.1, 510.2): "a creature that dealt combat damage to you this turn" (Witch-king of Angmar), "... dealt damage to you this turn": to the controller
+  [P('dealt damage to you this turn'), { dealtDamageToYouThisTurn: 'any' }], [P('dealt combat damage to you this turn'), { dealtDamageToYouThisTurn: 'combat' }],
   [P('attacked this turn'), { attackedThisTurn: true }], [P('blocked this turn'), { blockedThisTurn: true }],
+  // edh-next-139 (CR 701.14a, 400.7; Boxing Ring): "a creature that fought this turn": this object fought this turn (by any effect; as this object)
+  [P('fought this turn'), { foughtThisTurn: true }],
+  // edh-c-18 (CR 509.1h, 506.4; Heat Stroke): "creatures that blocked or were blocked this turn": was declared as a blocker, or became blocked
+  [P('was blocked this turn'), { wasBlockedThisTurn: true }], [P('were blocked this turn'), { wasBlockedThisTurn: true }],
+  [P('blocked or was blocked this turn'), BLOCKED_OR_WAS_BLOCKED], [P('blocked or were blocked this turn'), BLOCKED_OR_WAS_BLOCKED],
   // p2-damage-2 (CR 508.1a): "creatures that player controls that didn't attack this turn" (Kratos, God of War): never declared as an attacker this turn
   [P("didn't attack this turn"), { attackedThisTurn: false }],
+  // edh-next-89 (CR 508.1a, 400.7; The Fifth Doctor): "each creature you control that didn't attack or enter this turn": both negations on one object
+  [P("didn't attack or enter this turn"), { attackedThisTurn: false, enteredThisTurn: false }],
   // p2-damage-3 (CR 303.4b): "all creatures that aren't enchanted" (Winds of Rath), "target creature that isn't enchanted" (Brainspoil): no Aura is attached to it
   [P("isn't enchanted"), { enchanted: false }], [P("aren't enchanted"), { enchanted: false }],
+  // edh-c-20 (CR 303.4b; Infiltrator's Magemark): "creatures you control that are enchanted": an Aura is attached to each (plural only)
+  [P('are enchanted'), { enchanted: true }],
+  // edh-combat-2 (CR 303.4b, 301.5; Halvar, God of Battle): "creatures you control that are enchanted or equipped": an Aura or an Equipment is attached to it (either one)
+  [P('is enchanted or equipped'), ENCHANTED_OR_EQUIPPED], [P('are enchanted or equipped'), ENCHANTED_OR_EQUIPPED],
+  // edh-next-8 (CR 301.5; Hexgold Hoverwings, Long-Lost Lances): "creatures you control that are equipped", an Equipment is attached to each (the adjective "equipped creatures you control" says the same)
+  [P('are equipped'), { equipped: true }],
+  [P('is enchanted'), { enchanted: true }], // edh-c-55 (CR 303.4b; Necromancer's Magemark): "a creature you control that is enchanted" (the plural "that are enchanted" is edh-c-20's)
   [P('entered the battlefield this turn'), { enteredThisTurn: true }], [P('entered this turn'), { enteredThisTurn: true }],
+  // edh-b-4 (CR 400.7; Let the Galaxy Burn): "each creature that didn't enter this turn": no entry onto the battlefield this turn (render/np.ts says it for `enteredThisTurn: false`)
+  [P("didn't enter the battlefield this turn"), { enteredThisTurn: false }], [P("didn't enter this turn"), { enteredThisTurn: false }],
   // r3-choose (CR 400.7): "a card in your graveyard that was put there from anywhere this turn" (render/np.ts says it only after a named zone)
   [P('was put there from anywhere this turn'), { putThereThisTurn: true }], [P('were put there from anywhere this turn'), { putThereThisTurn: true }],
   // r5-fxz (CR 400.7): "... that were put there from the battlefield this turn" (Supper for Spiders); "that was put there this turn" is from anywhere
   [P('was put there from the battlefield this turn'), { putThereThisTurn: true, putThereFrom: 'battlefield' }], [P('were put there from the battlefield this turn'), { putThereThisTurn: true, putThereFrom: 'battlefield' }],
+  // edh-c-61 (CR 400.3, 700.4; Fell Shepherd): "creature cards that were put into your graveyard from the battlefield this turn": the cards you own that were put there from the battlefield this turn (family put-into-your-graveyard-from-battlefield)
+  [P('was put into your graveyard from the battlefield this turn'), { zone: 'graveyard', owner: 'you', putThereThisTurn: true, putThereFrom: 'battlefield' }], [P('were put into your graveyard from the battlefield this turn'), { zone: 'graveyard', owner: 'you', putThereThisTurn: true, putThereFrom: 'battlefield' }],
+  // edh-next-116 (CR 400.7, 506.1; Storrev, Devkarin Lich): "a creature card in your graveyard that wasn't put there this combat"
+  [P("wasn't put there this combat"), { putThereThisCombat: false }], [P("weren't put there this combat"), { putThereThisCombat: false }], [P('was put there this combat'), { putThereThisCombat: true }], [P('were put there this combat'), { putThereThisCombat: true }],
   [P('was put there this turn'), { putThereThisTurn: true }], [P('were put there this turn'), { putThereThisTurn: true }],
+  // edh-zones-22 (CR 400.7, 404.1, 701.17a; Captain N'ghathrod): "... a card in an opponent's graveyard that was put there from their library this turn": the card's owner's library
+  [P('was put there from their library this turn'), { putThereThisTurn: true, putThereFrom: 'library' }], [P('were put there from their library this turn'), { putThereThisTurn: true, putThereFrom: 'library' }],
+  // edh-next-59 (CR 400.7, 404.1; Banon, the Returners' Leader): "... in your graveyard that were put there from anywhere other than the battlefield this turn"
+  [P('were put there from anywhere other than the battlefield this turn'), { putThereThisTurn: true, putThereFrom: 'notBattlefield' }],
+  // edh-top-13 (CR 701.17a, 400.7; Tato Farmer): "a land card in a graveyard that was milled this turn": put into a graveyard from a library this turn (not any card put there from a library: Scryfall ruling 2024-03-08, a card put into a graveyard from a library without the word "mill" is not milled)
+  // edh-d-85 (CR 701.9a, 400.7, 404.1; Ghost of Ramirez DePietro): "a card in a graveyard that was discarded or put there from a library this turn" (either move this turn)
+  [P('was discarded or put there from a library this turn'), { putThereThisTurn: true, putThereFrom: 'discardOrLibrary' }],
+  [P('was milled this turn'), { putThereThisTurn: true, putThereFrom: 'mill' }], [P('were milled this turn'), { putThereThisTurn: true, putThereFrom: 'mill' }],
+  // edh-d-102 (CR 701.9a, 702.29a, 400.7; Shadow of the Grave, ruling 2017-04-18): "all cards in your graveyard that you cycled or discarded this turn": a card its owner discarded this turn, for any
+  // reason (cycling discards the card); a madness card put into the graveyard from exile after it was discarded counts too
+  [P('you cycled or discarded this turn'), { putThereThisTurn: true, putThereFrom: 'discard' }], [P('you discarded this turn'), { putThereThisTurn: true, putThereFrom: 'discard' }],
   // FAST5X E3 (CR 702.171c): "a creature that saddled it this turn" ("it" is the Mount with the ability: only its own abilities say it)
   [P('saddled it this turn'), { saddledThisTurn: { ref: 'self' } }], [P('saddled ~ this turn'), { saddledThisTurn: { ref: 'self' } }],
   // r5-static (CR 201.2a, 708.2a): "creatures that don't have a name" (a face-down creature has none)
@@ -752,10 +1146,15 @@ const REL: [string[], ObjectFilter][] = [
   [P('crewed it this turn'), { crewedThisTurn: { ref: 'self' } }], [P('crewed ~ this turn'), { crewedThisTurn: { ref: 'self' } }],
   // r5-fxb (CR 603.10a, 301.5): "an Equipment that was attached to ~" (~ has left the battlefield: its last known information)
   [P('was attached to ~'), { wasAttachedTo: { ref: 'self' } }],
+  // edh-zones-3 (CR 205.4a, 700.6): "all nonland permanents that aren't legendary" (Urza's Ruinous Blast), "each nonland permanent that's not historic" (Desynchronization): not
+  // legendary; not historic is none of an artifact, a legendary permanent or a Saga (the negation of the three kinds `historic` lists)
+  ...['isn\'t', 'aren\'t', 'is not', 'are not'].flatMap((neg): [string[], ObjectFilter][] => [[P(`${neg} legendary`), NOT_LEGENDARY], [P(`${neg} historic`), NOT_HISTORIC]]),
   [P('targets ~'), { targets: { ref: 'self' } }], [P('target ~'), { targets: { ref: 'self' } }], [P('targets you'), { targets: { ref: 'you' } }],
 ];
 
 const W_TARGETS_A = P('targets');
+/** edh-d-92: the controller phrases a targeted noun may end with ("a creature you don't control"). */
+const CONTROL_TAILS = [P("you don't control"), P('you control'), P('an opponent controls'), P('your opponents control')];
 const W_ONE_OR_MORE = P('one or more'); // std-rx28
 const W_OR_PLAYER = P('or player'); // std-rx28
 
@@ -789,14 +1188,20 @@ function areList(ctx: HoleCtx, pos: number): Frag[] {
     for (const it of items(p)) {
       const next = [...acc, ...it.f];
       if (next.length >= 2) out.push({ end: it.end, frag: { anyOf: next } });
-      if (depth < 4) for (const sep of W_ARE_SEPS) { const e = phraseAt(ctx, it.end, sep); if (e >= 0) walk(e, next, depth + 1); }
+      if (depth < 4) for (const sep of W_ARE_SEPS) {
+        const e = phraseAt(ctx, it.end, sep);
+        if (e < 0) continue;
+        walk(e, next, depth + 1);
+        // edh-d-102 (CR 205.2a, 715.1; Candlekeep Inspiration): "that are instant cards, are sorcery cards, and/or have an Adventure": the verb said again before a later kind
+        if (ctx.toks[e]?.norm === 'are' && ctx.toks[e + 1]?.norm !== 'have') walk(e + 1, next, depth + 1);
+      }
     }
   };
   walk(pos + 1, [], 0);
   return out;
 }
 
-const W_KIND_SEPS = [P(', or'), P('or'), P(',')];
+const W_KIND_SEPS = [P(', or'), P('or'), P(','), P(', and/or'), P('and/or')]; // edh-next-68 (Solemn Doomguide): "that's a Cleric, Rogue, Warrior, and/or Wizard" ("and/or" is "or", CR 205.3m)
 
 /**
  * std-re (CR 205.3m, 111.1): "each creature you control that's a Wolf or a Werewolf", "... that's a token or a Rabbit": a singular object that is one of two or
@@ -826,6 +1231,107 @@ function thatsKinds(ctx: HoleCtx, pos: number): Frag[] {
   return out;
 }
 
+const W_A_AN = [P('a'), P('an')];
+
+/**
+ * edh-zones-19 (CR 205.2a, 205.3; Ao, the Dawn Sky): "each permanent you control that's a creature or Vehicle": a permanent that is one of a card type and a subtype
+ * (a mix of the two, `anyOf`, the kinds thatsKinds and thatsCardTypes each read alone), the second kind without an article. Two items only, the type first.
+ */
+function thatsTypeOrSubtype(ctx: HoleCtx, pos: number): Frag[] {
+  const out: Frag[] = [];
+  for (const ws of W_A_AN) {
+    const p = phraseAt(ctx, pos, ws);
+    if (p < 0) continue;
+    const ty = ctx.toks[p]?.kind === 'WORD' ? ctx.vocab.types.get(ctx.toks[p]!.norm) : undefined;
+    if (ty === undefined || ty.plural) continue;
+    const q = phraseAt(ctx, p + 1, P('or'));
+    if (q < 0) continue;
+    const art = ctx.toks[q]?.norm;
+    const from = art === 'a' || art === 'an' ? q + 1 : q;
+    for (const m of multiAt(ctx, from, ctx.vocab.subtypes)) {
+      if (m.entry.plural && m.entry.both !== true) continue;
+      out.push({ end: m.end, frag: { anyOf: [{ types: [ty.name] }, { subtypes: [m.entry.name] }] } });
+    }
+  }
+  return out;
+}
+
+
+/**
+ * edh-d-76 (CR 205.2a, 202.3; Desdemona, Freedom's Edge): "target creature card in your graveyard that's an artifact or that has mana value 3 or less": a card type or a mana value
+ * comparison after "that's" (`anyOf` of the two, the shared words in front; the type first). One card type, a singular article, and "that has mana value" for the second option.
+ */
+function thatsTypeOrMv(ctx: HoleCtx, pos: number): Frag[] {
+  const out: Frag[] = [];
+  for (const ws of W_A_AN) {
+    const p = phraseAt(ctx, pos, ws);
+    if (p < 0) continue;
+    const ty = ctx.toks[p]?.kind === 'WORD' ? ctx.vocab.types.get(ctx.toks[p]!.norm) : undefined;
+    if (ty === undefined || ty.plural) continue;
+    const q = phraseAt(ctx, p + 1, P('or that has mana value'));
+    if (q < 0) continue;
+    for (const c of cmpAt(ctx, q)) out.push({ end: c.end, frag: { anyOf: [{ types: [ty.name] }, { manaValue: c.cmp }] } });
+  }
+  return out;
+}
+
+/**
+ * edh-zones-12 (CR 205.2a, 700.6; family card-thats-types; Mizzix's Mastery): "target card that's an instant or sorcery" is a card with either of two or more card
+ * types after "that's" (the singular only; one type alone, a subtype or a generic head word after the article are other readings and stay manual here). Weak
+ * (design 6.3 rule 2): a template that already spells the words out keeps its sentence.
+ */
+function thatsCardTypes(ctx: HoleCtx, pos: number): Frag[] {
+  const out: Frag[] = [];
+  for (const ws of W_A_AN) {
+    const p = phraseAt(ctx, pos, ws);
+    if (p < 0) continue;
+    for (const h of headAt(ctx, p)) {
+      if (h.head !== 'type' || h.number !== 'singular' || h.frag.types === undefined || h.frag.types.length < 2 || Object.keys(h.frag).some((k) => k !== 'types')) continue;
+      out.push({ end: h.end, frag: { types: h.frag.types }, weak: 1 });
+    }
+  }
+  return out;
+}
+
+
+const W_CARD_WORD = P('card');
+const W_A_CARD_THAT_HAS_AN_ADVENTURE = P('a card that has an adventure');
+/**
+ * edh-d-17 (CR 205.2a, 715.1; Sailors' Bane): "each card you own in exile and in your graveyard that's an instant card, a sorcery card, or a card that has an Adventure": a card that is
+ * one of a list of card types, each said with its own article and "card", the list closed by ", or" and ending in "a card that has an Adventure" (or in a third card type). Weak
+ * (design 6.3 rule 2): a template that spells the words out keeps its sentence. Not for fewer than three items (two card types are `thatsCardTypes`).
+ */
+function thatsCardList(ctx: HoleCtx, pos: number): Frag[] {
+  const out: Frag[] = [];
+  const item = (p: number): { end: number; f: ObjectFilter }[] => {
+    const r: { end: number; f: ObjectFilter }[] = [];
+    const adv = phraseAt(ctx, p, W_A_CARD_THAT_HAS_AN_ADVENTURE);
+    if (adv >= 0) r.push({ end: adv, f: { adventure: true } });
+    for (const ws of W_A_AN) {
+      const a = phraseAt(ctx, p, ws);
+      if (a < 0) continue;
+      for (const h of headAt(ctx, a)) {
+        if (h.head !== 'type' || h.number !== 'singular' || h.frag.types?.length !== 1 || Object.keys(h.frag).some((k) => k !== 'types')) continue;
+        const c = phraseAt(ctx, h.end, W_CARD_WORD);
+        if (c >= 0) r.push({ end: c, f: { types: h.frag.types } });
+      }
+    }
+    return r;
+  };
+  const walk = (p: number, acc: ObjectFilter[]): void => {
+    for (const it of item(p)) {
+      if (acc.some((x) => JSON.stringify(x) === JSON.stringify(it.f))) continue;
+      const next = [...acc, it.f];
+      if (next.length >= 2) {
+        for (const ws of [P(', or'), P('or')]) { const e = phraseAt(ctx, it.end, ws); if (e >= 0) for (const last of item(e)) { const all = [...next, last.f]; if (all.length >= 3 && !acc.some((x) => x.adventure === true) && it.f.adventure !== true && new Set(all.map((x) => JSON.stringify(x))).size === all.length) out.push({ end: last.end, frag: { anyOf: all }, weak: 1 }); } }
+      }
+      if (next.length < 3 && it.f.adventure !== true) { const e = phraseAt(ctx, it.end, P(',')); if (e >= 0) walk(e, next); }
+    }
+  };
+  walk(pos, []);
+  return out;
+}
+
 const W_OR_ARE_NAMED = P('or are named');
 
 /**
@@ -842,6 +1348,39 @@ function areOrNamed(ctx: HoleCtx, pos: number): Frag[] {
     const e = phraseAt(ctx, n.end, W_OR_ARE_NAMED);
     if (e < 0) continue;
     for (const nm of ctx.call('Name', e)) out.push({ end: nm.end, frag: { anyOf: [kinds, { name: nm.value as string }] }, weak: nm.weak ?? 0 });
+  }
+  return out;
+}
+
+const W_DOESNT_SHARE = [P("doesn't share"), P("don't share")]; // edh-next-41
+
+/**
+ * edh-next-41 (CR 205.3m, 608.2c; Radagast the Brown): "a creature card that doesn't share a creature type with a creature you control": no creature type of the object is a
+ * creature type of any object of the described set (`not` of the set form of `sharesWith`, rules/filter.ts reads a set as "some object of it"; a changeling shares every
+ * creature type, a card with no creature type shares none). Only the creature type (the one quality the cards print this way) and a singular noun phrase after "a" / "an".
+ */
+function notSharesCreatureType(ctx: HoleCtx, pos: number): Frag[] {
+  const out: Frag[] = [];
+  for (const ws of W_DOESNT_SHARE) {
+    const e = phraseAt(ctx, pos, ws);
+    if (e < 0) continue;
+    const a = phraseAt(ctx, e, P('a'));
+    if (a < 0) continue;
+    const k = phraseAt(ctx, a, P('creature type'));
+    const w = k >= 0 ? phraseAt(ctx, k, P('with')) : -1;
+    const t = w >= 0 ? ctx.toks[w]?.norm : undefined;
+    if (t !== 'a' && t !== 'an') continue;
+    for (const n of npAlts(ctx, w + 1)) {
+      if (n.number !== 'singular' || n.flags.some((x) => x !== 'zone-unstated')) continue;
+      out.push({ end: n.end, frag: { not: { sharesWith: { with: { ref: 'each', filter: n.filter }, quality: 'creatureType' } } }, ...(n.weak ? { weak: n.weak } : {}) });
+      // edh-next-130 (CR 205.3m; Volo, Guide to Monsters): "... with a creature you control or a creature card in your graveyard": with no object of EITHER description (the set of both)
+      const or = anyPhraseAt(ctx, n.end, [P('or a'), P('or an')]);
+      if (or >= 0) for (const m of npAlts(ctx, or)) {
+        if (m.number !== 'singular' || m.flags.some((x) => x !== 'zone-unstated')) continue;
+        const weak = (n.weak ?? 0) + (m.weak ?? 0);
+        out.push({ end: m.end, frag: { not: { sharesWith: { with: { ref: 'each', filter: { anyOf: [n.filter, m.filter] } }, quality: 'creatureType' } } }, ...(weak ? { weak } : {}) });
+      }
+    }
   }
   return out;
 }
@@ -872,10 +1411,21 @@ function notSameNameAs(ctx: HoleCtx, pos: number): Frag[] {
 
 const W_YOUVE_PUT_ONE_OR_MORE = P("you've put one or more");
 const W_COUNTERS_ON_THIS_TURN = P('counters on this turn');
+const W_YOUVE_PUT_A_COUNTER_ON_THIS_TURN = P("you've put a counter on this turn"); // trek-14
+
+/**
+ * edh-c-27 (CR 105.2, 205.2a; Glistening Deluge): "creatures that are green and/or white": the objects that are any of the colors listed ("and/or" is "or", the same filter as
+ * "green or white creatures", `colors`); plural only ("that are"), the colors by name.
+ */
+function areColors(ctx: HoleCtx, pos: number): Frag[] {
+  if (ctx.toks[pos]?.norm !== 'are') return [];
+  return colorMod(ctx, pos + 1).filter((c) => (c.frag.colors?.length ?? 0) >= 2).map((c) => ({ end: c.end, frag: c.frag }));
+}
 
 function relClause(ctx: HoleCtx, pos: number): Frag[] {
   const out: Frag[] = [];
   out.push(...areList(ctx, pos)); // FAST5 T49
+  out.push(...areColors(ctx, pos)); // edh-c-27
   out.push(...areOrNamed(ctx, pos)); // r5-mech
   for (const [ws, f] of REL) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: f }); }
   // std-rx12 (CR 122.6, 400.7): "each creature you control that you've put one or more +1/+1 counters on this turn" (Kid Loki): counters of that kind you put on it
@@ -887,9 +1437,12 @@ function relClause(ctx: HoleCtx, pos: number): Frag[] {
       if (e >= 0) out.push({ end: e, frag: { countersPutThisTurn: { kind: k.value as never, by: 'you' } } });
     }
   }
+  // trek-14 (CR 122.6, 400.7; La Forge, Thoughtful as Ever): "each permanent you control that you've put a counter on this turn": a counter of any kind you put on it this turn
+  const putAny = phraseAt(ctx, pos, W_YOUVE_PUT_A_COUNTER_ON_THIS_TURN);
+  if (putAny >= 0) out.push({ end: putAny, frag: { countersPutThisTurn: { kind: 'any', by: 'you' } } });
   out.push(...playerOfSharing(ctx, pos));
   for (const verb of ['has', 'have']) {
-    if (ctx.toks[pos]?.norm === verb) for (const f of featureAt(ctx, pos + 1, false)) out.push({ end: f.end, frag: f.frag });
+    if (ctx.toks[pos]?.norm === verb) for (const f of featureAtAll(ctx, pos + 1, false)) out.push({ end: f.end, frag: f.frag });
   }
   // r4-static (CR 715.1): "target card that has an Adventure" (Edgewall Inn), FAST5 T49's adventurer card
   if (ctx.toks[pos]?.norm === 'has') { const e = phraseAt(ctx, pos + 1, W_AN_ADVENTURE); if (e >= 0) out.push({ end: e, frag: { adventure: true } }); }
@@ -897,10 +1450,14 @@ function relClause(ctx: HoleCtx, pos: number): Frag[] {
   // so r4-cost's fixed "<spells> you cast that have an Adventure cost {1} less to cast" keeps its sentence
   if (ctx.toks[pos]?.norm === 'have') { const e = phraseAt(ctx, pos + 1, W_AN_ADVENTURE); if (e >= 0) out.push({ end: e, frag: { adventure: true }, weak: 1 }); }
   out.push(...notSameNameAs(ctx, pos)); // cloud std-dsk
+  out.push(...notSharesCreatureType(ctx, pos)); // edh-next-41
   out.push(...controlForms(ctx, pos));
   // CLOUD C5 (CR 607.2d, 608.2c): "Destroy all creatures that aren't of the chosen type" (Kindred Dominance): not of the type the linked choice chose
   const neg = ctx.toks[pos]?.norm;
   if (neg === "aren't" || neg === "isn't") for (const c of chosenOf(ctx, pos + 1)) out.push({ end: c.end, frag: { not: { chosen: c.value as NonNullable<ObjectFilter['chosen']> } } });
+  // edhd60 (CR 707.10, 601.2a; Errant, Street Artist): "a spell that wasn't cast": a spell on the stack that was never cast (a copy put on the stack; a copy of a card that is cast WAS cast, CR 707.12)
+  // D bundle 23: not before "from" ("that wasn't cast from its owner's hand" is edh-next-100's castFrom reading, Wash Away; read both and the sentence was ambiguous)
+  { const wc = phraseAt(ctx, pos, P("wasn't cast")); if (wc >= 0 && ctx.toks[wc]?.norm !== 'from') out.push({ end: wc, frag: { uncast: true } }); }
   // FAST4 T23 (CR 115.9b): "a spell that targets a creature": one of its targets is an object of that description (rules/filter.ts reads `targets`)
   const tg = phraseAt(ctx, pos, W_TARGETS_A);
   // FAST5 T45 (CR 115.9c): "a spell that targets only a single creature you control", "that targets only ~": exactly one different target, and it is that
@@ -908,12 +1465,21 @@ function relClause(ctx: HoleCtx, pos: number): Frag[] {
   if (to >= 0) {
     const sa = phraseAt(ctx, to, P('a single'));
     if (sa >= 0) for (const n of npAlts(ctx, sa)) if (n.number === 'singular' && n.head !== 'spell' && n.head !== 'ability' && n.filter.zone === undefined) out.push({ end: n.end, frag: { targetsOnly: { ref: 'each', filter: n.filter } } });
+    // edh-next-74 (CR 115.9c, 115.1; Radiate, Radiant Performer): "a single permanent or player": one different target, a permanent or any player
+    if (sa >= 0) {
+      const sp = phraseAt(ctx, sa, P('permanent or player'));
+      if (sp >= 0) out.push({ end: sp, frag: { targetsOnly: { ref: 'each', filter: { zone: 'battlefield' } }, targetsOnlyPlayer: true } });
+    }
     const se = phraseAt(ctx, to, P('~'));
     if (se >= 0) out.push({ end: se, frag: { targetsOnly: { ref: 'self' } } });
   }
   if (tg >= 0) {
     const art = ctx.toks[tg]?.norm;
-    if (art === 'a' || art === 'an') for (const n of npAlts(ctx, tg + 1)) if (n.number === 'singular' && n.head !== 'spell' && n.head !== 'ability' && n.filter.zone === undefined) out.push({ end: n.end, frag: { targets: { ref: 'each', filter: n.filter } } });
+    // edh-d-92 (CR 115.9b; Legolas, Master Archer): "a spell that targets a creature you don't control": the controller phrase after the targeted noun belongs to that noun (the
+    // relative clause "that targets ..." holds it), never to the spell ("a spell [that targets a creature] you don't control" is no reading: the caster's own spell): a shorter noun
+    // phrase that stops right before such a phrase is left out
+    const ctlAfter = (from: number, alts: readonly { end: number }[]): boolean => alts.some((m) => m.end > from && CONTROL_TAILS.some((w) => phraseAt(ctx, from, w) === m.end));
+    if (art === 'a' || art === 'an') { const ns = npAlts(ctx, tg + 1); for (const n of ns) if (n.number === 'singular' && n.head !== 'spell' && n.head !== 'ability' && n.filter.zone === undefined && !ctlAfter(n.end, ns)) out.push({ end: n.end, frag: { targets: { ref: 'each', filter: n.filter } } }); }
     // Standard round 4, r4-trig (CR 115.9b, 102.3; Danitha, Spear of Agony): "a spell that targets an opponent or a creature an opponent controls": one of its targets
     // is such a player or such an object (either description, `anyOf`); also a player alone ("that targets an opponent")
     const one = (p: number): { end: number; frag: ObjectFilter }[] => {
@@ -943,6 +1509,32 @@ function relClause(ctx: HoleCtx, pos: number): Frag[] {
       if (orPlayer >= 0) out.push({ end: orPlayer, frag: { anyOf: [x.frag, { targets: { ref: 'each', who: 'player' } }] } });
     }
   }
+  // edh-zones-13 (CR 608.2c; Pyre of Heroes): "a creature card that shares a creature type with the sacrificed creature and has mana value equal to 1 plus ..." (Birthing Ritual,
+  // Descendants' Fury): "and has / have" goes on with the same relative clause, one more feature of the same object. Weak (design 6.3 rule 2): any template that spells the
+  // clause out keeps its sentence.
+  const more: Frag[] = [];
+  for (const e of out) {
+    if (ctx.toks[e.end]?.norm !== 'and' || e.frag.sharesWith === undefined) continue;
+    for (const verb of ['has', 'have']) {
+      if (ctx.toks[e.end + 1]?.norm !== verb) continue;
+      // ... and "that creature" in it is the creature the clause just named, "the sacrificed creature" (the same reference, resolved once with it)
+      const withRef = e.frag.sharesWith.with as unknown as Record<string, unknown>;
+      const withAna = withRef['$anaphor'] as Record<string, unknown> | undefined;
+      const same = (v: unknown): unknown => {
+        if (Array.isArray(v)) return v.map(same);
+        if (typeof v !== 'object' || v === null) return v;
+        const o = v as Record<string, unknown>;
+        const a = o['$anaphor'] as Record<string, unknown> | undefined;
+        if (withAna !== undefined && a !== undefined && a['sort'] === 'object' && a['number'] === 'singular' && a['participle'] === undefined && a['head'] !== undefined && a['head'] === withAna['head'] && String(a['text']).startsWith('that ')) return JSON.parse(JSON.stringify(withRef));
+        return Object.fromEntries(Object.entries(o).map(([k, x]) => [k, same(x)]));
+      };
+      for (const f of featureAtAll(ctx, e.end + 2, false)) {
+        const merged = mergeFilter(e.frag, same(f.frag) as ObjectFilter);
+        if (merged !== null) more.push({ end: f.end, frag: merged, weak: (e.weak ?? 0) + (f.weak ?? 0) + 1 });
+      }
+    }
+  }
+  out.push(...more);
   return out;
 }
 
@@ -967,14 +1559,48 @@ function controlForms(ctx: HoleCtx, pos: number): Frag[] {
     const walker = anaphorObj({ sort: 'object', number: 'singular', head: 'planeswalker', text: 'that planeswalker' }) as ObjRef;
     out.push({ end: pp, frag: { anyOf: [{ controller: player }, { controller: { ref: 'controllerOf', object: walker } }] } });
   }
+  // edh-b-10 (CR 108.3): "owned by an opponent" / "owned by another player" (Kothophed): the owner is that player (another player is an opponent, CR 102.2)
+  const ownedBy = phraseAt(ctx, pos, W_OWNED_BY);
+  if (ownedBy >= 0) {
+    if (ctx.toks[ownedBy]?.norm === 'another' && ctx.toks[ownedBy + 1]?.norm === 'player') out.push({ end: ownedBy + 2, frag: { owner: 'opponent' } });
+    else for (const p of ctx.call('Player', ownedBy)) if (predOf(p.value as PlayerRef) === 'opponent' && ctx.toks[ownedBy]?.norm === 'an') out.push({ end: p.end, frag: { owner: 'opponent' } });
+  }
+  // edh-next-134 (CR 510.2, 120.1, 109.4; Admiral Beckett Brass): "controlled by a player who was dealt combat damage by three or more Pirates this turn": the controller was dealt
+  // combat damage this turn by N or more different sources of a description (rules/history.ts#combatDamageSourcesToPlayerThisTurn). Only "N or more" with N of two or more, and a plain
+  // description of the sources (no controller of their own, nothing that reads the history)
+  const dealtBy = phraseAt(ctx, pos, W_CONTROLLED_BY_PLAYER_DEALT_COMBAT_BY);
+  const atLeast = dealtBy >= 0 ? numberAt(ctx, dealtBy) : undefined;
+  if (atLeast !== undefined && atLeast >= 2 && ctx.toks[dealtBy + 1]?.norm === 'or' && ctx.toks[dealtBy + 2]?.norm === 'more') {
+    for (const f of ctx.call('Filter', dealtBy + 3)) {
+      const by = f.value as ObjectFilter;
+      if (!Object.keys(by).every((k) => k === 'types' || k === 'subtypes' || k === 'colors' || k === 'supertypes')) continue;
+      const e = phraseAt(ctx, f.end, W_THIS_TURN_F134);
+      if (e >= 0) out.push({ end: e, frag: { controllerDealtCombatDamageBy: { atLeast, by } } });
+    }
+  }
+  // edh-c-73 (CR 108.3, 109.4; Telim'Tor's Edict): "target permanent you own or control": owned by you, or controlled by you (either one)
+  const ooc = phraseAt(ctx, pos, W_YOU_OWN_OR_CONTROL);
+  if (ooc >= 0) out.push({ end: ooc, frag: { anyOf: [{ owner: 'you' }, { controller: 'you' }] } });
   // r4-copy (CR 108.3, 109.4): "target permanent you own but don't control" (Coveted Falcon): owned by you and controlled by another player
   const ob = phraseAt(ctx, pos, W_YOU_OWN_BUT_DONT_CONTROL);
   if (ob >= 0) out.push({ end: ob, frag: { owner: 'you', not: { controller: 'you' } } });
+  // edh-c-69 (CR 108.3, 109.4; Obelisk of Undoing): "target permanent you both own and control": owned and controlled by you (the same filter as "you own and control")
+  const both = phraseAt(ctx, pos, W_YOU_BOTH_OWN_AND_CONTROL_F);
+  if (both >= 0) out.push({ end: both, frag: { owner: 'you', controller: 'you' } });
+  // edh-c-54 (CR 108.3, 109.4, 102.2; Conjured Currency): "target permanent you neither own nor control": owned by another player and controlled by another player (another player is an opponent)
+  const neither = phraseAt(ctx, pos, W_YOU_NEITHER_OWN_NOR_CONTROL);
+  if (neither >= 0) out.push({ end: neither, frag: { owner: 'opponent', controller: 'opponent' } });
   return out;
 }
+const W_YOU_BOTH_OWN_AND_CONTROL_F = P('you both own and control'); // edh-c-69
 const W_BUT_DONT_OWN = P("but don't own");
+const W_OWNED_BY = P('owned by'); // edh-b-10
+const W_CONTROLLED_BY_PLAYER_DEALT_COMBAT_BY = P('controlled by a player who was dealt combat damage by'); // edh-next-134
+const W_THIS_TURN_F134 = P('this turn'); // edh-next-134
 const W_THAT_PLAYER_OR_PLANESWALKERS_CONTROLLER = P("that player or that planeswalker 's controller controls"); // p2-damage-3
 const W_YOU_OWN_BUT_DONT_CONTROL = P("you own but don't control");
+const W_YOU_OWN_OR_CONTROL = P('you own or control'); // edh-c-73
+const W_YOU_NEITHER_OWN_NOR_CONTROL = P('you neither own nor control'); // edh-c-54
 const W_YOU_OWN_IN_EXILE_AND_GY = P('you own in exile and in your graveyard'); // r5-mech
 
 function zoneForms(ctx: HoleCtx, pos: number): Frag[] {
@@ -993,6 +1619,15 @@ function zoneForms(ctx: HoleCtx, pos: number): Frag[] {
     if (prep === 'from' && zv.owner !== undefined && (or === 'or' || or === 'and/or') && second !== undefined && second !== zv.zone && OWN_ZONE_WORD[zv.zone] !== undefined) {
       out.push({ end: z.end + 2, frag: { zone: [zv.zone, second], owner: zv.owner } });
     }
+    // edh-next-75 (CR 400.1, 404.1, 408.1; Campfire): "commanders you own from the command zone and from your graveyard": a card in the command zone or in your own graveyard
+    // (the owner is the first reading's, stated with the noun: "you own"); the command zone first, as Oracle prints it
+    if (prep === 'from' && zv.zone === 'command' && zv.owner === undefined) {
+      const and = phraseAt(ctx, z.end, P('and from'));
+      if (and >= 0) for (const z2 of ctx.call('Zone', and)) {
+        const z2v = z2.value as { zone: ZoneName; owner?: PlayerPred };
+        if (z2v.zone === 'graveyard' && z2v.owner === 'you') out.push({ end: z2.end, frag: { zone: ['command', 'graveyard'], owner: 'you' } });
+      }
+    }
   }
   return out;
 }
@@ -1005,19 +1640,85 @@ const OWN_ZONE_WORD: Readonly<Record<string, ZoneName>> = { hand: 'hand', gravey
  */
 function abilitySourceForms(ctx: HoleCtx, pos: number): Frag[] {
   const out: Frag[] = [];
+  // edhd36 (CR 606.2, 113.7a; Verdant Command): "loyalty ability of a planeswalker": the source of the ability is a planeswalker (only this wording)
+  if (ctx.toks[pos]?.norm === 'of' && (ctx.toks[pos + 1]?.norm === 'a' || ctx.toks[pos + 1]?.norm === 'an') && ctx.toks[pos + 2]?.norm === 'planeswalker') out.push({ end: pos + 3, frag: { abilitySource: { types: ['Planeswalker'] } } });
+  // edh-next-131 (CR 113.7a, 205.4a, 903.3, 109.2; The Peregrine Dynamo): "from another legendary source that's not a commander": a legendary source other than the object that has the
+  // ability, that is not a commander (rules/filter.ts#abilitySourceMatches reads the source as it is, or as it last existed); only these exact words
+  const W131 = ['from', 'another', 'legendary', 'source', "that's", 'not', 'a', 'commander'];
+  if (W131.every((w, k) => ctx.toks[pos + k]?.norm === w)) out.push({ end: pos + W131.length, frag: { abilitySource: { supertypes: ['Legendary'], other: true, not: { commander: true } } } });
   if (ctx.toks[pos]?.norm !== 'from') return out;
   const art = ctx.toks[pos + 1]?.norm;
   if (art !== 'a' && art !== 'an') return out;
   const word = ctx.toks[pos + 2];
+  if (word !== undefined) {
+    // edhd43 (CR 113.7a, 205.2; Green Slime): "from an artifact or enchantment source": a source of either card type
+    if (ctx.toks[pos + 3]?.norm === 'or' && ctx.toks[pos + 5]?.norm === 'source' && word.kind === 'WORD') {
+      const a = ctx.vocab.types.get(word.norm);
+      const b = ctx.toks[pos + 4]?.kind === 'WORD' ? ctx.vocab.types.get(ctx.toks[pos + 4]!.norm) : undefined;
+      if (a !== undefined && b !== undefined && !a.plural && !b.plural && a.name !== b.name) out.push({ end: pos + 6, frag: { abilitySource: { types: [a.name, b.name] } } });
+    }
+  }
   if (word === undefined || word.kind !== 'WORD' || ctx.toks[pos + 3]?.norm !== 'source') return out;
   if (word.norm === 'colorless') out.push({ end: pos + 4, frag: { abilitySource: { colorless: true } } });
   const ty = ctx.vocab.types.get(word.norm);
   if (ty !== undefined && !ty.plural) out.push({ end: pos + 4, frag: { abilitySource: { types: [ty.name] } } });
+  // edhd36 (CR 113.7a, 205.2; Dissonant Wave): "from a noncreature source": a source that is not of the card type
+  const non = word.norm.startsWith('non') ? ctx.vocab.types.get(word.norm.slice(3)) : undefined;
+  if (non !== undefined && !non.plural) out.push({ end: pos + 4, frag: { abilitySource: { notTypes: [non.name] } } });
   return out;
 }
 
-/** One post-modifier at `pos`. */
+const W_EXCEPT_FOR = [P('except for'), P('except'), P('other than')]; // edh-replace-6: "creatures other than Werewolves and Wolves" (Moonmist), the same kinds list
+const W_AND_OR_EXCEPT = [P('and'), P('or')];
+/**
+ * edh-perms-9 (CR 205.2a, 205.3, 111.1; Elspeth Tirel): "all other permanents except for lands and tokens": the objects that are none of the kinds listed, the same filter
+ * as the negations before the noun ("nonland, nontoken permanents"). Plural bare card types, creature types and "tokens" only (nothing else is a kind that a list of
+ * exceptions can exclude here), two or three of them joined by "and" (or a comma and "and"). The phrase is weak (design 6.3 rule 2): the reading of "except" before
+ * "chosen this way" and the commander exception keep their sentences.
+ */
+function exceptForList(ctx: HoleCtx, pos: number): Frag[] {
+  const out: Frag[] = [];
+  const lead = anyPhraseAt(ctx, pos, W_EXCEPT_FOR);
+  if (lead < 0) return out;
+  const walk = (p: number, kinds: ObjectFilter[]): void => {
+    for (const a of npAlts(ctx, p, { preOnly: true })) {
+      if (a.number !== 'plural' || a.flags.length > 0 || (a.head !== 'type' && a.head !== 'token')) continue;
+      const keys = Object.keys(a.filter).filter((k) => (a.filter as Record<string, unknown>)[k] !== undefined);
+      const plain = a.head === 'token' ? keys.length === 1 && a.filter.token === true : keys.length === 1 && (keys[0] === 'types' || keys[0] === 'subtypes') && (a.filter[keys[0] as 'types' | 'subtypes'] ?? []).length === 1;
+      if (!plain) continue;
+      const next = [...kinds, a.filter];
+      const frag: ObjectFilter = {};
+      for (const k of next) {
+        if (k.token === true) frag.token = false;
+        if (k.types !== undefined) frag.notTypes = [...(frag.notTypes ?? []), ...k.types];
+        if (k.subtypes !== undefined) frag.notSubtypes = [...(frag.notSubtypes ?? []), ...k.subtypes];
+      }
+      if (next.length >= 2) out.push({ end: a.end, frag, weak: 1 });
+      if (next.length < 3) {
+        for (const sep of W_AND_OR_EXCEPT) { const e = phraseAt(ctx, a.end, sep); if (e >= 0) walk(e, next); }
+        if (ctx.toks[a.end]?.norm === ',') { walk(a.end + 1, next); if (ctx.toks[a.end + 1]?.norm === 'and') walk(a.end + 2, next); }
+      }
+    }
+  };
+  walk(lead, []);
+  return out;
+}
+
+/**
+ * edh-next-93 (CR 115.9b, 608.2c; Bane's Contingency): the "targets ..." clause of a relative clause read at `pos` (the word "targets"), for a condition about an object ("If that spell
+ * targets a commander you control"): the same readings as "a spell that targets ...", only those that say what is targeted (`targets`, `targetsOnly`).
+ */
+export function targetsClauseAt(ctx: HoleCtx, pos: number): Frag[] {
+  if (ctx.toks[pos]?.norm !== 'targets') return [];
+  return relClause(ctx, pos).filter((f) => f.frag.targets !== undefined || f.frag.targetsOnly !== undefined || (f.frag.anyOf?.length ?? 0) > 0 && f.frag.anyOf!.every((x) => x.targets !== undefined));
+}
+
+/** One post-modifier at `pos`, as other holes read it (a bare "with the greatest <stat>" is left to the noun phrase that fills its set, `postModAtAll`). */
 export function postModAt(ctx: HoleCtx, pos: number): Frag[] {
+  return postModAtAll(ctx, pos).filter((f) => !JSON.stringify(f.frag).includes(HEAD_SET));
+}
+
+function postModAtAll(ctx: HoleCtx, pos: number): Frag[] {
   const out: Frag[] = [];
   out.push(...controlForms(ctx, pos));
   out.push(...zoneForms(ctx, pos));
@@ -1026,49 +1727,153 @@ export function postModAt(ctx: HoleCtx, pos: number): Frag[] {
   if (exGy >= 0) out.push({ end: exGy, frag: { owner: predOf({ ref: 'you' }), zone: ['exile', 'graveyard'] } });
   out.push(...abilitySourceForms(ctx, pos)); // FAST5 T45
   const w = phraseAt(ctx, pos, W_WITH);
-  if (w >= 0) for (const f of featureAt(ctx, w, false)) out.push({ end: f.end, frag: f.frag, ...(f.weak ? { weak: f.weak } : {}) });
+  if (w >= 0) for (const f of featureAtAll(ctx, w, false)) out.push({ end: f.end, frag: f.frag, ...(f.weak ? { weak: f.weak } : {}) });
+  // edh-next-126 (CR 202.3, 201.2; Light-Paws, Emperor's Voice): "an Aura card with mana value less than or equal to that Aura and with a different name than each Aura you control": "and
+  // with" adds a second feature of the same object (both must hold). Weak (design 6.3 rule 2): a template that spells the second clause out keeps its sentence.
+  if (w >= 0) {
+    for (const f of featureAtAll(ctx, w, false)) {
+      const aw = phraseAt(ctx, f.end, W_AND_WITH);
+      if (aw < 0) continue;
+      for (const g of featureAtAll(ctx, aw, false)) {
+        const merged = mergeFilter(f.frag, g.frag);
+        if (merged !== null) out.push({ end: g.end, frag: merged, weak: (f.weak ?? 0) + (g.weak ?? 0) + 1 });
+      }
+    }
+  }
   // Cloud r3-repl: "up to two target creature cards each with mana value 2 or less" (Dewdrop Cure): "each with" after a plural noun is "with", a property of each
   // object (not of the set: "with different names" keeps its own reading above)
   const eachWith = phraseAt(ctx, pos, W_EACH_WITH);
-  if (eachWith >= 0) for (const f of featureAt(ctx, eachWith, false)) out.push({ end: f.end, frag: f.frag, ...(f.weak ? { weak: f.weak } : {}) });
+  if (eachWith >= 0) for (const f of featureAtAll(ctx, eachWith, false)) out.push({ end: f.end, frag: f.frag, ...(f.weak ? { weak: f.weak } : {}) });
   // FAST5 T42 (CR 201.2): "creature cards with different names": not a property of one card but of the set chosen, so it adds nothing to the filter and leaves the flag
   // `different-names`; only the target phrase that can state it (parser/holes/object.ts) takes the flag, anything else is manual (parser/lower/normalize.ts)
   if (w >= 0) { const dn = phraseAt(ctx, w, W_DIFFERENT_NAMES); if (dn >= 0) out.push({ end: dn, frag: {}, flags: ['different-names'] }); }
+  // edh-b-4 (CR 122.1; Slurrk, All-Ingesting): "each creature you control that has a +1/+1 counter on it": one object with a counter of a kind on it, the same as "with" (a counter alone)
+  const thatHas = phraseAt(ctx, pos, W_THAT_HAS);
+  if (thatHas >= 0) for (const f of featureAtAll(ctx, thatHas, false)) if (f.frag.counters !== undefined && Object.keys(f.frag).length === 1) out.push({ end: f.end, frag: f.frag, ...(f.weak ? { weak: f.weak } : {}) });
+  // edh-c-52 (CR 122.1; Coiling Stalker): "target creature you control that doesn't have a +1/+1 counter on it": no counter of the kind on it, the same as "without a +1/+1 counter on it"
+  const thatDoesnt = phraseAt(ctx, pos, W_THAT_DOESNT_HAVE);
+  if (thatDoesnt >= 0) for (const f of featureAt(ctx, thatDoesnt, true)) if (f.frag.not?.counters !== undefined && Object.keys(f.frag).length === 1) out.push({ end: f.end, frag: f.frag, ...(f.weak ? { weak: f.weak } : {}) });
+  // edh-next-92 (CR 702, 205.3; Path of Mettle): "each creature that doesn't have first strike, double strike, vigilance, or haste" / "creatures that don't have flying": the same none-of-them
+  // filter as "without <keywords>" (`notKeyword`), said as a relative clause
+  for (const w2 of [W_THAT_DOESNT_HAVE, W_THAT_DONT_HAVE]) {
+    const td = phraseAt(ctx, pos, w2);
+    if (td >= 0) for (const f of featureAt(ctx, td, true)) if (f.frag.notKeyword !== undefined && Object.keys(f.frag).length === 1) out.push({ end: f.end, frag: f.frag, ...(f.weak ? { weak: f.weak } : {}) });
+  }
+  // edh-c-20 (CR 208.1; Gilt-Leaf Winnower): "target non-Elf creature whose power and toughness aren't equal"
+  const pne = phraseAt(ctx, pos, P("whose power and toughness aren't equal"));
+  if (pne >= 0) out.push({ end: pne, frag: { powerNotEqualToughness: true } });
   const wo = phraseAt(ctx, pos, W_WITHOUT);
-  if (wo >= 0) for (const f of featureAt(ctx, wo, true)) out.push({ end: f.end, frag: f.frag, ...(f.weak ? { weak: f.weak } : {}) });
+  if (wo >= 0) for (const f of featureAtAll(ctx, wo, true)) out.push({ end: f.end, frag: f.frag, ...(f.weak ? { weak: f.weak } : {}) });
   const nm = phraseAt(ctx, pos, W_NAMED);
   if (nm >= 0) for (const n of ctx.call('Name', nm)) out.push({ end: n.end, frag: { name: n.value as string }, weak: n.weak ?? 0 });
+  // edh-zones-13 (CR 201.2; Tiamat, Burning-Rune Demon): "Dragon cards not named Tiamat": none of the objects has that name (ObjectFilter.notName), one name
+  const nnm = phraseAt(ctx, pos, W_NOT_NAMED);
+  if (nnm >= 0) for (const n of ctx.call('Name', nnm)) out.push({ end: n.end, frag: { notName: n.value as string }, weak: n.weak ?? 0 });
   for (const ws of W_ENCHANTED_BY_YOUR_AURA) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { enchantedBy: 'you' } }); } // FAST5 T68
+  out.push(...exceptForList(ctx, pos)); // edh-perms-9
   const th = phraseAt(ctx, pos, W_THAT);
   if (th >= 0) out.push(...relClause(ctx, th));
+  // edh-c-61 (CR 120.1, 120.3; Inflame): the bare participle, "each creature dealt damage this turn": was dealt damage (the same filter as "that was dealt damage this turn")
+  const bareDealt = phraseAt(ctx, pos, W_BARE_DEALT_DAMAGE);
+  if (bareDealt >= 0) out.push({ end: bareDealt, frag: { dealtDamageThisTurn: true } });
+  // edh-perms-20 (CR 603.10a, 608.2h, 303.4; Hateful Eidolon): "an Aura you controlled that was attached to it": an Aura that was attached to the object as it left the battlefield (its last
+  // known information, LastKnown.attached.ids) and that its controller then, you, controlled; it may have gone to a graveyard since, so it is looked for in every zone
+  const yca = phraseAt(ctx, pos, W_YOU_CONTROLLED_ATTACHED);
+  if (yca >= 0 && ctx.toks[yca]?.norm === 'it') out.push({ end: yca + 1, frag: { controller: 'you', zone: 'any', wasAttachedTo: anaphorObj({ sort: 'object', number: 'singular', text: 'it' }) as ObjRef } });
   // CLOUD std-ecl (CR 205.3m, 115.1): "two target creature cards that share a creature type from your graveyard": like "with different names", a property of the SET
   // chosen, so it adds nothing to the filter and leaves the flag `shared-creature-type` that only a target phrase of exactly two takes (parser/holes/object.ts)
+  // edh-d-59 (CR 205.3m, 115.1, 601.2c; Aphetto Dredging): "up to three target creature cards of the creature type of your choice from your graveyard": one creature type is chosen and every target
+  // has it, which is a creature type in common (`TargetSpec.sharedCreatureType`, a changeling has every type); unlike "that share a creature type" it takes any number of targets
+  // edh-d-96 (CR 304.1, 307.1, 603.10a; Gale, Waterdeep Prodigy): "target card of the other type from your graveyard" in the effect of a cast trigger whose spell is "an instant or sorcery
+  // spell": of instant and sorcery, the type the triggering spell does not have (`sharesWith` quality `otherSpellType`, read against the event's spell). Only in an instruction of an effect
+  // (a trigger's own pattern has no event yet); where the ability has no cast event the lint refuses the role (model/lint-roles.ts), so the sentence stays manual
+  const oot = ctx.discourse === undefined ? -1 : phraseAt(ctx, pos, W_OF_THE_OTHER_TYPE);
+  if (oot >= 0) out.push({ end: oot, frag: { sharesWith: { with: { ref: 'event', role: 'spell' }, quality: 'otherSpellType' } } });
+  const oct = phraseAt(ctx, pos, W_OF_THE_CREATURE_TYPE_OF_YOUR_CHOICE);
+  if (oct >= 0) out.push({ end: oct, frag: {}, flags: ['shared-creature-type', 'chosen-creature-type'] });
   if (th >= 0) { const sc = phraseAt(ctx, th, W_SHARE_A_CREATURE_TYPE); if (sc >= 0) out.push({ end: sc, frag: {}, flags: ['shared-creature-type'] }); }
+  // edh-top-3 (CR 202.3, 115.1): "target creature cards that each have a different mana value X or less" (Agadeem's Awakening): the comparison is the filter of each card, and
+  // "a different mana value" a property of the SET chosen (flag `different-mv`, taken only by the target phrase of parser/holes/object.ts, like "with different names")
+  if (th >= 0) for (const ws of [W_EACH_HAVE_A_DIFFERENT_MV, W_HAVE_A_DIFFERENT_MV]) { const e = phraseAt(ctx, th, ws); if (e >= 0) for (const c of cmpAt(ctx, e)) out.push({ end: c.end, frag: { manaValue: c.cmp }, flags: ['different-mv'], ...(c.weak ? { weak: c.weak } : {}) }); }
+  // edh-next-76 (CR 208.1; Catapult Fodder): "three or more creatures that each have toughness greater than their power": each creature's own two values (the plural of "with toughness greater than its power")
+  if (th >= 0) { const e = phraseAt(ctx, th, W_EACH_HAVE_TGP); if (e >= 0) out.push({ end: e, frag: { toughnessGreaterThanPower: true } }); }
   // FAST5 T57 (CR 105.2): "target creature or planeswalker that's green or blue": the colors after the nouns say what the colors before them do (one of them; an
   // object that is several colors has each of them); the reading of the other postmodifiers and of "that" is unchanged
   const ths = phraseAt(ctx, pos, W_THATS);
   if (ths >= 0) for (const c of colorMod(ctx, ths)) out.push({ end: c.end, frag: c.frag });
+  // edh-c-45 (CR 105.2; Sanctifier en-Vec): the plural, "exile all cards that are black or red from all graveyards", reads the colors as "all black or red cards" (the renderer says both, np.ts)
+  const thatAre = phraseAt(ctx, pos, W_THAT_ARE_COLORS);
+  if (thatAre >= 0) for (const c of colorMod(ctx, thatAre)) out.push({ end: c.end, frag: c.frag });
+  // edh-zones-3 (CR 700.6): "that's not historic" / "that's not legendary" (the contraction of "that is not")
+  if (ths >= 0) { const nl = phraseAt(ctx, ths, W_NOT_LEGENDARY); if (nl >= 0) out.push({ end: nl, frag: NOT_LEGENDARY }); const nh = phraseAt(ctx, ths, W_NOT_HISTORIC); if (nh >= 0) out.push({ end: nh, frag: NOT_HISTORIC }); }
   if (ths >= 0) out.push(...thatsKinds(ctx, ths)); // std-re
+  if (ths >= 0) out.push(...thatsCardTypes(ctx, ths)); // edh-zones-12
+  if (ths >= 0) out.push(...thatsTypeOrSubtype(ctx, ths)); // edh-zones-19
+  if (ths >= 0) out.push(...thatsTypeOrMv(ctx, ths)); // edh-d-76
+  if (ths >= 0) out.push(...thatsCardList(ctx, ths)); // edh-d-17
+  // edh-d-51 (CR 105.2; Iridian Maelstrom): "each creature that isn't all colors": fewer than all five colors (`allColors: false`)
+  for (const ws of W_NOT_ALL_COLORS) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { allColors: false } }); }
+  // edh-d-86 (CR 205.2a; Rendmaw, Creaking Nest): "a card with two or more card types": at least that many card types (`minCardTypes`), two to four
+  for (const [ws, n] of W_MIN_CARD_TYPES) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { minCardTypes: n } }); }
+  // edh-perms-7 (CR 205.3m; Swarmyard Massacre): "each creature that isn't an Insect, Rat, Spider, or Squirrel": none of the creature types listed (`notSubtypes`)
+  if (th >= 0) {
+    for (const ws of W_ISNT) {
+      const e = phraseAt(ctx, th, ws);
+      if (e < 0) continue;
+      // edh-cast-8 (CR 205.3m; Heliod, the Radiant Dawn): one kind, "enchantment card that isn't a God"
+      const art = ctx.toks[e]?.norm;
+      if (art === 'a' || art === 'an') for (const m of multiAt(ctx, e + 1, ctx.vocab.subtypes)) if (!m.entry.plural) out.push({ end: m.end, frag: { notSubtypes: [m.entry.name] }, weak: 1 });
+      for (const k of thatsKinds(ctx, e)) {
+        const any = k.frag.anyOf;
+        if (any !== undefined && any.every((a) => Object.keys(a).length === 1 && a.subtypes?.length === 1)) out.push({ end: k.end, frag: { notSubtypes: any.map((a) => a.subtypes![0]!) }, weak: 1 }); // weak (design 6.3 rule 2): a template that already spells out "that isn't a A, B, or C" (Summon: Leviathan) keeps its sentence
+      }
+    }
+  }
+  // edh-combat-2 (CR 303.4b, 301.5; Reyav, Master Smith): "a creature you control that's enchanted or equipped"
+  if (ths >= 0) { const oe = phraseAt(ctx, ths, P('enchanted or equipped')); if (oe >= 0) out.push({ end: oe, frag: ENCHANTED_OR_EQUIPPED }); }
+  // edh-c-55 (CR 303.4b; Necromancer's Magemark): "a creature you control that's enchanted" (not the start of "enchanted or equipped")
+  if (ths >= 0) { const en = phraseAt(ctx, ths, P('enchanted')); if (en >= 0 && ctx.toks[en]?.norm !== 'or') out.push({ end: en, frag: { enchanted: true } }); }
   // CLOUD std-msh (CR 506.5): "target creature you control that's attacking alone" (Crowd of True Believers): attacking, and no other creature is
   for (const ws of W_ATTACKING_ALONE) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { attackingAlone: true } }); }
+  // edh-c-69 (CR 506.4, 509.1; Gideon's Defeat): "target white creature that's attacking or blocking": the same filter as "attacking or blocking white creature"
+  for (const ws of W_THATS_ATTACKING_OR_BLOCKING) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { anyOf: [{ attacking: true }, { blocking: true }] } }); }
   // r4-static (CR 508.1b, 102.3): "each creature that's attacking one of your opponents" (Oviya): attacking a player who is an opponent (rules/filter.ts reads the
   // defender as a player, never a planeswalker or battle)
   for (const ws of W_ATTACKING_OPPONENT) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { attacking: { defender: 'opponent' } } }); }
+  for (const ws of W_ATTACKING_OPPONENT_OR_WALKER) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { attacking: { defender: 'opponent', orPlaneswalker: true } } }); }
   // p2-combat-flow-1 (CR 506.3, 508.1b): "that's attacking you": attacking the player you (rules/filter.ts reads the defender as a player, as above)
   for (const ws of W_ATTACKING_YOU) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { attacking: { defender: 'you' } } }); }
+  for (const ws of W_ATTACKING_ENCHANTED) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { attacking: { defender: { ref: 'enchantedPlayer' } } } }); }
   // pc-combat-3 (CR 506.3, 508.1b; Soul Snare): "target creature that's attacking you or a planeswalker you control": attacking you, or a planeswalker you control
   for (const ws of W_ATTACKING_YOU_OR_WALKER) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { attacking: { defender: 'you', orPlaneswalker: true } } }); }
+  // edh-players-12 (CR 506.3, 508.1b): "creatures attacking them": the player is a pronoun (parser/lower/anaphora.ts#groupChooser reads it for a group's step, else it stays manual)
+  for (const [ws, text] of W_ATTACKING_THEM) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { attacking: { defender: anaphorObj({ sort: 'player', number: 'singular', head: 'player', text }) as PlayerRef } } }); }
   // CLOUD std-misc (CR 105.2; Ancient Cornucopia): "a spell that's one or more colors" is a spell that is not colorless
   if (ths >= 0) { const oc = phraseAt(ctx, ths, W_ONE_OR_MORE_COLORS); if (oc >= 0) out.push({ end: oc, frag: { colorless: false } }); }
+  // edh-players-2 (CR 105.2; All Is Dust): the plural, "permanents that are one or more colors", is the same filter (the renderer already says both)
+  if (th >= 0) { const oc = phraseAt(ctx, th, W_ARE_ONE_OR_MORE_COLORS); if (oc >= 0) out.push({ end: oc, frag: { colorless: false } }); }
   // Cloud std-eoe (CR 202.3): "with mana value of the chosen quality": the parity an earlier "Choose odd or even." of the same ability chose (parser/lower/links.ts)
   const mq = phraseAt(ctx, pos, W_MV_CHOSEN_QUALITY);
   if (mq >= 0) out.push({ end: mq, frag: { chosen: { link: '$link', quality: 'oddEven' } } });
+  // edh-next-40 (CR 202.3; Twins of Discord): "with mana value of that quality" is the same parity ("Whenever you attack, choose odd or even. Creatures with mana value of that quality can't block this turn.")
+  const tq = phraseAt(ctx, pos, W_MV_THAT_QUALITY);
+  if (tq >= 0) out.push({ end: tq, frag: { chosen: { link: '$link', quality: 'oddEven' } } });
+  // edh-c-78 (CR 202.3; Ashling's Prerogative): "without mana value of the chosen quality": the other parity
+  const nmq = phraseAt(ctx, pos, W_MV_NOT_CHOSEN_QUALITY);
+  if (nmq >= 0) out.push({ end: nmq, frag: { not: { chosen: { link: '$link', quality: 'oddEven' } } } });
+  // edh-d-95 (CR 208.1, 607.2d; Zimone's Hypothesis): "with power of the chosen quality": the parity of the power, of the one earlier "choose odd or even" (parser/lower/links.ts reads it from that choice)
+  const pq = phraseAt(ctx, pos, W_POWER_CHOSEN_QUALITY);
+  if (pq >= 0) out.push({ end: pq, frag: { chosen: { link: '$link', quality: 'oddEvenPower' } } });
   const ch = phraseAt(ctx, pos, P('of the chosen'));
   if (ch >= 0) for (const [ws, quality] of CHOSEN) { const e = phraseAt(ctx, ch, ws); if (e >= 0) out.push({ end: e, frag: { chosen: { link: '$link', quality } } }); }
   // FAST5 T67 (CR 608.2c-d): "for each creature you control of that type": the type an earlier "Choose a creature type." of the same ability chose. The kind
   // ('$type': creature, card or land type) and the link are the earlier choice's (parser/lower/links.ts); with no such choice the placeholder makes it manual
   const tt = phraseAt(ctx, pos, W_OF_THAT_TYPE);
   if (tt >= 0) out.push({ end: tt, frag: { chosen: { link: '$link', quality: '$type' as never } } }); // the placeholder kind is replaced by the links pass
+  // edh-players-8 (CR 607.2d, 608.2c-d; Skrelv): "creatures of that color": the color an earlier "Choose a color." of the same ability chose (the link and kind are the earlier choice's,
+  // parser/lower/links.ts; with no such choice the placeholder makes it manual)
+  const tc = phraseAt(ctx, pos, W_OF_THAT_COLOR);
+  if (tc >= 0) out.push({ end: tc, frag: { chosen: { link: '$link', quality: 'color' } } });
   const ot = phraseAt(ctx, pos, P('other than ~'));
   if (ot >= 0) out.push({ end: ot, frag: { other: true } });
   // FAST5 T59 (CR 115.3, 608.2c): "target creature you control other than that creature" (Pawpatch Recruit): not the object an earlier phrase or the trigger's event
@@ -1080,22 +1885,55 @@ export function postModAt(ctx: HoleCtx, pos: number): Frag[] {
     for (const o of ctx.call('Obj', otherThan)) {
       const info = (o.value as { $anaphor?: { sort?: string; number?: string; head?: string } }).$anaphor;
       if (info?.sort === 'object' && info.number === 'singular' && info.head !== undefined) out.push({ end: o.end, frag: { not: { is: o.value as ObjRef } } });
+      // edh-perms-18 (CR 109.2, 608.2c; Sorin of House Markov): "a white permanent other than that creature or ~": not that object and not the source itself (FAST5 T78's reading as a hole;
+      // weak, design 6.3 rule 2: t78's own template keeps its sacrifice sentence)
+      if (info?.sort === 'object' && info.number === 'singular' && info.head !== undefined && ctx.toks[o.end]?.norm === 'or' && ctx.toks[o.end + 1]?.kind === 'SELF') {
+        out.push({ end: o.end + 2, frag: { not: { anyOf: [{ is: o.value as ObjRef }, { self: true }] } }, weak: 1 });
+      }
+    }
+  }
+  // edh-d-12 (CR 205.4a, 205.2, 109.2; Surgical Extraction): "target card in a graveyard other than a basic land card": not an object that is one of the plain kind said after
+  // "other than a/an" (card types, supertypes and subtypes only, one noun, no further modifier); the whole filter before it holds. Weak (design 6.3 rule 2): the readings of "other than
+  // that <noun>" and of the attached host keep their sentences.
+  if (otherThan >= 0 && (ctx.toks[otherThan]?.norm === 'a' || ctx.toks[otherThan]?.norm === 'an')) {
+    for (const a of npAlts(ctx, otherThan + 1, { preOnly: true })) {
+      if (a.number !== 'singular' || a.flags.some((x) => x !== 'zone-unstated')) continue;
+      const keys = Object.keys(a.filter).filter((k) => (a.filter as Record<string, unknown>)[k] !== undefined);
+      if (keys.length === 0 || keys.some((k) => k !== 'types' && k !== 'supertypes' && k !== 'subtypes' && k !== 'isCard')) continue;
+      const { isCard: _card, ...kind } = a.filter; // a card of the described kind (a graveyard holds no token, CR 111.7)
+      out.push({ end: a.end, frag: { not: kind }, weak: 1 });
     }
   }
   // FAST4 T33: "target creature you control other than enchanted creature": not the object the source is attached to (CR 303.4, 301.5)
   for (const ws of W_OTHER_THAN_ATTACHED) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { attachedToSource: false } }); }
   // CLOUD std-msh (CR 301.5, 303.4): "the number of Equipment attached to ~", "each Aura attached to it": attached to that one object as the filter is read
   // (`attachedToObject`, FAST4 T22's field, rules/filter.ts)
-  const att = phraseAt(ctx, pos, W_ATTACHED_TO);
+  // edh-perms-2 (CR 301.5, 303.4; Sage's Reverie): also said with the relative pronoun, "each Aura you control that's attached to a creature"
+  const att = anyPhraseAt(ctx, pos, [W_ATTACHED_TO, ...W_THATS_ATTACHED_TO]);
   if (att >= 0) for (const o of ctx.call('Obj', att)) if (isAttachHost(o.value)) out.push({ end: o.end, frag: { attachedToObject: o.value }, ...(o.flags ? { flags: o.flags } : {}) });
+  // edh-d-24 (CR 303.4a, 702.5a, 702.5d; Sovereigns of Lost Alara, Auratouched Mage): "an Aura card that could enchant that creature": the Aura's enchant restriction accepts that one permanent
+  // as the filter is read (`couldEnchant`, rules/filter.ts; no Aura with an enchant restriction the engine does not understand matches)
+  for (const ws of W_COULD_ENCHANT) {
+    const e = phraseAt(ctx, pos, ws);
+    if (e >= 0) for (const o of ctx.call('Obj', e)) if (isAttachHost(o.value)) out.push({ end: o.end, frag: { couldEnchant: o.value }, ...(o.flags ? { flags: o.flags } : {}) });
+  }
   // p2-combat-flow-1 (CR 509.1g, 506.4): "each creature blocking it" (Plague Wight): blocking that one object as the filter is read (`blockingObject`, FAST3 T18's
   // field, rules/filter.ts); the same hosts as "attached to it" (this object, an object named earlier, enchanted or equipped creature)
   const blk = phraseAt(ctx, pos, W_BLOCKING);
+  // edh-d-12 (CR 509.1g, 506.4; Labyrinth Raptor): the relative clause, "a creature that's blocking it" / "each creature that is blocking this creature": the same filter as the participle
+  for (const ws of W_THATS_BLOCKING) {
+    const e = phraseAt(ctx, pos, ws);
+    if (e >= 0) for (const o of ctx.call('Obj', e)) if (isAttachHost(o.value)) out.push({ end: o.end, frag: { blockingObject: o.value }, weak: (o.weak ?? 0) + 1, ...(o.flags ? { flags: o.flags } : {}) });
+  }
   // weak (design 6.3 rule 2): FAST3 T18's "for each creature blocking it" templates keep their sentences
   if (blk >= 0) for (const o of ctx.call('Obj', blk)) if (isAttachHost(o.value)) out.push({ end: o.end, frag: { blockingObject: o.value }, weak: (o.weak ?? 0) + 1, ...(o.flags ? { flags: o.flags } : {}) });
   // p2-combat-flow-1 (CR 509.1g-h): "all creatures blocked by ~" (Wall of Nets), "each creature blocking or blocked by ~" (Kjeldoran Frostbeast), same hosts
   const bby = phraseAt(ctx, pos, W_BLOCKED_BY);
   if (bby >= 0) for (const o of ctx.call('Obj', bby)) if (isAttachHost(o.value)) out.push({ end: o.end, frag: { blockedByObject: o.value }, ...(o.flags ? { flags: o.flags } : {}) });
+  // edh-top-3 (CR 509.1g-h, 506.4; Tinder Wall): "target creature it's blocking": the attacking creature that object blocks, as the filter is read (`blockedByObject`); "it" is the
+  // object a pronoun names (resolved by the anaphora pass like any "it")
+  for (const ws of W_SELF_BLOCKING) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { blockedByObject: { ref: 'self' } } }); }
+  for (const ws of W_IT_BLOCKING) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, frag: { blockedByObject: anaphorObj({ sort: 'object', number: 'singular', text: 'it' }) as ObjRef } }); }
   for (const ws of W_BLOCKING_OR_BLOCKED_BY) {
     const e = phraseAt(ctx, pos, ws);
     if (e >= 0) for (const o of ctx.call('Obj', e)) if (isAttachHost(o.value)) out.push({ end: o.end, frag: { blockingOrBlockedBy: o.value }, ...(o.flags ? { flags: o.flags } : {}) });
@@ -1116,9 +1954,40 @@ export function postModAt(ctx: HoleCtx, pos: number): Frag[] {
       out.push({ end: f.end, frag: { attachedToObject: { ref: 'each', filter: host } }, ...(weak ? { weak } : {}), ...(f.flags ? { flags: f.flags } : {}) });
     }
   }
+  // edh-perms-14 (CR 303.4, 301.5; Umbra Mystic): "Auras attached to permanents you control" / "Equipment attached to creatures you control": attached to any one of a plural description
+  // of permanents (at most a card type, and the controller), the same field as the singular host above
+  if (att >= 0 && article !== 'a' && article !== 'an') {
+    for (const f of ctx.call('Filter', att)) {
+      const host = f.value as ObjectFilter;
+      if (host.controller === undefined || !Object.keys(host).every((k) => k === 'types' || k === 'controller') || (host.types !== undefined && !isAttachHostKind({ ...host }))) continue;
+      out.push({ end: f.end, frag: { attachedToObject: { ref: 'each', filter: host } }, ...(f.weak ? { weak: f.weak } : {}), ...(f.flags ? { flags: f.flags } : {}) });
+    }
+  }
   // FAST3 T14: "a creature dealt damage by ~ this turn" (Sengir Vampire): damaged this turn by the object itself (CR 120.1)
   const dd = phraseAt(ctx, pos, W_DEALT_DAMAGE_BY_SELF);
   if (dd >= 0) out.push({ end: dd, frag: { dealtDamageBySourceThisTurn: true } });
+  // edh-c-113 (CR 120.1, 301.5, 400.7; Unscythe, Killer of Kings): "a creature dealt damage by equipped creature this turn": by the creature the Equipment is attached to
+  const de = phraseAt(ctx, pos, W_DEALT_DAMAGE_BY_EQUIPPED);
+  if (de >= 0) out.push({ end: de, frag: { dealtDamageByAttachedThisTurn: true } });
+  // edh-c-48 (CR 120.1, 400.7; Kumano Faces Kakkazan): "a creature dealt damage this turn by a source you controlled": damaged this turn by a source its controller controlled
+  const dy = phraseAt(ctx, pos, W_DEALT_DAMAGE_BY_YOUR_SOURCE);
+  if (dy >= 0) out.push({ end: dy, frag: { dealtDamageByYourSourceThisTurn: true } });
+  // edh-next-130 (CR 120.1, 400.7, 603.10a; Shelob, Child of Ungoliant): "another creature dealt damage this turn by a Spider you controlled": damaged this turn by a source of that
+  // subtype (at most a card type with it) that "you" controlled as it dealt the damage (the `source.` facts of the damage entry). A bare head only: the controller is the past tense
+  // "you controlled", never "you control"
+  const dt = anyPhraseAt(ctx, pos, W_DEALT_DAMAGE_THIS_TURN_BY);
+  if (dt >= 0) {
+    for (const m of multiAt(ctx, dt, ctx.vocab.subtypes)) {
+      if (m.entry.plural && !m.entry.both) continue;
+      let q = m.end;
+      const tt = ctx.toks[q];
+      const ty = tt !== undefined && tt.kind === 'WORD' ? ctx.vocab.types.get(tt.norm) : undefined;
+      const types = ty !== undefined && !(ty.plural && !ty.both) ? [ty.name] : undefined;
+      if (types !== undefined) q++;
+      const e = phraseAt(ctx, q, W_YOU_CONTROLLED);
+      if (e >= 0) out.push({ end: e, frag: { dealtDamageThisTurnBy: { subtypes: [m.entry.name], ...(types ? { types } : {}), controller: 'you' } } });
+    }
+  }
   // Standard round 5, r5-trig (CR 702.122c; Balthier and Fran): "a Vehicle crewed by ~ this turn": its crew cost was paid this turn by tapping the object itself
   const cb = phraseAt(ctx, pos, W_CREWED_BY_SELF);
   if (cb >= 0) out.push({ end: cb, frag: { crewedBySourceThisTurn: true } });
@@ -1158,7 +2027,7 @@ export function postModAt(ctx: HoleCtx, pos: number): Frag[] {
   // Cloud std-eoe (CR 608.2c, 400.7, 701.8a): "a creature card put into a graveyard this way" / "... into your graveyard this way": one of the cards an earlier destroy
   // or sacrifice step of the ability put into a graveyard (effects/handlers/zones-remove.ts binds the new objects), still in a graveyard; the same participle-only
   // mention answers it (lower/mentions.ts), unresolved it is manual
-  for (const [ws, owner] of [[W_PUT_INTO_A_GRAVEYARD_THIS_WAY, undefined], [W_PUT_INTO_YOUR_GRAVEYARD_THIS_WAY, 'you']] as const) {
+  for (const [ws, owner] of [[W_PUT_INTO_A_GRAVEYARD_THIS_WAY, undefined], [W_PUT_INTO_GRAVEYARDS_THIS_WAY, undefined] /* edh-next-127 */, [W_PUT_INTO_THEIR_GRAVEYARD_THIS_WAY, undefined], [W_PUT_INTO_YOUR_GRAVEYARD_THIS_WAY, 'you']] as const) {
     const e = phraseAt(ctx, pos, ws);
     if (e >= 0) out.push({ end: e, frag: { is: anaphorObj({ sort: 'set', number: 'plural', participle: PUT_INTO_GRAVEYARD_THIS_WAY, text: PUT_INTO_GRAVEYARD_THIS_WAY }) as ObjRef, zone: 'graveyard', ...(owner ? { owner } : {}) } });
   }
@@ -1191,8 +2060,14 @@ function computeNp(ctx: HoleCtx, pos: number, opts: NpOptions): NpAlt[] {
   const emit = (a: NpAlt): void => {
     // FAST5 T42: "with different names" says something about a SET of targets: only a target phrase (parser/holes/object.ts) asks for it; in a cost or a filter it would be dropped
     if (a.flags.includes('different-names') && opts.differentNames !== true) return;
+    if (a.flags.includes('different-mv') && opts.differentNames !== true) return; // edh-top-3: the same for "that each have a different mana value X or less"
     if (a.flags.includes('shared-creature-type') && opts.differentNames !== true) return; // CLOUD std-ecl: the same for "that share a creature type"
     if (a.flags.includes('linked-exiled-target') && opts.differentNames !== true) return; // std-rx5: "target creature card exiled with ~"
+    // edh-next-132 (CR 122.2, 608.2c; Altaïr Ibn-La'Ahad): "card from your graveyard with a memory counter on it" read as a card that HAS the counter is weak (design 6.3 rule 2): a card in a
+    // graveyard, hand or library has no counters (they don't stay on an object that changes zones), so the words are the counter an instruction puts on the card it moves
+    // (template eff.edhz27.exile.withOneCounter); lower/normalize.ts#countersOffBattlefield refuses this reading of a target anyway
+    const zs = a.filter.zone === undefined ? [] : [a.filter.zone].flat();
+    if (a.filter.counters !== undefined && zs.length > 0 && zs.every((z) => z === 'graveyard' || z === 'hand' || z === 'library')) a = { ...a, weak: (a.weak ?? 0) + 2 }; // two: below a phrase the template's own Obj marks weak ("up to one target ...")
     const k = `${a.end}|${a.number}|${a.head}|${JSON.stringify(a.filter)}`;
     if (dedup.has(k)) return;
     dedup.add(k);
@@ -1207,8 +2082,12 @@ function computeNp(ctx: HoleCtx, pos: number, opts: NpOptions): NpAlt[] {
     if (subtypeFirst && Object.keys(pre).some((k) => k !== 'other')) return;
     const base = mergeFilter(pre, h.frag);
     if (base === null) return;
-    const post = (end: number, f: ObjectFilter, flags: string[], weak: number, depth: number, afterTargetsOnly = false): void => {
-      const final = finalize(f, h.head);
+    const post = (end: number, f0: ObjectFilter, flags: string[], weak: number, depth: number, afterTargetsOnly = false): void => {
+      // edh-zones-10 (CR 110.4, 608.2c; Cloudstone Curio): "another permanent you control that shares a permanent type with it": "another" is another than the object "it" names, which shares
+      // every permanent type with itself, so that object is left out of the set compared with (`sharesWith.other`); render/np.ts refuses the filter unless "another" is said too
+      const f: ObjectFilter = f0.sharesWith?.quality === 'permanentType' ? { ...f0, sharesWith: { ...f0.sharesWith, other: true } } : f0;
+      const final = fillHeadSet(finalize(f, h.head));
+      if (final === null) return;
       const fl = [...flags];
       // Cloud C7: "card exiled this way" states where the card is (where the instruction moved it, parser/holes/moved-words.ts)
       if (h.head === 'card' && final.zone === undefined && (final as Record<string, unknown>)[MOVED_MARK] === undefined) fl.push('zone-unstated');
@@ -1217,11 +2096,11 @@ function computeNp(ctx: HoleCtx, pos: number, opts: NpOptions): NpAlt[] {
       const odd = final.controller !== undefined && typeof final.zone === 'string' && OWNED_ONLY_ZONES.has(final.zone) ? 1 : 0;
       emit({ end, filter: final, number: h.number, head: h.head, weak: weak + odd, flags: fl });
       if (depth >= MAX_POST || opts.preOnly === true) return;
-      const pms = postModAt(ctx, end);
+      const pms = postModAtAll(ctx, end);
       for (const pm of pms) {
         // std-r7 (CR 400.1, 205.2a, 205.3): ... and the zone the cards are in, "target Vehicle or creature card from your graveyard": a zone says where every noun of the list is
         if (subtypeFirst && Object.keys(pm.frag).some((k) => k !== 'controller' && k !== 'owner' && k !== 'zone')) continue;
-        if (h.or === true && Object.keys(pm.frag).some((k) => k !== 'controller' && k !== 'owner')) continue; // FAST5 T59: "legendary creature or creature with mana value one"
+        if (h.or === true && Object.keys(pm.frag).some((k) => k !== 'controller' && k !== 'owner' && (h.postAll !== true || k !== 'manaValue'))) continue; // FAST5 T59: "legendary creature or creature with mana value one"
         // FAST5X E27 review (CR 115.1, 601.2c): a keyword after a list of kinds belongs to the last noun only: "target artifact, enchantment, or creature with
         // flying" (Vivien Reid, Broken Wings) is an artifact, an enchantment, or a creature with flying. One filter would ask the keyword of every kind (no
         // plain artifact could be targeted). A list of card types reads as `anyOf` [the other types, the last type with the keyword]; any other list (subtypes,
@@ -1233,7 +2112,8 @@ function computeNp(ctx: HoleCtx, pos: number, opts: NpOptions): NpAlt[] {
         }
         // FAST5 T45: "that targets only a single creature you control": "you control" belongs to the creature, never to the spell after it
         // CLOUD std-msh (CR 115.9b): the same after "that targets a creature you control" (Mockingbird, Ace Agent): the creature's controller, not the spell's
-        if (afterTargetsOnly && Object.keys(pm.frag).every((k) => k === 'controller' || k === 'owner')) continue;
+        // edh-next-133 (CR 115.9c, 109.2; Ivy, Gleeful Spellthief): "a spell that targets only a single creature other than ~": "other than ~" is the creature's too (a spell is never ~ on the battlefield)
+        if (afterTargetsOnly && Object.keys(pm.frag).every((k) => k === 'controller' || k === 'owner' || k === 'other')) continue;
         // Wave-2 merge (std-lci and Cloud C7): std-lci's "<cards> exiled this way" (the exile's binding, counted in exile) reads a CARD noun; after a permanent noun,
         // "the number of creatures exiled this way" (Overwrite the Multiverse), the objects are described as they were when exiled (CR 608.2c, 608.2h), which is
         // C7's reading (`$moved`, parser/holes/moved-words.ts): a creature card counted in exile would miss an animated land that was exiled as a creature
@@ -1241,6 +2121,9 @@ function computeNp(ctx: HoleCtx, pos: number, opts: NpOptions): NpAlt[] {
         // ... and after a card noun the words are std-lci's alone: C7's marker for the same words ("creature cards exiled this way") would tie with it outside a count
         // ("the greatest power among creature cards exiled this way", Szat's Will: a marker that is not a count is never understood); "put into exile this way" stays C7's
         if (h.head === 'card' && (pm.frag as Record<string, unknown>)[MOVED_MARK] === 'exiled' && pms.some((q) => q.end === pm.end && exiledThisWayFrag(q.frag))) continue;
+        // edh-next-138 (CR 608.2c, 608.2h; The Hunger Tide Rises): "a creature card with mana value less than or equal to the number of creatures sacrificed this way": "<participle> this way"
+        // right after a comparison with a count belongs to the counted objects (the nearer noun), never to the card the comparison describes
+        if ((pm.frag as Record<string, unknown>)[MOVED_MARK] !== undefined && (['manaValue', 'power', 'toughness'] as const).some((k) => { const c = f[k] as { value?: unknown } | undefined; return c !== undefined && typeof c.value === 'object' && c.value !== null && (c.value as { q?: unknown }).q === 'count'; })) continue;
         const merged = mergeFilter(f, pm.frag);
         // FAST5 T42: a zone or player the description already has, said again, is the less likely reading ("target permanent card in your graveyard with mana value
         // less than or equal to the number of permanent cards in your graveyard": the second "in your graveyard" belongs to the counted cards)
@@ -1264,13 +2147,19 @@ function computeNp(ctx: HoleCtx, pos: number, opts: NpOptions): NpAlt[] {
       const merged = mergeFilter(f, m.frag);
       if (merged !== null) pre(m.end, merged, depth + 1, true);
       // "noncreature, nonland permanent": a comma between consecutive negations
-      if (ctx.toks[m.end]?.norm === ',' && merged !== null) {
-        for (const m2 of modAt(ctx, m.end + 1)) {
-          const merged2 = mergeFilter(merged, m2.frag);
+      // edh-b-3 (CR 205.3, 700.8; Power Word Kill): "non-Angel, non-Demon, non-Devil, non-Dragon creature": the comma chain goes on while the next one is a negation too
+      const commaChain = (prev: typeof m, acc: ObjectFilter, d: number): void => {
+        if (ctx.toks[prev.end]?.norm !== ',') return;
+        for (const m2 of modAt(ctx, prev.end + 1)) {
+          const merged2 = mergeFilter(acc, m2.frag);
           // Standard round 3, r3-trig (CR 111.1, 205.3): "nontoken, non-Angel creature" (`token: false` is the negation "nontoken")
-          if (merged2 !== null && (m.frag.notTypes || m.frag.notColors || m.frag.notSupertypes || m.frag.notSubtypes || m.frag.token === false)) pre(m2.end, merged2, depth + 2, true);
+          if (merged2 !== null && isNegation(prev.frag)) {
+            pre(m2.end, merged2, d + 2, true);
+            if (d + 2 < MAX_PRE) commaChain(m2, merged2, d + 2); // edh-b-3 + edh-next-8 (Victim of Night, Power Word Kill): the chain goes on while each next modifier is a negation too
+          }
         }
-      }
+      };
+      if (merged !== null) commaChain(m, merged, depth);
     }
   };
   pre(pos, {}, 0, false);
@@ -1294,33 +2183,51 @@ function computeNp(ctx: HoleCtx, pos: number, opts: NpOptions): NpAlt[] {
   return out;
 }
 
+/** edh-next-8: a modifier that only excludes ("nonland", "non-Vampire", "nonblack", "nontoken"). */
+const isNegation = (f: ObjectFilter): boolean => Boolean(f.notTypes || f.notColors || f.notSupertypes || f.notSubtypes || f.token === false);
 const W_OR_NP = P('or');
+const W_ANDOR_NP = P('and/or'); // edh-zones-22
 const W_AND_NP = P('and');
 /** cloud std-spm: the modifiers the second half of `andPhrases` may have beside its one card type or subtype (CR 205.4a supertypes, CR 105.1 colors). */
-const AND_HALF_KEYS: ReadonlySet<string> = new Set(['types', 'subtypes', 'supertypes', 'colors']);
+const AND_HALF_KEYS: ReadonlySet<string> = new Set(['types', 'subtypes', 'supertypes', 'colors', 'notSupertypes']);
 
 /**
  * cloud std-spm (CR 205.2a, 205.4a): "each Spider and legendary creature you control" (Ultimate Spider-Man): a bare card type or subtype and a type with a
  * supertype or a color of its own, joined by "and": the objects that are either one (the modifier after "and" belongs to the second noun only, as in "A or B",
- * FAST5 T59). The plain coordination of types ("Spider and Human", "artifact and creature") is the head grammar's, never this; what may follow the whole
+ * FAST5 T59). edh-players-3 (CR 205.4a, 614.1c): the second half may also be a "non<supertype>" description ("creatures and nonbasic lands your opponents control": Thalia, Heretic Cathar).
+ * The plain coordination of types ("Spider and Human", "artifact and creature") is the head grammar's, never this; what may follow the whole
  * coordination is who controls or owns them only (`or: true`, as for "or").
  */
 function andPhrases(ctx: HoleCtx, pos: number): HeadAlt[] {
   const out: HeadAlt[] = [];
   for (const a of npAlts(ctx, pos, { preOnly: true })) {
+    // edh-next-125 (CR 205.2a, 205.3g, 205.3h; Bello, Bard of the Brambles): "each non-Equipment artifact and non-Aura enchantment you control": two card types, each with a
+    // "non-<subtype>" of its own, joined by "and": the objects that are either one (an artifact that is not an Equipment, or an enchantment that is not an Aura)
+    if (a.head === 'type' && a.flags.length === 0 && typeNonSub(a.filter)) {
+      const and2 = phraseAt(ctx, a.end, W_AND_NP);
+      if (and2 >= 0) {
+        for (const b of npAlts(ctx, and2, { preOnly: true })) {
+          if (b.number !== a.number || b.head !== 'type' || b.flags.length > 0 || !typeNonSub(b.filter) || b.filter.types![0] === a.filter.types![0]) continue;
+          out.push({ end: b.end, frag: { anyOf: [a.filter, b.filter] }, number: a.number, head: 'type', or: true, postAll: true });
+        }
+      }
+    }
     if (a.head !== 'type' || a.flags.length > 0 || !plainKind(a.filter)) continue;
     const and = phraseAt(ctx, a.end, W_AND_NP);
     if (and < 0) continue;
     for (const b of npAlts(ctx, and, { preOnly: true })) {
       if (b.number !== a.number || b.head !== 'type' || b.flags.length > 0 || plainKind(b.filter)) continue;
       const keys = Object.keys(b.filter).filter((k) => (b.filter as Record<string, unknown>)[k] !== undefined);
-      if (!keys.every((k) => AND_HALF_KEYS.has(k)) || (b.filter.supertypes === undefined && b.filter.colors === undefined)) continue;
+      if (!keys.every((k) => AND_HALF_KEYS.has(k)) || (b.filter.supertypes === undefined && b.filter.colors === undefined && b.filter.notSupertypes === undefined)) continue;
       if ((b.filter.types?.length ?? 0) + (b.filter.subtypes?.length ?? 0) !== 1) continue;
       out.push({ end: b.end, frag: { anyOf: [a.filter, b.filter] }, number: a.number, head: 'type', or: true });
     }
   }
   return out;
 }
+/** edh-next-125: one card type with one "non-<subtype>" of its own and nothing else ("non-Aura enchantment", "non-Equipment artifact"). */
+const typeNonSub = (f: ObjectFilter): boolean => f.types?.length === 1 && f.notSubtypes?.length === 1
+  && Object.keys(f).filter((k) => (f as Record<string, unknown>)[k] !== undefined).sort().join() === 'notSubtypes,types';
 /** FAST5 T59: a description of several type words (card types and subtypes together, or more than one card type): "artifact creature", "Adventure instant". */
 const multiKind = (f: ObjectFilter): boolean => f.allTypes !== undefined || (f.types !== undefined && f.subtypes !== undefined) || (f.subtypes?.length ?? 0) > 1;
 /** FAST5 T59: a description that is one card type or one subtype and nothing else. */
@@ -1329,6 +2236,9 @@ const plainKind = (f: ObjectFilter): boolean => {
   return keys.length === 1 && (keys[0] === 'types' || keys[0] === 'subtypes') && (f[keys[0] as 'types' | 'subtypes'] ?? []).length === 1;
 };
 const SHARED_HEAD_KEYS: Record<string, string[]> = { spell: ['stackKind', 'zone'], token: ['token'] };
+/** edh-next-132: a token description of one card type and nothing else ("artifact tokens", "creature tokens"). */
+const plainToken = (f: ObjectFilter): boolean => f.token === true && f.types?.length === 1
+  && Object.keys(f).filter((k) => (f as Record<string, unknown>)[k] !== undefined).sort().join() === 'token,types';
 
 /**
  * FAST5 T59 (CR 205.2a, 700.6-ish "or"): "A or B" where A and B are noun phrases with modifiers of their own (design 6.3: a post-modifier after the whole
@@ -1339,13 +2249,42 @@ const SHARED_HEAD_KEYS: Record<string, string[]> = { spell: ['stackKind', 'zone'
 function orPhrases(ctx: HoleCtx, pos: number): HeadAlt[] {
   const out: HeadAlt[] = [];
   for (const a of npAlts(ctx, pos, { preOnly: true })) {
-    const or = phraseAt(ctx, a.end, W_OR_NP);
-    if (or < 0 || a.flags.length > 0) continue;
+    if (a.flags.length > 0) continue;
+    // edh-zones-22 (CR 109.2, 205.2a; Sorin, Lord of Innistrad): "creatures and/or other planeswalkers" is the same coordination as "or" (a plural list of two descriptions), only when
+    // the second half is a type said with "other" (the plain coordination of types has no place for "other" before one of them); any other "and/or" keeps its readings
+    for (const [or, andOr] of [[phraseAt(ctx, a.end, W_OR_NP), false], [a.number === 'plural' || (a.head === 'type' && plainKind(a.filter)) ? phraseAt(ctx, a.end, W_ANDOR_NP) : -1, true]] as const) {
+    if (or < 0) continue;
     for (const b of npAlts(ctx, or, { preOnly: true })) {
+      // edh-next-93 (CR 205.2a, 205.4a; Kamahl's Druidic Vow): "land and/or legendary permanent cards": a bare card type, then "or" / "and/or" and a supertype with the
+      // word "permanent": the objects that are that type, or a permanent with that supertype (every permanent type: a legendary sorcery card is no permanent card).
+      // The plain type may be singular beside "permanent" (the head noun that follows, "cards", is the template's).
+      if (b.head === 'permanent' && b.number === a.number && b.flags.length === 0 && a.head === 'type' && plainKind(a.filter) && a.filter.types !== undefined
+        && Object.keys(b.filter).filter((k) => (b.filter as Record<string, unknown>)[k] !== undefined).join() === 'supertypes') {
+        out.push({ end: b.end, frag: { anyOf: [a.filter, { ...b.filter, types: PERMANENT_TYPES }] }, number: a.number, head: 'type', or: true });
+        continue;
+      }
       if (b.number !== a.number || b.flags.length > 0) continue;
+      // edh-next-125 (CR 205.2a, 205.3g, 205.3h; Dance of the Manse): also "artifact and/or non-Aura enchantment cards", the plural "and/or" of edh-d-21's "artifact or non-Aura
+      // enchantment card" below (a card that is one of the two; "and/or" of a plural list is "or", CR 205.2a): only that shape, before the head noun "cards"
+      const andOrNonCards = andOr && b.head === 'type' && typeNonSub(b.filter) && ctx.toks[b.end]?.norm === 'cards';
+      // edh-next-132 (CR 111.1, 205.2a; Battle for Bretagard): "artifact tokens and/or creature tokens you control": two plural token descriptions of one card type each, each with the head
+      // "tokens" said again: the tokens that are either one (as "artifact and/or creature tokens"); who controls them, after the second, holds for both (`or`)
+      if (andOr && a.head === 'token' && b.head === 'token' && a.number === 'plural' && plainToken(a.filter) && plainToken(b.filter) && JSON.stringify(a.filter) !== JSON.stringify(b.filter)) {
+        out.push({ end: b.end, frag: { anyOf: [a.filter, b.filter] }, number: 'plural', head: 'token', or: true });
+        continue;
+      }
+      if (andOr && !andOrNonCards && !(b.head === 'type' && b.filter.other === true && b.filter.types?.length === 1)) continue;
       // "a Wizard or basic land card" is a card that is one of the two: the head noun "card" is shared, which the templates of searches and returns say themselves
       const next = ctx.toks[b.end]?.norm;
-      if (next === 'card' || next === 'cards') continue;
+      if (next === 'card' || next === 'cards') {
+        // edh-d-21 (lane type-change; CR 205.2a, 205.3m; Abuelo's Awakening): "artifact or non-Aura enchantment card": a card that is an artifact, or an enchantment that is not an Aura; the
+        // head noun "card" is shared. Only a bare card type before a card type with a "non-<subtype>" of its own (anything else is the templates' own, as before)
+        if (a.head === 'type' && b.head === 'type' && plainKind(a.filter) && a.filter.types !== undefined && b.filter.types?.length === 1 && b.filter.notSubtypes !== undefined && b.filter.subtypes === undefined
+          && Object.keys(b.filter).filter((k) => (b.filter as Record<string, unknown>)[k] !== undefined).sort().join() === 'notSubtypes,types') {
+          for (const h of headWord(ctx, b.end, ['card'])) out.push({ end: h.end, frag: { anyOf: [a.filter, b.filter] }, number: h.plural ? 'plural' : 'singular', head: 'card' });
+        }
+        continue;
+      }
       if (a.head === 'type' && b.head === 'type') {
         // "artifact creature or land" says nothing about whether "artifact" goes with the land (design 6.3: no reading is chosen): a half of several type words beside a bare type or subtype
         if ((multiKind(a.filter) && plainKind(b.filter)) || (multiKind(b.filter) && plainKind(a.filter))) continue;
@@ -1360,12 +2299,22 @@ function orPhrases(ctx: HoleCtx, pos: number): HeadAlt[] {
           rest[k] = v;
         }
         // "Adventure instant or sorcery spell": the subtype is said once and goes with both (the plain coordination of types distributes it), not with the first half only
-        if (multiKind(a.filter) && plainKind(rest as ObjectFilter)) continue;
+        // edh-d-6 (CR 205.3k, 715.3a; Lucky Clover): "Adventure instant or sorcery spell": the instant and sorcery subtype (Adventure, Lesson, Arcane, Trap) goes with both card types
+        if (multiKind(a.filter) && plainKind(rest as ObjectFilter)) {
+          const t1 = a.filter.types?.[0];
+          const t2 = (rest as ObjectFilter).types?.[0];
+          if (b.head === 'spell' && a.filter.types?.length === 1 && a.filter.subtypes?.length === 1 && Object.keys(a.filter).filter((k) => (a.filter as Record<string, unknown>)[k] !== undefined).length === 2
+            && ['Adventure', 'Lesson', 'Arcane', 'Trap'].includes(a.filter.subtypes[0]!) && (t1 === 'Instant' || t1 === 'Sorcery') && (t2 === 'Instant' || t2 === 'Sorcery') && t1 !== t2) {
+            out.push({ end: b.end, frag: { types: [t1, t2], subtypes: a.filter.subtypes }, number: a.number, head: b.head, or: true });
+          }
+          continue;
+        }
         if (Object.keys(rest).length > 0) out.push({ end: b.end, frag: { anyOf: [a.filter, rest as ObjectFilter] }, number: a.number, head: b.head, or: true });
         // CLOUD std-tmt (CR 111.1, 205.2a): a bare "token" after one card type shares no head noun: "another creature or token" is a creature, or a token of any type
         // (Ice Cream Kitty), a permanent either way
         else if (b.head === 'token' && plainKind(a.filter) && a.filter.types !== undefined) out.push({ end: b.end, frag: { anyOf: [a.filter, { token: true }] }, number: a.number, head: 'permanent', or: true });
       }
+    }
     }
   }
   return out;
@@ -1406,10 +2355,23 @@ function listPhrases(ctx: HoleCtx, pos: number): HeadAlt[] {
           if (a.number === 'singular' && tokenWord === 'token' && next.every((x) => plainKind(x.filter) && x.filter.types !== undefined && x.filter.subtypes === undefined)) {
             out.push({ end: e + 1, frag: { anyOf: [...next.map((x) => x.filter), { token: true }] }, number: a.number, head: 'permanent', or: true });
           }
+          // edh-next-116 (CR 205.2a, 205.4a, 700.6-style any-of; Rob the Hoard): "artifact, enchantment, or legendary card": bare card types, then ", or" and the supertype
+          // "legendary" with the shared head noun "card" (singular): a card that is one of the types or is legendary
+          if (ws === W_LIST_LAST[0]![0] && a.number === 'singular' && next.every((x) => plainKind(x.filter) && x.filter.types !== undefined)) {
+            const lg = phraseAt(ctx, e, W_LEGENDARY_WORD);
+            if (lg >= 0) for (const h of headWord(ctx, lg, ['card'])) if (!h.plural) out.push({ end: h.end, frag: { anyOf: [...next.map((x) => x.filter), { supertypes: ['Legendary'] }] }, number: 'singular', head: 'card' });
+          }
           for (const last of kindsAt(e, a.number)) {
             const all = [...next, last];
             const after = ctx.toks[last.end]?.norm;
-            if (after === 'card' || after === 'cards') continue;
+            if (after === 'card' || after === 'cards') {
+              // edh-d-21 (CR 205.2a, 205.3m; Excava, the Risen Past): "artifact, creature, or non-Aura enchantment card": bare card types, then one card type with a "non-<subtype>" of its own; "card" is shared
+              if (all.slice(0, -1).every((x) => plainKind(x.filter) && x.filter.types !== undefined) && last.filter.types?.length === 1 && last.filter.notSubtypes !== undefined && last.filter.subtypes === undefined
+                && Object.keys(last.filter).filter((k) => (last.filter as Record<string, unknown>)[k] !== undefined).sort().join() === 'notSubtypes,types') {
+                for (const h of headWord(ctx, last.end, ['card'])) out.push({ end: h.end, frag: { anyOf: all.map((x) => x.filter) }, number: h.plural ? 'plural' : 'singular', head: 'card' });
+              }
+              continue;
+            }
             // a list of plain kinds is the plain coordination's (shape(), FAST5 T40): only a list with an item of its own modifiers is read here
             if (all.every((x) => plainKind(x.filter))) continue;
             out.push({ end: last.end, frag: { anyOf: all.map((x) => x.filter) }, number: a.number, head: 'type', or: true });
@@ -1447,6 +2409,26 @@ function isSubtypeFirst(f: ObjectFilter): boolean {
 }
 
 /** CR 111.1: a "card" is never a token. CR 405.1 / 113.3: spells and abilities are objects on the stack; ability heads default to "an ability on the stack". */
+/** edh-c-83: the marker of the set a bare "with the greatest <stat>" compares with (featureAt); the noun phrase that has it fills it (`fillHeadSet`). */
+const HEAD_SET = '$headSet';
+
+/**
+ * edh-c-83 (CR 208.1, 202.3, 608.2d; Favor of the Mighty): "each creature with the greatest mana value" compares with the creatures themselves: the set is the whole description of the
+ * noun phrase without that comparison ("creatures you control with the greatest power" compares with the creatures you control). A comparison nested anywhere else, or two of them,
+ * has no reading (null). The description needs a card type (a bare "thing with the greatest power" names no set).
+ */
+function fillHeadSet(f: ObjectFilter): ObjectFilter | null {
+  const keys = (['power', 'toughness', 'manaValue'] as const).filter((k) => JSON.stringify(f[k] ?? null).includes(HEAD_SET));
+  if (keys.length === 0) return f;
+  if (JSON.stringify(f).split(HEAD_SET).length !== 2 || keys.length !== 1) return null;
+  const k = keys[0]!;
+  const { [k]: own, ...rest } = f;
+  if (rest.types === undefined || rest.types.length === 0 || rest.zone === 'stack' || rest.zone === 'graveyard' || rest.zone === 'hand' || rest.zone === 'library' || rest.zone === 'exile') return null;
+  const value = JSON.parse(JSON.stringify((own as { value: unknown }).value)) as { of: { filter: Record<string, unknown> } };
+  value.of.filter = rest as never;
+  return { ...rest, [k]: { ...(own as object), value } } as ObjectFilter;
+}
+
 function finalize(f: ObjectFilter, head: HeadKind): ObjectFilter {
   const out: ObjectFilter = { ...f };
   if (head === 'card') out.isCard = true;
@@ -1512,6 +2494,6 @@ export function yourCommanderAt(ctx: HoleCtx, pos: number): { end: number; filte
 export function headNounAt(ctx: HoleCtx, pos: number): { end: number; head: string; plural: boolean }[] {
   const out: { end: number; head: string; plural: boolean }[] = [];
   for (const it of itemsAt(ctx, pos)) out.push({ end: it.end, head: it.item.name.toLowerCase(), plural: it.item.plural });
-  for (const h of headWord(ctx, pos, ['permanent', 'card', 'spell', 'token', 'ability'])) out.push({ end: h.end, head: h.head, plural: h.plural });
+  for (const h of headWord(ctx, pos, ['permanent', 'card', 'spell', 'token', 'ability', 'source' /* edh-mana-keywords-4: "that source's controller", the source of the damage (CR 120.3) */])) out.push({ end: h.end, head: h.head, plural: h.plural });
   return out;
 }

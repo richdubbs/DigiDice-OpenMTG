@@ -1,0 +1,19 @@
+{
+  "id": "d8",
+  "player": "p1",
+  "prompt": "Put your triggered abilities on the stack in any order: the first one listed is put on the stack first.",
+  "rules": [
+    "CR 603.3b"
+  ],
+  "kind": "order",
+  "items": [
+    {
+      "id": "t1",
+      "label": "Elvish Visionary: When ~ enters, draw a card."
+    },
+    {
+      "id": "t2",
+      "label": "Soul Warden: Whenever another creature enters, you gain 1 life."
+    }
+  ]
+}

@@ -101,7 +101,15 @@ export const dur: HoleFn = (ctx, pos) => {
       }
     }
     const yc = phraseAt(ctx, fal, P('you control'));
-    if (yc >= 0 && ctx.toks[yc]?.kind === 'SELF') out.push({ end: yc + 1, value: { d: 'whileSource', as: 'controlled' } });
+    if (yc >= 0 && ctx.toks[yc]?.kind === 'SELF') {
+      out.push({ end: yc + 1, value: { d: 'whileSource', as: 'controlled' } });
+      // edh-next-50 (CR 611.2b; Helm of Possession): "for as long as you control ~ and ~ remains tapped" (both, the source named twice)
+      const andTapped = phraseAt(ctx, yc + 1, P('and'));
+      if (andTapped >= 0 && ctx.toks[andTapped]?.kind === 'SELF') {
+        const rt = phraseAt(ctx, andTapped + 1, P('remains tapped'));
+        if (rt >= 0) out.push({ end: rt, value: { d: 'whileSource', as: 'controlledTapped' } });
+      }
+    }
     // std-rx32: where the object reading above covers the words, the condition reading of the same words is not offered (the object's own state is the
     // specific reading, design 6.3 rule 2; `asLongAs` is not judged live, so it could never be automated anyway)
     const objectEnds = new Set(out.filter((a) => (a.value as Duration).d === 'whileObject').map((a) => a.end));

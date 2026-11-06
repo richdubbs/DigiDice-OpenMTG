@@ -1,0 +1,569 @@
+[
+  {
+    "id": "sta.edhd101.triggerMod.anyCause.while",
+    "kind": "static",
+    "since": 101,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 603.2",
+      "CR 611.3a"
+    ],
+    "pattern": "if a triggered ability of {f:Filter} triggers while {c:Cond} , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "abilitiesOf": "$f",
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "while",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If a triggered ability of another Wizard you control triggers while you control four or more Wizards, that ability triggers an additional time."
+      },
+      {
+        "text": "If a triggered ability of a Cleric creature you control triggers while you have 10 or less life, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "If a triggered ability of another Wizard you control triggers while you control four or more Wizards, that ability triggers two additional times.",
+      "If a triggered ability of another Wizard an opponent controls triggers while you control four or more Wizards, that ability triggers an additional time.",
+      "If an activated ability of another Wizard you control is activated while you control four or more Wizards, that ability triggers an additional time."
+    ]
+  },
+  {
+    "id": "eff.edhd101.eachOpp.chooseTarget.controllerMayExile.searchRemaining",
+    "kind": "effect",
+    "since": 101,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c",
+      "CR 101.4",
+      "CR 701.23a",
+      "CR 400.7"
+    ],
+    "pattern": "for each opponent , choose {o:OppTarget} . for each permanent chosen this way , its controller may exile it . then if one or more of the chosen permanents are still on the battlefield , you search your library for up to that many land cards , put them onto the battlefield tapped , then shuffle",
+    "build": [
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "who": "player"
+        },
+        "as": "controllerOfChosen",
+        "gather": "exiledByController",
+        "do": [
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "iterating"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "is": "$o",
+                "controller": {
+                  "ref": "iterating"
+                }
+              }
+            },
+            "min": 0,
+            "max": "any",
+            "as": "exiledByController"
+          }
+        ]
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiledByController"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "compare",
+          "left": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "is": "$o"
+              }
+            }
+          },
+          "op": ">=",
+          "right": 1
+        },
+        "then": [
+          {
+            "op": "search",
+            "who": {
+              "ref": "you"
+            },
+            "zone": "library",
+            "filter": {
+              "types": [
+                "Land"
+              ]
+            },
+            "min": 0,
+            "max": {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": {
+                  "is": "$o"
+                }
+              }
+            },
+            "as": "search"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              },
+              "tapped": true
+            }
+          },
+          {
+            "op": "shuffle",
+            "who": {
+              "ref": "you"
+            }
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "each",
+      "may",
+      "if",
+      "then",
+      "this way",
+      "chosen",
+      "still",
+      "up to",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "For each opponent, choose up to one target creature or artifact that player controls. For each permanent chosen this way, its controller may exile it. Then if one or more of the chosen permanents are still on the battlefield, you search your library for up to that many land cards, put them onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "For each opponent, choose up to one target nonland permanent that player controls. For each permanent chosen this way, its controller may exile it. Then if one or more of the chosen permanents are still on the battlefield, you search your library for up to that many land cards, put them onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent, choose up to one target creature or artifact that player controls. For each permanent chosen this way, its controller exiles it. Then if one or more of the chosen permanents are still on the battlefield, you search your library for up to that many land cards, put them onto the battlefield tapped, then shuffle.",
+      "For each opponent, choose up to one target creature or artifact that player controls. For each permanent chosen this way, its controller may exile it. Then if one or more of the chosen permanents are still on the battlefield, you search your library for up to that many land cards, put them onto the battlefield, then shuffle.",
+      "For each player, choose up to one target creature or artifact that player controls. For each permanent chosen this way, its controller may exile it. Then if one or more of the chosen permanents are still on the battlefield, you search your library for up to that many land cards, put them onto the battlefield tapped, then shuffle."
+    ]
+  },
+  {
+    "id": "sta.edhd101.playSelf.fromGraveyard",
+    "kind": "static",
+    "since": 101,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 305.1",
+      "CR 305.2",
+      "CR 404.1",
+      "CR 113.6"
+    ],
+    "pattern": "you may play ~ from your graveyard",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard"
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Until end of turn, each artifact card in your graveyard gains \"You may play this card from your graveyard.\""
+      },
+      {
+        "text": "{2}{B}, {T}: Until end of turn, each creature card in your graveyard gains \"You may play this card from your graveyard.\""
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Until end of turn, each artifact card in your graveyard gains \"You may play this card from your hand.\"",
+      "{1}, {T}: Until end of turn, each artifact card in your graveyard gains \"You may play this card from exile.\"",
+      "{1}, {T}: Until end of turn, each artifact card in an opponent's graveyard gains \"You may play this card from your graveyard.\""
+    ]
+  },
+  {
+    "id": "eff.edhd101.linked.turnFaceUp.ifTypeLoseManaValue",
+    "kind": "effect",
+    "since": 101,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 406.3",
+      "CR 607.2a",
+      "CR 202.3",
+      "CR 119.3",
+      "CR 714.2b"
+    ],
+    "pattern": "turn the exiled card face up . if it's ( a | an ) {f:CardDesc} , you lose life equal to its mana value",
+    "build": [
+      {
+        "op": "changeFace",
+        "what": {
+          "ref": "linked",
+          "link": "exiled"
+        },
+        "to": "faceUp",
+        "inExile": true
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "compare",
+          "left": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "zone": "exile",
+                "is": {
+                  "ref": "linked",
+                  "link": "exiled"
+                },
+                "types": "$f.types"
+              }
+            }
+          },
+          "op": ">=",
+          "right": 1
+        },
+        "then": [
+          {
+            "op": "loseLife",
+            "who": {
+              "ref": "you"
+            },
+            "amount": {
+              "q": "stat",
+              "stat": "manaValue",
+              "of": {
+                "ref": "linked",
+                "link": "exiled"
+              },
+              "sum": true
+            }
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "I -- Search your library for an artifact card, exile it face down, then shuffle.\nII -- Turn the exiled card face up. If it's an artifact card, you lose life equal to its mana value.\nIII -- Draw a card."
+      },
+      {
+        "text": "I -- Search your library for an enchantment card, exile it face down, then shuffle.\nII -- Turn the exiled card face up. If it's an enchantment card, you lose life equal to its mana value.\nIII -- You gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "I -- Search your library for an artifact card, exile it face down, then shuffle.\nII -- Turn the exiled card face up. If it's an artifact card, you gain life equal to its mana value.\nIII -- Draw a card.",
+      "I -- Search your library for an artifact card, exile it face down, then shuffle.\nII -- Turn the exiled card face up. If it's an artifact card, you lose life equal to its power.\nIII -- Draw a card.",
+      "I -- Search your library for an artifact card, exile it face down, then shuffle.\nII -- Turn the exiled card face up. You lose life equal to its mana value.\nIII -- Draw a card."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhd101.linked.mayPutIfType.elseHand",
+    "kind": "effect",
+    "since": 101,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.3",
+      "CR 714.2b"
+    ],
+    "pattern": "you may put the exiled card onto the battlefield if it's ( a | an ) {f:CardDesc} . if you don't put it onto the battlefield , put it into its owner 's hand",
+    "build": [
+      {
+        "op": "if",
+        "cond": {
+          "cond": "compare",
+          "left": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "zone": "exile",
+                "is": {
+                  "ref": "linked",
+                  "link": "exiled"
+                },
+                "types": "$f.types"
+              }
+            }
+          },
+          "op": ">=",
+          "right": 1
+        },
+        "then": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "each",
+                  "filter": {
+                    "zone": "exile",
+                    "is": {
+                      "ref": "linked",
+                      "link": "exiled"
+                    },
+                    "types": [
+                      "Artifact",
+                      "Battle",
+                      "Creature",
+                      "Enchantment",
+                      "Land",
+                      "Planeswalker"
+                    ]
+                  }
+                },
+                "to": {
+                  "zone": "battlefield",
+                  "controller": {
+                    "ref": "you"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "exile",
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "I -- Search your library for an artifact card, exile it face down, then shuffle.\nII -- Draw a card.\nIII -- You may put the exiled card onto the battlefield if it's an artifact card. If you don't put it onto the battlefield, put it into its owner's hand."
+      },
+      {
+        "text": "I -- Search your library for an enchantment card, exile it face down, then shuffle.\nII -- You gain 2 life and scry 1.\nIII -- You may put the exiled card onto the battlefield if it's an enchantment card. If you don't put it onto the battlefield, put it into its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "I -- Search your library for an artifact card, exile it face down, then shuffle.\nII -- Draw a card.\nIII -- You may put the exiled card onto the battlefield if it's an artifact card. If you don't put it onto the battlefield, put it into its owner's graveyard.",
+      "I -- Search your library for an artifact card, exile it face down, then shuffle.\nII -- Draw a card.\nIII -- Put the exiled card onto the battlefield if it's an artifact card. If you don't put it onto the battlefield, put it into its owner's hand.",
+      "I -- Search your library for an artifact card, exile it face down, then shuffle.\nII -- Draw a card.\nIII -- You may put the exiled card onto the battlefield. If you don't put it onto the battlefield, put it into its owner's hand."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "rid.edhd101.mana.youSpend.mayExileSpellAsItResolves",
+    "kind": "rider",
+    "since": 101,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 603.2",
+      "CR 614.1a",
+      "CR 608.2n",
+      "CR 616.1"
+    ],
+    "pattern": "when you spend this mana to cast ( a | an ) {f:CastSpell} , you may exile that spell instead of putting it into its owner 's graveyard as it resolves",
+    "build": {
+      "$patchPrevious": {
+        "whenSpent": {
+          "@new": {
+            "spells": "$f",
+            "do": [
+              {
+                "op": "effect",
+                "duration": {
+                  "d": "permanent"
+                },
+                "effects": [
+                  {
+                    "s": "replace",
+                    "replaces": {
+                      "ev": "zoneChange",
+                      "subject": {
+                        "is": {
+                          "ref": "event",
+                          "role": "spell"
+                        }
+                      },
+                      "from": "stack",
+                      "to": "graveyard",
+                      "cause": "resolve"
+                    },
+                    "body": {
+                      "b": "modify",
+                      "destination": {
+                        "zone": "exile"
+                      }
+                    },
+                    "optional": true
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "when",
+      "spend",
+      "may",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {R}. When you spend this mana to cast an instant spell, you may exile that spell instead of putting it into its owner's graveyard as it resolves."
+      },
+      {
+        "text": "{1}, {T}: Add {U}. When you spend this mana to cast a sorcery spell with mana value 2 or less, you may exile that spell instead of putting it into its owner's graveyard as it resolves."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {R}. When you spend this mana to cast an instant spell, exile that spell instead of putting it into its owner's graveyard as it resolves.",
+      "{T}: Add {R}. When you spend this mana to cast an instant spell, you may exile that spell instead of putting it into its owner's hand as it resolves.",
+      "{T}: Add {R}. If you spend this mana to cast an instant spell, you may exile that spell instead of putting it into its owner's graveyard as it resolves."
+    ]
+  },
+  {
+    "id": "eff.edhd101.castAnyNumber.linkedExiled.free",
+    "kind": "effect",
+    "since": 101,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast any number of spells from among cards exiled with ~ without paying their mana costs",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "exile"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "consumes": [
+      "may",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast an instant spell, exile the top card of your library.\n{4}, {T}: You may cast any number of spells from among cards exiled with this artifact without paying their mana costs."
+      },
+      {
+        "text": "When this creature enters, exile up to two target instant cards from your graveyard.\n{2}, {T}: You may cast any number of spells from among cards exiled with this creature without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant spell, exile the top card of your library.\n{4}, {T}: You may cast any number of spells from among cards exiled with this artifact.",
+      "Whenever you cast an instant spell, exile the top card of your library.\n{4}, {T}: You may cast a spell from among cards exiled with this artifact without paying its mana cost.",
+      "Whenever you cast an instant spell, exile the top card of your library.\n{4}, {T}: You may cast any number of spells from among cards in your graveyard without paying their mana costs."
+    ]
+  }
+]

@@ -18,6 +18,8 @@ const W_THE_EXCESS = [P('the excess damage dealt'), P('the amount of excess dama
 const W_THAT_EXCESS = P('that excess damage');
 const W_THIS_WAY = P('this way');
 const W_TO = P('to');
+const W_TO_A_PERMANENT = P('to a permanent');
+const W_TO_A_CREATURE = P('to a creature'); // edh-c-78 (CR 120.10; Vikya, Scorching Stalwart)
 const W_EXCESS_WAS_DEALT = [P('excess damage was dealt'), P('excess damage is dealt')];
 const W_IS_DEALT_EXCESS = [P('is dealt excess damage'), P('was dealt excess damage')];
 const W_THE_OPPONENTS_CREATURE = [P('the creature an opponent controls'), P('the creature the opponent controls')];
@@ -41,6 +43,12 @@ function toThisWay(ctx: HoleCtx, pos: number): { end: number; to?: unknown; flag
   const out: { end: number; to?: unknown; flags?: string[] }[] = [];
   const bare = phraseAt(ctx, pos, W_THIS_WAY);
   if (bare >= 0) out.push({ end: bare });
+  // edh-perms-9 (CR 120.10, 608.2c; Bottle-Cap Blast): "to a permanent this way": the excess dealt to permanents, whichever they are (the step reports only permanents)
+  const perm = phraseAt(ctx, pos, W_TO_A_PERMANENT);
+  if (perm >= 0) { const e = phraseAt(ctx, perm, W_THIS_WAY); if (e >= 0) out.push({ end: e }); }
+  // edh-c-78 (CR 120.10, 608.2c; Vikya, Scorching Stalwart): "to a creature this way": the excess dealt to creatures (the step's damage to a creature; a planeswalker or battle does not count)
+  const crea = phraseAt(ctx, pos, W_TO_A_CREATURE);
+  if (crea >= 0) { const e = phraseAt(ctx, crea, W_THIS_WAY); if (e >= 0) out.push({ end: e, to: { ref: 'each', filter: { types: ['Creature'] } } }); }
   const to = phraseAt(ctx, pos, W_TO);
   if (to >= 0) {
     for (const r of recipients(ctx, to)) {

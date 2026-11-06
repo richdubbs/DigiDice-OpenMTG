@@ -1,0 +1,678 @@
+[
+  {
+    "id": "eff.edhn16.shuffle.handCard.intoLibrary",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.24a",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "shuffle ( a | one ) card from your hand into your library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "shuf"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "shuf"
+        },
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "you"
+          }
+        },
+        "as": "shuffled"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        },
+        "guard": {
+          "cond": "did",
+          "step": "shuffled"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw three cards, then shuffle a card from your hand into your library."
+      },
+      {
+        "text": "Shuffle a card from your hand into your library. Scry 1."
+      }
+    ],
+    "counterExamples": [
+      "Shuffle two cards from your hand into your library.",
+      "Shuffle a card from your graveyard into your library.",
+      "Shuffle a card from your hand into target player's library."
+    ]
+  },
+  {
+    "id": "eff.edhn16.group.eachGetPump.gainAllCreatureTypes",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Objs} each get {pt:PT} and gain all creature types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "all": true
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all",
+      "each",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Up to three target creatures each get +1/+1 and gain all creature types until end of turn."
+      },
+      {
+        "text": "Up to two target creatures each get -2/-0 and gain all creature types until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Up to two target creatures each get +1/+1 and gain flying until end of turn.",
+      "Up to two target creatures each get +1/+1 and gain all creature types.",
+      "Up to two target creatures each get +1/+1 and lose all creature types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn16.countLibrary.lifeBecomes",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 119.5",
+      "CR 608.2c"
+    ],
+    "pattern": "count the number of cards in your library . your life total becomes that number",
+    "build": {
+      "op": "setLife",
+      "who": {
+        "ref": "you"
+      },
+      "value": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "zone": "library",
+            "owner": "you"
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "that number"
+    ],
+    "examples": [
+      {
+        "text": "Count the number of cards in your library. Your life total becomes that number. Exile ~."
+      },
+      {
+        "text": "Count the number of cards in your library. Your life total becomes that number. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Count the number of cards in your graveyard. Your life total becomes that number.",
+      "Count the number of cards in your library. Target player's life total becomes that number.",
+      "Count the number of cards in your library. You gain that much life."
+    ]
+  },
+  {
+    "id": "eff.edhn16.objs.cantBeTargeted.byOpponents.dur",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 702.11b"
+    ],
+    "pattern": "{o:Objs} can't be the targets of spells or abilities your opponents control {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "controller": "opponent"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control can't be the targets of spells or abilities your opponents control until your next turn."
+      },
+      {
+        "text": "Artifacts you control can't be the targets of spells or abilities your opponents control this turn."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control can't be the targets of spells or abilities your opponents control.",
+      "Creatures you control can't be the targets of spells your opponents control this turn.",
+      "Creatures you control can't be the targets of spells or abilities you control this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn16.destroyAll.creaturesAndAttached",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 303.4",
+      "CR 301.5",
+      "CR 608.2c"
+    ],
+    "pattern": "destroy all creatures and all permanents attached to creatures",
+    "build": {
+      "op": "destroy",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            {
+              "types": [
+                "Creature"
+              ]
+            },
+            {
+              "attachedToObject": {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all creatures and all permanents attached to creatures. You gain 2 life."
+      },
+      {
+        "text": "Draw a card. Destroy all creatures and all permanents attached to creatures."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all creatures and all permanents attached to lands.",
+      "Destroy all creatures and all Auras attached to creatures.",
+      "Destroy all artifacts and all permanents attached to artifacts."
+    ]
+  },
+  {
+    "id": "eff.edhn16.destroyAll.landsOrCreatures.noRegenCreatures",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 701.19c",
+      "CR 608.2d",
+      "CR 614.8"
+    ],
+    "pattern": "destroy all lands or all creatures . creatures destroyed this way can't be regenerated",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "destroyChoice",
+        "link": "destroyChoice",
+        "options": [
+          "lands",
+          "creatures"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "destroyChoice",
+          "equals": "lands"
+        },
+        "then": [
+          {
+            "op": "destroy",
+            "what": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Land"
+                ],
+                "notTypes": [
+                  "Creature"
+                ]
+              }
+            }
+          },
+          {
+            "op": "destroy",
+            "regeneration": "cant",
+            "what": {
+              "ref": "each",
+              "filter": {
+                "allTypes": [
+                  "Land",
+                  "Creature"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "destroyChoice",
+          "equals": "creatures"
+        },
+        "then": [
+          {
+            "op": "destroy",
+            "what": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ]
+              }
+            },
+            "regeneration": "cant"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "can't",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all lands or all creatures. Creatures destroyed this way can't be regenerated. Draw a card."
+      },
+      {
+        "text": "Scry 2. Destroy all lands or all creatures. Creatures destroyed this way can't be regenerated."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all lands and all creatures. Creatures destroyed this way can't be regenerated.",
+      "Destroy all lands or all creatures.",
+      "Destroy all lands or all artifacts. Creatures destroyed this way can't be regenerated."
+    ]
+  },
+  {
+    "id": "eff.edhn16.chooseCreatureOrPw.destroyAllOthers",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "choose ( a | one ) creature or planeswalker , then destroy all other creatures and planeswalkers",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": [
+                  "Creature"
+                ]
+              },
+              {
+                "types": [
+                  "Planeswalker"
+                ]
+              }
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "kept"
+      },
+      {
+        "op": "destroy",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": [
+                  "Creature"
+                ]
+              },
+              {
+                "types": [
+                  "Planeswalker"
+                ]
+              }
+            ],
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "kept"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "other",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Choose a creature or planeswalker, then destroy all other creatures and planeswalkers. Scry 1."
+      },
+      {
+        "text": "Draw a card. Choose a creature or planeswalker, then destroy all other creatures and planeswalkers."
+      }
+    ],
+    "counterExamples": [
+      "Choose a creature or planeswalker, then destroy all creatures and planeswalkers.",
+      "Choose a creature, then destroy all other creatures.",
+      "Choose a creature or planeswalker, then destroy all other creatures."
+    ]
+  },
+  {
+    "id": "rep.edhn16.enters.counter.forEach.and.forEach",
+    "kind": "static",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 122.1",
+      "CR 122.6",
+      "CR 614.12"
+    ],
+    "pattern": "~ enters with ( a | an ) +1/+1 counter on it for each {f:Filter} and ( a | an ) +1/+1 counter on it for each {g:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "+1/+1",
+                "count": {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": "$f"
+                  }
+                }
+              },
+              {
+                "kind": "+1/+1",
+                "count": {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": "$g"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "for each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a +1/+1 counter on it for each other red creature you control and a +1/+1 counter on it for each other white creature you control."
+      },
+      {
+        "text": "~ enters with a +1/+1 counter on it for each artifact you control and a +1/+1 counter on it for each enchantment you control."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a +1/+1 counter on it for each other red creature you control.",
+      "~ enters with a +1/+1 counter on it for each other red creature you control and a -1/-1 counter on it for each other green creature you control.",
+      "~ enters with a +1/+1 counter on it for each other red creature you control or a +1/+1 counter on it for each other green creature you control."
+    ]
+  },
+  {
+    "id": "eff.edhn16.may.haveDiscard.random",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {p:Player} discard {n:Qty} card[s] at random",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "discard",
+          "who": "$p",
+          "count": "$n",
+          "mode": "random"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "random",
+      "at random"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature attacks, you may have target opponent discard a card at random."
+      },
+      {
+        "text": "When this creature enters, you may have each opponent discard two cards at random."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature attacks, you may have target opponent discard a card.",
+      "Whenever this creature attacks, target opponent discards a card at random.",
+      "Whenever this creature attacks, you may have target opponent exile a card at random."
+    ]
+  },
+  {
+    "id": "eff.edhn16.return.upToOne.and.upToOne.graveyardToHand",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 404.1",
+      "CR 608.2d"
+    ],
+    "pattern": "return up to one {f:Filter} card and up to one {g:Filter} card from your graveyard to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "returnedFirst"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$g"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "returnedFirst"
+              }
+            },
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "returnedSecond"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returnedFirst"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returnedSecond"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Return up to one artifact card and up to one instant card from your graveyard to your hand."
+      },
+      {
+        "text": "Draw a card. Return up to one creature card and up to one artifact card from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Return up to one creature card and up to one land card from a graveyard to your hand.",
+      "Return up to two creature cards and up to one land card from your graveyard to your hand.",
+      "Return up to one creature card or up to one land card from your graveyard to your hand."
+    ]
+  }
+]

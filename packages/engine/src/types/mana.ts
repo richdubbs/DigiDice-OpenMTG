@@ -9,7 +9,7 @@ export type ManaType = Color | 'C';
 /** One mana symbol in a cost (CR 107.4). */
 export type ManaSymbol =
   | { kind: 'generic'; amount: number } // {0}, {1}, {2}, ... (CR 107.4b)
-  | { kind: 'colored'; color: Color } // {W} ... (CR 107.4a)
+  | { kind: 'colored'; color: Color; xOnly?: true } // {W} ... (CR 107.4a); xOnly (edh-next-85): generic mana of an X that only this color may pay (rules/cost.ts#applyOnlyX), never a symbol to pay life for
   | { kind: 'colorless' } // {C} (CR 107.4c)
   | { kind: 'hybrid'; colors: [Color, Color] } // {W/U} (CR 107.4e)
   | { kind: 'monoHybrid'; color: Color; generic: number } // {2/W} (CR 107.4e)
@@ -84,12 +84,13 @@ export function formatManaCost(cost: ManaCost | null): string {
  * Standard round 5, r5-trig (CR 107.4, 202.1, 700.5): the mana symbols of a cost that are of `color`: a colored, Phyrexian or hybrid symbol with that color counts
  * once, as devotion counts them (Namor the Sub-Mariner: "one or more blue mana symbols in its mana cost").
  */
-export function colorSymbolCount(cost: ManaCost | null | undefined, color: Color): number {
+export function colorSymbolCount(cost: ManaCost | null | undefined, color: Color | 'colored'): number {
   let n = 0;
   for (const s of cost ?? []) {
     switch (s.kind) {
-      case 'colored': case 'phyrexian': case 'monoHybrid': case 'colorlessHybrid': if (s.color === color) n++; break;
-      case 'hybrid': case 'hybridPhyrexian': if (s.colors.includes(color)) n++; break;
+      // edh-next-142 (CR 105.1, 107.4; Omnath, Locus of All): 'colored', a symbol of any color counts once (ruling 2023-04-14: {R/G}{G}{G/W} has three)
+      case 'colored': case 'phyrexian': case 'monoHybrid': case 'colorlessHybrid': if (color === 'colored' || s.color === color) n++; break;
+      case 'hybrid': case 'hybridPhyrexian': if (color === 'colored' || s.colors.includes(color)) n++; break;
       default: break;
     }
   }
@@ -137,6 +138,21 @@ export function toColors(xs: readonly string[] | undefined): Color[] {
  * FAST5 T37 (CR 601.2h, 106.1): was at least `spent.atLeast` of the mana spent to cast a spell of color `spent.color`? ("If at least three white mana was spent
  * to cast this spell", adamant.) \`units\` is the mana paid for the spell (CostsPaid.manaSpent); a spell that was not cast has paid none.
  */
-export function spentAtLeast(units: readonly { type: ManaType }[] | undefined, spent: { color: Color; atLeast: number }): boolean {
+export function spentAtLeast(units: readonly { type: ManaType }[] | undefined, spent: { color: ManaType; atLeast: number }): boolean {
   return (units ?? []).filter((u) => u.type === spent.color).length >= spent.atLeast;
+}
+
+/**
+ * edh-c-47 (CR 202.1, 709.4b; Embodiment of Agonies): a mana cost as one string, equal for equal costs: the generic symbols added up, every other symbol (colored, hybrid, Phyrexian, X, snow...)
+ * counted as its own, in a fixed order. A split card's cost (the halves joined) equals the same cost printed on one card (ruling 2019-07-12: Fire // Ice is {2}{U}{R}). null for no mana cost.
+ */
+export function manaCostIdentity(cost: ManaCost | null): string | null {
+  if (cost === null) return null;
+  let generic = 0;
+  const rest: string[] = [];
+  for (const s of cost) {
+    if (s.kind === 'generic') generic += s.amount;
+    else rest.push(JSON.stringify(s));
+  }
+  return JSON.stringify([generic, rest.sort()]);
 }

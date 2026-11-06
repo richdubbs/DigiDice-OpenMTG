@@ -10,6 +10,7 @@ import type { AbilityDef } from '../types/ability';
 import type { PlayerId } from '../types/ids';
 import type { PendingTrigger } from '../types/state';
 import { charsOfObject } from '../rules/characteristics';
+import { cantHappen } from '../statics/hooks';
 import type { Game } from './game';
 
 /**
@@ -22,7 +23,9 @@ export const MONARCH_SOURCE = 'rule:monarch';
 export function setMonarch(g: Game, player: PlayerId, rules: string[] = ['CR 725.3']): boolean {
   const d = g.s.designations;
   if (d.monarch === player || g.player(player).hasLost) return false;
+  if (cantHappen(g.s, { action: 'becomeMonarch', subject: player }) !== null) return false; // edh-next-82 (CR 725.1, 101.2): "You can't become the monarch this turn"
   d.monarch = player;
+  d.monarchLog = [...(d.monarchLog ?? []).slice(-15), { timestamp: g.s.counters.timestamp, player }]; // edh-players-18 (CR 610.3a-b)
   g.emit({ type: 'designationChanged', what: 'monarch', to: player });
   g.log(`${g.player(player).name} becomes the monarch.`, { rules, level: 'action' });
   return true;
@@ -190,9 +193,9 @@ export function monarchEvents(g: Game): void {
   const d = g.s.designations;
   if (d.monarch === undefined) return;
   if (g.player(d.monarch).hasLost) {
-    const next = g.apnap()[0]; // CR 725.4: the active player, or the next player in turn order still in the game
-    if (next !== undefined) setMonarch(g, next, ['CR 725.4']);
-    else d.monarch = undefined;
+    // CR 725.4: the active player, or the next player in turn order still in the game; edh-next-82 review: the first of them who can become the monarch ("can't become" effects), else no monarch
+    d.monarch = undefined;
+    g.apnap().some((p) => setMonarch(g, p, ['CR 725.4']));
     return;
   }
   for (let i = from; i < g.events.length; i++) {

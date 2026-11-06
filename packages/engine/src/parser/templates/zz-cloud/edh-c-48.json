@@ -1,0 +1,59 @@
+[
+  {
+    "id": "eff.edhv48.incubate.twice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.53a",
+      "CR 111.10i",
+      "CR 107.3a",
+      "CR 608.2c"
+    ],
+    "pattern": "incubate {n:Qty} twice",
+    "build": [
+      {
+        "op": "let",
+        "name": "incubateN",
+        "value": "$n"
+      },
+      {
+        "op": "repeat",
+        "times": 2,
+        "do": [
+          {
+            "op": "action",
+            "action": "incubate",
+            "who": {
+              "ref": "you"
+            },
+            "n": {
+              "q": "var",
+              "name": "incubateN"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:incubate"
+    ],
+    "examples": [
+      {
+        "text": "Incubate 3 twice, then draw a card."
+      },
+      {
+        "text": "You gain 2 life, then incubate 2 twice."
+      }
+    ],
+    "counterExamples": [
+      "Incubate twice, then draw a card.",
+      "Incubate 3 three times, then draw a card.",
+      "Investigate 3 twice, then draw a card."
+    ],
+    "consumes": [
+      "twice"
+    ]
+  }
+]

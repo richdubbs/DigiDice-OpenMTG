@@ -1,0 +1,8 @@
+# edh-players-2 (Commander lane edh-players; test/cloud/edh-players-2, golden edh-players-2-review.json; Veil of Summer is in cloud-c1-review.json)
+# colored permanents sacrificed; scoped trigger suppression; hexproof from colors for you; life total fixed; protection from everything; life per counter; "isn't" turn
+All Is Dust
+Elesh Norn, Mother of Machines
+Flare of Fortitude
+The One Ring
+Tataru Taru
+Veil of Summer

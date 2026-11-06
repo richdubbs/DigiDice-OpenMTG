@@ -1,0 +1,147 @@
+[
+  {
+    "id": "sta.edhv72.attached.cantBeTargetedBySpells.cantBeEnchantedByOtherAuras",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 115.1",
+      "CR 303.4",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be the target of spells and can't be enchanted by other Auras",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "attachedTo"
+        },
+        "mode": "cant",
+        "action": "beTargeted",
+        "other": {
+          "stackKind": "spell"
+        }
+      },
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "attachedTo"
+        },
+        "mode": "cant",
+        "action": "beEnchanted",
+        "other": {
+          "subtypes": [
+            "Aura"
+          ],
+          "other": true
+        }
+      }
+    ],
+    "consumes": [
+      "other",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted land can't be the target of spells and can't be enchanted by other Auras. Creatures you control get +1/+1."
+      },
+      {
+        "text": "Enchanted permanent can't be the target of spells and can't be enchanted by other Auras. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted land can't be the target of spells and can't be enchanted.",
+      "Enchanted land can't be the target of spells or abilities and can't be enchanted by other Auras.",
+      "Enchanted land can be the target of spells and can't be enchanted by other Auras."
+    ]
+  },
+  {
+    "id": "sta.edhv72.obj.cantAttackBlockCrew",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 508.1c",
+      "CR 509.1b",
+      "CR 702.122a",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't attack , block , or crew vehicles",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "attack"
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "block"
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "crew"
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature can't attack, block, or crew Vehicles. Creatures you control get +1/+1."
+      },
+      {
+        "text": "Enchanted permanent can't attack, block, or crew Vehicles. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't attack, block, or crew Vehicles this turn.",
+      "Enchanted creature can attack, block, or crew Vehicles.",
+      "Enchanted creature can't attack, block, or crew."
+    ]
+  },
+  {
+    "id": "sta.edhv72.rule.tappedLandManaOnlyColorless",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.12",
+      "CR 614.1a",
+      "CR 106.1b"
+    ],
+    "pattern": "if a land is tapped for mana , it produces colorless mana instead of any other type",
+    "build": {
+      "s": "rule",
+      "rule": "tappedLandManaOnlyColorless",
+      "player": {
+        "ref": "each",
+        "who": "player"
+      }
+    },
+    "consumes": [
+      "if",
+      "instead",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "If a land is tapped for mana, it produces colorless mana instead of any other type. Creatures you control get +1/+1."
+      },
+      {
+        "text": "If a land is tapped for mana, it produces colorless mana instead of any other type. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "If a land you control is tapped for mana, it produces colorless mana instead of any other type.",
+      "If a land is tapped for two or more mana, it produces colorless mana instead of any other type.",
+      "If a land is tapped for mana, it produces {G} instead of any other type."
+    ]
+  }
+]

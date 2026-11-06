@@ -1,0 +1,356 @@
+[
+  {
+    "id": "eff.edhc9.loseLife.forEach.qty",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 601.2i",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] 1 life for each {n:Qty}",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent casts a spell, they lose 1 life for each spell they've cast this turn."
+      },
+      {
+        "text": "Whenever a player casts an instant spell, they lose 1 life for each spell they've cast this turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent casts a spell, they gain 1 life for each spell they've cast this turn.",
+      "Whenever an opponent casts a spell, they lose 2 life for each spell they've cast this turn.",
+      "Whenever an opponent casts a spell, they lose 1 life for each spell they've cast this game."
+    ]
+  },
+  {
+    "id": "cm.edhc9.spells.each.less.subtypes",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.1",
+      "CR 205.3m"
+    ],
+    "pattern": "each spell you cast that's ( a | an ) {a:Subtypes} , {b:Subtypes} , or {c:Subtypes} costs {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "subtypes": [
+                "$a.0",
+                "$b.0",
+                "$c.0"
+              ],
+              "stackKind": "spell",
+              "zone": "stack"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each spell you cast that's a Golem, Horror, or Nightmare costs {1} less to cast."
+      },
+      {
+        "text": "Each spell you cast that's an Imp, Zombie, or Wizard costs {2} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Each spell you cast that's a Golem, Horror, or Nightmare costs {1} more to cast.",
+      "Each spell your opponents cast that's a Golem, Horror, or Nightmare costs {1} less to cast.",
+      "Each spell you cast that's a Golem, Horror, or Nightmare costs {1} less to activate."
+    ]
+  },
+  {
+    "id": "eff.edhc9.counter.ifSameManaValueAsRevealed",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.6a",
+      "CR 202.3",
+      "CR 608.2c",
+      "CR 701.20a"
+    ],
+    "pattern": "counter {o:Obj} if it has the same mana value as {r:Obj}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "stat",
+          "stat": "manaValue",
+          "of": "$o"
+        },
+        "op": "==",
+        "right": {
+          "q": "stat",
+          "stat": "manaValue",
+          "of": "$r"
+        }
+      },
+      "then": [
+        {
+          "op": "counter",
+          "what": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent casts a spell, reveal the top card of your library. Counter that spell if it has the same mana value as the revealed card."
+      },
+      {
+        "text": "Whenever you cast a spell, you may reveal the top card of your library. If you do, counter that spell if it has the same mana value as the revealed card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent casts a spell, reveal the top card of your library. Counter that spell if it has a different mana value than the revealed card.",
+      "Whenever an opponent casts a spell, reveal the top card of your library. Counter that spell unless it has the same mana value as the revealed card.",
+      "Whenever an opponent casts a spell, reveal the top card of your library. Counter that spell if it has the same power as the revealed card."
+    ]
+  },
+  {
+    "id": "eff.edhc9.cast.free.sameManaValue",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2",
+      "CR 202.3",
+      "CR 608.2c"
+    ],
+    "pattern": "you may cast {o:Obj} without paying its mana cost if the two spells have the same mana value",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "free": true,
+      "optional": true,
+      "exactManaValue": {
+        "q": "stat",
+        "stat": "manaValue",
+        "of": {
+          "ref": "event",
+          "role": "spell"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if",
+      "without",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, you may reveal the top card of your library. If you do, you may cast that card without paying its mana cost if the two spells have the same mana value."
+      },
+      {
+        "text": "Whenever you cast an instant spell, you may reveal the top card of your library. If you do, you may cast that card without paying its mana cost if the two spells have the same mana value."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, you may reveal the top card of your library. If you do, you may cast that card without paying its mana cost if the two spells have different mana values.",
+      "Whenever you cast a spell, you may reveal the top card of your library. If you do, you may cast that card without paying its mana cost unless the two spells have the same mana value.",
+      "Whenever you cast a spell, you may reveal the top card of your library. If you do, you may cast that card if the two spells have the same mana value."
+    ]
+  },
+  {
+    "id": "sta.edhc9.permit.loyaltyAsInstant",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 606.3",
+      "CR 606.1",
+      "CR 307.1",
+      "CR 114.1"
+    ],
+    "pattern": "you may activate loyalty abilities of {f:Filter} on any player 's turn any time you could cast an instant",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "activateLoyaltyAsInstant",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "any time"
+    ],
+    "examples": [
+      {
+        "text": "You may activate loyalty abilities of Chandra planeswalkers you control on any player's turn any time you could cast an instant."
+      },
+      {
+        "text": "You may activate loyalty abilities of legendary planeswalkers you control on any player's turn any time you could cast an instant."
+      }
+    ],
+    "counterExamples": [
+      "You may activate loyalty abilities of Chandra planeswalkers you control any time you could cast an instant.",
+      "You may activate loyalty abilities of Chandra planeswalkers you control on any player's turn any time you could cast a sorcery.",
+      "You may activate abilities of Chandra planeswalkers you control on any player's turn any time you could cast an instant."
+    ]
+  },
+  {
+    "id": "sta.edhc9.permit.loyaltyAsInstant.self",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 606.3",
+      "CR 606.1",
+      "CR 307.1"
+    ],
+    "pattern": "you may activate loyalty abilities of ~ on any player 's turn any time you could cast an instant",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "activateLoyaltyAsInstant"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "any time"
+    ],
+    "examples": [
+      {
+        "text": "You may activate loyalty abilities of Example Subject on any player's turn any time you could cast an instant."
+      },
+      {
+        "text": "You may activate loyalty abilities of Example Subject on any player's turn any time you could cast an instant.\nExample Subject has hexproof from green."
+      }
+    ],
+    "counterExamples": [
+      "You may activate loyalty abilities of Example Subject any time you could cast an instant.",
+      "You may activate loyalty abilities of Example Subject on any player's turn any time you could cast a sorcery.",
+      "You may activate abilities of Example Subject on any player's turn any time you could cast an instant."
+    ]
+  },
+  {
+    "id": "eff.edhc9.extraTurns.you.n",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 500.7",
+      "CR 608.2c"
+    ],
+    "pattern": "take {n:Qty} extra turns after this one",
+    "build": {
+      "op": "extraTurn",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "extra"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Take three extra turns after this one."
+      },
+      {
+        "text": "{4}{U}, {T}: Take two extra turns after this one."
+      }
+    ],
+    "counterExamples": [
+      "Take two extra turns.",
+      "Take two extra turns after this one unless an opponent pays {3}.",
+      "Take two extra phases after this one."
+    ]
+  },
+  {
+    "id": "eff.edhc9.token.forEach.qty.lead",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.6a",
+      "CR 601.2i",
+      "CR 608.2h"
+    ],
+    "pattern": "for each {n:Qty} , create ( a | an ) {t:TokenDesc}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, for each spell you've cast this turn, create a 1/1 green Saproling creature token."
+      },
+      {
+        "text": "At the beginning of your end step, for each spell you've cast this turn, create a 2/2 black Zombie creature token."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, for each spell you've cast this turn, target opponent creates a 1/1 green Saproling creature token.",
+      "At the beginning of your end step, for each spell you've cast this turn, create two 1/1 green Saproling creature tokens.",
+      "At the beginning of your end step, for each spell you've cast this game, create a 1/1 green Saproling creature token."
+    ]
+  }
+]

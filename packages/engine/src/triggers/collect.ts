@@ -1,6 +1,6 @@
 /** Trigger collection: candidates, intervening if (CR 603.4), additional triggers (603.2d), limits (603.2h) (design 8.4). Owner: WP8. Contract: triggers/api.ts#CollectTriggers. */
 import type { Game } from '../core/game';
-import { diesCause, type ChapterAbilityDef, type EventPattern, type ObjectFilter, type StaticEffect, type TriggerModDef, type TriggeredAbilityDef } from '../types/ability';
+import { diesCause, isEnterLeaveCause, leavingOf, type ChapterAbilityDef, type EventPattern, type ObjectFilter, type StaticEffect, type TriggerModDef, type TriggeredAbilityDef } from '../types/ability';
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { AbilityRef, GameObject, GameState, PendingTrigger, SemEvent, ZoneKind } from '../types/state';
 import { abilitiesFromChars, type AbilityInfo } from '../rules/abilities';
@@ -14,9 +14,9 @@ import { lookBackApplies, lookBackKinds } from './lookback';
 import { isManaActivationPattern, isTriggeredManaAbility } from './forms';
 import { historyMatches, type FactsEnv } from '../rules/history';
 import { matchEvent } from './match';
-import { batchOccurrences, byAttackedCount, byOccurrenceAmount, occurrences, perEventPattern } from './occurrences';
+import { batchOccurrences, byAttackedCount, byPlayerTotal, bySourceController, byOccurrenceAmount, isMixedAttackList, mixedAttackOccurrences, occurrences, perEventPattern } from './occurrences';
 import { triggersPossible } from './possible';
-import { hasReadAhead } from '../statics/levels';
+import { finalChapter, hasReadAhead } from '../statics/levels';
 import { keywordRegistry } from '../keywords/registry';
 
 /** An object whose abilities are looked at for a batch: a living object, or one that left a zone during the batch (last known information, CR 603.10). */
@@ -29,6 +29,10 @@ export interface Candidate {
   snapshot: boolean;
   /** CR 603.3a: the controller of a permanent or spell; objects in other zones have no controller, their owner controls the ability. */
   controller: PlayerId;
+  /** edh-zones-3 (CR 111.7): a token that was put into a graveyard and is gone again: it triggers only for the event that put it there. */
+  onlyEvent?: SemEvent;
+  /** edh-d-39 (CR 603.10b, 702.26b; Teferi's Imp): a permanent that phased out in this batch: it triggers only for its own phasing out (look back at the state just before it, when it still existed), never for anything else. */
+  phasedNow?: true;
 }
 
 /** The layered controller (layer 2, WP9: `Chars.controller`) when the characteristics function reports one, else the object's own. */
@@ -96,6 +100,7 @@ function candidatesIn(g: Game, batch: readonly SemEvent[]): Candidate[] {
       const o = s.objects[id];
       if (!o || o.kind === 'ability' || o.phasedOut) continue;
       const zone = o.zone;
+      if (o.kind === 'token' && zone === 'graveyard') continue; // edh-zones-3 (CR 111.7, 704.5d): a token there is looked at as the `onlyEvent` candidate below, once
       if (!always && !printedTriggerIn(g, o, zone) && !granted.has(id)) continue;
       const chars = charsOfObject(s, o);
       out.push({ id, obj: o, chars, zone, snapshot: false, controller: controllerFor(o, zone, chars) });
@@ -109,6 +114,18 @@ function candidatesIn(g: Game, batch: readonly SemEvent[]): Candidate[] {
     living(s.zones.graveyard[p.id] ?? [], false);
   }
   living(s.zones.exile, false);
+  // edh-d-39 (CR 603.10b, 702.26b; ruling 2023-10-13 of The War Doctor): a permanent that phased out in this batch looks back at its own phasing out ("Whenever this creature phases out"):
+  // it is treated as though it does not exist from then on, so it is a candidate for that event alone (`hitsPattern` below), whatever else the batch holds
+  for (const e of batch) {
+    if (e.ev !== 'becomes' || e.data['what'] !== 'phasedOut') continue;
+    const r = e.roles.subject;
+    for (const h of r !== undefined && 'objects' in r ? r.objects : []) {
+      const o = s.objects[h.id];
+      if (!o || o.kind === 'ability' || !o.phasedOut || o.zone !== 'battlefield' || out.some((c) => c.id === h.id)) continue;
+      const chars = charsOfObject(s, o);
+      out.push({ id: h.id, obj: o, chars, zone: 'battlefield', snapshot: false, controller: controllerFor(o, 'battlefield', chars), phasedNow: true });
+    }
+  }
   // CR 603.10a: only what left a zone IN THIS WINDOW looks back: the old ids of the batch's zone changes. The `before` of other events also holds objects that
   // are long gone (the source of damage dealt by its own "when this dies" ability), and those are not simultaneous leavers.
   const leftNow = new Set<ObjectId>();
@@ -122,6 +139,17 @@ function candidatesIn(g: Game, batch: readonly SemEvent[]): Candidate[] {
       const chars = lk.chars ?? charsOfObject(s, lk.object);
       out.push({ id, obj: lk.object, chars, zone, snapshot: true, controller: controllerFor(lk.object, zone, chars) });
     }
+  }
+  // edh-zones-3 (CR 111.7, 603.6c, 113.6k): a token put into a graveyard is there when the abilities its move triggers are collected (state-based action 704.5d has not yet
+  // taken it away, but a token has no record to find its ability by afterwards, so it is looked at once, by the old id): it is a candidate in the graveyard it was put into (its owner's), for the event that put it there only (as last known)
+  for (const e of batch) {
+    const oldId = e.ev === 'zoneChange' ? e.data['oldId'] : undefined;
+    if (typeof oldId !== 'string' || e.data['to'] !== 'graveyard' || s.objects[oldId]) continue;
+    const lk = e.before[oldId];
+    if (lk === undefined || lk.object.kind !== 'token' || seen.has(`${oldId}:graveyard`)) continue;
+    seen.add(`${oldId}:graveyard`);
+    const chars = lk.chars ?? charsOfObject(s, lk.object);
+    out.push({ id: oldId, obj: lk.object, chars, zone: 'graveyard', snapshot: false, controller: lk.object.owner, onlyEvent: e });
   }
   return out;
 }
@@ -163,11 +191,15 @@ function patternsFor(ab: TriggeredAbility, mode: CollectMode): EventPattern[] {
 }
 /** How many of the ability's chapter numbers this event reaches (CR 714.2b-c: "I, II --" is two chapter abilities, so one event adding two counters triggers it twice). */
 function chapterHits(def: ChapterAbilityDef, e: SemEvent, exactOnly = false): number {
+  return chaptersReached(def, e, exactOnly).length;
+}
+/** edhn78 (CR 714.2b-c, 714.2d): the chapter numbers of the ability this event reaches, ascending. */
+function chaptersReached(def: ChapterAbilityDef, e: SemEvent, exactOnly = false): number[] {
   const total = e.data['total'];
   const amount = e.data['amount'];
-  if (typeof total !== 'number' || typeof amount !== 'number') return 0;
+  if (typeof total !== 'number' || typeof amount !== 'number') return [];
   // M6-6, CR 702.155a: read ahead: the turn the Saga entered, a chapter ability triggers only if the Saga has exactly its chapter number of lore counters
-  return [...new Set(def.chapters)].filter((n) => total - amount < n && n <= total && (!exactOnly || n === total)).length;
+  return [...new Set(def.chapters)].filter((n) => total - amount < n && n <= total && (!exactOnly || n === total)).sort((a, b) => a - b);
 }
 
 /** M6-6, CR 702.155a: is this a read-ahead Saga (statics/levels.ts) in the turn it entered the battlefield (the history of this turn, triggers/history.ts)? */
@@ -194,8 +226,10 @@ function readAheadEnteredThisTurn(g: Game, cand: Candidate): boolean {
  * trek-2 (CR 603.2d, 119.9; cites unverified): `feature:triggerMod.lifeGain`, YOU GAINING LIFE (Dr. Beverly Crusher): the `life` gain events of the doubler's
  * controller (one per gain, triggers/normalize.ts; a life total set higher is a gain too, CR 119.5), matched without looking back like entering: an ability of a
  * permanent you control that one of them triggers ("whenever you gain life", "whenever you gain or lose life") triggers once more per such doubler.
+ * edh-d-93 (CR 603.2d, 121.1): `feature:triggerMod.draw`, A PLAYER DRAWING A CARD (Krang, the All-Powerful): the `draw` events of any player, matched without looking back like a life gain:
+ * an ability of a permanent you control that one of them triggers ("whenever a player draws a card", "whenever you draw your second card each turn") triggers once more per such doubler.
  */
-export const TRIGGER_MOD_CAPABILITIES: readonly string[] = ['static:triggerMod', 'feature:triggerMod.enters', 'feature:triggerMod.any', 'feature:triggerMod.suppress.enters' /* CLOUD std-misc: #suppressed */, 'feature:triggerMod.attacks' /* std-rx2 */, 'feature:triggerMod.suppress.keyword' /* std-rx32: #silencedKeywords */, 'feature:triggerMod.dies' /* std-typechange-2: diesCause */, 'feature:triggerMod.suppress.dies' /* p2-misc-1: #suppressed */, 'feature:triggerMod.lifeGain' /* trek-2: isLifeGainCause, CR 603.2d */];
+export const TRIGGER_MOD_CAPABILITIES: readonly string[] = ['static:triggerMod', 'feature:triggerMod.enters', 'feature:triggerMod.any', 'feature:triggerMod.suppress.enters' /* CLOUD std-misc: #suppressed */, 'feature:triggerMod.attacks' /* std-rx2 */, 'feature:triggerMod.suppress.keyword' /* std-rx32: #silencedKeywords */, 'feature:triggerMod.dies' /* std-typechange-2: diesCause */, 'feature:triggerMod.suppress.dies' /* p2-misc-1: #suppressed */, 'feature:triggerMod.lifeGain' /* trek-2: isLifeGainCause, CR 603.2d */, 'feature:triggerMod.cast' /* edh-cast-2: you casting or copying a spell, CR 603.2d */, 'feature:triggerMod.suppress.enters.scoped' /* edh-players-2: #suppressed, the abilities of the permanents abilitiesOf describes */, 'feature:triggerMod.enterLeave' /* edh-misc-5: isEnterLeaveCause, CR 603.2d */, 'feature:triggerMod.damage' /* edh-replace-6: a creature dealing combat damage to a player, CR 603.2d */, 'feature:triggerMod.damage.recipient' /* edh-d-45 */, 'feature:triggerMod.draw' /* edh-d-93: isAnyDrawCause, CR 603.2d */, 'feature:triggerMod.turnedFaceUp' /* edh-next-141: isTurnedFaceUpCause, CR 603.2d, 702.37e */];
 
 /** std-typechange-2 (CR 114.4): does the description of whose abilities are affected name emblems (`emblem: true`, alone or in one of its `anyOf`)? */
 const namesEmblems = (f: ObjectFilter): boolean => f.emblem === true || (f.anyOf ?? []).some((x) => x.emblem === true);
@@ -219,7 +253,7 @@ function triggerMods(g: Game, cands: readonly Candidate[]): TriggerMod[] {
       // FAST5 T40 (CR 603.10a): a doubler that left the battlefield in this batch still applies to the abilities that trigger from the same event, but only a mod with no
       // cause (every other mod is for a permanent that is still there, as before)
       // std-typechange-2 (CR 603.10a): ... and a mod whose cause is a creature dying (diesCause), an event that looks back
-      const mods = d.effects.filter((x: StaticEffect): x is TriggerModDef => x.s === 'triggerMod' && x.suppress !== true && (!c.snapshot || x.cause === undefined || diesCause(x.cause)));
+      const mods = d.effects.filter((x: StaticEffect): x is TriggerModDef => x.s === 'triggerMod' && x.suppress !== true && (!c.snapshot || x.cause === undefined || diesCause(x.cause) || isEnterLeaveCause(x)));
       if (mods.length === 0) continue;
       if (c.snapshot) {
         // the "as long as ..." of a permanent that is gone can't be judged (rules/conditions read the state as it is now): the extra trigger is not guessed
@@ -239,8 +273,9 @@ function triggerMods(g: Game, cands: readonly Candidate[]): TriggerMod[] {
  * modifications of permanents on the battlefield now (right after the event: a permanent that entered with it applies too, CR 603.2, 603.6a). Only a permanent entering
  * is such a cause (model/cap-walk.ts names every other one, never registered); an "as long as ..." the engine can't judge suppresses nothing and says so.
  */
-function suppressed(g: Game, cands: readonly Candidate[], batch: readonly SemEvent[]): Set<SemEvent> {
+function suppressed(g: Game, cands: readonly Candidate[], batch: readonly SemEvent[]): { all: Set<SemEvent>; scoped: ScopedSuppression[] } {
   const out = new Set<SemEvent>();
+  const scoped: ScopedSuppression[] = [];
   for (const c of cands) {
     if (c.zone !== 'battlefield') continue;
     for (const info of abilitiesFromChars(c.chars)) {
@@ -262,12 +297,25 @@ function suppressed(g: Game, cands: readonly Candidate[], batch: readonly SemEve
       }
       for (const m of mods) {
         const cx = { g, source: c.id, controller: c.controller, lookBack: diesCause(m.cause) };
-        for (const e of batch) if (!out.has(e) && matchEvent(m.cause!, e, cx)) out.add(e);
+        // edh-players-2 (CR 603.2, 603.6a; Elesh Norn, Mother of Machines): "... don't cause abilities of permanents your opponents control to trigger" silences only the
+        // abilities of the permanents `abilitiesOf` describes (judged from the silencer's controller); the event still causes everyone else's
+        const scope = Object.keys(m.abilitiesOf).length > 0;
+        for (const e of batch) {
+          if (!matchEvent(m.cause!, e, cx)) continue;
+          if (scope) scoped.push({ event: e, abilitiesOf: m.abilitiesOf, source: c.id, controller: c.controller });
+          else out.add(e);
+        }
       }
     }
   }
-  return out;
+  return { all: out, scoped };
 }
+
+/** edh-players-2: an event that causes no ability of the permanents `abilitiesOf` describes to trigger (CR 603.2). */
+/** edh-replace-7 (CR 108.4): "When you lose control of ~": a change of control of the object itself away from the controller of the ability, to whoever (triggers/match.ts#controlChange). */
+const losesControlOfSelf = (p: EventPattern): boolean => p.ev === 'controlChange' && p.from === 'you' && p.to === undefined && p.object?.self === true && Object.keys(p.object).length === 1;
+
+interface ScopedSuppression { event: SemEvent; abilitiesOf: ObjectFilter; source: ObjectId; controller: PlayerId }
 
 /**
  * std-rx32 ("Ward abilities of those creatures don't trigger", CR 702.21a, 603.2): the `suppress` trigger modifications with a `keyword` of permanents on the battlefield
@@ -317,7 +365,18 @@ function timesTriggered(g: Game, cand: Candidate, group: readonly SemEvent[], mo
     const cx = { g, source: m.source, controller: m.controller, lookBack: dies };
     if (typeof m.def.additional !== 'number') continue; // a computed number of extra triggers needs the interpreter's evaluator
     const cause = m.def.cause;
-    if (cause !== undefined) {
+    if (cause !== undefined && isEnterLeaveCause(m.def)) {
+      // edh-misc-5 (CR 603.2d, 603.10a; Gandalf the White): entering is judged on the event as it is, leaving looks back at the permanent that left
+      const leaving = leavingOf(cause);
+      // a doubler that has left the battlefield only doubles what LEAVES with it (CR 603.10a): a permanent that enters after it is gone, in the same resolution, is
+      // judged after that event (CR 603.2, 603.6a), when the doubler no longer applies
+      const gone = g.s.objects[m.source]?.zone !== 'battlefield';
+      // sacrificing, destroying and exiling a permanent from the battlefield is leaving it too (CR 701.17a, 701.8a, 701.13a): "whenever you sacrifice an artifact" is caused by it
+      const subject = (cause as { subject?: ObjectFilter }).subject;
+      const verbs = (['sacrifice', 'destroy', 'exile'] as const).map((verb) => ({ ev: 'action', verb, ...(subject !== undefined ? { subject } : {}) }) as unknown as EventPattern);
+      const left = (e: (typeof group)[number]): boolean => matchEvent(leaving, e, { ...cx, lookBack: true }) || verbs.some((v) => matchEvent(v, e, { ...cx, lookBack: true }));
+      if (!group.some((e) => (!gone && matchEvent(cause, e, { ...cx, lookBack: false })) || left(e))) continue;
+    } else if (cause !== undefined) {
       if (cand.snapshot && !dies) continue; // a cause that is an event of its own (entering...): abilities of a permanent that left count once, as before
       if (!group.some((e) => matchEvent(cause, e, cx))) continue;
     } // FAST5 T40: no cause: whatever event it is, also for the abilities that look back at a permanent that left (CR 603.10a)
@@ -398,7 +457,7 @@ function collectWith(g: Game, all: readonly SemEvent[], mode: CollectMode, histo
   const triggered: { t: PendingTrigger; cand: Candidate; group: readonly SemEvent[] }[] = []; // std-copy-6: what triggered, for metaEvents
   const cands = triggersPossible(g.s) ? candidatesFor(g, all) : []; // WP32: no definition of the game has a triggered ability: no object can trigger (possible.ts)
   // CLOUD std-misc: the events a "don't cause abilities to trigger" effect silences trigger nothing, delayed abilities included
-  const quiet = suppressed(g, cands, all);
+  const { all: quiet, scoped: quietScoped } = suppressed(g, cands, all);
   const batch = quiet.size === 0 ? all : all.filter((e) => !quiet.has(e));
   if (quiet.size > 0) g.log(`${quiet.size === 1 ? 'An event causes' : `${quiet.size} events cause`} no abilities to trigger.`, { rules: ['CR 603.2'], level: 'info' });
   const mods = triggerMods(g, cands);
@@ -431,25 +490,43 @@ function collectWith(g: Game, all: readonly SemEvent[], mode: CollectMode, histo
       // FAST5X E8 (CR 709.5j): the half a printed ability is on, for "When you unlock this door"
       const acx = ab.info.origin === 'printed' ? { ...cx, face: ab.info.face } : cx;
       const matched: SemEvent[] = [];
+      // edh-players-8 (CR 603.2c; triggers/occurrences.ts#isMixedAttackList): a batch list of an attack declaration beside single events judges each pattern alone
+      const mixedList = ab.def.kind === 'triggered' && ab.def.trigger.batch === true && ab.def.trigger.wholeBatch !== true && isMixedAttackList(patterns);
+      const hitsOf = new Map<SemEvent, readonly EventPattern[]>();
       const lookedBack = new Set<SemEvent>(); // AF2: the events that a pattern which matched them looks back at (CR 603.10a), for the effect (contextOf)
       for (const e of batch) {
+        // edh-players-2 (CR 603.2): an event that causes no ability of this permanent to trigger (scoped silencers, #suppressed)
+        if (quietScoped.length > 0 && cand.zone === 'battlefield' && quietScoped.some((q) => q.event === e && objectMatches(g.s, q.abilitiesOf, cand.obj, [cand.id], { source: q.source, controller: q.controller }))) continue;
+        if (cand.onlyEvent !== undefined && e !== cand.onlyEvent) continue; // edh-zones-3: a token in the graveyard it was put into
         const hits = patterns.filter((p) => {
+          // edh-d-39 (CR 603.10b, 702.26b): a permanent that phased out in this batch triggers only on its OWN phasing out (not on the other permanents that phased out with it)
+          if (cand.phasedNow === true) {
+            const r = e.roles.subject;
+            return p.ev === 'becomes' && p.what === 'phasedOut' && p.object.self === true && e.data['what'] === 'phasedOut' && r !== undefined && 'objects' in r && r.objects.some((h) => h.id === cand.id)
+              && matchEvent(perEventPattern(p, patterns), e, acx);
+          }
           // A thing that left a zone triggers only from where it was and only for events CR 603.10 lets look back.
           // wave 6 refs review (CR 603.2, 603.6a, 400.7): a permanent that entered and left again within the batch (exiled and returned twice by one resolution,
           // Another Round) triggered on its own entering, judged right after that event while it was on the battlefield: its snapshot sees that event too
           if (cand.snapshot && !(lookBackKinds(p).length > 0 && lookBackApplies(p, e)) && !(cand.zone === 'battlefield' && arrived.get(cand.id) === e)) return false;
           if (lookBackApplies(p, e) && arrivedNotBefore(cand, e)) return false; // CR 603.10a: it was not there just before the event
-          return matchEvent(perEventPattern(p, patterns), e, acx); // std-mkm: a one-sided damage amount is the occurrence's (triggers/occurrences.ts)
+          // edh-replace-7 (CR 108.4, 603.2, 603.3a; Khârn the Betrayer, ruling 2022-10-07): "When you lose control of ~" is judged for the player who lost control, though another player controls ~ now
+          const former = losesControlOfSelf(p) && typeof e.data['from'] === 'string' ? (e.data['from'] as PlayerId) : undefined;
+          return matchEvent(perEventPattern(p, mixedList ? [p] : patterns), e, former !== undefined ? { ...acx, controller: former } : acx); // std-mkm: a one-sided damage amount is the occurrence's (triggers/occurrences.ts)
         });
         const hit = hits.length > 0;
+        if (mixedList && hit) hitsOf.set(e, hits);
         if (hits.some((p) => lookBackApplies(p, e))) lookedBack.add(e);
         if (hit &&(ab.def.kind !== 'chapter' || chapterHits(ab.def, e, (exact ??= readAheadEnteredThisTurn(g, cand))) > 0)) matched.push(e);
       }
+      // edh-players-20 (CR 119.3, 603.2c): "one or more opponents each lose exactly 1 life": the players whose total for the batch is the amount
+      const kept = byPlayerTotal(patterns, matched, g.s.turn.step === 'combatDamage');
+      if (kept.length !== matched.length) matched.splice(0, matched.length, ...kept);
       if (matched.length === 0) continue;
       // CR 603.2c; PUSH1 T2: the combat damage of a step is one event for a damage trigger that names one side of it (CR 510.2, triggers/occurrences.ts)
       // ... and the counters put on ONE creature are one occurrence of "one or more counters are put on a creature" (triggers/occurrences.ts#batchOccurrences)
       // CLOUD std-misc (CR 603.2c): "one or more players discard one or more cards" is the whole batch, once (TriggerDef.wholeBatch)
-      let groups = ab.def.kind === 'triggered' && ab.def.trigger.batch ? (ab.def.trigger.wholeBatch === true ? [matched] : byAttackedCount(patterns, batchOccurrences(patterns, matched))) : byOccurrenceAmount(patterns, occurrences(patterns, matched));
+      let groups = mixedList ? mixedAttackOccurrences(patterns, matched, hitsOf) : ab.def.kind === 'triggered' && ab.def.trigger.batch ? (ab.def.trigger.wholeBatch === true ? bySourceController(patterns, matched, (e) => { const v = e.roles.source; const id = v && 'objects' in v ? v.objects[0]?.id : undefined; return id === undefined ? undefined : (g.s.objects[id] ?? e.before[id]?.object)?.controller; }) ?? [matched] : byAttackedCount(patterns, batchOccurrences(patterns, matched))) : byOccurrenceAmount(patterns, occurrences(patterns, matched));
       const trig = ab.def.kind === 'triggered' ? ab.def.trigger : undefined;
       // FAST4 T27 (CR 603.2, 603.2c): "for the first time each turn": only the first occurrence of the turn, and none when one happened before this batch
       let firstUnknown = false;
@@ -485,7 +562,15 @@ function collectWith(g: Game, all: readonly SemEvent[], mode: CollectMode, histo
         const times = applyLimit(g, cand, ab.info.key, limit, chapters * timesTriggered(g, cand, group, mods));
         for (let i = 0; i < times; i++) {
           const ref: AbilityRef = { source: ab.info.origin, face: ab.info.face, index: ab.info.index, key: ab.info.key };
-          const t: PendingTrigger = { id: `t${g.s.counters.effect++}`, sourceId: cand.id, sourceName: cand.chars.name, controller: cand.controller, abilityRef: ref, context };
+          // ... and the ability is the former controller's (they draw the cards), whoever controls the source now
+          const lostBy = patterns.some(losesControlOfSelf) && group.every((e) => e.ev === 'controlChange' && typeof e.data['from'] === 'string') ? (group[0]!.data['from'] as PlayerId) : undefined;
+          // edhn78 (CR 714.2d): the trigger of the chapter ability's greatest chapter number when that is the Saga's final one (the triggers of one event go in ascending order of chapter number)
+          let isFinal = false;
+          if (ab.def.kind === 'chapter') {
+            const reached = chaptersReached(ab.def, group[0]!, exact === true);
+            isFinal = reached.length > 0 && reached[Math.min(reached.length - 1, Math.floor((i * reached.length) / times))] === finalChapter(cand.chars.abilities);
+          }
+          const t: PendingTrigger = { id: `t${g.s.counters.effect++}`, sourceId: cand.id, sourceName: cand.chars.name, controller: lostBy ?? cand.controller, abilityRef: ref, context, ...(isFinal ? { finalChapter: true as const } : {}) };
           out.push(t);
           triggered.push({ t, cand, group });
           g.log(`${cand.chars.name} triggers: ${ab.def.text}`, { rules: ['CR 603.2'], level: 'info' });
@@ -509,10 +594,12 @@ function metaEvents(triggered: readonly { t: PendingTrigger; cand: Candidate; gr
   return triggered.map(({ t, cand, group }) => {
     const first = group[0]!;
     const byAttacking = group.some((e) => { const a = e.ev === 'attacks' ? e.roles.attacker : undefined; return a !== undefined && 'objects' in a && a.objects.some((h) => h.id === cand.id); });
+    // edh-next-74 (CR 603.2, 603.6a; Aboleth Spawn): ... or that object entering the battlefield (a `zoneChange` to the battlefield whose subject it is)
+    const byEntering = group.some((e) => e.ev === 'zoneChange' && e.data['to'] === 'battlefield' && e.roles.subject !== undefined && 'objects' in e.roles.subject && e.roles.subject.objects.some((h) => h.id === cand.id));
     return {
       ev: 'abilityTriggered', seq: first.seq, batch: first.batch, before: {},
       roles: { subject: { objects: [{ id: cand.id, zone: cand.zone }] }, spell: { objects: [{ id: `pending:${t.id}`, zone: 'stack' }] } },
-      data: { byAttacking },
+      data: { byAttacking, byEntering, ...(t.finalChapter === true ? { finalChapter: true } : {}) },
     } as SemEvent;
   });
 }

@@ -1,0 +1,131 @@
+[
+  {
+    "id": "eff.edhd40.return.fromGraveyard.thenAttachIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.7",
+      "CR 301.5c",
+      "CR 701.3a",
+      "CR 608.2c"
+    ],
+    "pattern": "return {o:Obj} to the battlefield , then attach it to {t:Obj}",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        },
+        "as": "moved"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "bound",
+          "name": "moved"
+        },
+        "to": "$t"
+      }
+    ],
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, create a 2/2 white Knight creature token. When you do, return target Equipment card from your graveyard to the battlefield, then attach it to that token."
+      },
+      {
+        "text": "When ~ dies, create a 1/1 white Spirit creature token with flying. When you do, return target Equipment card from your graveyard to the battlefield, then attach it to that token."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, create a 2/2 white Knight creature token. When you do, return target Equipment card from your graveyard to your hand, then attach it to that token.",
+      "When ~ enters, create a 2/2 white Knight creature token. When you do, return target Equipment card from your graveyard to the battlefield tapped, then attach it to that token."
+    ]
+  },
+  {
+    "id": "sta.edhd40.enchanted.otherPlayerControls.cantAttackBlock.otherwise.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 303.4",
+      "CR 508.1c",
+      "CR 509.1b",
+      "CR 702.89a"
+    ],
+    "pattern": "as long as another player controls enchanted creature , it can't attack or block . otherwise , ~ has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "attachedTo"
+        },
+        "filter": {
+          "controller": "opponent"
+        }
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "block"
+        }
+      ],
+      "otherwise": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "another",
+      "otherwise",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "As long as another player controls enchanted creature, it can't attack or block. Otherwise, ~ has flying."
+      },
+      {
+        "text": "As long as another player controls enchanted creature, it can't attack or block. Otherwise, ~ has lifelink."
+      }
+    ],
+    "counterExamples": [
+      "As long as an opponent controls enchanted creature, it can't attack or block. Otherwise, ~ has flying.",
+      "As long as another player controls enchanted creature, it can't attack. Otherwise, ~ has flying.",
+      "As long as another player controls enchanted creature, it can't attack or block. Then, ~ has flying."
+    ]
+  }
+]

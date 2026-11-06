@@ -1,0 +1,110 @@
+[
+  {
+    "id": "eff.edhv67.player.chooses.theyControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 109.4",
+      "CR 701.24"
+    ],
+    "pattern": "{p:Player} choose[s] ( a | an ) {f:Filter} they control",
+    "build": {
+      "op": "chooseObjects",
+      "who": "$p",
+      "from": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "$p"
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent chooses a Goblin they control. Destroy that Goblin."
+      },
+      {
+        "text": "Target player chooses an artifact they control. Destroy that artifact."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent chooses two Goblins they control. Destroy that Goblin.",
+      "Target opponent chooses a Goblin you control. Destroy that Goblin.",
+      "Target opponent chooses a Goblin they control and destroys it."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv67.put.gy.thatPlayers",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 401.4",
+      "CR 404.1"
+    ],
+    "pattern": "put {o:Objs} into that player 's graveyard",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "graveyard"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at the top card of target player's library. Put that card into that player's graveyard."
+      },
+      {
+        "text": "Look at the top card of target opponent's library. Put that card into that player's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top card of target player's library. Put that card into an opponent's graveyard.",
+      "Look at the top card of target player's library. Put that card into that player's hand."
+    ]
+  },
+  {
+    "id": "eff.edhv67.put.lib.top.thatPlayers",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 401.4",
+      "CR 404.1"
+    ],
+    "pattern": "put {o:Objs} on top of that player 's library",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "position": "top"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at target opponent's hand and choose a creature card from it. Put that card on top of that player's library."
+      },
+      {
+        "text": "Look at target player's hand and choose a creature card from it. Put that card on top of that player's library."
+      }
+    ],
+    "counterExamples": [
+      "Look at target opponent's hand and choose a creature card from it. Put that card on the bottom of that player's library.",
+      "Look at target opponent's hand and choose a creature card from it. Put that card on top of an opponent's library."
+    ]
+  }
+]

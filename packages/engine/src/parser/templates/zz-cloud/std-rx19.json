@@ -55,7 +55,7 @@
       "CR 305.2a",
       "CR 101.4"
     ],
-    "pattern": "( each player | players ) may play an additional land on each of their turns",
+    "pattern": "( each player | players ) may play an additional land ( on | during ) each of their turns",
     "build": {
       "s": "permit",
       "who": {

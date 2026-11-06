@@ -69,12 +69,26 @@ describe('r4-fxb template file (design 6.3, 6.9; CONTRIBUTING "Adding a template
   });
 });
 
+/**
+ * edh-perms-10 made "each of them" an object the Obj hole reads (parser/holes/object.ts), so the old generic eff.counters.put ("put a <kind> counter on <object>") reads
+ * "Put an indestructible counter on each of them." too, with the same JSON as this file's weak template (the chart picks one of two equal readings by template id). The old
+ * template is not made weak (it reads far more); the example is proved for this template by parsing it with the generic one left out, and the two JSONs are compared.
+ */
+const SUBSUMED_BY: Readonly<Record<string, string>> = { 'eff.fxb.counter.eachOfThem': 'eff.counters.put' };
+
 describe('r4-fxb guard G9 (design 6.8): examples and counter-examples', () => {
   for (const t of R3) {
     it(`${t.id} (${t.cr.join(', ')}): every example parses with it, is automated and passes the render gate; counter-examples do not give the same JSON`, () => {
       const first = parsedWith(t, t.examples[0]!.text);
       for (const e of t.examples) {
-        const f = parsedWith(t, e.text);
+        let f = parsedWith(t, e.text);
+        const by = SUBSUMED_BY[t.id];
+        if (by !== undefined && !f.templatesUsed.includes(t.id) && f.templatesUsed.includes(by)) {
+          const without = parseCard(exampleCard(t, e.text), { ...OPTS, templates: OPTS.templates.filter((x) => x.id !== by) }).faces[0]!;
+          expect(without.templatesUsed, e.text).toContain(t.id);
+          expect(jsonKey(f.abilities), `${e.text}: the same JSON with either template`).toBe(jsonKey(without.abilities));
+          f = without;
+        }
         // an experimental template whose wording the stable templates also lower to the same result gives way to them (design 6.9, G10: the "experimental" info
         // diagnostic names it)
         const fellBack = t.status === 'experimental' && f.diagnostics.some((d) => d.code === 'experimental' && d.message.includes(t.id));

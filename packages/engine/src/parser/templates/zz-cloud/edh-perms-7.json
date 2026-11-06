@@ -1,0 +1,138 @@
+[
+  {
+    "id": "eff.edhpm7.eachGets.shrink.foreach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 608.2h",
+      "CR 613.4c"
+    ],
+    "pattern": "each {f0:Filter} gets -1/-1 {d:Dur} for each {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f0"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  -1,
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  -1,
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each creature that isn't a Rat or Spider gets -1/-1 until end of turn for each Island you control."
+      },
+      {
+        "text": "Each creature you don't control gets -1/-1 until end of turn for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Each creature that isn't a Rat or Spider gets -1/-1 for each Island you control.",
+      "Each creature that isn't a Rat or Spider gets -2/-2 until end of turn for each Island you control.",
+      "Target creature gets -1/-1 until end of turn for each Island you control."
+    ]
+  },
+  {
+    "id": "eff.edhpm7.copyToken.tapped.ptColorSubtype",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.9b",
+      "CR 707.2",
+      "CR 111.1",
+      "CR 613.4b"
+    ],
+    "pattern": "create a tapped token that's a copy of {o:Obj} , except it's a {pt:BasePT} {c:Color} {st:Subtypes}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "tapped": true,
+      "except": [
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": [
+              "$c"
+            ]
+          }
+        },
+        {
+          "layer": 4,
+          "subtypes": {
+            "set": "$st"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Create a tapped token that's a copy of target creature, except it's a 2/2 white Spirit."
+      },
+      {
+        "text": "Create a tapped token that's a copy of target artifact you control, except it's a 3/3 blue Illusion."
+      }
+    ],
+    "counterExamples": [
+      "Create a tapped token that's a copy of target creature, except it's a 2/2 white Spirit in addition to its other types.",
+      "Create a tapped token that's a copy of target creature, except it's a white Spirit.",
+      "Create two tapped tokens that are copies of target creature, except they're 2/2 white Spirits."
+    ]
+  }
+]

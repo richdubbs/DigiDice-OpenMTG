@@ -1,0 +1,333 @@
+[
+  {
+    "id": "eff.edhd51.mayHave.basePT.possessive.equalTo.stat",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 608.2d",
+      "CR 608.2h",
+      "CR 208.1"
+    ],
+    "pattern": "you may have {o:Obj} 's base power and toughness become equal to {s:Obj} 's power and toughness {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7b",
+                  "power": {
+                    "q": "stat",
+                    "stat": "power",
+                    "of": "$s"
+                  },
+                  "toughness": {
+                    "q": "stat",
+                    "stat": "toughness",
+                    "of": "$s"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another Elf you control enters, you may have ~'s base power and toughness become equal to that creature's power and toughness until end of turn."
+      },
+      {
+        "text": "When ~ enters, you may have ~'s base power and toughness become equal to target creature's power and toughness until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another Elf you control enters, you may have ~'s base power and toughness become equal to that creature's power and toughness.",
+      "Whenever another Elf you control enters, ~'s base power and toughness become equal to that creature's power and toughness until end of turn.",
+      "Whenever another Elf you control enters, you may have ~'s base power and toughness become equal to that creature's toughness until end of turn.",
+      "Whenever another Elf you control enters, you may have ~'s power and toughness become equal to that creature's power and toughness until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhd51.gainlife.foreach.lead",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2h",
+      "CR 406.1"
+    ],
+    "pattern": "for each {f:Filter} , {p:Player} gain[s] 1 life",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Exile up to two target cards from graveyards. For each creature card exiled this way, you gain 1 life."
+      },
+      {
+        "text": "Exile target card from a graveyard. For each land card exiled this way, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Exile up to two target cards from graveyards. For each creature card exiled this way, you gain 2 life.",
+      "Exile up to two target cards from graveyards. For each creature card exiled this way, you lose 1 life.",
+      "Exile up to two target cards from graveyards. For each creature card exiled this way.",
+      "Exile up to two target cards from graveyards. For each creature card exiled this way, you may gain 1 life."
+    ]
+  },
+  {
+    "id": "eff.edhd51.gains.choice4",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "{o:Obj} gains your choice of {k1:Keyword} , {k2:Keyword} , {k3:Keyword} , or {k4:Keyword} {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "keywordChoice",
+        "link": "keywordChoice",
+        "options": [
+          "$k1.text",
+          "$k2.text",
+          "$k3.text",
+          "$k4.text"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k1.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k2.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k2"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k3.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k3"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k4.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k4"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature you control gains your choice of flying, vigilance, menace, or reach until end of turn."
+      },
+      {
+        "text": "Put a +1/+1 counter on target creature. It gains your choice of reach, deathtouch, lifelink, or trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control gains your choice of flying, vigilance, menace, or reach.",
+      "Target creature you control gains flying, vigilance, menace, and reach until end of turn.",
+      "Target creature you control gains your choice of flying, vigilance, or menace until end of turn."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhd51.exiledTop.cast.filtered",
+    "kind": "effect",
+    "since": 9,
+    "status": "experimental",
+    "weak": 1,
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 406.1",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from among {g:ExiledTop}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "exile"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top six cards of your library. You may cast a creature spell from among them."
+      },
+      {
+        "text": "Exile the top four cards of your library. You may cast an instant or sorcery spell with mana value 3 or less from among them."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top six cards of your library. You may cast two creature spells from among them.",
+      "Exile the top six cards of your library. You may cast a creature spell from among them without paying its mana cost.",
+      "Look at the top six cards of your library. You may cast a creature spell from among them."
+    ]
+  }
+]

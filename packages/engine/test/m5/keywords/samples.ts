@@ -26,8 +26,11 @@ export const SAMPLES: Readonly<Record<string, KeywordAbilityDef>> = {
   'buyback {3}': kw('buyback', 'Buyback {3}', { cost: mana('{3}') }),
   'flashback {1}{R}': kw('flashback', 'Flashback {1}{R}', { cost: mana('{1}{R}') }),
   storm: kw('storm', 'Storm'),
+  gravestorm: kw('gravestorm', 'Gravestorm'), // edh-d-3 (CR 702.69a)
   'affinity for artifacts': kw('affinity', 'Affinity for artifacts', { filter: { types: ['Artifact'], controller: 'you' } }),
   'entwine {2}': kw('entwine', 'Entwine {2}', { cost: mana('{2}') }),
+  'absorb 1': kw('absorb', 'Absorb 1', { amount: 1 }), // CR 702.64a (edh-c-54)
+  'frenzy 1': kw('frenzy', 'Frenzy 1', { amount: 1 }), // CR 702.68a (edh-c-114)
   'bushido 1': kw('bushido', 'Bushido 1', { amount: 1 }),
   'firebending 2': kw('firebending', 'Firebending 2', { amount: 2 }), // FAST5 MX6 (CR 702.189a)
   'ninjutsu {1}{U}': kw('ninjutsu', 'Ninjutsu {1}{U}', { cost: mana('{1}{U}') }),
@@ -58,6 +61,7 @@ export const SAMPLES: Readonly<Record<string, KeywordAbilityDef>> = {
   station: kw('station', 'Station'),
   devoid: kw('devoid', 'Devoid'),
   changeling: kw('changeling', 'Changeling'),
+  'living metal': kw('living metal', 'Living metal'), // edh-next-76 (CR 702.161)
   'crew 2': kw('crew', 'Crew 2', { amount: 2 }),
   'saddle 3': kw('saddle', 'Saddle 3', { amount: 3 }), // FAST5X E3 (CR 702.171a)
   // FAST5X E9 (CR 702.181a, 702.182a, 702.191a)
@@ -76,9 +80,13 @@ export const SAMPLES: Readonly<Record<string, KeywordAbilityDef>> = {
   undaunted: kw('undaunted', 'Undaunted'),
   'bloodthirst 2': kw('bloodthirst', 'Bloodthirst 2', { amount: 2 }),
   // std-rx15 (CR 702.82a-b): devour of creatures, and of a permanent type
+  // edh-c-42 (CR 702.38a): amplify
+  'recover {1}{w}': kw('recover', 'Recover {1}{W}', { cost: mana('{1}{W}') }),
+  'amplify 1': kw('amplify', 'Amplify 1', { amount: 1 }),
   'devour 2': kw('devour', 'Devour 2', { amount: 2 }),
   'devour land 3': kw('devour', 'Devour land 3', { amount: 3, filter: { types: ['Land'] } }),
   mentor: kw('mentor', 'Mentor'),
+  'tribute 2': kw('tribute', 'Tribute 2', { amount: 2 }), // edh-c-37 (CR 702.104a)
   dethrone: kw('dethrone', 'Dethrone'), // cmd4 (CR 702.105a)
   // M6-1 (m6 design 3.2): the keywords that use the replacement loop
   'dredge 4': kw('dredge', 'Dredge 4', { amount: 4 }),
@@ -119,6 +127,7 @@ export const SAMPLES: Readonly<Record<string, KeywordAbilityDef>> = {
   'outlast {1}{W}': kw('outlast', 'Outlast {1}{W}', { cost: mana('{1}{W}') }),
   ingest: kw('ingest', 'Ingest'),
   'afflict 2': kw('afflict', 'Afflict 2', { amount: 2 }),
+  'poisonous 1': kw('poisonous', 'Poisonous 1', { amount: 1 }),
   'soulshift 3': kw('soulshift', 'Soulshift 3', { amount: 3 }),
   'fabricate 1': kw('fabricate', 'Fabricate 1', { amount: 1 }),
   'modular 2': kw('modular', 'Modular 2', { amount: 2 }),
@@ -132,6 +141,7 @@ export const SAMPLES: Readonly<Record<string, KeywordAbilityDef>> = {
   unleash: kw('unleash', 'Unleash'), // CR 702.98a
   'reinforce 2 -- {1}{W}': kw('reinforce', 'Reinforce 2—{1}{W}', { amount: 2, cost: mana('{1}{W}') }), // CR 702.77a
   'transmute {1}{U}{U}': kw('transmute', 'Transmute {1}{U}{U}', { cost: mana('{1}{U}{U}') }), // CR 702.53a
+  'transfigure {1}{B}{B}': kw('transfigure', 'Transfigure {1}{B}{B}', { cost: mana('{1}{B}{B}') }), // CR 702.71a (edh-d-13)
   'scavenge {3}{G}{G}': kw('scavenge', 'Scavenge {3}{G}{G}', { cost: mana('{3}{G}{G}') }), // CR 702.97a
   ascend: kw('ascend', 'Ascend'), // CR 702.131a-b (a permanent: no expansion, core/citys-blessing.ts)
   // std-rl (precon round L)
@@ -149,6 +159,7 @@ export const SAMPLES: Readonly<Record<string, KeywordAbilityDef>> = {
   enlist: kw('enlist', 'Enlist'), // CR 702.154a
   'renown 2': kw('renown', 'Renown 2', { amount: 2 }), // CR 702.112a
   'surge {1}{R}': kw('surge', 'Surge {1}{R}', { cost: mana('{1}{R}') }), // CR 702.117a
+  'prowl {1}{B}': kw('prowl', 'Prowl {1}{B}', { cost: mana('{1}{B}') }), // edh-players-22, CR 702.76a
   // std-rx24 (wave 2, EDH lane rx24)
   'umbra armor': kw('umbra armor', 'Umbra armor'), // CR 702.89a
   'jump-start': kw('jump-start', 'Jump-start'), // CR 702.133a
@@ -164,4 +175,19 @@ export const SAMPLES: Readonly<Record<string, KeywordAbilityDef>> = {
   'beam me up {2}{U}': kw('beam me up', 'Beam me up {2}{U}', { cost: mana('{2}{U}') }),
   // pc-keywords-mana-1 (precon lane keywords-mana, CR 702.96a): an alternative cost; the spell is rewritten when it is cast (effects/overload.ts)
   'overload {3}{U}': kw('overload', 'Overload {3}{U}', { cost: mana('{3}{U}') }),
+  // edh-next-100 (CR 702.148a): cleave, an alternative cost; the spell's cleaved effect is read by actions/cast.ts and effects/run.ts
+  'cleave {1}{U}{U}': kw('cleave', 'Cleave {1}{U}{U}', { cost: mana('{1}{U}{U}') }),
+  // edh-mana-keywords-7 (Commander lane edh-mana-keywords): reconfigure (CR 702.151a), backup with the abilities printed below it (CR 702.165a; `below` is written by parser/parse.ts#fillBackupAbilities), demonstrate (CR 702.144a)
+  'reconfigure {2}': kw('reconfigure', 'Reconfigure {2}', { cost: mana('{2}') }),
+  'backup 1 with flying below': kw('backup', 'Backup 1', { amount: 1, below: [{ kind: 'keyword', keyword: 'flying', text: 'Flying' }] }),
+  demonstrate: kw('demonstrate', 'Demonstrate'),
+  // edh-top-2 (Commander lane edh-top): soulbond (CR 702.95a) and cipher (CR 702.99a)
+  soulbond: kw('soulbond', 'Soulbond'),
+  cipher: kw('cipher', 'Cipher'),
+  // edh-cast-15 (Commander lane edh-cast): ripple N (CR 702.60a)
+  'ripple 4': kw('ripple', 'Ripple 4', { amount: 4 }),
+  // edh-combat-7 (Commander lane edh-combat): artifact offering (CR 702.48)
+  'artifact offering {4}{R}{R}': kw('offering', 'Artifact offering', { cost: mana('{4}{R}{R}'), quality: 'Artifact' }),
+  // edh-c-8 (Commander effort, coordinator C): emerge {cost} (CR 702.119)
+  'emerge {5}{B}{B}': kw('emerge', 'Emerge {5}{B}{B}', { cost: mana('{5}{B}{B}') }),
 };

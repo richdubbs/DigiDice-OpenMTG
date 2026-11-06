@@ -20,7 +20,7 @@
  */
 import type { GameState } from '../types/state';
 import { combatTaxTexts } from '../statics/combat-tax';
-import { declarationLimits } from '../statics/hooks';
+import { declarationLimits, onlyAloneTexts } from '../statics/hooks';
 import { charsOfObject } from './characteristics';
 
 /** One piece of manual text that may change the legality of a declaration. */
@@ -75,7 +75,8 @@ export function manualCombatTexts(s: GameState, kind: 'attack' | 'block'): Manua
   for (const r of s.reminders) if (!r.id.startsWith(REQUIREMENT_CHIP)) add(r.sourceName, r.text);
   // r5-static (CR 508.1d, 509.1c-d): a cost to attack or block the engine charges (statics/combat-tax.ts) changes which requirements count as well
   // r5-static (CR 508.1c-d, 509.1b-c): and so does a limit on the whole declaration ("No more than one creature can attack each combat"): the search knows none
-  const limits = declarationLimits(s, kind).map((l) => ({ sourceName: l.sourceName, text: l.text }));
+  // edh-combat-6 (CR 508.1c-d): and so does "can only attack alone" (a requirement on another creature, or on the creature itself, may not be obeyed together with it)
+  const limits = [...declarationLimits(s, kind).map((l) => ({ sourceName: l.sourceName, text: l.text })), ...(kind === 'attack' ? onlyAloneTexts(s) : [])];
   for (const t of [...combatTaxTexts(s, kind), ...limits]) if (!out.some((x) => x.sourceName === t.sourceName && x.text === t.text)) out.push({ ...t, cost: true });
   for (const h of s.history) {
     if (h.turn !== s.turn.number || h.ev !== 'resolves' || h.subject === undefined) continue;

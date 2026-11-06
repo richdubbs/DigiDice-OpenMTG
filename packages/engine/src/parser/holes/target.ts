@@ -12,6 +12,8 @@ export interface TargetDet {
   min: number | Quantity;
   max: number | 'any' | Quantity;
   another: boolean;
+  /** edh-c-95: a less likely reading (design 6.3 rule 2), so an older template that spells the same words out wins ("a second"). */
+  weak?: number;
   /** Number of the noun that must follow. */
   number: 'singular' | 'plural';
   /** "each of up to two target ...": the same targets, named one by one. The verb after the phrase is singular; callers put the flag `each-of` on the parse. */
@@ -20,6 +22,8 @@ export interface TargetDet {
 
 const W_TARGET = P('target');
 const W_ANOTHER_TARGET = P('another target');
+const W_A_THIRD_TARGET = P('a third target'); // edh-c-6 (CR 115.3): a target different from the two before it, "another target" with two earlier targets
+const W_A_SECOND_TARGET = P('a second target'); // edh-c-95 (CR 115.3; Daghatar the Adamant ruling 2014-11-24: "The two targets must be different creatures"): a target different from the one before it
 const W_UP_TO = P('up to');
 const W_ANY_NUMBER_OF = P('any number of');
 const W_ONE_OR_TWO = P('one or two');
@@ -33,6 +37,8 @@ function counts(ctx: HoleCtx, pos: number): { end: number; value: number | Quant
   const t = ctx.toks[pos];
   if (t === undefined) return [];
   if (t.kind === 'X') return [{ end: pos + 1, value: { q: 'X' } }];
+  // edh-next-104 (CR 107.1, 115.1, 601.2c; Erebos's Intervention): "up to twice X target cards": twice the X announced
+  if (t.norm === 'twice' && ctx.toks[pos + 1]?.kind === 'X') return [{ end: pos + 2, value: { q: 'math', op: '*', args: [2, { q: 'X' }] } }];
   const n = numberAt(ctx, pos);
   return n === undefined ? [] : [{ end: pos + 1, value: n }];
 }
@@ -56,6 +62,10 @@ function plainDets(ctx: HoleCtx, pos: number): TargetDet[] {
   if (bare >= 0) out.push({ end: bare, min: 1, max: 1, another: false, number: 'singular' });
   const another = phraseAt(ctx, pos, W_ANOTHER_TARGET);
   if (another >= 0) out.push({ end: another, min: 1, max: 1, another: true, number: 'singular' });
+  const second = phraseAt(ctx, pos, W_A_SECOND_TARGET);
+  if (second >= 0) out.push({ end: second, min: 1, max: 1, another: true, number: 'singular', weak: 1 });
+  const third = phraseAt(ctx, pos, W_A_THIRD_TARGET);
+  if (third >= 0) out.push({ end: third, min: 1, max: 1, another: true, number: 'singular' });
 
   const withOther = (p: number): { end: number; other: boolean }[] => {
     const o = phraseAt(ctx, p, W_OTHER);

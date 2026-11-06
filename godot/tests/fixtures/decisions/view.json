@@ -1,0 +1,649 @@
+{
+  "schema": 1,
+  "viewer": "p1",
+  "midAction": false,
+  "options": {},
+  "defs": {
+    "Grizzly Bears": {
+      "id": "Grizzly Bears",
+      "name": "Grizzly Bears",
+      "layout": "normal",
+      "faces": [
+        {
+          "name": "Grizzly Bears",
+          "manaCost": null,
+          "typeLine": "Creature — Bear",
+          "supertypes": [],
+          "types": [
+            "Creature"
+          ],
+          "subtypes": [],
+          "oracleText": ""
+        }
+      ],
+      "isToken": false
+    },
+    "Llanowar Elves": {
+      "id": "Llanowar Elves",
+      "name": "Llanowar Elves",
+      "layout": "normal",
+      "faces": [
+        {
+          "name": "Llanowar Elves",
+          "manaCost": null,
+          "typeLine": "Creature — Elf Druid",
+          "supertypes": [],
+          "types": [
+            "Creature"
+          ],
+          "subtypes": [],
+          "oracleText": "{T}: Add {G}."
+        }
+      ],
+      "isToken": false
+    },
+    "Forest": {
+      "id": "Forest",
+      "name": "Forest",
+      "layout": "normal",
+      "faces": [
+        {
+          "name": "Forest",
+          "manaCost": null,
+          "typeLine": "Basic Land — Forest",
+          "supertypes": [],
+          "types": [
+            "Land"
+          ],
+          "subtypes": [],
+          "oracleText": "({T}: Add {G}.)"
+        }
+      ],
+      "isToken": false
+    },
+    "Mountain": {
+      "id": "Mountain",
+      "name": "Mountain",
+      "layout": "normal",
+      "faces": [
+        {
+          "name": "Mountain",
+          "manaCost": null,
+          "typeLine": "Basic Land — Mountain",
+          "supertypes": [],
+          "types": [
+            "Land"
+          ],
+          "subtypes": [],
+          "oracleText": "({T}: Add {R}.)"
+        }
+      ],
+      "isToken": false
+    },
+    "Island": {
+      "id": "Island",
+      "name": "Island",
+      "layout": "normal",
+      "faces": [
+        {
+          "name": "Island",
+          "manaCost": null,
+          "typeLine": "Basic Land — Island",
+          "supertypes": [],
+          "types": [
+            "Land"
+          ],
+          "subtypes": [],
+          "oracleText": "({T}: Add {U}.)"
+        }
+      ],
+      "isToken": false
+    },
+    "Hill Giant": {
+      "id": "Hill Giant",
+      "name": "Hill Giant",
+      "layout": "normal",
+      "faces": [
+        {
+          "name": "Hill Giant",
+          "manaCost": null,
+          "typeLine": "Creature — Giant",
+          "supertypes": [],
+          "types": [
+            "Creature"
+          ],
+          "subtypes": [],
+          "oracleText": ""
+        }
+      ],
+      "isToken": false
+    },
+    "Goblin Guide": {
+      "id": "Goblin Guide",
+      "name": "Goblin Guide",
+      "layout": "normal",
+      "faces": [
+        {
+          "name": "Goblin Guide",
+          "manaCost": null,
+          "typeLine": "Creature — Goblin Scout",
+          "supertypes": [],
+          "types": [
+            "Creature"
+          ],
+          "subtypes": [],
+          "oracleText": "Haste"
+        }
+      ],
+      "isToken": false
+    },
+    "Lightning Bolt": {
+      "id": "Lightning Bolt",
+      "name": "Lightning Bolt",
+      "layout": "normal",
+      "faces": [
+        {
+          "name": "Lightning Bolt",
+          "manaCost": null,
+          "typeLine": "Instant",
+          "supertypes": [],
+          "types": [
+            "Instant"
+          ],
+          "subtypes": [],
+          "oracleText": "Lightning Bolt deals 3 damage to any target."
+        }
+      ],
+      "isToken": false
+    },
+    "Shock": {
+      "id": "Shock",
+      "name": "Shock",
+      "layout": "normal",
+      "faces": [
+        {
+          "name": "Shock",
+          "manaCost": null,
+          "typeLine": "Instant",
+          "supertypes": [],
+          "types": [
+            "Instant"
+          ],
+          "subtypes": [],
+          "oracleText": "Shock deals 2 damage to any target."
+        }
+      ],
+      "isToken": false
+    },
+    "Shivan Dragon": {
+      "id": "Shivan Dragon",
+      "name": "Shivan Dragon",
+      "layout": "normal",
+      "faces": [
+        {
+          "name": "Shivan Dragon",
+          "manaCost": null,
+          "typeLine": "Creature — Dragon",
+          "supertypes": [],
+          "types": [
+            "Creature"
+          ],
+          "subtypes": [],
+          "oracleText": "Flying\n{R}: Shivan Dragon gets +1/+0 until end of turn."
+        }
+      ],
+      "isToken": false
+    },
+    "__hidden__": {
+      "id": "__hidden__",
+      "name": "",
+      "layout": "normal",
+      "faces": [],
+      "isToken": false
+    },
+    "Krenko, Mob Boss": {
+      "id": "Krenko, Mob Boss",
+      "name": "Krenko, Mob Boss",
+      "layout": "normal",
+      "faces": [
+        {
+          "name": "Krenko, Mob Boss",
+          "manaCost": null,
+          "typeLine": "Legendary Creature — Goblin Warrior",
+          "supertypes": [
+            "Legendary"
+          ],
+          "types": [
+            "Creature"
+          ],
+          "subtypes": [
+            "Goblin",
+            "Warrior"
+          ],
+          "oracleText": "{T}: Create X 1/1 red Goblin creature tokens, where X is the number of Goblins you control."
+        }
+      ],
+      "isToken": false
+    }
+  },
+  "players": [
+    {
+      "id": "p1",
+      "name": "Alice",
+      "life": 20,
+      "poison": 0,
+      "hasLost": false,
+      "landsPlayedThisTurn": 0,
+      "manaPool": [
+        {
+          "type": "G",
+          "sourceId": "o14"
+        }
+      ],
+      "keptHand": true,
+      "mulligans": 0,
+      "stops": {
+        "ownTurn": [
+          "main1",
+          "main2"
+        ],
+        "opponentTurn": [
+          "declareAttackers",
+          "end"
+        ],
+        "fullControl": false
+      },
+      "counters": {},
+      "commanders": [
+        {
+          "card": "c80",
+          "defId": "Krenko, Mob Boss",
+          "casts": 0
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "name": "Bob",
+      "life": 20,
+      "poison": 0,
+      "hasLost": false,
+      "landsPlayedThisTurn": 0,
+      "manaPool": [],
+      "keptHand": true,
+      "mulligans": 0,
+      "stops": {
+        "ownTurn": [
+          "main1",
+          "main2"
+        ],
+        "opponentTurn": [
+          "declareAttackers",
+          "end"
+        ],
+        "fullControl": false
+      },
+      "counters": {}
+    }
+  ],
+  "objects": {
+    "o10": {
+      "id": "o10",
+      "kind": "card",
+      "cardId": "c10",
+      "defId": "Grizzly Bears",
+      "owner": "p1",
+      "controller": "p1",
+      "zone": "battlefield",
+      "timestamp": 10,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o11": {
+      "id": "o11",
+      "kind": "card",
+      "cardId": "c11",
+      "defId": "Llanowar Elves",
+      "owner": "p1",
+      "controller": "p1",
+      "zone": "battlefield",
+      "timestamp": 11,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o12": {
+      "id": "o12",
+      "kind": "card",
+      "cardId": "c12",
+      "defId": "Forest",
+      "owner": "p1",
+      "controller": "p1",
+      "zone": "battlefield",
+      "timestamp": 12,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o13": {
+      "id": "o13",
+      "kind": "card",
+      "cardId": "c13",
+      "defId": "Mountain",
+      "owner": "p1",
+      "controller": "p1",
+      "zone": "battlefield",
+      "timestamp": 13,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o14": {
+      "id": "o14",
+      "kind": "card",
+      "cardId": "c14",
+      "defId": "Forest",
+      "owner": "p1",
+      "controller": "p1",
+      "zone": "battlefield",
+      "timestamp": 14,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o20": {
+      "id": "o20",
+      "kind": "card",
+      "cardId": "c20",
+      "defId": "Hill Giant",
+      "owner": "p2",
+      "controller": "p2",
+      "zone": "battlefield",
+      "timestamp": 20,
+      "tapped": true,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o21": {
+      "id": "o21",
+      "kind": "card",
+      "cardId": "c21",
+      "defId": "Goblin Guide",
+      "owner": "p2",
+      "controller": "p2",
+      "zone": "battlefield",
+      "timestamp": 21,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o30": {
+      "id": "o30",
+      "kind": "card",
+      "cardId": "c30",
+      "defId": "Lightning Bolt",
+      "owner": "p1",
+      "controller": "p1",
+      "zone": "hand",
+      "timestamp": 30,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o31": {
+      "id": "o31",
+      "kind": "card",
+      "cardId": "c31",
+      "defId": "Shock",
+      "owner": "p1",
+      "controller": "p1",
+      "zone": "hand",
+      "timestamp": 31,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o32": {
+      "id": "o32",
+      "kind": "card",
+      "cardId": "c32",
+      "defId": "Island",
+      "owner": "p1",
+      "controller": "p1",
+      "zone": "hand",
+      "timestamp": 32,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o40": {
+      "id": "o40",
+      "kind": "card",
+      "cardId": "c40",
+      "defId": "__hidden__",
+      "owner": "p2",
+      "controller": "p2",
+      "zone": "hand",
+      "timestamp": 40,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o50": {
+      "id": "o50",
+      "kind": "card",
+      "cardId": "c50",
+      "defId": "Lightning Bolt",
+      "owner": "p2",
+      "controller": "p2",
+      "zone": "stack",
+      "timestamp": 50,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o60": {
+      "id": "o60",
+      "kind": "card",
+      "cardId": "c60",
+      "defId": "__hidden__",
+      "owner": "p1",
+      "controller": "p1",
+      "zone": "library",
+      "timestamp": 60,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o61": {
+      "id": "o61",
+      "kind": "card",
+      "cardId": "c61",
+      "defId": "__hidden__",
+      "owner": "p1",
+      "controller": "p1",
+      "zone": "library",
+      "timestamp": 61,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o62": {
+      "id": "o62",
+      "kind": "card",
+      "cardId": "c62",
+      "defId": "__hidden__",
+      "owner": "p2",
+      "controller": "p2",
+      "zone": "library",
+      "timestamp": 62,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    },
+    "o70": {
+      "id": "o70",
+      "kind": "card",
+      "cardId": "c70",
+      "defId": "Shivan Dragon",
+      "owner": "p2",
+      "controller": "p2",
+      "zone": "graveyard",
+      "timestamp": 70,
+      "tapped": false,
+      "flipped": false,
+      "faceDown": false,
+      "phasedOut": false,
+      "face": 0,
+      "controlledSinceTurn": 1,
+      "counters": {},
+      "damage": 0,
+      "attachments": []
+    }
+  },
+  "zones": {
+    "library": {
+      "p1": [
+        "o60",
+        "o61"
+      ],
+      "p2": [
+        "o62"
+      ]
+    },
+    "hand": {
+      "p1": [
+        "o30",
+        "o31",
+        "o32"
+      ],
+      "p2": [
+        "o40"
+      ]
+    },
+    "graveyard": {
+      "p1": [],
+      "p2": [
+        "o70"
+      ]
+    },
+    "battlefield": [
+      "o10",
+      "o11",
+      "o12",
+      "o13",
+      "o14",
+      "o20",
+      "o21"
+    ],
+    "stack": [
+      "o50"
+    ],
+    "exile": [],
+    "command": []
+  },
+  "turn": {
+    "number": 3,
+    "activePlayer": "p1",
+    "step": "main1",
+    "startingPlayer": "p1",
+    "extraTurns": [],
+    "skipSteps": []
+  },
+  "combat": null,
+  "lki": {},
+  "pending": null,
+  "log": [],
+  "result": null
+}

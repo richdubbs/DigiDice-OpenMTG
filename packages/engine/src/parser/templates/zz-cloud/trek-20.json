@@ -1,0 +1,226 @@
+[
+  {
+    "id": "eff.trek20.creatures.cantAttackYou.dur.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 506.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{d:Dur} , {f:Filter} can't attack you",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Until your next turn, creatures with flying can't attack you."
+      },
+      {
+        "text": "Until end of turn, red creatures can't attack you. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Creatures with flying can't attack you.",
+      "Until your next turn, creatures with flying can't attack you or planeswalkers you control.",
+      "Until your next turn, creatures with flying can't block you."
+    ]
+  },
+  {
+    "id": "eff.trek20.extraPhase.afterSecondMain.combatThenMain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.8",
+      "CR 505.1",
+      "CR 505.1a"
+    ],
+    "pattern": "after the second main phase this turn , ( there is | there's ) an additional combat phase followed by an additional main phase",
+    "build": {
+      "op": "extraPhase",
+      "phase": "combat",
+      "after": "main2",
+      "followedBy": "main"
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. After the second main phase this turn, there is an additional combat phase followed by an additional main phase."
+      },
+      {
+        "text": "You gain 2 life. After the second main phase this turn, there's an additional combat phase followed by an additional main phase."
+      }
+    ],
+    "counterExamples": [
+      "After the first main phase this turn, there is an additional combat phase followed by an additional main phase.",
+      "After the second main phase this turn, there is an additional combat phase.",
+      "After the second main phase this turn, there are two additional combat phases followed by an additional main phase."
+    ]
+  },
+  {
+    "id": "eff.trek20.eachPlayer.vowKeepOne.cantAttackYou",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 122.1",
+      "CR 508.1b",
+      "CR 506.3",
+      "CR 611.2b",
+      "CR 701.21a",
+      "CR 608.2d"
+    ],
+    "pattern": "each player puts a {k:CounterKind} counter on a {f:Filter} they control and sacrifices the rest . each of those creatures can't attack you or planeswalkers you control for as long as it has a {j:CounterKind} counter on it",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": {
+              "ref": "iterating"
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "as": "kept"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "kept"
+        },
+        "kind": "$k",
+        "count": 1
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "not": {
+            "is": {
+              "ref": "bound",
+              "name": "kept"
+            }
+          }
+        },
+        "count": 1,
+        "mode": "all"
+      },
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "bound",
+          "name": "kept"
+        },
+        "as": "keeper",
+        "do": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "whileObject",
+              "object": {
+                "ref": "bound",
+                "name": "keeper"
+              },
+              "as": "counter",
+              "counter": "$j"
+            },
+            "effects": [
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "bound",
+                  "name": "keeper"
+                },
+                "mode": "cant",
+                "action": "attackPlayer",
+                "otherPlayer": {
+                  "ref": "you"
+                }
+              },
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "bound",
+                  "name": "keeper"
+                },
+                "mode": "cant",
+                "action": "attack",
+                "other": {
+                  "types": [
+                    "Planeswalker"
+                  ],
+                  "controller": "you"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "other",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Each player puts a pledge counter on a Soldier creature they control and sacrifices the rest. Each of those creatures can't attack you or planeswalkers you control for as long as it has a pledge counter on it."
+      },
+      {
+        "text": "Each player puts a shield counter on a Goblin creature they control and sacrifices the rest. Each of those creatures can't attack you or planeswalkers you control for as long as it has a shield counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent puts a pledge counter on a creature they control and sacrifices the rest. Each of those creatures can't attack you or planeswalkers you control for as long as it has a pledge counter on it.",
+      "Each player puts a pledge counter on a creature they control and sacrifices the rest. Each of those creatures can't attack you for as long as it has a pledge counter on it.",
+      "Each player puts a pledge counter on a creature they control and sacrifices the rest. Each of those creatures can't attack you or planeswalkers you control."
+    ]
+  }
+]

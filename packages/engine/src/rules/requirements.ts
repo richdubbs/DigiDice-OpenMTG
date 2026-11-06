@@ -169,7 +169,7 @@ const textOf = (s: GameState, h: RequirementHit): string => (h.text ? h.text.rep
 function toRequirement(s: GameState, h: RequirementHit): CombatRequirement {
   const kind = h.action;
   const text = textOf(s, h);
-  return { id: `req:${kind}:${h.key}`, creature: h.subject, kind, ...(h.among ? { among: [...h.among] } : {}), sourceName: h.sourceName, text };
+  return { id: `req:${kind}:${h.key}`, creature: h.subject, kind, ...(h.among ? { among: [...h.among] } : {}), ...(h.min !== undefined ? { min: h.min } : {}), ...(h.group ? { group: [...h.group] } : {}), ...(h.allIfAny ? { allIfAny: true as const } : {}), ...(h.exactly !== undefined ? { exactly: h.exactly } : {}), sourceName: h.sourceName, text };
 }
 
 function split(s: GameState, hits: RequirementHit[]): { enforced: RequirementHit[]; unenforced: UnenforcedRequirement[] } {
@@ -181,9 +181,16 @@ function split(s: GameState, hits: RequirementHit[]): { enforced: RequirementHit
 export function isObeyed(r: CombatRequirement, d: { attacks?: readonly Attack[]; blocks?: readonly Block[] }): boolean {
   const among = r.among;
   switch (r.kind) {
-    case 'attack': return (d.attacks ?? []).some((x) => x.attacker === r.creature && (!among || among.includes(x.defender)));
+    // edh-d-75 (CR 508.1d; Seeker of Slaanesh): a group requirement is obeyed by any creature of the group
+    // edh-d-88 (CR 508.1d; War's Toll): "if one of them attacks, all attack": obeyed when it attacks or none of the group does (the requirement does not apply)
+    case 'attack': if (r.allIfAny && r.group) { const grp = r.group; const xs = d.attacks ?? []; return xs.some((x) => x.attacker === r.creature) || !xs.some((x) => grp.includes(x.attacker)); }
+      return (d.attacks ?? []).some((x) => (r.group ? r.group.includes(x.attacker) : x.attacker === r.creature) && (!among || among.includes(x.defender)));
     case 'block': return (d.blocks ?? []).some((x) => x.blocker === r.creature && (!among || among.includes(x.attacker)));
-    case 'beBlocked': return (d.blocks ?? []).some((x) => x.attacker === r.creature && (!among || among.includes(x.blocker)));
+    // edh-d-38 (CR 509.1c; Gorm the Great): "must be blocked by two or more creatures if able" is obeyed by that many blockers
+    case 'beBlocked': {
+      const n = (d.blocks ?? []).filter((x) => x.attacker === r.creature && (!among || among.includes(x.blocker))).length;
+      return r.exactly !== undefined ? n === r.exactly : n >= (r.min ?? 1); // edh-d-75 (CR 509.1c; Nacatl War-Pride): exactly that many
+    }
   }
 }
 
@@ -199,27 +206,49 @@ function attackPlanIn(s: GameState, candidates: DeclareAttackersDecision['candid
   const objectDefenders = [...new Set(candidates.flatMap((c) => c.defenders).filter((d) => !isPlayer(d)))]; // what `other` can name (M6-7)
   const { enforced, unenforced } = split(s, requirementHits(s, 'attack', candidates.map((c) => c.id), objectDefenders));
   // CR 508.1d: a requirement to attack one of `among` that this creature can't attack can't be obeyed: not counted
-  const canObey = (h: RequirementHit): boolean => !h.among || candidates.find((c) => c.id === h.subject)!.defenders.some((d) => h.among!.includes(d));
+  const canObey = (h: RequirementHit): boolean => !h.among || (h.group ?? [h.subject]).some((id) => candidates.find((c) => c.id === id)!.defenders.some((d) => h.among!.includes(d)));
   const requirements = enforced.filter(canObey).map((h) => toRequirement(s, h));
   if (requirements.length === 0) return planOf<Attack>(requirements, unenforced, [], { best: 0, obeying: [] });
   const manual = manualCombatTexts(s, 'attack');
-  const creatures = [...new Set(requirements.map((r) => r.creature))];
+  const creatures = [...new Set(requirements.flatMap((r) => r.group ?? [r.creature]))]; // edh-d-75: and every creature of a group requirement
   const index = new Map(creatures.map((id, i) => [id, i]));
   // Without `among` any defender obeys, so one choice stands for all of them; with `among` every defender is a choice.
   const choices = creatures.map((id) => {
     const defenders = candidates.find((c) => c.id === id)!.defenders;
-    const anyAmong = requirements.some((r) => r.creature === id && r.among);
+    const anyAmong = requirements.some((r) => (r.group ? r.group.includes(id) : r.creature === id) && r.among);
     return [...(anyAmong ? defenders : defenders.slice(0, 1)), null];
   });
   const result = maximize({
     choices,
     requirements: requirements.map((r) => {
+      if (r.group && r.allIfAny) {
+        // edh-d-88 (CR 508.1d; War's Toll): the creature attacks, or no creature of its group does (the condition is false, so it does not apply)
+        const v = index.get(r.creature)!;
+        const vs = r.group.map((id) => index.get(id)!);
+        return { vars: vs, obeyed: (a) => a[v] !== null || vs.every((x) => a[x] === null) };
+      }
+      if (r.group) {
+        // edh-d-75 (CR 508.1d): one requirement for the whole group, obeyed by any member that attacks (one of `among` when it has them)
+        const vs = r.group.map((id) => index.get(id)!);
+        return { vars: vs, obeyed: (a) => vs.some((v) => a[v] !== null && (!r.among || r.among.includes(a[v]!))) };
+      }
       const v = index.get(r.creature)!;
       return { vars: [v], obeyed: (a) => a[v] !== null && (!r.among || r.among.includes(a[v]!)) };
     }),
   });
   if (!result) return planOf<Attack>(requirements, unenforced, manual, null);
-  const obeying = creatures.flatMap((id, i) => (result.witness[i] === null ? [] : [{ attacker: id, defender: result.witness[i]! }]));
+  // edh-d-75: a smaller example (a group requirement is obeyed by one attacker, not by every creature the search tried first): an attacker the count does not need is left out
+  const w = result.witness;
+  const asAttacks = (a: readonly (string | null)[]): Attack[] => creatures.flatMap((id, i) => (a[i] === null ? [] : [{ attacker: id, defender: a[i]! }]));
+  if (requirements.some((r) => r.group)) {
+    for (let i = creatures.length - 1; i >= 0; i--) {
+      const was = w[i]!;
+      if (was === null) continue;
+      w[i] = null;
+      if (requirements.filter((r) => isObeyed(r, { attacks: asAttacks(w) })).length < result.best) w[i] = was;
+    }
+  }
+  const obeying = asAttacks(w);
   return planOf(requirements, unenforced, manual, { best: result.best, obeying });
 }
 
@@ -237,7 +266,8 @@ function blockPlanIn(s: GameState, attackers: readonly ObjectId[], candidates: D
   // CR 509.1c: a requirement no pairing of this declaration could obey is not counted (M6-7: the attacker it must block, the creatures it must be blocked by)
   const canAttackers = (id: ObjectId): ObjectId[] => candidates.find((c) => c.id === id)?.attackers ?? [];
   const canObey = (h: RequirementHit): boolean =>
-    h.action === 'block' ? !h.among || canAttackers(h.subject).some((a) => h.among!.includes(a)) : candidates.some((c) => c.attackers.includes(h.subject) && (!h.among || h.among.includes(c.id)));
+    h.action === 'block' ? !h.among || canAttackers(h.subject).some((a) => h.among!.includes(a))
+      : candidates.filter((c) => c.attackers.includes(h.subject) && (!h.among || h.among.includes(c.id))).length >= (h.exactly ?? h.min ?? 1); // edh-d-38: and enough creatures could block it (edh-d-75: exactly N: at least N could)
   const requirements = [...blockHits.enforced, ...beHits.enforced].filter(canObey).map((h) => toRequirement(s, h));
   const unenforced = [...blockHits.unenforced, ...beHits.unenforced];
   if (requirements.length === 0) return planOf<Block>(requirements, unenforced, [], { best: 0, obeying: [] });
@@ -289,7 +319,7 @@ function blockPlanIn(s: GameState, attackers: readonly ObjectId[], candidates: D
         return { vars: [v], obeyed: (a) => a[v] !== null && (!r.among || r.among.includes(a[v]!)) };
       }
       const vs = vars.map((_, j) => j).filter((j) => choices[j]!.includes(r.creature) && (!r.among || r.among.includes(vars[j]!)));
-      return { vars: vs, obeyed: (a) => vs.some((j) => a[j] === r.creature) };
+      return { vars: vs, obeyed: (a) => { const n = vs.filter((j) => a[j] === r.creature).length; return r.exactly !== undefined ? n === r.exactly : n >= (r.min ?? 1); } };
     }),
     checkAfter,
   });
@@ -386,6 +416,14 @@ export function obeyRequirements(d: DeclareAttackersDecision | DeclareBlockersDe
   if (d.kind === 'declareAttackers') {
     const attacks = answer as Attack[];
     if (reqs.filter((r) => isObeyed(r, { attacks })).length >= d.mustObey) return attacks;
+    // edh-d-88 (CR 508.1d; War's Toll): "if one attacks, all attack": the answer plus every creature of a group it already attacks with (first defender it may attack)
+    const joined = [...attacks];
+    for (const r of reqs) {
+      if (!r.allIfAny || !r.group || joined.some((x) => x.attacker === r.creature) || !joined.some((x) => r.group!.includes(x.attacker))) continue;
+      const to = d.candidates.find((c) => c.id === r.creature)?.defenders[0];
+      if (to !== undefined) joined.push({ attacker: r.creature, defender: to });
+    }
+    if (joined.length > attacks.length && reqs.filter((r) => isObeyed(r, { attacks: joined })).length >= d.mustObey) return joined;
     const merged = [...attacks.filter((x) => !d.obeying!.some((y) => y.attacker === x.attacker)), ...d.obeying];
     return reqs.filter((r) => isObeyed(r, { attacks: merged })).length >= d.mustObey ? merged : d.obeying;
   }

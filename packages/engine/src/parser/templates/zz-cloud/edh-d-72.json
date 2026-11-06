@@ -1,0 +1,628 @@
+[
+  {
+    "id": "sta.edhd72.creatures.chosenType.sets.sameIsTrue.spellsAndCards",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.3m",
+      "CR 607.2d",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 108.3",
+      "CR 109.4"
+    ],
+    "pattern": "creatures you control are ( the chosen type | the chosen creature type ) . the same is true for creature spells you control and creature cards you own that aren't on the battlefield",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you"
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you",
+                  "zone": [
+                    "stack"
+                  ]
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "owner": "you",
+                  "isCard": true,
+                  "zone": [
+                    "hand",
+                    "graveyard",
+                    "library",
+                    "exile",
+                    "command",
+                    "stack"
+                  ]
+                }
+              }
+            ]
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "chosen": "type",
+                "chosenSets": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "chosen",
+      "same",
+      "aren't"
+    ],
+    "examples": [
+      {
+        "text": "As this creature enters, choose a creature type.\nCreatures you control are the chosen creature type. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
+      },
+      {
+        "text": "As this artifact enters, choose a creature type.\nCreatures you control are the chosen creature type. The same is true for creature spells you control and creature cards you own that aren't on the battlefield.\n{5}: You gain 7 life."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a creature type.\nCreatures you control are the chosen creature type. The same is true for creature spells you control.",
+      "As ~ enters, choose a creature type.\nCreatures you control are the chosen creature type. The same is true for creature cards you own that are on the battlefield.",
+      "As ~ enters, choose a creature type.\nCreatures you control are the chosen type until end of turn. The same is true for creature spells you control and creature cards you own that aren't on the battlefield.",
+      "As ~ enters, choose a color.\nCreatures you control are the chosen creature type. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
+    ]
+  },
+  {
+    "id": "sta.edhd72.slivers.nontokenCreatures.chosenType.inAddition.sameIsTrue",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 607.2d",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 108.3",
+      "CR 109.4"
+    ],
+    "pattern": "slivers you control and nontoken creatures you control are ( the chosen type | the chosen creature type ) in addition to their other creature types . the same is true for creature spells you control and creature cards you own that aren't on the battlefield",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "each",
+                "filter": {
+                  "subtypes": [
+                    "Sliver"
+                  ],
+                  "controller": "you"
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you",
+                  "token": false
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you",
+                  "zone": [
+                    "stack"
+                  ]
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "owner": "you",
+                  "isCard": true,
+                  "zone": [
+                    "hand",
+                    "graveyard",
+                    "library",
+                    "exile",
+                    "command",
+                    "stack"
+                  ]
+                }
+              }
+            ]
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "chosen": "type"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "chosen",
+      "in addition",
+      "other",
+      "same",
+      "aren't"
+    ],
+    "examples": [
+      {
+        "text": "As this creature enters, choose a creature type.\nSlivers you control and nontoken creatures you control are the chosen creature type in addition to their other creature types. The same is true for creature spells you control and creature cards you own that aren't on the battlefield.\n{4}, {T}: Create a 1/1 colorless Sliver creature token."
+      },
+      {
+        "text": "As this creature enters, choose a creature type.\nSlivers you control and nontoken creatures you control are the chosen creature type in addition to their other creature types. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a creature type.\nSlivers you control and nontoken creatures you control are the chosen creature type in addition to their other creature types. The same is true for creature spells you control.",
+      "As ~ enters, choose a creature type.\nSlivers you control and creatures you control are the chosen creature type in addition to their other creature types. The same is true for creature spells you control and creature cards you own that aren't on the battlefield.",
+      "As ~ enters, choose a creature type.\nSlivers you control and nontoken creatures you control are the chosen creature type. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
+    ]
+  },
+  {
+    "id": "sta.edhd72.allObjects.chosenColor.inAddition",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 105.2",
+      "CR 108.2",
+      "CR 604.1",
+      "CR 607.2d",
+      "CR 613.1e"
+    ],
+    "pattern": "( all | the ) cards that aren't on the battlefield , spells , and permanents are the chosen color in addition to their other colors",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "zone": [
+            "battlefield",
+            "command",
+            "exile",
+            "graveyard",
+            "hand",
+            "library",
+            "stack"
+          ],
+          "types": [
+            "Artifact",
+            "Battle",
+            "Creature",
+            "Enchantment",
+            "Instant",
+            "Kindred",
+            "Land",
+            "Planeswalker",
+            "Sorcery"
+          ]
+        }
+      },
+      "mods": [
+        {
+          "layer": 5,
+          "colors": {
+            "chosen": "color",
+            "add": []
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "each",
+      "chosen",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As this artifact enters, choose a color.\nThe cards that aren't on the battlefield, spells, and permanents are the chosen color in addition to their other colors."
+      },
+      {
+        "text": "As this creature enters, choose a color.\nThe cards that aren't on the battlefield, spells, and permanents are the chosen color in addition to their other colors.\n{3}: You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a color.\nThe cards that aren't on the battlefield, spells, and permanents are the chosen color.",
+      "As ~ enters, choose a color.\nThe cards that aren't on the battlefield and permanents are the chosen color in addition to their other colors.",
+      "As ~ enters, choose a creature type.\nThe cards that aren't on the battlefield, spells, and permanents are the chosen color in addition to their other colors.",
+      "As ~ enters, choose a color.\nThe cards that aren't on the battlefield, spells, and permanents are the chosen color in addition to their other colors until end of turn."
+    ]
+  },
+  {
+    "id": "rep.edhd72.enters.opponentChooses.creaturetype",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2a",
+      "CR 205.3m"
+    ],
+    "pattern": "as ~ enters , an opponent chooses a creature type",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "creatureType",
+                "link": "type",
+                "chooser": "opponent"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "opponent"
+    ],
+    "examples": [
+      {
+        "text": "As this artifact enters, an opponent chooses a creature type."
+      },
+      {
+        "text": "As this artifact enters, an opponent chooses a creature type.\n{3}, {T}: You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a creature type.",
+      "As ~ enters, an opponent chooses a color.",
+      "As ~ enters, each opponent chooses a creature type.",
+      "As ~ attacks, an opponent chooses a creature type."
+    ]
+  },
+  {
+    "id": "rep.edhd72.enters.choose.landtype.any",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2a",
+      "CR 205.3i"
+    ],
+    "pattern": "as ~ enters , choose a land type",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "landType",
+                "link": "landType"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As this creature enters, choose a land type."
+      },
+      {
+        "text": "As this artifact enters, choose a land type."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a basic land type.",
+      "As ~ enters, choose two land types.",
+      "As ~ attacks, choose a land type.",
+      "As ~ enters, choose a land."
+    ]
+  },
+  {
+    "id": "eff.edhd72.gainlife.foreachChosenColorItIs",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 105.1",
+      "CR 607.2d",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} gain[s] 1 life for each of the chosen colors {o:Obj} is",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": {
+        "q": "chosenColorsOf",
+        "link": "color",
+        "of": "$o"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As this creature enters, choose two colors.\nWhenever you cast a spell, you gain 1 life for each of the chosen colors it is."
+      },
+      {
+        "text": "As this artifact enters, choose two colors.\nWhenever you cast a creature spell, you gain 1 life for each of the chosen colors it is."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose two colors.\nWhenever you cast a spell, you gain 2 life for each of the chosen colors it is.",
+      "As ~ enters, choose two colors.\nWhenever you cast a spell, you gain 1 life for each of the chosen colors.",
+      "As ~ enters, choose two colors.\nWhenever you cast a spell, you gain 1 life for each of the chosen colors it isn't.",
+      "As ~ enters, choose two colors.\nWhenever you cast a spell, you lose 1 life for each of the chosen colors it is."
+    ]
+  },
+  {
+    "id": "sta.edhd72.aslong.theyAlsoHave",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as {c:Cond} , {o:They} also have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "As this creature enters, choose a creature type.\nCreatures you control of the chosen type get +1/+1. As long as you control a Forest, they also have vigilance."
+      },
+      {
+        "text": "As this artifact enters, choose a creature type.\nCreatures you control of the chosen type get +2/+2. As long as you control a Forest, they also have trample and vigilance."
+      }
+    ],
+    "counterExamples": [
+      "As long as you have the city's blessing, they also have vigilance.",
+      "Creatures you control get +1/+1. As long as you have the city's blessing, they have vigilance.",
+      "Creatures you control get +1/+1. As long as you have the city's blessing, it also has vigilance."
+    ]
+  },
+  {
+    "id": "eff.edhd72.dig.putAllCards.revealed.chosen.hand.rest.graveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 607.2d",
+      "CR 404.1"
+    ],
+    "pattern": "put all cards {c:Chosen} {g:RevealedThisWay} into your hand and the rest into your graveyard",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "chosen": "$c",
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Choose creature or land. Reveal the top three cards of your library. Put all cards of the chosen type revealed this way into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Choose creature or land. Reveal the top five cards of your library. Put all cards of the chosen type revealed this way into your hand and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top four cards of your library. Put all cards revealed this way into your hand and the rest into your graveyard.",
+      "Choose creature or land. Reveal the top four cards of your library. Put all cards of the chosen type revealed this way onto the battlefield and the rest into your graveyard.",
+      "Choose creature or land. Reveal the top four cards of your library. Put all cards of the chosen type revealed this way into your hand and the rest into their owners' graveyards."
+    ]
+  },
+  {
+    "id": "eff.edhd72.choose.creatureOrLand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 205.2a"
+    ],
+    "pattern": "choose creature or land",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "cardType",
+      "as": "chosenCardType",
+      "link": "chosenCardType",
+      "options": [
+        "Creature",
+        "Land"
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "creature",
+      "land"
+    ],
+    "examples": [
+      {
+        "text": "Choose creature or land. Reveal the top three cards of your library. Put all cards of the chosen type revealed this way into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Choose creature or land. Reveal the top six cards of your library. Put all cards of the chosen type revealed this way into your hand and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Choose creature or artifact. Reveal the top four cards of your library.",
+      "Choose creature, land, or artifact. Reveal the top four cards of your library.",
+      "Target player chooses creature or land. Reveal the top four cards of your library."
+    ]
+  },
+  {
+    "id": "eff.edhd72.becomeCopy.durFirst.except",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9a",
+      "CR 707.9b",
+      "CR 613.1a",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes a copy of {p:Obj} , except {x:CopyExcept}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p",
+              "except": "$x"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "except",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{1}: Until end of turn, ~ becomes a copy of target creature you control, except it's an artifact in addition to its other types."
+      },
+      {
+        "text": "{2}: Until end of turn, ~ becomes a copy of target creature you control, except it's an artifact in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "{1}: Until end of turn, ~ becomes a copy of target creature you control, except it's an artifact.",
+      "{1}: ~ becomes a copy of target creature you control, except it's an artifact in addition to its other types."
+    ]
+  }
+]

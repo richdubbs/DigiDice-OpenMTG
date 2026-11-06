@@ -1,0 +1,51 @@
+[
+  {
+    "id": "eff.edhn33.each.deals.power.to",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 120.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "each {f:Filter} deals damage equal to its power to {to:Recipient}",
+    "weak": 1,
+    "build": {
+      "op": "damage",
+      "source": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "to": "$to",
+      "amount": {
+        "q": "stat",
+        "stat": "power",
+        "of": {
+          "ref": "subject"
+        }
+      },
+      "perSource": true
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control that's a Wolf or a Werewolf deals damage equal to its power to target creature you don't control."
+      },
+      {
+        "text": "Each creature you control that's a Dragon or a Cleric deals damage equal to its power to target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control that's a Wolf deals damage equal to its toughness to target creature you don't control.",
+      "Each creature you control that's a Wolf deals damage equal to its power to itself.",
+      "Each creature you control that's a Wolf deals damage equal to its power to target creature unless it is tapped.",
+      "Creatures you control that are Wolves deal damage equal to their power to target creature you don't control."
+    ]
+  }
+]

@@ -15,6 +15,7 @@
  */
 import type { ObjectId, PlayerId } from '../types/ids';
 import { charsOfObject } from '../rules/characteristics';
+import { exertedThisTurn } from '../rules/history';
 import { exertPermanent } from '../rules/pay-parts';
 import { isSummoningSick } from '../rules/timing';
 import { attackOptions } from '../statics/hooks';
@@ -42,7 +43,11 @@ export function takeAttackOptions(g: Game, ap: PlayerId, attackers: readonly Obj
   const options = attackers.map((id) => ({ id, opts: attackOptions(g.s, id) })).filter((x) => x.opts.length > 0);
   if (options.length === 0) return;
   // CR 701.43a: "You may exert ~ as it attacks"
-  const exertable = options.filter((x) => x.opts.some((o) => o.effect.s === 'rule' && o.effect.rule === 'mayExertAsAttacks'));
+  // edh-combat-1 (CR 701.43a): "If ~ hasn't been exerted this turn, you may exert it as it attacks" (`unlessExertedThisTurn`) is not offered to a creature exerted this turn
+  // (read before any of this declaration's exerts, so the option taken now does not withdraw the same ability's `then`)
+  const exertable = options
+    .map((x) => ({ id: x.id, opts: x.opts.filter((o) => o.effect.s === 'rule' && o.effect.rule === 'mayExertAsAttacks' && !(o.effect.unlessExertedThisTurn === true && exertedThisTurn(g.s, x.id))) }))
+    .filter((x) => x.opts.length > 0);
   if (exertable.length > 0) {
     const chosen = g.choose({
       kind: 'chooseObjects', player: ap, prompt: "Choose any attacking creatures to exert as they attack (an exerted creature won't untap during your next untap step).",
@@ -50,7 +55,7 @@ export function takeAttackOptions(g: Game, ap: PlayerId, attackers: readonly Obj
     }).ids;
     for (const x of exertable) {
       if (!chosen.includes(x.id) || !exertPermanent(g, ap, x.id, 'as it attacks')) continue;
-      for (const o of x.opts) if (o.effect.s === 'rule' && o.effect.rule === 'mayExertAsAttacks') runThen(g, o, x.id, x.id);
+      for (const o of x.opts) runThen(g, o, x.id, x.id);
     }
   }
   // CR 702.154a: enlist, one instance at a time

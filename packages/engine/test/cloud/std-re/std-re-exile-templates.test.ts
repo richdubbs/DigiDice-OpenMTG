@@ -208,10 +208,11 @@ describe('std-re G10 (CR 607.2a): the one formerly automated unit the round chan
     expect(JSON.stringify(linked)).not.toBe(JSON.stringify(alone));
     expect(JSON.stringify(linked).replace(',"link":"exiled"', '')).toBe(JSON.stringify(alone));
   });
-  it('two abilities that exile on the face: the reader links to neither and stays manual (never a guess, CR 607.2a)', () => {
+  // edh-d-77 (CR 607.2a): every ability that exiles is linked to a reader that picks among the group ("a card exiled with ~"), so both exiling abilities carry the link
+  it('two abilities that exile on the face: both are linked to the reader that picks among the group (CR 607.2a; edh-d-77 changed this from manual)', () => {
     const f = parsed(ally(w(`${EXILER}\n{1}, {T}: Exile target creature card from your graveyard.\n${READER}`)));
-    expect(fullyAutomated(f)).toBe(false);
-    expect(JSON.stringify(f.abilities)).not.toContain('"link":"exiled"');
+    expect(fullyAutomated(f)).toBe(true);
+    expect(JSON.stringify(f.abilities).split('"link":"exiled"').length - 1).toBe(3); // the two exiling moves and the reader's own reference
   });
 });
 

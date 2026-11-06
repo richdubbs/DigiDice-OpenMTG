@@ -28,7 +28,23 @@ function lookThenPutBackArrangedByYou(list: EffectStep[], i: number, st: RenderS
   return { clauses: [ca, acting('you', `put ${what} back in any order`, `you put ${what} back in any order`)], consumed: 2 };
 }
 
+/**
+ * edh-c-69 (CR 401.4, 701.20e, 608.2d; Tahngarth's Glare, family look-then-put-back-by-player): "That player looks at the top three cards of your library, then puts them back in any
+ * order": another player looks at the top cards of YOUR library and that same player arranges exactly those cards (`arrangedBy` the player). The look and the move of exactly its binding.
+ */
+function playerLooksThenPutsBack(list: EffectStep[], i: number, st: RenderState): Folded | null {
+  const a = list[i];
+  const b = list[i + 1];
+  if (a?.op !== 'look' || a.guard !== undefined || a.as === undefined || a.who.ref !== 'target' || a.at.ref !== 'topCards' || !same(a.at.player, { ref: 'you' })) return null; // one targeted player only: the engine lets the first of a group arrange (zones-move.ts), so "each opponent" stays manual
+  if (b?.op !== 'move' || b.guard !== undefined || b.as !== undefined || b.until !== undefined || b.link !== undefined || !same(b.what, { ref: 'bound', name: a.as })) return null;
+  if (!same(b.to, { zone: 'library', position: 'top', order: 'chosen', arrangedBy: a.who })) return null;
+  const ca = K.clause(a, st);
+  const info = st.info.get(`b:${a.as}`);
+  if (info === undefined || !info.plural || ca.actor === null || ca.actor === 'you') return null;
+  return { clauses: [ca, acting(ca.actor, 'put them back in any order', 'puts them back in any order')], consumed: 2 }; // (exactly the cards that player just looked at: "them" is theirs, whatever else is plural)
+}
+
 /** The folds of p2-dig-1 (render/fold.ts#foldAt). */
 export function foldP2Dig1(list: EffectStep[], i: number, st: RenderState): Folded | null {
-  return lookThenPutBackArrangedByYou(list, i, st);
+  return lookThenPutBackArrangedByYou(list, i, st) ?? playerLooksThenPutsBack(list, i, st);
 }

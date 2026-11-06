@@ -1,0 +1,316 @@
+[
+  {
+    "id": "eff.edhn12.damage.triple.toOpp.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 611.2a",
+      "CR 120.1",
+      "CR 120.3"
+    ],
+    "pattern": "if a source you control would deal damage {d:Dur} to an opponent or a permanent an opponent controls , it deals triple that damage instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "controller": "you"
+            },
+            "recipient": {
+              "player": "opponent",
+              "object": {
+                "controller": "opponent"
+              }
+            }
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "mul": 3
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "triple"
+    ],
+    "examples": [
+      {
+        "text": "If a source you control would deal damage this turn to an opponent or a permanent an opponent controls, it deals triple that damage instead."
+      },
+      {
+        "text": "If a source you control would deal damage this turn to an opponent or a permanent an opponent controls, it deals triple that damage instead.\nFlashback {1}{R}"
+      }
+    ],
+    "counterExamples": [
+      "If a source you control would deal damage this turn to an opponent or a permanent an opponent controls, it deals double that damage instead.",
+      "If a source an opponent controls would deal damage this turn to an opponent or a permanent an opponent controls, it deals triple that damage instead.",
+      "If a source you control would deal damage this turn to you or a permanent you control, it deals triple that damage instead."
+    ]
+  },
+  {
+    "id": "rst.edhn12.players.cast.onlyOwnTurns",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 102.1"
+    ],
+    "pattern": "players can cast spells only during their own turns",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "mode": "onlyIf",
+      "action": "cast",
+      "relativeToSubject": true,
+      "when": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "can",
+      "only",
+      "own",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Players can cast spells only during their own turns. Creatures you control get +1/+1."
+      },
+      {
+        "text": "Players can cast spells only during their own turns. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "Players can't cast spells during their own turns.",
+      "Players can cast spells only during your turn.",
+      "Players can cast creature spells only during their own turns."
+    ]
+  },
+  {
+    "id": "sta.edhn12.rule.coinAdvantage",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 705.1",
+      "CR 614.1a"
+    ],
+    "pattern": "if you would flip a coin , instead flip two coins and ignore one",
+    "build": {
+      "s": "rule",
+      "rule": "coinAdvantage"
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "ignore"
+    ],
+    "examples": [
+      {
+        "text": "If you would flip a coin, instead flip two coins and ignore one. Creatures you control get +1/+1."
+      },
+      {
+        "text": "If you would flip a coin, instead flip two coins and ignore one. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "If you would flip a coin, instead flip three coins and ignore two.",
+      "If a player would flip a coin, instead they flip two coins and ignore one.",
+      "If you would flip a coin, instead flip two coins and ignore the first."
+    ]
+  },
+  {
+    "id": "sta.edhn12.permit.revealHand.opponents",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 402.3",
+      "CR 604.1"
+    ],
+    "pattern": "your opponents play with their hands revealed",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "action": "revealHand"
+    },
+    "examples": [
+      {
+        "text": "Your opponents play with their hands revealed. Creatures you control get +1/+1."
+      },
+      {
+        "text": "Your opponents play with their hands revealed. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "Your opponents play with the top card of their libraries revealed.",
+      "You play with your hand revealed.",
+      "Players play with the top two cards of their libraries revealed."
+    ]
+  },
+  {
+    "id": "sta.edhn12.costMod.floor.spells.aslong",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.1"
+    ],
+    "pattern": "as long as {c:Cond} , each spell that would cost less than three mana to cast costs three mana to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {},
+            "caster": "any"
+          },
+          "change": {
+            "kind": "floor",
+            "generic": 3
+          }
+        }
+      ],
+      "condition": "$c"
+    },
+    "examples": [
+      {
+        "text": "As long as you control a creature, each spell that would cost less than three mana to cast costs three mana to cast."
+      },
+      {
+        "text": "As long as you control an artifact, each spell that would cost less than three mana to cast costs three mana to cast."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is untapped, each spell that would cost less than four mana to cast costs three mana to cast.",
+      "As long as ~ is untapped, each creature spell that would cost less than three mana to cast costs three mana to cast.",
+      "As long as ~ is untapped, each spell that would cost less than three mana to cast costs four mana to cast."
+    ],
+    "consumes": [
+      "each",
+      "that",
+      "would",
+      "less",
+      "than"
+    ]
+  },
+  {
+    "id": "sta.edhn12.costMod.increase.perSpellCast.each",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 601.2i",
+      "CR 118.7"
+    ],
+    "pattern": "each spell a player casts costs {m:ManaCost} more to cast for each other spell that player has cast this turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {},
+            "caster": "any"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m",
+            "times": {
+              "q": "casterSpellsCastThisTurn"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Each spell a player casts costs {2} more to cast for each other spell that player has cast this turn."
+      },
+      {
+        "text": "Each spell a player casts costs {3} more to cast for each other spell that player has cast this turn."
+      }
+    ],
+    "counterExamples": [
+      "Each spell a player casts costs {1} less to cast for each other spell that player has cast this turn.",
+      "Each spell you cast costs {1} more to cast for each other spell you have cast this turn.",
+      "Each spell a player casts costs {1} more to cast for each other spell that player has cast."
+    ]
+  },
+  {
+    "id": "sta.edhn12.rule.tappedLandManaColorless",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.12",
+      "CR 614.1a",
+      "CR 106.1b"
+    ],
+    "pattern": "if a land is tapped for two or more mana , it produces {c} instead of any other type and amount",
+    "build": {
+      "s": "rule",
+      "rule": "tappedLandManaColorless",
+      "value": 2,
+      "player": {
+        "ref": "each",
+        "who": "player"
+      }
+    },
+    "consumes": [
+      "if",
+      "instead",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "If a land is tapped for two or more mana, it produces {C} instead of any other type and amount. Creatures you control get +1/+1."
+      },
+      {
+        "text": "If a land is tapped for two or more mana, it produces {C} instead of any other type and amount. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "If a land is tapped for three or more mana, it produces {C} instead of any other type and amount.",
+      "If a land is tapped for two or more mana, it produces {G} instead of any other type and amount.",
+      "If a land you control is tapped for two or more mana, it produces {C} instead of any other type and amount."
+    ]
+  }
+]

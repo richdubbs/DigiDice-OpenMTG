@@ -528,6 +528,7 @@
     "pattern": "they have {a:Abilities}",
     "build": {
       "$patchPrevious": {
+        "@into": true,
         "token": {
           "abilities": {
             "@new": "$a"

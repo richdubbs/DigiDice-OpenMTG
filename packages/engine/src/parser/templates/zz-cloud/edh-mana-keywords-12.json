@@ -1,0 +1,582 @@
+[
+  {
+    "id": "eff.edhmk12.reveal.anyNumber.fromHand",
+    "kind": "effect",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 402.3",
+      "CR 608.2d",
+      "CR 605.3b"
+    ],
+    "pattern": "reveal any number of {f:CardsDesc} in your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "as": "revealed"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Reveal any number of Elf cards in your hand. Add {C}{C} for each card revealed this way."
+      },
+      {
+        "text": "{T}: Reveal any number of land cards in your hand. Add {C}{C} for each card revealed this way."
+      }
+    ],
+    "counterExamples": [
+      "Reveal any number of artifact cards in your graveyard.",
+      "Reveal up to two artifact cards in your hand.",
+      "Reveal any number of artifact cards in an opponent's hand."
+    ]
+  },
+  {
+    "id": "eff.edhmk12.mana.twiceColorless.forEach",
+    "kind": "effect",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 107.1c",
+      "CR 605.1a"
+    ],
+    "pattern": "add {C}{C} for each {n:Qty}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "ofType",
+        "type": "C",
+        "count": {
+          "q": "math",
+          "op": "*",
+          "args": [
+            2,
+            "$n"
+          ]
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Reveal any number of Goblin cards in your hand. Add {C}{C} for each card revealed this way."
+      },
+      {
+        "text": "{T}, Remove any number of moss counters from ~: Add {C}{C} for each moss counter removed this way."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Reveal any number of artifact cards in your hand. Add {C} for each card revealed this way.",
+      "{T}: Reveal any number of artifact cards in your hand. Add {C}{C}{C} for each card revealed this way.",
+      "{T}: Reveal any number of artifact cards in your hand. Add {C}{C}."
+    ]
+  },
+  {
+    "id": "eff.edhmk12.note.manaTypeSpent.activation",
+    "kind": "effect",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 602.2b",
+      "CR 607.2d"
+    ],
+    "pattern": "note the type of mana spent to pay this activation cost",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "manaTypeSpent",
+      "as": "notedType",
+      "link": "notedType"
+    },
+    "subject": "none",
+    "consumes": [
+      "note"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Put a charge counter on this artifact. Note the type of mana spent to pay this activation cost."
+      },
+      {
+        "text": "{2}, {T}: Draw a card. Note the type of mana spent to pay this activation cost."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Put a charge counter on this artifact. Note the type of mana spent to cast this spell.",
+      "{1}, {T}: Put a charge counter on this artifact. Note the color of mana spent to pay this activation cost.",
+      "{1}, {T}: Put a charge counter on this artifact. Note the types of mana spent to pay this activation cost."
+    ]
+  },
+  {
+    "id": "eff.edhmk12.mana.oneOfNotedType",
+    "kind": "effect",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 607.2d",
+      "CR 605.1a"
+    ],
+    "pattern": "add one mana of ~ 's last noted type",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "chosen",
+        "link": "notedType",
+        "count": 1,
+        "noted": true
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "noted"
+    ],
+    "examples": [
+      {
+        "text": "{T}, Remove a charge counter from this creature: Add one mana of this creature's last noted type."
+      },
+      {
+        "text": "{2}, {T}: Add one mana of this creature's last noted type."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of this artifact's first noted type.",
+      "{T}: Add two mana of this artifact's last noted type.",
+      "{T}: Add one mana of target artifact's last noted type."
+    ]
+  },
+  {
+    "id": "kw.edhmk12.equip.planeswalker",
+    "kind": "ability",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 702.6a",
+      "CR 702.6c",
+      "CR 301.5c"
+    ],
+    "pattern": "equip planeswalker {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": {
+        "types": [
+          "Planeswalker"
+        ],
+        "controller": "you"
+      }
+    },
+    "examples": [
+      {
+        "text": "Equip planeswalker {2}"
+      },
+      {
+        "text": "Equip planeswalker {2}{W}"
+      }
+    ],
+    "counterExamples": [
+      "Equip planeswalker",
+      "Equip planeswalkers {1}",
+      "Equip nonlegendary planeswalker {1}"
+    ]
+  },
+  {
+    "id": "sta.edhmk12.attached.permanent.notPlaneswalker.isCreature",
+    "kind": "static",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 301.5"
+    ],
+    "pattern": "( enchanted | equipped ) permanent isn't a planeswalker and is a creature in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Creature"
+            ],
+            "remove": [
+              "Planeswalker"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other",
+      "enchanted",
+      "equipped"
+    ],
+    "examples": [
+      {
+        "text": "Enchant permanent\nEnchanted permanent isn't a planeswalker and is a creature in addition to its other types."
+      },
+      {
+        "text": "Enchant land\nEnchanted permanent isn't a planeswalker and is a creature in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Enchant permanent\nEnchanted permanent isn't a planeswalker and is a creature.",
+      "Enchant permanent\nEnchanted permanent isn't a land and is a creature in addition to its other types.",
+      "Enchant permanent\nEnchanted permanent is a creature in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.edhmk12.nextSpell.gains.sunburst",
+    "kind": "effect",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 611.2",
+      "CR 702.44a",
+      "CR 603.7"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:Filter} this turn , that spell gains sunburst",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "keyword",
+      "keyword": {
+        "kind": "keyword",
+        "keyword": "sunburst",
+        "text": "sunburst"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "that spell"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add one mana of any color. When you next cast a creature spell this turn, that spell gains sunburst."
+      },
+      {
+        "text": "{T}: Add {C}. When you next cast a noncreature spell this turn, that spell gains sunburst."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any color. When you next cast an artifact spell this turn, that spell gains flying.",
+      "{T}: Add one mana of any color. When you next cast an artifact spell this turn, it gains sunburst.",
+      "{T}: Add one mana of any color. When you cast an artifact spell this turn, that spell gains sunburst."
+    ]
+  },
+  {
+    "id": "sta.edhmk12.self.hasAllActivatedOf.spendAnyColorForThem",
+    "kind": "static",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 609.4b",
+      "CR 602.2b",
+      "CR 106.1"
+    ],
+    "pattern": "~ has all activated abilities of ( all | each ) {f:Filter} . you may spend mana as though it were mana of any color ( to activate those abilities | to pay the activation costs of ~ 's abilities )",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "addActivatedOf": {
+                "ref": "each",
+                "filter": "$f"
+              }
+            }
+          ]
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "spendMana",
+          "asThough": "any color",
+          "of": {
+            "self": true
+          },
+          "abilities": true
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "each",
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "~ has all activated abilities of all artifacts your opponents control. You may spend mana as though it were mana of any color to activate those abilities."
+      },
+      {
+        "text": "~ has all activated abilities of all artifact cards in your graveyard. You may spend mana as though it were mana of any color to activate those abilities."
+      }
+    ],
+    "counterExamples": [
+      "~ has all activated abilities of all artifacts your opponents control. You may spend mana as though it were mana of any type to activate those abilities.",
+      "~ has all activated abilities of all artifacts your opponents control. You may spend mana as though it were mana of any color to cast spells.",
+      "~ has all activated abilities of all artifacts your opponents control."
+    ]
+  },
+  {
+    "id": "eff.edhmk12.return.toBattlefield.faceDown.ownersControl",
+    "kind": "effect",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 708.2a",
+      "CR 708.3",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "return {o:Obj} to the battlefield face down under its owner 's control",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "faceDown": true,
+        "controller": "owner"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "face down"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another creature you control dies, you may return it to the battlefield face down under its owner's control."
+      },
+      {
+        "text": "Whenever another creature you control dies, return it to the battlefield face down under its owner's control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another creature you control dies, return it to the battlefield under its owner's control.",
+      "Whenever another creature you control dies, return it to the battlefield face up under its owner's control.",
+      "Whenever another creature you control dies, return it to your hand face down."
+    ]
+  },
+  {
+    "id": "rid.edhmk12.faceDown.isForestLand",
+    "kind": "rider",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 708.2a",
+      "CR 613.2b",
+      "CR 305.6",
+      "CR 708.4"
+    ],
+    "pattern": "( it's | it is ) a Forest land",
+    "attachTo": "move",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to.zone": "battlefield",
+          "to.faceDown": true
+        },
+        "to": {
+          "faceDownAs": {
+            "@new": "set:Land|Forest|"
+          }
+        }
+      }
+    },
+    "consumes": [
+      "it's"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another creature you control dies, you may return it to the battlefield face down under its owner's control. It is a Forest land."
+      },
+      {
+        "text": "Whenever another creature you control dies, return it to the battlefield face down under its owner's control. It is a Forest land."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another creature you control dies, return it to the battlefield face down under its owner's control. It's a Mountain land.",
+      "Whenever another creature you control dies, return it to the battlefield face down under its owner's control. It's a Forest creature.",
+      "Whenever another creature you control dies, return it to the battlefield under its owner's control. It's a Forest land."
+    ]
+  },
+  {
+    "id": "rid.edhmk12.turnedFaceDown.isCyberman",
+    "kind": "rider",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 708.2a",
+      "CR 708.4",
+      "CR 613.2b"
+    ],
+    "pattern": "( it's | it is ) a 2/2 Cyberman artifact creature",
+    "attachTo": "changeFace|move",
+    "build": {
+      "$patchPrevious": {
+        "@byOp": {
+          "changeFace": {
+            "@require": {
+              "to": "faceDown"
+            },
+            "faceDownAs": {
+              "@new": "set:Artifact,Creature|Cyberman|2/2"
+            }
+          },
+          "move": {
+            "@require": {
+              "to.zone": "battlefield",
+              "to.faceDown": true
+            },
+            "to": {
+              "faceDownAs": {
+                "@new": "set:Artifact,Creature|Cyberman|2/2"
+              }
+            }
+          }
+        }
+      }
+    },
+    "consumes": [
+      "it's"
+    ],
+    "examples": [
+      {
+        "text": "Turn target creature face down. It is a 2/2 Cyberman artifact creature."
+      },
+      {
+        "text": "Turn target creature an opponent controls face down. It is a 2/2 Cyberman artifact creature."
+      }
+    ],
+    "counterExamples": [
+      "Turn target creature face down. It is a 2/2 Cyberman creature.",
+      "Turn target creature face down. It is a 3/3 Cyberman artifact creature.",
+      "Turn target creature face up. It is a 2/2 Cyberman artifact creature."
+    ]
+  },
+  {
+    "id": "sta.edhmk12.firstSpell.manaFromSubtype.cascade",
+    "kind": "static",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 106.3",
+      "CR 205.3",
+      "CR 702.85a",
+      "CR 613.1f"
+    ],
+    "pattern": "the first spell you cast ( each turn | in each turn ) that mana from ( a | an ) {st:Subtypes} was spent to cast has cascade",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "firstCastManaFrom": "$st.0",
+          "controller": "you",
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "cascade",
+              "text": "cascade"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "first",
+      "each",
+      "that"
+    ],
+    "examples": [
+      {
+        "text": "The first spell you cast each turn that mana from a Food was spent to cast has cascade."
+      },
+      {
+        "text": "The first spell you cast in each turn that mana from a Clue was spent to cast has cascade."
+      }
+    ],
+    "counterExamples": [
+      "The first spell you cast each turn that mana from a Food was spent to cast has convoke.",
+      "The first spell you cast in each turn has cascade.",
+      "The first spell you cast each turn that mana from a land was spent to cast has cascade."
+    ]
+  }
+]

@@ -1,0 +1,498 @@
+[
+  {
+    "id": "eff.edhn2.becomes.plural.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} become {pt:BasePT} {st:Subtypes} creatures with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, any number of target lands you control become 2/2 Elemental creatures with haste and vigilance."
+      },
+      {
+        "text": "Until end of turn, up to two target artifacts you control become 3/3 Golem creatures with trample."
+      }
+    ],
+    "counterExamples": [
+      "Any number of target lands you control become 2/2 Elemental creatures with haste.",
+      "Until end of turn, any number of target lands you control become 2/2 Elemental artifact creatures with haste.",
+      "Until end of turn, any number of target lands you control become 2/2 Elemental creatures with haste unless it is tapped."
+    ]
+  },
+  {
+    "id": "eff.edhn2.may.have.become.with.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {o:Obj} become ( a | an ) {pt:BasePT} {st:Subtypes} creature with {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 4,
+                  "types": {
+                    "set": [
+                      "Creature"
+                    ]
+                  },
+                  "subtypes": {
+                    "set": "$st"
+                  }
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                },
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a land you control enters, you may have target land you control become a 3/3 Elemental creature with haste until end of turn."
+      },
+      {
+        "text": "Whenever you cast a spell, you may have target artifact you control become a 4/4 Golem creature with trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a land you control enters, you may have target land you control become a 3/3 Elemental creature with haste.",
+      "Whenever a land you control enters, you may have target land you control become a 3/3 Elemental artifact creature with haste until end of turn.",
+      "Whenever a land you control enters, have target land you control become a 3/3 Elemental creature with haste until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn2.becomes.creature.allTypes.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 702.73a"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} creature with {a:Abilities} and all creature types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "all": true
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "{3}: Target land you control becomes a 4/3 creature with vigilance and all creature types until end of turn."
+      },
+      {
+        "text": "{2}: ~ becomes a 2/5 creature with flying and trample and all creature types until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{3}: Target land you control becomes a 4/3 creature with vigilance and all creature types.",
+      "{3}: Target land you control becomes a 4/3 creature with vigilance and all land types until end of turn.",
+      "{3}: Target land you control becomes a 4/3 creature with vigilance until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn2.becomes.legendary.with.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 205.4a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes a legendary {pt:BasePT} {st:Subtypes} creature with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              },
+              "supertypes": {
+                "add": [
+                  "Legendary"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, until end of turn, ~ becomes a legendary 6/6 Nightmare God creature with menace and deathtouch."
+      },
+      {
+        "text": "{2}: Until end of turn, ~ becomes a legendary 4/4 Golem creature with trample."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, ~ becomes a legendary 6/6 Nightmare God creature with menace.",
+      "Whenever you cast a spell, until end of turn, ~ becomes a 6/6 Nightmare God creature with menace.",
+      "Whenever you cast a spell, until end of turn, ~ becomes a legendary 6/6 Nightmare God artifact creature with menace."
+    ]
+  },
+  {
+    "id": "rid.edhn2.theyStillLands",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 613.1d"
+    ],
+    "pattern": "they're still lands",
+    "build": {
+      "$patchPrevious": {
+        "effects": [
+          {
+            "mods": [
+              {
+                "types": {
+                  "add": {
+                    "@concat": [
+                      "@previous.effects.0.mods.0.types.add",
+                      "@previous.effects.0.mods.0.types.set"
+                    ]
+                  },
+                  "set": null
+                },
+                "subtypes": {
+                  "add": {
+                    "@concat": [
+                      "@previous.effects.0.mods.0.subtypes.add",
+                      "@previous.effects.0.mods.0.subtypes.set"
+                    ]
+                  },
+                  "set": null
+                }
+              }
+            ]
+          }
+        ],
+        "@into": true
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, any number of target lands you control become 1/1 Elemental creatures with haste. They're still lands."
+      },
+      {
+        "text": "Untap up to six target lands. They become 6/6 Elemental creatures. They're still lands."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. They're still lands.",
+      "They're still creatures."
+    ]
+  },
+  {
+    "id": "rid.edhn2.stillEnchantment",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 613.1d"
+    ],
+    "pattern": "it's still an enchantment",
+    "build": {
+      "$patchPrevious": {
+        "effects": [
+          {
+            "mods": [
+              {
+                "types": {
+                  "add": {
+                    "@concat": [
+                      "@previous.effects.0.mods.0.types.add",
+                      "@previous.effects.0.mods.0.types.set"
+                    ]
+                  },
+                  "set": null
+                },
+                "subtypes": {
+                  "add": {
+                    "@concat": [
+                      "@previous.effects.0.mods.0.subtypes.add",
+                      "@previous.effects.0.mods.0.subtypes.set"
+                    ]
+                  },
+                  "set": null
+                }
+              }
+            ]
+          }
+        ],
+        "@into": true
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, ~ becomes a legendary 6/6 Nightmare God creature with menace. It's still an enchantment."
+      },
+      {
+        "text": "Until end of turn, ~ becomes a 4/4 Golem creature with trample. It's still an enchantment."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. It's still an enchantment.",
+      "It's still a creature."
+    ]
+  },
+  {
+    "id": "eff.edhn2.they.become.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:They} become {pt:BasePT} {st:Subtypes} creatures",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Untap up to six target lands. They become 6/6 Elemental creatures."
+      },
+      {
+        "text": "Untap up to two target artifacts you control. They become 3/3 Golem creatures."
+      }
+    ],
+    "counterExamples": [
+      "Untap up to six target lands. They become 6/6 Elemental creatures until end of turn.",
+      "Untap up to six target lands. They become 6/6 Elemental artifact creatures.",
+      "They become 6/6 Elemental creatures."
+    ]
+  },
+  {
+    "id": "sta.edhn2.gainLife.opponent.loseInstead",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 119.3",
+      "CR 119.4",
+      "CR 614.11"
+    ],
+    "pattern": "if an opponent would gain life , ( that player loses | they lose ) that much life instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "life",
+        "change": "gain",
+        "player": "opponent"
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "loseLife",
+            "who": {
+              "ref": "event",
+              "role": "player"
+            },
+            "amount": {
+              "q": "eventAmount"
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "that much"
+    ],
+    "examples": [
+      {
+        "text": "If an opponent would gain life, they lose that much life instead."
+      },
+      {
+        "text": "~ has flying. If an opponent would gain life, they lose that much life instead."
+      }
+    ],
+    "counterExamples": [
+      "If an opponent would gain life, that player gains that much life instead.",
+      "If an opponent would gain life, that player loses that much life.",
+      "If you would gain life, that player loses that much life instead."
+    ]
+  }
+]

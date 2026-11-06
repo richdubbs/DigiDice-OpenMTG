@@ -1,0 +1,248 @@
+[
+  {
+    "id": "rst.edhn31.cantWinGame.oppsCantLose",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 104.2",
+      "CR 104.3",
+      "CR 101.2"
+    ],
+    "pattern": "you can't win the game and your opponents can't lose the game",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "win"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "mode": "cant",
+          "action": "lose"
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "{T}: You gain 7 life.\nYou can't win the game and your opponents can't lose the game."
+      },
+      {
+        "text": "You can't win the game and your opponents can't lose the game.\n{T}: You gain 7 life."
+      }
+    ],
+    "counterExamples": [
+      "You can't win the game and your opponents can't lose the game this turn.",
+      "You can't lose the game and your opponents can't win the game.",
+      "You can't win the game or your opponents can't lose the game."
+    ]
+  },
+  {
+    "id": "rst.edhn31.self.cantAttack.duringExtraTurns",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 500.7",
+      "CR 508.1",
+      "CR 604.1",
+      "CR 101.2"
+    ],
+    "pattern": "~ can't attack during extra turns",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "attack",
+          "when": {
+            "cond": "turnOf",
+            "whose": "any",
+            "extra": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "during",
+      "extra"
+    ],
+    "examples": [
+      {
+        "text": "{T}: You gain 7 life.\n~ can't attack during extra turns."
+      },
+      {
+        "text": "~ can't attack during extra turns.\n{T}: You gain 7 life."
+      }
+    ],
+    "counterExamples": [
+      "~ can't attack during your turn.",
+      "~ can't block during extra turns.",
+      "~ can't attack during extra turns unless you control an Elf.",
+      "~ can't attack during an extra turn."
+    ]
+  },
+  {
+    "id": "eff.edhn31.gainlife.foreach.imp",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.1",
+      "CR 119.3",
+      "CR 608.2h",
+      "CR 109.5"
+    ],
+    "pattern": "gain 1 life for each {f:Filter}",
+    "build": {
+      "op": "gainLife",
+      "who": {
+        "ref": "you"
+      },
+      "amount": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "When ~ dies, you may gain 1 life for each Cleric card in your graveyard."
+      },
+      {
+        "text": "Whenever a player casts a green spell, you may gain 1 life for each enchantment you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, you may gain 2 life for each Cleric you control.",
+      "When ~ dies, you may gain 1 life for each.",
+      "When ~ dies, you may gain 1 life for each Cleric you control unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.edhn31.player.incubates",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.53a",
+      "CR 111.10i",
+      "CR 109.5"
+    ],
+    "pattern": "{p:Player} incubates {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "incubate",
+      "who": "$p",
+      "n": "$n"
+    },
+    "subject": "player",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Exile target nonland permanent. Its controller incubates 3."
+      },
+      {
+        "text": "Destroy target creature. Target opponent incubates 2."
+      }
+    ],
+    "counterExamples": [
+      "Exile target nonland permanent. Its controller incubates.",
+      "Exile target nonland permanent. Its controller incubates 3 tokens.",
+      "Exile target nonland permanent. Its controller creates 3."
+    ]
+  },
+  {
+    "id": "rep.edhn31.enter.additionalCounter.forEachDiedUnderYourControl",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 700.4",
+      "CR 603.10a"
+    ],
+    "pattern": "{f:Filter} enter with an additional {k:CounterKind} counter on them for each creature that died under your control this turn",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "happenedCount",
+                  "event": {
+                    "ev": "zoneChange",
+                    "subject": {
+                      "types": [
+                        "Creature"
+                      ],
+                      "controller": "you"
+                    },
+                    "from": "battlefield",
+                    "to": "graveyard"
+                  },
+                  "scope": "turn"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Nontoken Elves you control enter with an additional +1/+1 counter on them for each creature that died under your control this turn."
+      },
+      {
+        "text": "Elves you control enter with an additional +1/+1 counter on them for each creature that died under your control this turn."
+      }
+    ],
+    "counterExamples": [
+      "Nontoken creatures you control enter with an additional +1/+1 counter on them for each creature that died this turn.",
+      "Nontoken creatures you control enter with an additional +1/+1 counter on them.",
+      "Nontoken creatures you control enter with a +1/+1 counter on them for each creature that died under your control this turn."
+    ]
+  }
+]

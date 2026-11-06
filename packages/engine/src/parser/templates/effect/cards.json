@@ -239,7 +239,7 @@
     "subject": "player",
     "examples": [{"text": "Target player shuffles their library."}, {"text": "Target opponent shuffles their library."}],
     "counterExamples": ["Target player shuffles their graveyard.", "Target player shuffles their hand into their library."],
-    "status": "experimental",
+    "status": "stable",
     "since": 1
   },
   {

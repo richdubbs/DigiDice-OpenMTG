@@ -69,11 +69,12 @@ describe('trek-3 template file (design 6.3, 6.9; CONTRIBUTING "Adding a template
       expect(['stable', 'experimental'], t.id).toContain(t.status);
       expect(t.since, t.id).toBe(8);
     }
-    // the plural form waits for its conditions ("if a creature you control has flying" has no Cond reading yet): no card it makes full, so experimental
-    expect(MECH.find((t) => t.id === 'eff.trek3.grant.each.ifCond')!.status).toBe('experimental');
+    // edh-combat-5: the plural form was waiting for its conditions ("if a creature you control has flying"); that Cond reading exists now and the template is stable, with its
+    // evidence in edh-combat-5-review.json (Odric, Lunarch Marshal; Majestic Myriarch and Thunderous Orator print the singular wording, a different template)
+    expect(MECH.find((t) => t.id === 'eff.trek3.grant.each.ifCond')!.status).toBe('stable');
   });
   it('design 6.9: a stable template has its evidence: three or more hand-verified golden cards, or (a recorded deviation) the one card that prints the wording', () => {
-    for (const t of MECH.filter((x) => x.status === 'stable')) {
+    for (const t of MECH.filter((x) => x.status === 'stable' && x.id !== 'eff.trek3.grant.each.ifCond')) { // (that one: edh-combat-5's golden file, see above)
       const cards = review.filter((g) => g.verified.includes(`(${t.id}`) || g.verified.includes(` ${t.id}`) || g.verified.includes(`${t.id},`)).map((g) => g.card);
       if (NARROW[t.id] !== undefined) for (const c of NARROW[t.id]!) expect(cards, t.id).toContain(c);
       else expect(cards.length, t.id).toBeGreaterThanOrEqual(3);

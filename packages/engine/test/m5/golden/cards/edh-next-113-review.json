@@ -1,0 +1,28 @@
+[
+{"card":"Erdwal Illuminator","expect":"full","verified":"edh-next-113 review (third pass top-rank-t1; EDHREC top 20,000, rank 5851), by hand against the Oracle text (no Scryfall rulings exist): whenever you investigate for the first time each turn (the investigate macro reports each investigation, CR 701.16a, 603.2; first = the turn's history, CR 603.2c), investigate once more (trg.edhn113.you.investigate.firstTime, eff.edhn113.investigate.additionalTime); the extra investigation is not the first of the turn so it cannot loop","faces":[{"abilities":[{"keyword":"flying","kind":"keyword"},{"effect":{"steps":[{"action":"investigate","n":1,"op":"action","who":{"ref":"you"}}
+],"targets":[]},"kind":"triggered","trigger":{"first":"turn","on":[{"actor":"you","ev":"action","verb":"investigate"}
+]}}
+]}
+]},
+{"card":"Display of Power","expect":"full","verified":"edh-next-113 review (third pass top-rank-t1; EDHREC top 20,000, rank 5739), by hand against the Oracle text and the Scryfall rulings (fetched 2026-11-04): this spell can't be copied; copy any number of target instant and/or sorcery spells (at most one copy of each, ruling 2023-06-16), the copies' controller may choose new targets for each copy (rider rid.t45.copy.newTargets.plural reaching a copy of a group target; CR 707.10, 707.10c, 115.7)","faces":[{"abilities":[{"effects":[{"action":"beCopied","mode":"cant","s":"restrict","subject":{"ref":"self"}}
+],"kind":"static","zone":["stack"]},{"effect":{"steps":[{"newTargets":"may","op":"copy","result":"spell","what":{"id":"t0","ref":"target"},"who":{"ref":"you"}}
+],"targets":[{"filter":{"types":["Instant","Sorcery"]},"id":"t0","kind":"spell","max":"any","min":0}
+]},"kind":"spell"}
+]}
+]},
+{"card":"Monk Gyatso","expect":"full","verified":"edh-next-113 review (third pass top-rank-t1; EDHREC top 20,000, rank 5289), by hand against the Oracle text and the Scryfall rulings (fetched 2026-11-04): whenever another creature you control becomes the target of a spell or ability you may airbend that creature (the permanent the trigger is about; a token ceases to exist, the card can be cast for {2}, CR 701.65a, 115.1, 603.2; render of airbend over a becomes-target event)","faces":[{"abilities":[{"effect":{"steps":[{"do":[{"action":"airbend","op":"action","subject":{"ref":"event","role":"subject"},"who":{"ref":"you"}}
+],"op":"may","who":{"ref":"you"}}
+],"targets":[]},"kind":"triggered","trigger":{"on":[{"ev":"becomes","object":{"controller":"you","other":true,"types":["Creature"]},"what":"targeted"}
+]}}
+]}
+]},
+{"card":"Pia's Revolution","expect":"full","verified":"edh-next-113 review (third pass top-rank-t1; EDHREC top 20,000, rank 7231), by hand against the Oracle text and the Scryfall rulings (fetched 2026-11-04): whenever a nontoken artifact is put into your graveyard from the battlefield (any controller, owner you), target opponent chooses whether to have ~ deal 3 damage to them; if not, return that card to your hand (eff.edhn113.returnHand.unlessTargetHasSelfDeal; CR 118.12a, 120.3, 608.2d)","faces":[{"abilities":[{"effect":{"steps":[{"do":[{"amount":3,"op":"damage","source":{"ref":"self"},"to":{"id":"t0","ref":"target"}}
+],"op":"may","otherwise":[{"op":"move","to":{"zone":"hand"},"what":{"ref":"event","role":"subject"}}
+],"who":{"id":"t0","ref":"target"}}
+],"targets":[{"id":"t0","kind":"player","max":1,"min":1,"players":{"who":"opponent"}}
+]},"kind":"triggered","trigger":{"on":[{"ev":"zoneChange","from":"battlefield","subject":{"owner":"you","token":false,"types":["Artifact"]},"to":"graveyard"}
+]}}
+]}
+]},
+{"card":"Duskmantle Guildmage","expect":"full","verified":"edh-next-113 review (third pass top-rank-t1; EDHREC top 20,000, rank 6224), by hand against the Oracle text and the Scryfall rulings (fetched 2026-11-04): {1}{U}{B} creates a delayed trigger until end of turn for each card put into an opponent's graveyard from anywhere (token permanents are no cards, ruling 2013-01-24); that player loses 1 life; {2}{U}{B} target player mills two cards (\"that player\" is the card's owner, ownerOf the event subject, parser/lower/scope.ts, render/refs.ts; the zone-unstated flag of a card whose event states its zone, parser/holes/event.ts; CR 400.3, 603.7, 603.2)","faces":[{"abilities":[{"cost":{"mana":[{"amount":1,"kind":"generic"},{"color":"U","kind":"colored"},{"color":"B","kind":"colored"}]},"effect":{"steps":[{"do":[{"amount":1,"op":"loseLife","who":{"object":{"ref":"event","role":"subject"},"ref":"ownerOf"}}],"duration":{"d":"endOfTurn"},"op":"delay","when":{"at":"event","event":{"ev":"zoneChange","subject":{"isCard":true,"owner":"opponent"},"to":"graveyard"}}}],"targets":[]},"kind":"activated"},{"cost":{"mana":[{"amount":2,"kind":"generic"},{"color":"U","kind":"colored"},{"color":"B","kind":"colored"}]},"effect":{"steps":[{"count":2,"op":"mill","who":{"id":"t0","ref":"target"}}],"targets":[{"id":"t0","kind":"player","max":1,"min":1}]},"kind":"activated"}]}]}
+]

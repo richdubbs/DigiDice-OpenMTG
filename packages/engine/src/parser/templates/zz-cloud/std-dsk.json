@@ -281,7 +281,7 @@
     "id": "eff.stddsk.counters.choice3.yourChoice",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 122.1",
       "CR 122.1b",
@@ -478,7 +478,7 @@
     "id": "eff.stddsk.counters.choice3.eachNamed",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 122.1",
       "CR 122.1b",

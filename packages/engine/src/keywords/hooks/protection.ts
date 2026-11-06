@@ -6,6 +6,7 @@
 import { deny } from '../../rules/denial';
 import type { GameLike } from '../../rules/hookpoints';
 import { hasProtectionFrom } from '../../rules/protection';
+import type { KeywordAbilityDef } from '../../types/ability';
 import type { ObjectId } from '../../types/ids';
 import type { KeywordHooks } from '../types';
 import { charsOfId, nm } from './common';
@@ -16,7 +17,17 @@ function attachDenial(g: GameLike, attachment: ObjectId, host: ObjectId) {
   const a = charsOfId(g, attachment);
   const h = charsOfId(g, host);
   if (a === null || h === null) return null;
-  if (hasProtectionFrom(h, a)) return deny(`${nm(h)} has protection from a quality of ${nm(a)}, so it can't be attached to it.`, 'CR 702.16c', 'CR 702.16d');
+  // edh-d-24 (CR 702.16c-d; Spectra Ward, Benevolent Blessing): "This effect doesn't remove Auras (and Equipment you control that are already attached to it)": an attachment of the kinds the
+  // protection names that is attached to this host already stays; a new one is refused
+  const ao = g.s.objects[attachment];
+  const kept = (k: KeywordAbilityDef): boolean => {
+    const kinds = k.exceptAttachedKinds;
+    if (kinds === undefined || ao === undefined || ao.attachedTo !== host || !a.subtypes.some((t) => kinds.subtypes.includes(t))) return false;
+    if (kinds.yours !== true) return true;
+    const by = k.exceptAttached?.ref === 'fixed' ? g.s.objects[k.exceptAttached.objects[0]?.id as ObjectId] : undefined;
+    return by !== undefined && by.controller === ao.controller;
+  };
+  if (hasProtectionFrom(h, a, {}, attachment, kept)) return deny(`${nm(h)} has protection from a quality of ${nm(a)}, so it can't be attached to it.`, 'CR 702.16c', 'CR 702.16d');
   return null;
 }
 

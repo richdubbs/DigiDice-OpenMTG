@@ -1,0 +1,7 @@
+# edh-c-108 (Commander EDHREC ranks 22,501-23,000, third pass): equipped creature gets A, B instead as long as C; has K as long as it is an X, otherwise prevent damage dealt by it; choose a card from a graveyard or hand and exile it; each player may search, reveal, hand; an Aura returns from the graveyard when its enchanted permanent is put into a graveyard; exile the other revealed cards and lose life for each. After editing: npm run cards -- fixtures
+Mind Carver
+Armament of Nyx
+Memory Leak
+Psychic Intrusion
+Jungle Wayfinder
+Spoils of the Vault

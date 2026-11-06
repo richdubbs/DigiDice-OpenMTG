@@ -29,7 +29,7 @@ export function radAbility(player: PlayerId): AbilityDef {
       targets: [],
       steps: [
         { op: 'mill', who, count: rads, as: 'radMilled' },
-        { op: 'loseLife', who, amount: nonland },
+        { op: 'loseLife', who, amount: nonland, radiation: true }, // edh-next-93 (CR 728.1): a rule `radiationGainsLife` turns this loss into a gain (effects/handlers/lifedamage.ts)
         { op: 'removeCounters', from: who, kind: 'rad', count: nonland },
       ],
     },

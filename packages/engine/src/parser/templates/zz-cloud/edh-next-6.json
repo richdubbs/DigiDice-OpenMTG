@@ -1,0 +1,357 @@
+[
+  {
+    "id": "eff.edhn6.prevent.combat.to.filter.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.2"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to {f:Filter} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt to Dogs you control this turn."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt to creatures you control this turn. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt to Dogs you control.",
+      "Prevent all damage that would be dealt to Dogs you control this turn.",
+      "Prevent all combat damage that would be dealt by Dogs you control this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn6.prevent.combat.durFirst.to.filter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.2"
+    ],
+    "pattern": "prevent all combat damage that would be dealt {d:Dur} to {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt this turn to Dogs you control."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt this turn to creatures you control. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt to Dogs you control.",
+      "Prevent all damage that would be dealt this turn to Dogs you control.",
+      "Prevent all combat damage that would be dealt this turn by Dogs you control."
+    ]
+  },
+  {
+    "id": "eff.edhn6.eachPlayer.loseLife.discard.sac.thenSac",
+    "cr": [
+      "CR 119.3",
+      "CR 701.9a",
+      "CR 701.21a",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "each player loses {n:Qty} life , discards {m:Qty} card[s] , sacrifices {a:Qty} {f:Filter} of their choice , then sacrifices {b:Qty} {g:Filter} of their choice",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "amount": "$n"
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "count": "$m"
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "filter": "$f",
+        "count": "$a"
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "filter": "$g",
+        "count": "$b"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player loses 2 life, discards two cards, sacrifices an artifact of their choice, then sacrifices an enchantment of their choice."
+      },
+      {
+        "text": "When ~ enters, each player loses 3 life, discards a card, sacrifices a nontoken creature of their choice, then sacrifices a land of their choice."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent loses 1 life, discards a card, sacrifices a creature of their choice, then sacrifices a land of their choice.",
+      "Each player loses 1 life, discards a card, sacrifices a creature of their choice, then sacrifices a land.",
+      "Each player loses 1 life, discards a card, then sacrifices a creature of their choice."
+    ],
+    "kind": "effect",
+    "since": 8,
+    "status": "stable"
+  },
+  {
+    "id": "eff.edhn6.return.toOwnersHands.first",
+    "cr": [
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "return to their owners' hands {o:Objs}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return to their owners' hands all creatures with toughness 2 or less."
+      },
+      {
+        "text": "Return to their owners' hands all nonland permanents your opponents control."
+      }
+    ],
+    "counterExamples": [
+      "Return to their owners' libraries all creatures with toughness 2 or less.",
+      "Return to their owners' hands target creature with toughness 2 or less.",
+      "Return to their owners' hands all creatures with toughness 2 or less. Draw a card."
+    ],
+    "kind": "effect",
+    "since": 8,
+    "status": "stable"
+  },
+  {
+    "id": "eff.edhn6.each.untap.next.its",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "each {f:Filter} doesn't untap during its controller 's next untap step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "not",
+      "each",
+      "next",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Each attacking Goblin doesn't untap during its controller's next untap step."
+      },
+      {
+        "text": "Each tapped land doesn't untap during its controller's next untap step."
+      }
+    ],
+    "counterExamples": [
+      "Each attacking Goblin doesn't untap during its controller's untap step.",
+      "Each attacking Goblin untaps during its controller's next untap step.",
+      "Each attacking Goblin doesn't untap during your next untap step."
+    ],
+    "kind": "effect",
+    "since": 8,
+    "status": "stable"
+  },
+  {
+    "id": "trg.edhn6.cast.duringCombat",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 506.1"
+    ],
+    "pattern": "whenever you cast a spell during combat",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you"
+        }
+      ],
+      "while": {
+        "cond": "turnOf",
+        "whose": "any",
+        "step": [
+          "beginCombat",
+          "declareAttackers",
+          "declareBlockers",
+          "combatDamage",
+          "endCombat"
+        ]
+      }
+    },
+    "consumes": [
+      "whenever",
+      "during"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell during combat, draw a card."
+      },
+      {
+        "text": "Whenever you cast a spell during combat, put a +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell during your turn, draw a card.",
+      "Whenever an opponent casts a spell during combat, draw a card.",
+      "Whenever you cast a creature spell during combat, draw a card."
+    ],
+    "since": 8,
+    "status": "stable"
+  },
+  {
+    "id": "eff.edhn6.counter.unless.discardHand",
+    "cr": [
+      "CR 701.6a",
+      "CR 118.12",
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "counter {o:Obj} unless its controller discards their hand",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "discard",
+            "count": 1,
+            "hand": true
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "counter",
+          "what": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Counter target creature spell unless its controller discards their hand."
+      },
+      {
+        "text": "Counter target noncreature spell unless its controller discards their hand."
+      }
+    ],
+    "counterExamples": [
+      "Counter target creature spell unless its controller discards a card.",
+      "Counter target creature spell unless you discard your hand.",
+      "Counter target creature spell if its controller discards their hand."
+    ],
+    "kind": "effect",
+    "since": 8,
+    "status": "stable"
+  }
+]

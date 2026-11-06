@@ -89,7 +89,9 @@ export function scanQuotes(text: string, from = 0, to: number = text.length, ins
           continue;
         }
       }
-      const opens = (prev === undefined || i === from || WS.test(prev) || prev === '"' || prev === '(') && next !== undefined && next !== '\n' && !WS.test(next) && i + 1 < to;
+      // a self reference ("This token") is blanked to "~" padded on the left (front/selfref.ts), so the opener of "'This token gets ...'" may be followed by blanks that end in it
+      const padded = next !== undefined && WS.test(next) && /^\s*[~¤]/.test(text.slice(i + 1, to));
+      const opens = (prev === undefined || i === from || WS.test(prev) || prev === '"' || prev === '(') && next !== undefined && next !== '\n' && (!WS.test(next) || padded) && i + 1 < to;
       if (opens) stack.push({ ch: "'", pos: i });
     }
   }

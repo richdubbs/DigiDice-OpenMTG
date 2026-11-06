@@ -47,10 +47,13 @@ describe('CR 608.2c, design 6.4: a pronoun inside a counted filter is never boun
     'When ~ enters, each player gains 1 life for each creature they control.',
     'When ~ enters, each opponent loses 1 life for each artifact that player controls.',
   ]) {
-    it(`CR 608.2c: "${text}" ("they" is each player in turn) is not automated with the event player`, () => {
+    // edh-players-12 (CR 608.2e, 101.4, 107.1a; parser/lower/anaphora.ts#groupChooser): the pronoun of a group's amount is each of those players in turn (`iterating`),
+    // read for each player by the engine (effects/handlers/lifedamage.ts): automated now, and still never the event player
+    it(`CR 608.2c: "${text}" ("they" is each player in turn) is automated with each player in turn, never the event player`, () => {
       const defs = abilitiesOf(creature, text);
       expect(filterRefs(defs), JSON.stringify(bare(defs))).not.toContain('event');
-      expect(automated(defs), JSON.stringify(bare(defs))).toBe(false);
+      expect(filterRefs(defs), JSON.stringify(bare(defs))).toContain('iterating');
+      expect(automated(defs), JSON.stringify(bare(defs))).toBe(true);
     });
   }
 
@@ -151,12 +154,17 @@ describe('CR 602.5b, 602.5d, 605.1a, 605.3a: a mana ability is automated only wh
     expect(classifyAbility(a, ENGINE_CAPABILITIES).level).toBe('full');
   });
 
-  it('CR 113.6: a mana ability that functions from another zone (a hand-exiling cost) is not run natively', () => {
+  it('CR 113.6m: a mana ability that functions from the hand only (a hand-exiling cost) is run natively since edh-mana-keywords-1; any other zone is not', () => {
     const a: AbilityDef = {
       kind: 'activated', text: 'Exile ~ from your hand: Add {R}.', cost: { other: [{ kind: 'exileFrom', zone: 'hand', count: 1, self: true }] }, isMana: true, zone: ['hand'],
       effect: { targets: [], steps: [{ op: 'addMana', who: { ref: 'you' }, units: [['R']] }] },
     } as AbilityDef;
-    expect(missingCapabilities(a, ENGINE_CAPABILITIES)).toEqual(expect.arrayContaining(['feature:mana.activation'])); // FAST5X E5: the exile cost itself is paid
+    expect(missingCapabilities(a, ENGINE_CAPABILITIES)).toEqual([]); // rules/mana.ts#manaAbilityDenial (feature:mana.activation.hand)
+    const g = { ...a, text: 'Exile ~ from your graveyard: Add {R}.', cost: { other: [{ kind: 'exileFrom', zone: 'graveyard', count: 1, self: true }] }, zone: ['graveyard'] } as AbilityDef;
+    // edh-d-65: the graveyard form is run natively too (feature:mana.activation.graveyard, rules/mana.ts#manaAbilityDenial); an ability that works in another zone (exile) is not
+    expect(missingCapabilities(g, ENGINE_CAPABILITIES)).toEqual([]);
+    const x = { ...g, text: 'Exile ~ from exile: Add {R}.', cost: { other: [{ kind: 'exileFrom', zone: 'exile', count: 1, self: true }] }, zone: ['exile'] } as AbilityDef;
+    expect(missingCapabilities(x, ENGINE_CAPABILITIES)).toEqual(expect.arrayContaining(['feature:mana.activation'])); // FAST5X E5
   });
 });
 
@@ -177,7 +185,10 @@ describe('WP20 templates name the wrong readings above as counter-examples, and 
       for (const text of texts) {
         expect(t.counterExamples, id).toContain(text);
         const f = parseExample(text);
-        expect(automated(f.abilities), `${text}: ${JSON.stringify(bare(f.abilities))}`).toBe(false);
+        // (edh-players-12: the group's "they" / "that player" is each player in turn now, so those two sentences are read, with `iterating`, not the event player)
+        const perPlayer = /\bthey control\.$/.test(text) && /each (opponent|player)/.test(text);
+        expect(automated(f.abilities), `${text}: ${JSON.stringify(bare(f.abilities))}`).toBe(perPlayer);
+        if (perPlayer) expect(JSON.stringify(bare(f.abilities))).toContain('"ref":"iterating"');
       }
     });
   }

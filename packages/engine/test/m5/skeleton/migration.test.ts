@@ -292,7 +292,7 @@ describe('compiler output keeps its M3/M4 shape, in the new model\'s terms', () 
     const unknown = compileCard(card('Frobnicate the quux.')).faces[0]!.abilities;
     expect(unknown).toMatchObject([{ kind: 'manual' }]);
     expect(['spell', 'activated', 'triggered', 'static', 'unknown']).toContain((unknown[0] as { shape: string }).shape);
-    const mana = compileCard(card('{T}: Add {R}. Each opponent gains 1 life.')).faces[0]!.abilities; // CMD5: a pain land's damage is automated now
+    const mana = compileCard(card('{T}: Add {R}. Frobnicate the quux.')).faces[0]!.abilities; // CMD5: a pain land's damage is automated now; edh-mana-keywords-4: so is each opponent's life gain
     expect(mana).toMatchObject([{ kind: 'manual', shape: 'activated', mana: true }]);
     expect(noAbilityCompiler(face('Flying'), { name: 'T', layout: 'normal' }).abilities).toMatchObject([{ kind: 'manual', shape: 'unknown' }]);
   });

@@ -1,0 +1,7 @@
+# edh-players-15 (Commander lane edh-players; test/cloud/edh-players-15, golden edh-players-15-review.json)
+# an opponent who controls a named artifact draws or gains life during their turn; a permanent an opponent owns enters under your control; spend mana as though of any color for the exiled cards; two creatures each get +2/+0, haste and must attack; protection from each of an exiled creature's colors; each target opponent sacrifices their greatest-power creature and loses life
+Wedding Ring
+Brainstealer Dragon
+Gogo, Mysterious Mime
+Éowyn, Fearless Knight
+Will of the Abzan

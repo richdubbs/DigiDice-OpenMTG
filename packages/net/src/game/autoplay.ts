@@ -55,6 +55,7 @@ export function autoAnswer(d: Decision, me: PlayerId): DecisionAnswer | 'cancel'
     case 'chooseReplacement': return { kind: 'chooseReplacement', id: d.options[0]!.id };
     case 'chooseName': return d.options?.[0] ? { kind: 'chooseName', name: d.options[0] } : null;
     case 'commanderZone': return { kind: 'commanderZone', command: true }; // M11-0: CR 903.9a-b
+    case 'shortcut': return { kind: 'shortcut' }; // shortcuts (engine docs/design/shortcuts.md 3): CR 727.2b, let it run
     default: return null;
   }
 }

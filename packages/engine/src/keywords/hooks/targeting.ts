@@ -15,7 +15,13 @@ import { charsOfId, nm, objectOf } from './common';
 function sourceChars(g: GameLike, source: ObjectId | null): Chars | null {
   if (source === null) return null;
   const src = g.s.objects[source] ?? g.s.lki[source]?.object;
-  return src ? charsOfObject(g.s, src) : null;
+  if (!src) return null;
+  const c = charsOfObject(g.s, src);
+  // edh-top-9 (CR 113.1, 702.11d; Volatile Stormdrake): "hexproof from activated and triggered abilities": the source acts as an ability when one of its abilities is on the stack
+  // (the one being announced or resolving, as statics/rule-match.ts#sourceView reads it); a spell on the stack (or its copy, which a storm trigger's new targets are chosen for) is a spell (CR 707.10), or when it is a permanent with no spell of its own on the stack
+  const abilityOnStack = c.isSpell !== true && g.s.zones.stack.some((id) => { const x = g.s.objects[id]; return x?.kind === 'ability' && x.stack?.sourceId === source; });
+  const asAbility = abilityOnStack || (src.zone === 'battlefield' && c.isSpell !== true);
+  return asAbility ? { ...c, isAbility: true } : c;
 }
 
 export function targetingDenial(g: GameLike, target: ObjectId | PlayerId, source: ObjectId | null, controller: PlayerId, keyword: string, why: string, ...rules: string[]): Denial | null {

@@ -1,0 +1,6 @@
+# edh-perms-7 (Commander lane edh-perms; test/cloud/edh-perms-7, golden edh-perms-7-review.json)
+# copy exceptions (artifact Vehicle with crew, conditional vanishing), a tapped token copy that is a 4/4 black Zombie, creature-type lists "that isn't an A, B, or C"
+Flesh Duplicate
+Hashaton, Scarab's Fist
+Imposter Mech
+Swarmyard Massacre

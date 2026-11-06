@@ -281,7 +281,7 @@
   "id": "eff.r5static.attackTax.you.lasting",
   "kind": "effect",
   "since": 8,
-  "status": "experimental",
+  "status": "stable",
   "cr": [
    "CR 508.1d",
    "CR 508.1h",
@@ -814,7 +814,7 @@
   "id": "sta.r5static.aslong.limit.attackYou",
   "kind": "static",
   "since": 8,
-  "status": "experimental",
+  "status": "stable",
   "cr": [
    "CR 508.1b",
    "CR 508.1c",

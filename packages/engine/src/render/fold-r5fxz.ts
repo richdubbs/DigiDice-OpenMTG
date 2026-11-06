@@ -29,7 +29,8 @@ function instructionChoice(list: EffectStep[], i: number, st: RenderState): Fold
   }
   if (JSON.stringify(list.slice(i + 1 + INSTRUCTION_CHOICE.length)).includes(`"${INSTRUCTION_CHOICE_LINK}"`)) return null;
   const [a, b] = branches.map((steps) => K.steps(steps, st));
-  return { clauses: [plain(`${a} or ${b}`)], consumed: 1 + INSTRUCTION_CHOICE.length };
+  // edh-perms-24 (Turnabout): "Tap all untapped permanents of the chosen type target player controls, or untap all tapped permanents ..." has the comma
+  return { clauses: [plain(alt(`${a} or ${b}`, `${a}, or ${b}`))], consumed: 1 + INSTRUCTION_CHOICE.length };
 }
 
 /**

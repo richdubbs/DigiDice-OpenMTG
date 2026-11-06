@@ -12,10 +12,25 @@
     "pattern": "( a creature | creatures | an artifact | artifacts | a land | lands | a permanent | permanents ) destroyed this way can't be regenerated",
     "build": {
       "$patchPrevious": {
-        "regeneration": "cant"
+        "@byOp": {
+          "destroy": {
+            "regeneration": "cant"
+          },
+          "if": {
+            "@require": {
+              "then.0.op": "destroy",
+              "then.0.regeneration": null
+            },
+            "then": [
+              {
+                "regeneration": "cant"
+              }
+            ]
+          }
+        }
       }
     },
-    "attachTo": "destroy",
+    "attachTo": "destroy|if",
     "consumes": [
       "can't",
       "this way"
@@ -29,6 +44,9 @@
       },
       {
         "text": "Destroy all nonblack creatures. Creatures destroyed this way can't be regenerated."
+      },
+      {
+        "text": "Destroy all creatures. They can't be regenerated. If there are seven or more cards in your graveyard, instead destroy all creatures, then create two 1/1 white Spirit creature tokens with flying. Creatures destroyed this way can't be regenerated."
       }
     ],
     "counterExamples": [

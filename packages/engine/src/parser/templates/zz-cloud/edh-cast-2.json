@@ -1,0 +1,129 @@
+[
+ {
+  "id": "eff.edhc2.player.cant.cast.additional",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "player",
+  "cr": [
+   "CR 611.2a",
+   "CR 601.3",
+   "CR 101.2"
+  ],
+  "pattern": "{p:Player} can't cast additional spells {d:Dur}",
+  "build": {
+   "op": "effect",
+   "duration": "$d",
+   "effects": [
+    {
+     "s": "restrict",
+     "subject": "$p",
+     "mode": "cant",
+     "action": "cast"
+    }
+   ]
+  },
+  "consumes": [
+   "can't",
+   "additional"
+  ],
+  "examples": [
+   {
+    "text": "You can't cast additional spells this turn."
+   },
+   {
+    "text": "Each opponent can't cast additional spells until end of turn."
+   }
+  ],
+  "counterExamples": [
+   "You can cast additional spells this turn.",
+   "You can't cast additional spells."
+  ]
+ },
+ {
+  "id": "sta.edhc2.triggerMod.cast.orCopy",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 603.2d",
+   "CR 601.2i",
+   "CR 707.10",
+   "CR 109.4"
+  ],
+  "pattern": "if you casting or copying {f:Filter} causes a triggered ability of a permanent you control to trigger , that ability triggers an additional time",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "triggerMod",
+     "cause": {
+      "ev": "cast",
+      "player": "you",
+      "spell": "$f",
+      "orCopy": true
+     },
+     "abilitiesOf": {
+      "controller": "you"
+     },
+     "additional": 1
+    }
+   ]
+  },
+  "consumes": [
+   "if",
+   "additional",
+   "casting",
+   "copying"
+  ],
+  "examples": [
+   {
+    "text": "If you casting or copying a noncreature spell causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+   },
+   {
+    "text": "If you casting or copying a red spell causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+   }
+  ],
+  "counterExamples": [
+   "If you casting or copying a noncreature spell causes a triggered ability of a permanent you control to trigger, that ability triggers two additional times.",
+   "If you casting or copying a noncreature spell causes a triggered ability of a permanent an opponent controls to trigger, that ability triggers an additional time.",
+   "If you casting a noncreature spell causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+  ]
+ },
+ {
+  "id": "eff.edhc2.put.ownersLibrary.seventhFromTop",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 401.7",
+   "CR 400.3",
+   "CR 608.2c"
+  ],
+  "pattern": "put {o:Obj} into its owner 's library seventh from the top",
+  "build": {
+   "op": "move",
+   "what": "$o",
+   "to": {
+    "zone": "library",
+    "position": {
+     "nth": 7
+    }
+   }
+  },
+  "examples": [
+   {
+    "text": "Put target creature into its owner's library seventh from the top. Scry 1."
+   },
+   {
+    "text": "Put target artifact an opponent controls into its owner's library seventh from the top. Draw a card."
+   }
+  ],
+  "counterExamples": [
+   "Put target creature into its owner's graveyard seventh from the top.",
+   "Put target creature into your library seventh from the top.",
+   "Put target creature into its owner's library seventh from the bottom."
+  ]
+ }
+]

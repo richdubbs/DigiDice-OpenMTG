@@ -181,8 +181,14 @@ describe('std-library-1 lowering (CR 603.7, 603.3d): the delayed trigger of the 
     expect(spell.effect.targets).toEqual([]);
     expect(spell.effect.steps.find((s) => s.op === 'delay')?.targets).toHaveLength(2);
   });
-  it('the end step leads keep their reading: a target in the delayed sentence stays manual (train-1 bounce, Swooping Pteranodon); the tail form announces it with the spell', () => {
-    expect(level('Sorcery', 'Draw a card. At the beginning of the next end step, target player draws a card.')).not.toBe('full');
+  // edh-next-134 (CR 603.7, 603.3d; Swooping Pteranodon ruling 2023-11-10): the "next end step" lead now takes the targets of its own sentence too (parser/lower/targets.ts#STEP_DELAY_TARGET_LEAD_STEP),
+  // chosen as the delayed ability triggers; this negative of std-library-1 is updated: the target is the delay's, never the spell's
+  it('the next end step lead takes its own targets as well (edh-next-134; was manual: train-1 bounce, Swooping Pteranodon); the tail form announces it with the spell', () => {
+    const lead = compiled('Sorcery', 'Draw a card. At the beginning of the next end step, target player draws a card.');
+    expect(lead.automation.level).toBe('full');
+    expect((lead.faces[0]!.abilities[0] as { effect: { targets: unknown[] } }).effect.targets).toHaveLength(0);
+    expect(JSON.stringify(lead.faces[0]!.abilities[0])).toContain('"op":"delay"');
+    expect(JSON.stringify(lead.faces[0]!.abilities[0])).toMatch(/"op":"delay".*"targets":\[\{"id"/);
     const tail = compiled('Sorcery', 'Target player draws three cards at the beginning of the next end step.');
     expect((tail.faces[0]!.abilities[0] as { effect: { targets: unknown[] } }).effect.targets).toHaveLength(1);
   });

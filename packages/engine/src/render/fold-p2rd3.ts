@@ -8,6 +8,7 @@ import { plain } from './clause';
 import type { Folded } from './fold';
 import { K } from './kernel';
 import type { RenderState } from './state';
+import { alt } from './text';
 
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 /** render/fold.ts#SOURCE_CHOICE_ZONES (FAST5 T36, CR 609.7a), said again here: a value import of fold.ts would be an import cycle (design 5.4). */
@@ -37,7 +38,10 @@ function sourceOfChoiceRedirect(list: EffectStep[], i: number, st: RenderState):
   if (list.slice(i + 2).some((x) => JSON.stringify(x).includes(`"name":${JSON.stringify(c.as)}`))) return null;
   const to = you ? 'you' : K.obj(rec!.object!.is!, st, 'object').text;
   const dur = K.dur(e.duration, st);
-  const text = `the next time a source of your choice would deal damage to ${to}${dur ? ` ${dur}` : ''}, that damage is dealt to ${K.obj(r.body.to as ObjRef, st, 'object').text} instead`;
+  const lead = `the next time a source of your choice would deal damage to ${to}${dur ? ` ${dur}` : ''}, `;
+  const dealtTo = same(r.body.to, { ref: 'you' }) ? 'you' : K.obj(r.body.to as ObjRef, st, 'object').text;
+  // edh-d-57 (CR 614.9, 609.7a; Jade Monolith): the damage redirected to you is also "that source deals that damage to you instead"
+  const text = same(r.body.to, { ref: 'you' }) ? `${lead}${alt(`that damage is dealt to ${dealtTo} instead`, `that source deals that damage to ${dealtTo} instead`)}` : `${lead}that damage is dealt to ${dealtTo} instead`;
   return { clauses: [plain(text)], consumed: 2 };
 }
 

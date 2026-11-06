@@ -1,0 +1,523 @@
+[
+  {
+    "id": "eff.edhv4.player.exilesNFromGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 404.1",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "{p:Player} exiles {n:Qty} cards from their graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "$p"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player exiles two cards from their graveyard."
+      },
+      {
+        "text": "Target opponent exiles three cards from their graveyard. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target player exiles two cards from your graveyard.",
+      "Target player exiles two creature cards from their graveyard.",
+      "Target player exiles two cards from their hand."
+    ]
+  },
+  {
+    "id": "eff.edhv4.eachPlayer.returnsOwnToHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 400.7",
+      "CR 109.4"
+    ],
+    "pattern": "each player return[s] ( a | an ) {f:Filter} to its owner 's hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player returns a land they control to its owner's hand."
+      },
+      {
+        "text": "Each player returns an artifact they control to its owner's hand. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each player returns two lands they control to its owner's hand.",
+      "Each player returns a land you control to its owner's hand.",
+      "Each player returns a land they control to the battlefield."
+    ],
+    "priority": 2
+  },
+  {
+    "id": "cm.edhv4.self.less.ifFirst",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5",
+      "CR 113.6"
+    ],
+    "pattern": "if {c:Cond} , ~ costs {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "If you control four or more artifacts, ~ costs {3} less to cast."
+      },
+      {
+        "text": "If an opponent controls five or more creatures, ~ costs {4} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "If you control four or more artifacts, ~ costs {3} more to cast.",
+      "If you control four or more artifacts, spells you cast cost {3} less to cast.",
+      "If you control four or more artifacts, ~ costs {3} less to cast, where X is the difference."
+    ]
+  },
+  {
+    "id": "eff.edhv4.mayHaveDealDamageEqual",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 608.2h",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {src:Obj} deal damage equal to {n:Qty} to {to:Recipient}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$to",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may have ~ deal damage equal to the number of artifacts you control to target creature."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may have ~ deal damage equal to the number of lands you control to any target."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may have ~ deal damage equal to the number of artifacts you control to each creature.",
+      "Whenever ~ attacks, ~ deals damage equal to the number of artifacts you control to target creature.",
+      "Whenever ~ attacks, you may have ~ deal damage equal to the number of artifacts you control to target creature unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.edhv4.shuffleAnyNumberFromHand.thenDrawThatMany",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 400.3",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "shuffle any number of cards from your hand into your library , then draw that many cards",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "toShuffle"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "toShuffle"
+        },
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "you"
+          }
+        },
+        "as": "shuffled"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "resultCount",
+          "step": "shuffled"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Shuffle any number of cards from your hand into your library, then draw that many cards."
+      },
+      {
+        "text": "Shuffle any number of cards from your hand into your library, then draw that many cards. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Shuffle any number of cards from your hand into your library, then draw that many cards plus one.",
+      "Shuffle any number of cards from your graveyard into your library, then draw that many cards.",
+      "Shuffle any number of cards from your hand into your library."
+    ],
+    "consumes": [
+      "any number",
+      "that many",
+      "then"
+    ]
+  },
+  {
+    "id": "eff.edhv4.eachPlayer.sacrificesAllExceptN",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2e",
+      "CR 101.4",
+      "CR 608.2d"
+    ],
+    "pattern": "each player sacrifices all {f:Filter} except for {n:Qty}",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "filter": "$f",
+      "count": {
+        "q": "math",
+        "op": "max",
+        "args": [
+          0,
+          {
+            "q": "math",
+            "op": "-",
+            "args": [
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              },
+              "$n"
+            ]
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each player sacrifices all artifacts they control except for one."
+      },
+      {
+        "text": "Each player sacrifices all creatures they control except for two."
+      }
+    ],
+    "counterExamples": [
+      "Each player sacrifices all creatures they control except for the first.",
+      "Each opponent sacrifices all creatures they control except for two.",
+      "Each player sacrifices all creatures you control except for two."
+    ]
+  },
+  {
+    "id": "eff.edhv4.look.topN.thenExileNOfThem",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 701.13a",
+      "CR 401.1",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "look at the top {n:Qty} cards of {p:Player} 's library , then exile {m:Qty} of them",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": "$p",
+          "count": "$n"
+        },
+        "as": "seen"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "seen"
+            },
+            "zone": "library"
+          }
+        },
+        "min": "$m",
+        "max": "$m",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Look at the top three cards of target opponent's library, then exile two of them."
+      },
+      {
+        "text": "When ~ enters, look at the top two cards of target player's library, then exile one of them. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Look at the top three cards of target opponent's library, then exile up to two of them.",
+      "{2}, {T}: Look at the top three cards of target opponent's graveyard, then exile two of them.",
+      "{2}, {T}: Look at the top three cards of target opponent's library, then exile two of them face down."
+    ]
+  },
+  {
+    "id": "rep.edhv4.permanent.graveyard.exile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 400.7",
+      "CR 700.4"
+    ],
+    "pattern": "if a permanent would be put into a graveyard , exile it instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": {},
+        "from": "battlefield",
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "exile"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control get +1/+1. If a permanent would be put into a graveyard, exile it instead."
+      },
+      {
+        "text": "Lands you control have vigilance. Creatures you control have trample. If a permanent would be put into a graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+1. If a permanent would be put into a graveyard from anywhere, exile it instead.",
+      "Creatures you control get +1/+1. If a permanent would be put into a graveyard, return it to its owner's hand instead.",
+      "Creatures you control get +1/+1. If a creature would be put into a graveyard, exile it instead."
+    ]
+  },
+  {
+    "id": "sta.edhv4.enchantedLand.everyBasicLandType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 303.4",
+      "CR 613.1d",
+      "CR 205.3i",
+      "CR 305.6",
+      "CR 305.7"
+    ],
+    "pattern": "enchanted land is every basic land type in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": [
+              "Plains",
+              "Island",
+              "Swamp",
+              "Mountain",
+              "Forest"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "every",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchant tapped land\nEnchanted land has vigilance. Enchanted land is every basic land type in addition to its other types."
+      },
+      {
+        "text": "Enchant snow land\nEnchanted land gets +1/+1. Enchanted land is every basic land type in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Enchant tapped land\nEnchanted land has vigilance. Enchanted land is every basic land type.",
+      "Enchant tapped land\nEnchanted land has vigilance. Enchanted land is every basic land type in addition to its other types until end of turn.",
+      "Enchant tapped land\nEnchanted land has vigilance. Enchanted land is the chosen basic land type in addition to its other types."
+    ]
+  }
+]

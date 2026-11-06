@@ -1,0 +1,364 @@
+[
+  {
+    "id": "eff.edhv6.unless.pays.domain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 305.6",
+      "CR 205.3i",
+      "CR 608.2h"
+    ],
+    "pattern": "{e:Effects} unless {p:Player} pay[s] {c:Cost} for each basic land type among lands you control",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": "$c",
+      "times": {
+        "q": "math",
+        "op": "+",
+        "args": [
+          {
+            "q": "math",
+            "op": "min",
+            "args": [
+              1,
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ],
+                    "controller": "you",
+                    "subtypes": [
+                      "Plains"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "q": "math",
+            "op": "min",
+            "args": [
+              1,
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ],
+                    "controller": "you",
+                    "subtypes": [
+                      "Island"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "q": "math",
+            "op": "min",
+            "args": [
+              1,
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ],
+                    "controller": "you",
+                    "subtypes": [
+                      "Swamp"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "q": "math",
+            "op": "min",
+            "args": [
+              1,
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ],
+                    "controller": "you",
+                    "subtypes": [
+                      "Mountain"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "q": "math",
+            "op": "min",
+            "args": [
+              1,
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ],
+                    "controller": "you",
+                    "subtypes": [
+                      "Forest"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "else": "$e"
+    },
+    "consumes": [
+      "unless",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Counter target noncreature spell unless its controller pays {1} for each basic land type among lands you control."
+      },
+      {
+        "text": "Counter target creature spell unless its controller pays {2} for each basic land type among lands you control."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell unless its controller pays {1} for each basic land type among lands target player controls.",
+      "Counter target spell unless its controller pays {1} for each basic land type among nonbasic lands you control.",
+      "Counter target creature spell unless its controller pays {2}."
+    ]
+  },
+  {
+    "id": "eff.edhv6.pumpgrant.each.if",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 608.2c",
+      "CR 601.2h"
+    ],
+    "pattern": "{o:Objs} get {pt:PT} and gain {a:Abilities} {d:Dur} if {c:Cond}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "guard": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control get +1/+1 and gain haste until end of turn if you control a Goblin."
+      },
+      {
+        "text": "Golems target player controls get +2/+0 and gain menace until end of turn if you control an artifact."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+1 and gain haste until end of turn unless you control a Goblin.",
+      "Creatures you control get +1/+1 and gain haste if you control a Goblin.",
+      "Creatures you control get +1/+1 and lose haste until end of turn if you control a Goblin."
+    ]
+  },
+  {
+    "id": "rid.edhv6.entersWith.if.cond",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 608.2c",
+      "CR 122.6",
+      "CR 601.2h"
+    ],
+    "pattern": "if {c:Cond} , that creature enters with {m:Qty} additional {k:CounterKind} counter[s] on it",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to.zone": "battlefield"
+        },
+        "to": {
+          "countersIf": {
+            "@new": [
+              {
+                "if": {},
+                "when": "$c",
+                "counters": [
+                  {
+                    "kind": "$k",
+                    "count": "$m"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. If you control a Goblin, that creature enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. If you control two or more artifacts, that creature enters with two additional +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from your graveyard to your hand. If you control a Goblin, that creature enters with an additional +1/+1 counter on it.",
+      "Return target creature card from your graveyard to the battlefield. If you control a Goblin, that creature enters with two +1/+1 counters on it.",
+      "Return target creature card from your graveyard to the battlefield. If you control a Goblin, that creature enters tapped with an additional +1/+1 counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhv6.counters.put.threeObjects",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 115.1",
+      "CR 115.3"
+    ],
+    "pattern": "put {n:Qty} {k:CounterKind} counter[s] on {a:Obj} , {m:Qty} {j:CounterKind} counter[s] on {b:Obj} , and {p:Qty} {l:CounterKind} counter[s] on {c:Obj}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$a",
+        "kind": "$k",
+        "count": "$n"
+      },
+      {
+        "op": "putCounters",
+        "on": "$b",
+        "kind": "$j",
+        "count": "$m"
+      },
+      {
+        "op": "putCounters",
+        "on": "$c",
+        "kind": "$l",
+        "count": "$p"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put a +1/+1 counter on target creature, a time counter on another target artifact, and three charge counters on a third target land."
+      },
+      {
+        "text": "Put two +1/+1 counters on target creature, a +1/+1 counter on another target creature, and a +1/+1 counter on a third target creature."
+      }
+    ],
+    "counterExamples": [
+      "Put a +1/+1 counter on target creature, a time counter on another target artifact, or three charge counters on a third target land.",
+      "Put a +1/+1 counter on target creature, a time counter on another target artifact, and three charge counters on each land.",
+      "Put a +1/+1 counter on target creature, and a time counter on another target artifact."
+    ]
+  },
+  {
+    "id": "eff.edhv6.player.puts.handCard.top",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} put[s] ( a | one ) card from their hand on top of their library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "back"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "back"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "owner": "$p"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "When this creature enters, target player puts a card from their hand on top of their library."
+      },
+      {
+        "text": "At the beginning of each player's upkeep, that player puts a card from their hand on top of their library."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, target opponent puts a card from their graveyard on top of their library.",
+      "When this creature enters, target opponent puts a card from their hand on the bottom of their library.",
+      "When this creature enters, target opponent puts two cards from their hand on top of their library."
+    ]
+  }
+]

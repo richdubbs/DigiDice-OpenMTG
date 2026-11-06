@@ -1,0 +1,9 @@
+# edh-c-45 (Commander lane edh-c, EDHREC ranks 15,501-16,000, third pass): damage plus N for either of two sources, for each 1 life lost, two own cost reductions, hexproof from a list of card types, lesser mana value than the creature that died, static regeneration, either of two creatures that must be blocked, a color list that goes to a graveyard from anywhere. After editing: npm run cards -- fixtures
+Pyromancer's Gauntlet
+Lich's Tomb
+Assassin's Ink
+Nevinyrral, Urborg Tyrant
+Death's Oasis
+Mossbridge Troll
+Noble Quarry
+Sanctifier en-Vec

@@ -1,0 +1,8 @@
+# edh-c-64 (Commander lane edh-c, EDHREC ranks 20,501-21,000, second pass): a card put onto the battlefield is also "that permanent", a spell or spell with the second article left out, cards put into exile during your turn, kicked "additional" counters, an additional draw of the same ability, for each nonland card revealed you create, the manifested permanent is "it". After editing: npm run cards -- fixtures
+Okiba Salvage
+Rose Noble
+Stonebinder's Familiar
+Ravaging Riftwurm
+Rayne, Academy Chancellor
+Rousing of Souls
+Wildcall

@@ -1,0 +1,325 @@
+[
+  {
+    "id": "eff.edhz15.exile.if",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 608.2c",
+      "CR 608.2b"
+    ],
+    "pattern": "exile {o:Objs} if {c:Cond}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile"
+      },
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast this spell, reveal a Golem card from your hand.\nExile target creature if its power is greater than the revealed card's power."
+      },
+      {
+        "text": "Exile target artifact if its mana value is 3 or less."
+      },
+      {
+        "text": "Exile all creatures if you control four or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature unless its power is 3 or less.",
+      "Exile target creature if its power is 3 or less instead.",
+      "Destroy target creature if its power is 3 or less and exile target artifact."
+    ]
+  },
+  {
+    "id": "eff.edhz15.exile.anyNumber.youControl.until",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 610.3",
+      "CR 610.3c"
+    ],
+    "pattern": "exile any number of {f:Filter} you control {d:Dur}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "until": "$d"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, exile any number of other nonland permanents you control until this creature leaves the battlefield."
+      },
+      {
+        "text": "When this creature enters, exile any number of artifacts you control until this creature leaves the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, exile any number of target nonland permanents you control until this creature leaves the battlefield.",
+      "When this creature enters, exile any number of other nonland permanents you control until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhz15.exile.anyNumber.youOwnAndControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 701.13a",
+      "CR 108.3",
+      "CR 109.4"
+    ],
+    "pattern": "exile any number of {f:Filter} you own and control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "own",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, exile any number of other nonland permanents you own and control."
+      },
+      {
+        "text": "Whenever this creature attacks, exile any number of artifacts you own and control."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, exile any number of other nonland permanents you control.",
+      "When this creature enters, exile any number of other nonland permanents you own."
+    ]
+  },
+  {
+    "id": "eff.edhz15.player.putsRest.theirLibraryBottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 406.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} put[s] {r:Rest} on the bottom of their library in a random order",
+    "build": {
+      "op": "move",
+      "what": "$r",
+      "to": {
+        "zone": "library",
+        "position": "bottom",
+        "order": "random"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature deals combat damage to a player, that player exiles cards from the top of their library until they exile a creature card. You may cast that card without paying its mana cost. Then that player puts the exiled cards that weren't cast this way on the bottom of their library in a random order."
+      },
+      {
+        "text": "{T}: Target opponent exiles cards from the top of their library until they exile an instant or sorcery card. You may cast that card without paying its mana cost. Then that player puts the exiled cards that weren't cast this way on the bottom of their library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature deals combat damage to a player, that player exiles cards from the top of their library until they exile a creature card. Then that player puts the exiled cards that weren't cast this way on top of their library in a random order.",
+      "Whenever this creature deals combat damage to a player, that player exiles cards from the top of their library until they exile a creature card. Then that player puts the exiled cards that weren't cast this way on the bottom of their library in any order."
+    ]
+  },
+  {
+    "id": "rep.edhz15.draw.insteadEffects",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 121.1"
+    ],
+    "pattern": "if you would draw a card , instead {e:Effects}",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "draw",
+        "player": "you"
+      },
+      "body": {
+        "b": "instead",
+        "do": "$e"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would draw a card, instead exile the top card of your library."
+      },
+      {
+        "text": "If you would draw a card, instead look at the top four cards of your library, then put one into your hand and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "If you would draw a card, exile the top card of your library.",
+      "If an opponent would draw a card, instead exile the top card of your library.",
+      "If you would draw a card, instead you may exile the top card of your library."
+    ]
+  },
+  {
+    "id": "eff.edhz15.look.thenPutOneHand.restGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "look at the top {n:Qty} cards of your library , then put one into your hand and the rest into your graveyard",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        "as": "looked"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "bound",
+          "name": "looked"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "kept"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "kept"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "looked"
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "rest",
+      "then",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top three cards of your library, then put one into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Scry 1, then look at the top four cards of your library, then put one into your hand and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top three cards of your library, then put one into your hand and the rest on the bottom of your library.",
+      "Look at the top three cards of target player's library, then put one into your hand and the rest into your graveyard.",
+      "Look at the top three cards of your library, then put one into your hand and the rest into your graveyard unless an opponent pays {1}."
+    ]
+  }
+]

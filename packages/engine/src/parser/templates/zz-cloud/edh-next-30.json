@@ -1,0 +1,548 @@
+[
+  {
+    "id": "eff.edhn30.become.pl.sized.inAddition.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Objs} become {pt:BasePT} {st:Subtypes} creatures in addition to their other types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Lands you control become 2/2 Elemental Warrior creatures in addition to their other types until end of turn."
+      },
+      {
+        "text": "At the beginning of your upkeep, Forests you control become 3/3 Treefolk creatures in addition to their other types until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Lands you control become 2/2 Elemental Warrior creatures in addition to their other types.",
+      "{T}: Lands you control become 2/2 Elemental Warrior creatures until end of turn.",
+      "{T}: Lands you control become 2/2 Elemental Warrior artifacts in addition to their other types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn30.may.haveBecome.pl.sized.artifactCreatures.inAddition.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 608.2d",
+      "CR 613.4b"
+    ],
+    "pattern": "you may have {o:Objs} become {pt:BasePT} {st:Subtypes} artifact creatures in addition to their other types {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 4,
+                  "types": {
+                    "add": [
+                      "Artifact",
+                      "Creature"
+                    ]
+                  },
+                  "subtypes": {
+                    "add": "$st"
+                  }
+                },
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "may",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, you may have Servos you control become 2/2 Golem Soldier artifact creatures in addition to their other types until end of turn."
+      },
+      {
+        "text": "{T}: You may have Clues you control become 4/4 Construct artifact creatures in addition to their other types until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, you may have Servos you control become 2/2 Golem artifact creatures in addition to their other types.",
+      "At the beginning of your end step, you may have Servos you control become 2/2 Golem creatures in addition to their other types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn30.becomes.subtypes.inAddition.andGains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} in addition to its other types and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Put a +1/+1 counter on target creature. It becomes a Zombie in addition to its other types and gains menace."
+      },
+      {
+        "text": "Tap target creature. It becomes a Horror in addition to its other types and gains flying."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Put a +1/+1 counter on target creature. It becomes a Zombie and gains menace.",
+      "{2}: Put a +1/+1 counter on target creature. It becomes a Zombie in addition to its other types and gains menace until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn30.may.haveBecome.color.subtype.withBase.inAddition.colorsAndTypes.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 105.3",
+      "CR 608.2d",
+      "CR 613.4b"
+    ],
+    "pattern": "you may have {o:Obj} become ( a | an ) {c:Color} {st:Subtypes} with base power and toughness {pt:BasePT} in addition to its other colors and types {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 4,
+                  "subtypes": {
+                    "add": "$st"
+                  }
+                },
+                {
+                  "layer": 5,
+                  "colors": {
+                    "add": [
+                      "$c"
+                    ]
+                  }
+                },
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "may",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control with flying attacks, you may have it become a blue Drake with base power and toughness 3/3 in addition to its other colors and types until end of turn."
+      },
+      {
+        "text": "Whenever ~ attacks, you may have it become a white Angel with base power and toughness 5/5 in addition to its other colors and types until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may have it become a white Angel with base power and toughness 5/5 in addition to its other colors and types.",
+      "Whenever ~ attacks, you may have it become a white Angel in addition to its other colors and types until end of turn."
+    ]
+  },
+  {
+    "id": "trg.edhn30.discard.batch.firstEachTurn",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 603.2c",
+      "CR 701.9a"
+    ],
+    "pattern": "whenever you discard one or more cards for the first time each turn",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "discard",
+          "actor": "you"
+        }
+      ],
+      "batch": true,
+      "first": "turn"
+    },
+    "consumes": [
+      "whenever",
+      "first",
+      "each",
+      "one or more"
+    ],
+    "needs": [
+      "feature:trigger.first"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you discard one or more cards for the first time each turn, you gain 2 life."
+      },
+      {
+        "text": "Whenever you discard one or more cards for the first time each turn, put a +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you discard one or more cards, draw that many cards.",
+      "Whenever you discard a card for the first time each turn, draw a card."
+    ]
+  },
+  {
+    "id": "trg.edhn30.entersAndWhenever.it.dealsCombatDamageToPlayer",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.6a",
+      "CR 510.3a"
+    ],
+    "pattern": "when ~ enter[s] and whenever it deals combat damage to a player",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "self": true
+          },
+          "to": "battlefield"
+        },
+        {
+          "ev": "damage",
+          "source": {
+            "self": true
+          },
+          "combat": true,
+          "recipient": {
+            "player": "any"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "when",
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters and whenever it deals combat damage to a player, you gain 1 life."
+      },
+      {
+        "text": "When ~ enters and whenever it deals combat damage to a player, scry 1."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters and whenever it deals combat damage to a creature, draw a card.",
+      "When ~ enters or whenever it deals combat damage to a player, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhn30.copy.token.basePT.color.subtype.creature.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.9a",
+      "CR 707.9b",
+      "CR 205.1b",
+      "CR 105.3",
+      "CR 111.10"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it's ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} creature in addition to its other types",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Creature"
+            ]
+          },
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": [
+              "$c"
+            ]
+          }
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target artifact you control, except it's a 2/2 white Spirit creature in addition to its other types."
+      },
+      {
+        "text": "Create a token that's a copy of target enchantment you control, except it's a 4/4 red Dragon creature in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target artifact you control, except it's a 2/2 white Spirit creature in addition to its other colors and types.",
+      "Create a token that's a copy of target artifact you control, except it's a 2/2 white Spirit creature."
+    ]
+  },
+  {
+    "id": "sta.edhn30.self.aslong.basePT.creature.inAddition.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "as long as {c:Cond} , it's ( a | an ) {pt:BasePT} creature in addition to its other types and it has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ has four or more +1/+1 counters on it, it's a 1/1 creature in addition to its other types and it has trample."
+      },
+      {
+        "text": "As long as ~ is tapped, it's a 2/2 creature in addition to its other types and it has flying."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ has eight or more +1/+1 counters on it, it's a 0/0 creature in addition to its other types.",
+      "As long as ~ has eight or more +1/+1 counters on it, it's a 0/0 creature and it has annihilator 2."
+    ]
+  },
+  {
+    "id": "eff.edhn30.shuffle.player.bare",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 701.24b"
+    ],
+    "pattern": "{p:Player} shuffle[s]",
+    "build": {
+      "op": "shuffle",
+      "who": "$p"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, target opponent shuffles."
+      },
+      {
+        "text": "Whenever ~ attacks, target player shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, target player shuffles their graveyard.",
+      "Whenever ~ attacks, target player shuffles their hand into their library."
+    ]
+  },
+  {
+    "id": "eff.edhn30.manifestDread.twice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.62a",
+      "CR 701.62b"
+    ],
+    "pattern": "manifest dread twice",
+    "build": {
+      "op": "action",
+      "action": "manifestDread",
+      "who": {
+        "ref": "you"
+      },
+      "n": 2,
+      "as": "dread"
+    },
+    "subject": "none",
+    "needs": [
+      "action:manifestDread",
+      "feature:action.manifestDread.n"
+    ],
+    "examples": [
+      {
+        "text": "{3}{G}: Manifest dread twice."
+      },
+      {
+        "text": "Whenever ~ attacks, manifest dread twice."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, manifest dread three times.",
+      "Whenever ~ attacks, manifest dread twice more."
+    ],
+    "consumes": [
+      "twice"
+    ]
+  }
+]

@@ -3,9 +3,16 @@
   "rule": "702.22",
   "params": [],
   "mechanisms": [
-    "structural"
+    "flag"
   ],
   "reminder": "Any creatures with banding, and up to one without, can attack in a band. Bands are blocked as a group. If any creatures with banding you control are blocking or being blocked by a creature, you divide that creature's combat damage, not its controller, among any of the creatures it's being blocked by or is blocking.",
   "multiple": "redundant",
-  "status": "planned"
+  "status": "implemented",
+  "readers": [
+    "rules/combat-rules.ts#hasBanding",
+    "core/combat.ts#declareAttackers",
+    "core/combat.ts#declareBlockers",
+    "core/combat-damage.ts#assignAttacker",
+    "core/combat-damage.ts#assignBlocker"
+  ]
 }

@@ -1,0 +1,9 @@
+# edh-next-39 (Commander EDHREC ranks 5,001-6,250, second pass): announce-time player counts, becomes crewed, a convoke grant, a twice-energy replacement, a greater-of count. After editing: npm run cards -- fixtures
+Rot Hulk
+Mobilizer Mech
+Endurance Bobblehead
+Prophet of the Scarab
+Aether Refinery
+Ghost Ark
+Wand of the Worldsoul
+Flockchaser Phantom

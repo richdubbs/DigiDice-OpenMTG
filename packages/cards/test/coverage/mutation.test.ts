@@ -23,6 +23,10 @@ describe('WP25 G9: effect examples are parsed as spell text, and a template with
     expect(exampleTypeLines({ kind: 'static' }, 'Enchanted creature gets +1/+1 and has flying.')).toEqual(['Enchantment — Aura']);
     expect(exampleTypeLines({ kind: 'static' }, 'Creatures you control get +1/+0.')).toEqual(['Enchantment']);
   });
+  it('CR 702.61a: a static example "If this spell was kicked, it has split second." is a sorcery\'s line (edh-next-90)', () => {
+    expect(exampleTypeLines({ kind: 'static' }, 'Kicker {4}{U}{U}{G}\nIf this spell was kicked, it has split second.\nYou gain 7 life.')).toEqual(['Sorcery']);
+    expect(exampleTypeLines({ kind: 'static' }, 'Creatures you control get +1/+0.')).toEqual(['Enchantment']);
+  });
   it('CR 611.2a: "Enchanted creature gets +2/+1 until end of turn." is checked as a spell, so its near misses are tried (the duration dropped among them)', () => {
     const engine = createCoverageEngine({ templates: [...BOOTSTRAP_TEMPLATES.filter((t) => t.id !== 'eff.pump'), enchanted] });
     const r = nearMissMutations([enchanted], engine);
@@ -44,7 +48,7 @@ describe('WP25 G9: effect examples are parsed as spell text, and a template with
   });
   it('CI: every merged template has at least one checked example', () => {
     expect(nearMissMutations(templateSet().templates, fullEngine()).uncheckedTemplates).toEqual([]);
-  }, 480_000); // Standard merge: every template's near misses, about 1,685 templates, take about 110-120 s alone; std-rw9: 2,277 templates take about 240-250 s alone (2026-10-20)
+  }, 7_200_000); // 2026-11-05: 34-55 min on the 4-CPU cloud machine with the band 5,001-10,000 templates (was 2_400_000) // Standard merge: every template's near misses, about 1,685 templates, take about 110-120 s alone; std-rw9: 2,277 templates take about 240-250 s alone (2026-10-20); Commander combined copy: about 3,300 templates are over 480 s alone (2026-10-28); 2026-11-03 Commander combined copy, about 4,770 templates: 1,181 s alone on a 4-CPU cloud machine, 1,379 s beside another run (1,200 s was the limit)
 });
 
 describe('WP25 G2: ability-word and flavor-word labels are counted, not judged (CR 207.2c-d)', () => {
@@ -96,7 +100,7 @@ describe('WP25 G9 near-miss mutations (design 6.8)', () => {
   it('CI: is green on every merged template', () => {
     const r = nearMissMutations(templateSet().templates, fullEngine());
     expect(r.violations).toEqual([]);
-  }, 480_000); // Standard merge: as above (about 110-130 s alone with the merged template set); std-rw9: doubled with the template count, as above
+  }, 7_200_000); // 2026-11-05: 34-55 min on the 4-CPU cloud machine with the band 5,001-10,000 templates (was 2_400_000) // Standard merge: as above (about 110-130 s alone with the merged template set); std-rw9: doubled with the template count, as above; Commander combined copy: over 480 s alone, as above; 2026-11-03, about 4,770 templates: 1,167 s alone on a 4-CPU cloud machine (1,200 s was the limit)
   it('a loose template alone is already stopped by the exact render gate (G6): "instead" consumed but not rendered makes the unit manual', () => {
     const loose = tpl('test.wp25.loose', 'effect', 'destroy {o:Objs} [instead]', { op: 'destroy', what: '$o' }, { examples: [{ text: 'Destroy target artifact.' }], consumes: ['instead'] });
     const set = [...BOOTSTRAP_TEMPLATES.filter((t) => t.id !== 'eff.destroy'), loose];
@@ -127,7 +131,7 @@ describe('WP25 G2 nonsense-word mutation (design 6.8)', () => {
     expect(r.mutations).toBeGreaterThan(200);
     expect(r.violations).toEqual([]);
     expect(r.rejected + r.absorbed + r.labelOnly + r.violations.length).toBe(r.mutations);
-  }, 300_000); // 161 s in a loaded run on a 4-CPU cloud machine, 2026-10-21 (the template set grows)
+  }, 4_800_000); // 2026-11-05: 18-31 min on the 4-CPU cloud machine (was 1_200_000) // 161 s in a loaded run on a 4-CPU cloud machine, 2026-10-21 (the template set grows); 362 s on the Commander combined copy (edh-cast-9), about 3,000 fixture cards (2026-10-28)
   it('catches a word that a template accepts: a "nonsense" word that is in the vocabulary leaves a full ability', () => {
     // the card's own name hides "Destroy" and "target", so the only mutable word is "artifact"; replacing it by a word the grammar knows is not nonsense
     const card = synthetic('Destroy Target', 'Instant', 'Destroy target artifact.');

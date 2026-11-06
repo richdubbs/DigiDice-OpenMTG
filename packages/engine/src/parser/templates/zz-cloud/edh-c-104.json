@@ -1,0 +1,272 @@
+[
+  {
+    "id": "eff.edhv104.look.hand.choose.two",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 402.3",
+      "CR 701.20e",
+      "CR 608.2d"
+    ],
+    "pattern": "look at {p:Player} 's hand and choose two {c:HandCardPlural}",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": "$c",
+        "min": 2,
+        "max": 2,
+        "as": "chosen"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "look",
+      "and",
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "Look at target player's hand and choose two cards from it. Exile them."
+      },
+      {
+        "text": "{2}, {T}: Look at target opponent's hand and choose two nonland cards from it. Exile them."
+      }
+    ],
+    "counterExamples": [
+      "Look at target opponent's hand and choose two cards from your graveyard. Exile them.",
+      "Look at target opponent's library and choose two cards from it. Exile them.",
+      "Look at target opponent's hand and choose three cards from it. Exile them."
+    ]
+  },
+  {
+    "id": "eff.edhv104.put.lib.top.anyorder.thatPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 401.4",
+      "CR 608.2c"
+    ],
+    "pattern": "put {o:Them} on top of {p:Player} 's library in any order",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "owner": "$p",
+        "position": "top",
+        "order": "chosen"
+      }
+    },
+    "subject": "none",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Look at target opponent's hand and choose two creature cards from it. Put them on top of that player's library in any order."
+      },
+      {
+        "text": "Look at target opponent's hand and choose two nonland cards from it. Put them on top of that player's library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at target opponent's hand and choose two creature cards from it. Put them on top of your library in any order.",
+      "Look at target opponent's hand and choose two creature cards from it. Put them on the bottom of that player's library in any order."
+    ]
+  },
+  {
+    "id": "eff.edhv104.eachOpponent.may.putOntoBf.fromHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "( each opponent | each other player ) may put ( a | an ) {f:Filter} card onto the battlefield from their hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "perPlayer": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "hand",
+            "owner": {
+              "ref": "iterating"
+            },
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "each other",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Each other player may put an artifact or enchantment card onto the battlefield from their hand."
+      },
+      {
+        "text": "Each opponent may put a creature card onto the battlefield from their hand."
+      }
+    ],
+    "counterExamples": [
+      "Each other player may put an artifact or enchantment card onto the battlefield from your hand.",
+      "Each other player may put an artifact or enchantment card onto the battlefield from their graveyard.",
+      "Each other player may put an artifact or enchantment card onto the battlefield tapped from their hand."
+    ]
+  },
+  {
+    "id": "eff.edhv104.prevent.nextTime.describedWouldDeal.toYou",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 611.2a",
+      "CR 607.2d"
+    ],
+    "pattern": "the next time ( a | an ) {f:Filter} would deal damage to you {d:Dur} , prevent that damage",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$f",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "{3}{W}: The next time a red creature would deal damage to you this turn, prevent that damage."
+      },
+      {
+        "text": "{W}: The next time an artifact source would deal damage to you this turn, prevent that damage."
+      }
+    ],
+    "counterExamples": [
+      "{3}{W}: The next time a red creature would deal damage to you, prevent that damage.",
+      "{3}{W}: The next time a red creature would deal damage to an opponent this turn, prevent that damage.",
+      "{3}{W}: The next time a red creature would deal damage to you this turn, prevent half that damage."
+    ]
+  },
+  {
+    "id": "eff.edhv104.put.exileCard.graveyard.ofPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 404.1",
+      "CR 608.2d"
+    ],
+    "pattern": "put ( a | an ) {f:Filter} into {p:Player} 's graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "back"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "back"
+        },
+        "to": {
+          "zone": "graveyard",
+          "owner": "$p"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Target opponent reveals their hand. You choose a nonland card from it. Exile that card. You may put a card that has an Adventure that player owns from exile into that player's graveyard."
+      },
+      {
+        "text": "Target opponent reveals their hand. You choose a nonland card from it. Exile that card. You may put a creature card that player owns from exile into that player's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent reveals their hand. You choose a nonland card from it. Exile that card. You put a card that has an Adventure that player owns from exile into that player's graveyard.",
+      "Target opponent reveals their hand. You choose a nonland card from it. Exile that card. You may put a card that has an Adventure that player owns from exile into your graveyard."
+    ]
+  }
+]

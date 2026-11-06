@@ -1,0 +1,410 @@
+[
+  {
+    "id": "eff.edhd16.dig.putAny.hand.restBottom",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 401.4",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "put any number of {f:CardsDesc} from among {g:Seen} into your hand and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        },
+        "as": "rest"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, reveal the top six cards of your library. Put any number of artifact and/or land cards from among them into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top five cards of your library. Put any number of snow land cards from among them into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. Put any number of snow land cards from among them onto the battlefield and the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. Put up to two snow land cards from among them into your hand and the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. Put any number of snow land cards from among them into your hand and the rest on the bottom of your library in any order."
+    ]
+  },
+  {
+    "id": "eff.edhd16.dig.mayPut.mvAtMost.bf.tappedAttacking",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 508.4",
+      "CR 202.3",
+      "CR 400.7"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card with mana value {n:Qty} or less from among {g:Seen} onto the battlefield tapped and attacking",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library",
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true,
+          "attacking": true
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may put an Elf creature card with mana value 3 or less from among them onto the battlefield tapped and attacking. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top five cards of your library. You may put an artifact creature card with mana value 2 or less from among them onto the battlefield tapped and attacking. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may put an Elf creature card with mana value 3 or less from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may put an Elf creature card with mana value 3 or more from among them onto the battlefield tapped and attacking. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may put an Elf creature card with mana value 3 or less from among them into your hand tapped and attacking. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhd16.put.self.fromYourGraveyard.thirdFromTop",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 401.7",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put ~ from your graveyard into your library third from the top",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "library",
+        "position": {
+          "nth": 3
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}{G}: Put ~ from your graveyard into your library third from the top."
+      },
+      {
+        "text": "{2}: Put ~ from your graveyard into your library third from the top. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{1}{G}: Put ~ from your graveyard into your library second from the top.",
+      "{1}{G}: Put ~ from your graveyard into your hand third from the top.",
+      "{1}{G}: Put ~ from your graveyard into an opponent's library third from the top."
+    ]
+  },
+  {
+    "id": "rid.edhd16.copy.newTargets.thatCopy",
+    "kind": "rider",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 707.10c",
+      "CR 115.7"
+    ],
+    "pattern": "you may choose new targets for that copy",
+    "build": {
+      "$patchPrevious": {
+        "@alsoStep": -2,
+        "newTargets": {
+          "@new": "may"
+        },
+        "@into": true
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Copy target instant spell. You may choose new targets for that copy."
+      },
+      {
+        "text": "Whenever you cast an instant spell, you may copy it. You may choose new targets for that copy."
+      },
+      {
+        "text": "When ~ is turned face up, copy target sorcery spell. You may choose new targets for that copy."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. You may choose new targets for that copy.",
+      "Copy target instant spell. You may choose new targets for those copies."
+    ]
+  },
+  {
+    "id": "eff.edhd16.cast.fromAGraveyard.mvAtMostQty.free",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 404.1"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} with mana value less than or equal to {n:Qty} from a graveyard without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "zone": "graveyard",
+            "isCard": true,
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "When ~ enters, you may cast an instant or sorcery spell with mana value less than or equal to the number of Elves you control from a graveyard without paying its mana cost. If that spell would be put into a graveyard, exile it instead."
+      },
+      {
+        "text": "Whenever ~ attacks, you may cast a sorcery spell with mana value less than or equal to the number of creatures you control from a graveyard without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may cast a sorcery spell with mana value less than or equal to the number of creatures you control from your graveyard without paying its mana cost.",
+      "Whenever ~ attacks, you may cast a sorcery spell with mana value less than the number of creatures you control from a graveyard without paying its mana cost.",
+      "Whenever ~ attacks, you may cast two sorcery spells with mana value less than or equal to the number of creatures you control from a graveyard without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.edhd16.exile.filterCardMvAtMost.fromGraveyard.atRandom",
+    "kind": "effect",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 404.1",
+      "CR 406.3",
+      "CR 202.3"
+    ],
+    "pattern": "exile ( a | an ) {f:Filter} card with mana value {n:Qty} or less from your graveyard at random",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true,
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile a creature card with mana value 3 or less from your graveyard at random. You may cast that card this turn."
+      },
+      {
+        "text": "{2}, {T}: Exile an artifact card with mana value 2 or less from your graveyard at random, then create a token that's a copy of that card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile a creature card with mana value 3 or less from your graveyard. You may cast that card this turn.",
+      "Whenever ~ attacks, exile a creature card with mana value 3 or more from your graveyard at random. You may cast that card this turn.",
+      "Whenever ~ attacks, exile a creature card with mana value 3 or less from target player's graveyard at random. You may cast that card this turn."
+    ],
+    "consumes": [
+      "random"
+    ]
+  },
+  {
+    "id": "cm.edhd16.alternative.fromGraveyard.mana",
+    "kind": "static",
+    "since": 16,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 601.3",
+      "CR 404.1"
+    ],
+    "pattern": "you may cast ~ from your graveyard by paying {m:ManaCost} rather than paying its mana cost",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": {
+            "mana": "$m"
+          },
+          "from": "graveyard",
+          "name": "alternative"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard by paying {3}{B} rather than paying its mana cost."
+      },
+      {
+        "text": "You may cast ~ from your graveyard by paying {1}{U} rather than paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand by paying {3}{B} rather than paying its mana cost.",
+      "You may cast ~ from your graveyard by paying {3}{B} in addition to paying its mana cost.",
+      "You may cast ~ from your graveyard by paying {3}{B} rather than paying its mana cost if you control an Island."
+    ]
+  }
+]

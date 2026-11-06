@@ -12,15 +12,19 @@ import type { CostDef, CostPart, EffectStep, Quantity } from '../../types/abilit
 import type { ObjectId, PlayerId } from '../../types/ids';
 import type { GameState } from '../../types/state';
 import { enumerateAbilities } from '../../rules/abilities';
-import { costText, partsDenial, planDenial, planFromCostDefs, type CostPlan } from '../../rules/cost';
+import { costFilterHasX, costHasX, costText, partsDenial, planDenial, planFromCostDefs, type CostPlan } from '../../rules/cost';
 import { resolveAnyCounts } from '../../rules/pay';
 import type { ExecCtx, StepHandler, StepResult } from '../api';
 import { evalQty } from '../eval';
 import { resolvePlayers } from '../refs';
 import { askManual, notesOf } from '../manual';
-import { performEffectPayment, performLink, performRecordDiscarded, performRecordSacrificed } from '../perform';
+import { withEffectCause } from '../../rules/cant';
+import { performAction, performEffectPayment, performRecordDiscarded, performRecordExiled, performRecordSacrificed } from '../perform';
+import { addToLink } from './zones-util';
 import { runSteps } from '../run';
 import { COND, fixNode } from './lasting-fix';
+import { bindUnrun } from './unrun';
+import { recheckXTargets } from '../ctx';
 
 type PayStep = Extract<EffectStep, { op: 'pay' }>;
 type Origin = 'unless' | 'optional';
@@ -84,7 +88,7 @@ function hasManualMana(s: GameState, payer: PlayerId): boolean {
 }
 
 /** std-rx24 (CR 607.2k): the forms of `pay` this handler runs beyond the plain one (model/cap-walk.ts names them): an exile cost part with a `link`. */
-export const OP_FORMS: readonly string[] = ['op:pay.costLink', 'op:pay.upTo'];
+export const OP_FORMS: readonly string[] = ['op:pay.costLink', 'op:pay.upTo', 'op:pay.anyAmount', 'op:pay.xMax' /* edh-players-6 */, 'op:pay.eachStartingWith' /* edh-top-6 */, 'op:pay.everyPlayer' /* edh-c-57 */, 'op:pay.reduceBy' /* edh-d-45 */, 'op:pay.byPlayerLink' /* edh-next-139 */, 'op:pay.cumulativeUpkeep' /* edh-d-74 */];
 
 /**
  * M12-2 (m12 design 4.5): "do you pay?" is a cost decision (CR 800.4f: not paid by a player who left the game, core/game.ts#choose); only a multiplayer game
@@ -151,9 +155,10 @@ function offer(cx: ExecCtx, st: PayStep, payer: PlayerId, plan: CostPlan, text: 
   const paid = performEffectPayment(pg, payer, src, resolveAnyCounts(pg, payer, src, plan, label), label);
   if (cx.stack !== null) performRecordSacrificed(cx.stack, paid.sacrificed ?? []); // FAST5 T78: "the sacrificed creature" of an optional cost (ObjRef costSacrificed)
   if (cx.stack !== null) performRecordDiscarded(cx.stack, paid.discarded ?? []); // CLOUD C8: "the discarded card" of an optional cost (ObjRef costDiscarded)
+  if (cx.stack !== null) performRecordExiled(cx.stack, paid.exiled?.others ?? []); // edh-next-131: "that card" an optional exile cost exiled (ObjRef costExiled; God-Pharaoh's Gift)
   // std-rx24 (CR 607.2k, 702.72a): an exile cost with a `link` ("sacrifice it unless you exile another Faerie you control", champion) is remembered by the source
   // of the ability, as long as it is still the object the ability belongs to (effects/perform.ts#performLink); "the exiled card" of its linked ability reads it
-  for (const [link, objects] of Object.entries(paid.costLinks ?? {})) performLink(g, cx.source, link, { objects });
+  for (const [link, objects] of Object.entries(paid.costLinks ?? {})) addToLink(cx, link, objects); // edh-c-77 (CR 607.2a): added to what earlier resolutions exiled (Panharmonicon: two enters triggers of Wormfang Drake)
   g.log(`${name} pays ${text}.`, { rules, level: 'action' });
   return true;
 }
@@ -162,9 +167,12 @@ function offer(cx: ExecCtx, st: PayStep, payer: PlayerId, plan: CostPlan, text: 
  * CR 118.12, 118.12a. Several payers ("unless any player pays") are offered the payment one at a time in the order `who` gives (APNAP for "each", CR 101.4)
  * until one pays. `times` pays the cost that many times (cumulative upkeep); a count that fails to determine can't be paid (CR 608.2b).
  */
-export const payHandler: StepHandler<PayStep> = (cx, st): StepResult => {
-  if (st.upTo !== undefined) { // std-combat-2
+export const payHandler: StepHandler<PayStep> = (cx, st): StepResult => withEffectCause(cx.source.id, () => payHandlerBody(cx, st)); // edh-next-69 (CR 701.21a): the source causes what the cost makes the payer do
+const payHandlerBody: StepHandler<PayStep> = (cx, st): StepResult => {
+  if (st.upTo !== undefined || st.anyAmount === true) { // std-combat-2; edh-replace-5: anyAmount
     const n = payUpTo(cx, st);
+    if (st.as !== undefined) cx.results.set(st.as, { performed: n > 0, count: n }); // edh-players-16 (CR 608.2c): "If you do, draw that many cards" reads the count in the `then`
+    if (n === 0 && st.else === undefined) bindUnrun(cx, st.then ?? [], true); // edh-zones-22
     runSteps(cx, (n > 0 ? st.then : st.else) ?? []);
     return { performed: n > 0, count: n };
   }
@@ -176,17 +184,44 @@ export const payHandler: StepHandler<PayStep> = (cx, st): StepResult => {
     paid = payChosenX(cx, st);
   } else {
     const n = Math.max(0, Math.floor(times));
-    const cost = fixedCost(cx, st.cost);
+    const cost0 = fixedCost(cx, st.cost);
+    // edh-d-45 (CR 118.12, 118.7; Draco): "This cost is reduced by {2} for each basic land type among lands you control": generic mana only, never below zero
+    const cut = st.reduceBy === undefined ? 0 : evalQty(cx, st.reduceBy);
+    if (st.reduceBy !== undefined && cut === undefined) {
+      cx.g.log(`${notesOf(cx).sourceName}: how much the cost is reduced by can't be determined, so it is not paid.`, { rules: ['CR 608.2b', 'CR 118.7'], level: 'info' });
+      if (st.else === undefined) bindUnrun(cx, st.then ?? [], true);
+      runSteps(cx, st.else ?? []); // an amount that can't be determined is no payment: the "unless" branch happens (CR 118.12, 608.2b)
+      return { performed: false, count: 0 };
+    }
+    const cost = cut === undefined || cut <= 0 ? cost0 : { ...cost0, mana: reduceGenericMana(cost0.mana ?? [], Math.floor(cut)) };
     const plan = planFromCostDefs(Array.from({ length: n }, () => cost), evalQty(cx, { q: 'X' }) ?? 0);
     const text = costText(plan);
     const origin: Origin = st.else && !st.then ? 'unless' : 'optional';
+    // edh-c-57 (CR 101.4, 118.12; Argothian Wurm ruling 2007-02-01): with `everyPlayer` ("any player may ..."), every player is offered the payment in turn, also after one has paid
+    // edh-d-71 (CR 119.4, 118.12; Temporal Extortion): "Any player may pay half their life, rounded up": an amount that reads the payer (`{ref:'iterating'}`) is worked out for each payer in turn
+    const perPayer = st.everyPlayer === true && JSON.stringify(st.cost).includes('"iterating"');
     for (const payer of resolvePlayers(cx, st.who)) {
-      if (offer(cx, st, payer, plan, text, origin)) {
+      let plan1 = plan;
+      let text1 = text;
+      if (perPayer) {
+        const saved = cx.iterating;
+        cx.iterating = payer;
+        try {
+          plan1 = planFromCostDefs(Array.from({ length: n }, () => fixedCost(cx, st.cost)), evalQty(cx, { q: 'X' }) ?? 0);
+          text1 = costText(plan1);
+        } finally {
+          if (saved === undefined) delete cx.iterating; else cx.iterating = saved;
+        }
+      }
+      if (offer(cx, st, payer, plan1, text1, origin)) {
         paid = true;
-        break;
+        if (st.everyPlayer !== true) break;
       }
     }
   }
+  // edh-d-74 (CR 702.24a, 603.2; Hibernation's End, Thought Lash): a cumulative upkeep paid, or not paid, is seen by the permanent's own triggers before the unpaid branch (the sacrifice) runs
+  if (st.cumulativeUpkeep === true) performAction(cx.g, { verb: paid ? 'payCumulativeUpkeep' : 'failCumulativeUpkeep', actor: cx.controller, objectId: cx.source.id });
+  if (!paid && st.else === undefined) bindUnrun(cx, st.then ?? [], true); // edh-zones-22 (CR 608.2c): the names the branch not taken would bind name nothing (unrun.ts#bindUnrun)
   const rest = runSteps(cx, (paid ? st.then : st.else) ?? []);
   // std-rw8 (CR 118.12, 603.12): a payment of one of two costs ("you may sacrifice an artifact or discard a nonland card"), stored as `pay A else [pay B]` (the second
   // by the same player, with no branches of its own besides "if you do"): "you do" is either payment, so the step's result is the second one's when the first
@@ -202,6 +237,17 @@ function eitherOr(st: PayStep): boolean {
     && st.mandatory === undefined && JSON.stringify(inner.who) === JSON.stringify(st.who);
 }
 
+/** edh-d-45 (CR 118.7a): `cut` generic mana taken off a mana cost (a cost without that much generic mana loses what it has). */
+function reduceGenericMana(mana: NonNullable<CostDef['mana']>, cut: number): NonNullable<CostDef['mana']> {
+  let left = cut;
+  return mana.flatMap((m) => {
+    if (m.kind !== 'generic' || left <= 0) return [m];
+    const take = Math.min(left, m.amount);
+    left -= take;
+    return m.amount - take > 0 ? [{ ...m, amount: m.amount - take }] : [];
+  });
+}
+
 /** A mana symbol {X} in the cost. */
 const variableMana = (cost: CostDef): boolean => (cost.mana ?? []).some((m) => m.kind === 'variable');
 
@@ -211,7 +257,10 @@ const variableMana = (cost: CostDef): boolean => (cost.mana ?? []).some((m) => m
  * resolution (the ability's own X from now on: a reflexive trigger made from it fixes it, CR 603.12). Only the controller paying one cost once.
  */
 function choosesX(cx: ExecCtx, st: PayStep): boolean {
-  return cx.stack !== null && cx.stack.x === undefined && st.times === undefined && st.who.ref === 'you' && !st.mandatory && st.else === undefined && variableMana(st.cost); // not "pay {X}. If you don't, ...": no card says it
+  // edh-replace-3 (CR 107.3, 107.3a, 118.12; Myr Battlesphere): and a count of X in another part of the cost, "you may tap X untapped Myr you control. If you do, ~ gets +X/+0 ... and deals X
+  // damage ...": the controller chooses X as they pay, the most the parts can be paid for (`largestX`), and it is the X of the rest of the resolution as well. A filter that reads X
+  // (an artifact with mana value X) is not monotone in X and is never chosen this way
+  return cx.stack !== null && cx.stack.x === undefined && st.times === undefined && st.who.ref === 'you' && !st.mandatory && st.else === undefined && (variableMana(st.cost) || (costHasX(st.cost) && !costFilterHasX(st.cost))); // not "pay {X}. If you don't, ...": no card says it
 }
 
 /** The largest X from 0 the payer could pay with (the plan is checked for each value, as a cast's X is, CR 601.2f-h); -1 when not even X = 0 can be paid. */
@@ -232,11 +281,22 @@ function payChosenX(cx: ExecCtx, st: PayStep): boolean {
   const source = notesOf(cx).sourceName;
   const cost = fixedCost(cx, st.cost);
   const rules = ['CR 118.12', 'CR 107.3'];
-  const max = largestX(cx, payer, cost);
+  let max = largestX(cx, payer, cost);
+  // edh-players-6 (CR 107.3, 608.2h; Well of Lost Dreams): "where X is less than or equal to the amount of life you gained": X is at most that number, read now; one that can't
+  // be determined is no payment (CR 608.2b)
+  if (st.xMax !== undefined) {
+    const cap = evalQty(cx, st.xMax);
+    if (cap === undefined) {
+      g.log(`${source}: the most X can be can't be determined, so ${name} doesn't pay.`, { rules: ['CR 608.2b', ...rules], level: 'info' });
+      return false;
+    }
+    max = Math.min(max, Math.max(0, Math.floor(cap)));
+  }
   // the cost as printed, with its X: "{X}", "{X}{R}" (the rest of it written by costText)
   const rest = { ...cost, mana: (cost.mana ?? []).filter((m) => m.kind !== 'variable') };
   const restText = rest.mana.length === 0 && (rest.other ?? []).length === 0 ? '' : costText(planFromCostDefs([rest], 0));
-  const plain = `{X}${restText.startsWith('{') ? restText : restText === '' ? '' : ` and ${restText}`}`;
+  // a cost with no {X} of its own (a count of X in a part) is said as that part with X, "tap X untapped permanents you control"
+  const plain = variableMana(cost) ? `{X}${restText.startsWith('{') ? restText : restText === '' ? '' : ` and ${restText}`}` : costText(planFromCostDefs([cost], 0)).replace(/\b0\b/, 'X');
   if (max < 0) {
     g.log(`${name} can't pay ${plain}.`, { rules: ['CR 118.3', ...rules], level: 'info' });
     return false;
@@ -248,6 +308,7 @@ function payChosenX(cx: ExecCtx, st: PayStep): boolean {
   }
   const x = max === 0 ? 0 : g.choose({ kind: 'chooseNumber', player: payer, prompt: `${source}: choose X for ${plain}.`, min: 0, max, cancellable: false, rules }).n;
   cx.stack!.x = x; // the X of the rest of this resolution (effects/eval.ts reads the stack object's X first)
+  recheckXTargets(cx); // edh-d-97 (CR 107.3f, 608.2b): a target whose filter reads X is checked with the X chosen now (effects/ctx.ts)
   const plan = planFromCostDefs([cost], x);
   const text = costText(plan);
   const pg = payingGame(g, payer, 'optional');
@@ -263,34 +324,86 @@ function payChosenX(cx: ExecCtx, st: PayStep): boolean {
  * controller, a mana cost, no `times`, no `else`; anything else is asked by hand.
  */
 function payUpTo(cx: ExecCtx, st: PayStep): number {
+  if (st.startingWith === undefined) return payUpToBy(cx, st, cx.controller, false);
+  // edh-top-6 (CR 101.4, 118.12, 608.2d; join forces, Minds Aglow): "Starting with you, each player may pay any amount of mana.": each player of the group in turn order beginning with
+  // `startingWith` (CR 101.4's turn order, as effects/handlers/choose.ts#chooseInTurn), each paying as they go; the count is what all of them paid together
+  const group = st.who.ref === 'each' ? resolvePlayers(cx, st.who) : [];
+  const [start] = resolvePlayers(cx, st.startingWith);
+  const seats = cx.g.s.players.map((p) => p.id);
+  const at = start === undefined ? 0 : Math.max(0, seats.indexOf(start));
+  const order = [...seats.slice(at), ...seats.slice(0, at)].filter((p) => group.includes(p));
+  if (group.length === 0 || st.anyAmount !== true || st.then !== undefined || st.else !== undefined || st.mandatory === true || st.times !== undefined) {
+    askManual(cx, `${notesOf(cx).sourceName}: players may pay a cost a number of times the engine cannot offer.`, 'a payment the engine cannot make automatically', undefined, { player: cx.controller });
+    return 0;
+  }
+  let total = 0;
+  // edh-next-139 (CR 608.2c-d, 119.4; Plague of Vermin): with `link`, what each player paid is kept for the rest of the resolution (`LinkValue.byPlayer`, the amount as a number,
+  // added up over the runs of a repeated process: "for each 1 life they paid this way"); every player of the group has an entry, 0 when they paid nothing
+  const tally = st.link !== undefined ? cx.choices?.get(st.link) : undefined;
+  const by: Record<PlayerId, string> = { ...(tally?.byPlayer ?? {}) };
+  for (const payer of order) {
+    if (cx.g.s.options.multiplayer !== undefined && cx.g.player(payer).hasLost) continue; // CR 800.4f
+    const k = payUpToBy(cx, st, payer, true);
+    total += k;
+    by[payer] = String(Number(by[payer] ?? 0) + k);
+  }
+  if (st.link !== undefined) {
+    for (const p of order) by[p] ??= '0';
+    cx.choices?.set(st.link, { values: [String(Object.values(by).reduce((a, b) => a + Number(b), 0))], byPlayer: by });
+  }
+  return total;
+}
+
+function payUpToBy(cx: ExecCtx, st: PayStep, payer: PlayerId, joint: boolean): number {
   const g = cx.g;
-  const payer = cx.controller;
   const name = g.player(payer).name;
   const source = notesOf(cx).sourceName;
   const rules = ['CR 118.12', 'CR 608.2d'];
-  const limit = evalQty(cx, st.upTo!);
+  // edh-replace-5 (CR 118.12, 608.2d): "any amount of {R}" has no most but what the payer can pay (the loop below stops at the first payment it can't make)
+  const limit = st.anyAmount === true ? 1000 : evalQty(cx, st.upTo!);
   const cost = fixedCost(cx, st.cost);
-  if (limit === undefined || st.who.ref !== 'you' || st.mandatory === true || st.times !== undefined || st.else !== undefined || (cost.other ?? []).length > 0 || variableMana(cost)) {
+  // edh-next-139 (CR 119.4; Plague of Vermin): in turn, each player may also pay any amount of LIFE (one life k times, paid as one payment of k life below)
+  const jointLife = joint && cost.mana === undefined && (cost.other ?? []).length === 1 && cost.other![0]!.kind === 'payLife';
+  if (limit === undefined || (!joint && st.who.ref !== 'you') || (joint && (cost.other ?? []).length > 0 && !jointLife) || st.mandatory === true || st.times !== undefined || st.else !== undefined || (cost.other ?? []).some((part) => !((part.kind === 'payLife' || part.kind === 'payEnergy') && part.amount === 1)) /* edh-next-32 (CR 107.14, 118.3): and energy, one counter for each, paid as one payment of k energy (Rampaging Aetherhood); */ /* edh-players-16 (CR 119.4): "any amount of life" is one life paid k times; the plan counts the life of all the payments together */ || variableMana(cost)) {
     askManual(cx, `${source}: ${name} may pay a cost a number of times the engine cannot offer.`, 'a payment the engine cannot make automatically', undefined, { player: payer });
     return 0;
   }
   const src = sourceFor(cx, payer);
+  const can = (k: number): boolean => planDenial(g.s, payer, src, planFromCostDefs(Array.from({ length: k }, () => cost), 0)) === null;
   let max = 0;
-  for (let k = 1; k <= Math.floor(limit); k++) {
-    if (planDenial(g.s, payer, src, planFromCostDefs(Array.from({ length: k }, () => cost), 0)) !== null) break;
-    max = k;
+  if (st.anyAmount === true) {
+    // the most is found by doubling, then halving (a payment that can be made k times can be made fewer times): the work grows with the logarithm of the amount
+    let hi = 1;
+    while (hi <= limit && can(hi)) { max = hi; hi *= 2; }
+    for (let step = Math.floor(max / 2); step >= 1; step = Math.floor(step / 2)) if (max + step <= limit && can(max + step)) max += step;
+  } else {
+    for (let k = 1; k <= Math.floor(limit); k++) {
+      if (!can(k)) break;
+      max = k;
+    }
   }
   const once = costText(planFromCostDefs([cost], 0));
-  if (max === 0) {
+  // edh-replace-5 (CR 605.3a, 605.3b): the payer controls a mana ability the engine can't run: it may pay more than the engine can count, by hand (as `offer` does); the number is theirs to say
+  const byHand = cost.mana !== undefined && hasManualMana(g.s, payer); // (a payment of life only has nothing a mana ability could add to, CR 119.4)
+  if (max === 0 && !byHand) {
     g.log(`${name} can't pay ${once}.`, { rules: ['CR 118.3', ...rules], level: 'info' });
     return 0;
   }
-  const k = g.choose({ kind: 'chooseNumber', player: payer, ...costAsker(cx), prompt: `${source}: pay ${once} how many times? (up to ${max})`, min: 0, max, cancellable: false, rules }).n;
+  const top = byHand ? Math.max(max, Math.floor(Math.min(limit, 99))) : max;
+  const k = g.choose({ kind: 'chooseNumber', player: payer, ...costAsker(cx), prompt: `${source}: pay ${once} how many times? (${byHand ? `the engine counts ${max}; mana abilities activated by hand may allow more` : `up to ${max}`})`, min: 0, max: top, cancellable: false, rules }).n;
   if (k <= 0) {
     g.log(`${name} doesn't pay ${once}.`, { rules, level: 'action' });
     return 0;
   }
-  const plan = planFromCostDefs(Array.from({ length: k }, () => cost), 0);
+  if (k > max) {
+    askManual(cx, `${name} pays ${once} ${k} times.`, 'a cost the engine cannot pay automatically', undefined, { player: payer });
+    g.log(`${name} pays ${once} ${k} times by hand.`, { rules, level: 'manual' });
+    return k;
+  }
+  // edh-players-16 (CR 119.4, 118.3): k life paid is ONE payment of k life (one life-loss event), not k payments of 1
+  const lifeOnly = cost.mana === undefined && (cost.other ?? []).length === 1 && cost.other![0]!.kind === 'payLife';
+  const energyOnly = cost.mana === undefined && (cost.other ?? []).length === 1 && cost.other![0]!.kind === 'payEnergy'; // edh-next-32 (CR 107.14): k energy is ONE payment of k energy
+  const plan = planFromCostDefs(lifeOnly ? [{ other: [{ kind: 'payLife', amount: k }] }] : energyOnly ? [{ other: [{ kind: 'payEnergy', amount: k }] }] : Array.from({ length: k }, () => cost), 0);
   const pg = payingGame(g, payer, 'optional');
   const label = `${source}'s effect`;
   performEffectPayment(pg, payer, src, resolveAnyCounts(pg, payer, src, plan, label), label);

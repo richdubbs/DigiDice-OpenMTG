@@ -8,9 +8,39 @@
     }
   ],
   "mechanisms": [
-    "replacement"
+    "replacement",
+    "expands"
   ],
   "reminder": "As this creature enters, an opponent of your choice may put {n} +1/+1 counters on it.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "{printed}",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tribute": {
+              "count": "$amount",
+              "link": "tribute"
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

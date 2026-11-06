@@ -77,7 +77,7 @@ export function manaUnitsOf(def: ActivatedAbilityDef): ManaType[][] | null {
   if (steps.length === 0) return null;
   const units: ManaType[][] = [];
   for (const st of steps) {
-    if (st.op !== 'addMana' || !Array.isArray(st.units)) return null;
+    if (st.op !== 'addMana' || !Array.isArray(st.units) || (st as { ofYourChoice?: true }).ofYourChoice === true) return null; // edh-misc-6: mana for a player of the controller's choice is no mana the source's controller pays with
     units.push(...(st.units as ManaType[][]));
   }
   return units;

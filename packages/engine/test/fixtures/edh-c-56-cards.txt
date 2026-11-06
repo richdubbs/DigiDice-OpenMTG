@@ -1,0 +1,10 @@
+# edh-c-56 (Commander lane edh-c, EDHREC ranks 29,501-30,000, second pass): see packages/engine/src/parser/templates/zz-cloud/edh-c-56.json. After editing: npm run cards -- fixtures
+Mudhole
+Hired Torturer
+Scourge of Numai
+Rhystic Syphon
+Peak Eruption
+Disappear
+Homarid
+Cephalid Snitch
+Winnow

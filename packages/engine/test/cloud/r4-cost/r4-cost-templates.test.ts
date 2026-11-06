@@ -57,7 +57,8 @@ const WHOLE_CORPUS: Readonly<Record<string, { cards: readonly string[]; line: Re
  * and The Dawning Archaic are full with r4-repl's exile replacement, rid.r4repl.cast.yourGraveyard.exileInstead. Standard round E: Dawn-Blessed Pennant ("the chosen
  * type" linked by parser/parse.ts#ENTERS_CHOICE) and Beluna Grandsquall // Seek Thrills (r4-dig's eff.r4dig.milled.putAll.hand promoted) are full.) */
 // std-typechange-2: Kaito, Bane of Nightmares is full since its static ability's slice (sta.stdtc2.duringTurn.aslong.self.is.sized.creature.has) and ninjutsu (std-typechange-1)
-const PENDING: ReadonlySet<string> = new Set(['Animar, Soul of Elements', 'Glamdring']);
+// edh-next-1: Glamdring is full (its static "has first strike and gets +1/+0 for each ..." is read), so it left the pending list
+const PENDING: ReadonlySet<string> = new Set(['Animar, Soul of Elements']);
 
 /** A synthetic card in which an example is an ability of the right kind: a spell on a sorcery, a triggered, activated or static ability on a creature (an additional cost on an enchantment). */
 function exampleCard(t: Template, text: string): OracleCard {

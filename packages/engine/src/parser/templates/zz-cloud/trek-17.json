@@ -1,0 +1,250 @@
+[
+  {
+    "id": "eff.trek17.putThoseTyped.battlefield.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:TypedThose} onto the battlefield and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "{4}: Reveal cards from the top of your library until you reveal two artifact cards. Put those artifact cards onto the battlefield and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, reveal cards from the top of your library until you reveal two land cards. Put those land cards onto the battlefield and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal two land cards. Put those land cards onto the battlefield and the rest on the bottom of your library in any order.",
+      "Reveal cards from the top of your library until you reveal two land cards. Put those land cards onto the battlefield and the rest on top of your library in a random order.",
+      "Reveal cards from the top of your library until you reveal two land cards. Put those land cards onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.trek17.putAll.revealed.battlefieldTapped.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 401.4"
+    ],
+    "pattern": "put all {f:Filter} cards {g:RevealedThisWay} onto the battlefield tapped and the rest on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top four cards of your library. Put all creature cards revealed this way onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "{3}{G}: Reveal the top six cards of your library. Put all artifact and land cards revealed this way onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top four cards of your library. Put all creature cards revealed this way onto the battlefield tapped and the rest on the bottom of your library in any order.",
+      "Look at the top four cards of your library. Put all creature cards revealed this way onto the battlefield tapped and the rest on the bottom of your library in a random order.",
+      "Reveal the top four cards of your library. Put all creature cards revealed this way onto the battlefield and the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.trek17.player.draws.thenShufflesIntoLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 701.24a",
+      "CR 115.1",
+      "CR 400.3"
+    ],
+    "pattern": "{p:Player} draw[s] {n:Qty} card[s] , then shuffle[s] {o:Objs} into their library",
+    "build": [
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "library",
+          "owner": "$p"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player draws three cards, then shuffles up to two target cards from their graveyard into their library."
+      },
+      {
+        "text": "The owner of target artifact draws a card, then shuffles that artifact into their library."
+      }
+    ],
+    "counterExamples": [
+      "Target player draws three cards, then shuffles up to two target cards from their graveyard into your library.",
+      "Target player draws three cards, then shuffles up to two target cards from your graveyard into their library.",
+      "Target player draws three cards and shuffles up to two target cards from their graveyard into their library."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.trek17.player.revealTop.thenDraws",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 121.1",
+      "CR 401.2",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} reveal[s] the top card of their library , then draw[s] a card",
+    "build": [
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "topCards",
+          "player": "$p",
+          "count": 1
+        }
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": 1
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Each opponent reveals the top card of their library, then draws a card."
+      },
+      {
+        "text": "Target player reveals the top card of their library, then draws a card."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent reveals the top card of their library, then discards a card.",
+      "Each opponent reveals the top card of their library, then draws two cards.",
+      "Each opponent reveals the top two cards of their library, then draws a card."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.trek17.forEach.putCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 701.20a"
+    ],
+    "pattern": "for each {n:Qty} , put ( a | an ) {k:CounterKind} counter on {o:Obj}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each opponent reveals the top card of their library, then draws a card. For each land card revealed this way, put a +1/+1 counter on ~."
+      },
+      {
+        "text": "Whenever ~ attacks, each player reveals the top card of their library, then draws a card. For each nonland card revealed this way, put a charge counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, each opponent reveals the top card of their library, then draws a card. For each land card revealed this way, put two +1/+1 counters on ~.",
+      "At the beginning of your upkeep, each opponent reveals the top card of their library, then draws a card. For each land card revealed this way, put a +1/+1 counter on each creature you control.",
+      "At the beginning of your upkeep, each opponent reveals the top card of their library, then discards a card. For each land card revealed this way, put a +1/+1 counter on ~."
+    ]
+  }
+]

@@ -1,0 +1,126 @@
+[
+  {
+    "id": "trg.edhmk9.landSameNameExiled.tappedForMana",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.12",
+      "CR 605.1b",
+      "CR 607.2a",
+      "CR 201.2",
+      "CR 603.2"
+    ],
+    "pattern": "whenever a land with the same name as the exiled card is tapped for mana",
+    "build": {
+      "on": [
+        {
+          "ev": "activate",
+          "source": {
+            "types": [
+              "Land"
+            ],
+            "sharesWith": {
+              "with": {
+                "ref": "linked",
+                "link": "exiled"
+              },
+              "quality": "name"
+            }
+          },
+          "manaAbility": true,
+          "tapped": true
+        }
+      ]
+    },
+    "needs": [
+      "feature:trigger.tappedForMana"
+    ],
+    "consumes": [
+      "whenever",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may exile target land you control.\nWhenever a land with the same name as the exiled card is tapped for mana, you gain 1 life."
+      },
+      {
+        "text": "When ~ enters, you may exile a land card from your hand.\nWhenever a land with the same name as the exiled card is tapped for mana, its controller adds one mana of any type that land produced. You draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may exile target land you control.\nWhenever a land with a different name than the exiled card is tapped for mana, you gain 1 life.",
+      "When ~ enters, you may exile target land you control.\nWhenever a land with the same name as the exiled card enters, you gain 1 life.",
+      "Whenever a land with the same name as the exiled card is tapped for mana, you gain 1 life."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhmk9.choose.anyTarget.thenAnotherPerKick",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 115.3",
+      "CR 601.2c",
+      "CR 702.33c",
+      "CR 608.2c"
+    ],
+    "pattern": "choose any target , then choose another target for each time ~ was kicked",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "target",
+            "id": "",
+            "$target": {
+              "kind": "anyTarget",
+              "min": 1,
+              "max": 1,
+              "text": "any target"
+            }
+          },
+          {
+            "ref": "target",
+            "id": "",
+            "$target": {
+              "kind": "anyTarget",
+              "min": {
+                "q": "kickCount"
+              },
+              "max": {
+                "q": "kickCount"
+              },
+              "text": "another target",
+              "another": true
+            }
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "another",
+      "each time",
+      "each",
+      "then"
+    ],
+    "needs": [],
+    "examples": [
+      {
+        "text": "Multikicker {1}\nChoose any target, then choose another target for each time this spell was kicked. ~ deals 3 damage to each of them."
+      },
+      {
+        "text": "Multikicker {2}\nChoose any target, then choose another target for each time this spell was kicked. ~ deals 2 damage to each of them."
+      }
+    ],
+    "counterExamples": [
+      "Multikicker {1}\nChoose any target, then choose another target for each time this spell was cast. ~ deals 3 damage to each of them.",
+      "Multikicker {1}\nChoose any target, then choose two other targets for each time this spell was kicked. ~ deals 3 damage to each of them.",
+      "Multikicker {1}\nChoose target creature, then choose another target for each time this spell was kicked. ~ deals 3 damage to each of them."
+    ]
+  }
+]

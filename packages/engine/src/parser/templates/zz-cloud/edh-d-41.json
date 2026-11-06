@@ -1,0 +1,323 @@
+[
+  {
+    "id": "sta.edhd41.enchanted.permanent.artifact.loseother",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 303.4",
+      "CR 613.1d",
+      "CR 613.1f"
+    ],
+    "pattern": "enchanted permanent is ( a | an ) {st:Subtypes} artifact with {a:Abilities} and it loses all other abilities",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "set": [
+              "Artifact"
+            ]
+          },
+          "subtypes": {
+            "set": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "removeAll": true,
+          "add": "$a"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchant nonland permanent an opponent controls\nEnchanted permanent is a Treasure artifact with \"{T}, Sacrifice this artifact: Add {G}\" and it loses all other abilities."
+      },
+      {
+        "text": "Enchant creature or artifact\nEnchanted permanent is a Food artifact with \"{2}, {T}, Sacrifice this artifact: You gain 4 life\" and it loses all other abilities."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted permanent is a Clue artifact with \"{3}, Sacrifice this artifact: Draw two cards\" and it loses all other card types.",
+      "Enchanted permanent is a Clue artifact with \"{3}, Sacrifice this artifact: Draw two cards\" and it loses all abilities.",
+      "Enchanted creature is a Clue artifact with \"{3}, Sacrifice this artifact: Draw two cards\" and it loses all other abilities.",
+      "Enchanted permanent is a Clue artifact with \"{3}, Sacrifice this artifact: Draw two cards\" and it loses all other abilities until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhd41.enchanted.permanent.colorless.artifact.loseother",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 303.4",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f"
+    ],
+    "pattern": "enchanted permanent is a colorless {st:Subtypes} artifact with {a:Abilities} and loses all other abilities",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "set": [
+              "Artifact"
+            ]
+          },
+          "subtypes": {
+            "set": "$st"
+          }
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": []
+          }
+        },
+        {
+          "layer": 6,
+          "removeAll": true,
+          "add": "$a"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchant nonland permanent an opponent controls\nEnchanted permanent is a colorless Clue artifact with \"{3}, Sacrifice this artifact: Draw two cards\" and loses all other abilities."
+      },
+      {
+        "text": "Enchant creature or artifact\nEnchanted permanent is a colorless Treasure artifact with \"{T}, Sacrifice this artifact: Add {R}\" and loses all other abilities."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted permanent is a colorless Clue artifact with \"{3}, Sacrifice this artifact: Draw two cards\" and loses all other card types and abilities.",
+      "Enchanted permanent is a Clue artifact with \"{3}, Sacrifice this artifact: Draw two cards\" and loses all other abilities.",
+      "Enchanted permanent is a colorless Clue artifact with \"{3}, Sacrifice this artifact: Draw two cards\" and loses all abilities."
+    ]
+  },
+  {
+    "id": "eff.edhd41.becomes.xx.subtype.creatureWith.inAddition.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3d",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 107.3"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) x/x {st:Subtypes} creature with {a:Abilities} in addition to its other types , where x is {q:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$q",
+              "toughness": "$q"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Until end of turn, target land you control becomes an X/X Elemental creature with trample in addition to its other types, where X is the number of creatures you control."
+      },
+      {
+        "text": "{1}: Until end of turn, target Forest becomes an X/X Treefolk creature with reach and haste in addition to its other types, where X is twice the number of Forests you control."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Until end of turn, target land you control becomes an X/X Elemental creature in addition to its other types, where X is the number of creatures you control and has trample.",
+      "{2}: Until end of turn, target land you control becomes a 3/3 Elemental creature with trample in addition to its other types, where X is the number of creatures you control.",
+      "{2}: Target land you control becomes an X/X Elemental creature with trample in addition to its other types, where X is the number of creatures you control.",
+      "{2}: Until end of turn, target land you control becomes an X/X Elemental creature with trample, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.edhd41.lead.becomes.subtype.artifactCreature.withQuoted",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 604.3a",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {st:Subtypes} artifact creature with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "becomes"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Until end of turn, this artifact becomes a Golem artifact creature with \"This creature's power and toughness are each equal to the number of cards in your hand.\""
+      },
+      {
+        "text": "{1}: Until end of turn, this artifact becomes a Construct artifact creature with \"This creature's power and toughness are each equal to your life total.\""
+      },
+      {
+        "text": "Until end of turn, target artifact you control becomes a Golem artifact creature with \"This creature's power and toughness are each equal to the number of cards in your hand.\""
+      }
+    ],
+    "counterExamples": [
+      "{2}: This artifact becomes a Golem artifact creature with \"This creature's power and toughness are each equal to the number of cards in your hand.\" until end of turn.",
+      "{2}: Until end of turn, this artifact becomes a Golem artifact creature in addition to its other types with \"This creature's power and toughness are each equal to the number of cards in your hand.\"",
+      "{2}: Until end of turn, this artifact becomes a Golem creature with \"This creature's power and toughness are each equal to the number of cards in your hand.\""
+    ]
+  },
+  {
+    "id": "eff.edhd41.lead.becomes.twoColor.subtype.creatureWith",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 105.2",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 611.2a",
+      "CR 604.3a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {c1:Color} and {c2:Color} {st:Subtypes} creature with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c1",
+                  "$c2"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "becomes"
+    ],
+    "examples": [
+      {
+        "text": "{2}{R}{G}: Until end of turn, this creature becomes a red and green Beast Elemental creature with \"This creature's power and toughness are each equal to the number of cards in your graveyard.\""
+      },
+      {
+        "text": "{1}{W}{U}: Until end of turn, this creature becomes a white and blue Spirit Drake creature with \"This creature's power and toughness are each equal to your life total.\""
+      }
+    ],
+    "counterExamples": [
+      "{2}{R}{G}: This creature becomes a red and green Beast Elemental creature with \"This creature's power and toughness are each equal to the number of cards in your graveyard.\" until end of turn.",
+      "{2}{R}{G}: Until end of turn, this creature becomes a red Beast Elemental creature with \"This creature's power and toughness are each equal to the number of cards in your graveyard.\"",
+      "{2}{R}{G}: Until end of turn, this creature becomes a red and green Beast Elemental creature in addition to its other types with \"This creature's power and toughness are each equal to the number of cards in your graveyard.\""
+    ]
+  }
+]

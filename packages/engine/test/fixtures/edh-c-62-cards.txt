@@ -1,0 +1,11 @@
+# edh-c-62 (Commander EDHREC ranks 25,001-25,500, second pass): "The creature can't be regenerated", "Draw a card for each time ~ was kicked", "shares a color with the most common color", "that much damage" after a cast trigger with a mana value, parley counters before the draw, "During turns other than yours, ~ is a P/T artifact creature with <keyword>", "<player> gains control of all <objects>", "they may pay {1}. If the player does", "that player didn't cast a <kind> spell this turn", ", and creatures that player controls can't attack this turn". After editing: npm run cards -- fixtures
+Mephitic Ooze
+Spell Contortion
+Tsabo's Assassin
+Imminent Doom
+Selvala's Enforcer
+Warden of the Wall
+Sky Swallower
+Horn of Plenty
+Predatory Advantage
+Oriss, Samite Guardian

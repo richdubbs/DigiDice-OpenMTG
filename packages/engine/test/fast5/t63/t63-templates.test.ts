@@ -27,7 +27,7 @@ const T63 = t63 as Template[];
  * check below proves there are no others). Each of these sentences is printed by one or two cards of the whole corpus.
  */
 const WHOLE_CORPUS: Readonly<Record<string, { cards: readonly string[]; line: RegExp }>> = {
-  'eff.t63.cast.noncreature.fromHand.free': { cards: ['Yue, the Moon Spirit'], line: /you may cast a noncreature spell from your hand without paying its mana cost/i },
+  'eff.t63.cast.noncreature.fromHand.free': { cards: ['Yue, the Moon Spirit', 'Brazen Bluff' /* trek-21: Brazen Bluff (Star Trek, 2026-11-03) prints the same sentence */], line: /you may cast a noncreature spell from your hand without paying its mana cost/i },
   'sta.t63.first.spell.less.flash': { cards: ['Radagast of Rhosgobel'], line: /costs \{\d\} less to cast and can be cast as though it had flash/i },
   'cm.t63.first.spell.yourTurns.less': { cards: ['Momo, Friendly Flier'], line: /spell[a-z -]* with [a-z]+ you cast during each of your turns costs \{\d\} less to cast/i },
   'cm.t63.ability.less.attackedWith': { cards: ['Thaumaton Torpedo'], line: /costs \{\d\} less to activate if you attacked with/i },

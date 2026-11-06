@@ -1,0 +1,357 @@
+[
+  {
+    "id": "eff.edhn14.damage.twoForEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 608.2h",
+      "CR 107.1"
+    ],
+    "pattern": "{src:Obj} deal[s] 2 damage to {to:Recipient} for each {f:Filter}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          2,
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        ]
+      }
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 2 damage to you for each artifact you control."
+      },
+      {
+        "text": "~ deals 2 damage to target player for each Goblin you control."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 2 damage to you for each.",
+      "~ deals 2 damage to you for each artifact you control until end of turn.",
+      "~ deals 2 damage for each artifact you control.",
+      "~ deals 3 damage to you for each artifact you control."
+    ]
+  },
+  {
+    "id": "eff.edhn14.eachPlayerLoseHalfLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 107.1a",
+      "CR 608.2f"
+    ],
+    "pattern": "each player loses half their life , rounded up",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "amount": {
+            "q": "math",
+            "op": "ceilDiv",
+            "args": [
+              {
+                "q": "life",
+                "of": {
+                  "ref": "bound",
+                  "name": "each"
+                }
+              },
+              2
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "half",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each player loses half their life, rounded up."
+      },
+      {
+        "text": "At the beginning of your upkeep, if you have 30 or more life, each player loses half their life, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each player loses half their life, rounded down.",
+      "When ~ enters, each player loses half your life, rounded up."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhn14.return.bf.underYourControl.counters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 122.6",
+      "CR 400.7",
+      "CR 614.1c"
+    ],
+    "pattern": "return {o:Objs} to the battlefield under your control with {n:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "counters": [
+          {
+            "kind": "$k",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When enchanted artifact is put into a graveyard, return that card to the battlefield under your control with two charge counters on it."
+      },
+      {
+        "text": "Return target artifact card from a graveyard to the battlefield under your control with two charge counters on it."
+      }
+    ],
+    "counterExamples": [
+      "Return target artifact card from a graveyard to the battlefield under your control with an additional charge counter on it.",
+      "Return target artifact card from a graveyard to the battlefield under its owner's control with two charge counters on it."
+    ]
+  },
+  {
+    "id": "eff.edhn14.grant.cantbeblockedBy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} gains {a:Abilities} {d:Dur} and can't be blocked by {f:Filter} this turn",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": "$f"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Target creature you control gains deathtouch until end of turn and can't be blocked by creatures with power 2 or less this turn."
+      },
+      {
+        "text": "{2}{B}: ~ gains lifelink until end of turn and can't be blocked by Walls this turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target creature gains deathtouch until end of turn and can't be blocked by Walls.",
+      "{T}: Target creature gains deathtouch until end of turn and can't block Walls this turn.",
+      "{T}: Target creature loses deathtouch until end of turn and can't be blocked by Walls this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn14.eachPlayerWhoSearchedTheirLibrary.shuffles",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 608.2c"
+    ],
+    "pattern": "each player who searched their library this way shuffles",
+    "build": {
+      "op": "shuffle",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "ifSearched": true
+    },
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "needs": [
+      "op:shuffle.ifSearched"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for a land card and put it onto the battlefield. Then each player who searched their library this way shuffles."
+      },
+      {
+        "text": "Each opponent may search their library for a creature card and put it onto the battlefield. Each player who searched their library this way shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a land card and put it onto the battlefield. Then each player who searched their library this way draws a card.",
+      "Search your library for a land card and put it onto the battlefield. Then each player shuffles.",
+      "Search your library for a land card and put it onto the battlefield. Then each opponent who searched their library this way shuffles."
+    ]
+  },
+  {
+    "id": "eff.edhn14.eachPlayerMay.search.anyCard.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 400.3"
+    ],
+    "pattern": "each player may search their library for a card and put ( it | that card ) into their hand",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "iterating"
+          },
+          "zone": "library",
+          "filter": {},
+          "max": 1,
+          "as": "playerSearch"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "playerSearch"
+          },
+          "to": {
+            "zone": "hand",
+            "owner": {
+              "ref": "iterating"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "may",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Each player may search their library for a card and put it into their hand."
+      },
+      {
+        "text": "Draw a card. Each player may search their library for a card and put that card into their hand."
+      }
+    ],
+    "counterExamples": [
+      "Each player searches their library for a card and puts it into their hand.",
+      "Each player may search their library for a card and put it onto the battlefield.",
+      "Each opponent may search their library for a card and put it into their hand.",
+      "Each player may search your library for a card and put it into their hand."
+    ]
+  },
+  {
+    "id": "eff.edhn14.return.toBattlefield.faceDown.yourControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 708.2a",
+      "CR 708.3",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "return {o:Obj} to the battlefield face down under your control",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "faceDown": true,
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "face down"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another creature you control dies, you may return it to the battlefield face down under your control."
+      },
+      {
+        "text": "Whenever another creature you control dies, return it to the battlefield face down under your control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another creature you control dies, return it to the battlefield under your control.",
+      "Whenever another creature you control dies, return it to the battlefield face up under your control.",
+      "Whenever another creature you control dies, return it to your hand face down."
+    ]
+  }
+]

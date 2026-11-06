@@ -1,0 +1,1 @@
+{"name":"refused_18","before":{"a":{"b":[1,2]},"s":"x"},"ops":[{"op":"move","path":["a"]}],"error":"Unknown patch operation \"move\"."}

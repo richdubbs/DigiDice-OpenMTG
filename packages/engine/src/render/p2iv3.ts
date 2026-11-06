@@ -23,7 +23,8 @@ export function p2iv3AllAny(c: Extract<Condition, { cond: 'all' | 'any' }>): str
   const spent = c.of.map((x) => (x.cond === 'wasCast' && x.spent !== undefined && Object.keys(x).length === 2 ? x.spent : null));
   const n = spent[0]?.atLeast;
   if (n === undefined || spent.some((s, i) => s === null || s.color !== COLORS[i] || s.atLeast !== n)) return null;
-  return `at least ${numWord(n)} mana of the same color was spent to cast it`;
+  // edh-c-94 (family adamant-same-color-self; Henge Walker): the spell is also named, "if at least three mana of the same color was spent to cast this spell" (read as "~")
+  return alt(`at least ${numWord(n)} mana of the same color was spent to cast it`, `at least ${numWord(n)} mana of the same color was spent to cast ~`);
 }
 
 /** "a permanent was put into your hand from the battlefield this turn" (CR 400.3), beside the generic words of the zone-change history. */

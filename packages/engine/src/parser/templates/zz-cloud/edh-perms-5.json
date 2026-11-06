@@ -1,0 +1,188 @@
+[
+  {
+    "id": "eff.edhpm5.forEachOfThem.copyToken.except",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 707.2",
+      "CR 707.9a",
+      "CR 111.1"
+    ],
+    "pattern": "for each of {t:Them} , create a token that's a copy of ( that creature | that permanent | that artifact ) , except {x:CopyExceptToken}",
+    "build": {
+      "op": "forEach",
+      "over": "$t",
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          },
+          "except": "$x"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Choose any number of target creatures you control. For each of them, create a token that's a copy of that creature, except it has haste."
+      },
+      {
+        "text": "Choose up to two target artifacts you control. For each of them, create a token that's a copy of that artifact, except it has flying."
+      }
+    ],
+    "counterExamples": [
+      "Choose any number of target creatures you control. For each of them, create a token that's a copy of that creature, except it has haste until end of turn.",
+      "Choose any number of target creatures you control. For each of them, create two tokens that are copies of that creature, except they have haste."
+    ]
+  },
+  {
+    "id": "eff.edhpm5.player.copyTokens.except",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.2",
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 107.1a"
+    ],
+    "pattern": "{p:Player} create[s] {n:Qty} tokens that are copies of {o:Obj} , except {x:CopyExceptTokens}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": "$p",
+      "count": "$n",
+      "except": "$x"
+    },
+    "subject": "player",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target creature. If that creature dies this way, its controller creates three tokens that are copies of that creature, except their power is half that creature's power and their toughness is half that creature's toughness. Round up each time."
+      },
+      {
+        "text": "Destroy target creature. Its controller creates three tokens that are copies of that creature, except they have haste."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target creature. If that creature dies this way, its controller creates three tokens that are copies of that creature, except their power is half that creature's power and their toughness is half that creature's toughness.",
+      "Destroy target creature. Its controller creates a token that's a copy of that creature, except it has haste."
+    ]
+  },
+  {
+    "id": "eff.edhpm5.counters.put.twoGroups",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 608.2f"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on {a:Objs} and ( a | an ) {j:CounterKind} counter on {b:Objs}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$a",
+        "kind": "$k",
+        "count": 1
+      },
+      {
+        "op": "putCounters",
+        "on": "$b",
+        "kind": "$j",
+        "count": 1
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "At the beginning of your end step, put a +1/+1 counter on each creature you control and a charge counter on each artifact you control."
+      },
+      {
+        "text": "Put a +1/+1 counter on each Goblin you control and a +1/+1 counter on each Elf you control."
+      }
+    ],
+    "counterExamples": [
+      "Put a +1/+1 counter on each creature you control and two charge counters on each artifact you control.",
+      "Put a +1/+1 counter on each creature you control or a charge counter on each artifact you control.",
+      "Put a +1/+1 counter on each creature you control and a charge counter on target artifact."
+    ]
+  },
+  {
+    "id": "sta.edhpm5.attached.basept.cantBeBlockedBy",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.4b",
+      "CR 509.1b",
+      "CR 604.1",
+      "CR 301.5a"
+    ],
+    "pattern": "( enchanted | equipped ) creature has base power and toughness {pt:BasePT} and can't be blocked by {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature has base power and toughness 5/3 and can't be blocked by creatures with flying."
+      },
+      {
+        "text": "Equipped creature has base power and toughness 6/4 and can't be blocked by Walls."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature has base power and toughness 5/3 and can be blocked by creatures with flying.",
+      "Enchanted creature has base power and toughness 5/3 and can't be blocked this turn.",
+      "Enchanted creature gets +5/+3 and can't be blocked by creatures with flying."
+    ]
+  }
+]

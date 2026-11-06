@@ -49,6 +49,8 @@ const WHOLE_CORPUS: Readonly<Record<string, { cards: readonly string[]; line: Re
   'eff.stdlci.thenIf.counters.removeTransform': { cards: ["Brass's Tunnel-Grinder // Tecutlan, the Searing Rift"], line: /, remove those counters and transform it/ },
   'eff.stdlci.return.bf.owner.tapped.transformed.counters': { cards: ['Ojer Pakpatiq, Deepest Epoch // Temple of Cyclical Time'], line: /return it to the battlefield tapped and transformed under its owner's control with/ },
   'eff.stdlci.player.discovers.whereX': { cards: ["Zoyowa's Justice"], line: /that player discovers X/ },
+  // edh-misc-3 (6.9 narrow wording, named in its record): the one printing, Wrenn and Seven, is HELD_OUT (opened by the owner's Commander request 2026-10-27), played in test/cloud/edh-misc-3
+  'eff.stdlci.put.anyNumber.bf.tapped': { cards: ['Wrenn and Seven'], line: /Put any number of [A-Za-z ]+ cards from your hand onto the battlefield tapped/ },
 };
 const OPTS = defaultParseOptions({ templates: [...TEMPLATE_SET], capabilities: ENGINE_CAPABILITIES }); // what a decklist card gets (design 5.2; `needs`)
 
@@ -106,12 +108,26 @@ describe('std-lci template file (design 6.3, 6.9; CONTRIBUTING "Adding a templat
   });
 });
 
+/**
+ * edh-zones-10's stable eff.edhz10.search.desc.reveal.shuffleTop ("search your library for <description>, reveal it, then shuffle and put it on top", CR 701.23a, 401.2) reads two of
+ * this file's examples too, with the same JSON (the chart picks one of two equal readings by template id, parser/chart.ts#better). That one is stable (a card it reads is full) and
+ * this one is experimental (it would cap the card), so the newer template is not made weak: the example is proved for this template by parsing it with the newer one left out.
+ */
+const SUBSUMED_BY: Readonly<Record<string, string>> = { 'eff.stdlci.search.or.reveal.top': 'eff.edhz10.search.desc.reveal.shuffleTop' };
+
 describe('std-lci guard G9 (design 6.8): examples and counter-examples', () => {
   for (const t of STD_LCI) {
     it(`${t.id} (${t.cr.join(', ')}): every example parses with it, is automated and passes the render gate; counter-examples do not give the same JSON`, () => {
       const first = parsedWith(t.examples[0]!.text);
       for (const e of t.examples) {
-        const f = parsedWith(e.text);
+        let f = parsedWith(e.text);
+        const by = SUBSUMED_BY[t.id];
+        if (by !== undefined && f.templatesUsed.includes(by)) {
+          const without = parseCard(exampleCard(e.text), { ...OPTS, templates: OPTS.templates.filter((x) => x.id !== by) }).faces[0]!;
+          expect(without.templatesUsed, e.text).toContain(t.id);
+          expect(jsonKey(f.abilities), `${e.text}: the same JSON with either template`).toBe(jsonKey(without.abilities));
+          f = without;
+        }
         expect(f.templatesUsed, e.text).toContain(t.id);
         expect(fullyAutomated(f), `${e.text}: ${JSON.stringify(f.abilities)} ${JSON.stringify(f.diagnostics)}`).toBe(true);
         expect(f.gate.every((g) => g.ok), `${e.text}: ${JSON.stringify(f.gate)}`).toBe(true);
@@ -187,8 +203,8 @@ describe('std-lci readings outside the template file', () => {
   it('CR 401.2, 603.2: "that many cards from the top of your library" needs a number the trigger or an earlier step gave', () => {
     expect(full('Whenever ~ deals combat damage to a player, exile that many cards from the top of your library.', 'Creature — Elf')).toBe(true);
     expect(full('Exile that many cards from the top of your library.')).toBe(false);
-    // the counters a dying creature had are not the event's amount: "that many" stays unresolved
-    expect(full('Whenever a creature you control with one or more counters on it dies, draw that many cards.', 'Creature — Elf')).toBe(false);
+    // combined copy: edh-next-134 (Oft-Nabbed Goat; family that-many-counters-it-had) reads "that many" as the counters the trigger names, on the creature as it last existed (CR 603.10a, 122.1)
+    expect(full('Whenever a creature you control with one or more counters on it dies, draw that many cards.', 'Creature — Elf')).toBe(true);
   });
   it('CR 106.3, 110.4b: "a permanent spell", and "using mana produced by ~" only of the object itself', () => {
     expect(full('Whenever you cast a permanent spell, you gain 1 life.', 'Enchantment')).toBe(true);
@@ -232,6 +248,7 @@ const HELD_OUT: Readonly<Record<string, string>> = {
   'Glimpse of Tomorrow': 'eff.stdlci.reveal.n.fromTop: held-out since the hash split of 2026-10-19 (design 6.12)',
   'Kairi, the Swirling Sky': 'eff.stdlci.return.upto.yourhand: held-out since the hash split of 2026-10-19 (design 6.12)',
   "Myojin of Life's Web": 'eff.stdlci.put.anyNumber.bf: held-out since the hash split of 2026-10-19 (design 6.12)',
+  'Wrenn and Seven': 'eff.stdlci.put.anyNumber.bf.tapped: held-out since the hash split of 2026-10-19 (design 6.12); opened by the owner (Commander request 2026-10-27)',
 };
 /** Cards held out of the tuning half are never read here (none is named below). */
 

@@ -1,0 +1,877 @@
+[
+  {
+    "id": "eff.edhn128.damage.playerOrPlaneswalker",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2d",
+      "CR 306.8"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Player} or a planeswalker ( that player | they ) control[s]",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "orPlaneswalker": true
+    },
+    "examples": [
+      {
+        "text": "At the beginning of enchanted player's upkeep, ~ deals 2 damage to that player or a planeswalker that player controls."
+      },
+      {
+        "text": "At the beginning of your end step, choose an opponent at random. ~ deals 3 damage to that player or a planeswalker they control."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 2 damage to target player or a planeswalker that player controls.",
+      "~ deals 2 damage to each opponent or a planeswalker that player controls.",
+      "~ deals 2 damage to that player or a creature that player controls."
+    ]
+  },
+  {
+    "id": "eff.edhn128.damage.equal.playerOrPlaneswalker",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2d",
+      "CR 306.8",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage equal to {n:Qty} to {to:Player} or a planeswalker ( that player | they ) control[s]",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "orPlaneswalker": true
+    },
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, choose an opponent at random. ~ deals damage equal to that spell's mana value to that player or a planeswalker that player controls."
+      },
+      {
+        "text": "At the beginning of enchanted player's upkeep, ~ deals damage equal to the number of cards in that player's hand to that player or a planeswalker they control."
+      }
+    ],
+    "counterExamples": [
+      "~ deals damage equal to its power to target player or a planeswalker that player controls.",
+      "~ deals damage equal to its power to that player or a creature that player controls."
+    ]
+  },
+  {
+    "id": "rep.edhn128.enters.rollDice.countersEqualTotal",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 706.2",
+      "CR 107.3m"
+    ],
+    "pattern": "as ~ enters , roll {n:Qty} d6 . ( it | ~ ) enters with a number of +1/+1 counters on it equal to the total of those results",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "roll": {
+              "sides": 6,
+              "count": "$n"
+            },
+            "counters": [
+              {
+                "kind": "+1/+1",
+                "count": {
+                  "q": "dieResult"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, roll two d6. It enters with a number of +1/+1 counters on it equal to the total of those results."
+      },
+      {
+        "text": "As ~ enters, roll four d6. ~ enters with a number of +1/+1 counters on it equal to the total of those results."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, roll two d6. It enters with a number of +1/+1 counters on it equal to the highest of those results.",
+      "As ~ enters, roll two d6. Target creature enters with a number of +1/+1 counters on it equal to the total of those results.",
+      "When ~ enters, roll two d6. It enters with a number of +1/+1 counters on it equal to the total of those results."
+    ]
+  },
+  {
+    "id": "eff.edhn128.choose.counterKindAtRandom.notOnSelf",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 702.9a"
+    ],
+    "pattern": "choose a kind of counter at random that ~ doesn't have on it from among flying , first strike , deathtouch , hexproof , lifelink , menace , reach , trample , vigilance , and +1/+1",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "counterKind",
+      "as": "counterKind",
+      "link": "counterKind",
+      "random": true,
+      "options": [
+        "flying",
+        "first strike",
+        "deathtouch",
+        "hexproof",
+        "lifelink",
+        "menace",
+        "reach",
+        "trample",
+        "vigilance",
+        "+1/+1"
+      ],
+      "counterNotOn": {
+        "ref": "self"
+      }
+    },
+    "consumes": [
+      "choose",
+      "counter",
+      "random",
+      "doesn't",
+      "among"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, choose a kind of counter at random that ~ doesn't have on it from among flying, first strike, deathtouch, hexproof, lifelink, menace, reach, trample, vigilance, and +1/+1. Put a counter of that kind on ~."
+      },
+      {
+        "text": "Whenever ~ attacks, choose a kind of counter at random that ~ doesn't have on it from among flying, first strike, deathtouch, hexproof, lifelink, menace, reach, trample, vigilance, and +1/+1. Put a counter of that kind on ~."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, choose a kind of counter that ~ doesn't have on it from among flying, first strike, deathtouch, hexproof, lifelink, menace, reach, trample, vigilance, and +1/+1. Put a counter of that kind on ~.",
+      "At the beginning of your upkeep, choose a kind of counter at random that ~ has on it from among flying, first strike, deathtouch, hexproof, lifelink, menace, reach, trample, vigilance, and +1/+1. Put a counter of that kind on ~.",
+      "At the beginning of your upkeep, choose a kind of counter at random from among flying, first strike, deathtouch, hexproof, lifelink, menace, reach, trample, vigilance, and +1/+1. Put a counter of that kind on ~."
+    ]
+  },
+  {
+    "id": "eff.edhn128.put.counterOfThatKind",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "put a counter of that kind on {o:Recipient}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "",
+      "count": 1,
+      "kindOfChoice": "counterKind"
+    },
+    "consumes": [
+      "put",
+      "counter",
+      "of",
+      "that",
+      "kind",
+      "on"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, choose a kind of counter at random that ~ doesn't have on it from among flying, first strike, deathtouch, hexproof, lifelink, menace, reach, trample, vigilance, and +1/+1. Put a counter of that kind on ~."
+      },
+      {
+        "text": "Whenever ~ blocks, choose a kind of counter at random that ~ doesn't have on it from among flying, first strike, deathtouch, hexproof, lifelink, menace, reach, trample, vigilance, and +1/+1. Put a counter of that kind on ~."
+      }
+    ],
+    "counterExamples": [
+      "Put a counter of that kind on ~.",
+      "Choose a counter on target creature. Put two counters of that kind on that creature.",
+      "At the beginning of your end step, choose a kind of counter at random that ~ doesn't have on it from among flying, first strike, deathtouch, hexproof, lifelink, menace, reach, trample, vigilance, and +1/+1. Put a counter of that kind on target creature."
+    ]
+  },
+  {
+    "id": "eff.edhn128.permit.free.fromHand.thisTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 611.2a",
+      "CR 604.1"
+    ],
+    "pattern": "you may cast {f:Filter} from your hand this turn without paying their mana costs",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "anyOf": [
+              "$f"
+            ],
+            "castFrom": "hand"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card. You may cast spells from your hand this turn without paying their mana costs."
+      },
+      {
+        "text": "Discard your hand. You may cast creature spells from your hand this turn without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. You may cast creature spells from your hand without paying their mana costs.",
+      "Draw a card. You may cast spells from your graveyard this turn without paying their mana costs.",
+      "Draw a card. You may cast spells from your hand this turn by paying 2 life rather than paying their mana costs."
+    ],
+    "consumes": [
+      "may"
+    ]
+  },
+  {
+    "id": "eff.edhn128.ifWonNFlipsThisWay",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 705.2",
+      "CR 608.2c"
+    ],
+    "pattern": "if you won {n:Count} flips this way , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "flip",
+        "wonCount": "$n"
+      },
+      "then": "$e"
+    },
+    "consumes": [
+      "if",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, flip four coins. For each flip you win, draw a card. If you won four flips this way, you gain 5 life."
+      },
+      {
+        "text": "At the beginning of your upkeep, flip three coins. For each flip you lose, you lose 1 life. If you won three flips this way, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "If you won four flips this way, you gain 5 life.",
+      "Whenever ~ attacks, flip a coin. If you won four flips this way, you gain 5 life.",
+      "Whenever ~ attacks, flip four coins. If you lost four flips this way, you gain 5 life.",
+      "Whenever ~ attacks, flip four coins. If you won two flips this way, you gain 5 life."
+    ]
+  },
+  {
+    "id": "eff.edhn128.forEachResultOf",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 706.2",
+      "CR 608.2c"
+    ],
+    "pattern": "for each result of {n:Count} , {e:Effects}",
+    "build": {
+      "op": "repeat",
+      "times": {
+        "q": "diceResults",
+        "match": "$n"
+      },
+      "do": "$e"
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, roll two six-sided dice. For each result of 1, ~ gets +1/+1 until end of turn."
+      },
+      {
+        "text": "At the beginning of your upkeep, roll three six-sided dice. For each result of 6, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "For each result of 1, draw a card.",
+      "Whenever ~ attacks, roll two six-sided dice. For each result of 1 or 2, draw a card.",
+      "Whenever ~ attacks, roll two six-sided dice. For each result of 1, target player draws a card."
+    ]
+  },
+  {
+    "id": "eff.edhn128.indicatedAbility",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 706.2",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "for each other result , {o:Obj} gains the indicated ability until end of turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [],
+      "@indicated": true,
+      "@who": "$o"
+    },
+    "consumes": [
+      "each other",
+      "each",
+      "other",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, roll two six-sided dice. For each result of 1, ~ gets +1/+1 until end of turn. For each other result, it gains the indicated ability until end of turn.\n• 2 -- flying\n• 3 -- trample\n• 4 -- haste\n• 5 -- reach\n• 6 -- lifelink"
+      },
+      {
+        "text": "At the beginning of your upkeep, roll two six-sided dice. For each result of 1, ~ gets +1/+1 until end of turn. For each other result, ~ gains the indicated ability until end of turn.\n• 2 -- deathtouch\n• 3 -- menace\n• 4 -- vigilance\n• 5 -- first strike\n• 6 -- hexproof"
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, roll two six-sided dice. For each other result, it gains the indicated ability until end of turn.",
+      "Whenever ~ attacks, roll two six-sided dice. For each result of 1, ~ gets +1/+1 until end of turn. For each other result, it gains the indicated ability until end of turn.\n• 2 -- flying\n• 4 -- trample\n• 3 -- haste\n• 5 -- reach\n• 6 -- lifelink",
+      "Whenever ~ attacks, roll a d6. For each other result, it gains the indicated ability until end of turn.\n• 2 -- flying\n• 3 -- trample\n• 4 -- haste\n• 5 -- reach\n• 6 -- lifelink"
+    ]
+  },
+  {
+    "id": "eff.edhn128.ifRolledDoubles.alsoGains",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 706.2",
+      "CR 608.2c",
+      "CR 611.2a"
+    ],
+    "pattern": "if you rolled doubles , {o:Obj} also gains {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "diceResults",
+          "match": "distinct"
+        },
+        "op": "==",
+        "right": 1
+      },
+      "then": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, roll two six-sided dice. For each result of 1, ~ gets +1/+1 until end of turn. If you rolled doubles, it also gains double strike until end of turn."
+      },
+      {
+        "text": "At the beginning of your upkeep, roll two six-sided dice. For each result of 6, ~ gets +2/+2 until end of turn. If you rolled doubles, ~ also gains trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "If you rolled doubles, ~ also gains double strike until end of turn.",
+      "Whenever ~ attacks, roll two six-sided dice. If you rolled triples, it also gains double strike until end of turn.",
+      "Whenever ~ attacks, roll two six-sided dice. If you rolled doubles, target creature also gains double strike until end of turn.",
+      "Whenever ~ attacks, roll a six-sided die. If you rolled doubles, it also gains double strike until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn128.forEach.putNCounters",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 706.2"
+    ],
+    "pattern": "for each even result , put {m:Count} -1/-1 counters on {o:Obj}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "-1/-1",
+      "count": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$m",
+          {
+            "q": "diceResults",
+            "match": "even"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Choose target creature. Roll three six-sided dice. For each even result, put two -1/-1 counters on that creature."
+      },
+      {
+        "text": "Choose target creature. Roll two six-sided dice. For each even result, put three -1/-1 counters on that creature."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature. Roll three six-sided dice. For each even result, put two -1/-1 counters on each creature.",
+      "Choose target creature. Roll three six-sided dice. For each even result, put a -1/-1 counter on that creature.",
+      "Choose target creature. Roll three six-sided dice. For each even result, remove two -1/-1 counters from that creature.",
+      "Target creature gets +1/+1 until end of turn. For each creature its controller controls, put two -1/-1 counters on that creature."
+    ]
+  },
+  {
+    "id": "eff.edhn128.youAndPlayerFlip.tailsDamage.untilBothHeads",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 705.1",
+      "CR 608.2c",
+      "CR 120.2b",
+      "CR 115.1"
+    ],
+    "pattern": "you and {p:Player} each flip a coin . {src:Obj} deals 1 damage to each player whose coin comes up tails . repeat this process until both players' coins come up heads on the same flip",
+    "build": {
+      "op": "repeat",
+      "times": 1,
+      "until": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "compare",
+            "left": {
+              "q": "resultCount",
+              "step": "flipA"
+            },
+            "op": "==",
+            "right": 1
+          },
+          {
+            "cond": "compare",
+            "left": {
+              "q": "resultCount",
+              "step": "flipB"
+            },
+            "op": "==",
+            "right": 1
+          }
+        ]
+      },
+      "do": [
+        {
+          "op": "flipCoin",
+          "who": {
+            "ref": "you"
+          },
+          "as": "flipA"
+        },
+        {
+          "op": "flipCoin",
+          "who": "$p",
+          "as": "flipB"
+        },
+        {
+          "op": "if",
+          "cond": {
+            "cond": "all",
+            "of": [
+              {
+                "cond": "compare",
+                "left": {
+                  "q": "resultCount",
+                  "step": "flipA"
+                },
+                "op": "==",
+                "right": 0
+              },
+              {
+                "cond": "compare",
+                "left": {
+                  "q": "resultCount",
+                  "step": "flipB"
+                },
+                "op": "==",
+                "right": 0
+              }
+            ]
+          },
+          "then": [
+            {
+              "op": "damage",
+              "source": "$src",
+              "to": {
+                "ref": "you"
+              },
+              "amount": 1,
+              "also": [
+                {
+                  "to": "$p",
+                  "amount": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "if",
+          "cond": {
+            "cond": "all",
+            "of": [
+              {
+                "cond": "compare",
+                "left": {
+                  "q": "resultCount",
+                  "step": "flipA"
+                },
+                "op": "==",
+                "right": 0
+              },
+              {
+                "cond": "compare",
+                "left": {
+                  "q": "resultCount",
+                  "step": "flipB"
+                },
+                "op": "==",
+                "right": 1
+              }
+            ]
+          },
+          "then": [
+            {
+              "op": "damage",
+              "source": "$src",
+              "to": {
+                "ref": "you"
+              },
+              "amount": 1
+            }
+          ]
+        },
+        {
+          "op": "if",
+          "cond": {
+            "cond": "all",
+            "of": [
+              {
+                "cond": "compare",
+                "left": {
+                  "q": "resultCount",
+                  "step": "flipA"
+                },
+                "op": "==",
+                "right": 1
+              },
+              {
+                "cond": "compare",
+                "left": {
+                  "q": "resultCount",
+                  "step": "flipB"
+                },
+                "op": "==",
+                "right": 0
+              }
+            ]
+          },
+          "then": [
+            {
+              "op": "damage",
+              "source": "$src",
+              "to": "$p",
+              "amount": 1
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "until",
+      "both",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "You and target opponent each flip a coin. ~ deals 1 damage to each player whose coin comes up tails. Repeat this process until both players' coins come up heads on the same flip. Draw a card."
+      },
+      {
+        "text": "Draw a card. You and target player each flip a coin. ~ deals 1 damage to each player whose coin comes up tails. Repeat this process until both players' coins come up heads on the same flip."
+      }
+    ],
+    "counterExamples": [
+      "You and target opponent each flip a coin. ~ deals 1 damage to each player whose coin comes up heads. Repeat this process until both players' coins come up heads on the same flip.",
+      "You and target opponent each flip a coin. ~ deals 1 damage to each player whose coin comes up tails. Repeat this process until both players' coins come up tails on the same flip.",
+      "You and target opponent each flip a coin. ~ deals 1 damage to each player whose coin comes up tails."
+    ]
+  },
+  {
+    "id": "eff.edhn128.chooseNumber.flipUntilLoseCapped.drawIfAllWon",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 705.2",
+      "CR 608.2c",
+      "CR 107.1"
+    ],
+    "pattern": "choose a number . flip a coin that many times or until you lose a flip , whichever comes first . if you win all the flips , draw {n:Count} cards for each flip",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "number",
+        "min": 0,
+        "as": "chosenNumber",
+        "link": "chosenNumber"
+      },
+      {
+        "op": "flipCoin",
+        "who": {
+          "ref": "you"
+        },
+        "untilLose": true,
+        "times": {
+          "q": "chosenNumber",
+          "link": "chosenNumber"
+        },
+        "as": "flips"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "compare",
+          "left": {
+            "q": "resultCount",
+            "step": "flips"
+          },
+          "op": "==",
+          "right": {
+            "q": "chosenNumber",
+            "link": "chosenNumber"
+          }
+        },
+        "then": [
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$n",
+                {
+                  "q": "chosenNumber",
+                  "link": "chosenNumber"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "choose",
+      "until",
+      "if",
+      "all",
+      "each",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "Choose a number. Flip a coin that many times or until you lose a flip, whichever comes first. If you win all the flips, draw two cards for each flip. You gain 1 life."
+      },
+      {
+        "text": "Draw a card. Choose a number. Flip a coin that many times or until you lose a flip, whichever comes first. If you win all the flips, draw three cards for each flip."
+      }
+    ],
+    "counterExamples": [
+      "Choose a number. Flip a coin that many times. If you win all the flips, draw two cards for each flip.",
+      "Choose a number. Flip a coin that many times or until you lose a flip, whichever comes first. If you win all the flips, draw two cards.",
+      "Choose a number. Flip a coin that many times or until you win a flip, whichever comes first. If you win all the flips, draw two cards for each flip."
+    ]
+  },
+  {
+    "id": "eff.edhn128.eachNonland.randomPlayer.gainsControl.untap",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 613.1b",
+      "CR 611.2a",
+      "CR 701.26b",
+      "CR 800.4a"
+    ],
+    "pattern": "for each nonland permanent , choose a player at random . then each player gains control of each permanent for which they were chosen . untap those permanents",
+    "build": [
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ]
+          }
+        },
+        "as": "each",
+        "do": [
+          {
+            "op": "chooseValue",
+            "who": {
+              "ref": "you"
+            },
+            "what": "player",
+            "random": true,
+            "as": "scrambled"
+          },
+          {
+            "op": "effect",
+            "duration": {
+              "d": "permanent"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "bound",
+                  "name": "each"
+                },
+                "mods": [
+                  {
+                    "layer": 2,
+                    "controller": {
+                      "ref": "bound",
+                      "name": "scrambled"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "untap",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ]
+          }
+        }
+      }
+    ],
+    "consumes": [
+      "each",
+      "random",
+      "then",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "For each nonland permanent, choose a player at random. Then each player gains control of each permanent for which they were chosen. Untap those permanents. Draw a card."
+      },
+      {
+        "text": "Draw a card. For each nonland permanent, choose a player at random. Then each player gains control of each permanent for which they were chosen. Untap those permanents."
+      }
+    ],
+    "counterExamples": [
+      "For each nonland permanent, choose a player. Then each player gains control of each permanent for which they were chosen. Untap those permanents.",
+      "For each nonland permanent, choose a player at random. Then each player gains control of each permanent for which they were chosen.",
+      "For each creature, choose a player at random. Then each player gains control of each permanent for which they were chosen. Untap those permanents."
+    ]
+  }
+]

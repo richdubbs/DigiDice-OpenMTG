@@ -1,0 +1,10 @@
+# edh-c-41 (Commander effort, coordinator C, EDHREC ranks 28,501 to 29,000). After editing: npm run cards -- fixtures
+Gravebane Zombie
+Wall of Tombstones
+Riptide Mangler
+Lurking Evil
+Hail Storm
+Deep Spawn
+Dragonsoul Knight
+Wishful Merfolk
+Sunbathing Rootwalla

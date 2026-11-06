@@ -1,0 +1,463 @@
+[
+  {
+    "id": "sta.edhd25.permit.attached.attackHaste",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 302.6",
+      "CR 508.1a",
+      "CR 609.4",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature can attack as though it had haste",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "controllerOf",
+        "object": {
+          "ref": "attachedTo"
+        }
+      },
+      "action": "attackAsThoughHaste",
+      "of": {
+        "attachedToSource": true
+      }
+    },
+    "consumes": [
+      "enchanted",
+      "equipped",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +4/+6.\nEquipped creature can attack as though it had haste."
+      },
+      {
+        "text": "Equipped creature has shroud and menace.\nEquipped creature can attack as though it had haste."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can block as though it had haste.",
+      "Enchanted creature can attack as though it had flying.",
+      "Enchanted creature can attack as though it didn't have haste.",
+      "Enchanted land can attack as though it had haste."
+    ]
+  },
+  {
+    "id": "sta.edhd25.aslong.eachOfYours.assignAsUnblocked",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 510.1b",
+      "CR 510.1c",
+      "CR 609.4"
+    ],
+    "pattern": "as long as {c:Cond} , for each {f:Filter} , you may have that creature assign its combat damage as though it weren't blocked",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "assignAsUnblocked",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "each",
+      "may",
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is attacking, for each Giant you control, you may have that creature assign its combat damage as though it weren't blocked."
+      },
+      {
+        "text": "As long as you control a Dragon, for each artifact creature you control, you may have that creature assign its combat damage as though it weren't blocked."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is attacking, for each creature you control, you may have that creature assign its combat damage as though it had trample.",
+      "As long as ~ is attacking, for each creature you control, that creature assigns its combat damage as though it weren't blocked.",
+      "If ~ is attacking, for each creature you control, you may have that creature assign its combat damage as though it weren't blocked.",
+      "As long as ~ is attacking, for each creature, you may have that creature assign its combat damage as though it weren't blocked."
+    ]
+  },
+  {
+    "id": "eff.edhd25.group.assignUnblocked.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1b",
+      "CR 510.1c",
+      "CR 609.4",
+      "CR 611.2a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {f:Filter} assign their combat damage this turn as though they weren't blocked",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "endOfTurn"
+          },
+          "effects": [
+            {
+              "s": "permit",
+              "who": {
+                "ref": "you"
+              },
+              "action": "assignAsUnblocked",
+              "of": "$f",
+              "mandatory": true
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "You may have Giants you control assign their combat damage this turn as though they weren't blocked."
+      },
+      {
+        "text": "You may have Elves you control assign their combat damage this turn as though they weren't blocked."
+      }
+    ],
+    "counterExamples": [
+      "You may have creatures you control assign their combat damage as though they weren't blocked.",
+      "You may have creatures you control assign their combat damage this turn as though they had trample.",
+      "You may have creatures you control assign their combat damage next turn as though they weren't blocked.",
+      "You may have creatures you control deal their combat damage this turn as though they weren't blocked."
+    ]
+  },
+  {
+    "id": "eff.edhd25.target.assignUnblocked.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1b",
+      "CR 510.1c",
+      "CR 509.1h",
+      "CR 609.4",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Objs} assign their combat damage this turn as though they weren't blocked",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "each",
+            "who": "player"
+          },
+          "action": "assignAsUnblocked",
+          "of": {
+            "is": "$o"
+          },
+          "mandatory": true
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Two target blocked creatures assign their combat damage this turn as though they weren't blocked."
+      },
+      {
+        "text": "Three target blocked creatures assign their combat damage this turn as though they weren't blocked."
+      }
+    ],
+    "counterExamples": [
+      "Two target blocked creatures assign their combat damage as though they weren't blocked.",
+      "Two target blocked creatures assign their combat damage this turn as though they had trample.",
+      "Two target blocked creatures assign their combat damage next turn as though they weren't blocked."
+    ]
+  },
+  {
+    "id": "sta.edhd25.permit.block.asThoughUntapped",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1a",
+      "CR 609.4"
+    ],
+    "pattern": "{f:Filter} can block as though they were untapped",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "blockAsThough",
+      "asThough": "as though they were untapped",
+      "of": "$f"
+    },
+    "consumes": [
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Tapped Giants you control can block as though they were untapped."
+      },
+      {
+        "text": "Tapped Elves you control can block as though they were untapped."
+      }
+    ],
+    "counterExamples": [
+      "Tapped creatures you control can attack as though they were untapped.",
+      "Tapped creatures you control can block as though they had flying.",
+      "Tapped creatures you control can block as though they weren't tapped and have haste."
+    ]
+  },
+  {
+    "id": "sta.edhd25.aslong.grant.mustBeBlockedBy",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 509.1c"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} has {a:Abilities} and must be blocked by ( a | an ) {f:Filter} if able",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "beBlocked",
+          "other": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "must",
+      "if able",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "As long as equipped creature is attacking, it has deathtouch and must be blocked by a Dalek if able."
+      },
+      {
+        "text": "As long as ~ is tapped, it has deathtouch and must be blocked by an Elf if able."
+      }
+    ],
+    "counterExamples": [
+      "As long as equipped creature is attacking, it has deathtouch and must be blocked if able.",
+      "As long as equipped creature is attacking, it has first strike and must be blocked by two or more Daleks if able.",
+      "As long as equipped creature is attacking, it loses first strike and must be blocked by a Dalek if able.",
+      "As long as equipped creature is attacking, it has first strike and must block a Dalek if able."
+    ]
+  },
+  {
+    "id": "sta.edhd25.group.cantBlock.cantAttackYou",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 506.2"
+    ],
+    "pattern": "{f:Filter} can't block , and they can't attack you or planeswalkers you control",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "block"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "attack",
+          "other": {
+            "types": [
+              "Planeswalker"
+            ],
+            "controller": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Giants your opponents control can't block, and they can't attack you or planeswalkers you control."
+      },
+      {
+        "text": "Creatures with flying can't block, and they can't attack you or planeswalkers you control."
+      }
+    ],
+    "counterExamples": [
+      "Creatures with flying can't block, and they can't attack you.",
+      "Creatures with flying can't block, and they can't attack you or planeswalkers you control unless their controller pays {1} for each of those creatures.",
+      "Creatures with flying can't block you, and they can't attack you or planeswalkers you control.",
+      "Creatures with flying can block, and they can't attack you or planeswalkers you control."
+    ]
+  },
+  {
+    "id": "eff.edhd25.toughnessDamage.untilEot",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1a",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "until end of turn , {o:Obj} assigns combat damage equal to its toughness rather than its power",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "combatDamageUsesToughness",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "{1}{G}: Until end of turn, target creature you control assigns combat damage equal to its toughness rather than its power."
+      },
+      {
+        "text": "{1}: Until end of turn, target creature assigns combat damage equal to its toughness rather than its power."
+      }
+    ],
+    "counterExamples": [
+      "{1}{G}: Until end of turn, target creature you control assigns combat damage equal to its power rather than its toughness.",
+      "{1}{G}: Until your next turn, target creature you control assigns combat damage equal to its toughness rather than its power.",
+      "{1}{G}: Until end of turn, target creature you control deals combat damage equal to its toughness rather than its power."
+    ]
+  },
+  {
+    "id": "eff.edhd25.lasting.group.attackEachCombat",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 506.1"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} attack each combat if able",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "if",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Until your next turn, creatures your opponents control attack each combat if able."
+      },
+      {
+        "text": "Until your next turn, Goblins you control attack each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, creatures your opponents control block each combat if able.",
+      "Until your next turn, creatures your opponents control attack each combat.",
+      "Until your next turn, creatures your opponents control attack you each combat if able.",
+      "Creatures your opponents control attack each combat if able until your next turn."
+    ]
+  }
+]

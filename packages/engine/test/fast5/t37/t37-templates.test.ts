@@ -85,9 +85,11 @@ describe('T37 lowering: what the shapes mean', () => {
     expect((trg!['trigger'] as { on: unknown[] }).on).toEqual([{ ev: 'becomes', what: 'monstrous', object: { self: true } }]);
     expect(automated(f.abilities)).toBe(true);
   });
-  it('CR 701.37c: a trigger that reads the X of "monstrosity X" stays manual (a trigger has no X of its own)', () => {
+  it('CR 701.37c: the "becomes monstrous" trigger of the permanent itself reads the X of "monstrosity X" (edh-perms-16: the event carries it); any other trigger has no X of its own and stays manual', () => {
     const f = face('Creature — Hydra', '{X}{X}{G}: Monstrosity X.\nWhen ~ becomes monstrous, you gain X life.');
-    expect(automated(f.abilities)).toBe(false);
+    expect(automated(f.abilities)).toBe(true);
+    const other = face('Creature — Hydra', '{X}{X}{G}: Monstrosity X.\nWhenever ~ attacks, you gain X life.');
+    expect(automated(other.abilities)).toBe(false);
   });
   it('CR 601.2h, 614.1c: converge is an enters replacement counting the colors of mana spent (`colorsSpent`) on the spell that became the permanent', () => {
     const f = face('Creature — Avatar', '~ enters with a +1/+1 counter on it for each color of mana spent to cast it.');
@@ -132,9 +134,12 @@ describe('T37 lowering: what the shapes mean', () => {
     expect(abilities(f)[1]).toMatchObject({ kind: 'triggered', zone: ['graveyard'], trigger: { on: [{ ev: 'action', verb: 'cycle', actor: 'you', object: { self: true } }] } });
     expect(automated(f.abilities)).toBe(true);
   });
-  it('CR 113.6k: a cycling trigger whose effect names the card itself stays manual (the card is not where it was)', () => {
+  it('CR 113.6k: a cycling trigger whose effect names the card itself: the card in the graveyard it went to (read since edh-d-98, Yidaro)', () => {
     const f = face('Creature — Bird', 'Cycling {2}{U}\nWhen you cycle ~, return it to the battlefield.');
-    expect(automated(f.abilities)).toBe(false);
+    // combined copy: edh-d-98 (Yidaro, Wandering Monster) reads it: the trigger works from the graveyard the cycled card went to, and "it" is that card there (CR 702.29, 113.6k)
+    expect(automated(f.abilities)).toBe(true);
+    expect(JSON.stringify(f.abilities)).toContain('"what":{"ref":"event","role":"subject"}');
+    expect(JSON.stringify(f.abilities)).toContain('"zone":["graveyard"]');
   });
   it('CR 122.1, 603.2: heroic - "put a +1/+1 counter on it" after "a spell that targets ~" is ~ itself, not the spell', () => {
     const f = face('Creature — Centaur', 'Whenever you cast a spell that targets ~, put a +1/+1 counter on it.');

@@ -1,0 +1,772 @@
+[
+  {
+    "id": "eff.edhz13.search.upTo.cardsDesc.eachDifferentNames.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 201.2"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:CardsDesc} that each have different names , reveal them",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "min": 0,
+      "max": "$n",
+      "differentNames": true,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, search your library for up to three Wizard cards not named Seer of Sails that each have different names, reveal them, put them into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for up to two land cards that each have different names, reveal them, put them into your hand, then shuffle. You lose 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two land cards that each have the same name, reveal them, put them into your hand, then shuffle.",
+      "Search your library for up to two land cards not named Forest, reveal them, put them into your hand, then shuffle.",
+      "Search your library for two land cards that each have different names, reveal it, put it into your hand, then shuffle."
+    ],
+    "consumes": [
+      "up to",
+      "each",
+      "different"
+    ]
+  },
+  {
+    "id": "eff.edhz13.dig.eachCardType.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.2a",
+      "CR 608.2d",
+      "CR 701.20e",
+      "CR 401.4"
+    ],
+    "pattern": "for each card type , you may put a card of that type from among {g:Seen} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen",
+        "eachCardType": true
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top eight cards of your library. For each card type, you may put a card of that type from among them into your hand. Put the rest into your graveyard."
+      },
+      {
+        "text": "Reveal the top six cards of your library. For each card type, you may put a card of that type from among the revealed cards into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top eight cards of your library. For each color, you may put a card of that color from among them into your hand. Put the rest into your graveyard.",
+      "Look at the top eight cards of your library. For each card type, you may exile a card of that type from among them. Put the rest into your graveyard.",
+      "Look at the top eight cards of your library. For each card type, put a card of that type from among them into your hand. Put the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhz13.dig.mayPut.bf.tappedAttacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 508.4",
+      "CR 400.7"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card from among {g:Seen} onto the battlefield tapped and attacking",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true,
+          "attacking": true
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may put an Elf creature card from among them onto the battlefield tapped and attacking. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top five cards of your library. You may put an artifact creature card from among them onto the battlefield tapped and attacking. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may put an Elf creature card from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may put an Elf creature card from among them onto the battlefield attacking. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may put an Elf creature card from among them into your hand tapped and attacking. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhz13.dig.anyNumber.hand.rest.graveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4"
+    ],
+    "pattern": "put any number of {f:CardsDesc} from among {g:Seen} into your hand and {r:Rest} into your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "graveyard"
+        },
+        "as": "rest"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. Put any number of artifact cards from among them into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Reveal the top four cards of your library. Put any number of Elf cards from among them into your hand and the rest into your graveyard. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. Put any number of artifact cards from among them into your hand and the rest on the bottom of your library.",
+      "Look at the top five cards of your library. Put an artifact card from among them into your hand and the rest into your graveyard.",
+      "Look at the top five cards of your library. Put any number of artifact cards from among them onto the battlefield and the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhz13.search.exactly.cardsDesc.differentNames",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23d",
+      "CR 201.2",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library for exactly {n:Qty} {f:CardsDesc} that have different names",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "min": "$n",
+      "max": "$n",
+      "differentNames": true,
+      "as": "found"
+    },
+    "subject": "none",
+    "consumes": [
+      "different"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for exactly two cards not named Seer of Sails that have different names. Reveal those cards. An opponent chooses one of them. Put the chosen card into your hand and the other into your graveyard, then shuffle."
+      },
+      {
+        "text": "Search your library for exactly three artifact cards that have different names. Reveal those cards. An opponent chooses two of them. Put the chosen cards into your graveyard and the rest onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two artifact cards that have different names. Reveal those cards. An opponent chooses one of them. Put the chosen card into your hand and the other into your graveyard, then shuffle.",
+      "Search your library for exactly two artifact cards that have the same name. Reveal those cards. An opponent chooses one of them. Put the chosen card into your hand and the other into your graveyard, then shuffle.",
+      "Search target player's library for exactly two artifact cards that have different names. Reveal those cards. An opponent chooses one of them. Put the chosen card into your hand and the other into your graveyard, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhz13.reveal.found",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.23a",
+      "CR 608.2c"
+    ],
+    "pattern": "reveal {g:Found} $",
+    "build": {
+      "op": "reveal",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$g"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for exactly two artifact cards that have different names. Reveal those cards. An opponent chooses one of them. Put the chosen card into your hand and the other into your graveyard, then shuffle."
+      },
+      {
+        "text": "Search your library for exactly three land cards that have different names. Reveal them. Put them onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for exactly two artifact cards that have different names. Reveal the top card of your library. An opponent chooses one of them.",
+      "Reveal those cards.",
+      "Look at the top three cards of your library. Reveal those cards."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhz13.putChosenCard.hand.restGraveyard.shuffle",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 701.24a"
+    ],
+    "pattern": "put the chosen card into your hand and {r:Rest} into your graveyard , then shuffle",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "object",
+            "number": "singular",
+            "head": "card",
+            "participle": "chosen",
+            "text": "the chosen card"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "graveyard"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "chosen",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for exactly two artifact cards that have different names. Reveal those cards. An opponent chooses one of them. Put the chosen card into your hand and the other into your graveyard, then shuffle."
+      },
+      {
+        "text": "Search your library for exactly three land cards that have different names. Reveal those cards. An opponent chooses one of them. Put the chosen card into your hand and the rest into your graveyard, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for exactly two artifact cards that have different names. Reveal those cards. An opponent chooses one of them. Put the chosen card into your graveyard and the other into your hand, then shuffle.",
+      "Search your library for exactly two artifact cards that have different names. Reveal those cards. An opponent chooses one of them. Put the chosen card into your hand and the other on the bottom of your library, then shuffle.",
+      "Put the chosen card into your hand and the other into your graveyard, then shuffle."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhz13.search.andOr.reveal.oneTapped.otherHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards and/or {g:Filter} cards , reveal ( them | those cards ) , put one onto the battlefield tapped and the other into your hand , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {
+          "anyOf": [
+            "$f",
+            "$g"
+          ]
+        },
+        "min": 0,
+        "max": "$n",
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "kept"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "kept"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "kept"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "other",
+      "then",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to two basic land cards and/or Cave cards, reveal them, put one onto the battlefield tapped and the other into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for up to three basic land cards and/or Desert cards, reveal those cards, put one onto the battlefield tapped and the other into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two basic land cards or Cave cards, reveal them, put one onto the battlefield tapped and the other into your hand, then shuffle.",
+      "Search your library for up to two basic land cards and/or Cave cards, reveal them, put one onto the battlefield and the other into your hand, then shuffle.",
+      "Search your library for up to two basic land cards and/or Cave cards, put one onto the battlefield tapped and the other into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "sta.edhz13.selfAndEnchanted.pump.whereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 107.3",
+      "CR 303.4"
+    ],
+    "pattern": "~ and enchanted creature each get +x/+x , where x is {q:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "self"
+          },
+          {
+            "ref": "attachedTo"
+          }
+        ]
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": "$q",
+          "toughness": "$q"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Bestow {3}{G}\nThis creature and enchanted creature each get +X/+X, where X is the number of artifacts you control."
+      },
+      {
+        "text": "Bestow {2}{U}\nThis creature and enchanted creature each get +X/+X, where X is the number of Islands you control."
+      }
+    ],
+    "counterExamples": [
+      "Bestow {3}{G}\nThis creature and enchanted creature each get +X/+X until end of turn, where X is the number of artifacts you control.",
+      "Bestow {3}{G}\nThis creature and enchanted creature each get +X/+0, where X is the number of artifacts you control.",
+      "Bestow {3}{G}\nThis creature and equipped creature each get +X/+X, where X is the number of artifacts you control."
+    ]
+  },
+  {
+    "id": "eff.edhz13.dig.put.descCard.milled.bf.control",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "put {f:DiscardDesc} from among {g:Milled} onto the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Each player mills four cards. Put a creature card with an even mana value from among the milled cards onto the battlefield under your control."
+      },
+      {
+        "text": "Each player mills three cards. Put an artifact card with mana value 2 or less from among the milled cards onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "Each player mills four cards. Put a creature card with an even mana value from among the milled cards into your hand.",
+      "Each player mills four cards. Put a creature card with an even mana value from among the milled cards onto the battlefield.",
+      "Each player mills four cards. Put up to two creature cards with an even mana value from among the milled cards onto the battlefield under your control."
+    ]
+  },
+  {
+    "id": "eff.edhz13.shuffle.thenRevealUntil",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 401.1",
+      "CR 608.2c"
+    ],
+    "pattern": "shuffle your library , then reveal cards from the top of it until you reveal {f:DiscardDesc}",
+    "build": [
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "revealUntil",
+        "who": {
+          "ref": "you"
+        },
+        "filter": "$f",
+        "as": "hit",
+        "revealed": "revealed"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Shuffle your library, then reveal cards from the top of it until you reveal a land card. Put that card into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Whenever ~ attacks, shuffle your library, then reveal cards from the top of it until you reveal a nonland card. Put that card into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal a land card. Put that card into your hand and the rest on the bottom of your library in a random order.",
+      "Shuffle your library, then reveal cards from the top of your library until you reveal a land card. Put that card into your hand and the rest on the bottom of your library in a random order.",
+      "Shuffle your library, then exile cards from the top of it until you exile a land card. Put that card into your hand and the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhz13.may.putThat.bottom.thatPlayersLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 400.3"
+    ],
+    "pattern": "you may put {o:Obj} on the bottom of {p:Player} 's library",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "library",
+            "owner": "$p",
+            "position": "bottom"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top card of target player's library. You may put that card on the bottom of that player's library."
+      },
+      {
+        "text": "Look at the top card of target opponent's library. You may put that card on the bottom of that player's library. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top card of target player's library. You may put that card on top of that player's library.",
+      "Look at the top card of target player's library. You may put that card into that player's graveyard.",
+      "Look at the top card of target player's library. Put that card on the bottom of that player's library."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhz13.exileLibrary.thenShuffleHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 401.3",
+      "CR 701.24a",
+      "CR 608.2c"
+    ],
+    "pattern": "exile all cards from {p:Player} 's library , then that player shuffles their hand into their library",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "library",
+            "owner": "$p"
+          }
+        },
+        "to": {
+          "zone": "exile"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "owner": "$p"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Exile all cards from target player's library, then that player shuffles their hand into their library."
+      },
+      {
+        "text": "Exile all cards from target opponent's library, then that player shuffles their hand into their library. You gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Exile all cards from target player's graveyard, then that player shuffles their hand into their library.",
+      "Exile all cards from target player's library, then that player shuffles their graveyard into their library.",
+      "Exile all cards from target player's library, then you shuffle your hand into your library."
+    ]
+  }
+]

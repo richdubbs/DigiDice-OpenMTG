@@ -1,0 +1,394 @@
+[
+  {
+    "id": "eff.edhmk8.convokers.connive",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.51a",
+      "CR 702.51c",
+      "CR 701.50a",
+      "CR 608.2c"
+    ],
+    "pattern": "each creature that convoked ~ connives",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "convokers"
+      },
+      "as": "eachConvoker",
+      "do": [
+        {
+          "op": "action",
+          "action": "connive",
+          "who": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "bound",
+              "name": "eachConvoker"
+            }
+          },
+          "subject": {
+            "ref": "bound",
+            "name": "eachConvoker"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "needs": [
+      "action:connive",
+      "ref:convokers"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target creature. Each creature that convoked this spell connives."
+      },
+      {
+        "text": "Each creature that convoked this spell connives. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control connives.",
+      "Each creature that convoked this spell connives twice.",
+      "Target creature that convoked this spell connives.",
+      "Each creature that crewed this spell connives."
+    ]
+  },
+  {
+    "id": "eff.edhmk8.exile.exceptConvokerTypes",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.51a",
+      "CR 205.3m",
+      "CR 608.2c",
+      "CR 406.2"
+    ],
+    "pattern": "exile all creatures except those that share a creature type with a creature that convoked ~ , all artifacts , and all enchantments",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            {
+              "types": [
+                "Creature"
+              ],
+              "not": {
+                "sharesWith": {
+                  "with": {
+                    "ref": "convokers"
+                  },
+                  "quality": "creatureType"
+                }
+              }
+            },
+            {
+              "types": [
+                "Artifact"
+              ]
+            },
+            {
+              "types": [
+                "Enchantment"
+              ]
+            }
+          ]
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "except"
+    ],
+    "needs": [
+      "ref:convokers"
+    ],
+    "examples": [
+      {
+        "text": "Exile all creatures except those that share a creature type with a creature that convoked this spell, all artifacts, and all enchantments. You gain 2 life."
+      },
+      {
+        "text": "Draw a card. Exile all creatures except those that share a creature type with a creature that convoked this spell, all artifacts, and all enchantments."
+      }
+    ],
+    "counterExamples": [
+      "Exile all creatures except those that share a creature type with a creature that convoked this spell.",
+      "Exile all creatures except those that share a creature type with a creature that convoked this spell, all artifacts, and all lands.",
+      "Exile all creatures except those that share a color with a creature that convoked this spell, all artifacts, and all enchantments."
+    ]
+  },
+  {
+    "id": "sta.edhmk8.costMod.firstEquip.free",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 602.2b",
+      "CR 601.2f",
+      "CR 118.9",
+      "CR 702.6a"
+    ],
+    "pattern": "you may pay ( {0} | nothing ) rather than pay the equip cost of the first equip ability you activate each turn",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "kind": "activated",
+              "keyword": "equip"
+            },
+            "caster": "you",
+            "firstEachTurn": true
+          },
+          "change": {
+            "kind": "set",
+            "mana": []
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than",
+      "first",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You may pay nothing rather than pay the equip cost of the first equip ability you activate each turn."
+      },
+      {
+        "text": "Equipped creatures get +1/+1.\nYou may pay nothing rather than pay the equip cost of the first equip ability you activate each turn."
+      }
+    ],
+    "counterExamples": [
+      "You may pay {1} rather than pay the equip cost of the first equip ability you activate each turn.",
+      "You may pay nothing rather than pay the equip cost of each equip ability you activate.",
+      "You may pay nothing rather than pay the equip cost of the first equip ability you activate during each of your turns.",
+      "You may pay nothing rather than pay the crew cost of the first crew ability you activate each turn."
+    ]
+  },
+  {
+    "id": "sta.edhmk8.costMod.firstEquip.free.yourTurns",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 602.2b",
+      "CR 601.2f",
+      "CR 118.9",
+      "CR 702.6a"
+    ],
+    "pattern": "you may pay ( {0} | nothing ) rather than pay the equip cost of the first equip ability you activate during each of your turns",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "kind": "activated",
+              "keyword": "equip"
+            },
+            "caster": "you",
+            "firstEachTurn": "yourTurns"
+          },
+          "change": {
+            "kind": "set",
+            "mana": []
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than",
+      "first",
+      "during",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You may pay nothing rather than pay the equip cost of the first equip ability you activate during each of your turns."
+      },
+      {
+        "text": "Equipped creatures get +1/+1.\nYou may pay nothing rather than pay the equip cost of the first equip ability you activate during each of your turns."
+      }
+    ],
+    "counterExamples": [
+      "You may pay {1} rather than pay the equip cost of the first equip ability you activate during each of your turns.",
+      "You may pay nothing rather than pay the equip cost of the first equip ability you activate each turn.",
+      "You may pay nothing rather than pay the equip cost of the first equip ability you activate during each opponent's turn.",
+      "You may pay nothing rather than pay the equip cost of each equip ability you activate during each of your turns."
+    ]
+  },
+  {
+    "id": "sta.edhmk8.permit.equipAsInstant",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.6a",
+      "CR 602.5d",
+      "CR 117.1a",
+      "CR 611.3a"
+    ],
+    "pattern": "during your turn , you may activate equip abilities ( any time | at any time ) you could cast an instant",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "activateEquipAsInstant"
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "may",
+      "any time"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, you may activate equip abilities at any time you could cast an instant."
+      },
+      {
+        "text": "Equipped creatures get +1/+1.\nDuring your turn, you may activate equip abilities at any time you could cast an instant."
+      }
+    ],
+    "counterExamples": [
+      "You may activate equip abilities at any time you could cast an instant.",
+      "During your turn, you may activate equip abilities at any time you could cast a sorcery.",
+      "During your turn, you may activate crew abilities at any time you could cast an instant.",
+      "During each opponent's turn, you may activate equip abilities at any time you could cast an instant."
+    ]
+  },
+  {
+    "id": "rid.edhmk8.mana.monocoloredChosen",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 105.2",
+      "CR 608.2c"
+    ],
+    "pattern": "spend this mana only to cast monocolored spells of that color",
+    "build": {
+      "$patchPrevious": {
+        "restriction": {
+          "spells": {
+            "monocolored": true,
+            "chosen": {
+              "link": "color",
+              "quality": "color"
+            }
+          }
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "only"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add two mana of the chosen color. Spend this mana only to cast monocolored spells of that color."
+      },
+      {
+        "text": "{T}: Add three mana of the chosen color. Spend this mana only to cast monocolored spells of that color."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add four mana of the chosen color. Spend this mana only to cast monocolored spells.",
+      "{T}: Add four mana of the chosen color. Spend this mana only to cast multicolored spells of that color.",
+      "{T}: Add four mana of the chosen color. Spend this mana only to cast creature spells of that color."
+    ]
+  },
+  {
+    "id": "eff.edhmk8.thenIf.removeAllCounters.and",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 603.4"
+    ],
+    "pattern": "then if it has {n:Qty} or more {k:CounterKind} counters on it , remove all of them and {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "counters": {
+            "kind": "$k",
+            "cmp": {
+              "op": ">=",
+              "value": "$n"
+            }
+          }
+        }
+      },
+      "then": {
+        "$concat": [
+          {
+            "op": "removeCounters",
+            "from": {
+              "ref": "self"
+            },
+            "kind": "$k",
+            "count": "all"
+          },
+          "$e"
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Put a night counter on ~. Then if it has eight or more night counters on it, remove all of them and draw a card."
+      },
+      {
+        "text": "At the beginning of your upkeep, put a night counter on this artifact. Then if it has eight or more night counters on it, remove all of them and draw a card."
+      },
+      {
+        "text": "At the beginning of your upkeep, put a charge counter on this artifact. Then if it has three or more charge counters on it, remove all of them and create a Treasure token."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, put a night counter on this artifact. Then if it has eight or more night counters on it, remove all of them.",
+      "At the beginning of your upkeep, put a night counter on this artifact. Then if it has eight or more night counters on it, remove two of them and draw a card.",
+      "At the beginning of your upkeep, put a night counter on this artifact. Then if it has eight night counters on it, remove all of them and draw a card.",
+      "At the beginning of your upkeep, put a night counter on this artifact. Then if it has eight or more night counters on it, remove all of them instead and draw a card."
+    ]
+  }
+]

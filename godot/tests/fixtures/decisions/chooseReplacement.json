@@ -1,0 +1,21 @@
+{
+  "id": "d14",
+  "player": "p1",
+  "prompt": "Choose which replacement effect applies first.",
+  "rules": [
+    "CR 616.1"
+  ],
+  "kind": "chooseReplacement",
+  "options": [
+    {
+      "id": "r1",
+      "label": "Rest in Peace: exile it instead",
+      "klass": 4
+    },
+    {
+      "id": "r2",
+      "label": "Leyline of the Void: exile it instead",
+      "klass": 4
+    }
+  ]
+}

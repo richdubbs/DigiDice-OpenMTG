@@ -1,0 +1,260 @@
+[
+  {
+    "id": "eff.edhv78.itis.colorSubtype.basept.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 105.3",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b",
+      "CR 611.2b"
+    ],
+    "pattern": "{o:ItIs} ( a | an ) {c:Color} {st:Subtypes} with base power and toughness {pt:BasePT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "base"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Tap target creature. It's a green Dinosaur with base power and toughness 5/5 for as long as it remains tapped."
+      },
+      {
+        "text": "Whenever ~ attacks, tap target creature. It's a blue Octopus with base power and toughness 2/2 for as long as it remains tapped."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Tap target creature. It's a green Dinosaur with base power and toughness 5/5 in addition to its other types for as long as it remains tapped.",
+      "{T}: Tap target creature. It's a green Dinosaur creature with base power and toughness 5/5 for as long as it remains tapped.",
+      "{T}: Tap target creature. It's a green Dinosaur with base power 5 for as long as it remains tapped."
+    ]
+  },
+  {
+    "id": "eff.edhv78.damage.anyCreature.mayRedirectToYou.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 614.9",
+      "CR 614.1a",
+      "CR 616.1",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "{d:Dur} , if damage would be dealt to any creature , you may have that damage dealt to you instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "optional": true,
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "types": [
+                  "Creature"
+                ]
+              }
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": {
+              "ref": "you"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Until end of turn, if damage would be dealt to any creature, you may have that damage dealt to you instead."
+      },
+      {
+        "text": "{2}{W}: Until end of turn, if damage would be dealt to any creature, you may have that damage dealt to you instead."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, if damage would be dealt to any creature, you may have that damage dealt to an opponent instead.",
+      "Until end of turn, if damage would be dealt to any creature, that damage is dealt to you instead.",
+      "Until end of turn, if damage would be dealt to any player, you may have that damage dealt to you instead."
+    ]
+  },
+  {
+    "id": "eff.edhv78.put.bf.underYourControl.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 110.2a"
+    ],
+    "pattern": "put {o:Obj} onto the battlefield under your control if {c:Cond}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      },
+      "guard": "$c"
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Put target creature card from a graveyard onto the battlefield under your control if its mana value is 3 or less."
+      },
+      {
+        "text": "{2}, {T}: Put target creature card from an opponent's graveyard onto the battlefield under your control if its mana value is less than or equal to the number of Allies you control."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Put target creature card from a graveyard onto the battlefield under your control unless its mana value is 3 or less.",
+      "{T}: Put target creature card from a graveyard onto the battlefield under its owner's control if its mana value is 3 or less.",
+      "{T}: Put target creature card from a graveyard onto the battlefield under your control if its mana value is 3 or less instead."
+    ]
+  },
+  {
+    "id": "sta.edhv78.hexproofWaiver.opponents",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.11b",
+      "CR 702.11c",
+      "CR 115.1",
+      "CR 604.1",
+      "CR 609.4"
+    ],
+    "pattern": "your opponents and {f:Filter} can be the targets of spells and abilities you control as though they didn't have hexproof",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "targetableThroughHexproof",
+          "of": "$f",
+          "ofPlayers": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "player": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "not",
+      "as though"
+    ],
+    "needs": [
+      "feature:rulemod.targetableThroughHexproof.players",
+      "feature:rulemod.targetableThroughHexproof.player"
+    ],
+    "examples": [
+      {
+        "text": "Your opponents and creatures your opponents control can be the targets of spells and abilities you control as though they didn't have hexproof."
+      },
+      {
+        "text": "Your opponents and artifacts your opponents control with hexproof can be the targets of spells and abilities you control as though they didn't have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "Your opponents and creatures your opponents control can be the targets of spells and abilities your opponents control as though they didn't have hexproof.",
+      "Your opponents and creatures your opponents control can be the targets of spells and abilities you control as though they didn't have shroud.",
+      "You and creatures you control can be the targets of spells and abilities you control as though they didn't have hexproof."
+    ]
+  },
+  {
+    "id": "rep.edhv78.each.filter.entersTapped",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12"
+    ],
+    "pattern": "each {f:Filter} enters tapped",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each creature enters tapped."
+      },
+      {
+        "text": "Each artifact enters tapped."
+      }
+    ],
+    "counterExamples": [
+      "Each creature your opponents control enters untapped.",
+      "Each creature your opponents control enters tapped and attacking.",
+      "Each creatures your opponents control enters tapped."
+    ]
+  }
+]

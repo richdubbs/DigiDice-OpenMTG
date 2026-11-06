@@ -73,7 +73,7 @@ describe('T67 template file (design 6.3, 6.9; CONTRIBUTING "Adding a template")'
 });
 
 /** Templates of another package with the same pattern and build (one reading, whichever matches first). */
-const TWIN_TEMPLATES: Record<string, readonly string[]> = { 'eff.t67.emblem': ['eff.e27.emblem.you'] };
+const TWIN_TEMPLATES: Record<string, readonly string[]> = { 'eff.t67.emblem': ['eff.e27.emblem.you'], 'eff.t67.token.forEach.counterOnSelf': ['eff.moved.token.forEach.qty'] /* r4-moved: its Qty hole reads "counter on ~" too, to the same JSON */ };
 
 describe('T67 guard G9 (design 6.8): examples and counter-examples', () => {
   for (const t of T67) {

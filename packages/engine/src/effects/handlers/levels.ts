@@ -24,6 +24,8 @@ import { becomePrepared, becomeUnprepared, hasPrepareSpell } from '../../core/pr
 import { bindAs, did, permanentsOf } from './zones-util';
 import { ruleDenial } from '../../statics/hooks';
 import { plottedTurn, PLOTTED_KEY } from '../../core/special/plot';
+import { FORETELL_LESS_KEY, FORETOLD_KEY } from '../../core/special/foretell';
+import { performExiledSeers } from '../perform-direct';
 import { resolveObjs } from '../refs';
 import { WARPED_KEY } from '../../rules/filter';
 
@@ -37,6 +39,8 @@ export const OP_FORMS: readonly string[] = [
   'op:designateObject.unlockDoor', 'op:designateObject.lockOrUnlockDoor', // FAST5X E8 (CR 709.5f-g, effects/handlers/rooms.ts)
   'op:designateObject.harnessed', // cloud r3-mech (CR 701.64)
   'op:designateObject.plotted', // r5-fxb (CR 702.170c-d): an effect makes a card in exile plotted
+  'op:designateObject.foretold', // edh-next-109 (CR 702.143a): "It becomes foretold" after an exile face down
+  'op:designateObject.foretold.less', // edh-d-86 (CR 702.143a, 118.9; Ethereal Valkyrie): "Its foretell cost is its mana cost reduced by {2}" (FORETELL_LESS_KEY)
   'op:designateObject.warped', // std-costs-2 (CR 702.185a): the card warp's delayed triggered ability exiled is a warped card
 ];
 
@@ -44,6 +48,7 @@ const designateObject: StepHandler<Step> = (cx, st) => {
   const g = cx.g;
   if (st.designation === 'plotted') return plotByEffect(cx, st);
   if (st.designation === 'warped') return warpedByEffect(cx, st);
+  if (st.designation === 'foretold') return foretoldByEffect(cx, st);
   const done = permanentsOf(cx, st.what).filter((h) => {
     const o = g.s.objects[h.id];
     if (!o || o.phasedOut) return false; // a phased-out permanent is treated as though it doesn't exist (CR 702.26b)
@@ -134,6 +139,27 @@ function plotByEffect(cx: Parameters<StepHandler<Step>>[0], st: Step): ReturnTyp
     o.chosen = { ...(o.chosen ?? {}), [PLOTTED_KEY]: g.s.turn.number };
     g.emit({ type: 'objectDesignation', objectId: o.id, what: 'plotted' }); // "When this card becomes plotted" (CR 702.170a, 603.2; triggers/forms-plot.ts)
     g.log(`${g.nameOf(o.id)} becomes plotted: its owner may cast it without paying its mana cost on a later turn.`, { rules: ['CR 702.170c', 'CR 702.170d'], level: 'action' });
+    return true;
+  });
+  bindAs(cx, st.as, done);
+  return did(done.length);
+}
+
+/**
+ * edh-next-109 (CR 702.143d, 406.3, 400.7; The Foretold Soldier, Ethereal Valkyrie): "Exile it face down. It becomes foretold.": a card in exile that is face down (the one
+ * the effect just exiled) is foretold from this turn on (`chosen.foretold` = this turn, the mark the foretell special action sets, so it may be cast for its foretell cost on a later
+ * turn, actions/cast-opt/foretell.ts). A card that is not face down in exile, a token, or an object a replacement effect put elsewhere does not become foretold (ruling
+ * 2021-02-05: foretell needs the card exiled face down); a card already foretold keeps the turn it first became so.
+ */
+function foretoldByEffect(cx: Parameters<StepHandler<Step>>[0], st: Step): ReturnType<StepHandler<Step>> {
+  const g = cx.g;
+  const done = resolveObjs(cx, st.what).filter((h) => {
+    const o = g.s.objects[h.id];
+    if (!o || o.zone !== 'exile' || h.zone !== 'exile' || o.kind !== 'card' || !o.faceDown) return false;
+    if (o.chosen?.[FORETOLD_KEY] !== undefined) return false;
+    o.chosen = { ...(o.chosen ?? {}), [FORETOLD_KEY]: g.s.turn.number, ...(st.foretellLess !== undefined ? { [FORETELL_LESS_KEY]: st.foretellLess } : {}) }; // edh-d-86: and the foretell cost the effect gives it
+    performExiledSeers(g, [o.id], [o.owner]); // CR 702.143d, 406.3: only its owner may look at it
+    g.log(`${g.nameOf(o.id)} becomes foretold: its owner may cast it for its foretell cost on a later turn.`, { rules: ['CR 702.143d'], level: 'action', privateText: { players: [o.owner], text: `${g.nameOf(o.id)} becomes foretold.` } });
     return true;
   });
   bindAs(cx, st.as, done);

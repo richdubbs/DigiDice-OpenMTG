@@ -22,6 +22,7 @@ import type { GameObject, GameState, PendingTrigger } from '../types/state';
 import type { AutomationLevel } from '../types/automation';
 import { DEF_PREFIX, DUNGEONS, UNDERCITY, dungeonByName, dungeonInCommand, dungeonOfObject, type Dungeon } from './dungeon-data';
 import type { Game } from './game';
+import { extraRoomTriggers } from '../statics/hooks';
 import { freshObject } from './zones';
 
 export * from './dungeon-data';
@@ -62,6 +63,8 @@ function triggerRoom(g: Game, o: GameObject, d: Dungeon, room: number): void {
     inline: { ...r.ability, zone: ['command'] } as AbilityDef,
   };
   g.s.pendingTriggers.push(t);
+  // edh-next-75 (CR 603.2d; Hama Pashar, Dungeon Delver): the room ability triggers an additional time for each such rule of the dungeon's owner
+  for (let i = extraRoomTriggers(g.s, o.owner); i > 0; i--) g.s.pendingTriggers.push({ ...t, id: `t${g.s.counters.effect++}` });
   g.log(`${g.player(o.owner).name}'s venture marker moves into ${r.name} (${d.name}): ${r.text}`, { rules: ['CR 309.4c', 'CR 701.49'], level: 'action' });
 }
 

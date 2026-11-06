@@ -1,0 +1,179 @@
+[
+ {
+  "id": "rst.edhc4.opponents.cantBlockWith.filter",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 604.1",
+   "CR 509.1b",
+   "CR 101.2"
+  ],
+  "pattern": "your opponents can't block with {f:Filter}",
+  "build": {
+   "s": "restrict",
+   "subject": {
+    "ref": "each",
+    "filter": {
+     "controller": "opponent",
+     "anyOf": [
+      "$f"
+     ]
+    }
+   },
+   "mode": "cant",
+   "action": "block"
+  },
+  "consumes": [
+   "can't"
+  ],
+  "examples": [
+   {
+    "text": "Your opponents can't block with creatures with odd mana values."
+   },
+   {
+    "text": "Your opponents can't block with green creatures."
+   }
+  ],
+  "counterExamples": [
+   "Your opponents can't block with creatures with odd mana values this turn.",
+   "Your opponents can block with creatures with odd mana values.",
+   "Your opponents can't be blocked by creatures with odd mana values."
+  ]
+ },
+ {
+  "id": "prm.edhc4.anyPlayer.haveFlash",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 601.3b",
+   "CR 702.8a",
+   "CR 609.4"
+  ],
+  "pattern": "any player may cast {f:Filter} as though they had flash",
+  "build": {
+   "s": "permit",
+   "who": {
+    "ref": "each",
+    "who": "player"
+   },
+   "action": "haveFlash",
+   "of": "$f"
+  },
+  "consumes": [
+   "any",
+   "may",
+   "as though"
+  ],
+  "examples": [
+   {
+    "text": "Any player may cast Elf spells as though they had flash."
+   },
+   {
+    "text": "Any player may cast red creature spells as though they had flash."
+   }
+  ],
+  "counterExamples": [
+   "You may cast Elf spells as though they had flash.",
+   "Any player may cast Elf spells as though they had haste.",
+   "Any player may cast Elf spells from their graveyard as though they had flash."
+  ]
+ },
+ {
+  "id": "sta.edhc4.aslong.top.play.cards",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 305.1",
+   "CR 601.3",
+   "CR 401.5",
+   "CR 611.3a",
+   "CR 604.1"
+  ],
+  "pattern": "as long as {c:Cond} , you may play cards from the top of your library",
+  "build": {
+   "kind": "static",
+   "condition": "$c",
+   "effects": [
+    {
+     "s": "permit",
+     "who": {
+      "ref": "you"
+     },
+     "action": "play",
+     "fromTop": true
+    }
+   ]
+  },
+  "consumes": [
+   "as long as",
+   "may"
+  ],
+  "examples": [
+   {
+    "text": "As long as you control a Forest, you may play cards from the top of your library."
+   },
+   {
+    "text": "As long as you control two or more artifacts, you may play cards from the top of your library."
+   }
+  ],
+  "counterExamples": [
+   "As long as you control a Forest, you may play cards from your graveyard.",
+   "As long as you control a Forest, you may play cards from the top of target player's library.",
+   "As long as you control a Forest, your opponents may play cards from the top of your library."
+  ]
+ },
+ {
+  "id": "cm.edhc4.spells.less.you.colored.only",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 601.2f",
+   "CR 118.7",
+   "CR 604.1"
+  ],
+  "pattern": "{f:Filter} you cast cost {m:ColoredManaCost} less to cast . this effect reduces only the amount of ( colored | white | blue | black | red | green ) mana you pay",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "battlefield"
+   ],
+   "effects": [
+    {
+     "s": "costMod",
+     "applies": {
+      "spells": "$f",
+      "caster": "you"
+     },
+     "change": {
+      "kind": "reduce",
+      "mana": "$m",
+      "floor": "zero",
+      "coloredOnly": true
+     }
+    }
+   ]
+  },
+  "priority": 2,
+  "consumes": [
+   "only"
+  ],
+  "examples": [
+   {
+    "text": "Goblin spells you cast cost {R} less to cast. This effect reduces only the amount of red mana you pay."
+   },
+   {
+    "text": "Creature spells you cast cost {W}{U} less to cast. This effect reduces only the amount of colored mana you pay."
+   }
+  ],
+  "counterExamples": [
+   "Goblin spells you cast cost {R} less to cast.",
+   "Goblin spells you cast cost {R} less to cast. This effect reduces only the amount of generic mana you pay.",
+   "Goblin spells you cast cost {1} less to cast. This effect reduces only the amount of colored mana you pay.",
+   "Goblin spells you cast cost {R} less to cast. This effect reduces only the amount of colored mana you pay this turn."
+  ]
+ }
+]

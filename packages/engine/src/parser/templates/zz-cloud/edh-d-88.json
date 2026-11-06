@@ -1,0 +1,657 @@
+[
+  {
+    "id": "sta.edhd88.ifOppCreatureAttacks.allAttack",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 508.1d",
+      "CR 506.4"
+    ],
+    "pattern": "if a creature an opponent controls attacks, all creatures that opponent controls attack if able",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "controller": "opponent"
+        }
+      },
+      "mode": "mustIfAble",
+      "action": "attack",
+      "allIfAny": true
+    },
+    "consumes": [
+      "if",
+      "all",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "If a creature an opponent controls attacks, all creatures that opponent controls attack if able."
+      },
+      {
+        "text": "At the beginning of your upkeep, you gain 1 life.\nIf a creature an opponent controls attacks, all creatures that opponent controls attack if able."
+      }
+    ],
+    "counterExamples": [
+      "If a creature an opponent controls attacks, all creatures that opponent controls block if able.",
+      "If a creature an opponent controls attacks, all creatures that opponent controls attack.",
+      "If a creature you control attacks, all creatures you control attack if able.",
+      "If a creature an opponent controls blocks, all creatures that opponent controls block if able."
+    ]
+  },
+  {
+    "id": "eff.edhd88.dig.mayPut.bf.tappedAttackingPlayer",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 508.4",
+      "CR 400.7"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card from among {g:Seen} onto the battlefield tapped and attacking {p:Player}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true,
+          "attacking": {
+            "defender": "$p"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks a player, look at the top six cards of your library. You may put an Elf creature card from among them onto the battlefield tapped and attacking that player. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Whenever ~ attacks a player, look at the top four cards of your library. You may put an artifact creature card from among them onto the battlefield tapped and attacking that player. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks a player, look at the top six cards of your library. You may put an Elf creature card from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order.",
+      "Whenever ~ attacks a player, look at the top six cards of your library. You may put an Elf creature card from among them onto the battlefield attacking that player. Put the rest on the bottom of your library in a random order.",
+      "Whenever ~ attacks a player, look at the top six cards of your library. Put an Elf creature card from among them onto the battlefield tapped and attacking that player. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhd88.cast.fromHandOrGraveyard.payLifeMv",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 608.2g"
+    ],
+    "pattern": "you may cast ( a | an ) {f:Filter} from your hand or graveyard by paying life equal to its mana value rather than paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": "$f.types",
+                "allTypes": "$f.allTypes",
+                "notTypes": "$f.notTypes",
+                "subtypes": "$f.subtypes",
+                "notSubtypes": "$f.notSubtypes",
+                "supertypes": "$f.supertypes",
+                "notSupertypes": "$f.notSupertypes",
+                "colors": "$f.colors",
+                "notColors": "$f.notColors",
+                "colorless": "$f.colorless",
+                "multicolored": "$f.multicolored",
+                "keyword": "$f.keyword",
+                "notKeyword": "$f.notKeyword",
+                "name": "$f.name",
+                "notName": "$f.notName",
+                "power": "$f.power",
+                "toughness": "$f.toughness",
+                "manaValue": "$f.manaValue"
+              }
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "zone": [
+              "hand",
+              "graveyard"
+            ],
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "costChange": {
+          "kind": "set",
+          "life": "manaValue"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "rather than",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may cast an enchantment spell from your hand or graveyard by paying life equal to its mana value rather than paying its mana cost."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may cast an artifact spell from your hand or graveyard by paying life equal to its mana value rather than paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may cast an enchantment spell from your hand by paying life equal to its mana value rather than paying its mana cost.",
+      "Whenever ~ attacks, you may cast an enchantment spell from your hand or graveyard without paying its mana cost.",
+      "Whenever ~ attacks, you may cast an enchantment spell from your hand or graveyard by paying life equal to its power rather than paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhd88.player.losesGame.ifOwnsExiledWithCounters",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 104.3e",
+      "CR 122.1",
+      "CR 406.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} loses the game if they own {n:Qty} or more exiled cards with {k:CounterKind} counters on them",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "zone": "exile",
+            "owner": "$p",
+            "isCard": true,
+            "counters": {
+              "kind": "$k"
+            }
+          }
+        },
+        "atLeast": "$n"
+      },
+      "then": [
+        {
+          "op": "loseGame",
+          "who": "$p"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "or more"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, exile target creature that player controls and put a mark counter on that card. That player loses the game if they own four or more exiled cards with mark counters on them."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, put a mark counter on target card in that player's graveyard and exile it. That player loses the game if they own three or more exiled cards with mark counters on them."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, exile target creature that player controls and put a mark counter on that card. That player loses the game if they own four or more exiled cards.",
+      "Whenever ~ deals combat damage to a player, exile target creature that player controls and put a mark counter on that card. That player loses the game if they control four or more creatures with mark counters on them.",
+      "Whenever ~ deals combat damage to a player, exile target creature that player controls and put a mark counter on that card. That player loses 4 life if they own four or more exiled cards with mark counters on them."
+    ]
+  },
+  {
+    "id": "eff.edhd88.spellsFromExile.thisTurn.costLess.whereX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 611.2a",
+      "CR 608.2h",
+      "CR 601.2a"
+    ],
+    "pattern": "spells you cast from exile this turn cost {x} less to cast , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "endOfTurn"
+          },
+          "effects": [
+            {
+              "s": "costMod",
+              "applies": {
+                "spells": {
+                  "castFrom": "exile"
+                },
+                "caster": "you"
+              },
+              "change": {
+                "kind": "reduce",
+                "generic": {
+                  "q": "X"
+                },
+                "floor": "zero"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "less",
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack, spells you cast from exile this turn cost {X} less to cast, where X is the number of attacking creatures."
+      },
+      {
+        "text": "When ~ enters, spells you cast from exile this turn cost {X} less to cast, where X is the number of opponents you have."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack, spells you cast from your hand this turn cost {X} less to cast, where X is the number of attacking creatures.",
+      "Whenever you attack, spells you cast from exile this turn cost {X} more to cast, where X is the number of attacking creatures.",
+      "Whenever you attack, spells your opponents cast from exile this turn cost {X} less to cast, where X is the number of attacking creatures."
+    ]
+  },
+  {
+    "id": "eff.edhd88.reselect.player",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.7",
+      "CR 508.7a",
+      "CR 508.7b",
+      "CR 508.7c"
+    ],
+    "pattern": "you may reselect which player {o:Obj} is attacking",
+    "build": {
+      "op": "reselectAttack",
+      "what": "$o",
+      "playersOnly": true
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{1}{R}: Put a +1/+1 counter on ~, then you may reselect which player ~ is attacking. Activate only during combat."
+      },
+      {
+        "text": "Whenever ~ becomes blocked, you may reselect which player target attacking creature is attacking."
+      }
+    ],
+    "counterExamples": [
+      "{1}{R}: Put a +1/+1 counter on ~, then you may reselect which player or permanent ~ is attacking. Activate only during combat.",
+      "{1}{R}: Put a +1/+1 counter on ~, then reselect which player ~ is attacking. Activate only during combat.",
+      "{1}{R}: Put a +1/+1 counter on ~, then you may reselect which player ~ is blocking. Activate only during combat."
+    ]
+  },
+  {
+    "id": "eff.edhd88.thosePlayersSacrifice.revealTopPutPermanent",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2e",
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 110.1"
+    ],
+    "pattern": "those players sacrifice {o:Them} . each player who sacrificed a permanent this way reveals the top card of their library , then puts it onto the battlefield if it's a permanent card",
+    "build": [
+      {
+        "op": "sacrifice",
+        "what": "$o",
+        "byControllers": true,
+        "as": "sacd"
+      },
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "controllerOf",
+          "object": {
+            "ref": "bound",
+            "name": "sacd"
+          }
+        },
+        "as": "p",
+        "do": [
+          {
+            "op": "reveal",
+            "who": {
+              "ref": "iterating"
+            },
+            "what": {
+              "ref": "topCards",
+              "player": {
+                "ref": "iterating"
+              },
+              "count": 1
+            },
+            "as": "rev"
+          },
+          {
+            "op": "if",
+            "cond": {
+              "cond": "matches",
+              "object": {
+                "ref": "bound",
+                "name": "rev"
+              },
+              "filter": {
+                "types": [
+                  "Artifact",
+                  "Battle",
+                  "Creature",
+                  "Enchantment",
+                  "Land",
+                  "Planeswalker"
+                ],
+                "isCard": true
+              }
+            },
+            "then": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "rev"
+                },
+                "to": {
+                  "zone": "battlefield",
+                  "controller": {
+                    "ref": "iterating"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "if",
+      "this way",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, for each player, choose target creature that player controls. Those players sacrifice those creatures. Each player who sacrificed a permanent this way reveals the top card of their library, then puts it onto the battlefield if it's a permanent card."
+      },
+      {
+        "text": "When ~ enters, for each player, choose target artifact that player controls. Those players sacrifice those artifacts. Each player who sacrificed a permanent this way reveals the top card of their library, then puts it onto the battlefield if it's a permanent card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, for each player, choose target creature that player controls. Those players sacrifice those creatures. Each player who sacrificed a permanent this way reveals the top card of their library, then puts it into their hand if it's a permanent card.",
+      "Whenever ~ deals combat damage to a player, for each player, choose target creature that player controls. Those players sacrifice those creatures. Each player who sacrificed a permanent this way reveals the top card of their library, then puts it onto the battlefield if it's a creature card.",
+      "Whenever ~ deals combat damage to a player, for each player, choose target creature that player controls. Those players exile those creatures. Each player who sacrificed a permanent this way reveals the top card of their library, then puts it onto the battlefield if it's a permanent card."
+    ]
+  },
+  {
+    "id": "eff.edhd88.manifestDread.twoCounterKinds",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.62a",
+      "CR 701.40a",
+      "CR 608.2c",
+      "CR 122.1"
+    ],
+    "pattern": "manifest dread , then put {n:Qty} {k:CounterKind} counter[s] and {m:Qty} {j:CounterKind} counter[s] on that creature",
+    "build": [
+      {
+        "op": "action",
+        "action": "manifestDread",
+        "who": {
+          "ref": "you"
+        },
+        "as": "dread"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "dread"
+        },
+        "kind": "$k",
+        "count": "$n"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "dread"
+        },
+        "kind": "$j",
+        "count": "$m"
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:manifestDread"
+    ],
+    "consumes": [
+      "and",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, manifest dread, then put a +1/+1 counter and a flying counter on that creature."
+      },
+      {
+        "text": "{4}{G}: Manifest dread, then put three +1/+1 counters and a reach counter on that creature. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, manifest dread, then put a +1/+1 counter and a flying counter on target creature.",
+      "When ~ enters, manifest dread, then put a +1/+1 counter or a flying counter on that creature.",
+      "When ~ enters, manifest, then put a +1/+1 counter and a flying counter on that creature."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhd88.instructionChoice.turnFaceUpOrCounter",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.40g",
+      "CR 708.8",
+      "CR 122.1"
+    ],
+    "pattern": "turn {o:Obj} face up or put {n:Qty} {k:CounterKind} counter[s] on it",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "options": [
+          "first",
+          "second"
+        ],
+        "as": "instructionChoice",
+        "link": "instructionChoice"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "instructionChoice",
+          "equals": "first"
+        },
+        "then": [
+          {
+            "op": "changeFace",
+            "what": "$o",
+            "to": "faceUp"
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "instructionChoice",
+          "equals": "second"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k",
+            "count": "$n"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control attacks, turn that creature face up or put a +1/+1 counter on it."
+      },
+      {
+        "text": "Whenever a creature you control becomes blocked, turn that creature face up or put two +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control deals combat damage to a player, turn that creature face up and put a +1/+1 counter on it.",
+      "Whenever a creature you control deals combat damage to a player, turn that creature face down or put a +1/+1 counter on it.",
+      "Whenever a creature you control deals combat damage to a player, turn that creature face up or put a +1/+1 counter on target creature."
+    ]
+  },
+  {
+    "id": "eff.edhd88.obj.attacksDuringControllersNextCombat",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 611.2a",
+      "CR 500.8"
+    ],
+    "pattern": "{o:Obj} attacks during its controller 's next combat phase if able",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "duringNextCombat",
+        "whose": {
+          "ref": "controllerOf",
+          "object": "$o"
+        }
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "during",
+      "next",
+      "if",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a land you control enters, target creature an opponent controls attacks during its controller's next combat phase if able."
+      },
+      {
+        "text": "When ~ enters, target creature attacks during its controller's next combat phase if able."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a land you control enters, target creature an opponent controls attacks during its controller's next turn if able.",
+      "Whenever a land you control enters, target creature an opponent controls blocks during its controller's next combat phase if able.",
+      "Whenever a land you control enters, target creature an opponent controls attacks during your next combat phase if able."
+    ]
+  }
+]

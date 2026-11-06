@@ -1,0 +1,7 @@
+# edh-top-8 (Commander lane edh-top): play lands and cast spells from among a group of exiled cards (also for free), an option actor named by "they", an opponent choosing a nonland card exiled this way and casting two of the others, "as long as you have sacrificed ... you may play cards exiled with ~", separating a player's permanents into piles. After editing: npm run cards -- fixtures
+Elder Brain
+Gix, Yawgmoth Praetor
+Plargg and Nassari
+Evendo Brushrazer
+Mnemonic Betrayal
+Invert Polarity

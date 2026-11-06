@@ -1,0 +1,179 @@
+[
+  {
+    "id": "sta.edhn13.obj.isLegendary",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.4a",
+      "CR 604.1",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:Obj} is legendary",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "add": [
+              "Legendary"
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchanted artifact is legendary."
+      },
+      {
+        "text": "Enchanted land is legendary."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted artifact is nonlegendary.",
+      "Enchanted artifact is legendary until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhn13.group.areLegendary",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.4a",
+      "CR 604.1",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:Objs} are legendary",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "add": [
+              "Legendary"
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "All artifacts are legendary."
+      },
+      {
+        "text": "Creatures you control are legendary."
+      }
+    ],
+    "counterExamples": [
+      "All nonland permanents are nonlegendary.",
+      "All nonland permanents are legendary until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn13.durFirst.basept.allTypes.gains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} has base power and toughness {pt:BasePT} , gains all creature types , and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "all": true
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control has base power and toughness 2/2, gains all creature types, and gains trample and haste."
+      },
+      {
+        "text": "Until end of turn, target creature has base power and toughness 3/5, gains all creature types, and gains reach."
+      }
+    ],
+    "counterExamples": [
+      "Target creature has base power and toughness 4/4, gains all creature types, and gains flying.",
+      "Until end of turn, target creature has base power and toughness 4/4, gains all creature types, and loses flying.",
+      "Until end of turn, target creature gets +4/+4, gains all creature types, and gains flying."
+    ]
+  },
+  {
+    "id": "sta.edhn13.obj.cantBeTargeted.twoColorSpells.byOpponents",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 115.1",
+      "CR 101.2",
+      "CR 105.1"
+    ],
+    "pattern": "{o:Obj} can't be the target of {c1:Color} or {c2:Color} spells your opponents control",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beTargeted",
+      "other": {
+        "stackKind": "spell",
+        "colors": [
+          "$c1",
+          "$c2"
+        ],
+        "controller": "opponent"
+      }
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature can't be the target of white or blue spells your opponents control."
+      },
+      {
+        "text": "Equipped creature can't be the target of green or red spells your opponents control."
+      }
+    ],
+    "counterExamples": [
+      "This creature can't be the target of black or red spells you control.",
+      "This creature can't be the target of black or red abilities your opponents control.",
+      "This creature can't be the target of black spells your opponents control."
+    ]
+  }
+]

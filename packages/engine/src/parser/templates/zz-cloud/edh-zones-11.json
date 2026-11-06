@@ -1,0 +1,363 @@
+[
+  {
+    "id": "eff.edhz11.dig.rest.theirGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 404.1",
+      "CR 400.3"
+    ],
+    "pattern": "put {r:Rest} into their graveyard",
+    "build": [
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, look at the top four cards of target opponent's library, exile one of them face down, then put the rest into their graveyard."
+      },
+      {
+        "text": "{T}: Look at the top three cards of target player's library, exile one of them face down, then put the rest into their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, look at the top four cards of target opponent's library, exile one of them face down, then put the rest into their hand.",
+      "When ~ enters, look at the top four cards of target opponent's library, exile one of them face down, then put the rest into your graveyard in a random order.",
+      "Put the rest into their graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhz11.dig.exileNOfThem",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "exile {n:Qty} of {g:Seen}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, look at the top four cards of your library. Exile one of those cards and put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "When ~ enters, look at the top five cards of target opponent's library, exile two of them, then put the rest into their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, look at the top four cards of your library. Exile up to one of those cards and put the rest on the bottom of your library in a random order.",
+      "At the beginning of your upkeep, look at the top four cards of your library. Exile one of those cards face up and put the rest on the bottom of your library in a random order.",
+      "At the beginning of your upkeep, look at the top four cards of your library. Exile one of those cards. Put the rest on the top of your library in a random order."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhz11.dig.mayReveal.anyNumber.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4"
+    ],
+    "pattern": "you may reveal any number of {f:CardsDesc} from among {g:Seen} and put {o:Objs} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "may",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, look at the top five cards of your library. You may reveal any number of artifact cards from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may reveal any number of land cards from among them and put the revealed cards into your hand. Put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, look at the top five cards of your library. You may reveal any number of artifact cards from among them and put the revealed cards onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "When ~ enters, look at the top five cards of your library. You may reveal two artifact cards from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in a random order.",
+      "When ~ enters, look at the top five cards of your library. You must reveal any number of artifact cards from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhz11.dig.exileNFaceDown.noOf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 406.3",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "exile {n:Qty} face down",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "set",
+                "number": "plural",
+                "participle": "seen",
+                "text": "them"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Look at the top four cards of your library. Exile one face down and put the rest on the bottom of your library in any order."
+      },
+      {
+        "text": "When ~ enters, look at the top five cards of your library. Exile two face down and put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Look at the top four cards of your library. Exile one and put the rest on the bottom of your library in any order.",
+      "{T}: Look at the top four cards of your library. Exile up to one face down and put the rest on the bottom of your library in any order.",
+      "{T}: Exile one face down and put the rest on the bottom of your library in any order."
+    ]
+  },
+  {
+    "id": "eff.edhz11.permit.cast.obj.durFirst.ifCreature",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 406.3"
+    ],
+    "pattern": "{d:Dur} , you may cast {o:Obj} if it's a creature spell",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "onlyTypes": [
+            "Creature"
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Exile the top card of your library face down. For as long as that card remains exiled, you may cast it if it's a creature spell."
+      },
+      {
+        "text": "When ~ enters, exile the top card of your library face down. For as long as it remains exiled, you may cast that card if it's a creature spell."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile the top card of your library face down. For as long as that card remains exiled, you may cast it if it's a land card.",
+      "{T}: Exile the top card of your library face down. For as long as that card remains exiled, you may cast it if it's an instant spell.",
+      "{T}: Exile the top card of your library face down. For as long as that card remains exiled, you may cast it."
+    ]
+  },
+  {
+    "id": "eff.edhz11.exileTop.thenPutOneFromAmong.control",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 701.13a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "exile the top {n:Qty} cards of {p:Player} 's library , then put ( a | an ) {f:Filter} card from among them onto the battlefield under your control",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "topCards",
+          "player": "$p",
+          "count": "$n"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "exiled"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "exiled"
+            },
+            "zone": "exile"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, exile the top six cards of that player's library, then put a land card from among them onto the battlefield under your control."
+      },
+      {
+        "text": "{T}: Exile the top four cards of target opponent's library, then put an artifact card from among them onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, exile the top six cards of that player's library, then put a land card from among them onto the battlefield.",
+      "Whenever ~ deals combat damage to a player, exile the top six cards of that player's library, then put up to one land card from among them onto the battlefield under your control.",
+      "Whenever ~ deals combat damage to a player, exile the top six cards of that player's library, then put a land card from among them into your hand."
+    ]
+  }
+]

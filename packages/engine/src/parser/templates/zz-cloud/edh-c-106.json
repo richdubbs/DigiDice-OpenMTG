@@ -1,0 +1,269 @@
+[
+  {
+    "id": "rep.edhv106.enters.counter.forEachOtherSpell",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 601.2i"
+    ],
+    "pattern": "~ enters with ( a | an ) {k:CounterKind} counter on it for each other spell cast this turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "happenedCount",
+                  "event": {
+                    "ev": "cast",
+                    "spell": {
+                      "not": {
+                        "self": true
+                      }
+                    }
+                  },
+                  "scope": "turn"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a charge counter on it for each other spell cast this turn."
+      },
+      {
+        "text": "~ enters with a +1/+0 counter on it for each other spell cast this turn."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a charge counter on it for each spell cast this turn.",
+      "~ enters with a charge counter on it for each other spell you've cast this turn.",
+      "~ enters with a charge counter on it for each other spell cast last turn.",
+      "~ enters with a charge counter on it for each other creature spell cast this turn."
+    ]
+  },
+  {
+    "id": "sta.edhv106.self.blockAsThough.reach",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 609.4",
+      "CR 702.17b",
+      "CR 509.1b"
+    ],
+    "pattern": "~ can block {f:Filter} as though it had reach",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "of": {
+            "self": true
+          },
+          "action": "blockAsThough",
+          "attacker": "$f",
+          "asThough": "as though it had reach"
+        }
+      ]
+    },
+    "consumes": [
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "~ can block Zombies as though it had reach."
+      },
+      {
+        "text": "~ can block Goblins as though it had reach."
+      }
+    ],
+    "counterExamples": [
+      "~ can block Zombies as though it had flying.",
+      "~ can block Zombies as though it didn't have flying.",
+      "~ can block Zombies this turn as though it had reach.",
+      "~ can't block Zombies as though it had reach."
+    ]
+  },
+  {
+    "id": "eff.edhv106.unlessPay.prefix",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 603.1"
+    ],
+    "pattern": "unless you pay {m:ManaCost} , {e:Effects}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "mana": "$m"
+      },
+      "else": "$e"
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, unless you pay {B}{B}{B}, tap ~ and sacrifice a land."
+      },
+      {
+        "text": "At the beginning of your upkeep, unless you pay {2}{U}, sacrifice ~."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, if you pay {B}{B}{B}, tap ~.",
+      "At the beginning of your upkeep, unless you pay {B}{B}{B} tap ~.",
+      "At the beginning of your upkeep, unless it is your turn, tap ~.",
+      "At the beginning of your upkeep, unless an opponent pays {2}, tap ~.",
+      "At the beginning of your upkeep, unless target player pays {2}, tap ~."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv106.loseLife.unlessThatPlayerSacrificeOrDiscard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 118.3",
+      "CR 119.3",
+      "CR 701.21a",
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life unless that player sacrifices ( a | an ) {f:Filter} of their choice or discards a card",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": "$f",
+            "count": 1
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "pay",
+          "who": "$p",
+          "cost": {
+            "other": [
+              {
+                "kind": "discard",
+                "count": 1
+              }
+            ]
+          },
+          "else": [
+            {
+              "op": "loseLife",
+              "who": "$p",
+              "amount": "$n"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent loses 2 life unless that player sacrifices a nonland permanent of their choice or discards a card."
+      },
+      {
+        "text": "Sacrifice a nontoken permanent. If you do, target opponent loses 2 life unless that player sacrifices a permanent of their choice or discards a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent loses 2 life unless that player sacrifices a nonland permanent of their choice and discards a card.",
+      "When ~ enters, target opponent loses 2 life unless you sacrifice a nonland permanent or discard a card.",
+      "When ~ enters, target opponent loses 2 life if that player sacrifices a nonland permanent of their choice or discards a card.",
+      "When ~ enters, target opponent loses 2 life unless that player sacrifices a nonland permanent of their choice or discard a card."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv106.sacrifice.ofOpponentsChoice",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 601.7a"
+    ],
+    "pattern": "sacrifice {n:Qty} {f:Filter} of an opponent 's choice",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "count": "$n",
+      "chooser": {
+        "ref": "anOpponent"
+      }
+    },
+    "consumes": [
+      "opponent"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, sacrifice a land of an opponent's choice."
+      },
+      {
+        "text": "When ~ enters, sacrifice a creature of an opponent's choice."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, sacrifice a land of their choice.",
+      "At the beginning of your upkeep, sacrifice a land of your choice.",
+      "At the beginning of your upkeep, each opponent sacrifices a land of an opponent's choice.",
+      "At the beginning of your upkeep, sacrifice a land at an opponent's choice."
+    ]
+  }
+]

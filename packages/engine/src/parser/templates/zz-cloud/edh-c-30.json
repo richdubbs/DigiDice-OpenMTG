@@ -1,0 +1,382 @@
+[
+ {
+  "id": "eff.edhv30.search.library.named.orName",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 701.23a",
+   "CR 701.23b",
+   "CR 201.2",
+   "CR 608.2c"
+  ],
+  "pattern": "search your library for a card named {a:Name} or {b:Name}",
+  "build": {
+   "op": "search",
+   "who": {
+    "ref": "you"
+   },
+   "zone": "library",
+   "filter": {
+    "anyOf": [
+     {
+      "name": "$a"
+     },
+     {
+      "name": "$b"
+     }
+    ]
+   },
+   "max": 1,
+   "as": "search"
+  },
+  "subject": "none",
+  "examples": [
+   {
+    "text": "{2}, {T}: Search your library for a card named Llanowar Elves or Elvish Mystic, put it onto the battlefield tapped, then shuffle."
+   },
+   {
+    "text": "{3}: Search your library for a card named Shivan Dragon or Fire Imp, put it into your hand, then shuffle."
+   }
+  ],
+  "counterExamples": [
+   "{2}, {T}: Search your library for a card named Llanowar Elves and Elvish Mystic, put it onto the battlefield tapped, then shuffle.",
+   "{2}, {T}: Search your graveyard for a card named Llanowar Elves or Elvish Mystic, put it onto the battlefield tapped.",
+   "{2}, {T}: Search your library for a card not named Llanowar Elves or Elvish Mystic, put it onto the battlefield tapped, then shuffle."
+  ],
+  "weak": 1
+ },
+ {
+  "id": "eff.edhv30.search.library.named.andOrName.reveal",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 701.23a",
+   "CR 701.23b",
+   "CR 701.20a",
+   "CR 201.2",
+   "CR 608.2c"
+  ],
+  "pattern": "search your library for a card named {a:Name} and/or a card named {b:Name} , reveal them",
+  "build": {
+   "op": "search",
+   "who": {
+    "ref": "you"
+   },
+   "zone": "library",
+   "filter": {
+    "anyOf": [
+     {
+      "name": "$a"
+     },
+     {
+      "name": "$b"
+     }
+    ]
+   },
+   "min": 0,
+   "max": 2,
+   "differentNames": true,
+   "reveal": true,
+   "as": "search"
+  },
+  "subject": "none",
+  "examples": [
+   {
+    "text": "When ~ enters, you may search your library for a card named Llanowar Elves and/or a card named Elvish Mystic, reveal them, put them into your hand, then shuffle."
+   },
+   {
+    "text": "Search your library for a card named Shivan Dragon and/or a card named Fire Imp, reveal them, put them into your hand, then shuffle."
+   }
+  ],
+  "counterExamples": [
+   "Search your library for a card named Shivan Dragon and a card named Fire Imp, reveal them, put them into your hand, then shuffle.",
+   "Search your graveyard for a card named Shivan Dragon and/or a card named Fire Imp, reveal them, put them into your hand.",
+   "Search your library for a card named Shivan Dragon and/or a card named Fire Imp, reveal it, put it into your hand, then shuffle."
+  ],
+  "weak": 1
+ },
+ {
+  "id": "eff.edhv30.search.libraryAndOrGraveyard.named.reveal.hand",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 701.23a",
+   "CR 701.23b",
+   "CR 701.23d",
+   "CR 701.20a",
+   "CR 201.2",
+   "CR 608.2c"
+  ],
+  "pattern": "search your library and/or graveyard for a card named {n:Name} , reveal it , then put it into your hand",
+  "build": [
+   {
+    "op": "search",
+    "who": {
+     "ref": "you"
+    },
+    "zone": "library",
+    "alsoZones": [
+     "graveyard"
+    ],
+    "filter": {
+     "name": "$n"
+    },
+    "max": 1,
+    "reveal": true,
+    "as": "search"
+   },
+   {
+    "op": "move",
+    "what": {
+     "ref": "bound",
+     "name": "search"
+    },
+    "to": {
+     "zone": "hand"
+    }
+   }
+  ],
+  "subject": "none",
+  "needs": [
+   "op:search.alsoZones"
+  ],
+  "examples": [
+   {
+    "text": "When ~ enters, you may search your library and/or graveyard for a card named Shivan Dragon, reveal it, then put it into your hand. If you search your library this way, shuffle."
+   },
+   {
+    "text": "Search your library and/or graveyard for a card named Llanowar Elves, reveal it, then put it into your hand. If you search your library this way, shuffle."
+   }
+  ],
+  "counterExamples": [
+   "Search your library or graveyard for a card named Shivan Dragon, reveal it, then put it into your hand. If you search your library this way, shuffle.",
+   "Search your library and/or graveyard for a card not named Shivan Dragon, reveal it, then put it into your hand. If you search your library this way, shuffle.",
+   "Search your library and/or graveyard for a card named Shivan Dragon, reveal it, then put it onto the battlefield. If you search your library this way, shuffle."
+  ],
+  "consumes": [
+   "then"
+  ]
+ },
+ {
+  "id": "eff.edhv30.damage.eachFilter.ifSpent.andEachFilter.ifSpent",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 601.2h",
+   "CR 106.1",
+   "CR 120.3",
+   "CR 608.2c"
+  ],
+  "pattern": "{src:Obj} deal[s] {n:Qty} damage to {r1:Recipient} if {c1:Cond} and {m:Qty} damage to {r2:Recipient} if {c2:Cond}",
+  "build": [
+   {
+    "op": "damage",
+    "source": "$src",
+    "to": "$r1",
+    "amount": "$n",
+    "guard": "$c1"
+   },
+   {
+    "op": "damage",
+    "source": "$src",
+    "to": "$r2",
+    "amount": "$m",
+    "guard": "$c2"
+   }
+  ],
+  "subject": "object",
+  "consumes": [
+   "if"
+  ],
+  "examples": [
+   {
+    "text": "~ deals 3 damage to each creature without flying if {R} was spent to cast this spell and 3 damage to each creature with flying if {G} was spent to cast this spell."
+   },
+   {
+    "text": "~ deals 2 damage to each creature with flying if {U} was spent to cast this spell and 4 damage to each creature without flying if {B} was spent to cast this spell."
+   }
+  ],
+  "counterExamples": [
+   "~ deals 3 damage to each creature without flying if {R} was spent to cast this spell or 3 damage to each creature with flying if {G} was spent to cast this spell.",
+   "~ deals 3 damage to each creature without flying unless {R} was spent to cast this spell and 3 damage to each creature with flying if {G} was spent to cast this spell.",
+   "~ deals 3 damage to each creature without flying and 3 damage to each creature with flying if {G} was spent to cast this spell."
+  ]
+ },
+ {
+  "id": "eff.edhv30.player.cant.playLands.ifSpent.cantCast.ifSpent",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 601.2h",
+   "CR 106.1",
+   "CR 305.2",
+   "CR 601.3",
+   "CR 611.2a"
+  ],
+  "pattern": "{p:Player} can't play lands {d1:Dur} if {c1:Cond} and can't cast {f:Filter} {d2:Dur} if {c2:Cond}",
+  "build": [
+   {
+    "op": "effect",
+    "duration": "$d1",
+    "effects": [
+     {
+      "s": "restrict",
+      "subject": "$p",
+      "mode": "cant",
+      "action": "playLand"
+     }
+    ],
+    "guard": "$c1"
+   },
+   {
+    "op": "effect",
+    "duration": "$d2",
+    "effects": [
+     {
+      "s": "restrict",
+      "subject": "$p",
+      "mode": "cant",
+      "action": "cast",
+      "other": "$f"
+     }
+    ],
+    "guard": "$c2"
+   }
+  ],
+  "subject": "player",
+  "consumes": [
+   "if",
+   "can't"
+  ],
+  "examples": [
+   {
+    "text": "Target player can't play lands this turn if {R} was spent to cast this spell and can't cast creature spells this turn if {W} was spent to cast this spell."
+   },
+   {
+    "text": "Target opponent can't play lands this turn if {U} was spent to cast this spell and can't cast artifact spells this turn if {B} was spent to cast this spell."
+   }
+  ],
+  "counterExamples": [
+   "Target player can't play lands this turn if {R} was spent to cast this spell or can't cast creature spells this turn if {W} was spent to cast this spell.",
+   "Target player can't play lands this turn and can't cast creature spells this turn if {W} was spent to cast this spell.",
+   "Target player can't play lands this turn unless {R} was spent to cast this spell and can't cast creature spells this turn if {W} was spent to cast this spell."
+  ]
+ },
+ {
+  "id": "eff.edhv30.player.discards.chosen.thenRandom",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 701.9a",
+   "CR 701.9b",
+   "CR 608.2c"
+  ],
+  "pattern": "{p:Player} discard[s] {o:ChosenCard} , then discard[s] {n:Qty} card[s] at random",
+  "build": [
+   {
+    "op": "discard",
+    "who": "$p",
+    "count": 1,
+    "filter": {
+     "is": "$o"
+    }
+   },
+   {
+    "op": "discard",
+    "who": "$p",
+    "count": "$n",
+    "mode": "random"
+   }
+  ],
+  "subject": "player",
+  "examples": [
+   {
+    "text": "Target player reveals their hand. You choose a creature card from it. That player discards that card, then discards a card at random."
+   },
+   {
+    "text": "Look at target opponent's hand. You may choose an instant card from it. Target opponent discards that card, then discards two cards at random."
+   }
+  ],
+  "counterExamples": [
+   "Target player reveals their hand. You choose a creature card from it. That player discards that card, then discards a card.",
+   "Target player reveals their hand. You choose a creature card from it. That player discards that card and discards a card at random.",
+   "That player discards that card, then discards a card at random."
+  ],
+  "consumes": [
+   "random",
+   "then"
+  ]
+ },
+ {
+  "id": "eff.edhv30.draw.thenPutBottom",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 121.1",
+   "CR 401.4",
+   "CR 608.2c"
+  ],
+  "pattern": "draw {n:Qty} card[s] , then put {m:Qty} card[s] from your hand on the bottom of your library",
+  "build": [
+   {
+    "op": "draw",
+    "who": {
+     "ref": "you"
+    },
+    "count": "$n"
+   },
+   {
+    "op": "chooseObjects",
+    "who": {
+     "ref": "you"
+    },
+    "from": {
+     "ref": "each",
+     "filter": {
+      "zone": "hand",
+      "owner": "you"
+     }
+    },
+    "min": "$m",
+    "max": "$m",
+    "as": "back"
+   },
+   {
+    "op": "move",
+    "what": {
+     "ref": "bound",
+     "name": "back"
+    },
+    "to": {
+     "zone": "library",
+     "position": "bottom"
+    }
+   }
+  ],
+  "subject": "none",
+  "examples": [
+   {
+    "text": "When ~ enters, draw four cards, then put three cards from your hand on the bottom of your library."
+   },
+   {
+    "text": "When ~ enters, draw three cards, then put two cards from your hand on the bottom of your library."
+   }
+  ],
+  "counterExamples": [
+   "When ~ enters, draw two cards, then put two cards from your hand on top of your library.",
+   "When ~ enters, draw two cards, then put two cards from your graveyard on the bottom of your library.",
+   "When ~ enters, draw two cards, then put two cards from your hand on the bottom of your library in any order."
+  ],
+  "consumes": [
+   "then"
+  ],
+  "weak": 1
+ }
+]

@@ -1,0 +1,518 @@
+[
+  {
+    "id": "eff.edhn134.dur.gainControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 613.1b",
+      "CR 108.4"
+    ],
+    "pattern": "{d:Dur} , gain control of {o:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, gain control of target artifact."
+      },
+      {
+        "text": "Until end of turn, gain control of target creature with mana value 2 or less an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, lose control of target creature.",
+      "Until end of turn, gain control of target creature unless its controller pays {3}.",
+      "Gain control of target creature."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhn134.whileHere.alsoGoaded",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.15a",
+      "CR 701.15b",
+      "CR 611.2b",
+      "CR 611.2a"
+    ],
+    "pattern": "as long as ~ remains on the battlefield , {o:Obj} is also goaded",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "whileSource",
+        "as": "onBattlefield"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack",
+          "goad": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "as long as",
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, tap target creature an opponent controls. As long as ~ remains on the battlefield, that creature is also goaded."
+      },
+      {
+        "text": "When ~ enters, put a -1/-1 counter on target creature an opponent controls. As long as ~ remains on the battlefield, that creature is also goaded."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, tap target creature an opponent controls. As long as ~ remains tapped, that creature is also goaded.",
+      "When ~ enters, tap target creature an opponent controls. As long as ~ remains on the battlefield, that creature is also tapped.",
+      "When ~ enters, tap target creature an opponent controls. That creature is goaded."
+    ]
+  },
+  {
+    "id": "eff.edhn134.spellsController.mayChooseNewTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.7d",
+      "CR 115.7e",
+      "CR 701.12a",
+      "CR 608.2c"
+    ],
+    "pattern": "the spell 's controller may choose new targets for it",
+    "build": {
+      "op": "chooseNewTargets",
+      "who": {
+        "ref": "controllerOf",
+        "object": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "object",
+            "number": "singular",
+            "head": "spell",
+            "text": "the spell"
+          }
+        }
+      },
+      "what": {
+        "ref": "bound",
+        "name": "",
+        "$anaphor": {
+          "sort": "object",
+          "number": "singular",
+          "head": "spell",
+          "text": "the spell"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "new"
+    ],
+    "examples": [
+      {
+        "text": "Exchange control of target instant spell and target artifact. Then the spell's controller may choose new targets for it."
+      },
+      {
+        "text": "Exchange control of target sorcery spell and target creature. Then the spell's controller may choose new targets for it."
+      }
+    ],
+    "counterExamples": [
+      "Exchange control of target instant spell and target artifact. Then the spell's owner may choose new targets for it.",
+      "Exchange control of target instant spell and target artifact. Then the spell's controller may choose a new target for it.",
+      "Exchange control of target instant spell and target artifact. Then you may choose new targets for it."
+    ]
+  },
+  {
+    "id": "eff.edhn134.itsControllerChoosesTarget.sharesCardType.exchangeControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.12a",
+      "CR 701.12b",
+      "CR 603.3d",
+      "CR 601.2c",
+      "CR 115.1",
+      "CR 205.2a",
+      "CR 613.1b"
+    ],
+    "pattern": "its controller chooses target permanent another player controls that shares a card type with it . exchange control of those permanents",
+    "build": {
+      "op": "exchange",
+      "what": "control",
+      "a": {
+        "ref": "bound",
+        "name": "",
+        "$anaphor": {
+          "sort": "object",
+          "number": "singular",
+          "text": "it"
+        }
+      },
+      "b": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "object",
+          "min": 1,
+          "max": 1,
+          "text": "target permanent another player controls that shares a card type with it",
+          "chooser": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "object",
+                "number": "singular",
+                "text": "its"
+              }
+            }
+          },
+          "filter": {
+            "not": {
+              "controller": {
+                "ref": "controllerOf",
+                "object": {
+                  "ref": "bound",
+                  "name": "",
+                  "$anaphor": {
+                    "sort": "object",
+                    "number": "singular",
+                    "text": "its"
+                  }
+                }
+              }
+            },
+            "sharesWith": {
+              "with": {
+                "ref": "bound",
+                "name": "",
+                "$anaphor": {
+                  "sort": "object",
+                  "number": "singular",
+                  "text": "it"
+                }
+              },
+              "quality": "cardType"
+            }
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an artifact or creature enters, its controller chooses target permanent another player controls that shares a card type with it. Exchange control of those permanents."
+      },
+      {
+        "text": "Whenever a creature or enchantment enters, its controller chooses target permanent another player controls that shares a card type with it. Exchange control of those permanents."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an artifact or creature enters, its controller chooses target permanent another player controls that shares a creature type with it. Exchange control of those permanents.",
+      "Whenever an artifact or creature enters, its controller chooses target permanent another player controls that shares a card type with it. Destroy those permanents.",
+      "Whenever an artifact or creature enters, you choose target permanent another player controls that shares a card type with it. Exchange control of those permanents."
+    ]
+  },
+  {
+    "id": "eff.edhn134.villainous.sacrificeOrStealAttacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.55a",
+      "CR 701.55b",
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 613.1b",
+      "CR 508.4",
+      "CR 701.26a"
+    ],
+    "pattern": "{p:Player} faces a villainous choice -- that player sacrifices a creature of their choice , or you gain control of a creature of your choice that player controls until end of turn . if you gain control of a creature this way , tap it , and it's attacking that player",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "villainous": true,
+      "do": [
+        {
+          "op": "sacrificeChoice",
+          "who": "$p",
+          "filter": {
+            "types": [
+              "Creature"
+            ]
+          },
+          "count": 1
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "$p"
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "stolen"
+        },
+        {
+          "op": "effect",
+          "duration": {
+            "d": "endOfTurn"
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": {
+                "ref": "bound",
+                "name": "stolen"
+              },
+              "mods": [
+                {
+                  "layer": 2,
+                  "controller": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "op": "tap",
+          "what": {
+            "ref": "bound",
+            "name": "stolen"
+          },
+          "attacking": {
+            "defender": "$p"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "until",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, defending player faces a villainous choice -- That player sacrifices a creature of their choice, or you gain control of a creature of your choice that player controls until end of turn. If you gain control of a creature this way, tap it, and it's attacking that player."
+      },
+      {
+        "text": "Whenever ~ attacks, target opponent faces a villainous choice -- That player sacrifices a creature of their choice, or you gain control of a creature of your choice that player controls until end of turn. If you gain control of a creature this way, tap it, and it's attacking that player."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, defending player faces a villainous choice -- That player sacrifices a creature of their choice, or you gain control of a creature of your choice that player controls. If you gain control of a creature this way, tap it, and it's attacking that player.",
+      "Whenever ~ attacks, defending player faces a villainous choice -- That player sacrifices a creature of their choice, or you gain control of a creature of your choice that player controls until end of turn. If you gain control of a creature this way, tap it.",
+      "Whenever ~ attacks, defending player faces a villainous choice -- That player sacrifices an artifact of their choice, or you gain control of a creature of your choice that player controls until end of turn. If you gain control of a creature this way, tap it, and it's attacking that player."
+    ]
+  },
+  {
+    "id": "eff.edhn134.startingWithYou.eachPlayerChoosesA",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d"
+    ],
+    "pattern": "starting with you , each player chooses ( a | an ) {f:Filter}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "startingWith": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ]
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Starting with you, each player chooses an artifact. Destroy each artifact chosen this way."
+      },
+      {
+        "text": "When ~ enters, starting with you, each player chooses a creature. Exile each creature chosen this way."
+      }
+    ],
+    "counterExamples": [
+      "Starting with you, each player chooses up to one artifact. Destroy each artifact chosen this way.",
+      "Each player chooses an artifact. Destroy each artifact chosen this way.",
+      "Starting with you, each player chooses two artifacts. Destroy each artifact chosen this way."
+    ]
+  },
+  {
+    "id": "eff.edhn134.forEachVote.voterChoosesTheyControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 701.38d",
+      "CR 608.2d",
+      "CR 608.2f",
+      "CR 101.4"
+    ],
+    "pattern": "for each {q:VoteCount} , the voter chooses ( a | an ) {f:Filter} they control",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "votedFor",
+        "votes": "$q"
+      },
+      "as": "voter",
+      "gather": "votedChosen",
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "bound",
+            "name": "voter"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "controller": {
+                "ref": "bound",
+                "name": "voter"
+              }
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "votedChosen"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player votes for grace or taxes. For each taxes vote, the voter chooses a creature they control. Destroy each creature chosen this way."
+      },
+      {
+        "text": "Starting with you, each player votes for aid or profit. For each profit vote, the voter chooses an artifact they control. Exile each artifact chosen this way."
+      }
+    ],
+    "counterExamples": [
+      "Starting with you, each player votes for grace or taxes. For each taxes vote, you choose a creature they control. Destroy each creature chosen this way.",
+      "Starting with you, each player votes for grace or taxes. For each taxes vote, the voter chooses a creature you control. Destroy each creature chosen this way.",
+      "Starting with you, each player votes for grace or taxes. For each taxes vote, the voter chooses two creatures they control. Destroy each creature chosen this way."
+    ]
+  },
+  {
+    "id": "sta.edhn134.cantAttackOwner",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 108.3",
+      "CR 506.3"
+    ],
+    "pattern": "~ can't attack its owner",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "ownerOf",
+            "object": {
+              "ref": "self"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't attack its owner."
+      },
+      {
+        "text": "When ~ enters, you gain 3 life and scry 1.\n~ can't attack its owner."
+      }
+    ],
+    "counterExamples": [
+      "~ can't attack its controller.",
+      "~ can't block its owner.",
+      "~ can't attack."
+    ]
+  }
+]

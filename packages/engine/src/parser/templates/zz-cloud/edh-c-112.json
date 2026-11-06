@@ -1,0 +1,250 @@
+[
+  {
+    "id": "sta.edhv112.enchanted.pump.foreach.counterOnOthers",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 303.4",
+      "CR 122.1"
+    ],
+    "pattern": "enchanted creature gets {pt:PT} for each {k:CounterKind} counter on other creatures you control",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "counters",
+                "on": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you",
+                    "attachedToSource": false
+                  }
+                },
+                "kind": "$k"
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "counters",
+                "on": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you",
+                    "attachedToSource": false
+                  }
+                },
+                "kind": "$k"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "other"
+    ],
+    "priority": 2,
+    "examples": [
+      {
+        "text": "Enchanted creature gets +2/+2 for each +1/+1 counter on other creatures you control."
+      },
+      {
+        "text": "Enchanted creature gets +3/+0 for each +1/+1 counter on other creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +2/+2 for each +1/+1 counter on creatures you control.",
+      "Enchanted creature gets +2/+2 for each +1/+1 counter on other creatures an opponent controls.",
+      "Enchanted creature gets +2/+2 until end of turn for each +1/+1 counter on other creatures you control."
+    ]
+  },
+  {
+    "id": "eff.edhv112.dur.becomes.subtype.basePT.losesAll.gains",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 613.1f",
+      "CR 113.1"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT} , loses all abilities , and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Until end of turn, ~ becomes a Frog with base power and toughness 2/2, loses all abilities, and gains hexproof."
+      },
+      {
+        "text": "{2}: Until end of turn, target creature becomes a Bird with base power and toughness 1/1, loses all abilities, and gains flying."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Until end of turn, ~ becomes a Human with base power and toughness 1/1 and gains hexproof.",
+      "{T}: ~ becomes a Human with base power and toughness 1/1, loses all abilities, and gains hexproof.",
+      "{T}: Until end of turn, ~ becomes a Human with base power and toughness 1/1, loses all abilities, and has hexproof."
+    ]
+  },
+  {
+    "id": "eff.edhv112.obj.hasBasePT.eachEqual.permanent",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Obj} has base power and base toughness each equal to {q:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$q",
+              "toughness": "$q"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "When ~ enters, ~ has base power and base toughness each equal to the number of cards in your graveyard."
+      },
+      {
+        "text": "When ~ enters, ~ has base power and base toughness each equal to the number of lands you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, ~ has base power and base toughness 2/2.",
+      "When ~ enters, ~ has base power each equal to the number of lands you control.",
+      "When ~ enters, ~ has base power and base toughness each equal to the number of lands you control until end of turn."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edhv112.eachPlayer.returnsAll.sameName.graveyard.bf",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2c",
+      "CR 201.2",
+      "CR 400.7",
+      "CR 110.2a"
+    ],
+    "pattern": "each player returns all cards with the same name as {o:Obj} from their graveyard to the battlefield",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": "graveyard",
+          "isCard": true,
+          "sharesWith": {
+            "with": "$o",
+            "quality": "name"
+          }
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player casts an artifact spell, each player returns all cards with the same name as that spell from their graveyard to the battlefield."
+      },
+      {
+        "text": "Whenever you cast a spell, each player returns all cards with the same name as that spell from their graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player casts an artifact spell, each opponent returns all cards with the same name as that spell from their graveyard to the battlefield.",
+      "Whenever a player casts an artifact spell, each player returns all cards with the same name as that spell from their graveyard to their hand.",
+      "Whenever a player casts an artifact spell, each player returns all cards with the same name as that spell from the graveyard to the battlefield."
+    ]
+  }
+]

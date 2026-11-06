@@ -6,6 +6,7 @@
  * Kept apart from trigger-zone.ts (owned by the graveyard-zone work, CR 113.6m) so that the two changes do not touch the same lines. Pure.
  */
 import type { TriggerDef, ZoneName } from '../../types/ability';
+import { castSelfAndBattlefieldEvents } from './trigger-zone';
 
 // CMD2's reading of the text, kept for the other rounds that read a self trigger's text with it (p2-trigger-events-2's selfOffAndOnBattlefield, unmerged): copying
 // or countering the spell and the mana spent to cast it are safe; any other mention of the spell, or a pronoun that may name it, is not
@@ -37,9 +38,12 @@ export function castSelfProgramSafe(program: unknown): boolean {
     // an ability inside the effect (a token's "Sacrifice this creature: Add {C}.", a granted ability) names its own object as `self`, not this spell (CR 113.1c, 113.6)
     if (parent !== null && typeof v['kind'] === 'string' && NESTED_ABILITY_KINDS.has(v['kind'])) return;
     // the cast event's spell is this spell too ("return it to your hand": `{ref:'event', role:'spell'}`), as is the object itself (`{ref:'self'}`)
+    // edh-next-50: the mana spent to cast the event's spell (this spell) names no object it acts on
+    if (key === 'of' && parent !== null && parent['q'] === 'spellManaSpent' && v['ref'] === 'event' && v['role'] === 'spell') return;
     if (v['ref'] === 'self' || (v['ref'] === 'event' && v['role'] === 'spell')) {
       // a copy of the spell on the stack (not a token made from it: Osgood, Operation Double stays manual) or countering it
-      const allowed = key === 'what' && parent !== null && ((parent['op'] === 'copy' && parent['result'] === 'spell') || parent['op'] === 'counter');
+      // edh-next-97 (CR 707.2, 111.1, 603.7c; Osgood, Operation Double): or a token that is a copy of it, made as the ability resolves while the spell is still on the stack (or, if it was countered, from its last known information)
+      const allowed = key === 'what' && parent !== null && ((parent['op'] === 'copy' && (parent['result'] === 'spell' || parent['result'] === 'token')) || parent['op'] === 'counter');
       if (!allowed) safe = false;
       return;
     }
@@ -55,7 +59,15 @@ export function castSelfProgramSafe(program: unknown): boolean {
  * "while" condition of the event)? `away` is what `offBattlefield` said about the trigger (the cast trigger of ~ functions on the stack: `zone` ['stack']). The
  * effect is judged once lowered (castSelfProgramSafe, p2-c-cast-zone-1), by lower/ability.ts#triggered's whole-effect check.
  */
-export function castSelfAutomated(trigger: TriggerDef, away: { zone: ZoneName[] } | null, _rest?: string): boolean {
+export function castSelfAutomated(trigger: TriggerDef, away: { zone: ZoneName[]; castSelfAndBattlefield?: true } | null, _rest?: string): boolean {
+  // edh-perms-13 (CR 113.6k; Cityscape Leveler): the cast event of the spell itself beside events of the permanent that happen on the battlefield only, under the same terms
+  if (away?.castSelfAndBattlefield === true) {
+    const both = castSelfAndBattlefieldEvents(trigger);
+    if (both === null || trigger.batch === true || trigger.first !== undefined || trigger.while !== undefined) return false;
+    const p = both.cast;
+    if (p.ev !== 'cast' || p.player !== 'you' || p.spell === undefined || Object.entries(p.spell).some(([k, v]) => v !== undefined && k !== 'self')) return false;
+    return !(p.orCopy === true || p.nth !== undefined || p.nthMatching !== undefined || p.via !== undefined);
+  }
   if (away === null || away.zone.length !== 1 || away.zone[0] !== 'stack') return false;
   const [p] = trigger.on;
   if (trigger.on.length !== 1 || p === undefined || p.ev !== 'cast' || trigger.batch === true || trigger.first !== undefined || p.player !== 'you') return false;

@@ -1,0 +1,215 @@
+[
+  {
+    "id": "eff.edhd22.mana.oneAndOtherColor",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 106.1",
+      "CR 106.1b",
+      "CR 106.4",
+      "CR 605.1a"
+    ],
+    "pattern": "add {a:Qty} mana of any one color and {b:Qty} mana of any other color",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "anyOneColor",
+        "count": "$a",
+        "otherGroup": "$b"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Add three mana of any one color and one mana of any other color.",
+        "type": "Instant"
+      },
+      {
+        "text": "Add one mana of any one color and three mana of any other color.",
+        "type": "Instant"
+      }
+    ],
+    "counterExamples": [
+      "Add two mana of any one color and two mana of any color.",
+      "Add two mana of any one color and two mana of the same color.",
+      "Add two mana of any color and two mana of any other color."
+    ],
+    "consumes": [
+      "other"
+    ]
+  },
+  {
+    "id": "rid.edhd22.mana.spentEntersWith",
+    "kind": "rider",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 614.1c",
+      "CR 122.1"
+    ],
+    "pattern": "if that mana is spent ( to cast | on ) {f:SpellsCast} , that creature enters with an additional {k:CounterKind} counter on it",
+    "build": {
+      "$patchPrevious": {
+        "rider": {
+          "spells": "$f",
+          "entersWith": [
+            {
+              "kind": "$k",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "needs": [
+      "feature:mana.spentRider.entersWith"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add one mana of any color. If that mana is spent to cast a non-Elf creature spell, that creature enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "{2}, {T}: Add one mana of any color. If that mana is spent on a red creature spell, that creature enters with an additional +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any color. If that mana is spent to cast a creature spell, that creature enters with a +1/+1 counter on it.",
+      "{T}: Add one mana of any color. If that mana is spent to cast a creature spell, that creature enters with two additional +1/+1 counters on it."
+    ]
+  },
+  {
+    "id": "eff.edhd22.mana.choosePlayerAnyColor",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 106.4",
+      "CR 605.3b",
+      "CR 608.2d"
+    ],
+    "pattern": "choose a player . that player adds one mana of any color they choose",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "units": [
+        [
+          "W",
+          "U",
+          "B",
+          "R",
+          "G"
+        ]
+      ],
+      "ofYourChoice": true
+    },
+    "subject": "none",
+    "needs": [
+      "op:addMana.playerOfChoice"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Choose a player. That player adds one mana of any color they choose."
+      },
+      {
+        "text": "{2}, {T}, Sacrifice ~: Choose a player. That player adds one mana of any color they choose."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Choose a player. That player adds one mana of any color.",
+      "{T}: Choose a player. That player adds {C}.",
+      "{T}: Choose a player. That player adds one mana of any color you choose."
+    ]
+  },
+  {
+    "id": "eff.edhd22.mana.couldProduce.sacrificed",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 106.7",
+      "CR 605.1a",
+      "CR 608.2h"
+    ],
+    "pattern": "add one mana of any type the sacrificed land could produce",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "couldProduce",
+        "count": 1,
+        "among": {
+          "ref": "costSacrificed"
+        }
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "feature:mana.couldProduce"
+    ],
+    "examples": [
+      {
+        "text": "{1}, Sacrifice a land: Add one mana of any type the sacrificed land could produce."
+      },
+      {
+        "text": "{T}, Sacrifice a land: Add one mana of any type the sacrificed land could produce."
+      }
+    ],
+    "counterExamples": [
+      "Sacrifice a land: Add one mana of any color the sacrificed land could produce.",
+      "Sacrifice a land: Add two mana of any type the sacrificed land could produce.",
+      "Sacrifice a land: Add one mana of any type a land you control could produce."
+    ]
+  },
+  {
+    "id": "eff.edhd22.mana.choosePlayerAdds",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 106.4",
+      "CR 605.3b",
+      "CR 608.2d"
+    ],
+    "pattern": "choose a player . that player adds {u:ManaUnits}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "units": "$u",
+      "ofYourChoice": true
+    },
+    "subject": "none",
+    "needs": [
+      "op:addMana.playerOfChoice"
+    ],
+    "examples": [
+      {
+        "text": "{T}, Sacrifice a Swamp: Choose a player. That player adds {B}{B}{B}."
+      },
+      {
+        "text": "{2}, {T}: Choose a player. That player adds {R}{R}."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Choose a player. That player adds one mana of any color.",
+      "{T}: Choose a player. That player gains {C}.",
+      "{T}: Choose an opponent. That player adds {C}."
+    ]
+  }
+]

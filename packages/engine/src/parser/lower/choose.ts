@@ -23,7 +23,10 @@ export function chooseNode(u: Unit): Rec | null {
  */
 function thenRoll(u: Unit): boolean {
   const [first, second] = u.steps;
-  return u.steps.length === 2 && isRec(first) && first['lower'] === 'chooseTargets' && isRec(second) && second['op'] === 'rollDie' && second['table'] === undefined;
+  // edh-top-8 (CR 115.1, 601.2c, 705.1; Invert Polarity): "Choose target spell, then flip a coin. If you win the flip, gain control of that spell ..." announces the target and flips one coin with no result
+  // steps yet (the sentences after it are the riders of the flip, templates eff.r3mech.ifFlip.win and .lose)
+  const flips = isRec(second) && second['op'] === 'flipCoin' && second['onWin'] === undefined && second['onLose'] === undefined && second['untilLose'] === undefined && second['called'] === undefined;
+  return u.steps.length === 2 && isRec(first) && first['lower'] === 'chooseTargets' && isRec(second) && ((second['op'] === 'rollDie' && second['table'] === undefined) || flips);
 }
 
 /** The target ids a value refers to. */
@@ -48,7 +51,9 @@ function lowerFightEachOther(u: Unit): void {
     const what = s['what'];
     const of = isRec(what) && what['ref'] === 'union' && Array.isArray(what['of']) ? what['of'] : [];
     if (of.length !== 2 || !of.every((r) => isRec(r) && r['ref'] === 'target' && typeof r['id'] === 'string')) { bad = true; return s; }
-    return { op: 'fight', a: of[0], b: of[1] };
+    const fight = { op: 'fight', a: of[0], b: of[1], ...(s['by'] === 'toughness' ? { by: 'toughness' } : {}), ...(typeof s['as'] === 'string' ? { as: s['as'] } : {}) }; // edh-c-111: Grim Contest's damage by toughness (not a fight)
+    // trek-22 (CR 701.14a, 608.2d; T'Pring, Never Parted): "You may have the chosen creatures fight each other." the controller decides whether the fight happens
+    return s['may'] === true ? { op: 'may', who: { ref: 'you' }, do: [fight] } : fight;
   });
   if (bad) setManual(u, { code: 'unbound-reference', reason: '"fight each other" names no pair of targets announced together (CR 701.14a, 608.2c)' });
 }
@@ -70,11 +75,44 @@ function insteadChoose(d: Draft, u: Unit, next: Unit | undefined): { cond: unkno
   return { cond: patch['cond'], ids };
 }
 
+/**
+ * edh-zones-26 (CR 701.21a, 701.20, 115.1, 608.2b, 608.2c; Goblin Welder): "Choose target artifact a player controls and target artifact card in that player's graveyard. If both
+ * targets are still legal as this ability resolves, that player simultaneously sacrifices the artifact and returns the artifact card to the battlefield." (template
+ * eff.edhz26.thatPlayer.sacrificeAndReturnTogether builds `{"lower": "sacrificeReturnPair", a, b}`, `a`/`b` the two nouns of the sentence): the two targets the "choose"
+ * sentence right before it announced (the second is a card in a graveyard of the controller of the first, lower/targets.ts#specOf), and the nouns must be those targets'
+ * own card types; it becomes the `exchange` step of kind `sacrificeReturn` (effects/handlers/zones-status.ts). Anything else is manual.
+ */
+function lowerSacrificeReturnPair(d: Draft, seq: Unit[], u: Unit, i: number): void {
+  if (u.manual !== undefined) return;
+  const prev = seq[i - 1];
+  const ids = prev !== undefined && prev.manual === undefined && chooseNode(prev) !== null ? (prev.targetIds ?? []) : [];
+  const [sa, sb] = ids.map((id) => d.targets.find((t) => t.id === id));
+  const node = u.steps.length === 1 && isRec(u.steps[0]) && u.steps[0]['lower'] === 'sacrificeReturnPair' ? u.steps[0] : undefined;
+  const typesOf = (f: unknown): string => (isRec(f) && Array.isArray(f['types']) ? JSON.stringify([...f['types']].map(String).sort()) : '');
+  const first = sa?.filter as unknown as Rec | undefined;
+  const second = sb?.filter as unknown as Rec | undefined;
+  const owner = second?.['owner'];
+  const linked = isRec(owner) && owner['ref'] === 'controllerOf' && isRec(owner['object']) && owner['object']['ref'] === 'target' && owner['object']['id'] === sa?.id;
+  const ok = node !== undefined && ids.length === 2 && sa !== undefined && sb !== undefined && sa.kind === 'object' && sb.kind === 'object' && sa.min === 1 && sa.max === 1 && sb.min === 1 && sb.max === 1
+    && first !== undefined && second !== undefined && Object.keys(first).join() === 'types' && Object.keys(second).sort().join() === 'isCard,owner,types,zone' && second['zone'] === 'graveyard' && linked && typesOf(first) !== '' && typesOf(first) === typesOf(node['a']) && typesOf(second) === typesOf(node['b']);
+  if (!ok || sa === undefined || sb === undefined) {
+    setManual(u, { code: 'unbound-reference', reason: '"that player sacrifices the X and returns the X card" names no pair of targets announced just before it (CR 115.1, 608.2c)' });
+    return;
+  }
+  // the prompts name the card type the nouns of the sentence say (the template can only place the phrases by their last words, "controls" and "graveyard")
+  const type = String((first['types'] as unknown[])[0]).toLowerCase();
+  sa.text = `target ${type} a player controls`;
+  sb.text = `target ${type} card in that player's graveyard`;
+  u.steps = [{ op: 'exchange', what: 'sacrificeReturn', a: { ref: 'target', id: sa.id }, b: { ref: 'target', id: sb.id } }];
+}
+
 export function lowerChoose(draft: Draft): Draft {
   const hasFight = (u: Unit): boolean => u.steps.some((s) => isRec(s) && s['lower'] === 'fightEachOther');
-  if (!sequences(draft).some((seq) => seq.some((u) => chooseNode(u) !== null || hasFight(u)))) return draft;
+  const hasPair = (u: Unit): boolean => u.steps.some((s) => isRec(s) && s['lower'] === 'sacrificeReturnPair');
+  if (!sequences(draft).some((seq) => seq.some((u) => chooseNode(u) !== null || hasFight(u) || hasPair(u)))) return draft;
   const d = cloneDraft(draft);
   for (const seq of sequences(d)) for (const u of seq) if (hasFight(u)) lowerFightEachOther(u);
+  for (const seq of sequences(d)) seq.forEach((u, i) => { if (hasPair(u)) lowerSacrificeReturnPair(d, seq, u, i); });
   for (const seq of sequences(d)) {
     seq.forEach((u, i) => {
       if (u.manual !== undefined || chooseNode(u) === null) return;

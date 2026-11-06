@@ -89,9 +89,9 @@ describe('GET /api/cards/search', () => {
     const exactlyWU = await search({ colors: '=WU', pageSize: '200' });
     expect(names(exactlyWU)).toEqual(expect.arrayContaining(["Galina's Knight", 'Vassal Soul']));
     for (const c of exactlyWU.cards) expect(c.colors, c.name).toEqual(['W', 'U']);
-    const colorless = names(await search({ colors: 'C', types: 'artifact', pageSize: '200' })); // std-ra: more colorless artifacts in the fixtures than one default page
-    expect(colorless).toContain('Sol Ring');
-    expect(colorless).toContain('Bonesplitter');
+    const colorlessOf = async (name: string) => names(await search({ colors: 'C', types: 'artifact', name, pageSize: '200' })); // std-ra: more colorless artifacts in the fixtures than one page (edh-players-14: asked by name)
+    expect(await colorlessOf('Sol Ring')).toContain('Sol Ring');
+    expect(await colorlessOf('Bonesplitter')).toContain('Bonesplitter');
     expect(names(await search({ colors: 'C' }))).not.toContain('Lightning Bolt');
     const monoGreenIdentity = names(await search({ identity: 'G', types: 'creature', pageSize: '200' })); // std-r9: more fixture cards, a wider page (never fewer cards)
     expect(monoGreenIdentity).toContain('Grizzly Bears');
@@ -122,7 +122,7 @@ describe('GET /api/cards/search', () => {
   });
 
   it('orders name and q matches by relevance: exact name, then name start, then name words, then rules text; Oracle-name order within each', async () => {
-    expect(names(await search({ q: 'swamp' }))).toEqual(['Swamp', 'Swamp Mosquito' /* std-rx35 fixture card */, 'Foggy Swamp Vinebender' /* FAST5X E10 fixture card */, 'Foggy Swamp Visions' /* std-rx32 fixture card */, 'Leatherhead, Swamp Stalker' /* FAST5X E24 fixture card */, 'Snow-Covered Swamp', 'Bog Raiders', 'Corrupt' /* std-rx20 fixture card */, 'Infernal Harvest' /* std-ry4 fixture card: returns Swamps */, 'Lake of the Dead' /* p2-replace-events-1 fixture card */, 'Magical Hack', 'Quagmire' /* p2-attack-block-1 fixture card: swampwalk */, 'Troll of Khazad-dûm' /* FAST5 T57 fixture card: Swampcycling */, 'Urborg, Tomb of Yawgmoth', "Witch's Cottage" /* std-rx19 fixture card: other Swamps */]);
+    expect(names(await search({ q: 'swamp' }))).toEqual(['Swamp', 'Swamp Mosquito' /* std-rx35 fixture card */, 'Foggy Swamp Vinebender' /* FAST5X E10 fixture card */, 'Foggy Swamp Visions' /* std-rx32 fixture card */, 'Leatherhead, Swamp Stalker' /* FAST5X E24 fixture card */, 'Snow-Covered Swamp', 'Bog Raiders', 'Corrupt' /* std-rx20 fixture card */, 'Infernal Harvest' /* std-ry4 fixture card: returns Swamps */, 'Jarad, Golgari Lich Lord' /* edh-mana-keywords-6 fixture card: sacrifices a Swamp */, 'Lake of the Dead' /* p2-replace-events-1 fixture card */, 'Liliana of the Dark Realms' /* edh-players-11 fixture card: Swamps */, 'Magical Hack', 'Quagmire' /* p2-attack-block-1 fixture card: swampwalk */, 'Troll of Khazad-dûm' /* FAST5 T57 fixture card: Swampcycling */, 'Urborg, Tomb of Yawgmoth', "Witch's Cottage" /* std-rx19 fixture card: other Swamps */]);
     expect(names(await search({ q: 'island' }))[0]).toBe('Island');
     expect(names(await search({ name: 'shock' }))).toEqual(['Shock', 'Shocker' /* p2-zone-moves-1 fixture card */, 'Barbed Shocker' /* p2-zone-moves-1 fixture card */, 'Stoneshock Giant' /* std-rx18 fixture card */, 'Sudden Shock']);
     // A card whose full name is the query comes before a card that only has a face of that name ("Emeritus of Conflict // Lightning Bolt").
@@ -232,7 +232,7 @@ describe('GET /api/cards/search', () => {
     const file = path.join(versionDir(fx.ctx.compiledDir), 'classification.jsonl');
     expect(existsSync(file)).toBe(true);
     expect(readFileSync(file, 'utf8').trim().split('\n').length).toBeGreaterThanOrEqual(fx.deckCards.length);
-  }, 60_000);
+  }, 240_000); // classifies every deck card with the whole template set: about 54 s before the Commander card work added its templates, over 60 s after
 });
 
 describe('GET /api/cards/:name', () => {

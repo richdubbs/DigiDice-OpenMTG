@@ -81,7 +81,7 @@
     "priority": 2,
     "examples": [{ "text": "You may pay {3} and discard a card." }, { "text": "Target opponent may pay {2}{B} and discard a card." }],
     "counterExamples": ["You may pay {3} or discard a card.", "You may pay {3} and discard two cards.", "You may discard a card and pay {3}."],
-    "status": "experimental",
+    "status": "stable",
     "since": 1
   },
   {

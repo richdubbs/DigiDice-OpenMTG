@@ -55,6 +55,7 @@
         }
       }
     ],
+    "weak": 1,
     "subject": "none",
     "consumes": [
       "any number"

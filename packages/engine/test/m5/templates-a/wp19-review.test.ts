@@ -66,12 +66,12 @@ describe('design 6.6, 6.8 G6/G10: a reading the renderer cannot print back never
   });
 
   it('CR 603.1: a trigger clause the gate refuses leaves the manual triggered ability that keeps its understood effect ("Trigger now", design 6.6)', () => {
-    // a trigger clause the gate refuses: "another nontoken creature is put into an opponent's graveyard from the battlefield" (std-rp: "another creature is put
+    // a trigger clause the gate refuses: "another nontoken creature is put into a graveyard from your hand" (edh-players-12: "... into an opponent's graveyard from the battlefield" prints now, CR 404.1; std-rp: "another creature is put
     // into your graveyard from the battlefield", the example before, prints: an object you own goes to your graveyard, CR 400.3; cmd4: "an opponent cycles a card", the example
     // before, now prints: a cycled card is a card in a hand, CR 702.29a; cloud std-lci: "an opponent discards a land card", the one before that, prints: the
     // discarded card is a card in a hand, CR 701.9a; FAST5X E17: "At the beginning of your second main phase" prints: the second main phase is the main phase
     // numbered 2 in its turn, CR 505.1b; FAST1 T4's "deals combat damage to a player or planeswalker" prints too)
-    const a = only('Creature — Frog', "Whenever another nontoken creature is put into an opponent's graveyard from the battlefield, draw a card.");
+    const a = only('Creature — Frog', "Whenever another nontoken creature is put into a graveyard from your hand, draw a card.");
     expect(a.kind).toBe('manual');
     expect((a as ManualAbilityDef).shape).toBe('triggered');
     expect((a as ManualAbilityDef).effect?.steps).toEqual([{ op: 'draw', who: { ref: 'you' }, count: 1 }]);
@@ -112,10 +112,14 @@ describe('CR 113.6k, 113.6m: a trigger that cannot fire from the battlefield is 
     expect((a as ManualAbilityDef).shape).toBe('triggered');
     expect((a as ManualAbilityDef).zone, text).toEqual([zone]);
   };
-  it('CR 113.6k: "When ~ is put into a graveyard from anywhere" is a manual trigger that functions in the graveyard; its effect is kept', () => {
-    manualIn('When ~ is put into a graveyard from anywhere, each player draws a card.', 'graveyard');
-    const a = only('Creature — Spirit', 'When ~ is put into a graveyard from anywhere, each player draws a card.') as ManualAbilityDef;
+  it('CR 113.6k, 603.6c: "When ~ is put into a graveyard from anywhere" is an automated trigger that functions in the graveyard (edh-zones-3; never a leaves-the-battlefield ability); an effect not understood keeps it manual', () => {
+    const text = 'When ~ is put into a graveyard from anywhere, each player draws a card.';
+    const a = only('Creature — Spirit', text) as TriggeredAbilityDef;
+    expect(a.kind, text).toBe('triggered');
+    expect(a.zone, text).toEqual(['graveyard']);
+    expect(a.trigger.on, text).toEqual([{ ev: 'zoneChange', subject: { self: true }, to: 'graveyard' }]);
     expect(a.effect?.steps).toEqual([{ op: 'draw', who: { ref: 'each', who: 'player' }, count: 1 }]);
+    manualIn('When ~ is put into a graveyard from anywhere, fnord the foo.', 'graveyard');
   });
   it('CR 113.6k: "When ~ is exiled" is a manual trigger that functions in exile', () => {
     manualIn('When ~ is exiled, draw a card.', 'exile');
@@ -189,14 +193,16 @@ describe('CR 506.3, 508.1b: a creature attacking a planeswalker or battle is not
 });
 
 describe('CR 109.2: a type or "permanent" without "card" or "spell" is a permanent on the battlefield', () => {
-  it('trg.you.activate.of is withdrawn: "Whenever you activate an ability of a creature that isn\'t a mana ability" is not an automated trigger', () => {
+  it('trg.you.activate.of stays withdrawn as a template; "Whenever you activate an ability of an artifact or creature that isn\'t a mana ability" is read by the event hole (edh-next-17: the source is a permanent on the battlefield since edh-players-5, triggers/match.ts#activatedOnBattlefield)', () => {
     expect(ids.has('trg.you.activate.of')).toBe(false);
     const a = only('Artifact Creature — Construct', 'Whenever you activate an ability of an artifact or creature that isn\'t a mana ability, ~ gets +1/+1 until end of turn.');
-    expect(a.kind).toBe('manual');
+    expect(a.kind).toBe('triggered');
+    expect(JSON.stringify(a)).toContain('"manaAbility":false');
   });
-  it('"Whenever a permanent deals damage to you" is not an automated trigger (its source filter would also match a spell)', () => {
+  it('"Whenever a permanent deals damage to you" is an automated trigger whose pattern says the source was a permanent (edh-zones-19 `sourcePermanent`: a spell\'s damage never matches)', () => {
     const a = only('Enchantment', 'Whenever a permanent deals damage to you, draw a card.');
-    expect(a.kind).toBe('manual');
+    expect(a.kind).toBe('triggered');
+    expect(JSON.stringify(a)).toContain('"sourcePermanent":true');
   });
 });
 

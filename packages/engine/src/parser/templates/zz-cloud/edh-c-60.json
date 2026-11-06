@@ -1,0 +1,407 @@
+[
+ {
+  "id": "eff.edhv60.prevent.nextUnblockedChoice.combatToYou.allButN",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 609.7a",
+   "CR 615.1",
+   "CR 615.7",
+   "CR 510.2",
+   "CR 506.4"
+  ],
+  "pattern": "the next time an unblocked creature of your choice would deal combat damage to you {d:Dur} , prevent all but {n:Qty} of that damage",
+  "build": [
+   {
+    "op": "chooseObjects",
+    "who": {
+     "ref": "you"
+    },
+    "from": {
+     "ref": "each",
+     "filter": {
+      "types": [
+       "Creature"
+      ],
+      "attacking": true,
+      "blocked": false,
+      "zone": [
+       "battlefield"
+      ]
+     }
+    },
+    "min": 1,
+    "max": 1,
+    "damageSource": true,
+    "as": "damageSource"
+   },
+   {
+    "op": "effect",
+    "duration": "$d",
+    "effects": [
+     {
+      "s": "replace",
+      "replaces": {
+       "ev": "damage",
+       "combat": true,
+       "source": {
+        "is": {
+         "ref": "bound",
+         "name": "damageSource"
+        }
+       },
+       "recipient": {
+        "player": "you"
+       }
+      },
+      "body": {
+       "b": "prevent",
+       "amount": {
+        "q": "math",
+        "op": "-",
+        "args": [
+         {
+          "q": "eventAmount"
+         },
+         "$n"
+        ]
+       }
+      },
+      "shield": {
+       "uses": 1
+      }
+     }
+    ]
+   }
+  ],
+  "subject": "none",
+  "consumes": [
+   "would",
+   "next",
+   "choice",
+   "prevent",
+   "all",
+   "but"
+  ],
+  "examples": [
+   {
+    "text": "{3}: The next time an unblocked creature of your choice would deal combat damage to you this turn, prevent all but 1 of that damage."
+   },
+   {
+    "text": "{2}: The next time an unblocked creature of your choice would deal combat damage to you this turn, prevent all but 2 of that damage."
+   }
+  ],
+  "counterExamples": [
+   "{1}: The next time an unblocked creature of your choice would deal combat damage to you, prevent all but 1 of that damage.",
+   "{1}: The next time a creature of your choice would deal combat damage to you this turn, prevent all but 1 of that damage.",
+   "{1}: The next time an unblocked creature of your choice would deal damage to you this turn, prevent all but 1 of that damage.",
+   "{1}: The next time an unblocked creature of your choice would deal combat damage to you this turn, prevent all of that damage."
+  ]
+ },
+ {
+  "id": "eff.edhv60.redirect.nextSourceChoice.toSelf",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 614.9",
+   "CR 609.7a",
+   "CR 615.7"
+  ],
+  "pattern": "the next time a source of your choice would deal damage {d:Dur} , that damage is dealt to ~ instead",
+  "build": [
+   {
+    "op": "chooseObjects",
+    "who": {
+     "ref": "you"
+    },
+    "from": {
+     "ref": "each",
+     "filter": {
+      "zone": [
+       "battlefield",
+       "stack",
+       "command"
+      ]
+     }
+    },
+    "min": 1,
+    "max": 1,
+    "damageSource": true,
+    "as": "damageSource"
+   },
+   {
+    "op": "effect",
+    "duration": "$d",
+    "effects": [
+     {
+      "s": "replace",
+      "replaces": {
+       "ev": "damage",
+       "source": {
+        "is": {
+         "ref": "bound",
+         "name": "damageSource"
+        }
+       }
+      },
+      "body": {
+       "b": "redirect",
+       "to": {
+        "ref": "self"
+       }
+      },
+      "shield": {
+       "uses": 1
+      }
+     }
+    ]
+   }
+  ],
+  "subject": "none",
+  "consumes": [
+   "would",
+   "next",
+   "instead",
+   "choice"
+  ],
+  "examples": [
+   {
+    "text": "{T}: The next time a source of your choice would deal damage this turn, that damage is dealt to ~ instead."
+   },
+   {
+    "text": "{1}{W}: The next time a source of your choice would deal damage this turn, that damage is dealt to ~ instead."
+   }
+  ],
+  "counterExamples": [
+   "{T}: The next time a source of your choice would deal damage, that damage is dealt to ~ instead.",
+   "{T}: The next time a source of your choice would deal damage this turn, prevent that damage.",
+   "{T}: The next time a red source of your choice would deal damage this turn, that damage is dealt to ~ instead.",
+   "{T}: The next time a source of an opponent's choice would deal damage this turn, that damage is dealt to ~ instead."
+  ]
+ },
+ {
+  "id": "eff.edhv60.redirect.combatToYouByTarget.toItsController",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 614.9",
+   "CR 611.2a",
+   "CR 510.2",
+   "CR 506.4"
+  ],
+  "pattern": "all combat damage that would be dealt to you {d:Dur} by {t:Obj} is dealt to its controller instead",
+  "build": {
+   "op": "effect",
+   "duration": "$d",
+   "effects": [
+    {
+     "s": "replace",
+     "replaces": {
+      "ev": "damage",
+      "combat": true,
+      "source": {
+       "is": "$t"
+      },
+      "recipient": {
+       "player": "you"
+      }
+     },
+     "body": {
+      "b": "redirect",
+      "to": {
+       "ref": "controllerOf",
+       "object": "$t"
+      }
+     }
+    }
+   ]
+  },
+  "subject": "none",
+  "consumes": [
+   "all",
+   "would",
+   "instead"
+  ],
+  "examples": [
+   {
+    "text": "All combat damage that would be dealt to you this turn by target attacking creature is dealt to its controller instead."
+   },
+   {
+    "text": "Draw a card. All combat damage that would be dealt to you this turn by target unblocked creature is dealt to its controller instead."
+   }
+  ],
+  "counterExamples": [
+   "All combat damage that would be dealt to you by target unblocked creature is dealt to its controller instead.",
+   "All damage that would be dealt to you this turn by target unblocked creature is dealt to its controller instead.",
+   "All combat damage that would be dealt to you this turn by target unblocked creature is dealt to you instead.",
+   "All combat damage that would be dealt to target player this turn by target unblocked creature is dealt to its controller instead."
+  ]
+ },
+ {
+  "id": "eff.edhv60.skip.nextCombatPhase.dur",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 614.1b",
+   "CR 614.10",
+   "CR 614.10a",
+   "CR 500.11",
+   "CR 506.1"
+  ],
+  "pattern": "{p:Player} skips their next combat phase {d:Dur}",
+  "build": {
+   "op": "effect",
+   "duration": "$d",
+   "effects": [
+    {
+     "s": "replace",
+     "replaces": {
+      "ev": "phase",
+      "phase": "combat",
+      "whose": "$p"
+     },
+     "body": {
+      "b": "skip"
+     },
+     "shield": {
+      "uses": 1
+     }
+    }
+   ]
+  },
+  "subject": "none",
+  "consumes": [
+   "skip",
+   "next"
+  ],
+  "needs": [
+   "feature:shield.skip"
+  ],
+  "examples": [
+   {
+    "text": "Draw a card. Target player skips their next combat phase this turn."
+   },
+   {
+    "text": "Scry 1. Target opponent skips their next combat phase this turn."
+   }
+  ],
+  "counterExamples": [
+   "Target player skips their next combat phase.",
+   "Target player skips their combat phase this turn.",
+   "Target player skips their next two combat phases this turn.",
+   "Target player skips their next combat phase until your next turn."
+  ]
+ },
+ {
+  "id": "eff.edhv60.dig.putAll.bf.rest.hand",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 701.20e",
+   "CR 608.2c",
+   "CR 110.2a",
+   "CR 401.4"
+  ],
+  "pattern": "put all {f:Filter} cards from among {g:Seen} onto the battlefield and the rest into your hand",
+  "build": [
+   {
+    "op": "move",
+    "what": {
+     "ref": "each",
+     "filter": {
+      "anyOf": [
+       "$f"
+      ],
+      "is": "$g",
+      "zone": "library"
+     }
+    },
+    "to": {
+     "zone": "battlefield",
+     "controller": {
+      "ref": "you"
+     }
+    }
+   },
+   {
+    "op": "move",
+    "what": {
+     "ref": "each",
+     "filter": {
+      "is": "$g",
+      "zone": "library"
+     }
+    },
+    "to": {
+     "zone": "hand"
+    }
+   }
+  ],
+  "subject": "none",
+  "consumes": [
+   "all",
+   "and"
+  ],
+  "examples": [
+   {
+    "text": "Reveal the top four cards of your library. Put all land cards from among them onto the battlefield and the rest into your hand."
+   },
+   {
+    "text": "Look at the top three cards of your library. Put all creature cards from among them onto the battlefield and the rest into your hand."
+   }
+  ],
+  "counterExamples": [
+   "Reveal the top four cards of your library. Put all land cards from among them onto the battlefield tapped and the rest into your hand.",
+   "Reveal the top four cards of your library. Put all land cards from among them into your hand and the rest into your hand.",
+   "Reveal the top four cards of your library. Put a land card from among them onto the battlefield and the rest into your hand.",
+   "Reveal the top four cards of your library. Put all land cards from among them onto the battlefield and the rest into your graveyard."
+  ]
+ },
+ {
+  "id": "sta.edhv60.cantbetargeted.nongreen",
+  "kind": "static",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 604.1",
+   "CR 115.1",
+   "CR 113.7a",
+   "CR 101.2",
+   "CR 105.2"
+  ],
+  "pattern": "{o:Obj} can't be the target of nongreen spells or abilities from nongreen sources",
+  "build": {
+   "s": "restrict",
+   "subject": "$o",
+   "mode": "cant",
+   "action": "beTargeted",
+   "other": {
+    "notColors": [
+     "G"
+    ]
+   }
+  },
+  "consumes": [
+   "can't"
+  ],
+  "examples": [
+   {
+    "text": "Enchanted creature can't be the target of nongreen spells or abilities from nongreen sources."
+   },
+   {
+    "text": "Equipped creature can't be the target of nongreen spells or abilities from nongreen sources."
+   }
+  ],
+  "counterExamples": [
+   "~ can't be the target of nongreen spells or abilities from green sources.",
+   "~ can't be the target of nongreen spells.",
+   "~ can't be the target of green spells or abilities from green sources.",
+   "~ can't be the target of nonblue spells or abilities from nonblue sources."
+  ]
+ }
+]

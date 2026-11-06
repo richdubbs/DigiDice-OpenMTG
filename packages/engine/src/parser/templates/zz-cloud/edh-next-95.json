@@ -1,0 +1,312 @@
+[
+  {
+    "id": "eff.edhn95.player.adds.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 608.2c"
+    ],
+    "pattern": "that player adds {t:ManaSym} for each {f:Filter}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "bound",
+        "name": "",
+        "$anaphor": {
+          "sort": "player",
+          "number": "singular",
+          "text": "that player"
+        }
+      },
+      "dynamic": {
+        "kind": "ofType",
+        "type": "$t",
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "weak": 1,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each player's upkeep, that player adds {C} for each artifact they control."
+      },
+      {
+        "text": "At the beginning of each player's precombat main phase, that player adds {G} for each creature they control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each player's upkeep, that player adds {C}{C} for each artifact they control.",
+      "At the beginning of each player's upkeep, that player adds {C} for each artifact and each creature they control.",
+      "At the beginning of each player's upkeep, that player gains {C} for each artifact they control."
+    ]
+  },
+  {
+    "id": "trg.edhn95.event.firstEachOfYourTurns",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 500.1"
+    ],
+    "pattern": "whenever {e:Event} for the first time during each of your turns",
+    "build": {
+      "on": "$e",
+      "first": "turn",
+      "while": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "whenever",
+      "first",
+      "each",
+      "during"
+    ],
+    "weak": 1,
+    "needs": [
+      "feature:trigger.first",
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control becomes tapped for the first time during each of your turns, put a +1/+1 counter on it."
+      },
+      {
+        "text": "Whenever an opponent loses life for the first time during each of your turns, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control becomes tapped for the first time during each of their turns, put a +1/+1 counter on it.",
+      "Whenever a creature you control becomes tapped for the second time during each of your turns, put a +1/+1 counter on it.",
+      "Whenever a creature you control becomes tapped for the first time each turn, put a +1/+1 counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhn95.put.anyNumber.fromExiledTop.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 406.1"
+    ],
+    "pattern": "you may put any number of {f:Filter} cards from among {g:ExiledTop} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top seven cards of your library. You may put any number of creature and/or land cards from among them onto the battlefield."
+      },
+      {
+        "text": "Exile the top four cards of your library. You may put any number of artifact cards from among them onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top seven cards of your library. You may put any number of creature cards from among them onto the battlefield tapped.",
+      "Exile the top seven cards of your library. You may put a creature card from among them onto the battlefield.",
+      "Exile the top seven cards of your library. You may put any number of creature cards from among them into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn95.put.anyNumber.fromMilled.battlefield.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "put any number of {f:Filter} cards from among {g:Milled} onto the battlefield tapped",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Mill five cards. Put any number of land cards from among them onto the battlefield tapped."
+      },
+      {
+        "text": "Mill four cards. Put any number of creature and/or land cards from among them onto the battlefield tapped."
+      }
+    ],
+    "counterExamples": [
+      "Mill five cards. Put any number of land cards from among them onto the battlefield.",
+      "Mill five cards. Put a land card from among them onto the battlefield tapped.",
+      "Mill five cards. Put any number of land cards from among them into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn95.copy.token.tapped.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 111.1",
+      "CR 110.5b",
+      "CR 608.2c"
+    ],
+    "pattern": "^ create a tapped token that's a copy of {o:Obj} if {c:Cond}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "tapped": true,
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you sacrifice a land, create a tapped token that's a copy of ~ if eight or more land cards are in your graveyard. Otherwise, create a tapped 1/1 black Insect creature token with flying."
+      },
+      {
+        "text": "At the beginning of your end step, create a tapped token that's a copy of target artifact you control if you control three or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, create a token that's a copy of target artifact you control if you control three or more artifacts.",
+      "At the beginning of your end step, create a tapped token that's a copy of target artifact you control unless you control three or more artifacts.",
+      "At the beginning of your end step, create a tapped and attacking token that's a copy of target artifact you control if you control three or more artifacts."
+    ]
+  },
+  {
+    "id": "eff.edhn95.goaded.plural.restOfGame",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.15a",
+      "CR 701.15b",
+      "CR 701.15c",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Objs} are goaded for the rest of the game",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack",
+          "goad": true
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent creates a 1/1 white Soldier creature token. The tokens are goaded for the rest of the game."
+      },
+      {
+        "text": "When ~ enters, create two 1/1 white Soldier creature tokens. The tokens are goaded for the rest of the game."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent creates a 1/1 white Soldier creature token. The tokens are goaded until end of turn.",
+      "When ~ enters, each opponent creates a 1/1 white Soldier creature token. The token is goaded for the rest of the game.",
+      "When ~ enters, each opponent creates a 1/1 white Soldier creature token. The tokens aren't goaded for the rest of the game."
+    ]
+  }
+]

@@ -1,0 +1,96 @@
+[
+  {
+    "id": "eff.edhd12.cantbeblocked.greaterpower.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 611.2a",
+      "CR 208.1",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be blocked by creatures with greater power {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": {
+            "types": [
+              "Creature"
+            ],
+            "power": {
+              "op": ">",
+              "value": {
+                "q": "stat",
+                "stat": "power",
+                "of": "$o"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Target creature can't be blocked by creatures with greater power this turn."
+      },
+      {
+        "text": "Whenever a creature you control with flying attacks, it can't be blocked by creatures with greater power this combat."
+      }
+    ],
+    "counterExamples": [
+      "Target creature can't be blocked by creatures with greater power.",
+      "Target creature can't be blocked by creatures with greater toughness this turn.",
+      "Target creature can't block creatures with greater power this turn."
+    ]
+  },
+  {
+    "id": "eff.edhd12.sacrifice.theirChoice.blocking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 509.1g"
+    ],
+    "pattern": "{p:Player} sacrifice[s] {n:Qty} {f:Filter} of their choice that's blocking {o:Obj}",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": {
+        "$merge": [
+          "$f",
+          {
+            "blockingObject": "$o"
+          }
+        ]
+      },
+      "count": "$n"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, defending player sacrifices a creature of their choice that's blocking ~."
+      },
+      {
+        "text": "Whenever a creature you control becomes blocked, defending player sacrifices a creature of their choice that's blocking it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, defending player sacrifices a creature of your choice that's blocking ~.",
+      "Whenever ~ attacks, defending player sacrifices a creature of their choice that's attacking ~.",
+      "Whenever ~ attacks, defending player sacrifices all creatures of their choice that's blocking ~."
+    ]
+  }
+]

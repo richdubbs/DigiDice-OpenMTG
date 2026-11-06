@@ -48,6 +48,9 @@ describe('which actions are macros', () => {
       'doubleEachKind', // cloud std-spm: native (effects/handlers/actions-native-counters.ts), CR 701.10e
       'anotherOfEachKind', // r5-refs: native (effects/handlers/actions-native-counters.ts), CR 701.34a's "another counter of each kind already there"
       'assimilate', // trek-1: a macro (keywords/actions/assimilate.ts), Star Trek reminder text
+      'timeTravel', // edh-next-3: native (effects/handlers/actions-native-counters.ts), CR 701.56a
+      'planeswalk', 'chaosEnsues', // edhd19: native no-ops without a Planechase game (effects/handlers/planechase.ts), CR 701.31a, 311.7
+      'rollPlanarDie', // edh-next-127: native no-op without a Planechase game (effects/handlers/planechase.ts), CR 901.3, 706.7
     ].sort()); // M6-3: manifest, cloak, manifest dread (native, effects/handlers/face-ops.ts); M6-4: meld (native, effects/handlers/dfc-ops.ts); MX2: meldPair (native, effects/handlers/meld-pair.ts); MX4: venture (native, effects/handlers/venture.ts); FAST5 MX7: learn (native, effects/handlers/learn.ts); MX3: ringTempts (native, effects/handlers/ring.ts); FAST5 T37: monstrosity (native)
   });
 
@@ -75,6 +78,7 @@ describe('which actions are macros', () => {
       monstrosity: 'CR 701.37a', // FAST5 T37: native (effects/handlers/actions-native-counters.ts)
       doubleEachKind: 'CR 701.10e', // cloud std-spm: native (effects/handlers/actions-native-counters.ts)
       anotherOfEachKind: 'CR 701.34a', // r5-refs: native (effects/handlers/actions-native-counters.ts)
+      timeTravel: 'CR 701.56a', // edh-next-3: native (effects/handlers/actions-native-counters.ts)
       blight: 'CR 701.68', // FAST5X E9: a macro over chooseObjects and putCounters
       openAttraction: 'CR 701.51a', // FAST5 T38: native (effects/handlers/attraction.ts)
       airbend: 'CR 701.65a', // FAST5X E10: native (effects/handlers/airbend.ts)
@@ -84,9 +88,11 @@ describe('which actions are macros', () => {
       exert: 'CR 701.43a', forage: 'CR 701.61a', // FAST5X E28: forage is native (effects/handlers/forage.ts); std-ry8: exert is native (effects/handlers/exert.ts)
       renown: 'CR 702.112a', // std-ry8: native (effects/handlers/actions-native-counters.ts)
       goad: 'CR 701.15a', // M12-3: native (effects/handlers/goad.ts)
+      planeswalk: 'CR 701.31a', chaosEnsues: 'CR 311.7', // edhd19: native (effects/handlers/planechase.ts)
+      rollPlanarDie: 'CR 901.3', // edh-next-127: native (effects/handlers/planechase.ts)
       assimilate: 'CR 701 (reminder text)', // trek-1: a macro over move and a layer 4 effect (Star Trek; rule number unverified)
     };
-    const native = new Set(['cascade', 'discover', 'vote', 'proliferate', 'bolster', 'manifest', 'cloak', 'manifestDread', 'meld', 'meldPair', 'giveGift', 'venture', 'learn', 'ringTempts', 'monstrosity', 'openAttraction', 'airbend', 'behold', 'collectEvidence', 'forage' /* FAST5X E28 */, 'goad' /* M12-3 */, 'doubleEachKind' /* cloud std-spm */, 'anotherOfEachKind' /* r5-refs */, 'explore' /* std-lci: effects/handlers/explore.ts */, 'exert', 'renown' /* std-ry8 */]);
+    const native = new Set(['planeswalk', 'chaosEnsues', 'rollPlanarDie' /* edh-next-127 */, 'cascade', 'discover', 'vote', 'proliferate', 'bolster', 'manifest', 'cloak', 'manifestDread', 'meld', 'meldPair', 'giveGift', 'venture', 'learn', 'ringTempts', 'monstrosity', 'openAttraction', 'airbend', 'behold', 'collectEvidence', 'forage' /* FAST5X E28 */, 'goad' /* M12-3 */, 'doubleEachKind' /* cloud std-spm */, 'anotherOfEachKind' /* r5-refs */, 'explore' /* std-lci: effects/handlers/explore.ts */, 'exert', 'renown' /* std-ry8 */, 'timeTravel' /* edh-next-3 */]);
     for (const [name, m] of Object.entries(ACTION_MACROS)) {
       expect(m.name).toBe(name);
       expect(m.rule).toBe(rules[name]);
@@ -113,8 +119,10 @@ describe('which actions are macros', () => {
 
 describe('CR 701.16: investigate', () => {
   it('creates a Clue token (CR 111.10f); "investigate twice" creates two; the step\'s name goes to the token', () => {
-    expect(run('investigate')).toEqual([{ op: 'createToken', who: you, token: { predefined: 'Clue' }, count: 1 }]);
-    expect(run('investigate', { n: 2, as: 'clues' })).toEqual([{ op: 'createToken', who: you, token: { predefined: 'Clue' }, count: 2, as: 'clues' }]);
+    // edh-next-113: and each investigation is reported (reportAction), for "whenever you investigate"
+    const rep = { op: 'reportAction', who: you, verb: 'investigate' };
+    expect(run('investigate')).toEqual([{ op: 'createToken', who: you, token: { predefined: 'Clue' }, count: 1 }, rep]);
+    expect(run('investigate', { n: 2, as: 'clues' })).toEqual([{ op: 'createToken', who: you, token: { predefined: 'Clue' }, count: 2, as: 'clues' }, rep, rep]);
   });
 });
 
@@ -210,9 +218,13 @@ describe('CR 701.50: connive', () => {
 });
 
 describe('CR 701.46: adapt', () => {
-  it('puts N +1/+1 counters only if the permanent has none', () => {
+  it('puts N +1/+1 counters only if the permanent has none (edh-next-110: or this turn holds more marks of it than adapts of it, Biomancer\'s Familiar), and reports the adapt', () => {
+    const none = { cond: 'compare', left: { q: 'counters', on: { ref: 'self' }, kind: '+1/+1' }, op: '==', right: 0 };
+    const hist = (verb: string) => ({ q: 'happenedCount', event: { ev: 'action', verb, object: { is: { ref: 'self' } } }, scope: 'turn' });
+    const marked = { cond: 'compare', left: hist('adaptAsNoCounters'), op: '>', right: hist('adapt') };
     expect(run('adapt', { n: 3 })).toEqual([
-      { op: 'if', cond: { cond: 'compare', left: { q: 'counters', on: { ref: 'self' }, kind: '+1/+1' }, op: '==', right: 0 }, then: [{ op: 'putCounters', on: { ref: 'self' }, kind: '+1/+1', count: 3 }] },
+      { op: 'if', cond: { cond: 'any', of: [none, marked] }, then: [{ op: 'putCounters', on: { ref: 'self' }, kind: '+1/+1', count: 3 }] },
+      { op: 'reportAction', who: { ref: 'you' }, verb: 'adapt', object: { ref: 'self' } },
     ]);
     expect(run('adapt')[0]).toMatchObject({ op: 'manual' });
   });

@@ -1,0 +1,6 @@
+# edh-cast-3 (Commander lane edh-cast): the cards the round made fully automated
+Cavern-Hoard Dragon
+Chandra's Incinerator
+Rakdos, Lord of Riots
+Teferi, Time Raveler
+Ethersworn Canonist

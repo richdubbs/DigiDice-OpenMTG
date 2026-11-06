@@ -26,7 +26,7 @@ export const result = (count: number): StepResult => ({ performed: count > 0, co
  * effects/handlers/zones-remove.ts#asChooser reads the count of a sacrifice). Whether a step's amount is such an amount, and the read itself.
  */
 export function readsEachPlayer(who: { ref: string }, q: unknown): boolean {
-  return who.ref === 'each' && JSON.stringify(q ?? null).includes('"ref":"iterating"');
+  return (who.ref === 'each' || who.ref === 'chose' /* edh-next-143: "each friend" */) && JSON.stringify(q ?? null).includes('"ref":"iterating"');
 }
 export function readFor<T>(cx: ExecCtx, p: PlayerId, read: () => T): T {
   const before = cx.iterating;

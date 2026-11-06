@@ -9,13 +9,17 @@
  * decisions, CR 733.1), exiles the card and puts N time counters on the card in exile: it is then suspended (CR 702.62b: in exile, has suspend, and has a time
  * counter). The two triggered abilities that work from exile are the keyword's expansion (keywords/data/suspend.json); the second gives the cast creature its haste (audit-fix-2).
  *
- * Not here (fail closed): a suspend amount that is not a fixed number ("Suspend X", CR 702.62a with X chosen as the action is taken), a cost with X, and effects
+ * edhn81 (CR 702.62a, 107.3a; Aeon Chronicler): "Suspend X--{X}{3}{U}. X can't be 0.": X is chosen as the action is taken (`SuspendTerms.x`, the least value from the
+ * keyword's `xMin`), the cost is paid with that X and the card gets X time counters. Any other X (no `xMin`: X could be 0, a card that would be suspended with no time
+ * counter, CR 702.62b) is not offered.
+ *
+ * Not here (fail closed): a suspend amount that is not a fixed number or the X above, a cost with X beside a fixed number, and effects
  * that suspend a card or give it suspend (CR 702.62c-d) are not offered, so the cards that say so stay manual.
  *
  * The payment and the zone change are performed by effects/handlers/suspend-ops.ts, which installs itself here when it loads (an import cycle otherwise, as
  * core/special/plot.ts).
  */
-import type { CostDef } from '../../types/ability';
+import type { CostDef, KeywordAbilityDef } from '../../types/ability';
 import type { ObjectId, PlayerId } from '../../types/ids';
 import { formatManaCost } from '../../types/mana';
 import type { GameObject, GameState } from '../../types/state';
@@ -26,14 +30,17 @@ import type { SpecialActionHandler } from '../registries';
 
 /** A card's suspend: its number of time counters and its cost (CR 702.62a). */
 export interface SuspendTerms {
+  /** The number of time counters; 0 with `x`, where it is the X chosen as the action is taken. */
   amount: number;
   cost: CostDef;
+  /** edhn81 (CR 702.62a, 107.3a): "Suspend X": X is chosen when the action is taken, at least `min` ("X can't be 0"). */
+  x?: { min: number };
 }
 
 /** What performs the action (installed by effects/handlers/suspend-ops.ts, see the file comment). */
 export interface SuspendImpl {
   /** Could `player` pay this suspend cost now (CR 118.3)? */
-  payable(s: GameState, player: PlayerId, id: ObjectId, cost: CostDef): boolean;
+  payable(s: GameState, player: PlayerId, id: ObjectId, terms: SuspendTerms): boolean;
   /** Pay the cost (cancellable decisions, CR 733.1), exile the card from the hand and put the time counters on it (CR 702.62a). */
   perform(g: Game, player: PlayerId, id: ObjectId, terms: SuspendTerms): void;
 }
@@ -49,11 +56,23 @@ export function installSuspend(f: SuspendImpl | null): void {
 export function suspendTermsOf(s: GameState, o: GameObject): SuspendTerms | null {
   const all = charsOfObject(s, o).keywords.filter((k) => k.keyword === 'suspend');
   if (all.length === 0) return null;
-  const terms = all.map((k) => (typeof k.amount === 'number' && Number.isInteger(k.amount) && k.amount >= 1 && k.cost !== undefined ? { amount: k.amount, cost: k.cost } : null));
+  const terms = all.map((k): SuspendTerms | null => {
+    if (k.cost === undefined) return null;
+    if (typeof k.amount === 'number' && Number.isInteger(k.amount) && k.amount >= 1) return { amount: k.amount, cost: k.cost };
+    return suspendXOf(k);
+  });
   const first = terms[0];
   if (!first) return null;
   const key = JSON.stringify(first);
   return terms.every((t) => t !== null && JSON.stringify(t) === key) ? first : null;
+}
+
+/** edhn81 (CR 702.62a, 107.3a): "Suspend X--{X}{3}{U}. X can't be 0.": the amount is X, the cost has X, and X is at least 1 (else a suspended card could have no time counter, CR 702.62b). */
+function suspendXOf(k: KeywordAbilityDef): SuspendTerms | null {
+  const a = k.amount as unknown;
+  const isX = typeof a === 'object' && a !== null && (a as { q?: unknown }).q === 'X';
+  if (!isX || k.cost === undefined || !(k.cost.mana ?? []).some((m) => m.kind === 'variable') || typeof k.xMin !== 'number' || !Number.isInteger(k.xMin) || k.xMin < 1) return null;
+  return { amount: 0, cost: k.cost, x: { min: k.xMin } };
 }
 
 const costText = (c: CostDef): string => (c.mana ? formatManaCost(c.mana) : 'its suspend cost');
@@ -70,8 +89,8 @@ function listed(g: Game, player: PlayerId): { object: ObjectId; label: string; c
     const chars = charsOfObject(s, o);
     // CR 702.62a, 116.2f: when the player could begin to cast it from the hand (its timing); a land is never cast (CR 305.1)
     if (chars.types.includes('Land') || castTiming(s, player, id, chars) !== null) continue;
-    if (!impl.payable(s, player, id, terms.cost)) continue;
-    out.push({ object: id, label: `Suspend ${chars.name} (${terms.amount} time counter${terms.amount === 1 ? '' : 's'}, ${costText(terms.cost)})`, cost: terms.cost, terms });
+    if (!impl.payable(s, player, id, terms)) continue;
+    out.push({ object: id, label: terms.x ? `Suspend ${chars.name} (X time counters, ${costText(terms.cost)})` : `Suspend ${chars.name} (${terms.amount} time counter${terms.amount === 1 ? '' : 's'}, ${costText(terms.cost)})`, cost: terms.cost, terms });
   }
   return out;
 }

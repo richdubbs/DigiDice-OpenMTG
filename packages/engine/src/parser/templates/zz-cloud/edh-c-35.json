@@ -1,0 +1,454 @@
+[
+  {
+    "id": "sta.edhv35.prevent.attached.toAndBy",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 303.4",
+      "CR 301.5",
+      "CR 120.2"
+    ],
+    "pattern": "prevent all damage that would be dealt to and dealt by ( enchanted | equipped ) ( creature | permanent )",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "attachedToSource": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "attachedToSource": true
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to and dealt by equipped creature."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to and dealt by enchanted permanent."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt to and dealt by equipped creature.",
+      "Prevent all damage that would be dealt to enchanted permanent.",
+      "Prevent all damage that would be dealt by enchanted permanent."
+    ]
+  },
+  {
+    "id": "eff.edhv35.gets.becomesColor.gains",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 105.3"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} , becomes {c:Color} , and gains {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature gets +2/+0, becomes green, and gains trample until end of turn."
+      },
+      {
+        "text": "Target artifact creature gets -1/-1, becomes blue, and gains flying until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+0, becomes green, and gains trample.",
+      "Target creature gets +2/+0, becomes red and green, and gains haste until end of turn.",
+      "Target creature gets +2/+0, becomes red, and loses flying until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv35.discard.random.thenDiscard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard[s] {n:Qty} card[s] at random , then discard[s] {m:Qty} card[s]",
+    "build": [
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$n",
+        "mode": "random"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$m"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Target player discards two cards at random, then discards a card."
+      },
+      {
+        "text": "When ~ enters, each opponent discards a card at random, then discards a card."
+      }
+    ],
+    "counterExamples": [
+      "Target player discards two cards at random, then discards a card at random.",
+      "Target player discards two cards, then discards a card.",
+      "Target player discards two cards at random, then you discard a card."
+    ]
+  },
+  {
+    "id": "eff.edhv35.discard.you.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "^ discard {n:Qty} card[s] if {c:Cond}",
+    "build": {
+      "op": "discard",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, discard a card if you don't control a Wizard."
+      },
+      {
+        "text": "At the beginning of your end step, discard two cards if you control a Goblin."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, discard a card unless you control a Wizard.",
+      "At the beginning of your upkeep, discard a card at random if you don't control a Wizard.",
+      "At the beginning of your upkeep, each player discards a card if you don't control a Wizard."
+    ]
+  },
+  {
+    "id": "sta.edhv35.self.aslong.is.sized.artifactCreature",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 205.1b"
+    ],
+    "pattern": "~ is ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [],
+    "examples": [
+      {
+        "text": "~ is a 4/4 Construct artifact creature as long as you control two or more artifacts."
+      },
+      {
+        "text": "~ is a 3/3 Golem Shapeshifter artifact creature as long as it's your turn."
+      }
+    ],
+    "counterExamples": [
+      "~ is a 4/4 Construct artifact creature.",
+      "~ is a 4/4 Construct creature as long as you control two or more artifacts.",
+      "~ is a 4/4 Construct artifact creature unless you control two or more artifacts."
+    ]
+  },
+  {
+    "id": "sta.edhv35.aslong.pump.loses",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 702.9a"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} gets {pt:PT} and loses {k:Keyword}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "remove": [
+                "$k.keyword"
+              ]
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [],
+    "examples": [
+      {
+        "text": "As long as you control a Wizard, ~ gets +1/+0 and loses flying."
+      },
+      {
+        "text": "As long as it's your turn, ~ gets -2/-1 and loses reach."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Wizard, ~ gets +1/+0 and gains flying.",
+      "As long as you control a Wizard, ~ gets +1/+0 and loses all abilities.",
+      "~ gets +1/+0 and loses flying."
+    ]
+  },
+  {
+    "id": "sta.edhv35.attached.cantblock.if",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 509.1b",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature can't block if {c:Cond}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "block",
+          "when": "$c"
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature can't block if it's white."
+      },
+      {
+        "text": "Equipped creature can't block if you control a Swamp."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't block unless it's white.",
+      "Enchanted creature can block if it's white.",
+      "Enchanted creature can't attack if it's white."
+    ]
+  },
+  {
+    "id": "sta.edhv35.enchanted.has.cantBeEnchantedByOtherAuras",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 303.4",
+      "CR 608.3e",
+      "CR 613.1f",
+      "CR 702.12a",
+      "CR 704.5m"
+    ],
+    "pattern": "enchanted ( land | creature | permanent ) has {a:Abilities} and can't be enchanted by other auras",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "beEnchanted",
+          "other": {
+            "subtypes": [
+              "Aura"
+            ],
+            "other": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "other",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted land has hexproof and can't be enchanted by other Auras."
+      },
+      {
+        "text": "Enchanted creature has flying and can't be enchanted by other Auras."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted land has indestructible and can't be enchanted.",
+      "Enchanted land has indestructible and can't be equipped by other Auras.",
+      "Enchanted land has indestructible and can be enchanted by other Auras."
+    ]
+  },
+  {
+    "id": "eff.edhv35.player.discard.forEach.devoured",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 702.82c",
+      "CR 608.2h",
+      "CR 109.5"
+    ],
+    "pattern": "{p:Player} discard[s] a card for each creature it devoured",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": {
+        "q": "chosenNumber",
+        "link": "devoured"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent discards a card for each creature it devoured."
+      },
+      {
+        "text": "When ~ enters, each player discards a card for each creature it devoured."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent discards two cards for each creature it devoured.",
+      "When ~ enters, target opponent discards a card for each creature it devoured at random.",
+      "When ~ enters, target opponent discards a card for each creature you devoured."
+    ]
+  }
+]

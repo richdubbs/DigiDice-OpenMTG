@@ -1,0 +1,630 @@
+[
+ {
+  "card": "Finale of Glory",
+  "expect": "full",
+  "verified": "edh-combat-2 review (Commander lane edh-combat), by hand against the Oracle text and the rules cited (eff.edhcb2.ifx.ormore.also: X is the X of the spell, the second kind of token is made only when X is 10 or more and in the number X again, CR 107.3, 608.2c, 111.1; 6.9 deviation, one card prints the wording; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "count": {
+          "q": "X"
+         },
+         "token": {
+          "colors": [
+           "W"
+          ],
+          "keywords": [
+           "vigilance"
+          ],
+          "power": 2,
+          "subtypes": [
+           "Soldier"
+          ],
+          "toughness": 2,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "op": "if",
+         "cond": {
+          "op": ">=",
+          "cond": "compare",
+          "left": {
+           "q": "X"
+          },
+          "right": 10
+         },
+         "then": [
+          {
+           "op": "createToken",
+           "count": {
+            "q": "X"
+           },
+           "token": {
+            "colors": [
+             "W"
+            ],
+            "keywords": [
+             "flying",
+             "vigilance"
+            ],
+            "power": 4,
+            "subtypes": [
+             "Angel"
+            ],
+            "toughness": 4,
+            "types": [
+             "Creature"
+            ]
+           },
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Halvar, God of Battle // Sword of the Realms",
+  "expect": "full",
+  "verified": "edh-combat-2 review (Commander lane edh-combat; held-out, opened by the owner (commander request 2026-10-27)), by hand against the Oracle text, its rulings and the rules cited (reader: \"creatures you control that are enchanted or equipped\", you do not have to control the Aura or Equipment, CR 303.4b, 301.5, 604.1; the rest of the card is older templates; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "anyOf": [
+           {
+            "enchanted": true
+           },
+           {
+            "equipped": true
+           }
+          ],
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "double strike"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "may",
+         "do": [
+          {
+           "op": "attach",
+           "to": {
+            "ref": "target",
+            "id": "t1"
+           },
+           "what": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         ],
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "kind": "object",
+         "filter": {
+          "attachedToObject": {
+           "ref": "each",
+           "filter": {
+            "controller": "you",
+            "types": [
+             "Creature"
+            ]
+           }
+          },
+          "subtypes": [
+           "Aura",
+           "Equipment"
+          ]
+         },
+         "id": "t0",
+         "max": 1,
+         "min": 1
+        },
+        {
+         "kind": "object",
+         "filter": {
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         },
+         "id": "t1",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "vigilance"
+           }
+          ]
+         },
+         {
+          "layer": "7c",
+          "power": 2,
+          "toughness": 0
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "zone": "hand"
+         },
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "battlefield",
+         "subject": {
+          "attachedToSource": true,
+          "types": [
+           "Creature"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        },
+        {
+         "kind": "colored",
+         "color": "W"
+        }
+       ]
+      },
+      "keyword": "equip"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Jolene, the Plunder Queen",
+  "expect": "full",
+  "verified": "edh-combat-2 review (Commander lane edh-combat), by hand against the Oracle text and the rules cited (event: \"a player attacks one or more of your opponents\" is one trigger for the declaration however many opponents it attacks, any player's attack on an opponent of the controller, CR 506.2, 508.1a, 603.2c; \"that attacking player\" is the active player who declared the attackers, who creates the Treasure and is the player the Treasure replacement of Jolene itself does not touch, CR 111.1; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "createToken",
+         "count": 1,
+         "token": {
+          "predefined": "Treasure"
+         },
+         "who": {
+          "ref": "active"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "batch": true,
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "types": [
+           "Creature"
+          ]
+         },
+         "defender": "opponent"
+        }
+       ],
+       "wholeBatch": true
+      }
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "replace",
+        "body": {
+         "b": "modify",
+         "then": {
+          "as": "created",
+          "do": [
+           {
+            "op": "createToken",
+            "count": 1,
+            "token": {
+             "predefined": "Treasure"
+            },
+            "who": {
+             "ref": "you"
+            }
+           }
+          ]
+         }
+        },
+        "replaces": {
+         "ev": "createToken",
+         "player": "you",
+         "token": {
+          "subtypes": [
+           "Treasure"
+          ]
+         }
+        }
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "other": [
+        {
+         "kind": "sacrifice",
+         "count": 5,
+         "filter": {
+          "subtypes": [
+           "Treasure"
+          ]
+         }
+        }
+       ]
+      },
+      "effect": {
+       "steps": [
+        {
+         "kind": "+1/+1",
+         "op": "putCounters",
+         "count": 5,
+         "on": {
+          "ref": "self"
+         }
+        }
+       ],
+       "targets": []
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Reyav, Master Smith",
+  "expect": "full",
+  "verified": "edh-combat-2 review (Commander lane edh-combat; held-out, opened by the owner (commander request 2026-10-27)), by hand against the Oracle text, its rulings and the rules cited (reader: \"a creature you control that's enchanted or equipped\", an Aura or an Equipment attached as it is declared an attacker, CR 303.4b, 301.5, 508.1m, 603.2; the attacker is the creature that attacked, the grant lasts until end of turn, CR 611.2a; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "event",
+            "role": "attacker"
+           },
+           "mods": [
+            {
+             "layer": 6,
+             "add": [
+              {
+               "kind": "keyword",
+               "keyword": "double strike"
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "anyOf": [
+           {
+            "enchanted": true
+           },
+           {
+            "equipped": true
+           }
+          ],
+          "controller": "you",
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sting, the Glinting Dagger",
+  "expect": "full",
+  "verified": "edh-combat-2 review (Commander lane edh-combat; held-out, opened by the owner (commander request 2026-10-27)), by hand against the Oracle text and the rules cited (reader: \"as long as it's blocking or blocked by a Goblin or Orc\" is the equipped creature blocking such a creature or blocked by one, either role, CR 509.1g-h, 506.4, 702.7; the rest of the card is older templates; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "haste"
+           }
+          ]
+         },
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 1
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "effect": {
+       "steps": [
+        {
+         "op": "untap",
+         "what": {
+          "ref": "attachedTo"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "condition": {
+       "cond": "matches",
+       "filter": {
+        "blockingOrBlockedBy": {
+         "ref": "each",
+         "filter": {
+          "subtypes": [
+           "Goblin",
+           "Orc"
+          ]
+         }
+        }
+       },
+       "object": {
+        "ref": "attachedTo"
+       }
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "first strike"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "keyword": "equip"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Stormtide Leviathan",
+  "expect": "full",
+  "verified": "edh-combat-2 review (Commander lane edh-combat), by hand against the Oracle text, its rulings and the rules cited (sta.edhcb2.all.are.pluralSubtype.addition: every land is also an Island, CR 305.6, 613.1d, 205.1b; reader: \"without flying or islandwalk\", a landwalk named by its land word, a creature of any controller without either can't attack, CR 702.14a, 508.1; 6.9 deviation, one card prints the wording; cites from memory, unverified)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "landwalk",
+      "quality": "island"
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Land"
+          ]
+         }
+        },
+        "mods": [
+         {
+          "layer": 4,
+          "subtypes": {
+           "add": [
+            "Island"
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "action": "attack",
+        "mode": "cant",
+        "subject": {
+         "ref": "each",
+         "filter": {
+          "notKeyword": [
+           "flying",
+           "islandwalk"
+          ],
+          "types": [
+           "Creature"
+          ]
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ }
+]

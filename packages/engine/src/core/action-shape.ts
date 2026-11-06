@@ -25,6 +25,7 @@ import type { Action } from '../types/actions';
 import type { DecisionAnswer, ManualOp } from '../types/decisions';
 import { STEP_ORDER } from '../types/state';
 import { measureJsonValue } from '../util/json-bounds';
+import { SHORTCUT_MAX_STEPS, SHORTCUT_MAX_TIMES } from './shortcut';
 
 type Keys<T> = T extends unknown ? keyof T & string : never;
 type Variant<U, D extends string, V> = Extract<U, Record<D, V>>;
@@ -50,6 +51,7 @@ const ACTION_FIELDS = {
   cancel: ['type', 'player'],
   concede: ['type', 'player'],
   setStops: ['type', 'player', 'stops'],
+  shortcut: ['type', 'player', 'steps', 'times'], // shortcuts (docs/design/shortcuts.md 2, 6): CR 727.2a; added with replay format 2
 } as const satisfies FieldTable<PlayerAction, 'type'>;
 
 const ANSWER_FIELDS = {
@@ -63,7 +65,7 @@ const ANSWER_FIELDS = {
   order: ['kind', 'ids'],
   chooseTargets: ['kind', 'targets'],
   payCost: ['kind', 'auto', 'activations', 'lifeForPhyrexian', 'spendPool'],
-  declareAttackers: ['kind', 'attacks'],
+  declareAttackers: ['kind', 'attacks', 'bands'],
   declareBlockers: ['kind', 'blocks'],
   assignDamage: ['kind', 'amounts'],
   chooseReplacement: ['kind', 'id'],
@@ -71,6 +73,7 @@ const ANSWER_FIELDS = {
   chooseDivision: ['kind', 'amounts'],
   chooseName: ['kind', 'name'],
   commanderZone: ['kind', 'command'], // M11-0 (m11 design 4.3): CR 903.9a-b
+  shortcut: ['kind', 'stop'], // shortcuts (docs/design/shortcuts.md 3): CR 727.2b
 } as const satisfies FieldTable<DecisionAnswer, 'kind'>;
 
 const OP_FIELDS = {
@@ -106,13 +109,14 @@ export type ActionFieldsComplete = Assert<Complete<typeof ACTION_FIELDS, PlayerA
 export type AnswerFieldsComplete = Assert<Complete<typeof ANSWER_FIELDS, DecisionAnswer, 'kind'>>;
 export type OpFieldsComplete = Assert<Complete<typeof OP_FIELDS, ManualOp, 'op'>>;
 type ItemComplete<T, L extends readonly string[]> = [Exclude<Keys<T>, L[number]>] extends [never] ? true : false;
-export type ItemFieldsComplete = Assert<
-  ItemComplete<Item<Answer<'chooseTargets'>['targets']>, typeof ITEM_FIELDS.chooseTargets.fields>
-  & ItemComplete<Item<Extract<Answer<'payCost'>, { auto: false }>['activations']>, typeof ITEM_FIELDS.payCost.fields>
-  & ItemComplete<Item<Answer<'declareAttackers'>['attacks']>, typeof ITEM_FIELDS.declareAttackers.fields>
-  & ItemComplete<Item<Answer<'declareBlockers'>['blocks']>, typeof ITEM_FIELDS.declareBlockers.fields>
-  & ItemComplete<Item<Answer<'assignDamage'>['amounts']>, typeof ITEM_FIELDS.assignDamage.fields>
->;
+// edh-d-83 (review finding): one Assert per item list; an intersection `true & false` is `never`, which `extends true` lets through, so the old single Assert checked nothing
+export type ItemFieldsComplete = [
+  Assert<ItemComplete<Item<Answer<'chooseTargets'>['targets']>, typeof ITEM_FIELDS.chooseTargets.fields>>,
+  Assert<ItemComplete<Item<Extract<Answer<'payCost'>, { auto: false }>['activations']>, typeof ITEM_FIELDS.payCost.fields>>,
+  Assert<ItemComplete<Item<Answer<'declareAttackers'>['attacks']>, typeof ITEM_FIELDS.declareAttackers.fields>>,
+  Assert<ItemComplete<Item<Answer<'declareBlockers'>['blocks']>, typeof ITEM_FIELDS.declareBlockers.fields>>,
+  Assert<ItemComplete<Item<Answer<'assignDamage'>['amounts']>, typeof ITEM_FIELDS.assignDamage.fields>>,
+];
 
 /** An action's estimated JSON size, nesting depth and number of values, at most (audit C4; packages/net `LIMITS.actionBytes` and the others). */
 export const ACTION_BOUNDS = Object.freeze({ maxBytes: 64 * 1024, maxDepth: 12, maxValues: 8192 });
@@ -206,6 +210,9 @@ export function actionShapeProblem(x: unknown, opts: ActionShapeOptions = {}): s
       return isStr(x['kind'], 100) && (x['object'] === undefined || isStr(x['object'], 64)) && (x['via'] === undefined || (typeof x['via'] === 'string' && SPECIAL_VIA.has(x['via'])))
         && (x['x'] === undefined || isInt(x['x'], 0, 1_000_000)) && (x['door'] === undefined || isInt(x['door'], 0, 8))
         && (x['option'] === undefined || isInt(x['option'], 0, 8)) && (x['outside'] === undefined || isStr(x['outside'], 200)) ? null : 'action malformed'; // door: FAST5X E8 (CR 709.5e); option: std-freecast-5 (CR 702.170a); outside: trek-11 (CR 400.11b, a definition id)
+    case 'shortcut':
+      // shortcuts (docs/design/shortcuts.md 2, 6): both positive whole numbers within the caps (CR 727.2a); the engine checks the rest
+      return isInt(x['steps'], 1, SHORTCUT_MAX_STEPS) && isInt(x['times'], 1, SHORTCUT_MAX_TIMES) ? null : 'action malformed';
     case 'answer':
       return isStr(x['decisionId'], 64) && isRec(x['answer']) && typeof x['answer']['kind'] === 'string' ? null : 'action malformed';
     case 'setStops': {

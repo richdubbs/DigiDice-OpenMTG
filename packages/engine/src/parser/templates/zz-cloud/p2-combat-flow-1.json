@@ -406,7 +406,7 @@
     "id": "rst.p2cf1.cast.self.beforeBlockers",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 601.3",
       "CR 101.2",

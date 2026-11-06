@@ -185,9 +185,10 @@ describe('std-ry10 HandCard (parser/holes/object.ts#handCard; CR 202.3, 701.20a)
 });
 
 describe('std-ry10 renderer support (G6: the render gate is exact)', () => {
-  it('render/stat.ts#lastingCombatToAndBy: only the pair of one object; a group ("those creatures") or all damage stays manual', () => {
+  it('render/stat.ts#lastingCombatToAndBy: only the pair of one object; a group ("those creatures") stays manual; all damage (not only combat) is read since edh-b-2', () => {
     expect(level('Instant', 'Prevent all combat damage that would be dealt to and dealt by target creature this turn.')).toBe('full');
-    expect(level('Instant', 'Prevent all damage that would be dealt to and dealt by target creature this turn.')).not.toBe('full');
+    expect(level('Instant', 'Prevent all damage that would be dealt to and dealt by target creature this turn.')).toBe('full'); // edh-b-2 (Kiora, Dovin): the pair of all damage
+    expect(level('Instant', 'Prevent all damage that would be dealt to and dealt by those creatures this turn.')).not.toBe('full');
   });
 });
 

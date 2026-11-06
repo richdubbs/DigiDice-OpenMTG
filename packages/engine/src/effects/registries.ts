@@ -46,6 +46,8 @@ import { TRANSFORMED_DESTINATION_PARTS } from './destination-parts/transformed';
 import { COUNTERS_KIND, CREATE_TOKEN_KIND, DAMAGE_KIND, DESTROY_KIND, DRAW_KIND, LIFE_KIND, STEP_KIND, ZONE_CHANGE_KIND } from './proposal-kinds/m5';
 import { PHASE_KIND } from './proposal-kinds/phase';
 import { MILL_KIND } from './proposal-kinds/mill';
+import { SEARCH_KIND } from './proposal-kinds/search';
+import { LOSE_GAME_KIND } from './proposal-kinds/lose-game';
 import { PAY_LIFE_KIND } from './proposal-kinds/pay-life';
 import { DRAW_MANY_KIND } from './proposal-kinds/draw-many';
 import { EXPLORE_KIND } from './proposal-kinds/explore';
@@ -155,9 +157,11 @@ export const PROPOSAL_KINDS: ProposalKinds = {
   drawMany: DRAW_MANY_KIND, // Cloud r4-repl (CR 121.2, 614.1a)
   explore: EXPLORE_KIND, // Cloud r4-repl (CR 701.44a, 614.1a)
   connive: CONNIVE_KIND, // Cloud r3-repl (CR 701.50a, 614.1a)
+  loseGame: LOSE_GAME_KIND, // edh-replace-7 (CR 104.3, 614.1a)
   payLife: PAY_LIFE_KIND, // std-library-4 (CR 119.4, 614.1a)
   proliferate: PROLIFERATE_KIND, // p2-replace-events-2 (CR 701.34a, 614.1a)
   scry: SCRY_KIND, // p2-replace-events-3 (CR 701.22a, 614.1a)
+  search: SEARCH_KIND, // edh-zones-14 (CR 701.23a, 614.1a)
 };
 
 /** The kind of a proposed event (a typed view of `PROPOSAL_KINDS[e.ev]`). */

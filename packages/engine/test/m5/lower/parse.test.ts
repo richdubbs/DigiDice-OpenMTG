@@ -63,7 +63,7 @@ describe('WP17 guard G4: every ledger tiles', () => {
       });
     }
     expect(faces).toBeGreaterThan(150);
-  }, 60_000); // parses every fixture card: past the 5 s default since the fixture set grew (5.3-6.1 s on a 4-CPU cloud machine, 2026-10-21)
+  }, 1_800_000); // parses every fixture card: past the 5 s default since the fixture set grew (5.3-6.1 s on a 4-CPU cloud machine, 2026-10-21); 56-67 s at 6,610 fixture cards (2026-11-05)
   it('consumed text names the templates that consumed it; manual text says why', () => {
     const f = face(card('Half Spell', 'Sorcery', 'Draw two cards. Shuffle your graveyard into the moon.'));
     expect(f.ledger.find((e) => e.status === 'consumed')?.by).toBe('eff.draw.you');

@@ -1,0 +1,9 @@
+# edh-perms-12 (Commander lane edh-perms; test/cloud/edh-perms-12, golden edh-perms-12-review.json)
+# the card a delayed return brought back as "it" (and its controller), "you put" counters after another player's clause, reveal-or-control lands, a granted mobilize X, "choose up to N, then destroy the rest", each player may choose, "return another permanent card to the battlefield"
+Druid of Purification
+Infantry Shield
+Mount Doom
+Persistent Constrictor
+Phelia, Exuberant Shepherd
+Rise of the Witch-king
+Temple of the Dragon Queen

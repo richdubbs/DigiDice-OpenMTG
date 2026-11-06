@@ -57,6 +57,8 @@ export function chooseAttacks(ctx: Ctx, d: DeclareAttackersDecision): { attacker
   if (!alpha) attacking = keepDefense(ctx, attacking, cands.map((x) => x.c.id));
   // "Can't attack alone" (CR 506.5, 508.1c): the only attacker would be refused, so no attack at all
   if (attacking.length === 1 && attacking[0]!.c.onlyWithOthers === true && !attacking[0]!.c.mustAttack) return [];
+  // "Can only attack alone" (CR 506.5, 508.1c): with other attackers it stays home
+  if (attacking.length > 1) attacking = attacking.filter((x) => x.c.onlyAlone !== true);
   return attacking.map((x) => ({ attacker: x.c.id, defender: x.defender }));
 }
 
@@ -107,7 +109,7 @@ interface MultiCand {
  * the rest. A player who left is never attacked (CR 800.4a; the decision does not offer them, and `opps` skips them).
  */
 function chooseAttacksMulti(ctx: Ctx, d: DeclareAttackersDecision): { attacker: ObjectId; defender: PlayerId | ObjectId }[] {
-  const reqs = (d.requirements ?? []).filter((r) => r.kind === 'attack' && r.among !== undefined);
+  const reqs = (d.requirements ?? []).filter((r) => r.kind === 'attack' && r.among !== undefined && r.group === undefined); // edh-d-75: a group requirement binds no one creature (obeyRequirements adds the attackers it needs)
   const order = (p: PlayerId): number => ctx.opps.indexOf(p);
   const blockersOf = new Map(ctx.opps.map((p) => [p, creatures(ctx, p).filter((id) => !ctx.view.objects[id]?.tapped)]));
   const cands: MultiCand[] = d.candidates.map((c) => {
@@ -207,6 +209,8 @@ function chooseAttacksMulti(ctx: Ctx, d: DeclareAttackersDecision): { attacker: 
   attacking = keepDefenseMulti(ctx, attacking, cands.map((x) => x.c.id), lethalSplit);
   // "Can't attack alone" (CR 506.5, 508.1c): the only attacker would be refused, so no attack at all
   if (attacking.length === 1 && attacking[0]!.c.onlyWithOthers === true && !attacking[0]!.c.mustAttack) return [];
+  // "Can only attack alone" (CR 506.5, 508.1c): with other attackers it stays home
+  if (attacking.length > 1) attacking = attacking.filter((x) => x.c.onlyAlone !== true);
   return attacking.map((x) => ({ attacker: x.c.id, defender: assigned.get(x.c.id)! }));
 }
 

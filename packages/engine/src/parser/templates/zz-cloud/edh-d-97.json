@@ -1,0 +1,662 @@
+[
+  {
+    "id": "eff.edhd97.cast.obj.dur.colorlessAnyColor",
+    "kind": "effect",
+    "since": 97,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 107.4c"
+    ],
+    "pattern": "you may cast {o:Obj} {d:Dur} , and you may spend colorless mana as though it were mana of any color to cast ( it | that spell )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "colorlessAnyColor": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Exile target creature an opponent controls. You may cast that card for as long as it remains exiled, and you may spend colorless mana as though it were mana of any color to cast it."
+      },
+      {
+        "text": "Exile the top card of target player's library. You may cast that card this turn, and you may spend colorless mana as though it were mana of any color to cast that spell."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target player's library. You may cast that card this turn, and you may spend colorless mana as though it were mana of any type to cast that spell.",
+      "Exile the top card of target player's library. You may cast that card this turn, and you may spend colorless mana as though it were mana of any color to cast those spells.",
+      "Exile the top card of target player's library. You may cast that card this turn, and you may spend black mana as though it were mana of any color to cast that spell."
+    ]
+  },
+  {
+    "id": "eff.edhd97.exile.hand.you",
+    "kind": "effect",
+    "since": 97,
+    "status": "stable",
+    "cr": [
+      "CR 406.2",
+      "CR 400.7",
+      "CR 109.5"
+    ],
+    "pattern": "exile your hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": "hand",
+          "owner": "you",
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature dies, you may exile your hand. If you do, draw four cards."
+      },
+      {
+        "text": "Exile your hand, then draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "Exile your library.",
+      "Exile your hand face down.",
+      "Exile your hand unless it is blue."
+    ]
+  },
+  {
+    "id": "sta.edhd97.spell.cast.has.emerge.manaCost",
+    "kind": "static",
+    "since": 97,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 601.2b",
+      "CR 702.119a",
+      "CR 707.10",
+      "CR 118.9"
+    ],
+    "pattern": "each {f:Filter} you cast has emerge . the emerge cost is equal to ( its | that spell 's ) mana cost",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "controller": "you",
+              "not": {
+                "stackKind": "copy",
+                "zone": "stack"
+              },
+              "zone": "stack"
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "emerge",
+                  "text": "emerge",
+                  "costIsManaCost": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "Each artifact creature spell you cast has emerge. The emerge cost is equal to its mana cost."
+      },
+      {
+        "text": "Each Dragon spell you cast has emerge. The emerge cost is equal to its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Each creature spell you cast has emerge {2}. The emerge cost is equal to its mana cost.",
+      "Each creature spell you cast has emerge. The emerge cost is equal to its power.",
+      "Each creature spell your opponents cast has emerge. The emerge cost is equal to its mana cost."
+    ]
+  },
+  {
+    "id": "sta.edhd97.asYouCascade.landTapped",
+    "kind": "static",
+    "since": 97,
+    "status": "stable",
+    "cr": [
+      "CR 702.85b",
+      "CR 702.85a",
+      "CR 110.2a",
+      "CR 305.2"
+    ],
+    "pattern": "as you cascade , you may put a land card from among the exiled cards onto the battlefield tapped",
+    "build": {
+      "s": "rule",
+      "rule": "cascadeLandTapped"
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "As you cascade, you may put a land card from among the exiled cards onto the battlefield tapped. This creature has haste."
+      },
+      {
+        "text": "Bloom Rite — As you cascade, you may put a land card from among the exiled cards onto the battlefield tapped."
+      }
+    ],
+    "counterExamples": [
+      "As you cascade, you may put a creature card from among the exiled cards onto the battlefield tapped.",
+      "As you cascade, you may put a land card from among the exiled cards into your hand.",
+      "As you discover, you may put a land card from among the exiled cards onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.edhd97.anyOpponent.mayHaveYouPutIntoGraveyard",
+    "kind": "effect",
+    "since": 97,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 404.1",
+      "CR 608.2c"
+    ],
+    "pattern": "any opponent may have you put {o:Obj} into your graveyard",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "anyOne": true,
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "graveyard",
+            "owner": {
+              "ref": "you"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "any"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, reveal the top card of your library. Any opponent may have you put that card into your graveyard. If a player does, you gain 2 life. Otherwise, put that card into your hand."
+      },
+      {
+        "text": "When this creature enters, reveal the top card of your library. Any opponent may have you put it into your graveyard. If no one does, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top card of your library. Each opponent may have you put that card into your graveyard.",
+      "Reveal the top card of your library. Any opponent may have you put that card into your hand.",
+      "Reveal the top card of your library. Any opponent may put that card into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhd97.whenIt.putIntoYourGraveyard.thisTurn",
+    "kind": "effect",
+    "since": 97,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 603.10a",
+      "CR 400.7",
+      "CR 404.1"
+    ],
+    "pattern": "when {o:Obj} is put into your graveyard this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "is": "$o",
+            "owner": "you"
+          },
+          "from": "battlefield",
+          "to": "graveyard"
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gains deathtouch until end of turn. When that creature is put into your graveyard this turn, return that card to your hand."
+      },
+      {
+        "text": "Target creature gets +1/+1 until end of turn. When that creature is put into your graveyard this turn, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +1/+1 until end of turn. When that creature is put into your graveyard, draw a card.",
+      "Target creature gets +1/+1 until end of turn. When that creature is put into an opponent's graveyard this turn, draw a card.",
+      "Target creature gets +1/+1 until end of turn. When that creature is put into exile this turn, draw a card."
+    ]
+  },
+  {
+    "id": "rst.edhd97.cantLoseGame",
+    "kind": "static",
+    "since": 97,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 104.3",
+      "CR 101.2"
+    ],
+    "pattern": "you can't lose the game",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "lose"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Last Stand — You can't lose the game."
+      },
+      {
+        "text": "Undying Pact — You can't lose the game."
+      }
+    ],
+    "counterExamples": [
+      "You can't lose the game this turn.",
+      "You can't win the game.",
+      "Your opponents can't lose the game."
+    ]
+  },
+  {
+    "id": "eff.edhd97.forEachLifeLost.exilePermanentOrHandGraveyard",
+    "kind": "effect",
+    "since": 97,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 406.2",
+      "CR 400.1"
+    ],
+    "pattern": "for each 1 life you lost , exile a permanent you control or a card from your hand or graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "zone": "battlefield",
+                "controller": "you"
+              },
+              {
+                "zone": "hand",
+                "owner": "you",
+                "isCard": true
+              },
+              {
+                "zone": "graveyard",
+                "owner": "you",
+                "isCard": true
+              }
+            ],
+            "zone": [
+              "battlefield",
+              "hand",
+              "graveyard"
+            ]
+          }
+        },
+        "min": {
+          "q": "eventAmount"
+        },
+        "max": {
+          "q": "eventAmount"
+        },
+        "as": "lostExiles"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "lostExiles"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you lose life during your turn, for each 1 life you lost, exile a permanent you control or a card from your hand or graveyard."
+      },
+      {
+        "text": "Whenever you lose life, for each 1 life you lost, exile a permanent you control or a card from your hand or graveyard. Then draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you lose life, for each 1 life you lost, exile a permanent you control or a card from your hand.",
+      "Whenever you lose life, for each 2 life you lost, exile a permanent you control or a card from your hand or graveyard.",
+      "Whenever you lose life, for each 1 life you lost, sacrifice a permanent you control or a card from your hand or graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhd97.creatureCastThisWay.gains",
+    "kind": "effect",
+    "since": 97,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 400.7a",
+      "CR 400.7h",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 608.2c"
+    ],
+    "pattern": "if you cast a creature spell this way , it gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "is": {
+                "ref": "bound",
+                "name": "@castThisWay"
+              },
+              "types": [
+                "Creature"
+              ],
+              "zone": "stack"
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Exile the top card of your library. You may cast that card without paying its mana cost. If you cast a creature spell this way, it gains haste and \"At the beginning of the end step, sacrifice this creature.\""
+      },
+      {
+        "text": "When this creature enters, target opponent reveals cards from the top of their library until they reveal a creature card. You may cast that card without paying its mana cost. If you cast a creature spell this way, it gains trample."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of your library. You may cast that card without paying its mana cost. If you cast a creature spell this way, it gets +2/+2.",
+      "Exile the top card of your library. You may cast that card. If you cast a creature spell this way, it gains haste.",
+      "Exile the top card of your library. You may cast that card without paying its mana cost. If you cast an instant spell this way, it gains haste."
+    ]
+  },
+  {
+    "id": "sta.edhd97.asLongAsExiledCardHas.equippedHas.sameFor",
+    "kind": "static",
+    "since": 97,
+    "status": "stable",
+    "cr": [
+      "CR 613.1f",
+      "CR 607.2a",
+      "CR 611.3a",
+      "CR 702.11",
+      "CR 702.16"
+    ],
+    "pattern": "as long as a card exiled with ~ has flying , equipped creature has flying . the same is true for first strike , double strike , deathtouch , haste , hexproof , indestructible , lifelink , menace , protection , reach , trample , and vigilance",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "keywordsOf": {
+                "ref": "linked",
+                "link": "exiled"
+              },
+              "keywordsFirst": [
+                {
+                  "kind": "keyword",
+                  "keyword": "flying",
+                  "text": "flying"
+                }
+              ],
+              "keywordsAmong": [
+                {
+                  "kind": "keyword",
+                  "keyword": "first strike",
+                  "text": "first strike"
+                },
+                {
+                  "kind": "keyword",
+                  "keyword": "double strike",
+                  "text": "double strike"
+                },
+                {
+                  "kind": "keyword",
+                  "keyword": "deathtouch",
+                  "text": "deathtouch"
+                },
+                {
+                  "kind": "keyword",
+                  "keyword": "haste",
+                  "text": "haste"
+                },
+                {
+                  "kind": "keyword",
+                  "keyword": "hexproof",
+                  "text": "hexproof"
+                },
+                {
+                  "kind": "keyword",
+                  "keyword": "indestructible",
+                  "text": "indestructible"
+                },
+                {
+                  "kind": "keyword",
+                  "keyword": "lifelink",
+                  "text": "lifelink"
+                },
+                {
+                  "kind": "keyword",
+                  "keyword": "menace",
+                  "text": "menace"
+                },
+                {
+                  "kind": "keyword",
+                  "keyword": "protection",
+                  "text": "protection"
+                },
+                {
+                  "kind": "keyword",
+                  "keyword": "reach",
+                  "text": "reach"
+                },
+                {
+                  "kind": "keyword",
+                  "keyword": "trample",
+                  "text": "trample"
+                },
+                {
+                  "kind": "keyword",
+                  "keyword": "vigilance",
+                  "text": "vigilance"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "same",
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Exile target creature card from a graveyard.\nAs long as a card exiled with this Equipment has flying, equipped creature has flying. The same is true for first strike, double strike, deathtouch, haste, hexproof, indestructible, lifelink, menace, protection, reach, trample, and vigilance."
+      },
+      {
+        "text": "{1}, {T}: Exile target creature card from a graveyard. You gain 1 life.\nAs long as a card exiled with this Equipment has flying, equipped creature has flying. The same is true for first strike, double strike, deathtouch, haste, hexproof, indestructible, lifelink, menace, protection, reach, trample, and vigilance."
+      }
+    ],
+    "counterExamples": [
+      "As long as a card exiled with this Equipment has flying, equipped creature has flying.",
+      "As long as a card exiled with this Equipment has flying, equipped creature has flying. The same is true for first strike and trample.",
+      "As long as a creature card in your graveyard has flying, equipped creature has flying. The same is true for first strike, double strike, deathtouch, haste, hexproof, indestructible, lifelink, menace, protection, reach, trample, and vigilance."
+    ]
+  },
+  {
+    "id": "sta.edhd97.self.castFromExile.ifCastAnother",
+    "kind": "static",
+    "since": 97,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 113.6",
+      "CR 611.3a",
+      "CR 406.1"
+    ],
+    "pattern": "you may cast ~ from exile as long as ( you've | you have ) cast another spell this turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "exile"
+      ],
+      "condition": {
+        "cond": "happened",
+        "event": {
+          "ev": "cast",
+          "player": "you"
+        },
+        "scope": "turn",
+        "times": {
+          "op": ">=",
+          "value": 1
+        }
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "exile"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as long as",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "You may cast this card from exile as long as you've cast another spell this turn."
+      },
+      {
+        "text": "You may cast this permanent from exile as long as you have cast another spell this turn."
+      }
+    ],
+    "counterExamples": [
+      "You may cast this card from exile as long as an opponent has cast another spell this turn.",
+      "You may cast this card from your graveyard as long as you've cast another spell this turn.",
+      "You may cast this card from exile as long as you've cast two other spells this turn."
+    ]
+  }
+]

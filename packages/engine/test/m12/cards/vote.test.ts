@@ -29,7 +29,7 @@ const PLAYERS = (() => {
   }];
   return d;
 })();
-const READER = synthetic('Test Reader', 'Creature — Human Advisor', '{W}', 'When this creature enters, starting with you, each player votes for evidence or bribery. For each evidence vote, investigate. For each bribery vote, create a Treasure token.');
+const READER = synthetic('Test Reader', 'Creature — Human Advisor', '{W}', 'When this creature enters, starting with you, each player votes for evidence or bribery. For each evidence vote, investigate. For each bribery vote, the voters take a moment to ponder.');
 const DEFS = [WORDS, DILEMMA, BROKER, MAYBE, PLAYERS, READER];
 
 const castSorcery = (s: GameState, name: string, player: PlayerId = 'p1'): GameState => {
@@ -161,6 +161,8 @@ describe('CR 701.38d: additional votes happen at the same time as the player\'s 
 });
 
 describe('CR 701.38d: what modifies a vote', () => {
+  // edh-players-13 made "For each evidence vote, investigate." automated (CR 701.38a-b); the manual sentence here is now an invented one the compiler cannot read,
+  // so the test still pins what it pinned: a manual sentence after the vote does not make the vote manual.
   it('a manual sentence that only reads the result ("for each evidence vote") does not make the vote manual; the sentence is resolved by hand after it', () => {
     let s = mpScenario({ players: 3, defs: DEFS, cards: ['Plains'], zones: { p1: { hand: ['Test Reader'], battlefield: ['Plains'] } } });
     s = castSorcery(s, 'Test Reader');

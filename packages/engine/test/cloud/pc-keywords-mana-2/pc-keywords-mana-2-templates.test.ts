@@ -197,7 +197,7 @@ describe('pc-keywords-mana-2 parser change: a mana production replaced by anothe
     expect(json).toContain('"dynamic":{"kind":"anyOneColor","count":2}');
   });
   it('near misses: a different player, a restriction on one production, a loss of life are not the fold', () => {
-    for (const m of [ok.replace('add two mana of any one color instead', 'each opponent adds two mana of any one color instead'), ok.replace('instead', 'instead. You lose 1 life'), ok.replace('add two mana', 'draw two cards')]) {
+    for (const m of [ok.replace('add two mana of any one color instead', 'each opponent adds two mana of any one color instead'), ok.replace('instead', 'instead. Each player discards a card'), ok.replace('add two mana', 'draw two cards')]) {
       const f = parseAbility('Creature — Plant', m);
       expect(fullyAutomated(f) && JSON.stringify(bare(f.abilities)).includes('"isMana":true') && JSON.stringify(bare(f.abilities)).includes('"dynamic":{"kind":"anyOneColor","count":2}'), m).toBe(false);
     }

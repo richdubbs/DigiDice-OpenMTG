@@ -1,0 +1,107 @@
+[
+  {
+    "id": "eff.edhpm22.phaseOut.until",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.26b",
+      "CR 610.3"
+    ],
+    "pattern": "{o:Objs} phase[s] out {d:Dur}",
+    "build": {
+      "op": "phaseOut",
+      "what": "$o",
+      "until": "$d"
+    },
+    "subject": "object",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "{2}, {T}: Target artifact phases out until ~ leaves the battlefield."
+      },
+      {
+        "text": "When ~ enters, target creature an opponent controls phases out until ~ leaves the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Target artifact phases out.",
+      "{2}, {T}: Target artifact phases in until ~ leaves the battlefield.",
+      "{2}, {T}: Target artifact can't phase out until ~ leaves the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhpm22.phaseIn.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.26b",
+      "CR 702.26c"
+    ],
+    "pattern": "tap {o:Obj} as it phases in this way",
+    "build": {
+      "op": "phaseOut",
+      "what": "$o",
+      "tapped": true
+    },
+    "subject": "none",
+    "consumes": [
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target artifact phases out until ~ leaves the battlefield. Tap that artifact as it phases in this way."
+      },
+      {
+        "text": "{2}, {T}: Target land phases out until ~ leaves the battlefield. Tap that land as it phases in this way."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target artifact phases out until ~ leaves the battlefield. Tap that artifact as it leaves the battlefield.",
+      "When ~ enters, tap target artifact as it phases in this way."
+    ]
+  },
+  {
+    "id": "eff.edhpm22.counters.distribute.upTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2d",
+      "CR 603.3d",
+      "CR 122.1",
+      "CR 608.2b"
+    ],
+    "pattern": "distribute up to {n:Qty} {k:CounterKind} counters among {o:Objs}",
+    "build": {
+      "lower": "divide",
+      "upTo": true,
+      "step": {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k",
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "distribute",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Distribute up to three +1/+1 counters among any number of target artifact creatures."
+      },
+      {
+        "text": "At the beginning of your end step, distribute up to three time counters among one, two, or three target permanents."
+      }
+    ],
+    "counterExamples": [
+      "Distribute up to three +1/+1 counters among creatures you control.",
+      "Distribute three +1/+1 counters among any number of target creatures.",
+      "Put up to three +1/+1 counters on any number of target creatures.",
+      "Distribute up to three +1/+1 counters among any number of target creatures unless it is blue."
+    ]
+  }
+]

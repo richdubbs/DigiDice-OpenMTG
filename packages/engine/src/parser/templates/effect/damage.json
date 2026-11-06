@@ -27,7 +27,7 @@
       {"text": "~ deals 1 damage to target player for each artifact you control."}
     ],
     "counterExamples": ["~ deals 2 damage to any target for each Goblin you control.", "~ deals 1 damage to any target for each.", "When ~ enters, it deals 1 damage to any target for each creature you control with toughness greater than its power."],
-    "status": "experimental",
+    "status": "stable",
     "since": 1
   },
   {
@@ -57,7 +57,7 @@
       {"text": "~ deals 9 damage divided evenly, rounded down, among up to three targets."}
     ],
     "counterExamples": ["~ deals X damage divided evenly, rounded up, among any number of targets.", "~ deals X damage divided evenly among any number of targets."],
-    "status": "experimental",
+    "status": "stable",
     "since": 1
   },
   {

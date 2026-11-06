@@ -1,0 +1,9 @@
+# edh-perms-2 (Commander lane edh-perms; test/cloud/edh-perms-2, golden edh-perms-2-review.json)
+# You, <group>, and <group> have hexproof; protection from each color not in your commander's color identity; "its controller may draw a card if its power is greater than each
+# other creature's power"; "create twice X ... tokens"; "for each Aura and Equipment attached to it"; "for each Aura you control that's attached to a creature"
+Shalai, Voice of Plenty
+Commander's Plate
+Selvala, Heart of the Wilds
+Pest Infestation
+Thran Power Suit
+Sage's Reverie

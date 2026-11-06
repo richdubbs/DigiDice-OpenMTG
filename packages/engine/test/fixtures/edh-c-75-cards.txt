@@ -1,0 +1,11 @@
+# edh-c-75 (Commander EDHREC ranks 27,501-28,000, second pass): target enchanted permanent, each of them gets, becomes a color and attacks, prevent all damage dealt by a group of spells, same mana value as the sacrificed creature, unless pays a cost or life, has a keyword for as long as ~ remains tapped, choose an opponent and counters per their creatures, a creature dealt damage this way dies this turn. After editing: npm run cards -- fixtures
+Cut the Earthly Bond
+Hope and Glory
+Incite
+Energy Storm
+Sanguine Praetor
+Erosion
+Hisoka's Guard
+Canker Abomination
+Skeletonize
+Insubordination

@@ -1,0 +1,8 @@
+# edh-top-7 (Commander lane edh-top): a self cast trigger's spell is never "that creature", "lesser mana value" in a cast trigger, the rest of an exile-until put on the bottom of your library, a shuffle that keeps the focus, the number of instant and sorcery spells you've cast this turn, X token copies with "where X is", another player's events, its owner may cast it, may remove those counters and transform it. After editing: npm run cards -- fixtures
+Flayer of Loyalties
+Jodah, the Unifier
+Hoarding Broodlord
+Grenzo, Havoc Raiser
+Aerial Extortionist
+Rionya, Fire Dancer
+Primal Amulet // Primal Wellspring

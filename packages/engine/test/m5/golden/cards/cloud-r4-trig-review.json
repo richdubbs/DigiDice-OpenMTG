@@ -816,40 +816,38 @@
  {
   "card": "Fecund Greenshell",
   "expect": "full",
-  "verified": "r4-trig review, by hand: \"another creature you control with toughness greater than its power\" is the filter toughnessGreaterThanPower (CR 208.1), the object itself an event of its own; look at the top card, a land onto the battlefield tapped, otherwise into the hand (CR 401.1, 608.2c)",
+  "verified": "r4-trig review, by hand: \"another creature you control with toughness greater than its power\" is the filter toughnessGreaterThanPower (CR 208.1), the object itself an event of its own; look at the top card, a land onto the battlefield tapped, otherwise into the hand (CR 401.1, 608.2c) edh-misc-4 (owner's standing rule 2026-10-27): 'Otherwise' also covers declining the option (Fecund Greenshell ruling), so the may carries the other instruction as its otherwise.",
   "faces": [
    {
     "abilities": [
      {
-      "kind": "keyword",
-      "keyword": "reach"
+      "keyword": "reach",
+      "kind": "keyword"
      },
      {
-      "kind": "static",
       "condition": {
+       "atLeast": 10,
        "cond": "exists",
        "of": {
-        "ref": "each",
         "filter": {
+         "controller": "you",
          "types": [
           "Land"
-         ],
-         "controller": "you"
-        }
-       },
-       "atLeast": 10
+         ]
+        },
+        "ref": "each"
+       }
       },
       "effects": [
        {
-        "s": "continuous",
         "affects": {
-         "ref": "each",
          "filter": {
+          "controller": "you",
           "types": [
            "Creature"
-          ],
-          "controller": "you"
-         }
+          ]
+         },
+         "ref": "each"
         },
         "mods": [
          {
@@ -857,11 +855,96 @@
           "power": 2,
           "toughness": 2
          }
-        ]
+        ],
+        "s": "continuous"
        }
-      ]
+      ],
+      "kind": "static"
      },
      {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "at": {
+          "count": 1,
+          "player": {
+           "ref": "you"
+          },
+          "ref": "topCards"
+         },
+         "op": "look",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "cond": {
+          "cond": "matches",
+          "filter": {
+           "isCard": true,
+           "types": [
+            "Land"
+           ]
+          },
+          "object": {
+           "name": "b0",
+           "ref": "bound"
+          }
+         },
+         "else": [
+          {
+           "op": "move",
+           "to": {
+            "zone": "hand"
+           },
+           "what": {
+            "name": "b0",
+            "ref": "bound"
+           }
+          }
+         ],
+         "op": "if",
+         "then": [
+          {
+           "do": [
+            {
+             "op": "move",
+             "to": {
+              "controller": {
+               "ref": "you"
+              },
+              "tapped": true,
+              "zone": "battlefield"
+             },
+             "what": {
+              "name": "b0",
+              "ref": "bound"
+             }
+            }
+           ],
+           "op": "may",
+           "otherwise": [
+            {
+             "op": "move",
+             "to": {
+              "zone": "hand"
+             },
+             "what": {
+              "name": "b0",
+              "ref": "bound"
+             }
+            }
+           ],
+           "who": {
+            "ref": "you"
+           }
+          }
+         ]
+        }
+       ],
+       "targets": []
+      },
       "kind": "triggered",
       "trigger": {
        "on": [
@@ -875,85 +958,14 @@
         {
          "ev": "zoneChange",
          "subject": {
+          "controller": "you",
+          "other": true,
+          "toughnessGreaterThanPower": true,
           "types": [
            "Creature"
-          ],
-          "controller": "you",
-          "toughnessGreaterThanPower": true,
-          "other": true
+          ]
          },
          "to": "battlefield"
-        }
-       ]
-      },
-      "effect": {
-       "targets": [],
-       "steps": [
-        {
-         "op": "look",
-         "who": {
-          "ref": "you"
-         },
-         "at": {
-          "ref": "topCards",
-          "player": {
-           "ref": "you"
-          },
-          "count": 1
-         },
-         "as": "seen"
-        },
-        {
-         "op": "if",
-         "cond": {
-          "cond": "matches",
-          "object": {
-           "ref": "bound",
-           "name": "seen"
-          },
-          "filter": {
-           "types": [
-            "Land"
-           ],
-           "isCard": true
-          }
-         },
-         "then": [
-          {
-           "op": "may",
-           "who": {
-            "ref": "you"
-           },
-           "do": [
-            {
-             "op": "move",
-             "what": {
-              "ref": "bound",
-              "name": "seen"
-             },
-             "to": {
-              "zone": "battlefield",
-              "controller": {
-               "ref": "you"
-              },
-              "tapped": true
-             }
-            }
-           ]
-          }
-         ],
-         "else": [
-          {
-           "op": "move",
-           "what": {
-            "ref": "bound",
-            "name": "seen"
-           },
-           "to": {
-            "zone": "hand"
-           }
-          }
-         ]
         }
        ]
       }

@@ -1,0 +1,200 @@
+[
+  {
+    "id": "eff.edhb7.eachPlayer.loseThirdLife.roundUp",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 107.1a",
+      "CR 608.2e"
+    ],
+    "pattern": "each player loses a third of their life , rounded up",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "amount": {
+            "q": "math",
+            "op": "ceilDiv",
+            "args": [
+              {
+                "q": "life",
+                "of": {
+                  "ref": "bound",
+                  "name": "each"
+                }
+              },
+              3
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each player loses a third of their life, rounded up."
+      },
+      {
+        "text": "Each player loses a third of their life, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "Each player loses a third of their life, rounded down.",
+      "Each opponent loses a third of their life, rounded up.",
+      "Each player loses a quarter of their life, rounded up."
+    ]
+  },
+  {
+    "id": "eff.edhb7.player.loseLife.perCardInTheirGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 119.3",
+      "CR 404.1",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] 1 life for each card in their graveyard",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "$p",
+            "isCard": true
+          }
+        }
+      }
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, defending player loses 1 life for each card in their graveyard."
+      },
+      {
+        "text": "When ~ enters, target opponent loses 1 life for each card in their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, defending player loses 2 life for each card in their graveyard.",
+      "Whenever ~ attacks, defending player loses 1 life for each card in your graveyard.",
+      "Whenever ~ attacks, defending player gains 1 life for each card in their graveyard."
+    ]
+  },
+  {
+    "id": "sta.edhb7.attackTax.you.whereX",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 508.1h",
+      "CR 508.1i",
+      "CR 508.1j",
+      "CR 604.1",
+      "CR 107.3"
+    ],
+    "pattern": "{f:Filter} can't attack you unless their controller pays {x} for each creature they control that's attacking you , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "attackTax",
+          "of": "$f",
+          "value": "$q"
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "unless",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Creatures can't attack you unless their controller pays {X} for each creature they control that's attacking you, where X is the number of Walls you control."
+      },
+      {
+        "text": "Creatures can't attack you unless their controller pays {X} for each creature they control that's attacking you, where X is the number of Plains you control."
+      }
+    ],
+    "counterExamples": [
+      "Creatures can attack you unless their controller pays {X} for each creature they control that's attacking you, where X is the number of Walls you control.",
+      "Creatures can't attack you if their controller pays {X} for each creature they control that's attacking you, where X is the number of Walls you control.",
+      "Creatures can't block you unless their controller pays {X} for each creature they control that's attacking you, where X is the number of Walls you control."
+    ]
+  },
+  {
+    "id": "eff.edhb7.you.untap.upToChosen",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.26b",
+      "CR 608.2d"
+    ],
+    "pattern": "you untap up to {n:Qty} {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "untap"
+      },
+      {
+        "op": "untap",
+        "what": {
+          "ref": "bound",
+          "name": "untap"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. You untap up to two lands."
+      },
+      {
+        "text": "When ~ enters, you untap up to three artifacts."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you untap up to three target lands.",
+      "When ~ enters, you tap up to three lands.",
+      "When ~ enters, you untap three lands."
+    ]
+  }
+]

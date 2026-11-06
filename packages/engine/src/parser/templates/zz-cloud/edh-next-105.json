@@ -1,0 +1,140 @@
+[
+  {
+    "id": "eff.edhn105.castSpell.exileAsItResolves.thenReturnNextEnd",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 608.2n",
+      "CR 603.7",
+      "CR 400.7"
+    ],
+    "pattern": "exile that card instead of putting it into your graveyard as it resolves . if you do , return it to your hand at the beginning of the next end step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "is": {
+                "ref": "event",
+                "role": "spell"
+              },
+              "owner": "you"
+            },
+            "from": "stack",
+            "to": "graveyard",
+            "cause": "resolve"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            },
+            "then": {
+              "as": "exiledCard",
+              "do": [
+                {
+                  "op": "delay",
+                  "when": {
+                    "at": "step",
+                    "step": "end",
+                    "next": true
+                  },
+                  "do": [
+                    {
+                      "op": "move",
+                      "what": {
+                        "ref": "bound",
+                        "name": "exiledCard"
+                      },
+                      "to": {
+                        "zone": "hand",
+                        "owner": {
+                          "ref": "you"
+                        }
+                      }
+                    }
+                  ],
+                  "capture": [
+                    "exiledCard"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "instead",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a blue sorcery spell, exile that card instead of putting it into your graveyard as it resolves. If you do, return it to your hand at the beginning of the next end step."
+      },
+      {
+        "text": "Whenever you cast a green instant spell, exile that card instead of putting it into your graveyard as it resolves. If you do, return it to your hand at the beginning of the next end step."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant or sorcery spell, exile that card instead of putting it into your graveyard as it resolves. If you do, return it to your hand at the beginning of your next upkeep.",
+      "Whenever you cast an instant or sorcery spell, exile that card instead of putting it into your graveyard as it resolves. If you do, put it onto the battlefield at the beginning of the next end step."
+    ]
+  },
+  {
+    "id": "dl.edhn105.nextEnd.tail.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 603.4",
+      "CR 513.1"
+    ],
+    "pattern": "{e:Effects} at the beginning of the next end step if {c:Cond}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "end",
+        "next": true
+      },
+      "do": [
+        {
+          "op": "if",
+          "cond": "$c",
+          "then": "$e"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature with power 2 or less is put into your graveyard from the battlefield, you may return that card to the battlefield at the beginning of the next end step if ~ is still on the battlefield."
+      },
+      {
+        "text": "Whenever a creature you control dies, return that card to your hand at the beginning of the next end step if you control an artifact."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control dies, return that card to your hand at the beginning of each end step if you control an artifact.",
+      "Whenever a creature you control dies, if you control an artifact, return that card to your hand at the beginning of the next end step."
+    ],
+    "weak": 1
+  }
+]

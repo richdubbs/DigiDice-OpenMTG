@@ -30,7 +30,9 @@ describe('pc-counters-4: "You may A. Then B." (CR 608.2c, 608.2d)', () => {
 
 describe('pc-counters-4: "creature that entered the battlefield under your control this turn" stays manual', () => {
   it('"under your control" at entry is not "you control it now" (CR 400.7, 110.2; Shaile\'s ruling): no reading, so the card is partial rather than wrong', () => {
-    expect(fullyAutomated(parse('Put a +1/+1 counter on each creature that entered the battlefield under your control this turn.'))).toBe(false);
+    // edh-next-109 (Shaile, Dean of Radiance): the narrow template eff.edhn109.counters.eachEnteredUnderYourControl now reads this exact wording with the entry controller (filter enteredUnderYourControl, a history fact), never "you control it now"
+    expect(fullyAutomated(parse('Put a +1/+1 counter on each creature that entered the battlefield under your control this turn.'))).toBe(true);
+    expect(fullyAutomated(parse('Put a +1/+1 counter on each creature that entered the battlefield under an opponent\'s control this turn.'))).toBe(false);
     expect(fullyAutomated(parse('Put a +1/+1 counter on each creature you control that entered the battlefield this turn.'))).toBe(true);
   });
 });

@@ -121,7 +121,7 @@ function turnDown(cx: ExecCtx, id: ObjectId, info: FaceDownInfo): void {
   if (performTurnFaceDown(g, id, info)) g.log(`${name} is turned face down${info.by === 'manifest' ? ' (manifested)' : ''}.`, { rules: [info.by === 'manifest' ? 'CR 701.40a' : 'CR 708.2a', 'CR 613.7f'], level: 'action' });
 }
 
-const faceDown: ChangeFaceOp = (cx, _st, id) => turnDown(cx, id, { by: 'effect', profile: 'plain' });
+const faceDown: ChangeFaceOp = (cx, st, id) => turnDown(cx, id, { by: 'effect', profile: st.faceDownAs ?? 'plain' }); // edh-mana-keywords-12: or with set characteristics ("It's a 2/2 Cyberman artifact creature.")
 const manifestPermanent: ChangeFaceOp = (cx, _st, id) => turnDown(cx, id, { by: 'manifest', profile: 'plain' });
 
 export const FACE_OPS: ChangeFaceTable = { faceUp, faceDown, manifest: manifestPermanent };
@@ -132,7 +132,9 @@ export const FACE_OPS: ChangeFaceTable = { faceUp, faceDown, manifest: manifestP
 export const FACE_NATIVE_FEATURES: readonly string[] = [
   'action.native.manifest', 'action.native.cloak', 'action.native.manifestDread',
   // FAST5X E25 (model/cap-walk.ts#stepForms): "manifest dread X times" (CR 701.62a, `n`); "shuffle that pile, then cloak them" (CR 701.58e, `arg: 'shuffle'`)
-  'action.manifestDread.n', 'action.cloak.shuffle',
+  'action.manifestDread.n', 'action.cloak.shuffle', 'action.manifest.shuffle' /* edh-d-39 (CR 701.40a, 701.24a): "exile them in a face-down pile, shuffle that pile, then manifest those cards" */,
+  // edh-mana-keywords-12 (CR 708.2a; model/cap-walk.ts): a face-down permanent with set characteristics ("It's a Forest land.", FaceDownSet)
+  'faceDown.set',
 ];
 
 const RULE: Record<'manifest' | 'cloak', string> = { manifest: 'CR 701.40a', cloak: 'CR 701.58a' };

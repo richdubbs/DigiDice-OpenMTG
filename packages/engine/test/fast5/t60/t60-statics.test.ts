@@ -21,8 +21,9 @@ const BEAR = card('Test Bear', 'Creature — Bear', '', ['2', '2']);
 
 describe('CR 205.1b, 613.1d: "Nontoken artifacts you control are creatures in addition to their other types."', () => {
   const SMITH = card('Test Smith', 'Creature — Human Artificer', 'Nontoken artifacts you control are creatures in addition to their other types.', ['1', '1']);
-  const RELIC = card('Test Relic', 'Artifact', '', undefined, '{1}');
-  const TREASURE = card('Test Trinket', 'Artifact', '', undefined, '{1}');
+  // edh-mana-keywords-12 (CR 208.3, 208.5): a permanent made a creature uses its printed power and toughness, or is 0/0 and dies without them, so these artifacts print 2/2
+  const RELIC = card('Test Relic', 'Artifact', '', ['2', '2'], '{1}');
+  const TREASURE = card('Test Trinket', 'Artifact', '', ['2', '2'], '{1}');
   it('is automated; a nontoken artifact of its controller becomes an artifact creature, an opponent\'s and a token do not', () => {
     expect(automated(SMITH)).toBe(true);
     const s0 = scenario([], { p1: { battlefield: ['Test Smith', 'Test Relic', 'Test Trinket'] }, p2: { battlefield: ['Test Relic'] }, defs: [SMITH, RELIC, TREASURE] });

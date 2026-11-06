@@ -1,0 +1,612 @@
+[
+  {
+    "id": "sta.edhr1.damage.double.noncombat.opp.thatPlayerOrPermanent",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 120.1a"
+    ],
+    "pattern": "if a source you control would deal noncombat damage to an opponent or a permanent an opponent controls , it deals double that damage to that player or permanent instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "controller": "you"
+        },
+        "recipient": {
+          "player": "opponent",
+          "object": {
+            "controller": "opponent"
+          }
+        },
+        "combat": false
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "double",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals double that damage to that player or permanent instead."
+      },
+      {
+        "text": "Haste\nIf a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals double that damage to that player or permanent instead."
+      }
+    ],
+    "counterExamples": [
+      "If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals triple that damage to that player or permanent instead.",
+      "If a source you control would deal combat damage to an opponent or a permanent an opponent controls, it deals double that damage to that player or permanent instead.",
+      "If a source an opponent controls would deal noncombat damage to an opponent or a permanent an opponent controls, it deals double that damage to that player or permanent instead."
+    ]
+  },
+  {
+    "id": "rep.edhr1.counters.half.byOpponent.permanentOrPlayer",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 122.6",
+      "CR 107.1a"
+    ],
+    "pattern": "if an opponent would put one or more counters on a permanent or player , they put half that many of each of those kinds of counters on that permanent or player instead , rounded down",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "counters",
+            "change": "put",
+            "on": {},
+            "by": "opponent"
+          },
+          "body": {
+            "b": "modify",
+            "count": {
+              "mul": 0.5
+            }
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "counters",
+            "change": "put",
+            "on": {
+              "player": "any"
+            },
+            "by": "opponent"
+          },
+          "body": {
+            "b": "modify",
+            "count": {
+              "mul": 0.5
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "half",
+      "that many",
+      "each",
+      "instead",
+      "rounded"
+    ],
+    "examples": [
+      {
+        "text": "If an opponent would put one or more counters on a permanent or player, they put half that many of each of those kinds of counters on that permanent or player instead, rounded down."
+      },
+      {
+        "text": "Flying\nIf an opponent would put one or more counters on a permanent or player, they put half that many of each of those kinds of counters on that permanent or player instead, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "If an opponent would put one or more counters on a permanent or player, they put half that many of each of those kinds of counters on that permanent or player instead, rounded up.",
+      "If you would put one or more counters on a permanent or player, you put half that many of each of those kinds of counters on that permanent or player instead, rounded down.",
+      "If an opponent would put one or more counters on a creature, they put half that many of each of those kinds of counters on that creature instead, rounded down."
+    ]
+  },
+  {
+    "id": "eff.edhr1.prevent.nextSourceOfChoice.you.ifPrevented.damageBack",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.7a",
+      "CR 615.1",
+      "CR 615.5",
+      "CR 615.7",
+      "CR 615.8",
+      "CR 608.2h"
+    ],
+    "pattern": "the next time a source of your choice would deal damage to you {d:Dur} , prevent that damage . if damage is prevented this way , ~ deals that much damage to that source 's controller",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack",
+              "command"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "damageSource": true,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "recipient": {
+                "player": "you"
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all",
+              "then": [
+                {
+                  "op": "damage",
+                  "source": {
+                    "ref": "self"
+                  },
+                  "to": {
+                    "ref": "controllerOf",
+                    "object": {
+                      "ref": "bound",
+                      "name": "damageSource"
+                    }
+                  },
+                  "amount": {
+                    "q": "preventedAmount"
+                  }
+                }
+              ]
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "choice",
+      "prevent",
+      "this way",
+      "if",
+      "that much"
+    ],
+    "examples": [
+      {
+        "text": "{1}{W}: The next time a source of your choice would deal damage to you this turn, prevent that damage. If damage is prevented this way, ~ deals that much damage to that source's controller."
+      },
+      {
+        "text": "{2}{W}, {T}: The next time a source of your choice would deal damage to you this turn, prevent that damage. If damage is prevented this way, ~ deals that much damage to that source's controller."
+      }
+    ],
+    "counterExamples": [
+      "The next time a source of your choice would deal damage to you this turn, prevent that damage. If damage is prevented this way, ~ deals that much damage to any target.",
+      "The next time a source of your choice would deal damage to you this turn, prevent that damage. If damage is prevented this way, ~ deals 2 damage to that source's controller.",
+      "The next time a source of your choice would deal damage to you this turn, prevent that damage. If damage is prevented this way, ~ deals that much damage to that source's controller and you draw that many cards."
+    ]
+  },
+  {
+    "id": "eff.edhr1.prevent.combat.toYou.forEachPrevented.create",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.5",
+      "CR 510.2",
+      "CR 611.2a",
+      "CR 111.1"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to you {d:Dur} . for each 1 damage prevented this way , create ( a | an ) {t:TokenDesc}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "createToken",
+                "who": {
+                  "ref": "you"
+                },
+                "count": {
+                  "q": "preventedAmount"
+                },
+                "token": "$t"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt to you this turn. For each 1 damage prevented this way, create a 2/1 white and black Bat creature token with flying."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt to you this turn. For each 1 damage prevented this way, create a 1/1 green Snake creature token."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt to you this turn. For each 2 damage prevented this way, create a 1/1 green Snake creature token.",
+      "Prevent all damage that would be dealt to you this turn. For each 1 damage prevented this way, create a 1/1 green Snake creature token.",
+      "Prevent all combat damage that would be dealt to you this turn. For each 1 damage prevented this way, you gain 1 life."
+    ]
+  },
+  {
+    "id": "sta.edhr1.damage.double.toOpp.anySource",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 120.1a"
+    ],
+    "pattern": "if a source would deal damage to an opponent or a permanent an opponent controls , that source deals double that damage to that player or permanent instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "recipient": {
+          "player": "opponent",
+          "object": {
+            "controller": "opponent"
+          }
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "double",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to an opponent or a permanent an opponent controls, that source deals double that damage to that player or permanent instead."
+      },
+      {
+        "text": "Flying\nIf a source would deal damage to an opponent or a permanent an opponent controls, that source deals double that damage to that player or permanent instead."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to an opponent or a permanent an opponent controls, that source deals triple that damage to that player or permanent instead.",
+      "If a source would deal damage to an opponent, that source deals double that damage to that player instead.",
+      "If a source you control would deal damage to an opponent or a permanent an opponent controls, that source deals double that damage to that player or permanent instead."
+    ]
+  },
+  {
+    "id": "sta.edhr1.damage.preventHalf.toYouAndYours.roundedUp",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.6",
+      "CR 120.3",
+      "CR 107.1a"
+    ],
+    "pattern": "if a source would deal damage to you or a permanent you control , prevent half that damage , rounded up",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "recipient": {
+          "player": "you",
+          "object": {
+            "controller": "you"
+          }
+        }
+      },
+      "body": {
+        "b": "prevent",
+        "amount": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+            {
+              "q": "eventAmount"
+            },
+            2
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent",
+      "half",
+      "rounded"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to you or a permanent you control, prevent half that damage, rounded up."
+      },
+      {
+        "text": "Flying\nIf a source would deal damage to you or a permanent you control, prevent half that damage, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to you or a permanent you control, prevent half that damage, rounded down.",
+      "If a source would deal damage to you, prevent half that damage, rounded up.",
+      "If a source an opponent controls would deal damage to you or a permanent you control, prevent half that damage, rounded up."
+    ]
+  },
+  {
+    "id": "sta.edhr1.damage.preventAllButN.toFilter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.6",
+      "CR 120.3"
+    ],
+    "pattern": "if a source would deal damage to {f:Filter} , prevent all but {n:Qty} of that damage",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "recipient": {
+          "object": "$f"
+        }
+      },
+      "body": {
+        "b": "prevent",
+        "amount": {
+          "q": "math",
+          "op": "-",
+          "args": [
+            {
+              "q": "eventAmount"
+            },
+            "$n"
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent",
+      "all",
+      "but"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to a Goblin you control, prevent all but 1 of that damage."
+      },
+      {
+        "text": "If a source would deal damage to another creature you control, prevent all but 2 of that damage."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to a Goblin you control, prevent all of that damage.",
+      "If a source would deal damage to a Goblin you control, prevent all but 1 of that damage, rounded up.",
+      "If a source would deal damage to you, prevent all but 1 of that damage."
+    ]
+  },
+  {
+    "id": "sta.edhr1.damage.combat.double.attached.toPermanentOrPlayer",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 510.2",
+      "CR 120.3"
+    ],
+    "pattern": "if ( enchanted | equipped ) creature would deal combat damage to a permanent or player , it deals double that damage instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "attachedToSource": true
+        },
+        "combat": true
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "double",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If equipped creature would deal combat damage to a permanent or player, it deals double that damage instead."
+      },
+      {
+        "text": "Flying\nIf equipped creature would deal combat damage to a permanent or player, it deals double that damage instead."
+      }
+    ],
+    "counterExamples": [
+      "If equipped creature would deal combat damage to a permanent or player, it deals triple that damage instead.",
+      "If equipped creature would deal damage to a permanent or player, it deals double that damage instead.",
+      "If equipped creature would deal combat damage to a creature, it deals double that damage instead."
+    ]
+  },
+  {
+    "id": "sta.edhr1.damage.combat.double.attached",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 510.2",
+      "CR 120.3"
+    ],
+    "pattern": "if ( enchanted | equipped ) creature would deal combat damage , it deals double that damage instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "attachedToSource": true
+        },
+        "combat": true
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "double",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If enchanted creature would deal combat damage, it deals double that damage instead."
+      },
+      {
+        "text": "Flying\nIf enchanted creature would deal combat damage, it deals double that damage instead."
+      }
+    ],
+    "counterExamples": [
+      "If enchanted creature would deal combat damage, it deals triple that damage instead.",
+      "If enchanted creature would deal damage, it deals double that damage instead.",
+      "If enchanted creature would deal combat damage to a player, it deals double that damage instead."
+    ]
+  },
+  {
+    "id": "sta.edhr1.damage.combat.double.anotherCreature.toAttached",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 510.2",
+      "CR 120.3"
+    ],
+    "pattern": "if another creature would deal combat damage to ( enchanted | equipped ) creature , it deals double that damage to ( enchanted | equipped ) creature instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "types": [
+            "Creature"
+          ],
+          "not": {
+            "attachedToSource": true
+          }
+        },
+        "recipient": {
+          "object": {
+            "attachedToSource": true
+          }
+        },
+        "combat": true
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "another",
+      "double",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If another creature would deal combat damage to enchanted creature, it deals double that damage to enchanted creature instead."
+      },
+      {
+        "text": "Flying\nIf another creature would deal combat damage to enchanted creature, it deals double that damage to enchanted creature instead."
+      }
+    ],
+    "counterExamples": [
+      "If another creature would deal combat damage to enchanted creature, it deals triple that damage to enchanted creature instead.",
+      "If another creature would deal damage to enchanted creature, it deals double that damage to enchanted creature instead.",
+      "If a creature would deal combat damage to enchanted creature, it deals double that damage to enchanted creature instead."
+    ]
+  }
+]

@@ -8,9 +8,34 @@
     }
   ],
   "mechanisms": [
-    "replacement"
+    "expands"
   ],
   "reminder": "If a source would deal damage to this creature, prevent {n} of that damage.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Absorb {n}",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": {
+                  "ref": "self"
+                }
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "$amount"
+          }
+        }
+      ]
+    }
+  ]
 }

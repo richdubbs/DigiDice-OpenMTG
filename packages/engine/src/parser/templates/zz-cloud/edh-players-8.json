@@ -1,0 +1,155 @@
+[
+  {
+    "id": "eff.edhp8.player.chooses.upTo.sacrificesRest",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 701.21a"
+    ],
+    "pattern": "{p:Player} choose[s] up to {n:Qty} {f:Filter} they control , then sacrifice[s] the rest",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "$p"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosenKept"
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "$p",
+          "not": {
+            "is": {
+              "ref": "bound",
+              "name": "chosenKept"
+            }
+          }
+        },
+        "count": 1,
+        "mode": "all"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each opponent's upkeep, that player chooses up to three artifacts they control, then sacrifices the rest."
+      },
+      {
+        "text": "At the beginning of each opponent's end step, that player chooses up to one land they control, then sacrifices the rest."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each opponent's upkeep, that player chooses up to three artifacts you control, then sacrifices the rest.",
+      "At the beginning of each opponent's upkeep, that player chooses up to three artifacts they control, then sacrifices them."
+    ]
+  },
+  {
+    "id": "eff.edhp8.returnOwnersNextEndStep",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 608.2c",
+      "CR 400.7"
+    ],
+    "pattern": "return {o:Obj} to the battlefield under its owner 's control at the beginning of that player 's next end step",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "end",
+        "whose": {
+          "ref": "ownerOf",
+          "object": "$o"
+        },
+        "next": true
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "battlefield",
+            "controller": "owner"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Exile up to one target artifact. Return that card to the battlefield under its owner's control at the beginning of that player's next end step."
+      },
+      {
+        "text": "Exile target creature you control. Return it to the battlefield under its owner's control at the beginning of that player's next end step."
+      }
+    ],
+    "counterExamples": [
+      "Exile up to one target artifact. Return that card to the battlefield under your control at the beginning of that player's next end step.",
+      "Exile up to one target artifact. Return that card to the battlefield under its owner's control at the beginning of your next end step."
+    ]
+  },
+  {
+    "id": "eff.edhp8.choose.playerWithMostLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 119.1",
+      "CR 102.1"
+    ],
+    "pattern": "choose a player with the most life or tied for most life",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "player",
+      "as": "chosenPlayer",
+      "mostLife": true
+    },
+    "subject": "none",
+    "consumes": [
+      "tied"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Choose a player with the most life or tied for most life. That player loses 1 life."
+      },
+      {
+        "text": "{2}, {T}: Choose a player with the most life or tied for most life. Target creature can't be blocked by creatures that player controls this turn."
+      }
+    ],
+    "counterExamples": [
+      "Choose a player with the least life or tied for least life.",
+      "Choose a player with the most life.",
+      "Choose an opponent with the most life or tied for most life."
+    ]
+  }
+]

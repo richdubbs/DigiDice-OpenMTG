@@ -1,0 +1,10 @@
+# edh-d-5 (Commander EDHREC ranks 13,751-15,000, second pass): the cards made full by the round. After editing: npm run cards -- fixtures
+Kirtar's Wrath
+Sigrid, God-Favored
+Seht's Tiger
+Gor Muldrak, Amphinologist
+Pulling Teeth
+Upwelling
+Abeyance
+Acorn Catapult
+Gunner Conscript

@@ -1,0 +1,6 @@
+# edh-c-101 (Commander lane edh-c): group pump per counter among a group, "you may <cost> or pay <mana>", base power and toughness equal to another object's, two objects that each get a pump, exactly N attackers, "shares a color with a group". After editing: npm run cards -- fixtures
+Chong and Lily, Nomads
+Exuberant Wolfbear
+Nimble Hobbit
+Jaded Response
+Alluring Suitor // Deadly Dancer

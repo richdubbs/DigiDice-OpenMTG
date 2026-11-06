@@ -1,0 +1,8 @@
+# edh-c-99 (Commander EDHREC ranks 29,501-30,000, fourth pass): ~ can attack as though it didn't have defender; each <group> can't be blocked as long as defending player controls <a>; ~ becomes an enchantment; if kicked, it deals N damage to another target; you sacrifice ~; put one of them into their graveyard; destroy X and it can't be regenerated. After editing: npm run cards -- fixtures
+Hidden Stag
+Tanglewalker
+Prison Barricade
+Jilt
+Pillar Tombs of Aku
+Wu Spy
+Knight of the Mists

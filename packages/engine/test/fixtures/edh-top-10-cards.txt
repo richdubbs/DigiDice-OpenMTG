@@ -1,0 +1,6 @@
+# edh-top-10 (Commander lane edh-top): a mana rider that gives a counter and a keyword until the next turn, untap a creature you control (and all of them instead), a player gets counters if they have none, remove them all after a counter condition, the Ring has tempted you N or more times. After editing: npm run cards -- fixtures
+Jade Orb of Dragonkind
+White Plume Adventurer
+Vexing Radgull
+Strixhaven Stadium
+Frodo, Adventurous Hobbit

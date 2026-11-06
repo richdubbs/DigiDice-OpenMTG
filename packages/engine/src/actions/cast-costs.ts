@@ -19,6 +19,8 @@ import type { AnnounceEnv } from './announce-cond';
 import { modesDenial, programsDenial } from './announce';
 import { isKickerName, type AdditionalOption } from './cast-options';
 import { charsOfObject } from '../rules/characteristics';
+import { findObjects } from '../rules/filter';
+import { filterCtxOutside } from '../rules/filter-env';
 import { ALL_CREATURE_TYPES } from '../rules/creature-types';
 
 const ORDINALS = ['', 'first', 'second', 'third', 'fourth'];
@@ -108,19 +110,26 @@ function partLabel(p: CostPart): string {
     case 'sacrifice': return p.self ? 'Sacrifice this' : many(p.count) ? `Sacrifice ${String(p.count)} ${filterNoun(p.filter, 'permanent')}s` : `Sacrifice ${article(filterNoun(p.filter, 'permanent'))}`;
     case 'discard': return p.hand ? 'Discard your hand' : many(p.count) ? `Discard ${String(p.count)} cards` : 'Discard a card';
     case 'payLife': return `Pay ${typeof p.amount === 'number' ? p.amount : 'X'} life`;
+    case 'rollDie': return `Roll a d${p.sides}`; // edh-d-49
     case 'exileFrom':
       if (p.zone === 'battlefield' && !p.orGraveyard) return p.self ? 'Exile this' : `Exile ${many(p.count) ? `${String(p.count)} ${filterNoun(p.filter, 'permanent')}s` : article(filterNoun(p.filter, 'permanent'))} you control`; // FAST5X E13
       return `Exile ${many(p.count) ? `${String(p.count)} cards` : 'a card'} from your ${p.zone}`;
-    case 'putIntoLibrary': return `Put this card from your ${p.zone} on the ${p.position} of your library`; // trek-9
+    case 'unattach': return p.self ? 'Unattach this permanent' : 'Unattach the permanent that gave this ability'; // edh-top-15
+    case 'putIntoLibrary': return p.zone === 'battlefield' ? `Put this permanent on the ${p.position} of its owner's library` : `Put this card from your ${p.zone} on the ${p.position} of your library`; // trek-9, edh-d-34
     case 'reveal': {
+      if (p.hand === true) return 'Reveal your hand'; // edh-next-117
       const sub = (p.filter?.subtypes ?? []).join(' ');
       return `Reveal ${article(sub !== '' ? `${sub} card` : filterNoun(p.filter, 'card'))} from your hand`;
     }
     case 'tapUntapped': return `Tap ${article(`untapped ${filterNoun(p.filter, 'permanent')}`)} you control`;
+    case 'moveCards': return p.to === 'graveyard' ? `Put ${many(p.count) ? String(p.count) : 'a'} ${filterNoun(p.filter, 'card')}${many(p.count) ? 's' : ''} from ${p.from === 'exile' ? 'exile' : 'your hand'} into ${many(p.count) ? 'their' : 'its'} owner's graveyard` : `Put ${many(p.count) ? String(p.count) : 'a'} ${filterNoun(p.filter, 'card')}${many(p.count) ? 's' : ''} from your ${p.from} on top of your library`; // edh-d-54
     case 'untapTapped': return `Untap ${many(p.count) ? `${String(p.count)} tapped ${filterNoun(p.filter, 'permanent')}s` : article(`tapped ${filterNoun(p.filter, 'permanent')}`)} you control`; // p2-cost-parts-1
     // FAST5X E9 (CR 701.68a): "Blight 2" says how many -1/-1 counters; other actions keep their name
     case 'action': return p.action === 'blight' && typeof p.arg === 'number' ? `Blight ${p.arg} (put ${p.arg === 1 ? 'a -1/-1 counter' : `${p.arg} -1/-1 counters`} on a creature you control)` : p.action;
     // FAST5X E27 (CR 122.1f, 601.2b): "Get 2 poison counters"; a choice between costs, "{3} or Discard a card"
+    case 'exileTop': return `Exile the top ${p.count === 1 ? 'card' : 'cards'} of your library`; // edh-d-74
+    case 'flipCoin': return 'Flip a coin'; // edh-d-74
+    case 'opponentGainsLife': return `Have an opponent gain ${typeof p.amount === 'number' ? p.amount : 'X'} life`; // edh-cast-14
     case 'getCounters': return `Get ${typeof p.amount === 'number' ? p.amount : 'X'} poison counter${p.amount === 1 ? '' : 's'}`;
     case 'oneOf': return p.options.map(costOptionLabel).join(' or ');
     // FAST5X E11 (CR 701.4a): "Behold a Kithkin" (choose one you control or reveal one from your hand)
@@ -199,14 +208,31 @@ function withTrialPaid<T>(paid: CostsPaid, trial: CostsPaid, f: () => T): T {
  */
 export function withAnnouncedCount(cost: CostDef, n: number): CostDef | null {
   const parts = cost.other ?? [];
-  const at = parts.map((p, i) => ('count' in p && p.count === 'any' ? i : -1)).filter((i) => i >= 0);
+  // edh-d-45 (CR 118.3, 122.1, 601.2b; Hierophant Bio-Titan): "remove any number of +1/+1 counters from among creatures you control" (a `removeCounters` part with `anyNumber`) is fixed to `n` counters in all
+  const at = parts.map((p, i) => (('count' in p && p.count === 'any') || (p.kind === 'removeCounters' && p.anyNumber === true && p.among === true) ? i : -1)).filter((i) => i >= 0);
   if (at.length !== 1) return null;
-  return { ...cost, other: parts.map((p, i) => (i === at[0] ? ({ ...p, count: n } as typeof p) : p)) };
+  return { ...cost, other: parts.map((p, i) => {
+    if (i !== at[0]) return p;
+    if (p.kind === 'removeCounters') { const { anyNumber: _any, ...rest } = p; return { ...rest, count: n } as typeof p; }
+    return { ...p, count: n } as typeof p;
+  }) };
 }
 
-/** std-costs-1: the most objects an "any number" part could take: the permanents the player controls (the parts that count are sacrifices), at most 20. */
-export function countCap(s: GameState, player: PlayerId): number {
-  return Math.min(20, s.zones.battlefield.filter((id) => s.objects[id]?.controller === player).length);
+/**
+ * std-costs-1: the most objects an "any number" part could take: the permanents the player controls (the parts that count are sacrifices), at most 20.
+ * edhc5 (CR 118.8, 601.2b): or the cards in their hand, for a part that exiles or discards from the hand ("you may exile any number of blue cards from your hand").
+ */
+export function countCap(s: GameState, player: PlayerId, cost?: CostDef): number {
+  const part = (cost?.other ?? []).find((p) => ('count' in p && p.count === 'any') || (p.kind === 'removeCounters' && p.anyNumber === true));
+  // edh-d-45 (CR 122.1; Hierophant Bio-Titan): the counters of that kind on the permanents the filter describes (most 20)
+  if (part !== undefined && part.kind === 'removeCounters' && part.among === true && part.filter !== undefined) {
+    const ctx = filterCtxOutside(s, { controller: player, x: null });
+    return Math.min(20, findObjects(s, { ...part.filter, zone: 'battlefield', controller: 'you' }, ctx).reduce((n, o) => n + (part.counter === 'any' ? Object.values(o.counters).reduce((a, b) => a + b, 0) : (o.counters[part.counter] ?? 0)), 0));
+  }
+  const fromHand = part !== undefined && ((part.kind === 'exileFrom' && part.zone === 'hand') || part.kind === 'discard');
+  // edh-d-2 (CR 118.8, 601.2b; Gorex): or the cards in their graveyard, for a part that exiles from it
+  const fromGraveyard = part !== undefined && part.kind === 'exileFrom' && part.zone === 'graveyard';
+  return Math.min(20, fromHand ? (s.zones.hand[player] ?? []).length : fromGraveyard ? (s.zones.graveyard[player] ?? []).length : s.zones.battlefield.filter((id) => s.objects[id]?.controller === player).length);
 }
 
 /**
@@ -305,7 +331,9 @@ export function announceOptionalCosts(env: OptionalCostsEnv): void {
       // The number of modes an override asks for (entwine: all of them) must still be choosable and payable with this cost paid (CR 702.42a, 601.4).
       // FAST5X E1 (CR 601.2f): the total cost is judged as if this cost were announced, so a reduction that reads it ("This spell costs {2} less to cast if
       // it's bargained", statics/match.ts wasCast on the stack) applies to the trial too
-      return withTrialPaid(paid, trial, () => payable(addPlans(basePlan('unannounced'), planFromCostDefs(withIt, 'unannounced')))
+      // edh-perms-24 (CR 107.3, 601.2b; Thieving Skydiver, "Kicker {X}. X can't be 0."): a cost whose X has a floor is judged with X at that floor
+      const at = o.xMin ?? 'unannounced';
+      return withTrialPaid(paid, trial, () => payable(addPlans(basePlan(at), planFromCostDefs(withIt, at)))
         && programsDenial(g.s, env.programs, player, stackId, deny(''), stackId, trialEnv) === null
         && modesDenial(g.s, env.programs, player, stackId, stackId, trialEnv, (modeCs) => payable(addPlans(basePlan('unannounced'), planFromCostDefs([...withIt, ...modeCs], 'unannounced')))) === null);
     };
@@ -324,7 +352,7 @@ export function announceOptionalCosts(env: OptionalCostsEnv): void {
           && programsDenial(g.s, env.programs, player, stackId, deny(''), stackId, { ...aenv, costsPaid: trial }) === null);
       };
       const allowed: number[] = [];
-      for (let n = 1; n <= countCap(g.s, player); n++) if (fitsCount(n)) allowed.push(n);
+      for (let n = 1; n <= countCap(g.s, player, o.cost); n++) if (fitsCount(n)) allowed.push(n);
       if (allowed.length === 0) {
         g.log(`${name} can't pay the ${label} cost of ${spellName}, so it is cast without it.`, { rules: ['CR 601.2b', 'CR 118.3'], level: 'info' });
         continue;

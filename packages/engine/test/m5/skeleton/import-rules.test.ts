@@ -7,7 +7,7 @@
  *   keywords  imports types, model, keywords and, from rules, ONLY characteristics, protection and denial (design 5.4 amendment, below); never effects,
  *             triggers, statics, parser, cards, actions, core (value). Only rules/hookpoints reaches keywords/hooks: the registry, expand and capabilities never value-import a hook module
  *   parser    imports types, model, render, keywords and NOTHING from core, effects, rules, statics, triggers, actions, cards (not even types): it runs without a game
- *   statics   imports types, keywords, rules/base-chars only (rules/characteristics imports statics/layers, so statics may not import it back)
+ *   statics   imports types, keywords, rules/base-chars and the data table rules/ability-kinds only (rules/characteristics imports statics/layers, so statics may not import it back)
  *   triggers  imports types, statics, rules, core; effects imports those too and keywords/actions; neither imports cards, parser, render, model
  *   cards     the milestone 5 modules (pipeline, spans, pack, pool) import parser, model, keywords, render, types
  *   engine    core, rules, actions, effects, triggers, statics, keywords never import parser, render or model (tooling stays outside the engine core)
@@ -98,7 +98,7 @@ const RULES: Rule[] = [
   {
     name: 'statics import types, keywords and rules/base-chars only',
     applies: (m) => m.layer === 'statics',
-    values: (e) => ['types', 'keywords', 'statics', 'util'].includes(layerOf(e.to)) || e.to === 'rules/base-chars',
+    values: (e) => ['types', 'keywords', 'statics', 'util'].includes(layerOf(e.to)) || e.to === 'rules/base-chars' || e.to === 'rules/ability-kinds', // edh-c-89: ability-kinds is a table of data that imports nothing (statics/match.ts reads the kind of a keyword ability)
     types: inLayers('types', 'keywords', 'statics', 'rules'),
   },
   {

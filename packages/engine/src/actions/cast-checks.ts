@@ -9,10 +9,11 @@
  * not. A spell that was not cast (a copy put on the stack, CR 707.10) or a condition that could not be checked has no record: the condition is false.
  */
 import type { Game } from '../core/game';
-import type { Condition, EffectProgram } from '../types/ability';
+import type { Condition, EffectProgram, Quantity } from '../types/ability';
 import type { ObjectId, PlayerId } from '../types/ids';
 import { castCheckKey } from '../rules/resolutions';
-import { holds } from '../triggers/cond';
+import { holds, triggerCtx } from '../triggers/cond';
+import { evalQty } from '../effects/eval';
 
 /** Every `asCast` condition inside a JSON tree (the spell's programs: steps, guards, modes). */
 function asCastConditions(node: unknown, out: Condition[]): void {
@@ -23,10 +24,38 @@ function asCastConditions(node: unknown, out: Condition[]): void {
   for (const k in o) asCastConditions(o[k], out);
 }
 
+/** edh-next-126: every `asCast` quantity's value inside a JSON tree (the spell's programs). */
+function asCastValues(node: unknown, out: Quantity[]): void {
+  if (Array.isArray(node)) { for (const v of node) asCastValues(v, out); return; }
+  if (node === null || typeof node !== 'object') return;
+  const o = node as Record<string, unknown>;
+  if (o['q'] === 'asCast' && o['value'] !== undefined) out.push(o['value'] as Quantity);
+  for (const k in o) asCastValues(o[k], out);
+}
+
+/**
+ * edh-next-126 (CR 601.2i, 608.2h; Lifestream's Blessing): the spell has become cast: read each "as you cast" number of its programs now, as the spell's controller, and keep them
+ * (`StackInfo.castValues`). A value that can't be determined is not kept (the spell reads it as undetermined).
+ */
+function recordCastValues(g: Game, spellId: ObjectId, caster: PlayerId, programs: readonly EffectProgram[]): void {
+  const found: Quantity[] = [];
+  asCastValues(programs, found);
+  const spell = g.obj(spellId);
+  if (found.length === 0 || !spell.stack) return;
+  const values: Record<string, number> = {};
+  for (const value of found) {
+    const n = evalQty(triggerCtx(g, { source: { id: spellId, zone: 'stack' }, controller: caster, event: null }), value);
+    if (n !== undefined) values[JSON.stringify(value)] = n;
+  }
+  spell.stack.castValues = values;
+}
+
 /** CR 601.2i: the spell has become cast: decide each "as you cast" condition of its programs now, as the spell's controller, and keep the answers. */
-export function recordCastChecks(g: Game, spellId: ObjectId, caster: PlayerId, programs: readonly EffectProgram[]): void {
+export function recordCastChecks(g: Game, spellId: ObjectId, caster: PlayerId, programs: readonly EffectProgram[], triggered: readonly unknown[] = []): void {
+  recordCastValues(g, spellId, caster, programs); // edh-next-126
   const found: Condition[] = [];
   asCastConditions(programs, found);
+  asCastConditions(triggered, found); // edh-next-37 (CR 601.2i, 603.4; Sentinel's Mark): also the intervening "if you cast it during your main phase" of a triggered ability of the permanent the spell becomes (kept on its cast record)
   if (found.length === 0) return;
   const spell = g.obj(spellId);
   if (!spell.stack) return;

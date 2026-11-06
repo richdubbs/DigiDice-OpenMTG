@@ -1,0 +1,9 @@
+# edh-c-23 (Commander lane edh-c, EDHREC 19,376-20,000, third pass): the cards made full by the round. After editing: npm run cards -- fixtures
+Snow Devil
+Gruul Spellbreaker
+Relic Axe
+Regent's Authority
+Oathsworn Knight
+Keral Keep Disciples
+Dream Salvage
+Misinformation

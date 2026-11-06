@@ -1,0 +1,479 @@
+[
+  {
+    "id": "eff.edhv10.search.playerLibrary.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 406.3",
+      "CR 608.2c"
+    ],
+    "pattern": "search {p:Player} 's library for {f:SearchDesc} and exile it",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "owner": "$p",
+        "filter": "$f",
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search target opponent's library for a creature card and exile it. Then that player shuffles."
+      },
+      {
+        "text": "Search target player's library for a card and exile it. Then that player shuffles. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Search target opponent's library for a card and exile it face down. Then that player shuffles.",
+      "Search target opponent's graveyard for a card and exile it. Then that player shuffles.",
+      "Search target opponent's library for a card and put it onto the battlefield under your control. Then that player shuffles."
+    ],
+    "consumes": [
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhv10.counter.andGoadIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 701.15a",
+      "CR 608.2c"
+    ],
+    "pattern": "put a +1/+1 counter on {o:Obj} and goad it",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "+1/+1",
+        "count": 1
+      },
+      {
+        "op": "action",
+        "action": "goad",
+        "who": {
+          "ref": "you"
+        },
+        "subject": "$o"
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:goad"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another creature you control dies, put a +1/+1 counter on target creature and goad it."
+      },
+      {
+        "text": "Whenever another nontoken creature you control dies, put a +1/+1 counter on target creature an opponent controls and goad it."
+      }
+    ],
+    "counterExamples": [
+      "Put a +1/+1 counter on target creature and tap it.",
+      "Put a +1/+1 counter on target creature and goad each creature.",
+      "Put a +1/+1 counter on target creature and goad it until end of turn.",
+      "Put two +1/+1 counters on target creature and goad it."
+    ],
+    "consumes": [
+      "and"
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhv10.self.dealsDamage.andGains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 608.2c"
+    ],
+    "pattern": "~ deals {n:Qty} damage to {to:Recipient} and gains {a:Abilities} {d:Dur}",
+    "build": [
+      {
+        "op": "damage",
+        "source": {
+          "ref": "self"
+        },
+        "to": "$to",
+        "amount": "$n"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": {
+              "ref": "self"
+            },
+            "mods": [
+              {
+                "layer": 6,
+                "add": "$a"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{0}: ~ deals 2 damage to target player and gains indestructible until end of turn."
+      },
+      {
+        "text": "{0}: ~ deals 3 damage to each opponent and gains lifelink until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 2 damage to target player and gains indestructible.",
+      "~ deals 2 damage to target player and loses flying until end of turn.",
+      "~ deals 2 damage to target player and you gain indestructible until end of turn."
+    ],
+    "consumes": [
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhv10.destroy.allOther.shareColorWithIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 105.1",
+      "CR 109.1",
+      "CR 608.2c"
+    ],
+    "pattern": "destroy all other creatures that share a color with it",
+    "build": {
+      "op": "destroy",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "sharesWith": {
+            "with": {
+              "ref": "event",
+              "role": "subject"
+            },
+            "quality": "color"
+          },
+          "not": {
+            "is": {
+              "ref": "event",
+              "role": "subject"
+            }
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever a creature enters, destroy all other creatures that share a color with it."
+      },
+      {
+        "text": "Whenever a creature dies, destroy all other creatures that share a color with it. They can't be regenerated."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature enters, destroy all creatures that share a color with it.",
+      "Whenever a creature enters, destroy all other creatures that share a creature type with it.",
+      "Whenever a creature enters, destroy all other creatures that share a color with target creature."
+    ],
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "priority": 1
+  },
+  {
+    "id": "sta.edhv10.attached.hasKeyword.toughnessDamage",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1a",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.11",
+      "CR 702.20a"
+    ],
+    "pattern": "as long as enchanted creature has {k:Keyword} , it assigns combat damage equal to its toughness rather than its power",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "attachedTo"
+        },
+        "filter": {
+          "keyword": "$k.keyword"
+        }
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "combatDamageUsesToughness",
+          "of": {
+            "attachedToSource": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "As long as enchanted creature has flying, it assigns combat damage equal to its toughness rather than its power."
+      },
+      {
+        "text": "As long as enchanted creature has haste, it assigns combat damage equal to its toughness rather than its power."
+      }
+    ],
+    "counterExamples": [
+      "As long as enchanted creature has vigilance, it assigns combat damage equal to its power rather than its toughness.",
+      "As long as enchanted creature has vigilance, it assigns combat damage equal to its toughness.",
+      "As long as target creature has vigilance, it assigns combat damage equal to its toughness rather than its power."
+    ]
+  },
+  {
+    "id": "eff.edhv10.put.upToN.fromGraveyards",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 404.1",
+      "CR 110.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "put up to {n:Qty} {f:Filter} cards from graveyards onto the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, put up to two creature cards from graveyards onto the battlefield under your control."
+      },
+      {
+        "text": "Put up to three artifact cards from graveyards onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "Put up to two creature cards from your graveyard onto the battlefield under your control.",
+      "Put two creature cards from graveyards onto the battlefield under your control.",
+      "Put up to two creature cards from graveyards onto the battlefield."
+    ],
+    "consumes": [
+      "up to"
+    ]
+  },
+  {
+    "id": "eff.edhv10.returnToOwnersHand.each.powerVsHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.7",
+      "CR 108.3",
+      "CR 608.2c"
+    ],
+    "pattern": "return to its owner 's hand each {f:Filter}",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each player's end step, return to its owner's hand each creature that player controls with power greater than the number of cards in their hand."
+      },
+      {
+        "text": "At the beginning of your end step, return to its owner's hand each creature you control with power greater than the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Return to its owner's hand each creature that player controls with power greater than the number of cards in your hand.",
+      "Return to its owner's hand each creature that player controls with power less than the number of cards in their hand."
+    ]
+  },
+  {
+    "id": "sta.edhv10.asLongAs.preventAllDamageToYou",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 614.1a",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , prevent all damage that would be dealt to you",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a green creature, prevent all damage that would be dealt to you."
+      },
+      {
+        "text": "As long as you have 5 or less life, prevent all damage that would be dealt to you."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a green creature, prevent all damage that would be dealt to target player.",
+      "As long as you control a green creature, prevent all combat damage that would be dealt to you.",
+      "As long as you control a green creature, prevent the next 3 damage that would be dealt to you."
+    ]
+  },
+  {
+    "id": "eff.edhv10.controllerSacrificesIt.thenTokensEqualPower",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 111.2",
+      "CR 608.2h",
+      "CR 109.4",
+      "CR 208.1"
+    ],
+    "pattern": "{o:Obj} 's controller sacrifices it , then creates x {t:TokenDesc} , where x is that creature 's power",
+    "build": [
+      {
+        "op": "sacrificeChoice",
+        "who": {
+          "ref": "controllerOf",
+          "object": "$o"
+        },
+        "filter": {
+          "is": "$o"
+        },
+        "count": 1
+      },
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "controllerOf",
+          "object": "$o"
+        },
+        "count": {
+          "q": "stat",
+          "stat": "power",
+          "of": "$o"
+        },
+        "token": "$t"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "sacrifices",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Target creature's controller sacrifices it, then creates X 1/1 green Elf creature tokens, where X is that creature's power."
+      },
+      {
+        "text": "Target artifact creature's controller sacrifices it, then creates X 2/2 black Zombie creature tokens, where X is that creature's power."
+      }
+    ],
+    "counterExamples": [
+      "Target creature's controller sacrifices it, then creates X 1/1 green Elf creature tokens, where X is that creature's toughness.",
+      "Target creature's controller sacrifices it, then creates three 1/1 green Elf creature tokens.",
+      "Target creature's owner sacrifices it, then creates X 1/1 green Elf creature tokens, where X is that creature's power."
+    ]
+  }
+]

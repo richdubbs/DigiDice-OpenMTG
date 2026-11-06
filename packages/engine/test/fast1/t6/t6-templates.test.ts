@@ -90,8 +90,9 @@ function nearMisses(text: string): string[] {
   const body = sentences[0]!.replace(/\.$/, '');
   const rest = sentences.slice(1).join(' ');
   const out = [`${body} unless it is blue.`, `${body} instead.`, `${body} at random.`, `${body} twice.`];
+  // "then" is swapped for "or": since edh-c-77 the step joiner reads ", and" between two instructions like ", then" (render/steps.ts; the same instructions in order, CR 608.2c)
   const swaps: [RegExp, string][] = [
-    [/\btheir choice\b/, 'your choice'], [/\btapped\b/, 'untapped'], [/\blose(s?)\b/, 'gain$1'], [/\bthen\b/, 'and'], [/\btarget\b/, 'each'],
+    [/\btheir choice\b/, 'your choice'], [/\btapped\b/, 'untapped'], [/\blose(s?)\b/, 'gain$1'], [/\bthen\b/, 'or'], [/\btarget\b/, 'each'],
     [/\bon top of\b/, 'on the bottom of'], [/\bor untap\b/, 'and untap'], [/\byour hand\b/, 'your graveyard'], [/\bgraveyards?\b/, 'library'],
   ];
   for (const [re, by] of swaps) if (re.test(body)) out.push(`${body.replace(re, by).replace(/\s+/g, ' ')}.`);

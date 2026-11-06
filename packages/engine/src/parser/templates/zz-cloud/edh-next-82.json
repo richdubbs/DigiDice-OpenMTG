@@ -1,0 +1,170 @@
+[
+  {
+    "id": "eff.edhn82.player.cant.becomeMonarch.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 725.1",
+      "CR 101.2",
+      "CR 611.2a"
+    ],
+    "pattern": "{p:Player} can't become the monarch {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "becomeMonarch"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "needs": [
+      "rule:becomeMonarch"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent becomes the monarch. You can't become the monarch this turn."
+      },
+      {
+        "text": "When ~ enters, you gain 2 life. Each opponent can't become the monarch until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent becomes the monarch. You can become the monarch this turn.",
+      "When ~ enters, target opponent becomes the monarch. You can't become the monarch.",
+      "When ~ enters, target opponent becomes the monarch. You can't become the monarch this turn or next turn."
+    ]
+  },
+  {
+    "id": "sta.edhn82.damageToSelf.whileCond.prevent.then",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 614.1a",
+      "CR 725.1"
+    ],
+    "pattern": "if damage would be dealt to ~ while you're the monarch , prevent that damage and {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "condition": {
+            "cond": "designation",
+            "who": {
+              "ref": "you"
+            },
+            "what": "monarch"
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If damage would be dealt to ~ while you're the monarch, prevent that damage and put that many +1/+1 counters on ~."
+      },
+      {
+        "text": "If damage would be dealt to ~ while you're the monarch, prevent that damage and you gain that much life."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to ~ while you're the monarch, prevent that damage or put that many +1/+1 counters on ~.",
+      "If damage would be dealt to ~, prevent that damage and put that many +1/+1 counters on ~.",
+      "If damage would be dealt by ~ while you're the monarch, prevent that damage and put that many +1/+1 counters on ~."
+    ]
+  },
+  {
+    "id": "eff.edhn82.permit.play.duringTurnAttackedWith.exiledTop",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2c",
+      "CR 508.1a",
+      "CR 305.1",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 903.3"
+    ],
+    "pattern": "during any turn you attacked with {f:Filter} , you may play {g:ExiledTop}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$g"
+          },
+          "while": {
+            "cond": "happened",
+            "event": {
+              "ev": "attacks",
+              "attacker": {
+                "anyOf": [
+                  "$f"
+                ],
+                "controller": "you"
+              }
+            },
+            "scope": "turn"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "any",
+      "during",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile the top two cards of your library. During any turn you attacked with a commander, you may play those cards."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top three cards of your library. During any turn you attacked with a Goblin, you may play those cards."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile the top two cards of your library. During any turn an opponent attacked with a commander, you may play those cards.",
+      "Whenever ~ attacks, exile the top two cards of your library. During any turn you attacked with a commander, you may cast those cards.",
+      "Whenever ~ attacks, exile the top two cards of your library. During your turn, you may play those cards."
+    ]
+  }
+]

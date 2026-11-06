@@ -1,0 +1,101 @@
+[
+  {
+    "id": "eff.edhn84.grant.each.untilEot.cantBeBlockedExcept",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 115.1"
+    ],
+    "pattern": "{o:Objs} each gain {a:Abilities} until end of turn and can't be blocked this turn except by {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": {
+            "not": "$f"
+          }
+        }
+      ]
+    },
+    "subject": "objects",
+    "consumes": [
+      "each",
+      "until",
+      "can't",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Up to two target creatures you control each gain haste until end of turn and can't be blocked this turn except by creatures with haste."
+      },
+      {
+        "text": "Two target creatures each gain flying until end of turn and can't be blocked this turn except by Walls."
+      }
+    ],
+    "counterExamples": [
+      "Up to two target creatures you control each gain haste until end of turn and can't be blocked this turn.",
+      "Up to two target creatures you control each gain haste until end of turn and can't be blocked this turn by Walls.",
+      "Up to two target creatures you control each lose haste until end of turn and can't be blocked this turn except by creatures with haste.",
+      "Up to two target creatures you control each gain haste until your next turn and can't be blocked this turn except by creatures with haste."
+    ]
+  },
+  {
+    "id": "eff.edhn84.controlPlayer.nextTurn.thatPlayers",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 723.1",
+      "CR 723.1b",
+      "CR 723.5"
+    ],
+    "pattern": "you control {p:Player} during that player 's next turn",
+    "build": {
+      "op": "controlPlayer",
+      "who": "$p",
+      "during": "turn"
+    },
+    "subject": "none",
+    "consumes": [
+      "control",
+      "next",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "When this creature attacks, you control target opponent during that player's next turn."
+      },
+      {
+        "text": "When this creature dies, you control target player during that player's next turn."
+      }
+    ],
+    "counterExamples": [
+      "You control target opponent during your next turn.",
+      "You control target creature during that player's next turn.",
+      "You control target opponent during that player's next upkeep.",
+      "Target opponent controls you during that player's next turn."
+    ]
+  }
+]

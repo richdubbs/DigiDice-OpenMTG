@@ -1,0 +1,227 @@
+[
+  {
+    "id": "eff.edhx6.counters.move.among",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.5",
+      "CR 608.2d"
+    ],
+    "pattern": "move any number of counters from among {a:Objs} ( onto | to ) {b:Obj}",
+    "build": {
+      "op": "moveCounters",
+      "from": "$a",
+      "to": "$b",
+      "kind": "any",
+      "count": "all",
+      "upTo": true,
+      "among": true
+    },
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "needs": [
+      "op:moveCounters.among"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card, then move any number of counters from among artifacts you control onto target creature."
+      },
+      {
+        "text": "Move any number of counters from among Elves you control onto target creature."
+      }
+    ],
+    "counterExamples": [
+      "Move any number of counters from target artifact you control onto another target artifact you control.",
+      "Move any number of +1/+1 counters from among creatures you control onto target creature.",
+      "Move any number of counters from among creatures you control onto each creature."
+    ]
+  },
+  {
+    "id": "eff.edhx6.counters.move.eachNewKind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.5"
+    ],
+    "pattern": "move a counter of each kind not on ~ from {a:Obj} ( onto | to ) ~",
+    "build": {
+      "op": "moveCounters",
+      "from": "$a",
+      "to": {
+        "ref": "self"
+      },
+      "kind": "any",
+      "count": 1,
+      "eachNewKind": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "not"
+    ],
+    "needs": [
+      "op:moveCounters.eachNewKind"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Move a counter of each kind not on ~ from target creature you control onto ~."
+      },
+      {
+        "text": "{T}: Move a counter of each kind not on ~ from target artifact onto ~."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Move a counter of each kind from another target permanent you control onto ~.",
+      "{T}: Move a counter of each kind not on target creature from ~ onto target creature.",
+      "{T}: Move a +1/+1 counter of each kind not on ~ from another target permanent you control onto ~."
+    ]
+  },
+  {
+    "id": "eff.edhx6.counters.move.oneOrMore",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.5",
+      "CR 608.2d"
+    ],
+    "pattern": "move one or more counters from {a:Obj} ( onto | to ) [a second] {b:Obj}",
+    "build": {
+      "op": "moveCounters",
+      "from": "$a",
+      "to": "$b",
+      "kind": "any",
+      "count": "all",
+      "upTo": true,
+      "atLeastOne": true
+    },
+    "subject": "none",
+    "consumes": [
+      "second"
+    ],
+    "needs": [
+      "op:moveCounters.atLeastOne",
+      "op:moveCounters.upTo"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Move one or more counters from ~ onto another target creature you control."
+      },
+      {
+        "text": "Move one or more counters from target creature onto another target creature."
+      }
+    ],
+    "counterExamples": [
+      "Move one or more +1/+1 counters from target creature onto another target creature.",
+      "Move one or more counters from target creature onto each other creature.",
+      "Move one or more counters from among creatures you control onto target creature."
+    ]
+  },
+  {
+    "id": "eff.edhx6.mana.playerOfChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.4",
+      "CR 605.3b",
+      "CR 608.2d"
+    ],
+    "pattern": "a player of your choice adds {u:ManaUnits}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "units": "$u",
+      "ofYourChoice": true
+    },
+    "subject": "none",
+    "needs": [
+      "op:addMana.playerOfChoice"
+    ],
+    "examples": [
+      {
+        "text": "{T}, Sacrifice ~: A player of your choice adds {R}{R}."
+      },
+      {
+        "text": "{2}: A player of your choice adds {G}."
+      }
+    ],
+    "counterExamples": [
+      "{T}: A player of your choice adds one mana of any color.",
+      "{T}: A player of your choice gains {C}.",
+      "{T}: Target player adds {C}."
+    ]
+  },
+  {
+    "id": "eff.edhx6.text.creatureType.toVampire",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 612.1",
+      "CR 612.2",
+      "CR 612.2a",
+      "CR 608.2d",
+      "CR 613.1c"
+    ],
+    "pattern": "change the text of {o:Obj} by replacing all instances of one creature type with vampire",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "creatureType",
+        "as": "textWordFrom",
+        "link": "textWordFrom"
+      },
+      {
+        "op": "effect",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 3,
+                "changeWord": {
+                  "kind": "creatureType",
+                  "from": {
+                    "chosen": "textWordFrom"
+                  },
+                  "to": "Vampire"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Tap target creature. Change the text of that creature by replacing all instances of one creature type with Vampire."
+      },
+      {
+        "text": "Change the text of target creature by replacing all instances of one creature type with Vampire."
+      }
+    ],
+    "counterExamples": [
+      "Change the text of target creature by replacing all instances of one creature type with another.",
+      "Change the text of target creature by replacing all instances of one creature type with Wall.",
+      "Change the text of target creature by replacing all instances of one color word with Vampire."
+    ]
+  }
+]

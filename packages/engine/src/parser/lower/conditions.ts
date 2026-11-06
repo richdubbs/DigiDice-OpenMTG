@@ -35,8 +35,10 @@ import { notPutMove } from '../../model/focus';
 import { foldFlips } from './coin-flip';
 import { foldClashes } from './clash';
 import { foldRollTable } from './die-roll';
-import { foldRepeatProcess } from './repeat-process';
-import { STEP_DELAY_TARGET_LEADS } from './targets';
+import { bindSacrificedX } from './edhd90';
+import { bindCastThisWay, bindSelfMovedAgain } from './self-moved';
+import { foldRepeatFollowing, foldRepeatProcess, markDropUncast } from './repeat-process';
+import { STEP_DELAY_TARGET_LEAD_STEP } from './targets';
 
 /** Steps whose "did" is not the success of one action (control flow), and the manual placeholder: never the producer of `did`. */
 const NOT_AN_ACTION: ReadonlySet<string> = new Set(['if', 'forEach', 'repeat', 'let', 'reflexive', 'manual', 'delay']);
@@ -46,7 +48,7 @@ const STEP_LISTS: ReadonlySet<string> = new Set(['then', 'else', 'do', 'otherwis
  * The instruction right before the condition at `path` (relative to top-level step `top` of `u`), or null. `u.steps[0..top-1]` are the steps as they
  * will be kept (the caller rewrites in place, in order).
  */
-function previousInstruction(seq: readonly Unit[], at: number, top: number, path: string, prefix: readonly Unit[], negated = false, raw = false, intoIf = false): Rec | Unit | null {
+function previousInstruction(seq: readonly Unit[], at: number, top: number, path: string, prefix: readonly Unit[], negated = false, raw = false, intoIf = false, intoElse = false): Rec | Unit | null {
   const parts = path.split('/').filter((x) => x !== '');
   if (parts.some((x, k) => STEP_LISTS.has(x) && /^\d+$/.test(parts[k + 1] ?? ''))) return null; // inside a nested step list: not resolved here
   const u = seq[at]!;
@@ -71,8 +73,19 @@ function previousInstruction(seq: readonly Unit[], at: number, top: number, path
   // still lowers Y as a manual step; Y is never automated by this. "If you don't" there stays unresolved (the text does not settle whether "not doing"
   // includes "not being offered").
   const then = step?.['then'];
-  if (!negated && step !== undefined && step['op'] === 'if' && step['else'] === undefined && step['guard'] === undefined && Array.isArray(then) && then.length === 1
-    && isRec(then[0]) && then[0]['op'] === 'may') return then[0];
+  // edh-d-85 (CR 608.2c, 118.12; Fishing Gear, ruling 2025-10-02): "If it's a permanent card, you may put it onto the battlefield under your control. If you don't, Z.": "you don't" is the
+  // option the lead-in "if" wraps, a move onto the battlefield of the very card the condition looks at; Z happens whenever that card was not put there (declined, or not of that kind: the
+  // option never ran, so it has no result, effects/eval.ts#did). Only that shape: any other "If C, you may X. If you don't" stays unresolved (T3 below).
+  if (negated && step !== undefined && step['op'] === 'if' && step['else'] === undefined && step['guard'] === undefined && Array.isArray(then) && then.length === 1 && isRec(then[0]) && then[0]['op'] === 'may'
+    && then[0]['otherwise'] === undefined && isRec(step['cond']) && step['cond']['cond'] === 'matches' && Array.isArray(then[0]['do']) && (then[0]['do'] as unknown[]).length === 1) {
+    const mv = (then[0]['do'] as unknown[])[0];
+    if (isRec(mv) && mv['op'] === 'move' && mv['guard'] === undefined && JSON.stringify(mv['what']) === JSON.stringify(step['cond']['object']) && isRec(mv['to']) && mv['to']['zone'] === 'battlefield') return then[0];
+  }
+  // edh-d-78 (CR 118.12, 608.2c; Transmute Artifact): "If C, you may pay {X}. If you do, Y. If you don't, Z.": "you don't" is the wrapped payment too (declined or unpaid; with C false the payment is never offered and Z does not happen: foldNotDidInIf)
+  if ((!negated || (Array.isArray(then) && isRec(then[0]) && then[0]['op'] === 'pay')) && step !== undefined && step['op'] === 'if' && step['else'] === undefined && step['guard'] === undefined && Array.isArray(then) && then.length === 1
+    && isRec(then[0]) && (then[0]['op'] === 'may'
+      // edh-c-67 (CR 118.12, 608.2c; Wand of Denial): "If C, you may pay 2 life. If you do, Y.": the optional payment the lead-in "if" wraps (a payment with nothing of its own after it); lint-flow.ts#optionDid
+      || (then[0]['op'] === 'pay' && then[0]['mandatory'] !== true && then[0]['then'] === undefined && then[0]['else'] === undefined && (then[0]['times'] === undefined || isRec(then[0]['times']) /* edh-d-78: "you may pay {X}, where X is the difference" is one payment of an amount */)))) return then[0];
   // std-blb (CR 608.2c, 118.12): "Then if C, X. If you do, Y." resolves "you do" to X, the last instruction of the branch of the `if` right before (no
   // `else`, no guard; not a payment, which foldPay owns). (Cloud std-fin wrote the same reading for a branch of one instruction, "[Then] if C, sacrifice ~. If you
   // do, Y." (The Misty Mountains Cold), with its foldActionInIf: merged into this one, which also reads a longer branch.) Only for a sentence that is nothing but "If you do, Y." (`intoIf`): foldDidInIf then moves it into
@@ -80,6 +93,14 @@ function previousInstruction(seq: readonly Unit[], at: number, top: number, path
   if (intoIf && !negated && step !== undefined && step['op'] === 'if' && step['else'] === undefined && step['guard'] === undefined && Array.isArray(then) && then.length > 0) {
     const last = then[then.length - 1];
     if (isRec(last) && typeof last['op'] === 'string' && !NOT_AN_ACTION.has(last['op']) && last['op'] !== 'pay') return last;
+  }
+  // edh-misc-6 (CR 603.12, 608.2c; Rose Room Treasurer): "If C, X. Otherwise, you may pay {X}. When you do, Y." The reflexive trigger waits for the payment of the `else`
+  // branch right before it (the last instruction of that branch, a `pay`); with C true nothing was paid, and a payment that never ran has no result (effects/eval.ts#did).
+  // Only a reflexive trigger, and only when the `then` branch has no option or payment of its own that "you do" could mean.
+  if (intoElse && !negated && step !== undefined && step['op'] === 'if' && step['guard'] === undefined && Array.isArray(step['else']) && step['else'].length > 0
+    && Array.isArray(then) && !then.some((x) => isRec(x) && (x['op'] === 'pay' || x['op'] === 'may'))) {
+    const last = step['else'][step['else'].length - 1];
+    if (isRec(last) && last['op'] === 'pay') return last;
   }
   return step !== undefined && typeof step['op'] === 'string' && !NOT_AN_ACTION.has(step['op']) ? step : null;
 }
@@ -204,6 +225,13 @@ function movedFits(node: Rec): (s: Rec) => boolean {
  * names the exile, not the permission right before. Every earlier sentence must be understood (one that is not may hold such an instruction: an E1 shield aside),
  * and there must be exactly one; otherwise null.
  */
+/** edh-next-142: an option of yours (no `otherwise`, no guard) that is one reveal by you of one named card ("you may reveal that card"). */
+function isRevealOption(x: Rec): boolean {
+  const body = Array.isArray(x['do']) && x['do'].length === 1 ? x['do'][0] : undefined;
+  return x['op'] === 'may' && isRec(x['who']) && x['who']['ref'] === 'you' && x['otherwise'] === undefined && x['guard'] === undefined && isRec(body) && body['op'] === 'reveal'
+    && isRec(body['who']) && body['who']['ref'] === 'you' && body['to'] === undefined && isRec(body['what']) && (body['what']['ref'] === 'bound' || body['what']['ref'] === 'target');
+}
+
 function onlyEarlier(seq: readonly Unit[], at: number, top: number, prefix: readonly Unit[], fits: (s: Rec) => boolean): Rec | null {
   const found: Rec[] = [];
   for (const u of [...prefix, ...seq.slice(0, at + 1)]) {
@@ -326,6 +354,22 @@ function resolveDid(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
         if (typeof dw['as'] !== 'string') dw['as'] = freshName(d, 'drew');
         return { cond: 'did', step: dw['as'], not: true };
       }
+      // edh-perms-6 (CR 111.1, 707.9, 608.2c; Springheart Nantuko): "If you didn't create a token this way" names the ONE token creation or token copy of the ability before it, in a payment's
+      // branch too: one that never ran (its payment declined, its condition false) created nothing (eval.ts#did reads a missing result as not performed)
+      // edh-next-142 (CR 701.20a, 608.2c, 608.2d; Omnath, Locus of All): "If you don't reveal it, put it into your hand." names the ONE option of yours earlier in the ability that is one
+      // reveal by you of one named card, inside an `if` too ("You may reveal that card if C."): an option that never ran (its condition false) or was declined revealed nothing (eval.ts#did)
+      if (node['$step'] === 'revealThisWay') {
+        const may = node['not'] === true ? onlyEarlier(seq, at, i, prefix, isRevealOption) : null;
+        if (may === null) { ok = false; return undefined; }
+        if (typeof may['as'] !== 'string') may['as'] = freshName(d, 'did');
+        return { cond: 'did', step: may['as'], not: true };
+      }
+      if (node['$step'] === 'tokenThisWay') {
+        const mk = onlyEarlier(seq, at, i, prefix, (x) => (x['op'] === 'createToken' || (x['op'] === 'copy' && x['result'] === 'token')) && isRec(x['who']) && x['who']['ref'] === 'you');
+        if (mk === null) { ok = false; return undefined; }
+        if (typeof mk['as'] !== 'string') mk['as'] = freshName(d, 'made');
+        return { cond: 'did', step: mk['as'], not: true };
+      }
       // std-rx31 (CR 608.2c, 601.2): "Put the exiled card into your hand if it wasn't cast this way" names the ONE optional cast by you earlier in the ability, inside an
       // `if` too ("If this spell was bargained, you may cast the exiled card ..."): a cast that never ran (its condition false) or was declined cast nothing (eval.ts#did)
       if (node['$step'] === 'castThisWay') {
@@ -346,6 +390,9 @@ function resolveDid(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
         const dw = drewThisWay(seq, at, i, path, prefix);
         if (dw === null) { ok = false; return undefined; }
         if (typeof dw['as'] !== 'string') dw['as'] = freshName(d, 'drew');
+        // trek-14 (CR 608.2c, 121.1; Sarek, Federation Ambassador): "if you draw three or more cards this way": at least that many cards drawn by that draw (resultCount)
+        if (typeof node['$atLeast'] === 'number') return { cond: 'compare', left: { q: 'resultCount', step: dw['as'] }, op: '>=', right: node['$atLeast'] };
+        if (node['not'] === true) return { cond: 'did', step: dw['as'], not: true }; // edh-d-26 (Mr. Foxglove): "If you didn't draw cards this way"
         return { cond: 'did', step: dw['as'] };
       }
       // r4-fxb (CR 608.2c): "If you do, X. If you don't, Y.": "you don't" reads the same instruction as the "If you do" sentence right before it (an `if` on that
@@ -355,13 +402,20 @@ function resolveDid(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
         const c = r !== null && !isUnit(r) && r['op'] === 'if' && r['else'] === undefined && r['guard'] === undefined && isRec(r['cond']) ? r['cond'] : null;
         if (c !== null && c['cond'] === 'did' && typeof c['step'] === 'string' && Object.keys(c).length === 2) return { cond: 'did', step: c['step'], not: true };
       }
-      let p = previousInstruction(seq, at, i, path, prefix, node['not'] === true, false, only);
+      // std-rw8 (CR 603.12, 118.12): this sentence is a reflexive trigger, "When you do, ..."
+      const reflexiveWhen = path === '/when' && u.steps.length === 1 && u.steps[i]?.['op'] === 'reflexive' && node['which'] === undefined && node['to'] === undefined;
+      let p = previousInstruction(seq, at, i, path, prefix, node['not'] === true, false, only || reflexiveWhen, reflexiveWhen); // edh-d-34: a reflexive "When you do" also waits for the last instruction of the branch of an `if` right before it (Regenerations Restored)
       if (p === null && node['which'] !== undefined) p = onlyEarlier(seq, at, i, prefix, movedFits(node)); // Cloud C7
+      // edh-d-95 (CR 602.2b, 608.2h, 614.15; Shilgengar, Sire of Famine): no instruction before it at all, as in the "instead" of the ability's first instruction ("Sacrifice another creature:
+      // Create a Blood token. If you sacrificed an Angel this way, create ... instead.", the rider folded into that instruction): only the cost can be what "this way" names (Cloud r3-moved below)
+      if (p === null && node['which'] !== undefined) {
+        const cost = noEarlierOfKind(seq, at, i, prefix, movedFits(node)) ? costMovedCond(d, node) : null;
+        if (cost !== null) return cost;
+      }
       if (p === null) { ok = false; return undefined; }
       // FAST5 T44: "you do" after a payment of one of two costs is folded into both payments (foldPay): only as a sentence of its own, and never "you don't";
       // std-rw8 (CR 603.12, 118.12): or as the "When you do" of a reflexive trigger, the whole sentence ("You may sacrifice an artifact or discard a nonland card. When
       // you do, ~ deals 2 damage to any target."), which waits for either payment (effects/handlers/pay.ts: the result of such a payment is either payment's)
-      const reflexiveWhen = path === '/when' && u.steps.length === 1 && u.steps[i]?.['op'] === 'reflexive' && node['which'] === undefined && node['to'] === undefined;
       if (!isUnit(p) && eitherOrPay(p) !== null && (node['not'] === true || (didOnly(u) === null && !reflexiveWhen))) { ok = false; return undefined; }
       // FAST5X E17 (CR 608.2c, 608.2h): "if a creature you controlled was destroyed this way" reads what a destroy step reports (StepResult.before), so the
       // instruction right before it must be that destroy step (understood); anything else is unresolved
@@ -380,6 +434,13 @@ function resolveDid(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
       // Cloud C7 (CR 608.2c): "If you exiled a land card this way" after "You may play them this turn": the one earlier instruction of the kind the words name
       // (Cloud std-eoe's "If you didn't put a card into your hand this way" after "Put the rest on the bottom ...", Pulsar Squadron Ace, is read here too: its own
       // handMoveBeforeRest found the same move to the hand and was collapsed into this one reading at the wave 3 merge)
+      // edh-d-53 (CR 602.2b, 608.2h; Lethal Throwdown): "If the modified creature was sacrificed" (no "this way") asks only what the cost sacrificed
+      if (node['$costOnly'] === true) {
+        const cost = noEarlierOfKind(seq, at, i, prefix, movedFits(node)) ? costMovedCond(d, node) : null;
+        if (cost !== null) return cost;
+        ok = false;
+        return undefined;
+      }
       if (node['which'] !== undefined && (isUnit(p) || !movedFits(node)(p))) p = onlyEarlier(seq, at, i, prefix, movedFits(node)) ?? p;
       if (node['which'] !== undefined && (isUnit(p) || !movedFits(node)(p))) {
         // Cloud r3-moved (CR 602.2b, 601.2h, 608.2c, 608.2h): no instruction of the ability is of that kind, but its cost is: "{1}{B}, Sacrifice another creature: Put a
@@ -396,6 +457,15 @@ function resolveDid(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
       // r5-moved (CR 701.23a, 603.12, 608.2c): ... or, when the instruction right before is another one ("Search your library for a basic land card, put it onto the
       // battlefield tapped, then shuffle. When you search your library this way, ..."), the ONE earlier search of your library by you in the ability, every earlier sentence
       // understood (a search is performed when the library was searched, whatever it found: effects/handlers/cards-library.ts)
+      // edh-next-138 (CR 701.20a, 608.2c; Fisher's Talent): "Create a 1/1 blue Fish creature token if you revealed it this way." names the option of yours right before it that reveals the one card
+      // ("You may reveal it if it's a land card.": the option inside the `if` of its condition, which, not taken or not offered, revealed nothing); anything else is unresolved
+      if (node['$revealed'] === true) {
+        const optionOf = (x: Rec): Rec | null => (x['op'] === 'may' && isRec(x['who']) && x['who']['ref'] === 'you' && x['otherwise'] === undefined && Array.isArray(x['do']) && x['do'].length === 1 && isRec(x['do'][0]) && x['do'][0]['op'] === 'reveal' && isRec(x['do'][0]['who']) && x['do'][0]['who']['ref'] === 'you' && isRec(x['do'][0]['what']) && x['do'][0]['what']['ref'] === 'bound' ? x : null);
+        const inIf = !isUnit(p) && p['op'] === 'if' && p['else'] === undefined && Array.isArray(p['then']) && p['then'].length === 1 && isRec(p['then'][0]) ? optionOf(p['then'][0] as Rec) : null;
+        const own = isUnit(p) ? null : (inIf ?? optionOf(p));
+        if (own === null) { ok = false; return undefined; }
+        p = own;
+      }
       if (node['$searched'] === true && (isUnit(p) || !searchOfYourLibrary(p))) p = onlyEarlier(seq, at, i, prefix, (x) => x['op'] === 'search' && searchOfYourLibrary(x)) ?? p;
       if (node['$searched'] === true && (isUnit(p) || !searchOfYourLibrary(p))) { ok = false; return undefined; }
       if (toHand && node['which'] === undefined) { ok = false; return undefined; }
@@ -408,7 +478,25 @@ function resolveDid(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
       // TREK-6 (CR 608.2d; assimilate, Star Trek reminder text): or an assimilate of a card chosen among those a linked instruction exiled ("Assimilate a creature card exiled
       // with it. If you can't, ..."): it put no card onto the battlefield when there was none to choose (the macro's moves report nothing, keywords/actions/assimilate.ts)
       const assimilates = !isUnit(p) && p['op'] === 'action' && p['action'] === 'assimilate' && p['guard'] === undefined;
-      if (node['$cant'] === true && (isUnit(p) || (p['op'] !== 'move' && !(p['op'] === 'sacrificeChoice' && p['mode'] === undefined) && !faceUpSelf && !assimilates))) { ok = false; return undefined; }
+      // edh-top-9 (CR 701.12a, 608.2c; Gilded Drake): "if you don't or can't make an exchange" names the exchange (of control) right before it, which reports whether it was performed
+      if (node['$exchange'] === true && (isUnit(p) || p['op'] !== 'exchange' || p['guard'] !== undefined)) { ok = false; return undefined; }
+      // edh-c-96 (CR 609.3, 608.2d; Egon, God of Death ruling 2021-02-05): "exile two cards from your graveyard. If you can't, ..." with one card in the graveyard exiles nothing and
+      // counts as "can't"; the choose-and-exile reading of eff.edhv96.exile.nCardsFromYourGraveyard exiles the one card, so "if you can't" never follows it
+      const exilesChosenN = !isUnit(p) && p['op'] === 'move' && isRec(p['what']) && p['what']['ref'] === 'bound' && p['what']['name'] === 'exiledChoice';
+      if (exilesChosenN) { ok = false; return undefined; }
+      // edh-d-28 (CR 701.9a, 608.2d; Urgoros, the Empty One): or a discard of exactly one card by one player ("That player discards a card at random. If the player can't, ..."): the discard
+      // reports nothing done when the hand was empty (effects/handlers/cards-draw.ts#discardHandler); a group of players, or several cards, is no reading of "can't" (which of them?)
+      // edh-next-98 (CR 118.3, 107.14, 608.2d; Greenbelt Rampager): or a bare "Pay {E}{E}." (template ch.pay, not "you may pay"): an instruction, so it is made whenever it can be (`mandatory`,
+      // effects/handlers/pay.ts) and "If you can't, ..." reads that it was not made. A payment of other wording stays unresolved.
+      const barePay = !isUnit(p) && p['op'] === 'pay' && p['mandatory'] === undefined && p['then'] === undefined && p['else'] === undefined && p['times'] === undefined && p['guard'] === undefined
+        && p['upTo'] === undefined && p['anyAmount'] === undefined && p['everyPlayer'] === undefined && isRec(p['who']) && p['who']['ref'] === 'you'
+        && seq.some((x) => x.steps.includes(p as Rec) && x.templates.length === 1 && x.templates[0] === 'ch.pay');
+      const paysMandatory = node['$cant'] === true && barePay;
+      const discardsOne = !isUnit(p) && p['op'] === 'discard' && p['count'] === 1 && p['guard'] === undefined && p['cantAs'] === undefined && isRec(p['who']) && p['who']['ref'] === 'event';
+      if (node['$cant'] === true && (isUnit(p) || (p['op'] !== 'move' && !(p['op'] === 'sacrificeChoice' && p['mode'] === undefined) && !faceUpSelf && !assimilates && !discardsOne && !paysMandatory))) { ok = false; return undefined; }
+      // edh-perms-5 (CR 700.4, 701.8a; Saw in Half): "If that creature dies this way" is about the ONE object a destroy of a single target put into a graveyard
+      if (node['$dies'] === true && (isUnit(p) || p['op'] !== 'destroy' || !isRec(p['what']) || p['what']['ref'] !== 'target')) { ok = false; return undefined; }
+      if (paysMandatory && !isUnit(p)) p['mandatory'] = true;
       const how = moveTo !== null ? { to: moveTo } : {};
       if (isUnit(p)) {
         // the name the manual sentence would have produced: taint T1 poisons every step that reads it (parser/taint.ts, model/taint.ts#poisonedSteps)
@@ -421,6 +509,36 @@ function resolveDid(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
     }) as Rec;
   }
   if (!ok) setManual(u, { code: 'unbound-reference', reason: '"if you do" with no understood instruction right before it to refer to (CR 118.12, 608.2c)', unresolved: true });
+}
+
+/** edh-next-145: the `when` of a reflexive trigger marked `@becomes` (see lowerReflexive), with the `let` it needs put in front of the pump; null when the pump is not of that shape. */
+function becomesCondition(d: Draft, step: Rec, all: readonly Unit[]): Rec | null {
+  const when = step['when'];
+  const b = step['@becomes'] as Rec;
+  if (!isRec(when) || when['cond'] !== 'did' || typeof when['step'] !== 'string' || when['step'] === '' || Object.keys(when).length !== 2 || b['stat'] !== 'power' || typeof b['value'] !== 'number') return null;
+  const owner = all.find((o) => o.manual === undefined && o.steps.some((x) => x['as'] === when['step']));
+  const k = owner === undefined ? -1 : owner.steps.findIndex((x) => x['as'] === when['step']);
+  const pump = owner === undefined || k < 0 ? undefined : owner.steps[k]!;
+  const obj = pump === undefined ? undefined : pumpedObject(pump);
+  if (owner === undefined || obj === undefined) return null;
+  const before = freshName(d, 'powerBefore');
+  owner.steps = [...owner.steps.slice(0, k), { op: 'let', name: before, value: { q: 'stat', stat: 'power', of: clone(obj) } }, ...owner.steps.slice(k)];
+  return { did: when['step'], if: { cond: 'all', of: [{ cond: 'compare', left: { q: 'var', name: before }, op: '!=', right: b['value'] }, { cond: 'compare', left: { q: 'stat', stat: 'power', of: clone(obj) }, op: '==', right: b['value'] }] } };
+}
+
+/**
+ * edh-next-145 (CR 613.4c, 611.2c): the one object a pump right before "When its power becomes N this way" raises the power of: an `effect` of one continuous effect until end of turn on
+ * the source itself or on one target, whose only modification is a layer 7c change of a positive power by a number. Anything else: undefined.
+ */
+function pumpedObject(p: Rec): Rec | undefined {
+  if (p['op'] !== 'effect' || p['guard'] !== undefined || !Array.isArray(p['effects']) || p['effects'].length !== 1) return undefined;
+  const e = p['effects'][0];
+  if (!isRec(e) || e['s'] !== 'continuous' || !isRec(e['affects']) || !Array.isArray(e['mods']) || e['mods'].length !== 1) return undefined;
+  const a = e['affects'];
+  if (!((a['ref'] === 'self' && Object.keys(a).length === 1) || (a['ref'] === 'target' && typeof a['id'] === 'string' && Object.keys(a).length === 2))) return undefined;
+  const m = e['mods'][0];
+  if (!isRec(m) || m['layer'] !== '7c' || typeof m['power'] !== 'number' || m['power'] <= 0) return undefined;
+  return a;
 }
 
 /** std-rj: a `cast` step, or the `cast` that is the only instruction of an `if` with no `else` and no guard (lower/conditions.ts#resolveDid, `$cast`); else null. */
@@ -463,6 +581,9 @@ function resolveExcess(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void 
     let name: string | undefined;
     u.steps[i] = rewrite(top, (node, path) => {
       if (!ok || !isExcess(node) || node['$step'] === undefined) return undefined;
+      // edh-next-93 (CR 120.10, 603.2; Fall of Cair Andros): "that excess damage" with no excess condition before it ("Whenever a creature ... is dealt excess damage, amass Orcs X, where X is that
+      // excess damage") is the excess part of the damage the trigger's event was (lint-nodes.ts keeps it to a trigger on a damage event with `excess`)
+      if (node['$that'] === true && cond === undefined) return { q: 'eventExcess' };
       const parts = path.split('/').filter((x) => x !== '');
       const nested = parts.some((x, k) => STEP_LISTS.has(x) && /^\d+$/.test(parts[k + 1] ?? ''));
       if (nested && cond === undefined) { ok = false; return undefined; }
@@ -517,6 +638,29 @@ function losesLife(p: Rec): boolean {
 }
 
 /**
+ * trek-22 (CR 119.3, 608.2c, 608.2e; Gul Dukat, Colonial Prefect): "Each opponent loses life equal to the life that player lost this turn. You gain life equal to the life lost this way."
+ * The first sentence is a `forEach` over the players whose one step makes the bound player lose their own amount (eff.t34.loseLife.eachOpponentLifeLostThisTurn). Read by "the life lost
+ * this way" it is the one `loseLife` of a group whose amount is read for each player (`who` the group, `amount` reading `iterating`; effects/handlers/lifedamage.ts#lifeHandler adds up
+ * what they lost): the same instruction, written so that its result is one step. Only that exact shape, and only when "the life lost this way" follows it.
+ */
+function eachLosesOwnAmount(p: Rec): boolean {
+  const over = p['over'];
+  const body = p['do'];
+  const as = p['as'];
+  if (p['op'] !== 'forEach' || typeof as !== 'string' || !isRec(over) || over['ref'] !== 'each' || (over['who'] !== 'opponent' && over['who'] !== 'player') || Object.keys(over).length !== 2) return false;
+  if (!Array.isArray(body) || body.length !== 1 || !isRec(body[0]) || body[0]['op'] !== 'loseLife' || body[0]['guard'] !== undefined || body[0]['as'] !== undefined) return false;
+  const who = body[0]['who'];
+  if (!isRec(who) || who['ref'] !== 'bound' || who['name'] !== as || Object.keys(p).some((k) => !['op', 'over', 'as', 'do', 'text', 'src'].includes(k))) return false;
+  const amount = JSON.parse(JSON.stringify(body[0]['amount']).split(JSON.stringify({ ref: 'bound', name: as })).join('{"ref":"iterating"}')) as unknown;
+  if (JSON.stringify(amount).includes('"bound"')) return false;
+  for (const k of ['over', 'as', 'do']) delete p[k];
+  p['op'] = 'loseLife';
+  p['who'] = over;
+  p['amount'] = amount;
+  return true;
+}
+
+/**
  * M12-3 (CR 119.3, 608.2c): "the life lost this way" (`{q:'lifeLost', step:'', $step}` from the Qty hole) names the loseLife instruction RIGHT BEFORE the
  * sentence's instruction, as "if you do" and excess damage do (`previousInstruction`): it gets an `as` name and the quantity names it ("Each opponent loses
  * X life. You gain life equal to the life lost this way."; "each opponent loses 3 life, then you gain life equal to the life lost this way"). Anything else
@@ -536,9 +680,14 @@ function resolveLifeLost(d: Draft, seq: Unit[], at: number, prefix: Unit[]): voi
     u.steps[i] = rewrite(top, (node, path) => {
       if (!ok || !isLifeLost(node) || node['$step'] === undefined) return undefined;
       const parts = path.split('/').filter((x) => x !== '');
-      if (parts.some((x, k) => STEP_LISTS.has(x) && /^\d+$/.test(parts[k + 1] ?? '')) && JSON.stringify(node) !== cond) { ok = false; return undefined; }
+      // edh-next-86 (CR 608.2c, 119.3; Blood Tribute): "If this spell was kicked, you gain life equal to the life lost this way": the marker one level inside the then / else steps of an `if`
+      // (a plain condition about the spell, not a life-lost comparison) still names the instruction right before that `if`
+      const oneLevelInIf = top['op'] === 'if' && cond === undefined && parts.length >= 2 && (parts[0] === 'then' || parts[0] === 'else') && parts[1] === '0' /* the first step: no earlier step of the list could be the loss meant */
+        && !parts.some((x, k) => k >= 2 && STEP_LISTS.has(x) && /^\d+$/.test(parts[k + 1] ?? ''));
+      if (parts.some((x, k) => STEP_LISTS.has(x) && /^\d+$/.test(parts[k + 1] ?? '')) && JSON.stringify(node) !== cond && !oneLevelInIf) { ok = false; return undefined; }
       if (name === undefined) {
-        const p = previousInstruction(seq, at, i, '', prefix);
+        let p = previousInstruction(seq, at, i, '', prefix);
+        if (p === null) { const raw = previousInstruction(seq, at, i, '', prefix, false, true); if (raw !== null && !isUnit(raw) && eachLosesOwnAmount(raw)) p = raw; } // trek-22
         if (p === null || (!isUnit(p) && !losesLife(p))) { ok = false; return undefined; }
         if (isUnit(p)) {
           name = freshName(d, 'lost');
@@ -580,7 +729,7 @@ function resolveDamageDealt(d: Draft, seq: Unit[], at: number, prefix: Unit[]): 
         if (typeof p['as'] !== 'string') p['as'] = freshName(d, 'dealt');
         name = p['as'] as string;
       }
-      return { q: 'damageDealt', step: name };
+      return node['stated'] === true ? { q: 'damageDealt', step: name, stated: true } : { q: 'damageDealt', step: name }; // edh-next-109: the stated amount keeps its flag
     }) as Rec;
   }
   if (!ok) setManual(u, { code: 'unbound-reference', reason: '"the damage dealt this way" with no damage instruction right before it to refer to (CR 120.3, 608.2c)', unresolved: true });
@@ -605,8 +754,8 @@ function resolveCountersRemoved(d: Draft, seq: Unit[], at: number, prefix: Unit[
   const u = seq[at]!;
   let ok = true;
   u.steps = [...u.steps];
+  let name: string | undefined; // edhn63: one name for the whole sentence ("You draw cards and lose life equal to the number of counters removed this way" reads it in two steps)
   for (let i = 0; i < u.steps.length && ok; i++) {
-    let name: string | undefined;
     u.steps[i] = rewrite(u.steps[i]!, (node, path) => {
       if (!ok || !isCountersRemoved(node) || node['$step'] === undefined) return undefined;
       const parts = path.split('/').filter((x) => x !== '');
@@ -636,7 +785,14 @@ function resolveCountersRemoved(d: Draft, seq: Unit[], at: number, prefix: Unit[
 
 const isCountersPut = (n: unknown): n is Rec => isRec(n) && n['q'] === 'countersPut';
 
+/** edh-d-93: a moveCounters instruction of every counter of one kind (the kind the condition names) from one object onto another. */
+function movesCountersOfKind(p: Rec, kind: unknown): boolean {
+  return p['op'] === 'moveCounters' && typeof kind === 'string' && p['kind'] === kind && p['count'] === 'all' && p['guard'] === undefined
+    && ['distribute', 'among', 'upTo', 'eachNewKind'].every((k) => p[k] === undefined);
+}
+
 /** trek-6: a putCounters instruction, or a "you may" whose optional action is one (or holds one). */
+
 function putsCounters(p: Rec): boolean {
   const own = (s: unknown): boolean => isRec(s) && s['op'] === 'putCounters';
   if (own(p)) return true;
@@ -659,15 +815,20 @@ function resolveCountersPut(d: Draft, seq: Unit[], at: number, prefix: Unit[]): 
     u.steps[i] = rewrite(u.steps[i]!, (node, path) => {
       if (!ok || !isCountersPut(node) || node['$step'] === undefined) return undefined;
       const parts = path.split('/').filter((x) => x !== '');
-      if (parts.some((x, k) => STEP_LISTS.has(x) && /^\d+$/.test(parts[k + 1] ?? ''))) { ok = false; return undefined; }
+      // edh-d-93: the "that much" of the counters moved, inside the `then` of the same `if` whose condition names the move (Black Panther: "..., you gain that much life")
+      const sameIf = node['$move'] === true && u.steps[i]!['op'] === 'if' && JSON.stringify(u.steps[i]!['cond']).includes('"$move":true') && parts[0] === 'then';
+      if (!sameIf && parts.some((x, k) => STEP_LISTS.has(x) && /^\d+$/.test(parts[k + 1] ?? ''))) { ok = false; return undefined; }
       if (name === undefined) {
         const p = previousInstruction(seq, at, i, '', prefix);
-        if (p === null || (!isUnit(p) && !putsCounters(p))) { ok = false; return undefined; }
+        // edh-d-93 (CR 122.5, 608.2c; Black Panther, Wakandan King): "If one or more +1/+1 counters are moved this way" (`$move`, parser/holes/edhd93.ts#countersMoved) names the moveCounters
+        // instruction right before it, of one kind from one object (the counters it put onto the other object are the counters moved), and nothing else
+        const move = node['$move'] === true;
+        if (p === null || (!isUnit(p) && (move ? !movesCountersOfKind(p, node['kind']) : !putsCounters(p)))) { ok = false; return undefined; }
         if (isUnit(p)) {
           name = freshName(d, 'put');
           p.lostNames = [...(p.lostNames ?? []), name];
         } else {
-          const put = p['op'] === 'putCounters' ? p : ((p['do'] as Rec[]).find((s) => isRec(s) && s['op'] === 'putCounters') as Rec);
+          const put = p['op'] === 'putCounters' || move ? p : ((p['do'] as Rec[]).find((s) => isRec(s) && s['op'] === 'putCounters') as Rec);
           if (node['kind'] !== undefined && put['kind'] !== node['kind']) { ok = false; return undefined; }
           if (typeof p['as'] !== 'string') p['as'] = freshName(d, 'put');
           name = p['as'] as string;
@@ -700,6 +861,16 @@ function resolveMayCount(d: Draft, seq: Unit[], at: number, prefix: Unit[]): voi
       if (parts.some((x, k) => STEP_LISTS.has(x) && /^\d+$/.test(parts[k + 1] ?? ''))) { ok = false; return undefined; }
       if (name === undefined) {
         const p = previousInstruction(seq, at, i, '', prefix);
+        // edh-next-91 (CR 608.2c, 608.2d, 101.4; Tempt with Immortality): "Each opponent may return a creature card from their graveyard to the battlefield. For each opponent who does, ...":
+        // the sentence right before is one choice per opponent (at most one card each, `perPlayer`) and the move of what they chose; the opponents who did are the cards chosen
+        if (i === 0 && p !== null && !isUnit(p) && p['op'] === 'move' && isRec(p['what']) && p['what']['ref'] === 'bound' && typeof p['what']['name'] === 'string') {
+          const before = [...prefix, ...seq.slice(0, at)].filter((x) => x.manual !== undefined || x.steps.length > 0);
+          const last = before[before.length - 1];
+          const ch = last !== undefined && last.manual === undefined && last.steps.length >= 2 ? last.steps[last.steps.length - 2] : undefined;
+          if (ch !== undefined && ch['op'] === 'chooseObjects' && ch['as'] === p['what']['name'] && ch['min'] === 0 && ch['max'] === 1 && isRec(ch['perPlayer']) && ch['perPlayer']['ref'] === 'each' && ch['perPlayer']['who'] === 'opponent' && last!.steps[last!.steps.length - 1] === p) {
+            return { q: 'count', of: { ref: 'bound', name: p['what']['name'] } };
+          }
+        }
         if (p !== null && isUnit(p)) {
           // a sentence of this sequence right before it that is not understood is the antecedent: the reader is manual with it (taint T1), not contagious
           name = freshName(d, 'did');
@@ -752,7 +923,7 @@ function resolveVotes(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
   for (let i = 0; i < u.steps.length && ok; i++) {
     u.steps[i] = rewrite(u.steps[i]!, (node) => {
       if (!ok) return undefined;
-      const compare = node['cond'] === 'compare' && isVoteMarker(node['left']) ? node : undefined;
+      const compare = node['cond'] === 'compare' && isVoteMarker(node['left']) && (node['left'] as Rec)['q'] === 'votes' ? node : undefined; // edhd27: a compare of `votesFor` markers is resolved on its own sides
       if (compare === undefined && !isVoteMarker(node)) return undefined;
       const vote = voteBefore(seq, at, i, prefix);
       if (vote === null) { ok = false; return undefined; }
@@ -775,9 +946,20 @@ function resolveVotes(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
         if (choices === null || !choices.includes(choice) || node['$other'] !== undefined) { ok = false; return undefined; }
         return { q: 'votes', step: name(), choice };
       }
+      // edhd27 (CR 701.38a-b): "for each vote you received" / "for each vote they received": the votes a player or an object got, in a vote for players or objects
+      if (node['q'] === 'votesFor') {
+        const subject = vote['subject'];
+        // a vote for players is read for a player (you, the player a group instruction is at), a vote for objects for an object a forEach is at; anything else is always 0
+        const of = isRec(node['of']) ? node['of']['ref'] : undefined;
+        const forPlayers = isRec(subject) && subject['who'] !== undefined;
+        if (choices !== null || !isRec(subject) || (forPlayers ? of !== 'you' && of !== 'iterating' : of !== 'bound')) { ok = false; return undefined; }
+        return { q: 'votesFor', step: name(), of: node['of'] };
+      }
       if (node['ref'] === 'bound') {
         const subject = vote['subject'];
         if (choices !== null || !isRec(subject) || subject['ref'] !== 'each' || subject['filter'] === undefined) { ok = false; return undefined; }
+        // edhd27 (CR 701.38a): "each creature with one or more votes": every object the vote could be for (the template keeps those with a vote), not only the winners
+        if (node['$voted'] === true) return JSON.parse(JSON.stringify(subject));
         return { ref: 'bound', name: name() };
       }
       ok = false;
@@ -791,9 +973,31 @@ function resolveVotes(d: Draft, seq: Unit[], at: number, prefix: Unit[]): void {
 function nameUsed(d: Draft, name: string): boolean {
   let used = false;
   for (const u of sequences(d).flat()) visit(u.steps, (n) => {
-    if ((n['cond'] === 'did' && n['step'] === name) || (n['ref'] === 'bound' && n['name'] === name) || ((n['q'] === 'resultCount' || n['q'] === 'excessDamage' || n['q'] === 'lifeLost' || n['q'] === 'countersRemoved' || n['q'] === 'countersPut' || n['q'] === 'votes' || n['q'] === 'damageDealt') && n['step'] === name)) used = true;
+    if ((n['cond'] === 'did' && n['step'] === name) || (n['ref'] === 'bound' && n['name'] === name) || ((n['q'] === 'resultCount' || n['q'] === 'excessDamage' || n['q'] === 'lifeLost' || n['q'] === 'countersRemoved' || n['q'] === 'countersPut' || n['q'] === 'votes' || n['q'] === 'votesFor' || n['q'] === 'damageDealt') && n['step'] === name)) used = true;
   });
   return used;
+}
+
+/** Control flow and placeholders never say "you may pay X and <instruction>": the instruction is a plain action done only when the payment was made. */
+const NOT_PAID_WITH: ReadonlySet<string> = new Set([...NOT_AN_ACTION, 'may', 'pay', 'choose', 'chooseValue']);
+
+/**
+ * edh-misc-4 (CR 118.12, 608.2c; Kinzu of the Bleak Coven; owner's standing rule 2026-10-27, a recorded G10 change): "you may pay 2 life and exile it." is one option of
+ * the controller: the payment, then the instruction, done only if the payment was made. The chart reads the sentence as the payment and a separate instruction (which
+ * then ran whether or not the payment was made). The instruction becomes the `then` of the payment; "If you do, Y." right after it joins that `then` (foldPay), as after
+ * a sentence that is only the payment. Only a sentence that begins "you may pay" and whose instructions after the payment are all plain actions without a guard
+ * (a cost that is part of the payment itself, "you may pay {1} and discard a card", was already one payment and has one step).
+ */
+function foldMayPayAnd(seq: Unit[]): void {
+  for (const u of seq) {
+    if (u.manual || u.steps.length < 2 || u.rider !== undefined || !/^you may pay\b/i.test(u.text.trim())) continue;
+    const [pay, ...rest] = u.steps;
+    if (pay === undefined || pay['op'] !== 'pay' || !isRec(pay['who']) || pay['who']['ref'] !== 'you' || Object.keys(pay['who']).length !== 1) continue;
+    if (['then', 'else', 'as', 'guard', 'mandatory', 'times', 'upTo'].some((k) => pay[k] !== undefined)) continue;
+    if (!rest.every((r) => typeof r['op'] === 'string' && !NOT_PAID_WITH.has(r['op'] as string) && r['guard'] === undefined)) continue;
+    pay['then'] = rest;
+    u.steps = [pay];
+  }
 }
 
 /** CR 118.12: fold "If [they do / don't], X." into the pay step it follows. */
@@ -816,6 +1020,14 @@ function foldPay(d: Draft, seq: Unit[]): void {
       second['then'] = JSON.parse(JSON.stringify(s['then'])) as unknown;
       u.steps = [];
       if (!nameUsed(d, cond['step'] as string)) delete pay['as'];
+      return;
+    }
+    if (side === 'then' && /^you may pay\b[^.]*? and\b/i.test(prev.text.trim()) && Array.isArray(pay['then']) && Array.isArray(s['then'])) { // (a `then` the payment has before "If you do" is the one foldMayPayAnd made)
+      // edh-misc-4: "You may pay 2 life and exile it. If you do, create a token ...": the sentence goes after the instruction done with the payment
+      pay['then'].push(...s['then']);
+      u.steps = [];
+      if (!nameUsed(d, cond['step'] as string)) delete pay['as'];
+      absorbFollowers(seq, i, pay);
       return;
     }
     if (pay[side] !== undefined) return;
@@ -858,6 +1070,72 @@ function foldMayInIf(seq: Unit[]): void {
  * sentence that is nothing but "If you do, Y.". Cloud std-fin's foldActionInIf (the same fold for a branch of one instruction, The Misty Mountains Cold) is
  * merged into this one.
  */
+/**
+ * edh-d-78 (CR 118.12, 608.2c; Transmute Artifact): "If C, you may pay {X}. If you do, Y. If you don't, Z.": "If you don't, Z." moves into the branch of the `if` that wraps the payment, after the
+ * "if you do" Y (foldMayInIf / foldDidInIf put that one there): the payment is offered only when C holds, so Z too happens only then. Only the second answer to a payment that is the
+ * first instruction of the branch, directly after its "if you do" answer.
+ */
+function foldNotDidInIf(seq: Unit[]): void {
+  seq.forEach((u, i) => {
+    if (u.manual || u.steps.length !== 1 || i === 0) return;
+    const s = u.steps[0]!;
+    const cond = s['cond'];
+    if (s['op'] !== 'if' || !isRec(cond) || cond['cond'] !== 'did' || cond['not'] !== true || cond['which'] !== undefined || cond['to'] !== undefined || typeof cond['step'] !== 'string' || s['else'] !== undefined || s['guard'] !== undefined) return;
+    const prev = seq.slice(0, i).reverse().find((p) => p.manual !== undefined || p.steps.length > 0);
+    if (!prev || prev.manual) return;
+    const outer = prev.steps[prev.steps.length - 1]!;
+    const branch = outer['then'];
+    if (outer['op'] !== 'if' || outer['else'] !== undefined || outer['guard'] !== undefined || !Array.isArray(branch) || branch.length !== 2) return;
+    const [pay, yes] = branch;
+    if (!isRec(pay) || pay['op'] !== 'pay' || pay['as'] !== cond['step'] || !isRec(yes) || yes['op'] !== 'if' || !isRec(yes['cond']) || yes['cond']['cond'] !== 'did' || yes['cond']['step'] !== cond['step'] || yes['cond']['not'] === true) return;
+    branch.push(s);
+    u.steps = [];
+  });
+}
+
+/**
+ * edh-d-85 (CR 608.2c, 118.12; Fishing Gear, ruling 2025-10-02): "If it's a permanent card, you may put it onto the battlefield under your control. If you don't, Z.": Z happens whenever the card was
+ * not put onto the battlefield, declined or not of that kind (previousInstruction reads "you don't" as that option). The option's name is bound only where the "if" holds, so Z is written on
+ * both paths: after the option inside the branch (when it was declined) and as the branch's `else` (when the card is not of that kind). Only this exact shape.
+ */
+function foldNotDidAfterPutOption(seq: Unit[]): void {
+  seq.forEach((u, i) => {
+    if (u.manual || u.steps.length !== 1 || i === 0) return;
+    const s = u.steps[0]!;
+    const cond = s['cond'];
+    if (s['op'] !== 'if' || !isRec(cond) || cond['cond'] !== 'did' || cond['not'] !== true || cond['which'] !== undefined || cond['to'] !== undefined || typeof cond['step'] !== 'string' || s['else'] !== undefined || s['guard'] !== undefined) return;
+    const prev = seq.slice(0, i).reverse().find((p) => p.manual !== undefined || p.steps.length > 0);
+    if (!prev || prev.manual) return;
+    const outer = prev.steps[prev.steps.length - 1]!;
+    const branch = outer['then'];
+    if (outer['op'] !== 'if' || outer['else'] !== undefined || outer['guard'] !== undefined || !isRec(outer['cond']) || outer['cond']['cond'] !== 'matches' || !Array.isArray(branch) || branch.length !== 1) return;
+    const may = branch[0];
+    if (!isRec(may) || may['op'] !== 'may' || may['as'] !== cond['step'] || may['otherwise'] !== undefined || !Array.isArray(s['then'])) return;
+    branch.push(s);
+    outer['else'] = structuredClone(s['then']);
+    u.steps = [];
+  });
+}
+
+/**
+ * edh-d-78 (CR 608.2c; Transmute Artifact review): "If A is less than or equal to B, X. If it's greater, Y." is ONE comparison with two outcomes, made once: Y is the `else` of the first
+ * `if` (a second test run after X could read something X changed, e.g. a card that entered as a copy of a dearer one). The step marked `$greater` by lower/quantities.ts#resolveNumbers
+ * moves into the `else` of the `<=` `if` right before it (same two amounts); a marked step that cannot move makes its sentence manual.
+ */
+function foldGreaterAsElse(seq: Unit[]): void {
+  seq.forEach((u, i) => {
+    if (u.manual || i === 0 || u.steps.length !== 1 || u.steps[0]!['$greater'] !== true) return;
+    const s = u.steps[0]!;
+    const prev = seq.slice(0, i).reverse().find((p) => p.manual !== undefined || p.steps.length > 0);
+    const outer = prev && !prev.manual ? prev.steps[prev.steps.length - 1] : undefined;
+    const pc = outer?.['cond'];
+    if (outer === undefined || outer['op'] !== 'if' || outer['else'] !== undefined || outer['guard'] !== undefined || !isRec(pc) || pc['op'] !== '<=' || !isRec(s['cond'])
+      || JSON.stringify(pc['left']) !== JSON.stringify(s['cond']['left']) || JSON.stringify(pc['right']) !== JSON.stringify(s['cond']['right']) || s['else'] !== undefined || s['guard'] !== undefined || !Array.isArray(s['then'])) return;
+    outer['else'] = s['then'];
+    u.steps = [];
+  });
+}
+
 function foldDidInIf(seq: Unit[]): void {
   seq.forEach((u, i) => {
     if (u.manual || u.steps.length !== 1 || i === 0) return;
@@ -877,16 +1155,68 @@ function foldDidInIf(seq: Unit[]): void {
 }
 
 /**
+ * edh-misc-6 (CR 603.12, 608.2c; Rose Room Treasurer): "If C, X. Otherwise, you may pay {X}. When you do, Y." The reflexive trigger waits for the payment that is the
+ * last instruction of the `else` branch (resolveDid: previousInstruction with `intoElse`). The name that payment binds exists on that branch alone, so the trigger moves
+ * into the branch, after the payment: with C true nothing was paid and nothing triggers. Only a sentence that is nothing but a reflexive trigger, only an `if` with
+ * no guard.
+ */
+function foldReflexiveInElse(seq: Unit[]): void {
+  seq.forEach((u, i) => {
+    if (u.manual || u.steps.length !== 1 || i === 0) return;
+    const s = u.steps[0]!;
+    const when = s['when'];
+    if (s['op'] !== 'reflexive' || !isRec(when) || typeof when['did'] !== 'string') return;
+    const prev = seq.slice(0, i).reverse().find((p) => p.manual !== undefined || p.steps.length > 0);
+    if (!prev || prev.manual) return;
+    const outer = prev.steps[prev.steps.length - 1]!;
+    const branch = outer['else'];
+    if (outer['op'] !== 'if' || outer['guard'] !== undefined || !Array.isArray(branch) || branch.length === 0) return;
+    const last = branch[branch.length - 1];
+    if (!isRec(last) || last['op'] !== 'pay' || last['as'] !== when['did']) return;
+    branch.push(s);
+    u.steps = [];
+  });
+}
+
+/**
+ * edh-d-34 (CR 603.12, 608.2c; Regenerations Restored): "Then if this enchantment has no time counters on it, exile it. When you do, take an extra turn after this one." The
+ * reflexive trigger waits for the instruction that is the last of the `then` branch of the `if` right before it (resolveDid: previousInstruction with `intoIf`). The name that
+ * instruction binds exists on that branch alone, so the trigger moves into the branch, after it: with the condition false nothing was done and nothing triggers. As
+ * foldReflexiveInElse for the other branch; only a sentence that is nothing but a reflexive trigger, only an `if` with no `else` and no guard.
+ */
+function foldReflexiveInIf(seq: Unit[]): void {
+  seq.forEach((u, i) => {
+    if (u.manual || u.steps.length !== 1 || i === 0) return;
+    const s = u.steps[0]!;
+    const when = s['when'];
+    if (s['op'] !== 'reflexive' || !isRec(when) || typeof when['did'] !== 'string') return;
+    const prev = seq.slice(0, i).reverse().find((p) => p.manual !== undefined || p.steps.length > 0);
+    if (!prev || prev.manual) return;
+    const outer = prev.steps[prev.steps.length - 1]!;
+    const branch = outer['then'];
+    if (outer['op'] !== 'if' || outer['else'] !== undefined || outer['guard'] !== undefined || !Array.isArray(branch) || branch.length === 0) return;
+    const last = branch[branch.length - 1];
+    if (!isRec(last) || last['as'] !== when['did']) return;
+    branch.push(s);
+    u.steps = [];
+  });
+}
+
+/**
  * FAST5 T69 (CR 118.12, 608.2c): "You may pay {1}. If you do, return that card to the battlefield tapped under your control. It's a Treasure artifact with ..."
  * (Vraska, the Silencer): the sentence after a folded "If you do" that does nothing but act on an object only the folded instructions named ("it" is the card
  * they returned, bound under an `as` name inside the `then`) goes with them: with no payment there is no such card, and a name bound on one path alone can
  * not be read after it. Only whole sentences whose every reference to a bound name is to a name bound inside the `then`, and that name at least one.
  */
-function absorbFollowers(seq: Unit[], at: number, pay: Rec): void {
+function absorbFollowers(seq: Unit[], at: number, pay: Rec, bound: readonly string[] = []): void {
   const inside = new Set<string>();
   visit(pay['then'] as Rec[], (n) => {
     if (typeof n['as'] === 'string') inside.add(n['as']);
+    // edh-zones-22 (CR 608.2c, 701.20a; Descendants' Fury): and the cards a "reveal until" revealed (`revealed`), which "the rest" of the next sentence names
+    if (n['op'] === 'revealUntil' && typeof n['revealed'] === 'string') inside.add(n['revealed']);
   });
+  const ofMay = new Set<string>(bound.filter((b) => !inside.has(b))); // edh-zones-13: the names a `may` bound, not the branch itself
+  for (const b of bound) inside.add(b);
   if (inside.size === 0) return;
   for (let j = at + 1; j < seq.length; j++) {
     const next = seq[j]!;
@@ -902,7 +1232,13 @@ function absorbFollowers(seq: Unit[], at: number, pay: Rec): void {
     // r4-fxz (CR 608.2c, 701.20e): "If you do, look at the top two cards of your library. Put one of them into your hand and the other into your graveyard." (Marchesa,
     // Dealer of Death): the sentence reads the cards looked at (bound inside the `then`) and its own choice; it goes with the payment too
     if (!reads.some((r) => inside.has(r)) || !reads.every((r) => inside.has(r) || own.has(r))) return;
+    // edh-zones-13: for the names a `may` bound (not a payment's), a delayed trigger stays where it is ("Return the exiled card ... at the beginning of the next end step", Identity Thief:
+    // a formerly automated unit, G10)
+    if (reads.some((r) => ofMay.has(r)) && JSON.stringify(next.steps).includes('"op":"delay"')) return;
     (pay['then'] as Rec[]).push(...next.steps);
+    // edh-zones-13 (CR 608.2c): the names the absorbed sentence bound are bound inside the `then` now, for the sentence after it ("You may reveal a permanent card from
+    // among them and put it into your hand. Put the rest on the bottom of your library in any order.": the rest are the cards looked at less the one chosen)
+    for (const n of own) inside.add(n);
     next.steps = [];
   }
 }
@@ -972,7 +1308,7 @@ function didOnly(u: Unit): Rec | null {
 function absorbIntoDelay(d: Draft, seq: Unit[], at: number): boolean {
   const u = seq[at]!;
   const s = didOnly(u);
-  if (s === null) return false;
+  if (s === null) return absorbReflexiveIntoDelay(d, seq, at);
   const prev = seq.slice(0, at).reverse().find((p) => p.manual !== undefined || p.steps.length > 0);
   if (!prev || prev.manual) return false;
   const delay = prev.steps[prev.steps.length - 1]!;
@@ -990,6 +1326,32 @@ function absorbIntoDelay(d: Draft, seq: Unit[], at: number): boolean {
     if (typeof last['as'] !== 'string') last['as'] = freshName(d, last['op'] === 'pay' ? 'paid' : 'did');
     inner.push({ op: 'if', cond: { cond: 'did', step: last['as'], ...(not ? { not: true } : {}) }, then: s['then'] });
   }
+  u.steps = [];
+  return true;
+}
+
+/**
+ * trek-21 (CR 603.7, 603.12, 608.2c; U.S.S. Farragut, Bold Explorer): "At the beginning of the next end step, put it on the bottom of your library. When you do, draw a
+ * card.": the reflexive "When you do" right after a sentence that ends with a delayed trigger is one of that trigger's instructions (as absorbIntoDelay reads "if you
+ * do"): it waits for the last instruction INSIDE the delay (the put on the bottom, which reports nothing when the card was no longer there). Only a reflexive trigger
+ * of no targets and no wording beyond the bare "you do"; the same fail-closed guards as absorbIntoDelay. Returns false when it does not apply.
+ */
+function absorbReflexiveIntoDelay(d: Draft, seq: Unit[], at: number): boolean {
+  const u = seq[at]!;
+  if (u.manual || u.steps.length !== 1 || (u.targetIds?.length ?? 0) > 0) return false;
+  const refl = u.steps[0]!;
+  const when = refl['when'];
+  if (refl['op'] !== 'reflexive' || !isRec(when) || when['cond'] !== 'did' || when['$step'] !== 'previous' || when['not'] === true || when['which'] !== undefined || when['to'] !== undefined) return false;
+  if (!Array.isArray(refl['do']) || refl['do'].length === 0 || (Array.isArray(refl['targets']) && refl['targets'].length > 0) || refl['modes'] !== undefined) return false;
+  const prev = seq.slice(0, at).reverse().find((p) => p.manual !== undefined || p.steps.length > 0);
+  if (!prev || prev.manual) return false;
+  const delay = prev.steps[prev.steps.length - 1]!;
+  if (delay['op'] !== 'delay' || !Array.isArray(delay['do']) || !isRec(delay['when']) || delay['when']['at'] !== 'step') return false;
+  const inner = delay['do'] as Rec[];
+  const last = inner[inner.length - 1];
+  if (last === undefined || last['op'] !== 'move' || last['guard'] !== undefined) return false;
+  if (typeof last['as'] !== 'string') last['as'] = freshName(d, 'did');
+  inner.push({ op: 'reflexive', when: { did: last['as'] }, targets: [], do: refl['do'] });
   u.steps = [];
   return true;
 }
@@ -1048,7 +1410,7 @@ function foldReflexive(seq: Unit[]): void {
     // counter on that token ..."): the token exists only once the trigger resolves, so nothing outside it can name it either
     const ownNames = new Set<string>();
     visit(refl['do'], (n) => { if (typeof n['op'] === 'string' && typeof n['as'] === 'string') ownNames.add(n['as']); });
-    if (own.size === 0 && ownNames.size === 0) return;
+    if (own.size === 0 && ownNames.size === 0 && seq[at + 1]?.reflexiveX !== true) return; // edh-next-124: or the next sentence reads the trigger's X
     for (let j = at + 1; j < seq.length; j++) {
       const next = seq[j]!;
       if (next.manual !== undefined || next.rider !== undefined) return;
@@ -1066,7 +1428,10 @@ function foldReflexive(seq: Unit[]): void {
         if (n['ref'] === 'bound' && typeof n['name'] === 'string' && ownNames.has(n['name'])) names++;
         else if (n['op'] === 'reflexive' || n['op'] === 'manual' || (n['ref'] === 'bound' && typeof n['name'] === 'string' && !local.has(n['name']))) foreign = true;
       });
-      if (foreign || targets.length + names === 0 || !targets.every((id) => own.has(id))) return;
+      // edh-next-124 (CR 603.12, 107.3; Minsc & Boo, Timeless Heroes, ruling 2022-06-10): a sentence whose X the trigger defined (lower/quantities.ts, Unit.reflexiveX) is one of its
+      // instructions, whatever it names besides (no target, no reflexive or manual step of its own): with no legal target the trigger does nothing, so no card is drawn
+      const joinsByX = next.reflexiveX === true && targets.length === 0 && !JSON.stringify(next.steps).includes('"op":"reflexive"') && !JSON.stringify(next.steps).includes('"op":"manual"');
+      if (!joinsByX && (foreign || targets.length + names === 0 || !targets.every((id) => own.has(id)))) return;
       // r4-refs (CR 603.12, 603.4): a reflexive trigger that is one condition ("When you do, if it has four or more quest counters on it, put a +1/+1 counter on target
       // creature you control.") does the next sentence's instructions only when the condition held, so they join the condition's instructions
       const only: Rec | undefined = (refl['do'] as Rec[]).length === 1 ? (refl['do'] as Rec[])[0]! : undefined;
@@ -1086,7 +1451,10 @@ function lowerReflexive(d: Draft, u: Unit, all: readonly Unit[]): string | null 
   for (let k = 0; k < u.steps.length; k++) {
     const step = u.steps[k]!;
     let nested = false;
-    for (const key of STEP_LISTS) visit(step[key], (n) => { if (n['op'] === 'reflexive') nested = true; });
+    // trek-21 (CR 603.7, 603.12): a reflexive trigger absorbReflexiveIntoDelay already put at the end of a delayed trigger's instructions (no targets, `when` resolved) is allowed there
+    const absorbed = step['op'] === 'delay' && Array.isArray(step['do']) && step['do'].length > 0 ? step['do'][step['do'].length - 1] : undefined;
+    const okReflexive = isRec(absorbed) && absorbed['op'] === 'reflexive' && isRec(absorbed['when']) && typeof absorbed['when']['did'] === 'string' && Array.isArray(absorbed['targets']) && absorbed['targets'].length === 0 ? absorbed : undefined;
+    for (const key of STEP_LISTS) visit(step[key], (n) => { if (n['op'] === 'reflexive' && n !== okReflexive) nested = true; });
     if (nested) return 'a reflexive trigger inside another instruction (CR 603.12)';
     if (step['op'] !== 'reflexive') continue;
     const when = step['when'];
@@ -1100,7 +1468,16 @@ function lowerReflexive(d: Draft, u: Unit, all: readonly Unit[]): string | null 
     // std-copy-1 (CR 603.12, 705.2): "When you win the flip, X" waits for the result of the coin flip right before it: the `{cond:'flip', won}` marker stays for
     // parser/lower/coin-flip.ts#foldFlips, which moves the trigger into that flip and names it (unresolved there: manual)
     const flip = isRec(when) && when['cond'] === 'flip' && typeof when['won'] === 'boolean' && Object.keys(when).length === 2;
-    if (!flip && excess === null && moved === null && (!isRec(when) || when['cond'] !== 'did' || typeof when['step'] !== 'string' || when['step'] === '' || when['not'] === true || Object.keys(when).length !== 2)) {
+    // edh-next-145 (CR 603.12, 608.2c, 608.2h, 613.4c; Inferno of the Star Mounts, rulings 2021-07-23): "When its power becomes 20 this way, ..." (`@becomes`, template
+    // eff.edhn145.reflexive.powerBecomes) waits for the pump right before it (the "you do" step), on ONE object, and for its power to have BECOME the number through it: the power that
+    // object had just before the pump is fixed by a `let` put in front of the pump, and the trigger's `if` asks that it was not the number then and is the number now
+    const becomes = isRec(step['@becomes']) ? becomesCondition(d, step, all) : null;
+    if (isRec(step['@becomes']) && becomes === null) return 'a reflexive trigger on a power that "becomes" a number, after no single pump of one object right before it (CR 603.12, 613.4c)';
+    // edh-d-94 (CR 603.12, 701.20a; Yuna's Whistle): a template that reads the instruction and its reflexive trigger together names the step itself ("When you reveal a creature card this way":
+    // `when: {did: <the move of the card found>}`, with an optional `if`); only a step of this unit, before the trigger
+    const own = isRec(when) && typeof when['did'] === 'string' && Object.keys(when).every((x) => x === 'did' || x === 'if') && (when['if'] === undefined || isRec(when['if']))
+      && u.steps.slice(0, k).some((x) => x['as'] === when['did']) ? when : null;
+    if (!flip && own === null && excess === null && moved === null && becomes === null && (!isRec(when) || when['cond'] !== 'did' || typeof when['step'] !== 'string' || when['step'] === '' || when['not'] === true || Object.keys(when).length !== 2)) {
       return 'a reflexive trigger that does not wait for "you do" (CR 603.12)';
     }
     const named = targetIdsIn(step['do']);
@@ -1133,12 +1510,23 @@ function lowerReflexive(d: Draft, u: Unit, all: readonly Unit[]): string | null 
     // on target creature you control ..." (Sigil of Myrkul): an "if" right after "When you do," is an intervening "if" whether or not a later sentence joined it (the
     // template rf.whenYouDo reads "when <cond>, <effects>", so a lone `if` with no `else` as the instructions is that "if"). Not when the condition names a target of
     // the reflexive ability itself: those are chosen only after it triggers (CR 603.3d), so the condition could not be checked then (left as it was)
-    const { $intervening: _marked, ...plainStep } = step;
+    const { $intervening: _marked, '@becomes': _becomes, ...plainStep } = step;
+    // edh-next-132 (CR 603.12a, 603.3d, 115.1; Espers to Magicite): "When you do, choose up to one target creature card exiled this way. Create a token that's a copy of that card ...": a sentence
+    // inside the reflexive trigger that only announces its targets (the node of template eff.stdeoe.choose.targets, lower/choose.ts) does nothing as it resolves; the sentences foldReflexive joined
+    // to it must name every one of those targets (as lower/choose.ts asks of an ability's own announcement), or the trigger is refused
+    if (Array.isArray(plainStep['do']) && (plainStep['do'] as Rec[]).some((x) => isRec(x) && x['lower'] === 'chooseTargets')) {
+      const list = plainStep['do'] as Rec[];
+      if (!(isRec(list[0]) && list[0]['lower'] === 'chooseTargets') || list.slice(1).some((x) => isRec(x) && x['lower'] === 'chooseTargets')) return 'a reflexive trigger that announces targets other than first (CR 603.12a)';
+      const announced = targetIdsIn(list[0]);
+      const actedOn = new Set(targetIdsIn(list.slice(1)));
+      if (announced.length === 0 || !announced.every((id) => actedOn.has(id))) return '"choose ... target ..." in a reflexive trigger with no instruction of it that names those targets (CR 603.12a, 115.1)';
+      plainStep['do'] = list.slice(1);
+    }
     const doList = plainStep['do'];
     const loneIf = Array.isArray(doList) && doList.length === 1 && isRec(doList[0]) && doList[0]['op'] === 'if' && doList[0]['else'] === undefined && doList[0]['otherwise'] === undefined ? (doList[0] as Rec) : null;
     const lone = loneIf !== null && !targetIdsIn(loneIf['cond']).some((id) => ids.includes(id)) ? loneIf : null;
     if (flip && lone !== null) return 'an intervening "if" in a reflexive trigger of a coin flip (CR 603.4, 603.12)'; // std-copy-1: not modeled, fail closed
-    u.steps[k] = { ...plainStep, when: flip ? when : excess !== null ? { did: excess, if: when } : waits !== null ? { did: waits, if: when } : lone !== null ? { did: (when as Rec)['step'], if: structuredClone(lone['cond']) } : { did: (when as Rec)['step'] }, targets: specs };
+    u.steps[k] = { ...plainStep, when: flip || own !== null ? when : becomes !== null ? becomes : excess !== null ? { did: excess, if: when } : waits !== null ? { did: waits, if: when } : lone !== null ? { did: (when as Rec)['step'], if: structuredClone(lone['cond']) } : { did: (when as Rec)['step'] }, targets: specs };
     d.targets = d.targets.filter((t) => !ids.includes(t.id));
     if (u.targetIds) u.targetIds = u.targetIds.filter((id) => !ids.includes(id));
   }
@@ -1158,7 +1546,8 @@ function lowerDelayTargets(d: Draft, u: Unit, all: readonly Unit[]): string | nu
     const step = u.steps[k]!;
     // std-library-1: and a step-timed delay written with a lead template that takes its targets ("At the beginning of the next combat phase this turn, ...";
     // parser/lower/targets.ts#STEP_DELAY_TARGET_LEADS); the tail form and the end step leads keep their older readings (guard G10)
-    const stepLead = isRec(step['when']) && step['when']['at'] === 'step' && step['when']['step'] === 'beginCombat' && u.templates.some((t) => STEP_DELAY_TARGET_LEADS.has(t));
+    // edh-next-134: and the next end step lead (STEP_DELAY_TARGET_LEAD_STEP: the step each lead waits for)
+    const stepLead = isRec(step['when']) && step['when']['at'] === 'step' && u.templates.some((t) => STEP_DELAY_TARGET_LEAD_STEP[t] === (step['when'] as Rec)['step']);
     if (step['op'] !== 'delay' || !isRec(step['when']) || (step['when']['at'] !== 'event' && !stepLead)) continue;
     const ids = targetIdsIn(step['do']).filter((id) => announcedHere.has(id));
     if (ids.length === 0) continue;
@@ -1199,9 +1588,18 @@ function resolveDoneAll(d: Draft): void {
   }
 }
 
+/**
+ * edh-d-78 (CR 608.2c; Transmute Artifact): the marker condition `$greaterThanBefore` (parser/holes/cond.ts#itsGreater) is turned into the comparison it reverses by
+ * lower/quantities.ts#resolveNumbers; one left over had no `<=` comparison right before it, so its sentence is manual.
+ */
+function resolveGreaterThanBefore(u: Unit): void {
+  if (JSON.stringify(u.steps).includes('"$greaterThanBefore"') || JSON.stringify(u.steps).includes('"$greater"')) setManual(u, { code: 'unbound-reference', reason: '"it\'s greater" with no comparison of two amounts right before it to turn round (CR 608.2c)', unresolved: true });
+}
+
 export function lowerConditions(input: Draft): Draft {
   const d = cloneDraft(input);
   resolveDoneAll(d); // std-mana-12
+  for (const seq of sequences(d)) foldMayPayAnd(seq); // edh-misc-4: before "you do" is resolved
   sequences(d).forEach((seq, si) => {
     const prefix = si === 0 ? [] : d.units;
     seq.forEach((u, i) => {
@@ -1215,6 +1613,7 @@ export function lowerConditions(input: Draft): Draft {
       if (!u.manual) resolveVotes(d, seq, i, prefix); // M12-3
       if (!u.manual) resolveDid(d, seq, i, prefix);
     });
+    bindSacrificedX(d, seq); // edh-d-90: "you may sacrifice X Foods. When you do, up to X target ..." (CR 107.3, 608.2h)
     foldReflexive(seq); // FAST5 T76
     const all = sequences(d).flat();
     for (const u of seq) {
@@ -1225,13 +1624,23 @@ export function lowerConditions(input: Draft): Draft {
     foldPay(d, seq);
     foldMayInIf(seq);
     foldDidInIf(seq); // std-blb
+    foldNotDidInIf(seq); // edh-d-78
+    foldNotDidAfterPutOption(seq); // edh-d-85
+    foldGreaterAsElse(seq); // edh-d-78
+    for (const u of seq) if (!u.manual) resolveGreaterThanBefore(u); // edh-d-78: what is left of the markers
+    foldReflexiveInElse(seq); // edh-misc-6
+    foldReflexiveInIf(seq); // edh-d-34
     foldFlips(seq, d); // r3-mech: "If you win / lose the flip" (CR 705.2)
     foldClashes(seq); // p2-player-rules-2: "Clash with an opponent. If you win, X. Otherwise, Y." (CR 701.30)
     foldRollTable(seq); // p2-c-dieroll-1: the rows of a die-roll table move into the roll (CR 706.3a)
+    bindSelfMovedAgain(seq); // edh-next-121: a later move of ~ after ~ moved to a public zone moves the new object (CR 400.7j)
+    bindCastThisWay(seq); // edh-next-121: "a spell you cast this way" after a free cast of a choice (CR 400.7h)
     absorbIntoDid(seq); // r4-fxz (before the repeat fold: "this process" then copies the if-did with what it absorbed, and the empty marker reads nothing)
     absorbIntoIf(seq); // std-costs-1
     foldMayFollowers(seq); // r5-refs (before the repeat fold, as absorbIntoDid: "this process" copies the option with its followers)
     foldRepeatProcess(seq); // r4-mech: "Repeat this process once" (CR 608.2c)
+    markDropUncast(seq); // edh-next-99 (CR 608.2g): a chosen spell that can't be cast is still part of "the rest"
+    foldRepeatFollowing(seq); // edh-misc-2: "Repeat the following process X times." (CR 608.2c)
   });
   return d;
 }
@@ -1289,6 +1698,15 @@ function absorbIntoDid(seq: Unit[]): void {
     const s = u.steps[0]!;
     const cond = s['cond'];
     if (s['op'] !== 'if' || !isRec(cond) || cond['cond'] !== 'did' || cond['not'] === true || cond['which'] !== undefined || s['else'] !== undefined || s['guard'] !== undefined || !Array.isArray(s['then'])) return;
-    absorbFollowers(seq, i, s);
+    // edh-zones-13 (CR 608.2c, 608.2d; Burning-Rune Demon): "You may search your library for ... If you do, reveal those cards. An opponent chooses one of them. Put the chosen card
+    // into your hand and the other into your graveyard, then shuffle.": when the condition is on the `may` right before it, the names the `may` bound (the cards it searched for) are
+    // bound inside the branch too, so the sentences that act on them (and shuffle after them) are the branch's: with the search declined, nothing is chosen, moved or shuffled
+    const prev = seq.slice(0, i).reverse().find((p) => p.manual !== undefined || p.steps.length > 0);
+    const may = prev === undefined || prev.manual !== undefined ? undefined : prev.steps[prev.steps.length - 1];
+    const bound: string[] = [];
+    if (may !== undefined && may['op'] === 'may' && typeof may['as'] === 'string' && may['as'] === cond['step'] && Array.isArray(may['do']) && may['otherwise'] === undefined) {
+      visit(may['do'] as Rec[], (n) => { if (typeof n['as'] === 'string') bound.push(n['as']); });
+    }
+    absorbFollowers(seq, i, s, bound);
   });
 }

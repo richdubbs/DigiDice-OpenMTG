@@ -12,6 +12,8 @@ import { showCards } from '../../core/zones';
 import { cardLine, seersOf } from '../../core/view';
 import type { ExecCtx, StepResult } from '../api';
 import { propose, proposeResult } from '../propose';
+import { performAction } from '../perform';
+import { byHand } from './zones-util';
 import { filterCtxOf } from '../refs';
 import { bindObjects, cardCount, cardsWord, logAction, moveAsAction, namesOf, NOTHING, playerName, playersOf, readFor, readsEachPlayer, result } from './cards-util';
 
@@ -19,6 +21,7 @@ type Step<K extends EffectStep['op']> = Extract<EffectStep, { op: K }>;
 
 /** CR 121.1-121.2: each player draws that many cards, one at a time, in APNAP order. A draw a replacement effect replaced is not a draw (CR 614.11). */
 export function drawHandler(cx: ExecCtx, st: Step<'draw'>): StepResult {
+  if (st.revealDrawn === true) return drawAndReveal(cx, st); // edh-next-136
   // p2-zone-moves-1 (CR 121.2, 608.2e): "Each player discards their hand, then draws that many cards": a count that reads the drawing player (`{ref:'iterating'}`) is
   // read for each player of the group, as the discard handler reads its own (op:draw.perPlayerCount)
   const perPlayer = readsEachPlayer(st.who, st.count);
@@ -26,9 +29,12 @@ export function drawHandler(cx: ExecCtx, st: Step<'draw'>): StepResult {
   if (n === undefined) return NOTHING;
   const g = cx.g;
   const all: ObjHandle[] = [];
+  // edh-d-26 (CR 608.2h; Tales of the Ancestors): every player's count is determined once, before anyone draws (a draw replacement that grows a hand must not change a later player's count)
+  const counts = new Map<PlayerId, number>();
+  if (perPlayer) for (const p of playersOf(cx, st.who)) counts.set(p, readFor(cx, p, () => cardCount(cx, st.count)) ?? 0);
   for (const p of playersOf(cx, st.who)) {
     const drawn: ObjectId[] = [];
-    const most = perPlayer ? readFor(cx, p, () => cardCount(cx, st.count)) ?? 0 : cardCount(cx, st.count) ?? 0;
+    const most = perPlayer ? counts.get(p) ?? 0 : cardCount(cx, st.count) ?? 0;
     // edh-players-1 (CR 121.1, 608.2d, 609.3; Arcane Denial): "may draw up to two cards" is the drawing player's own choice of how many, 0 to the count
     const n = st.upTo === true && most > 0
       ? cx.g.choose({ kind: 'chooseNumber', player: p, prompt: `${playerName(g, p)}: draw how many cards? (up to ${most})`, min: 0, max: most, cancellable: false, rules: ['CR 121.1', 'CR 608.2d'] }).n
@@ -48,6 +54,42 @@ export function drawHandler(cx: ExecCtx, st: Step<'draw'>): StepResult {
   }
   bindObjects(cx, st.as, all);
   return result(all.length);
+}
+
+/**
+ * edh-next-136 (CR 121.1, 701.20a, 614.11; Jace, Mirror Mage, rulings 2020-09-25): "Draw a card and reveal it.": one player draws one card and reveals it before it joins the other cards
+ * of the hand; `as` names it. A draw a replacement effect replaced, or changed into a different number of draws, reveals nothing and names nothing (the cards drawn instead stay hidden).
+ */
+function drawAndReveal(cx: ExecCtx, st: Step<'draw'>): StepResult {
+  const g = cx.g;
+  const ps = playersOf(cx, st.who);
+  if (st.count !== 1 || st.upTo === true || ps.length > 1) return byHand(cx, st, 'a draw and reveal of other than one card by one player is not automated (CR 121.1, 701.20a)');
+  bindObjects(cx, st.as, []);
+  const p = ps[0];
+  if (p === undefined) return NOTHING;
+  const final = proposeResult(g, { ev: 'drawMany', player: p, count: 1 })?.event;
+  const k = final?.ev === 'drawMany' ? final.count : 0;
+  const drawn: ObjectId[] = [];
+  let plain = k === 1;
+  for (let i = 0; i < k; i++) {
+    const mark = g.events.length;
+    if (!propose(g, { ev: 'draw', player: p })) { plain = false; continue; }
+    const now = g.events.slice(mark).filter((e) => e.type === 'drew' && e.player === p);
+    if (now.length !== 1) plain = false; // a draw replaced by another event draws no card this way (a dredge, CR 614.11); one changed into more draws is not the drawn card
+    for (const e of now) if (e.type === 'drew') drawn.push(e.objectId);
+  }
+  if (drawn.length === 0) return NOTHING;
+  logAction(cx, `${playerName(g, p)} draws ${cardsWord(drawn.length)}.`, ['CR 121.1', 'CR 121.2'], { players: [p], text: `${playerName(g, p)} draws ${namesOf(g, drawn)}.` });
+  const id = drawn[0]!;
+  if (!plain || drawn.length !== 1 || g.s.objects[id]?.zone !== 'hand') {
+    g.log(`${playerName(g, p)}'s draw was replaced: no card is revealed.`, { rules: ['CR 614.11', 'CR 701.20a'], level: 'info' });
+    return result(drawn.length);
+  }
+  showCards(g, [id], g.s.players.map((x) => x.id));
+  performAction(g, { verb: 'reveal', actor: p, objectId: id });
+  logAction(cx, `${playerName(g, p)} reveals ${namesOf(g, [id])}.`, ['CR 701.20a']);
+  bindObjects(cx, st.as, [{ id, zone: 'hand' }]);
+  return result(1);
 }
 
 /** The player who picks the cards for "discards a card of your choice" (CR 701.9b): the controller, or, when the controller discards, an opponent. */
@@ -97,7 +139,7 @@ function discardable(cx: ExecCtx, p: PlayerId, ids: ObjectId[]): ObjectId[] {
   const kept: ObjectId[] = [];
   let why = '';
   for (const id of ids) {
-    const d = cantDo(cx.g.s, 'discard', p, id);
+    const d = cantDo(cx.g.s, 'discard', p, id, undefined, false, cx.source.id); // edh-next-136 (CR 701.9a, 109.5; Tamiyo, Collector of Tales): the effect's source causes the discard (`causedByOpponents`)
     if (d) {
       kept.push(id);
       why ||= d.message;
@@ -116,7 +158,8 @@ function discardable(cx: ExecCtx, p: PlayerId, ids: ObjectId[]): ObjectId[] {
 /** C6: the value forms of the discard op this module runs (model/cap-walk.ts emits them; model/capabilities.ts registers them): the players who can't (CR 101.3). */
 export const OP_FORMS: readonly string[] = ['op:discard.cantAs', 'op:discard.perPlayerCount', // std-rx30: perPlayerCount
   'op:draw.perPlayerCount', // p2-zone-moves-1
-  'op:draw.upTo']; // edh-players-1
+  'op:draw.upTo', // edh-players-1
+  'op:draw.revealDrawn']; // edh-next-136
 
 /** CR 701.9a: move cards from a player's hand to that player's graveyard. Every player chooses first, in APNAP order, then the cards are discarded together (CR 608.2e). */
 export function discardHandler(cx: ExecCtx, st: Step<'discard'>): StepResult {

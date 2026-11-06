@@ -1,0 +1,1 @@
+{"name":"an element inserted at the front","before":{"l":["a","b"]},"ops":[{"op":"splice","path":["l"],"at":0,"del":0,"add":["z"]}],"after":{"l":["z","a","b"]}}

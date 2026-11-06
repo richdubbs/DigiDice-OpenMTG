@@ -1,0 +1,40 @@
+{
+  "id": "d11",
+  "player": "p1",
+  "prompt": "Declare attackers: choose which creatures attack and what each attacks.",
+  "rules": [
+    "CR 508.1"
+  ],
+  "kind": "declareAttackers",
+  "candidates": [
+    {
+      "id": "o10",
+      "defenders": [
+        "p2"
+      ]
+    },
+    {
+      "id": "o11",
+      "defenders": [
+        "p2"
+      ],
+      "mustAttack": true
+    }
+  ],
+  "requirements": [
+    {
+      "id": "r1",
+      "creature": "o11",
+      "kind": "attack",
+      "sourceName": "Goblin Rabblemaster",
+      "text": "Other Goblins you control attack each combat if able."
+    }
+  ],
+  "mustObey": 1,
+  "obeying": [
+    {
+      "attacker": "o11",
+      "defender": "p2"
+    }
+  ]
+}

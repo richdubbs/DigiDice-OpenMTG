@@ -188,6 +188,7 @@ import k_teamwork from './teamwork.json';
 import k_tiered from './tiered.json';
 import k_toxic from './toxic.json';
 import k_training from './training.json';
+import k_trampleOverPlaneswalkers from './trample-over-planeswalkers.json'; // edh-d-90 (CR 702.19c; Thrasta, Tempest's Roar)
 import k_trample from './trample.json';
 import k_transfigure from './transfigure.json';
 import k_transmute from './transmute.json';
@@ -393,6 +394,7 @@ export const KEYWORD_DATA_FILES: readonly { file: string; data: unknown }[] = [
   { file: 'tiered.json', data: k_tiered },
   { file: 'toxic.json', data: k_toxic },
   { file: 'training.json', data: k_training },
+  { file: 'trample-over-planeswalkers.json', data: k_trampleOverPlaneswalkers },
   { file: 'trample.json', data: k_trample },
   { file: 'transfigure.json', data: k_transfigure },
   { file: 'transmute.json', data: k_transmute },

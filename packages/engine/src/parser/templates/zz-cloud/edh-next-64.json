@@ -1,0 +1,145 @@
+[
+  {
+    "id": "eff.edhn64.token.attachedTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 303.4f",
+      "CR 303.4g",
+      "CR 701.7a"
+    ],
+    "pattern": "create {n:Qty} {t:TokenDesc} attached to {o:Obj}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t",
+      "attachTo": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create a white Aura enchantment token named Shroud attached to target creature an opponent controls."
+      },
+      {
+        "text": "Create a blue Aura enchantment token named Veil attached to target land you control."
+      }
+    ],
+    "counterExamples": [
+      "Create a white Aura enchantment token named Shroud.",
+      "Create a white Aura enchantment token named Shroud attached to each creature you control.",
+      "Create a white Aura enchantment token named Shroud attached to target creature an opponent controls until end of turn."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhn64.token.tarmogoyf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.3",
+      "CR 111.4",
+      "CR 701.7a",
+      "CR 604.3"
+    ],
+    "pattern": "create a tarmogoyf token",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": {
+        "name": "Tarmogoyf",
+        "colors": [
+          "G"
+        ],
+        "types": [
+          "Creature"
+        ],
+        "subtypes": [
+          "Lhurgoyf"
+        ],
+        "manaCost": [
+          {
+            "kind": "generic",
+            "amount": 1
+          },
+          {
+            "kind": "colored",
+            "color": "G"
+          }
+        ],
+        "abilities": [
+          {
+            "kind": "static",
+            "text": "~'s power is equal to the number of card types among cards in all graveyards and its toughness is equal to that number plus 1.",
+            "effects": [
+              {
+                "s": "continuous",
+                "cda": true,
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": "7a",
+                    "power": {
+                      "q": "distinct",
+                      "what": "cardTypes",
+                      "among": {
+                        "ref": "each",
+                        "filter": {
+                          "zone": "graveyard",
+                          "isCard": true
+                        }
+                      }
+                    },
+                    "toughness": {
+                      "q": "math",
+                      "op": "+",
+                      "args": [
+                        {
+                          "q": "distinct",
+                          "what": "cardTypes",
+                          "among": {
+                            "ref": "each",
+                            "filter": {
+                              "zone": "graveyard",
+                              "isCard": true
+                            }
+                          }
+                        },
+                        1
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever you attack, create a Tarmogoyf token."
+      },
+      {
+        "text": "{1}{G}, {T}: Create a Tarmogoyf token."
+      }
+    ],
+    "counterExamples": [
+      "Create two Tarmogoyf tokens.",
+      "Create a tapped Tarmogoyf token.",
+      "Create a Tarmogoyf token for each opponent."
+    ]
+  }
+]

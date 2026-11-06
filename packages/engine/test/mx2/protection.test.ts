@@ -41,8 +41,12 @@ describe('MX2: the capability and the walker', () => {
     expect(ENGINE_CAPABILITIES.has('feature:quality.chosen.printed')).toBe(false);
     const grant = { kind: 'static', text: 'x', effects: [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 6, add: [printed] }] }] };
     expect(capabilitiesOf(grant as unknown as AbilityDef)).toContain('feature:quality.chosen');
-    const otherLink = { ...printed, quality: 'chosen:cardType' };
-    expect(capabilitiesOf({ ...grant, effects: [{ ...grant.effects[0], mods: [{ layer: 6, add: [otherLink] }] }] } as unknown as AbilityDef)).toContain('feature:quality.chosen.cardType');
+    const otherLink = { ...printed, quality: 'chosen:landType' };
+    expect(capabilitiesOf({ ...grant, effects: [{ ...grant.effects[0], mods: [{ layer: 6, add: [otherLink] }] }] } as unknown as AbilityDef)).toContain('feature:quality.chosen.landType');
+    // edht4 (CR 702.16a, 607.2d; Serra's Emissary): the card type is read like the color (statics/mods.ts#withChosenQualities): the same capabilities, the same fail-closed printed form
+    const cardType = { ...printed, quality: 'chosen:cardType' };
+    expect(capabilitiesOf({ ...grant, effects: [{ ...grant.effects[0], mods: [{ layer: 6, add: [cardType] }] }] } as unknown as AbilityDef)).toContain('feature:quality.chosen');
+    expect(capabilitiesOf(cardType as unknown as AbilityDef)).toContain('feature:quality.chosen.printed');
   });
 
   it('Voice of All and Ward Sliver are full on the game path', () => {

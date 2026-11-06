@@ -135,7 +135,7 @@ describe('design 5.2: inside a rule effect, what the statics can\'t evaluate is 
   const died = { ev: 'zoneChange' as const, subject: { types: ['Creature' as const] }, from: 'battlefield' as const, to: 'graveyard' as const };
 
   it('a history filter field, a history quantity in a rule modification and a history condition in a restriction are missing', () => {
-    expect(missing(staticOf("Creatures that entered this turn can't attack.", [cant({ ref: 'each', filter: { types: ['Creature'], enteredThisTurn: true } }, 'attack')]))).toContain('rfilter:enteredThisTurn');
+    expect(missing(staticOf("Creatures that blocked this turn can't attack.", [cant({ ref: 'each', filter: { types: ['Creature'], blockedThisTurn: true } }, 'attack')]))).toContain('rfilter:blockedThisTurn'); // edh-c-8: enteredThisTurn is evaluated by the statics now (statics/match.ts), blockedThisTurn is not
     // CLOUD std-ecl: a history count is evaluated by the statics now (statics/match.ts `happenedCount`, test/cloud/std-ecl), so the one still missing is a count of
     // the targets of a spell outside a cost
     const hand = staticOf('Your maximum hand size is equal to the number of creatures that died this turn.', [ruleMod('maxHandSize', { value: { q: 'happenedCount', event: died, scope: 'turn' } })]);
@@ -148,7 +148,7 @@ describe('design 5.2: inside a rule effect, what the statics can\'t evaluate is 
   it('what the statics do evaluate is advertised: the cost path\'s history count and the announced targets (Death-Rattle Oni, Fireball), stackKind, castFrom', () => {
     for (const a of DEATH_RATTLE_ONI.faces[0]!.abilities.filter((x) => x.kind === 'static')) expect(missing(a)).toEqual([]);
     for (const c of ['rfilter:stackKind', 'rfilter:castFrom', 'rfilter:types', 'rq:count', 'rq:cost.happenedCount', 'rq:cost.spellTargetCount', 'rcond:turnOf']) expect(ENGINE_CAPABILITIES.has(c), c).toBe(true);
-    for (const c of ['rfilter:enteredThisTurn', 'rfilter:targets', 'rq:spellTargetCount']) expect(ENGINE_CAPABILITIES.has(c), c).toBe(false);
+    for (const c of ['rfilter:blockedThisTurn', 'rfilter:targets', 'rq:spellTargetCount']) expect(ENGINE_CAPABILITIES.has(c), c).toBe(false);
     expect(ENGINE_CAPABILITIES.has('rq:happenedCount')).toBe(true); // CLOUD std-ecl (statics/match.ts `happenedCount`)
     expect(ENGINE_CAPABILITIES.has('rcond:happened')).toBe(true); // FAST5X E9 (statics/match.ts `happened`)
   });

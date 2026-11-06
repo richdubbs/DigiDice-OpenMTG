@@ -1,0 +1,59 @@
+[
+  {
+    "id": "eff.edhc8.cast.free.lesserMv",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2",
+      "CR 202.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "you may cast {o:Obj} without paying its mana cost if it's a spell with lesser mana value",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "free": true,
+      "optional": true,
+      "maxManaValue": {
+        "q": "math",
+        "op": "-",
+        "args": [
+          {
+            "q": "stat",
+            "stat": "manaValue",
+            "of": {
+              "ref": "event",
+              "role": "spell"
+            }
+          },
+          1
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast your first spell each turn, reveal the top card of your library. You may cast it without paying its mana cost if it's a spell with lesser mana value."
+      },
+      {
+        "text": "Whenever you cast a creature spell, exile the top card of your library. You may cast that card without paying its mana cost if it's a spell with lesser mana value."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast your first spell each turn, reveal the top card of your library. You may cast it without paying its mana cost if it's a spell with greater mana value.",
+      "Whenever you cast your first spell each turn, reveal the top card of your library. You may cast it without paying its mana cost unless it's a spell with lesser mana value.",
+      "Whenever you cast your first spell each turn, reveal the top card of your library. You may cast it if it's a spell with lesser mana value."
+    ]
+  }
+]

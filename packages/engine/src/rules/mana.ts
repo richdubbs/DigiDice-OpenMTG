@@ -22,6 +22,7 @@ import { gameOf, hookpoints } from './hookpoints';
 import { manaUnitsOf } from './mana-text';
 import { activationRestrictionDenial, isSummoningSickToActivate } from './timing';
 import { stunInsteadOfUntap } from './status';
+import { beginTypedActivation, endTypedActivation } from './typed-activations';
 
 export const manaText = (types: readonly ManaType[]): string => types.map((t) => `{${t}}`).join('');
 
@@ -39,13 +40,34 @@ export const manaText = (types: readonly ManaType[]): string => types.map((t) =>
  *     offered, never activated half paid or resolved with a wrong amount.
  * model/cap-walk.ts#nativeManaGaps mirrors this on the JSON (capability feature:mana.cost for `unsupported`).
  */
+/** edh-top-2 (CR 400.7j, 608.2h): what the payment of a mana ability's cost exiled, by the ids the cards have in exile (rules/pay.ts#Paid.exiled), kept for the resolver. */
+export interface ManaCostPaid {
+  exiled?: { self?: string; others: string[] };
+  /** edh-next-47 (CR 605.3b, 608.2h): the permanents the payment sacrificed, by the ids they had on the battlefield (keys of GameState.lki), kept for the resolver (ObjRef `costSacrificed`). */
+  sacrificed?: string[];
+}
 export type ManaCostShape = 'simple' | 'converter' | 'byHand' | 'unsupported';
 
 const PLAIN_SYMBOLS: ReadonlySet<ManaSymbol['kind']> = new Set(['generic', 'colored', 'colorless', 'hybrid', 'monoHybrid', 'colorlessHybrid']);
 
 /** FAST5X E5: what a mana ability's effect may not read when its cost is paid by the payment code: the cost's X and objects, the mana spent (see above). */
 // CLOUD C8: and what the cost discarded or exiled ("the discarded card", "the exiled creature"): no stack object keeps it for a mana ability (CR 605.3b)
-export const COST_READS = /"q":"X"|"ref":"costSacrificed"|"ref":"costTapped"|"ref":"costDiscarded"|"ref":"costExiled"|"q":"colorsSpent"/;
+export const COST_READS = /"q":"X"|"ref":"costTapped"|"ref":"costDiscarded"|"ref":"costExiled","self":true|"q":"colorsSpent"/;
+/**
+ * edh-top-2 (CR 118.3, 605.3b, 608.2h; Food Chain): a mana ability whose effect reads what its own cost exiled ("the exiled creature's mana value", ObjRef `costExiled`
+ * of cards other than ~) is a `byHand` ability: the cost is paid by the payment code, which hands the cards it exiled to the resolver (`ManaCostPaid`,
+ * ACTIVATING), so the amount is read after the cost, from the cards in exile. It is never planned ahead (`computedManaUnits` would read no cards). Its "self" form
+ * (the source itself moved away) stays unsupported, as every other cost-read.
+ */
+export const readsCostExiled = (def: ActivatedAbilityDef): boolean => JSON.stringify(def.effect).includes('"ref":"costExiled"');
+/**
+ * edh-next-47 (CR 118.3, 605.3b, 608.2h; Illuminor Szeras, Soldevi Adnate): a mana ability whose effect reads what its own cost sacrificed ("the sacrificed creature's
+ * mana value", ObjRef `costSacrificed`) is a `byHand` ability, the same way: the payment code hands the ids it sacrificed to the resolver (`ManaCostPaid.sacrificed`),
+ * which reads the permanents as they last existed on the battlefield (CR 608.2h). It is never planned ahead (the amount is unknown before the sacrifice).
+ */
+export const readsCostSacrificed = (def: ActivatedAbilityDef): boolean => JSON.stringify(def.effect).includes('"ref":"costSacrificed"');
+/** What the resolver of a mana ability must be handed after the cost is paid (exiled cards, sacrificed permanents): no amount of it can be planned. */
+export const readsCostPaid = (def: ActivatedAbilityDef): boolean => readsCostExiled(def) || readsCostSacrificed(def);
 
 /**
  * p2-mana-1 (CR 107.1c, 107.3a, 601.2b, 602.2b, 605.3b): the one cost part of a mana ability whose number is the ability's X, "Remove any number of storage
@@ -53,12 +75,19 @@ export const COST_READS = /"q":"X"|"ref":"costSacrificed"|"ref":"costTapped"|"re
  * counters of that kind on ~), the part is paid with it and the production reads it ("Add {B} for each storage counter removed this way"). Such an ability is
  * activated by hand (`byHand`), never planned by the automatic payer. Undefined for any other cost.
  */
-export function counterXPart(def: ActivatedAbilityDef): Extract<NonNullable<ActivatedAbilityDef['cost']['other']>[number], { kind: 'removeCounters' }> | undefined {
+export function counterXPart(def: ActivatedAbilityDef): Extract<NonNullable<ActivatedAbilityDef['cost']['other']>[number], { kind: 'removeCounters' | 'tapUntapped' | 'sacrifice' }> | undefined {
   const cost = def.cost;
   if (cost.loyalty !== undefined || cost.loyaltyX === true || (cost.mana ?? []).some((sym) => sym.kind === 'variable')) return undefined;
   const xs = (cost.other ?? []).filter((p) => JSON.stringify(p).includes('"q":"X"'));
   const p = xs[0];
-  if (xs.length !== 1 || p === undefined || p.kind !== 'removeCounters' || p.self !== true || p.counter === 'any' || p.among === true || p.filter !== undefined) return undefined;
+  if (xs.length !== 1 || p === undefined) return undefined;
+  // edh-perms-23 (CR 107.3a, 601.2b, 602.2b, 605.3b; Hazel of the Rootbloom): "Tap X untapped tokens you control": X is announced as the ability is activated (0 up to
+  // the untapped permanents that fit), that many are chosen and tapped, and the production reads X ("Add X mana in any combination of colors")
+  if (p.kind === 'tapUntapped') return p.other !== true && typeof p.count === 'object' && (p.count as { q?: string }).q === 'X' ? p : undefined;
+  // edh-next-97 (CR 107.3a, 601.2b, 602.2b, 605.3b, 701.21a; Springjack Pasture): "Sacrifice X Goats": X is announced as the ability is activated (0 up to the permanents that fit), that many are
+  // chosen and sacrificed, and the production reads X ("Add X mana of any one color. You gain X life.")
+  if (p.kind === 'sacrifice') return p.self !== true && typeof p.count === 'object' && (p.count as { q?: string }).q === 'X' ? p : undefined;
+  if (p.kind !== 'removeCounters' || p.self !== true || p.counter === 'any' || p.among === true || p.filter !== undefined) return undefined;
   if (p.all === true) return undefined; // p2-counters-move-2: "Remove all ... counters" has no X to choose (actions/activate.ts#fixedCounterX); not a mana ability's announced X
   return typeof p.count === 'object' && (p.count as { q?: string }).q === 'X' ? p : undefined;
 }
@@ -76,7 +105,7 @@ export function manaCostShape(def: ActivatedAbilityDef): ManaCostShape {
   const xOnly = counterXPart(def) !== undefined;
   const reads = (v: unknown): boolean => COST_READS.test(xOnly ? JSON.stringify(v).replaceAll('"q":"X"', '') : JSON.stringify(v));
   if (reads(other) || reads(def.effect)) return 'unsupported';
-  if (xOnly) return 'byHand';
+  if (xOnly || readsCostSacrificed(def)) return 'byHand'; // edh-next-47: the production reads what the cost sacrificed (handed to the resolver), so it is never planned as a converter
   if (selfOnly && mana.every((sym) => PLAIN_SYMBOLS.has(sym.kind))) return 'converter';
   return 'byHand';
 }
@@ -90,13 +119,15 @@ export function manaCostShape(def: ActivatedAbilityDef): ManaCostShape {
  */
 export interface ManaCostRules {
   denial: (s: GameState, player: PlayerId, source: GameObject, info: ActivatedInfo) => Denial | null;
-  pay: (g: Game, player: PlayerId, source: GameObject, info: ActivatedInfo, payWith?: ManaType[], /** p2-mana-1: the announced X of counterXPart */ x?: number) => void;
+  pay: (g: Game, player: PlayerId, source: GameObject, info: ActivatedInfo, payWith?: ManaType[], /** p2-mana-1: the announced X of counterXPart */ x?: number) => ManaCostPaid | void;
   /**
    * std-rx28 INTERFACE CHANGE (additive): does another object's static ability increase (or set) the cost of activating this mana ability now ("Activated
    * abilities of sources with the chosen name cost {2} more to activate", Skyseer's Chariot; CR 601.2f, 602.2b, 605.1a)? Such an ability is paid like any other
    * (`shapeNow`), never activated for free.
    */
   increased?: (s: GameState, player: PlayerId, source: GameObject, info: ActivatedInfo) => boolean;
+  /** edh-perms-23 (CR 107.3a, 601.2b; counterXPart): the most permanents the announced X of a "Tap X untapped ..." part can be now (its candidates, the ability's own {T} counted). */
+  maxX?: (s: GameState, player: PlayerId, source: GameObject, info: ActivatedInfo) => number;
 }
 let costRules: ManaCostRules | null = null;
 export function installManaCostRules(r: ManaCostRules | null): void {
@@ -179,8 +210,26 @@ export function addMana(g: Game, player: PlayerId, types: ManaType[], source: Ga
   const tapped = viaActivation && (opts.tapped === true || (byResolver && running.tap));
   const subtypes = source ? sourceSubtypesOf(g, source) : [];
   // std-mana-1 (CR 106.12, 614.1a): a permanent tapped for mana may produce more of that mana ("three times as much of that mana instead")
-  const factor = tapped && source !== undefined && source.zone === 'battlefield' && tapMultiplier ? tapMultiplier(g.s, player, source.id) : 1;
+  // edh-misc-2: the factor was read before the costs were paid (activateManaAbility), so a nonland permanent sacrificed as part of the cost, a Treasure, is judged as it was
+  // when it was tapped (CR 106.12, 608.2h); a mana ability the engine did not activate reads the permanent still on the battlefield
+  // (the rule's own source must still be on the battlefield: a doubler sacrificed as part of the cost no longer replaces anything, CR 113.6, 614.1a)
+  const before = tapped && source !== undefined ? FACTOR_BEFORE_COST.get(g)?.get(source.id) : undefined;
+  const factor = before !== undefined ? before.reduce((n, [src, v]) => (src === '' || g.s.objects[src]?.zone === 'battlefield' ? n * v : n), 1) : (tapped && source !== undefined && source.zone === 'battlefield' && tapMultiplier ? tapMultiplier(g.s, player, source.id) : 1);
+  const original = types;
   if (factor > 1) types = types.flatMap((t) => Array.from({ length: factor }, () => t));
+  // edh-next-12 (CR 106.12, 614.1a; Damping Sphere): a land tapped for two or more mana produces {C} instead of any other type and amount (after a multiplier, which is also a
+  // replacement of the amount: the player chooses the order, CR 616.1; the one that leaves the least is applied here)
+  // Damping Sphere ruling 2022-12-08, CR 616.1: the land's controller chooses the order. Collapsing first and multiplying after gives the most mana, so that order is taken when the
+  // land would produce enough without the multiplier; otherwise the multiplied amount is what the collapse applies to
+  // edh-next-140 (Contamination): from one mana on, and of the type the effect names ({B}); a multiplier then doubles that one mana (the order that gives the most, CR 616.1)
+  if (tapped && source !== undefined && source.zone === 'battlefield' && types.length >= 1) {
+    const col = tappedManaCollapseAtNow(g.s, player, source.id);
+    if (col !== null && types.length >= col.at) types = original.length >= col.at ? Array.from({ length: Math.max(factor, 1) }, () => col.type) : [col.type];
+  }
+  // edh-c-72 (CR 106.12, 614.1a; Ritual of Subdual): a land tapped for mana produces {C} instead of any other type, the same amount (after the collapse above, which is already {C})
+  // edh-next-45 (Infernal Darkness): or the one type the effect names, {B}
+  const onlyType = tapped && source !== undefined && source.zone === 'battlefield' ? tappedManaOnlyColorlessNow(g.s, player, source.id) : null;
+  if (onlyType !== null && types.some((t) => t !== onlyType)) types = types.map(() => onlyType);
   for (const type of types) {
     const unit: ManaUnit = { type };
     if (source) unit.sourceId = source.id;
@@ -207,8 +256,37 @@ export function addMana(g: Game, player: PlayerId, types: ManaType[], source: Ga
  */
 type TapManaMultiplier = (s: GameState, player: PlayerId, source: string) => number;
 let tapMultiplier: TapManaMultiplier | null = null;
-export function installTapManaMultiplier(f: TapManaMultiplier | null): void {
+type TapManaMultiplierSources = (s: GameState, player: PlayerId, source: string) => [string, number][];
+let tapSources: TapManaMultiplierSources | null = null;
+/** edh-misc-2 (CR 106.12, 614.1a): per game, the tapManaMultiplier factor of a mana ability being activated, read before its costs were paid (a Treasure is sacrificed in them). */
+const FACTOR_BEFORE_COST = new WeakMap<Game, Map<string, [string, number][]>>();
+/**
+ * edh-next-12 (CR 106.12, 614.1a; Damping Sphere): the least amount of mana at which a land tapped for mana produces {C} instead (statics/hooks.ts#tappedManaCollapseAt, installed
+ * by effects/mana-ability.ts like the multiplier). Not installed: null (no such effect).
+ */
+type TappedManaCollapse = (s: GameState, player: PlayerId, source: string) => { at: number; type: ManaType } | null; // edh-next-140: and the type of the one mana (Contamination)
+let tappedCollapse: TappedManaCollapse | null = null;
+export function installTappedManaCollapse(f: TappedManaCollapse | null): void {
+  tappedCollapse = f;
+}
+export function tappedManaCollapseAtNow(s: GameState, player: PlayerId, source: string): { at: number; type: ManaType } | null {
+  return tappedCollapse ? tappedCollapse(s, player, source) : null;
+}
+/**
+ * edh-c-72 (CR 106.12, 614.1a; Ritual of Subdual): does a land tapped for mana produce {C} instead of any other type (statics/hooks.ts#tappedManaOnlyColorless, installed by
+ * effects/mana-ability.ts like the collapse)? Not installed: false.
+ */
+type TappedManaOnlyColorless = (s: GameState, player: PlayerId, source: string) => ManaType | null; // edh-next-45: the type it produces instead ('C' for Ritual of Subdual)
+let tappedOnlyColorless: TappedManaOnlyColorless | null = null;
+export function installTappedManaOnlyColorless(f: TappedManaOnlyColorless | null): void {
+  tappedOnlyColorless = f;
+}
+export function tappedManaOnlyColorlessNow(s: GameState, player: PlayerId, source: string): ManaType | null {
+  return tappedOnlyColorless ? tappedOnlyColorless(s, player, source) : null;
+}
+export function installTapManaMultiplier(f: TapManaMultiplier | null, sources: TapManaMultiplierSources | null = null): void {
   tapMultiplier = f;
+  tapSources = sources;
 }
 
 export type ManaAbilityResolver = (g: Game, player: PlayerId, source: GameObject, info: ActivatedInfo) => void;
@@ -217,7 +295,7 @@ export function installManaAbilityResolver(f: ManaAbilityResolver | null): void 
   manaResolver = f;
 }
 /** The source whose mana ability is being activated in this game right now, and whether it is an exhaust ability (per Game: deterministic, nothing kept across runs). */
-const ACTIVATING = new WeakMap<Game, { id: string; exhaust: boolean; tap: boolean; x?: number; preset?: ManaType[] }>();
+const ACTIVATING = new WeakMap<Game, { id: string; exhaust: boolean; tap: boolean; x?: number; preset?: ManaType[]; paid?: ManaCostPaid }>();
 
 /**
  * Owner 2026-10-21: the next type the payer (or the player, in the payment decision) already chose for the mana ability the resolver is running now
@@ -232,6 +310,10 @@ export function presetManaType(g: Game, options: readonly ManaType[]): ManaType 
 export function activatingX(g: Game): number | undefined {
   return ACTIVATING.get(g)?.x;
 }
+/** edh-top-2: what the cost of the mana ability the resolver is running now exiled (read by ObjRef `costExiled`, effects/mana-ability.ts's context); undefined otherwise. */
+export function activatingPaid(g: Game): ManaCostPaid | undefined {
+  return ACTIVATING.get(g)?.paid;
+}
 
 /**
  * Whether `player` can activate this mana ability of `source` right now (controller, zone, {T}/{Q} state, summoning sickness, and "can't activate"
@@ -242,10 +324,14 @@ export function activatingX(g: Game): number | undefined {
  * (not while it is being activated), and whether its whole cost can be paid now (CR 118.3, 605.3a: a mana cost, life, other permanents; `manaCostShape`).
  */
 export function manaAbilityDenial(s: GameState, player: PlayerId, source: GameObject, info: ActivatedInfo): Denial | null {
-  // edh-mana-keywords-1 (CR 113.6, 605.1a, 602.2): "Exile this card from your hand: Add {G}." (the Spirit Guides) works in the hand only, for the card's owner, who
+  // edh-mana-keywords-1 (CR 113.6m, 605.1a, 602.2): "Exile this card from your hand: Add {G}." (the Spirit Guides) works in the hand only, for the card's owner, who
   // holds it (a card in a hand has no controller); every other mana ability works on the battlefield, for its controller
   if (source.zone === 'hand' && info.def.zone?.length === 1 && info.def.zone[0] === 'hand') {
     if (source.owner !== player) return deny('You can only activate abilities of cards in your own hand.', 'CR 602.2');
+  } else if (source.zone === 'graveyard' && info.def.zone?.length === 1 && info.def.zone[0] === 'graveyard') {
+    // edhd65-mana-ability-graveyard (CR 113.6m, 605.1a, 602.2; Jack-o'-Lantern): "{1}, Exile this card from your graveyard: Add one mana of any color." works in the graveyard only,
+    // for the card's owner (a card in a graveyard has no controller)
+    if (source.owner !== player) return deny('You can only activate abilities of cards in your own graveyard.', 'CR 602.2');
   } else {
     if (source.zone !== 'battlefield' || !activationZones(info.def).includes('battlefield')) return deny('Mana abilities of permanents can only be activated while the permanent is on the battlefield.', 'CR 113.6');
     if (source.controller !== player) return deny('You can only activate abilities of permanents you control.', 'CR 602.2');
@@ -286,7 +372,7 @@ export function manaAbilityDenial(s: GameState, player: PlayerId, source: GameOb
   }
   for (const part of cost.other ?? []) {
     if (part.kind !== 'sacrifice' || !part.self) return deny('This mana ability has a cost the engine can not pay yet.', 'CR 605.3a');
-    const cant = costUseDenial(s, player, source.id, 'sacrifice'); // WP31: "can't be sacrificed", "can't leave the battlefield" (CR 701.21a, 614.17b)
+    const cant = costUseDenial(s, player, source.id, 'sacrifice', undefined, true); // edh-next-18: a cost of activating; WP31: "can't be sacrificed", "can't leave the battlefield" (CR 701.21a, 614.17b)
     if (cant) return deny(`${c.name} can't be sacrificed, so this mana ability can't be activated. ${cant.message}`, 'CR 701.21a', 'CR 614.17b');
   }
   return null;
@@ -335,6 +421,18 @@ export function installManaAmountReader(f: ManaAmountReader | null): void {
 }
 
 /**
+ * edh-mana-keywords-3 INTERFACE CHANGE (additive), CR 106.1, 106.7, 605.3b: reads the units of a mana ability whose types come from the game state ("one mana of any
+ * color among legendary creatures you control", "one mana of any type that a land you control could produce"), as the interpreter will when it resolves
+ * (effects/handlers/cards-mana.ts#plannedProduction), so the automatic payer and the castability check offer it. Installed by effects/mana-ability.ts; not
+ * installed: such abilities are left to the player, as before.
+ */
+export type ManaProductionReader = (s: GameState, player: PlayerId, source: GameObject, info: ActivatedInfo, step: unknown) => { units: ManaType[][]; oneType: boolean } | undefined;
+let productionReader: ManaProductionReader | null = null;
+export function installManaProductionReader(f: ManaProductionReader | null): void {
+  productionReader = f;
+}
+
+/**
  * True when every quantity and condition in `node` depends only on the game state (statics/match.ts's kinds): no event, no question to a player. An amount
  * that reads whether permanents are tapped is left out: paying the ability's {T} cost changes it, so it could not be planned before the payment.
  */
@@ -369,7 +467,16 @@ export function computedManaUnits(s: GameState, player: PlayerId, source: GameOb
   const st = steps[0]!;
   if (st.op !== 'addMana' || st.units !== undefined || !st.dynamic || st.guard || st.who.ref !== 'you') return null;
   const d = st.dynamic;
+  // edh-mana-keywords-3 (CR 106.1, 106.7): the colors among objects and what lands could produce, read from the state (effects/handlers/cards-mana.ts#plannedProduction)
+  if ((d.kind === 'colorsOf' || d.kind === 'eachColorAmong' || d.kind === 'couldProduce') && productionReader) {
+    if (!stateOnly(d)) return null;
+    const read = productionReader(s, player, source, info, st);
+    if (read === undefined) return null;
+    return { units: read.units, oneType: read.oneType, options: [...new Set(read.units.flat())] };
+  }
   if (d.kind !== 'anyColor' && d.kind !== 'anyOneColor' && d.kind !== 'ofType' && d.kind !== 'commanderIdentity') return null;
+  if (d.kind === 'anyOneColor' && d.otherGroup !== undefined) return null; // edh-d-22: two choices of color (the second depends on the first); the player activates it
+  if (d.kind === 'anyColor' && d.distinct === true) return null; // edh-mana-keywords-3: "two mana of different colors" is one choice across the units; the player activates it
   if (!stateOnly(d.count)) return null;
   // M11-1, CR 903.4, 903.4f, 702.124c: "any color in your commander's color identity": exactly those colors; none (nothing to offer) without a commander or
   // with a colorless identity; an identity the game was not given is left to the player (the resolver asks by hand, never a guess)
@@ -412,7 +519,8 @@ function presetTypes(c: ComputedUnits, opts: ActivateOptions): ManaType[] | null
     const t = given[0]!;
     return given.every((x) => x === t) ? c.units.map(() => t) : null;
   }
-  return c.units.map((_, i) => given[i] ?? opts.color ?? given[given.length - 1]!);
+  // edh-mana-keywords-3 review: a unit with one option (each color among, CR 106.1) is that type whatever color the player gave for the source
+  return c.units.map((u, i) => (u.length === 1 ? u[0]! : given[i] ?? opts.color ?? given[given.length - 1]!));
 }
 
 /**
@@ -434,6 +542,13 @@ function countActivation(g: Game, sourceId: string, info: ActivatedInfo): void {
  * Returns the mana produced.
  */
 export function activateManaAbility(g: Game, player: PlayerId, sourceId: string, key: string, opts: ActivateOptions = {}): ManaType[] {
+  try {
+    return activateManaAbilityNow(g, player, sourceId, key, opts);
+  } finally {
+    FACTOR_BEFORE_COST.get(g)?.delete(sourceId);
+  }
+}
+function activateManaAbilityNow(g: Game, player: PlayerId, sourceId: string, key: string, opts: ActivateOptions): ManaType[] {
   const source = g.maybeObj(sourceId);
   if (!source) throw new IllegalAction('That object is not here.');
   const info = findAbility(g.s, sourceId, key);
@@ -441,12 +556,17 @@ export function activateManaAbility(g: Game, player: PlayerId, sourceId: string,
   const mana = info as ActivatedInfo;
   const d = manaAbilityDenial(g.s, player, source, mana);
   if (d) throw new IllegalAction(d.message, d.rules);
+  if (mana.def.cost.tap && tapSources) { // edh-misc-2: only an ability with {T} in its cost taps the permanent for mana (CR 106.12)
+    const m = FACTOR_BEFORE_COST.get(g) ?? new Map<string, [string, number][]>();
+    FACTOR_BEFORE_COST.set(g, m);
+    m.set(source.id, tapSources(g.s, player, source.id));
+  }
 
   // Decide the type of each unit before paying anything. (A dynamic ability decides as it resolves, through the resolver: WP31.)
   // PAY1: an ability whose amount is computed, activated with its type(s) given (the auto-payer's plan, or the player's color), adds the given type(s)
   // instead of asking again (CR 106.1b, 605.3b). Its amount is read after its costs are paid, as the resolver reads it (rules/mana.ts#computedManaUnits).
   const xPart = counterXPart(mana.def); // p2-mana-1: its amount reads the X announced below, never planned ahead
-  const computed = xPart === undefined && manaUnitsOf(mana.def) === null && (opts.color !== undefined || (opts.colors?.length ?? 0) > 0) ? computedManaUnits(g.s, player, source, mana) : null;
+  const computed = xPart === undefined && !readsCostPaid(mana.def) && manaUnitsOf(mana.def) === null && (opts.color !== undefined || (opts.colors?.length ?? 0) > 0) ? computedManaUnits(g.s, player, source, mana) : null;
   if (computed) {
     const given = presetTypes(computed, opts);
     if (given === null) throw new IllegalAction(`${charsOfObject(g.s, source).name} adds mana of one color only.`, ['CR 106.1b']);
@@ -474,11 +594,22 @@ export function activateManaAbility(g: Game, player: PlayerId, sourceId: string,
     produced.push(t);
   });
 
-  const fromHand = source.zone === 'hand'; // edh-mana-keywords-1: its cost moves it out of the hand
+  // edh-next-124 (CR 602.2, 605.1a; Tezzeret, Betrayer of Flesh, ruling 2022-02-18): a mana ability's activation begins too (rules/typed-activations.ts); its marks go once its cost is paid
+  const typedMarks = beginTypedActivation(g.s, player, source);
+  const sourceNow: GameObject = source; // (the narrowing above, for the function below)
+  try {
+    return payAndProduce();
+  } finally {
+    endTypedActivation(g.s, typedMarks);
+  }
+  function payAndProduce(): ManaType[] {
+  const source = sourceNow;
+  const fromHand = source.zone === 'hand' || source.zone === 'graveyard'; // edhd65: the graveyard form exiles the card too; edh-mana-keywords-1: its cost moves it out of the hand
   const c = charsOfObject(g.s, source);
   const snow = c.supertypes.includes('Snow'); // CR 107.4h: mana produced by a snow source is snow mana
   const shape = manaCostShapeNow(g.s, player, source, mana); // std-rx28
   let announcedX: number | undefined; // p2-mana-1 (counterXPart)
+  let costPaid: ManaCostPaid | undefined; // edh-top-2: what the cost exiled
   const sacrifice = (mana.def.cost.other ?? []).some((p) => p.kind === 'sacrifice' && p.self === true);
   const name = c.name;
   if (shape === 'simple') {
@@ -502,11 +633,13 @@ export function activateManaAbility(g: Game, player: PlayerId, sourceId: string,
     try {
       // p2-mana-1 (CR 107.1c, 601.2b, 602.2b): "Remove any number of storage counters from ~": the number is announced first, 0 up to the counters on it
       if (xPart !== undefined) {
-        const have = source.counters[xPart.counter] ?? 0;
-        announcedX = have === 0 ? 0 : g.choose({ kind: 'chooseNumber', player, prompt: `How many ${xPart.counter} counters do you remove from ${name}? (X, up to ${have})`, min: 0, max: have, cancellable: true, rules: ['CR 107.1c', 'CR 601.2b', 'CR 602.2b'] }).n;
+        // edh-perms-23: or the untapped permanents the part could tap (installed by rules/pay.ts: its candidates for this part, the {T} of this ability already counted)
+        const have = xPart.kind === 'tapUntapped' || xPart.kind === 'sacrifice' ? (costRules.maxX?.(g.s, player, source, mana) ?? 0) : source.counters[xPart.counter] ?? 0;
+        const what = xPart.kind === 'tapUntapped' ? `untapped permanents do you tap for ${name}` : xPart.kind === 'sacrifice' ? `permanents do you sacrifice for ${name}` : `${xPart.counter} counters do you remove from ${name}`;
+        announcedX = have === 0 ? 0 : g.choose({ kind: 'chooseNumber', player, prompt: `How many ${what}? (X, up to ${have})`, min: 0, max: have, cancellable: true, rules: ['CR 107.1c', 'CR 601.2b', 'CR 602.2b'] }).n;
         if (!Number.isInteger(announcedX) || announcedX < 0 || announcedX > have) throw new IllegalAction(`Choose a number from 0 to ${have}.`, ['CR 601.2b']);
       }
-      costRules.pay(g, player, source, mana, opts.payWith, announcedX);
+      costPaid = costRules.pay(g, player, source, mana, opts.payWith, announcedX) ?? undefined;
     } finally {
       active.delete(key);
     }
@@ -525,7 +658,7 @@ export function activateManaAbility(g: Game, player: PlayerId, sourceId: string,
     const before = pool.length;
     firstEvent = g.events.length;
     const preset = [...(opts.colors ?? []), ...(opts.color !== undefined ? [opts.color] : [])];
-    ACTIVATING.set(g, { id: source.id, exhaust, tap: mana.def.cost.tap === true, ...(announcedX !== undefined ? { x: announcedX } : {}), ...(preset.length > 0 ? { preset } : {}) });
+    ACTIVATING.set(g, { id: source.id, exhaust, tap: mana.def.cost.tap === true, ...(announcedX !== undefined ? { x: announcedX } : {}), ...(costPaid?.exiled !== undefined || costPaid?.sacrificed !== undefined ? { paid: costPaid } : {}), ...(preset.length > 0 ? { preset } : {}) });
     try {
       manaResolver!(g, player, source, mana); // CR 605.3b: at once, without the stack
     } finally {
@@ -550,6 +683,7 @@ export function activateManaAbility(g: Game, player: PlayerId, sourceId: string,
   }
   addManaByActivation(g, player, [], source, snow, restrictionOf(mana), exhaust, undefined, undefined, mana.def.cost.tap === true);
   return produced;
+  }
 }
 
 /**

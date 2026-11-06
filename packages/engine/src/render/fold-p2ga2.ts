@@ -23,7 +23,9 @@ function eachOpponentMayPutOneFromHand(list: EffectStep[], i: number, st: Render
   const a = list[i];
   const b = list[i + 1];
   if (a?.op !== 'chooseObjects' || a.guard !== undefined || a.random !== undefined || a.groupLimit !== undefined || a.startingWith !== undefined || a.min !== 0 || a.max !== 1) return null;
-  if (!same(a.who, ITERATING) || !same(a.perPlayer, { ref: 'each', who: 'opponent' }) || a.from.ref !== 'each') return null;
+  // edh-next-1 (Show and Tell): "Each player may put an artifact, creature, enchantment, or land card from their hand onto the battlefield" (every player, you included): the same two steps over `each player`
+  const group = same(a.perPlayer, { ref: 'each', who: 'opponent' }) ? 'opponent' : same(a.perPlayer, { ref: 'each', who: 'player' }) ? 'player' : null;
+  if (!same(a.who, ITERATING) || group === null || a.from.ref !== 'each') return null;
   const f = a.from.filter;
   if (f.anyOf?.length !== 1 || f.zone !== 'hand' || !same(f.owner, ITERATING) || f.isCard !== true || Object.keys(f).some((k) => !['anyOf', 'zone', 'owner', 'isCard'].includes(k))) return null;
   if (b?.op !== 'move' || b.guard !== undefined || b.as !== undefined || b.until !== undefined || b.link !== undefined || !same(b.what, { ref: 'bound', name: a.as })) return null;
@@ -31,7 +33,9 @@ function eachOpponentMayPutOneFromHand(list: EffectStep[], i: number, st: Render
   const kind = f.anyOf[0]!;
   bind(st, a.as, { nouns: [...K.nounsOf(kind), 'card'], plural: true });
   const card = K.np({ ...kind, isCard: true, zone: 'hand' }, st, { det: 'a', noZone: true });
-  return { clauses: [plain(`${alt('each opponent', 'each other player')} may put ${card} from their hand onto the battlefield`, { standalone: true })], consumed: 2 };
+  const who = group === 'player' ? 'each player' : alt('each opponent', 'each other player');
+  // edh-c-104 (CR 101.4, 608.2d; Charmed Griffin; family put-onto-battlefield-from-hand-order): the zone phrase may follow the destination, "may put an artifact or enchantment card onto the battlefield from their hand"
+  return { clauses: [plain(alt(`${who} may put ${card} from their hand onto the battlefield`, `${who} may put ${card} onto the battlefield from their hand`), { standalone: true })], consumed: 2 };
 }
 
 /** The folds of p2-group-actions-2 (render/fold.ts#foldAt). */

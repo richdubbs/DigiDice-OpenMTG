@@ -94,15 +94,15 @@ describe('CR 701.6a, 401.3: counter puts the spell exactly where the step says, 
     expect(r.state.zones.library['p2']!.indexOf(newIdOf(r.state, bolt))).toBe(2);
   });
 
-  it('CR 701.6a: a destination a countered spell is not put into by this build (the battlefield) is resolved by hand, never skipped silently', () => {
+  it('CR 701.6a: a destination a countered spell is not put into by this build (the battlefield with a later step naming the result, edhd36) is resolved by hand, never skipped silently', () => {
     const { t, bolt } = withBolt();
-    const r = runProgram(t, { name: 'Counterspell', targets: [[chosenObject(bolt)]] }, prog([{ op: 'counter', what: { ref: 'target', id: 't0' }, to: { zone: 'battlefield', controller: { ref: 'you' } } }], [spellSpec]));
+    const r = runProgram(t, { name: 'Counterspell', targets: [[chosenObject(bolt)]] }, prog([{ op: 'counter', what: { ref: 'target', id: 't0' }, as: 'x', to: { zone: 'battlefield', controller: { ref: 'you' } } }], [spellSpec]));
     expect(pipeline.manual).toHaveLength(1);
     expect(r.state.objects[bolt]!.zone).toBe('stack');
   });
 
   it('CR 701.6a: the capability walker names a counter onto the battlefield, so the card is not classified automated', () => {
-    const caps = capabilitiesOf({ kind: 'spell', text: 'x', effect: prog([{ op: 'counter', what: { ref: 'target', id: 't0' }, to: { zone: 'battlefield', controller: { ref: 'you' } } }], [spellSpec]) });
+    const caps = capabilitiesOf({ kind: 'spell', text: 'x', effect: prog([{ op: 'counter', what: { ref: 'target', id: 't0' }, as: 'x', to: { zone: 'battlefield', controller: { ref: 'you' } } }], [spellSpec]) });
     expect(caps).toContain('op:counter.to.battlefield');
     expect(ENGINE_CAPABILITIES.has('op:counter.to.battlefield')).toBe(false);
   });
@@ -165,8 +165,8 @@ describe('CR 701.3d: becoming unattached', () => {
     expect(sem.some((e) => e.ev === 'becomes' && e.data['what'] === 'attached')).toBe(true);
   });
 
-  it('CR 701.3d, 603.10: "becomes unattached" is not advertised while leaving the battlefield and the 704.5m-n state-based actions emit nothing', () => {
-    expect(ENGINE_CAPABILITIES.has('feature:ev.becomes.unattached')).toBe(false);
+  it('CR 701.3d, 603.10c (edh-perms-10): "becomes unattached" is advertised now that the attach op, re-attaching, leaving the battlefield and the 704.5n-p state-based actions all emit it (cloud/edh-perms-10 plays each)', () => {
+    expect(ENGINE_CAPABILITIES.has('feature:ev.becomes.unattached')).toBe(true);
   });
 });
 

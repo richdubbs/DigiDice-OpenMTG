@@ -41,7 +41,10 @@ export const cardsDesc: HoleFn = (ctx, pos) => {
 const weaker = (alts: Alt[]): Alt[] => alts.map((a) => ({ ...a, weak: (a.weak ?? 0) + 1 }));
 
 const W_OR = P('or');
+const withoutIsCard = (f: ObjectFilter): ObjectFilter => { const { isCard: _isCard, ...rest } = f; return rest; };
 const W_CARD = P('card');
+const W_COMMA = P(','); // edh-zones-26
+const W_COMMA_OR = P(', or'); // edh-zones-26
 
 /**
  * `SearchDesc`: the card a search of the library is for, with its article, one unspecific word lower (`weak`): `DiscardDesc`'s description,
@@ -51,6 +54,7 @@ const W_CARD = P('card');
  */
 export const searchDesc: HoleFn = (ctx, pos) => {
   const out: Alt[] = [...discardDesc(ctx, pos)];
+  const extra: Alt[] = [];
   const art = ctx.toks[pos]?.norm;
   if (art === 'a' || art === 'an') {
     for (const f of ctx.call('Filter', pos + 1)) {
@@ -64,6 +68,47 @@ export const searchDesc: HoleFn = (ctx, pos) => {
         if (e >= 0) out.push({ end: e, value: { anyOf: [f.value as ObjectFilter, g.value as ObjectFilter] } });
       }
     }
+    // edh-zones-4 (CR 608.2c, 701.23a): "an artifact card with a mana ability or a basic land card" (Moonsilver Key): either half is a whole card description with its own
+    // qualifiers (a noun phrase of the head "card": "with a mana ability", "with mana value 3 or less"), which `Filter card` above stops short of; a flag (a property of the set) is no reading
+    for (const n of npAlts(ctx, pos + 1)) {
+      if (n.number !== 'singular' || n.head !== 'card' || n.filter.zone !== undefined || n.flags.some((fl) => fl !== 'zone-unstated')) continue;
+      const o = phraseAt(ctx, n.end, W_OR);
+      const art2 = o >= 0 ? ctx.toks[o]?.norm : undefined;
+      // edh-zones-9 (CR 701.23a; Open the Gates): "a basic land card or Gate card": the article said once, before the first half (the second half is a whole card description with no article)
+      if (o >= 0 && art2 !== 'a' && art2 !== 'an') {
+        for (const m of npAlts(ctx, o)) {
+          if (m.number !== 'singular' || m.head !== 'card' || m.filter.zone !== undefined || m.flags.some((fl) => fl !== 'zone-unstated')) continue;
+          const theirs = (f: ObjectFilter): boolean => f.keyword !== undefined || f.notKeyword !== undefined || f.manaValue !== undefined;
+          if (!out.some((a) => a.end === m.end) && !theirs(n.filter) && !theirs(m.filter)) extra.push({ end: m.end, value: { anyOf: [withoutIsCard(n.filter), withoutIsCard(m.filter)] }, ...(n.weak + m.weak > 0 ? { weak: n.weak + m.weak } : {}) });
+        }
+        continue;
+      }
+      if (art2 !== 'a' && art2 !== 'an') continue;
+      for (const m of npAlts(ctx, o + 1)) {
+        if (m.number !== 'singular' || m.head !== 'card' || m.filter.zone !== undefined || m.flags.some((fl) => fl !== 'zone-unstated')) continue;
+        // not weakened: the first reading above stops at the qualifier ("zone-unstated" notes), so this one is the only whole reading, and the wording is as specific as a name.
+        // A half with a keyword or a mana value is the whole-sentence templates' (eff.t31.search.orCardWithKeyword / orMvAtMost read "... or a card with flash", "... or a creature
+        // card with mana value 1 or less"): leaving those sentences to them keeps their readings (equal priority would make the sentence ambiguous, G5)
+        const theirs = (f: ObjectFilter): boolean => f.keyword !== undefined || f.notKeyword !== undefined || f.manaValue !== undefined;
+        if (!out.some((a) => a.end === m.end) && !theirs(n.filter) && !theirs(m.filter)) extra.push({ end: m.end, value: { anyOf: [withoutIsCard(n.filter), withoutIsCard(m.filter)] }, ...(n.weak + m.weak > 0 ? { weak: n.weak + m.weak } : {}) });
+      }
+    }
   }
-  return weaker(out);
+  // edh-zones-26 (CR 701.23a, 608.2c; Search for Glory): a list of three, each half a whole card description with its own article, "a snow permanent card, a legendary card, or a Saga card":
+  // one card that fits any of them (a bare supertype is a description only with its noun, so the halves are read as noun phrases of the head "card", as above)
+  if (art === 'a' || art === 'an') {
+    const half = (p: number, art2: boolean) => (art2 ? ctx.toks[p]?.norm === 'a' || ctx.toks[p]?.norm === 'an' : true)
+      ? npAlts(ctx, art2 ? p + 1 : p).filter((n) => n.number === 'singular' && n.head === 'card' && n.filter.zone === undefined && n.flags.every((fl) => fl === 'zone-unstated') && n.filter.keyword === undefined && n.filter.notKeyword === undefined && n.filter.manaValue === undefined)
+      : [];
+    for (const a of half(pos, true)) {
+      const c1 = phraseAt(ctx, a.end, W_COMMA);
+      if (c1 < 0) continue;
+      for (const b of half(c1, true)) {
+        const c2 = phraseAt(ctx, b.end, W_COMMA_OR);
+        if (c2 < 0) continue;
+        for (const c of half(c2, true)) extra.push({ end: c.end, value: { anyOf: [withoutIsCard(a.filter), withoutIsCard(b.filter), withoutIsCard(c.filter)] }, ...(a.weak + b.weak + c.weak > 0 ? { weak: a.weak + b.weak + c.weak } : {}) });
+      }
+    }
+  }
+  return [...weaker(out), ...extra];
 };

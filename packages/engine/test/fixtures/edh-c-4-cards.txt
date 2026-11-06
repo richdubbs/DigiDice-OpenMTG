@@ -1,0 +1,11 @@
+# edh-c-4 (Commander lane edh-c, EDHREC ranks 16,876 to 17,500): see packages/engine/src/parser/templates/zz-cloud/edh-c-4.json. After editing: npm run cards -- fixtures
+Curse of Oblivion
+Curfew
+Avatar of Fury
+Goblin Razerunners
+Credit Voucher
+Keldon Firebombers
+Thoughtpicker Witch
+Nylea's Presence
+Samurai of the Pale Curtain
+Midnight Oil

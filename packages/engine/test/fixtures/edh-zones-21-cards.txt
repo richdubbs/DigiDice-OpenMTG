@@ -1,0 +1,3 @@
+# edh-zones-21 (Commander effort, lane edh-zones; test/cloud/edh-zones-21, golden edh-zones-21-review.json): for each group its owner puts it on their choice of the top or bottom of their library (Aetherspouts), lands entering under an opponent's control without being played (Deep Gnome Terramancer)
+Aetherspouts
+Deep Gnome Terramancer

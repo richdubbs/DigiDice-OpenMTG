@@ -1,0 +1,112 @@
+[
+  {
+    "id": "eff.edhpm18.put.eitherKind.fromHand.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2a"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card or ( a | an ) {g:Filter} card from your hand onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f",
+              "$g"
+            ],
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may put a green creature card or an enchantment card from your hand onto the battlefield."
+      },
+      {
+        "text": "{2}{U}: You may put a Wizard card or a land card from your hand onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you may put a green creature card and/or an enchantment card from your hand onto the battlefield.",
+      "At the beginning of your upkeep, you may put a green creature card or an enchantment card from your graveyard onto the battlefield.",
+      "At the beginning of your upkeep, you may put a green creature card or two enchantment cards from your hand onto the battlefield."
+    ]
+  },
+  {
+    "id": "trg.edhpm18.you.sacrifice.duringYourTurn",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 603.1",
+      "CR 701.21a",
+      "CR 500.1"
+    ],
+    "pattern": "( when | whenever ) you sacrifice {f:Filter} during your turn",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "sacrifice",
+          "actor": "you",
+          "object": "$f"
+        }
+      ],
+      "while": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "when",
+      "whenever",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you sacrifice another artifact during your turn, draw a card."
+      },
+      {
+        "text": "Whenever you sacrifice another nontoken creature during your turn, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you sacrifice another artifact during an opponent's turn, draw a card.",
+      "Whenever an opponent sacrifices another artifact during your turn, draw a card.",
+      "Whenever you sacrifice two artifacts during your turn, draw a card."
+    ]
+  }
+]

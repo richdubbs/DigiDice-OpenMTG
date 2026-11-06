@@ -1,0 +1,23 @@
+[
+  {
+    "id": "eff.edht14.attach.toRandomOtherOpponent",
+    "kind": "effect",
+    "weak": 1,
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 701.3a", "CR 303.4", "CR 608.2c"],
+    "pattern": "attach {o:Obj} to another one of your opponents chosen at random",
+    "build": { "op": "attach", "what": "$o", "to": { "ref": "randomOpponent", "than": { "ref": "enchantedPlayer" } } },
+    "subject": "none",
+    "consumes": ["another", "chosen", "random"],
+    "examples": [
+      { "text": "At the beginning of enchanted player's upkeep, ~ deals 2 damage to that player. Then attach ~ to another one of your opponents chosen at random." },
+      { "text": "Whenever enchanted player casts a spell, that player loses 1 life. Then attach ~ to another one of your opponents chosen at random." }
+    ],
+    "counterExamples": [
+      "Attach ~ to a random opponent.",
+      "Attach ~ to another one of your opponents.",
+      "Attach ~ to each of your opponents chosen at random."
+    ]
+  }
+]

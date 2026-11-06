@@ -22,7 +22,7 @@ import type { PlayerId } from '../types/ids';
 import type { GameState, PlayerControlRec } from '../types/state';
 
 /** What the questions below read: a game state, or a player's view of it (core/view.ts keeps both fields). */
-type Seen = Pick<GameState, 'players' | 'playerControl'>;
+type Seen = Pick<GameState, 'players' | 'playerControl'> & Partial<Pick<GameState, 'pending'>>;
 import type { Game } from './game';
 
 const RULES_TURN = ['CR 723.1'];
@@ -69,12 +69,31 @@ export function withDecider<D extends Decision>(state: Seen, d: D): D {
 export function mayActAs(state: Seen, from: PlayerId, action: Action): boolean {
   if (action.type === 'startGame' || !('player' in action)) return false;
   if (action.type === 'concede' || action.type === 'setStops') return action.player === from;
+  // edh-combat-7 (CR 509.1, 723.1; Odric, Master Tactician): a decision that names who answers it (`Decision.decidedBy`) is answered from that player's seat only
+  if (action.type === 'answer' && state.pending != null && state.pending.id === action.decisionId && state.pending.decidedBy !== undefined) return state.pending.decidedBy === from;
   return controllerOfPlayer(state, action.player) === from;
 }
 
+/**
+ * edh-next-119 (CR 723.2, 723.5): `controller` controls `player` while one search of their own library goes on (effects/handlers/search-control.ts): an active record `during: 'search'`, the newest
+ * one (CR 723.1a). Returns its id, for endSearchControl.
+ */
+export function beginSearchControlRecord(g: Game, controller: PlayerId, player: PlayerId, sourceName: string): string {
+  const rec: PlayerControlRec = { id: `pc${g.newEffectId()}`, controller, player, during: 'search', timestamp: g.newTimestamp(), active: true, sourceName };
+  g.s.playerControl = [...(g.s.playerControl ?? []), rec];
+  return rec.id;
+}
+
+/** edh-next-119: the search is over: its record ends (no other record is touched). */
+export function endSearchControl(g: Game, id: string): void {
+  const kept = (g.s.playerControl ?? []).filter((r) => r.id !== id);
+  if (kept.length > 0) g.s.playerControl = kept;
+  else delete g.s.playerControl;
+}
+
 /** Op `controlPlayer`: `controller` controls `player` during their next turn or their next combat phase (CR 723.1). */
-export function addPlayerControl(g: Game, controller: PlayerId, player: PlayerId, during: PlayerControlRec['during'], sourceName: string): void {
-  const rec: PlayerControlRec = { id: `pc${g.newEffectId()}`, controller, player, during, timestamp: g.newTimestamp(), sourceName };
+export function addPlayerControl(g: Game, controller: PlayerId, player: PlayerId, during: PlayerControlRec['during'], sourceName: string, thenExtraTurn = false): void {
+  const rec: PlayerControlRec = { id: `pc${g.newEffectId()}`, controller, player, during, timestamp: g.newTimestamp(), sourceName, ...(thenExtraTurn ? { thenExtraTurn: true as const } : {}) };
   g.s.playerControl = [...(g.s.playerControl ?? []), rec];
   const when = during === 'turn' ? 'their next turn' : 'their next combat phase';
   g.log(`${g.player(controller).name} will control ${g.player(player).name} during ${when} (${sourceName}).`, { rules: during === 'turn' ? RULES_TURN : RULES_COMBAT, level: 'action' });

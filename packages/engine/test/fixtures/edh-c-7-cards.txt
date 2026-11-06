@@ -1,0 +1,9 @@
+# edh-c-7 (Commander lane edh-c, EDHREC ranks 18,751 to 19,375): chosen color without flying, for each ... on the battlefield with flying, whileObject after a move, next-upkeep tail. After editing: npm run cards -- fixtures
+Teferi's Moat
+Radiant, Archangel
+Force of Rage
+Makeshift Mannequin
+Mathas, Fiend Seeker
+Obsidian Fireheart
+Rally the Ancestors
+Skarrgan Firebird

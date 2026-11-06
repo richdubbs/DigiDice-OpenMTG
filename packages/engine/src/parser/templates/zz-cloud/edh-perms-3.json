@@ -1,0 +1,251 @@
+[
+  {
+    "id": "eff.edhpm3.group.becomes.subtype.inaddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3a",
+      "CR 613.1d",
+      "CR 611.2a"
+    ],
+    "pattern": "each {f:Filter} becomes ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control becomes a Demon in addition to its other types."
+      },
+      {
+        "text": "Each artifact creature target opponent controls becomes a Pirate in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control becomes a Demon.",
+      "Each creature you control becomes a Demon in addition to its other types until end of turn.",
+      "Each creature you control becomes a Demon artifact in addition to its other types.",
+      "Creatures you control become Demons in addition to their other types.",
+      "Target creature becomes a Demon in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.edhpm3.dur.group.has.basept.becomes.subtype",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3a",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} has base power and toughness {pt:BasePT} and becomes ( a | an ) {st:Subtypes} in addition to its other creature types",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "each",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, each Goblin creature you control has base power and toughness 4/4 and becomes a Demon in addition to its other creature types."
+      },
+      {
+        "text": "{2}{R}: Until end of turn, each Goblin creature you control has base power and toughness 3/3 and becomes a Beast in addition to its other creature types."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, each Elf creature you control has base power and toughness 5/5 and becomes a Dinosaur.",
+      "Each Elf creature you control has base power and toughness 5/5 and becomes a Dinosaur in addition to its other creature types.",
+      "Until end of turn, each Elf creature you control has base power 5 and becomes a Dinosaur in addition to its other creature types.",
+      "Until end of turn, creatures you control have base power and toughness 5/5 and become Dinosaurs in addition to their other creature types."
+    ]
+  },
+  {
+    "id": "sta.edhpm3.self.offbattlefield.creature.inaddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.2",
+      "CR 604.3",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 113.6"
+    ],
+    "pattern": "as long as ~ isn't on the battlefield , it's ( a | an ) {pt:BasePT} {st:Subtypes} creature in addition to its other types",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "library",
+        "hand",
+        "graveyard",
+        "stack",
+        "exile",
+        "command"
+      ],
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ isn't on the battlefield, it's a 2/2 Spirit creature in addition to its other types."
+      },
+      {
+        "text": "As long as ~ isn't on the battlefield, it's a 3/3 Demon creature in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ isn't on the battlefield, it's a 1/1 Insect creature.",
+      "As long as ~ isn't in your graveyard, it's a 1/1 Insect creature in addition to its other types.",
+      "As long as ~ is on the battlefield, it's a 1/1 Insect creature in addition to its other types."
+    ]
+  },
+  {
+    "id": "rep.edhpm3.enters.copy.another.except",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.9a",
+      "CR 707.9b",
+      "CR 614.1c",
+      "CR 613.1f",
+      "CR 707.2"
+    ],
+    "pattern": "you may have ~ enter as a copy of another {f:Filter} , except {x:CopyExcept}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": {
+                "anyOf": [
+                  "$f"
+                ],
+                "other": true
+              },
+              "optional": true,
+              "except": "$x"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of another creature you control, except it has flying."
+      },
+      {
+        "text": "You may have ~ enter as a copy of another artifact you control, except it has ~'s other abilities.\n{T}: You gain 7 life."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of a creature you control, except it has flying.",
+      "You may have ~ enter as a copy of another creature you control, except it has flying and deathtouch until end of turn.",
+      "You may have ~ enter as a copy of another creature you control."
+    ]
+  }
+]

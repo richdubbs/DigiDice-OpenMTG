@@ -66,8 +66,8 @@ const KEYWORD_DEFS = [WRENCH, COG, NOTION, IDEA, GOLEM, BANNER, SQUIRE, FORGE];
 describe('the synthetic cards are automated', () => {
   it('every synthetic card plays fully', () => {
     for (const d of [WRENCH, PLOTTER, CURATOR, DIG]) expect(full(d), `${d.name}: ${JSON.stringify(d.automation)}`).toBe(true);
-    // the convoke template is experimental (design 6.9: no usable evidence yet), which caps the card at partial; its ability itself is automated
-    expect(BANNER.automation.level).toBe('partial');
+    // edh-next-39 promoted the convoke template (Wand of the Worldsoul, design 6.9 narrow wording), so the card plays fully now
+    expect(BANNER.automation.level).toBe('full');
     expect(BANNER.automation.faces![0]!.abilities.every((a) => a.level === 'full')).toBe(true);
   });
 });

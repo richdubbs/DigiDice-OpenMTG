@@ -1,0 +1,7 @@
+# edh-next-34 (Commander EDHREC ranks 15,001-16,250): draw and graveyard replacements, a group investigate, a linked-exile pickup, an attack-and-block tax Aura. After editing: npm run cards -- fixtures
+# (Wheel of Sun and Moon is in test-cards.txt already)
+Forbidden Crypt
+Declaration in Stone
+Endless Horizons
+Invisible Woman
+Oppressive Rays

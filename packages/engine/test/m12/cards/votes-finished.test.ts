@@ -17,7 +17,7 @@ const MODEL_OF_UNITY = card('Model of Unity', 'Artifact Creature — Construct',
 const ERESTOR = card('Erestor of the Council', 'Legendary Creature — Elf Noble', '{1}{G}{U}',
   "Whenever players finish voting, each opponent who voted for a choice you voted for creates a Treasure token. You scry X, where X is the number of opponents who voted for a choice you didn't vote for. Draw a card.");
 const PETITION = card('Test Petition', 'Sorcery', '{W}', 'Starting with you, each player votes for time or knowledge. If time gets more votes, each opponent loses 3 life. If knowledge gets more votes or the vote is tied, draw two cards.');
-const SECRET = card('Test Secret Council', 'Sorcery', '{W}', 'Each player secretly votes for truth or consequences, then those votes are revealed. You draw cards equal to the number of truth votes.');
+const SECRET = card('Test Secret Council', 'Sorcery', '{W}', 'Each player secretly votes for a color, then those votes are revealed. You draw a card for each vote you received.'); // edhd27: "for a player" is automated now (eff.edhd27.vote.secret.player), so this stays a vote by hand
 const DEFS = [GRUDGE_KEEPER, MODEL_OF_UNITY, ERESTOR, PETITION, SECRET];
 
 const triggersOf = (d: CardDef) => d.faces[0]!.abilities.filter((a) => a.kind === 'triggered');

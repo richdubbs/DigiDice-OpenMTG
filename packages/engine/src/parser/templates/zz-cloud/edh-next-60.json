@@ -1,0 +1,949 @@
+[
+  {
+    "id": "eff.edhn60.redirect.all.youAnd.lead",
+    "kind": "effect",
+    "cr": [
+      "CR 614.9",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "{d:Dur} , all damage that would be dealt to you and {f:Filter} is dealt to {t:Obj} instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": "$t"
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": "$t"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, all damage that would be dealt to you and creatures you control is dealt to target creature you control instead."
+      },
+      {
+        "text": "Until your next turn, all damage that would be dealt to you and permanents you control is dealt to target creature instead."
+      }
+    ],
+    "counterExamples": [
+      "All damage that would be dealt to you and creatures you control is dealt to target creature you control instead.",
+      "Until end of turn, all combat damage that would be dealt to you and creatures you control is dealt to target creature you control instead.",
+      "Until end of turn, all damage that would be dealt to creatures you control is dealt to target creature you control instead."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "eff.edhn60.redirect.all.youAnd.mid",
+    "kind": "effect",
+    "cr": [
+      "CR 614.9",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "all damage that would be dealt {d:Dur} to you and {f:Filter} is dealt to {t:Obj} instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": "$t"
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": "$t"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "All damage that would be dealt this turn to you and creatures you control is dealt to target creature you control instead."
+      },
+      {
+        "text": "All damage that would be dealt this turn to you and permanents you control is dealt to target creature instead."
+      }
+    ],
+    "counterExamples": [
+      "All damage that would be dealt to you and creatures you control is dealt to target creature you control instead.",
+      "All combat damage that would be dealt this turn to you and creatures you control is dealt to target creature you control instead.",
+      "All damage that would be dealt this turn to creatures you control is dealt to target creature you control instead."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "eff.edhn60.redirect.all.group.lead",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.9",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "{d:Dur} , all damage that would be dealt to {f:Filter} is dealt to {t:Obj} instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": "$t"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, all damage that would be dealt to creatures you control is dealt to target creature instead."
+      },
+      {
+        "text": "Until your next turn, all damage that would be dealt to permanents you control is dealt to target creature you control instead."
+      }
+    ],
+    "counterExamples": [
+      "All damage that would be dealt to creatures you control is dealt to target creature instead.",
+      "Until end of turn, all combat damage that would be dealt to creatures you control is dealt to target creature instead.",
+      "Until end of turn, all damage that would be dealt to you and creatures you control is dealt to target creature instead and you draw a card."
+    ]
+  },
+  {
+    "id": "sta.edhn60.damageToSelf.prevent.list",
+    "kind": "static",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 614.1a"
+    ],
+    "pattern": "if damage would be dealt to ~ , prevent that damage , {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "If damage would be dealt to ~, prevent that damage, remove that many time counters from ~, and create that many 1/1 white Soldier creature tokens."
+      },
+      {
+        "text": "If damage would be dealt to ~, prevent that damage, remove that many +1/+1 counters from ~, and create that many 1/1 black Rat creature tokens."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to ~, prevent that damage and remove that many +1/+1 counters from ~.",
+      "If damage would be dealt to you, prevent that damage, remove that many +1/+1 counters from ~, and create that many 1/1 colorless Spirit creature tokens.",
+      "If damage would be dealt to ~, remove that many +1/+1 counters from ~, and create that many 1/1 colorless Spirit creature tokens."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "sta.edhn60.damageToAttached.prevent.then",
+    "kind": "static",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 614.1a",
+      "CR 301.5"
+    ],
+    "pattern": "if ( enchanted | equipped ) creature would be dealt damage , prevent that damage and {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": {
+                  "ref": "attachedTo"
+                }
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "If equipped creature would be dealt damage, prevent that damage and put that many oil counters on it."
+      },
+      {
+        "text": "If enchanted creature would be dealt damage, prevent that damage and you gain that much life."
+      }
+    ],
+    "counterExamples": [
+      "If equipped creature would be dealt damage, put that many +1/+1 counters on it.",
+      "If equipped creature would be dealt combat damage, prevent that damage and put that many +1/+1 counters on it.",
+      "If a creature would be dealt damage, prevent that damage and put that many +1/+1 counters on it."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "sta.edhn60.damageToSelf.whileCounter.prevent.then",
+    "kind": "static",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 614.1a",
+      "CR 122.1"
+    ],
+    "pattern": "if damage would be dealt to ~ while it has ( a | an ) {k:CounterKind} counter on it , prevent that damage and {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "condition": {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "counters": {
+                "kind": "$k"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "while"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "If damage would be dealt to ~ while it has an oil counter on it, prevent that damage and remove that many oil counters from it."
+      },
+      {
+        "text": "If damage would be dealt to ~ while it has an oil counter on it, prevent that damage and put that many +1/+1 counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to ~, prevent that damage and remove that many oil counters from it.",
+      "If damage would be dealt to ~ while it has a +1/+1 counter on it, remove that many +1/+1 counters from it.",
+      "If combat damage would be dealt to ~ while it has a +1/+1 counter on it, prevent that damage and remove that many +1/+1 counters from it."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "eff.edhn60.damageToObj.prevent.then.dur",
+    "kind": "effect",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 611.2a"
+    ],
+    "pattern": "if damage would be dealt to {o:Obj} {d:Dur} , prevent that damage and {e:Effects}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Choose target creature you control. If damage would be dealt to that creature this turn, prevent that damage and put that many +1/+1 counters on it."
+      },
+      {
+        "text": "Choose target creature you control. If damage would be dealt to it this turn, prevent that damage and you gain that much life."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature you control. If damage would be dealt to that creature, prevent that damage and put that many +1/+1 counters on it.",
+      "Choose target creature you control. If combat damage would be dealt to that creature this turn, prevent that damage and put that many +1/+1 counters on it.",
+      "Choose target creature you control. If damage would be dealt to that creature this turn, put that many +1/+1 counters on it."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "eff.edhn60.prevent.nextTime.objWouldDeal.gainLife",
+    "kind": "effect",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 615.7",
+      "CR 119.3"
+    ],
+    "pattern": "the next time {o:Obj} would deal damage {d:Dur} , prevent that damage . you gain life equal to the damage prevented this way",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "gainLife",
+                "who": {
+                  "ref": "you"
+                },
+                "amount": {
+                  "q": "preventedAmount"
+                }
+              }
+            ]
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "The next time target attacking creature would deal damage this turn, prevent that damage. You gain life equal to the damage prevented this way."
+      },
+      {
+        "text": "The next time target artifact would deal damage this turn, prevent that damage. You gain life equal to the damage prevented this way."
+      }
+    ],
+    "counterExamples": [
+      "The next time target creature would deal damage this turn, prevent that damage. You gain 2 life.",
+      "The next time target creature would deal damage to you this turn, prevent that damage. You gain life equal to the damage prevented this way.",
+      "The next time target creature would deal damage, prevent that damage. You gain life equal to the damage prevented this way."
+    ],
+    "since": 9,
+    "status": "stable",
+    "priority": 2
+  },
+  {
+    "id": "eff.edhn60.prevent.nextTime.objCombatToPlayers.then",
+    "kind": "effect",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 615.7",
+      "CR 510.2"
+    ],
+    "priority": 2,
+    "pattern": "the next time {o:Obj} would deal combat damage to one or more players {d:Dur} , prevent that damage . if damage is prevented this way , {e:Effects}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": {
+              "is": "$o"
+            },
+            "recipient": {
+              "player": "any"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "if",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "The next time target creature would deal combat damage to one or more players this combat, prevent that damage. If damage is prevented this way, create that many 1/1 colorless Phyrexian Mite artifact creature tokens."
+      },
+      {
+        "text": "The next time target attacking creature would deal combat damage to one or more players this combat, prevent that damage. If damage is prevented this way, create that many 1/1 black Rat creature tokens."
+      }
+    ],
+    "counterExamples": [
+      "The next time target creature would deal combat damage to one or more players this combat, prevent that damage. Create a 1/1 white Soldier creature token.",
+      "The next time target creature would deal damage to one or more players this combat, prevent that damage. If damage is prevented this way, create that many 1/1 white Soldier creature tokens.",
+      "The next time target creature would deal combat damage to a player this combat, prevent that damage. If damage is prevented this way, create that many 1/1 white Soldier creature tokens."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "sta.edhn60.aslong.prevent.toObj",
+    "kind": "static",
+    "cr": [
+      "CR 615.1",
+      "CR 611.3a",
+      "CR 614.1a"
+    ],
+    "pattern": "as long as {c:Cond} , prevent all damage that would be dealt to {o:Obj}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Cleric, prevent all damage that would be dealt to equipped creature."
+      },
+      {
+        "text": "As long as a Soldier you control is attacking, prevent all damage that would be dealt to ~."
+      }
+    ],
+    "counterExamples": [
+      "As long as you have a full party, prevent all combat damage that would be dealt to equipped creature.",
+      "As long as you have a full party, prevent all damage that would be dealt by equipped creature.",
+      "Prevent all damage that would be dealt to equipped creature."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "sta.edhn60.combatDamageToCreature.prevent.ownerShuffles",
+    "kind": "static",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 510.2",
+      "CR 701.24a",
+      "CR 400.3"
+    ],
+    "pattern": "if ~ would deal combat damage to ( a | an ) {f:Filter} , prevent that damage and that creature 's owner shuffles it into their library",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": {
+              "self": true
+            },
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "event",
+                  "role": "object"
+                },
+                "to": {
+                  "zone": "library",
+                  "owner": {
+                    "ref": "ownerOf",
+                    "object": {
+                      "ref": "event",
+                      "role": "object"
+                    }
+                  }
+                }
+              },
+              {
+                "op": "shuffle",
+                "who": {
+                  "ref": "ownerOf",
+                  "object": {
+                    "ref": "event",
+                    "role": "object"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "If ~ would deal combat damage to a nonartifact creature, prevent that damage and that creature's owner shuffles it into their library."
+      },
+      {
+        "text": "If ~ would deal combat damage to an attacking creature, prevent that damage and that creature's owner shuffles it into their library."
+      }
+    ],
+    "counterExamples": [
+      "If ~ would deal damage to a nonartifact creature, prevent that damage and that creature's owner shuffles it into their library.",
+      "If ~ would deal combat damage to a nonartifact creature, that creature's owner shuffles it into their library.",
+      "If ~ would deal combat damage to a nonartifact creature, prevent that damage and that creature's controller shuffles it into their library."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "eff.edhn60.prevent.toYou.byFilter.whenPrevented.eachDealsPower",
+    "kind": "effect",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 603.12",
+      "CR 120.3"
+    ],
+    "priority": 2,
+    "pattern": "prevent all damage that would be dealt to you {d:Dur} by {g:Filter} . whenever damage from a creature is prevented this way , each {f:Filter} you control deals damage equal to its power to that creature",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$g",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "if",
+                "cond": {
+                  "cond": "matches",
+                  "object": {
+                    "ref": "event",
+                    "role": "source"
+                  },
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  }
+                },
+                "then": [
+                  {
+                    "op": "if",
+                    "cond": {
+                      "cond": "compare",
+                      "left": {
+                        "q": "preventedAmount"
+                      },
+                      "op": ">=",
+                      "right": 1
+                    },
+                    "then": [
+                      {
+                        "op": "damage",
+                        "source": {
+                          "ref": "each",
+                          "filter": {
+                            "anyOf": [
+                              "$f"
+                            ],
+                            "controller": "you"
+                          }
+                        },
+                        "to": {
+                          "ref": "event",
+                          "role": "source"
+                        },
+                        "amount": {
+                          "q": "stat",
+                          "stat": "power",
+                          "of": {
+                            "ref": "subject"
+                          }
+                        },
+                        "perSource": true
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "would",
+      "whenever",
+      "this way",
+      "each",
+      "its"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to you this turn by creatures your opponents control. Whenever damage from a creature is prevented this way, each Soldier you control deals damage equal to its power to that creature."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to you this turn by sources your opponents control. Whenever damage from a creature is prevented this way, each Knight you control deals damage equal to its power to that creature."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt to you this turn by sources your opponents control. Whenever damage from a creature is prevented this way, each commander creature you control deals 1 damage to that creature.",
+      "Prevent all damage that would be dealt to you this turn by sources your opponents control. Whenever damage from a noncreature source is prevented this way, each commander creature you control deals damage equal to its power to that creature.",
+      "Prevent all damage that would be dealt to you this turn by sources your opponents control. Each commander creature you control deals damage equal to its power to that creature."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "sta.edhn60.damageToSelf.whileCounter.prevent.removeThenGiveRad",
+    "kind": "static",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 122.1",
+      "CR 728.1"
+    ],
+    "pattern": "if damage would be dealt to ~ while it has ( a | an ) {k:CounterKind} counter on it , prevent that damage , remove that many {j:CounterKind} counters from it , then give each player ( a | an ) {r:CounterKind} counter for each {m:CounterKind} counter removed this way",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "condition": {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "counters": {
+                "kind": "$k"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "removeCounters",
+                "from": {
+                  "ref": "self"
+                },
+                "kind": "$j",
+                "count": {
+                  "q": "preventedAmount"
+                },
+                "as": "removed"
+              },
+              {
+                "op": "putCounters",
+                "on": {
+                  "ref": "each",
+                  "who": "player"
+                },
+                "kind": "$r",
+                "count": {
+                  "q": "countersRemoved",
+                  "step": "removed",
+                  "kind": "$m"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "while",
+      "then",
+      "this way",
+      "that many",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "If damage would be dealt to ~ while it has an oil counter on it, prevent that damage, remove that many oil counters from it, then give each player a rad counter for each oil counter removed this way."
+      },
+      {
+        "text": "If damage would be dealt to ~ while it has a charge counter on it, prevent that damage, remove that many charge counters from it, then give each player a rad counter for each charge counter removed this way."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to ~ while it has an oil counter on it, prevent that damage, remove that many oil counters from it, then give each opponent a rad counter for each oil counter removed this way.",
+      "If damage would be dealt to ~, prevent that damage, remove that many oil counters from it, then give each player a rad counter for each oil counter removed this way.",
+      "If damage would be dealt to ~ while it has an oil counter on it, prevent that damage, remove that many oil counters from it, then give each player a rad counter."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "sta.edhn60.entersWith.escapesWith.instead",
+    "kind": "static",
+    "cr": [
+      "CR 614.12",
+      "CR 614.1c",
+      "CR 702.138c",
+      "CR 122.6"
+    ],
+    "pattern": "~ enters with {n:Qty} {k:CounterKind} counters on it . it escapes with {m:Qty} {j:CounterKind} counters on it instead",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "condition": {
+            "cond": "not",
+            "of": {
+              "cond": "wasCast",
+              "via": "escape"
+            }
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$n"
+              }
+            ]
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "condition": {
+            "cond": "wasCast",
+            "via": "escape"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$j",
+                "count": "$m"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "instead",
+      "escapes"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with six +1/+1 counters on it. It escapes with twelve +1/+1 counters on it instead."
+      },
+      {
+        "text": "~ enters with three +1/+1 counters on it. It escapes with five +1/+1 counters on it instead."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with six +1/+1 counters on it. It escapes with twelve +1/+1 counters on it.",
+      "~ enters with six +1/+1 counters on it. It enters with twelve +1/+1 counters on it instead.",
+      "~ enters with six +1/+1 counters on it. It escapes with a +1/+1 counter on it instead."
+    ],
+    "since": 9,
+    "status": "stable"
+  }
+]

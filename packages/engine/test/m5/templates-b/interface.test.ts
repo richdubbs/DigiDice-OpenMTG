@@ -61,7 +61,7 @@ describe('INTERFACE CHANGE 2, capabilities (CR 605.3b): a mana ability the nativ
     expect(classifyAbility(pain!, ENGINE_CAPABILITIES).level).toBe('full');
     // W3 integration: since WP23's review (lower/ability.ts) the parser itself already makes a mana ability with another instruction a manual mana ability
     // with its cost kept; the capability walk still refuses the same program when it is written by hand (an LLM entry, a pack)
-    const [rider] = parsedAbilities('Example Grove', 'Land', '{T}: Add {R} or {G}. Each opponent gains 1 life.');
+    const [rider] = parsedAbilities('Example Grove', 'Land', '{T}: Add {R} or {G}. Each opponent discards a card.');
     expect(rider).toMatchObject({ kind: 'manual', mana: true, cost: { tap: true } });
     expect(classifyAbility(rider!, ENGINE_CAPABILITIES).level).toBe('manual');
     const written: AbilityDef = { kind: 'activated', text: '{T}: Add {W}. This land deals 1 damage to you.', cost: { tap: true }, isMana: true, effect: { targets: [], steps: [
@@ -72,10 +72,10 @@ describe('INTERFACE CHANGE 2, capabilities (CR 605.3b): a mana ability the nativ
     const sacrificed = { ...written, cost: { tap: true, other: [{ kind: 'sacrifice', filter: { self: true }, count: 1, self: true }] } } as AbilityDef;
     expect(missingCapabilities(sacrificed, ENGINE_CAPABILITIES)).toEqual(['feature:mana.steps']);
     expect(classifyAbility(sacrificed, ENGINE_CAPABILITIES).level).toBe('manual');
-    // std-ry7 (CR 605.1a, 605.3b, 121.1): a fixed draw by its controller is run by the resolver too (model/cap-walk.ts#nativeManaEffect); this pin expected
-    // feature:mana.steps for it before; another player's draw still needs it
+    // std-ry7 (CR 605.1a, 605.3b, 121.1): a fixed draw by its controller was run by the resolver too; since edh-fix-5 (CR 605.1a of 2026-09-25: a draw moves a card out of a
+    // library) no mana ability draws: a mana ability with any draw still needs feature:mana.steps (the parser makes such an ability an ordinary one)
     const drawn: AbilityDef = { ...written, effect: { targets: [], steps: [{ op: 'addMana', who: { ref: 'you' }, units: [['W']] }, { op: 'draw', who: { ref: 'you' }, count: 1 }] } } as AbilityDef;
-    expect(missingCapabilities(drawn, ENGINE_CAPABILITIES)).toEqual([]);
+    expect(missingCapabilities(drawn, ENGINE_CAPABILITIES)).toEqual(['feature:mana.steps']);
     const theirs: AbilityDef = { ...written, effect: { targets: [], steps: [{ op: 'addMana', who: { ref: 'you' }, units: [['W']] }, { op: 'draw', who: { ref: 'each', who: 'opponent' }, count: 1 }] } } as AbilityDef;
     expect(missingCapabilities(theirs, ENGINE_CAPABILITIES)).toEqual(['feature:mana.steps']);
   });

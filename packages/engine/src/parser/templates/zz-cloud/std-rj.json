@@ -256,28 +256,21 @@
     ],
     "pattern": "you may cast {o:Obj} without paying its mana cost if the spell 's mana value is less than {q:Qty}",
     "build": {
-      "op": "if",
-      "cond": {
-        "cond": "compare",
-        "left": {
-          "q": "stat",
-          "stat": "manaValue",
-          "of": "$o"
-        },
-        "op": "<",
-        "right": "$q"
+      "op": "cast",
+      "who": {
+        "ref": "you"
       },
-      "then": [
-        {
-          "op": "cast",
-          "who": {
-            "ref": "you"
-          },
-          "what": "$o",
-          "free": true,
-          "optional": true
-        }
-      ]
+      "what": "$o",
+      "free": true,
+      "optional": true,
+      "maxManaValue": {
+        "q": "math",
+        "op": "-",
+        "args": [
+          "$q",
+          1
+        ]
+      }
     },
     "subject": "none",
     "consumes": [

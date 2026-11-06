@@ -31,9 +31,10 @@ const NARROW: Readonly<Record<string, readonly string[]>> = {
   'rep.p2re3.self.graveyardFromBf.insteadExileExtraTurn': ["Ugin's Nexus"],
   'rep.p2re3.draw.while.insteadEffects': ['Blood Scrivener'],
   'rep.p2re3.scry.insteadEffects': ['Eligeth, Crossroads Augur'],
+  'rep.p2re3.extraTurn.skip.opponent': ['Trouble in Pairs'], // edh-players-8: promoted (Commander request 2026-10-27 opened the held-out cards of the EDHREC top 5,000); Stranglehold (#6853) is outside it
 };
-/** Templates kept experimental: the cards that print "an opponent would begin an extra turn" (Stranglehold, Trouble in Pairs) are held-out, so no golden card can be its evidence (guide section 4, design 6.9). */
-const EXPERIMENTAL: readonly string[] = ['rep.p2re3.extraTurn.skip.opponent'];
+/** Templates kept experimental (none since edh-players-8 promoted rep.p2re3.extraTurn.skip.opponent on Trouble in Pairs, a card of the EDHREC top 5,000 the owner opened on 2026-10-27). */
+const EXPERIMENTAL: readonly string[] = [];
 const OPTS = defaultParseOptions({ templates: [...TEMPLATE_SET], capabilities: ENGINE_CAPABILITIES }); // what a decklist card gets (design 5.2; `needs`)
 
 /** A synthetic card in which an example is an ability of the right kind: a creature (a static ability), an instant for an effect example. */

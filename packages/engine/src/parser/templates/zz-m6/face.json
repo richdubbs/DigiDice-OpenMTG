@@ -121,7 +121,7 @@
       "Cloak the top card of target opponent's library.",
       "Cloak the top card of your library tapped."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 3
   },
   {

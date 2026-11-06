@@ -1,0 +1,556 @@
+[
+  {
+    "id": "eff.edhv5.setLife.startingLife",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.5",
+      "CR 103.4"
+    ],
+    "pattern": "your life total becomes equal to your starting life total",
+    "build": {
+      "op": "setLife",
+      "who": {
+        "ref": "you"
+      },
+      "value": {
+        "q": "startingLife"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Your life total becomes equal to your starting life total."
+      },
+      {
+        "text": "Draw a card. Your life total becomes equal to your starting life total."
+      }
+    ],
+    "counterExamples": [
+      "Your life total becomes equal to your starting life total instead.",
+      "Your life total becomes equal to half your starting life total.",
+      "Target player's life total becomes equal to your starting life total."
+    ]
+  },
+  {
+    "id": "eff.edhv5.discard.hand.you.subject",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 109.5"
+    ],
+    "pattern": "you discard your hand",
+    "build": {
+      "op": "discard",
+      "who": {
+        "ref": "you"
+      },
+      "count": "hand"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exile all creatures. You discard your hand."
+      },
+      {
+        "text": "Draw two cards. You discard your hand."
+      }
+    ],
+    "counterExamples": [
+      "You discard your library.",
+      "You discard your hand unless it is blue.",
+      "Target opponent discards their hand."
+    ]
+  },
+  {
+    "id": "sta.edhv5.self.allColors",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.3",
+      "CR 613.1e",
+      "CR 105.2"
+    ],
+    "pattern": "~ is all colors",
+    "build": {
+      "s": "continuous",
+      "cda": true,
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": 5,
+          "colors": {
+            "set": [
+              "W",
+              "U",
+              "B",
+              "R",
+              "G"
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "This creature is all colors."
+      },
+      {
+        "text": "Example Plan is all colors."
+      }
+    ],
+    "counterExamples": [
+      "This creature is all colors until end of turn.",
+      "This creature is all creature types.",
+      "This creature is red."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "sta.edhv5.all.minusX.zero.whereX",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 613.4c",
+      "CR 604.1",
+      "CR 107.3"
+    ],
+    "pattern": "all {f:Filter} get -x/-0 , where x is {q:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              -1,
+              "$q"
+            ]
+          },
+          "toughness": 0
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "All creatures get -X/-0, where X is the number of lands you control."
+      },
+      {
+        "text": "All Goblins get -X/-0, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "All creatures get -X/-0, where X is the number of cards in your hand until end of turn.",
+      "All creatures get -X/-X, where X is the number of cards in your hand.",
+      "All creatures get +X/-0, where X is the number of cards in your hand."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "cm.edhv5.self.more.notYourTurn",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5",
+      "CR 611.3a"
+    ],
+    "pattern": "during turns other than yours , ~ costs {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": {
+        "cond": "not",
+        "of": {
+          "cond": "turnOf",
+          "whose": "you"
+        }
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "During turns other than yours, ~ costs {2} more to cast."
+      },
+      {
+        "text": "During turns other than yours, ~ costs {1}{U} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "During turns other than yours, ~ costs {3} less to cast.",
+      "During your turn, ~ costs {3} more to cast.",
+      "During turns other than yours, ~ costs {3} more to cast for each card in your hand."
+    ],
+    "consumes": [
+      "other",
+      "during"
+    ]
+  },
+  {
+    "id": "sta.edhv5.aslongas.cantAttackYou",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1c",
+      "CR 506.2",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , {f:Filter} can't attack you",
+    "weak": 1,
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As long as you control a Plains, creatures with power 2 or less can't attack you."
+      },
+      {
+        "text": "As long as you have 10 or less life, creatures with flying can't attack you."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Plains, creatures with power 2 or less can't attack you or planeswalkers you control.",
+      "As long as you control a Plains, creatures with power 2 or less can't attack you unless their controller pays {2}.",
+      "As long as you control a Plains, creatures with power 2 or less can't attack."
+    ],
+    "consumes": [
+      "as long as",
+      "can't"
+    ]
+  },
+  {
+    "id": "sta.edhv5.aslong.additionalPumpGrant",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 207.2c"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} get[s] an additional {pt:PT} and (has | have) {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As long as you control five or more lands, ~ gets an additional +1/+0 and has first strike."
+      },
+      {
+        "text": "As long as it's your turn, enchanted creature gets an additional +2/+2 and has trample."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control five or more lands, ~ gets an additional +1/+0 and has first strike until end of turn.",
+      "As long as you control five or more lands, ~ gets additional +1/+0 and has first strike.",
+      "As long as you control five or more lands, ~ gets an additional +1/+0 and loses first strike."
+    ],
+    "consumes": [
+      "as long as",
+      "additional"
+    ]
+  },
+  {
+    "id": "sta.edhv5.each.cantBeBlockedExceptByMin",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 702.111b",
+      "CR 101.2"
+    ],
+    "pattern": "each {f:Filter} can't be blocked except by {n:Qty} or more creatures",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "cant",
+      "action": "beBlocked",
+      "min": "$n"
+    },
+    "examples": [
+      {
+        "text": "Each creature you control with flying can't be blocked except by four or more creatures."
+      },
+      {
+        "text": "Each Goblin you control can't be blocked except by two or more creatures."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control with flying can't be blocked.",
+      "Each creature you control with flying can't be blocked except by creatures with flying.",
+      "Each creature you control with flying can't be blocked except by three or fewer creatures."
+    ],
+    "consumes": [
+      "can't",
+      "except",
+      "or more",
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edhv5.destroy.unlessControllerHasSelfDeal",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 120.3",
+      "CR 701.8a"
+    ],
+    "pattern": "destroy {o:Obj} unless its controller has ~ deal {n:Qty} damage to them",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "do": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": {
+            "ref": "controllerOf",
+            "object": "$o"
+          },
+          "amount": "$n"
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "destroy",
+          "what": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Destroy target land unless its controller has ~ deal 3 damage to them."
+      },
+      {
+        "text": "Whenever ~ attacks, destroy target creature unless its controller has ~ deal 3 damage to them."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Destroy target land unless its controller has ~ deal 2 damage to you.",
+      "{T}: Destroy target land unless its controller pays {2}.",
+      "{T}: Destroy target land unless its controller has ~ deal 2 damage to them instead."
+    ]
+  },
+  {
+    "id": "eff.edhv5.counter.unlessControllerHasSelfDeal",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 120.3",
+      "CR 701.6a"
+    ],
+    "pattern": "counter {o:Obj} unless its controller has ~ deal {n:Qty} damage to them",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "do": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": {
+            "ref": "controllerOf",
+            "object": "$o"
+          },
+          "amount": "$n"
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "counter",
+          "what": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Counter target instant or sorcery spell unless its controller has ~ deal 3 damage to them."
+      },
+      {
+        "text": "Counter target creature spell unless its controller has ~ deal 2 damage to them."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell unless its controller has ~ deal 2 damage to you.",
+      "Counter target spell unless its controller pays {5}.",
+      "Counter target spell unless its controller has ~ deal 2 damage to them instead."
+    ]
+  },
+  {
+    "id": "eff.edhv5.sacrifice.theirChoice.forEach",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 107.3"
+    ],
+    "pattern": "{p:Player} sacrifice[s] ( a | an ) {f:Filter} of their choice for each {g:Filter}",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": "$f",
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$g"
+        }
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent sacrifices a creature of their choice for each Equipment you control."
+      },
+      {
+        "text": "Each player sacrifices an artifact of their choice for each card in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Each player sacrifices a land of their choice for each card in your hand at random.",
+      "Each player sacrifices a land of your choice for each card in your hand.",
+      "Each player sacrifices two lands of their choice for each card in your hand."
+    ]
+  },
+  {
+    "id": "eff.edhv5.enchanted.damageToOwner",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 108.3",
+      "CR 303.4"
+    ],
+    "pattern": "enchanted creature deals {n:Qty} damage to its owner",
+    "build": {
+      "op": "damage",
+      "source": {
+        "ref": "attachedTo"
+      },
+      "to": {
+        "ref": "ownerOf",
+        "object": {
+          "ref": "attachedTo"
+        }
+      },
+      "amount": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of each end step, enchanted creature deals 2 damage to its owner."
+      },
+      {
+        "text": "At the beginning of your upkeep, enchanted creature deals 3 damage to its owner."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, enchanted creature deals 1 damage to its controller.",
+      "At the beginning of your upkeep, enchanted creature deals 1 damage to you.",
+      "At the beginning of your upkeep, enchanted creature deals 1 damage to its owner and you."
+    ],
+    "priority": 1
+  }
+]

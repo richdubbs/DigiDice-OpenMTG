@@ -164,6 +164,18 @@ export function preprocessFace(ctx: FaceContext, opts: FrontEndOptions = {}): Pr
           }
         }
       }
+      // edh-mana-keywords-3 (CR 207.2d, 706.2): a flavor word after a die-roll result ("1 | Trapped! -- You lose 3 life.", Treasure Chest) has no rules meaning, like
+      // any label: it is taken out of the text the row is read from
+      if (!lead.label && !lead.keywordDash) {
+        const row = /^\d+(?:-\d+|\+| or less)?\s*\|\s*/.exec(work.slice(lead.body[0], lead.body[1]));
+        if (row) {
+          const inner = detectLead(work, [lead.body[0] + row[0].length, lead.body[1]], ix);
+          if (inner.label && !inner.keywordDash) {
+            line.chapterLabel = inner.label;
+            chapterLabels.push(inner.label.range);
+          }
+        }
+      }
     }
     return line;
   });

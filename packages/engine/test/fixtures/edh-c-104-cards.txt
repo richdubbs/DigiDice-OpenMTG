@@ -1,0 +1,10 @@
+# edh-c-104 (Commander lane edh-c, EDHREC ranks 27,501-28,000, third pass): see packages/engine/src/parser/templates/zz-cloud/edh-c-104.json. After editing: npm run cards -- fixtures
+Soulquake
+Thran Tome
+Frenzied Raider
+Specter's Shriek
+Agonizing Memories
+Charmed Griffin
+Circle of Solace
+Bogardan Phoenix
+Memory Theft

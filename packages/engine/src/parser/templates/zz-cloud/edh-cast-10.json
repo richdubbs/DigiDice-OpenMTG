@@ -1,0 +1,433 @@
+[
+  {
+    "id": "eff.edhc10.seen.cast.free.mvOrLess.revealedThisWay",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 701.20a"
+    ],
+    "pattern": "you may cast a spell with mana value {n:Qty} or less from among cards {g:RevealedThisWay} without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "library",
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true,
+        "maxManaValue": "$n"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, reveal the top four cards of your library. You may cast a spell with mana value 3 or less from among cards revealed this way without paying its mana cost. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, reveal the top five cards of your library. You may cast a spell with mana value 2 or less from among cards revealed this way without paying its mana cost. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, reveal the top four cards of your library. You may cast a spell with mana value 3 or less from among cards revealed this way. Put the rest on the bottom of your library in a random order.",
+      "Whenever ~ attacks, reveal the top four cards of your library. You may cast a spell with mana value 3 or greater from among cards revealed this way without paying its mana cost. Put the rest on the bottom of your library in a random order.",
+      "Whenever ~ attacks, you may cast a spell with mana value 3 or less from among cards revealed this way without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhc10.seenInHand.cast.free",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 402.3",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast a spell from among {g:SeenInHand} without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "hand"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, look at target opponent's hand. You may cast a spell from among those cards without paying its mana cost."
+      },
+      {
+        "text": "{2}, {T}: Look at target player's hand. You may cast a spell from among those cards without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, look at that player's hand. You may cast a spell from among those cards.",
+      "Whenever ~ deals combat damage to a player, look at the top three cards of your library. You may cast a spell from among those cards without paying its mana cost.",
+      "Whenever ~ deals combat damage to a player, look at that player's hand. You may cast a creature spell from among those cards without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhc10.permit.cast.oneInstantSorcery.fromGroup.durFirst",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 205.2a"
+    ],
+    "pattern": "{d:Dur} , you may cast an instant or sorcery spell from among {o:Group}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "onlyTypes": [
+            "Instant",
+            "Sorcery"
+          ],
+          "single": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top five cards of your library. Until the end of your next turn, you may cast an instant or sorcery spell from among those exiled cards."
+      },
+      {
+        "text": "Exile the top four cards of your library. Until end of turn, you may cast an instant or sorcery spell from among them."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top five cards of your library. Until the end of your next turn, you may cast an instant or sorcery spell from among those exiled cards without paying its mana cost.",
+      "Exile the top five cards of your library. Until the end of your next turn, you may cast instant or sorcery spells from among those exiled cards.",
+      "Exile the top five cards of your library. Until the end of your next turn, you may cast an instant spell from among those exiled cards."
+    ]
+  },
+  {
+    "id": "eff.edhc10.permit.cast.oneSpell.fromMilled.durFirst",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 701.17a",
+      "CR 400.7"
+    ],
+    "pattern": "{d:Dur} , you may cast a spell from among {g:Milled}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$g"
+          },
+          "single": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, each player mills a card. Until end of turn, you may cast a spell from among those cards."
+      },
+      {
+        "text": "Whenever ~ attacks, each player mills a card. Until the end of your next turn, you may cast a spell from among those cards."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, each player mills a card. Until end of turn, you may cast spells from among those cards.",
+      "Whenever ~ deals combat damage to a player, each player mills a card. Until end of turn, you may cast a spell from among those cards without paying its mana cost.",
+      "Whenever ~ deals combat damage to a player, each player mills a card. You may cast a spell from among those cards."
+    ]
+  },
+  {
+    "id": "eff.edhc10.cast.yourNext.copy.that",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.10",
+      "CR 601.2i"
+    ],
+    "pattern": "when you cast your next {f:CastSpell} this turn , copy that spell",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "When you cast your next instant or sorcery spell this turn, copy that spell. You may choose new targets for the copy."
+      },
+      {
+        "text": "When you cast your next creature spell this turn, copy that spell."
+      }
+    ],
+    "counterExamples": [
+      "When you cast your next instant or sorcery spell, copy that spell. You may choose new targets for the copy.",
+      "When you cast your next instant or sorcery spell this turn, copy that spell twice.",
+      "When you cast your next instant or sorcery spell this turn, exile that spell."
+    ]
+  },
+  {
+    "id": "rid.edhc10.copy.gains.ifItsPermanent",
+    "kind": "rider",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10b",
+      "CR 111.1",
+      "CR 608.2c"
+    ],
+    "pattern": "if it's a permanent spell , the copy gains {a:Abilities}",
+    "build": {
+      "$patchPrevious": {
+        "gains": {
+          "@new": {
+            "add": "$a",
+            "ifPermanent": true
+          }
+        }
+      }
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell from exile, copy it. You may choose new targets for the copy. If it's a permanent spell, the copy gains haste."
+      },
+      {
+        "text": "Whenever you cast a spell from exile, copy it. If it's a permanent spell, the copy gains haste and \"At the beginning of the end step, sacrifice this permanent.\""
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell from exile, copy it. If it's a creature spell, the copy gains haste.",
+      "Draw a card. If it's a permanent spell, the copy gains haste.",
+      "Whenever you cast a spell from exile, copy it. If it's a permanent spell, the copy gains haste until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhc10.copy.spell.exceptNotLegendaryIfLegendary",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 707.9b",
+      "CR 707.10",
+      "CR 205.4a"
+    ],
+    "pattern": "copy {o:Obj} , except it isn't legendary if the spell is legendary",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "remove": [
+              "Legendary"
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Copy target creature spell you control, except it isn't legendary if the spell is legendary."
+      },
+      {
+        "text": "Copy target artifact spell you control, except it isn't legendary if the spell is legendary."
+      }
+    ],
+    "counterExamples": [
+      "Copy target creature spell you control, except it isn't legendary.",
+      "Copy target creature spell you control, except it is legendary if the spell is legendary.",
+      "Copy target creature spell you control, except it isn't legendary if the spell is blue."
+    ]
+  },
+  {
+    "id": "eff.edhc10.permit.play.oneOfGroup.durFirst",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 406.3",
+      "CR 400.7"
+    ],
+    "pattern": "{d:Dur} , you may play one of {o:Group}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "single": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top card of each player's library. Until end of turn, you may play one of those cards."
+      },
+      {
+        "text": "Exile the top two cards of target opponent's library. Until the end of your next turn, you may play one of those cards."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of each player's library. Until end of turn, you may play those cards.",
+      "Exile the top card of each player's library. Until end of turn, you may cast one of those cards.",
+      "Exile the top card of each player's library. You may play one of those cards."
+    ]
+  }
+]

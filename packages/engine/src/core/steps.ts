@@ -1,6 +1,7 @@
 /**
  * Turn-based actions at the start and end of steps (CR 703, 502-514).
  */
+import { duringNextCombatNow } from '../statics/rule-sources'; // edh-d-88
 import { hasSimpleDuration, type ManaUnit, type Step } from '../types/state';
 import type { Game } from './game';
 import { zoneArray, moveObject } from './zones';
@@ -8,7 +9,7 @@ import { performStateBasedActions } from './sba';
 import { beginCombat, declareAttackers, declareBlockers } from './combat';
 import { combatDamageStep } from './combat-damage';
 import { collectPendingTriggers } from './triggers';
-import { damageKeptInCleanup, mayNotUntap, maxHandSize, unspentManaRules, untapLimits, untapPrevented, untapsDuringOthersUntapStep } from '../statics/hooks';
+import { damageKeptInCleanup, drawsDuringDrawStep, mayNotUntap, maxHandSize, unspentManaRules, untapLimits, untapPrevented, untapsDuringOthersUntapStep } from '../statics/hooks';
 import type { ManaType } from '../types/mana';
 import type { PlayerId } from '../types/ids';
 import { cantDo } from '../rules/cant';
@@ -21,6 +22,7 @@ import { TURN_BASED } from './registries';
 import { fixAllowedAttackers } from './turn-effects';
 import { proposeNested } from '../effects/nested';
 import { playerControlAtCombatEnd } from './player-control';
+import { loseLife } from '../rules/life';
 
 /**
  * Perform the turn-based actions for the beginning of a step.
@@ -108,6 +110,14 @@ export function beginStepTurnBasedActions(g: Game, step: Step): boolean {
         const many = proposeNested(g, { ev: 'drawMany', player: ap, count: 1 })?.event;
         const k = many?.ev === 'drawMany' ? many.count : 0;
         for (let i = 0; i < k; i++) proposeNested(g, { ev: 'draw', player: ap });
+      }
+      // edh-next-124 (CR 504.1, 504.2; Teferi, Who Slows the Sunset's emblem, ruling 2021-09-24): "You draw a card during each opponent's draw step.": then each such player draws, in
+      // APNAP order, with no priority in between (the turn-based action of this step; statics/hooks.ts#drawsDuringDrawStep)
+      for (const p of drawsDuringDrawStep(g.s)) {
+        g.log(`${g.player(p).name} draws a card during ${g.player(ap).name}'s draw step.`, { rules: ['CR 504.1'] });
+        const many = proposeNested(g, { ev: 'drawMany', player: p, count: 1 })?.event; // Cloud r4-repl (CR 121.2): a draw of "one or more cards" too
+        const k = many?.ev === 'drawMany' ? many.count : 0;
+        for (let i = 0; i < k; i++) proposeNested(g, { ev: 'draw', player: p });
       }
       return true;
     case 'main1':
@@ -203,6 +213,7 @@ export function endOfStepCleanup(g: Game, step: Step): void {
   if (step === 'endCombat') endCombatPhase(g);
   // FAST5 MX6: mana that lasts "until end of combat" (firebending, CR 702.189a) survives the end of every combat step but the end of combat step
   const keepCombat = COMBAT_STEPS_BEFORE_END.has(step);
+  const burnLost: [PlayerId, number][] = [];
   for (const p of g.s.players) {
     if (p.manaPool.length === 0) continue;
     // FAST5X E19 (CR 106.4, 500.5, 614.1): mana a rule says the player doesn't lose stays; the rest is lost, or becomes another type instead and stays
@@ -213,7 +224,26 @@ export function endOfStepCleanup(g: Game, step: Step): void {
     const lost = p.manaPool.filter((u) => !kept(u));
     const into = lost.length === 0 ? undefined : becomesType(g, p.id, rules.becomes);
     p.manaPool = into === undefined ? stays : [...stays, ...lost.map((u) => ({ ...u, type: into }))]; // CR 500.5, 106.4
+    if (into === undefined && lost.length > 0 && rules.burn) burnLost.push([p.id, lost.length]);
   }
+  // edh-next-141 (CR 106.4, 500.5, 119.3; Yurlok of Scorch Thrash, rulings 2020-11-10): the life is lost at the same time the mana is lost, without the stack
+  for (const [p, n] of burnLost) loseLife(g, p, n, 'losing unspent mana');
+}
+
+/**
+ * edh-c-85 (CR 106.4, 500.5, 614.1; Mana Short): an instruction that makes a player lose all the unspent mana in their pool. None of it stays (the rules that keep mana as steps
+ * and phases end say nothing of an instruction, 500.5); a rule that makes lost unspent mana become another type instead (Kruphix) turns it into mana of that type.
+ * Returns how many units were in the pool.
+ */
+export function loseUnspentMana(g: Game, player: PlayerId): number {
+  const p = g.player(player);
+  const lost = p.manaPool;
+  if (lost.length === 0) return 0;
+  const rules = unspentManaRules(g.s, player);
+  const into = becomesType(g, player, rules.becomes);
+  p.manaPool = into === undefined ? [] : lost.map((u) => ({ ...u, type: into }));
+  if (into === undefined && rules.burn) loseLife(g, player, lost.length, 'losing unspent mana'); // edh-next-141 (CR 106.4, 119.3): Yurlok of Scorch Thrash
+  return lost.length;
 }
 
 /** CR 616.1: the type the player's lost mana becomes; when several replacement effects say different types, the affected player chooses which applies. */
@@ -228,6 +258,8 @@ function becomesType(g: Game, player: PlayerId, types: readonly ManaType[]): Man
 export function endCombatPhase(g: Game): void {
   g.s.continuousEffects = g.s.continuousEffects.filter((e) => !hasSimpleDuration(e, 'endOfCombat'));
   expireSimple(g, 'endOfCombat');
+  // edh-d-88 (CR 611.2a, 500.8): "during its controller's next combat phase" ends with the combat phase it applied in
+  g.s.continuousEffects = g.s.continuousEffects.filter((e) => !(e.duration.d === 'duringNextCombat' && duringNextCombatNow(g.s, e.duration)));
   g.s.combat = null;
   playerControlAtCombatEnd(g); // std-control-3 (CR 723.1, 500.5a): "during their next combat phase" ends with it
 }

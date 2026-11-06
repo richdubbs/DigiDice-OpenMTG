@@ -1,0 +1,19 @@
+OpenMTG
+Copyright (c) 2026 DigiDice LLC. Code licensed under the MIT License (see LICENSE).
+Created by DigiDice LLC.
+
+OpenMTG is unofficial Fan Content permitted under the Fan Content Policy. Not approved/endorsed by Wizards. Portions of the materials used are property of Wizards of the Coast. ©Wizards of the Coast LLC.
+
+The MIT License applies to OpenMTG's own code only. It does not cover Wizards of the Coast's
+intellectual property (card names, card text, card art, mana and set symbols, logos, and the
+Comprehensive Rules text). Card data is fetched at runtime from Scryfall (https://scryfall.com)
+and is not redistributed. OpenMTG is not affiliated with or endorsed by Wizards of the Coast or Scryfall.
+
+The DigiDice name, logos and card back design (assets/brand/) are trademarks and works of
+DigiDice LLC and are not licensed under the MIT License.
+
+OpenMTG is built with the Godot Engine (https://godotengine.org), used under the MIT License.
+The notices of the engine and of the libraries it includes, and those of the game server that
+comes with OpenMTG, are listed under Third-party notices on the About screen.
+
+Redistributions and forks must keep this notice.

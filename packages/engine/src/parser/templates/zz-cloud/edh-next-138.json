@@ -1,0 +1,370 @@
+[
+  {
+    "id": "eff.edhn138.forEachOpp.becomes.artifactCreature.with",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 205.1b",
+      "CR 611.2b",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "for each opponent , {o:OppTarget} becomes ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature with {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "priority": 1,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, up to one target noncreature artifact they control becomes a 0/4 Wall artifact creature with defender for as long as you control ~."
+      },
+      {
+        "text": "When ~ enters, for each opponent, up to one target noncreature artifact that player controls becomes a 1/1 Thopter artifact creature with flying until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, up to one target noncreature artifact they control becomes a 0/4 Wall artifact creature with defender for as long as you control ~.",
+      "When ~ enters, for each opponent, up to two target noncreature artifacts they control become 0/4 Wall artifact creatures with defender for as long as you control ~.",
+      "When ~ enters, for each opponent, up to one target noncreature artifact they control becomes a 0/4 Wall artifact creature with defender."
+    ]
+  },
+  {
+    "id": "rep.edhn138.enters.payAnyLife",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.12a",
+      "CR 614.1c",
+      "CR 119.4",
+      "CR 107.1b",
+      "CR 607.2d"
+    ],
+    "pattern": "as ~ enters , pay any amount of life",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "payLifeAny": {
+              "link": "lifePaid"
+            }
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As Example Relic enters, pay any amount of life.\n{3}, {T}: Draw X cards, where X is the life paid as Example Relic entered."
+      },
+      {
+        "text": "As Example Relic enters, pay any amount of life.\n{4}, {T}: Create an X/X black Horror creature token, where X is the life paid as Example Relic entered."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, pay 3 life.",
+      "As ~ enters, you may pay any amount of life.",
+      "When ~ enters, pay any amount of life."
+    ]
+  },
+  {
+    "id": "eff.edhn138.permit.cast.obj.thisTurn.free",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 400.7"
+    ],
+    "pattern": "you may cast {o:Obj} this turn without paying its mana cost",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{1}: Exile target instant card from your graveyard. You may cast that card this turn without paying its mana cost."
+      },
+      {
+        "text": "{2}, {T}: Exile the top card of your library. You may cast that card this turn without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "{1}: Exile target instant card from your graveyard. You may cast that card without paying its mana cost.",
+      "{1}: Exile target instant card from your graveyard. You may cast that card this turn by paying {2} rather than paying its mana cost.",
+      "{1}: Exile target instant card from your graveyard. You may play that card this turn without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhn138.may.reveal.obj.if",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may reveal {o:Obj} if {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "you"
+          },
+          "do": [
+            {
+              "op": "reveal",
+              "who": {
+                "ref": "you"
+              },
+              "what": "$o"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, look at the top card of your library. You may reveal it if it's an artifact card. Create a 1/1 colorless Thopter artifact creature token with flying if you revealed it this way. Then draw a card."
+      },
+      {
+        "text": "At the beginning of your end step, look at the top card of your library. You may reveal it if it's a creature card. Create a 1/1 green Saproling creature token if you revealed it this way."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, look at the top card of your library. You may reveal it. Create a 1/1 blue Fish creature token if you revealed it this way.",
+      "At the beginning of your upkeep, look at the top card of your library. You may reveal it unless it's a land card. If you do, you gain 2 life.",
+      "At the beginning of your upkeep, look at the top card of your library. You may exile it if it's a land card. If you do, you gain 2 life."
+    ]
+  },
+  {
+    "id": "rep.edhn138.createSubtypeToken.createOtherInstead",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 111.1",
+      "CR 111.4",
+      "CR 616.1"
+    ],
+    "pattern": "if you would create ( a | an ) {st:Subtypes} token , create ( a | an ) {t:TokenDesc} instead",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "createToken",
+            "player": "you",
+            "token": {
+              "subtypes": "$st"
+            }
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "createToken",
+                "who": {
+                  "ref": "you"
+                },
+                "count": {
+                  "q": "eventAmount"
+                },
+                "token": "$t"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "If you would create a Bird token, create a 2/2 blue Drake creature token with flying instead."
+      },
+      {
+        "text": "If you would create a Squirrel token, create a 4/4 green Beast creature token instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would create a Bird token, create a 2/2 blue Drake creature token with flying.",
+      "If an opponent would create a Bird token, create a 2/2 blue Drake creature token with flying instead.",
+      "If you would create a Bird token, create two 2/2 blue Drake creature tokens with flying instead."
+    ],
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ]
+  },
+  {
+    "id": "eff.edhn138.tappedTokensAndLife.insteadX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 111.1",
+      "CR 110.5b",
+      "CR 119.1",
+      "CR 107.3a",
+      "CR 702.35a"
+    ],
+    "pattern": "create {n:Qty} tapped {t:TokenDesc} and you gain {m:Qty} life . if {c:Cond} , instead create x of those tokens and you gain x life",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": {
+            "q": "X"
+          },
+          "token": "$t",
+          "tapped": true
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": {
+            "q": "X"
+          }
+        }
+      ],
+      "else": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n",
+          "token": "$t",
+          "tapped": true
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": "$m"
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "instead",
+      "those"
+    ],
+    "examples": [
+      {
+        "text": "Madness {X}{R}{R}\nCreate two tapped 1/1 red Goblin creature tokens and you gain 2 life. If this spell's madness cost was paid, instead create X of those tokens and you gain X life."
+      },
+      {
+        "text": "Kicker {X}\nCreate two tapped 1/1 white Spirit creature tokens and you gain 2 life. If this spell was kicked, instead create X of those tokens and you gain X life."
+      }
+    ],
+    "counterExamples": [
+      "Madness {X}{R}{R}\nCreate two tapped 1/1 red Goblin creature tokens and you gain 2 life. If this spell's madness cost was paid, create X of those tokens and you gain X life.",
+      "Madness {X}{R}{R}\nCreate two tapped 1/1 red Goblin creature tokens and you gain 2 life. If this spell's madness cost was paid, instead create X of those tokens.",
+      "Madness {X}{R}{R}\nCreate two 1/1 red Goblin creature tokens and you gain 2 life. If this spell's madness cost was paid, instead create X of those tokens and you gain X life."
+    ]
+  }
+]

@@ -54,7 +54,7 @@ describe('CR 122.5: moving a counter is all or nothing', () => {
     const s = board();
     const [giant, bears] = [find(s, 'Hill Giant', 'battlefield'), find(s, 'Grizzly Bears', 'battlefield')];
     const { state, result } = runStep(s, { ...BOLT, targets: [[chosenObject(giant)], [chosenObject(bears)]] }, MOVE);
-    expect(result).toEqual({ performed: true, count: 1 });
+    expect(result).toEqual({ performed: true, count: 1, countersPut: new Map([['+1/+1', 2]]) }); // edh-d-93: the counters moved, by kind ("that much")
     expect(state.log.some((l) => l.level === 'action' && l.rules?.includes('CR 122.5') && /2 \+1\/\+1 counters/.test(l.text))).toBe(true);
   });
 
@@ -99,7 +99,7 @@ describe('the counters of an object that left the battlefield (CR 122.5, 122.8, 
     };
     const { state, bears, result } = trigger(dies, () => {}, { ref: 'self' });
     expect(counters(state, bears)).toEqual({ '+1/+1': 3 });
-    expect(result).toEqual({ performed: true, count: 1 });
+    expect(result).toEqual({ performed: true, count: 1, countersPut: new Map([['+1/+1', 3]]) }); // edh-d-93: the counters moved, by kind ("that much")
     expect(pipeline.proposals).toEqual([expect.objectContaining({ ev: 'counters', change: 'put', count: 3 })]); // nothing to remove: those counters ceased to exist (CR 400.7)
     expect(state.log.some((l) => l.rules?.includes('CR 122.8'))).toBe(true);
   });

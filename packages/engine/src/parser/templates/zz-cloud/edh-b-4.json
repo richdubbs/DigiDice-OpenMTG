@@ -1,0 +1,325 @@
+[
+  {
+    "id": "eff.edhb4.double.itsPT",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.10a",
+      "CR 701.10b",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "double its power and toughness {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "singular",
+              "text": "it"
+            }
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "stat",
+                "stat": "power",
+                "of": {
+                  "ref": "bound",
+                  "name": "",
+                  "$anaphor": {
+                    "sort": "object",
+                    "number": "singular",
+                    "text": "it"
+                  }
+                }
+              },
+              "toughness": {
+                "q": "stat",
+                "stat": "toughness",
+                "of": {
+                  "ref": "bound",
+                  "name": "",
+                  "$anaphor": {
+                    "sort": "object",
+                    "number": "singular",
+                    "text": "it"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another creature you control attacks, double its power and toughness until end of turn."
+      },
+      {
+        "text": "When ~ enters, target creature you control gets +1/+1 until end of turn. Double its power and toughness until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever equipped creature attacks, double its power and toughness.",
+      "Whenever another creature you control attacks, double its power until end of turn.",
+      "Whenever equipped creature attacks, double its toughness until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhb4.double.toughness.objs",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.10a",
+      "CR 701.10b",
+      "CR 608.2f",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "double the toughness of {o:Objs} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": 0,
+              "toughness": {
+                "q": "stat",
+                "stat": "toughness",
+                "of": {
+                  "ref": "subject"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "Double the toughness of each creature you control until end of turn."
+      },
+      {
+        "text": "{2}{G}: Double the toughness of each Wolf you control until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Double the toughness of each creature you control.",
+      "Double the power of each Elf you control until end of turn.",
+      "Double the toughness of each creature you control until end of turn unless it is blue."
+    ]
+  },
+  {
+    "id": "sta.edhb4.cantBeCast.filter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 601.3",
+      "CR 101.2"
+    ],
+    "pattern": "{f:Filter} can't be cast",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "mode": "cant",
+      "action": "cast",
+      "other": "$f"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Noncreature spells with mana value 5 or greater can't be cast."
+      },
+      {
+        "text": "Artifact spells with {X} in their mana costs can't be cast."
+      }
+    ],
+    "counterExamples": [
+      "Noncreature spells with mana value 5 or greater can be cast.",
+      "Noncreature spells can't be cast this turn.",
+      "Noncreature spells can't be countered."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhb4.cantBeBlocked.selfAndOther",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 115.1d",
+      "CR 611.2c"
+    ],
+    "pattern": "~ and {o:Obj} can't be blocked {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "self"
+              },
+              "$o"
+            ]
+          },
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "other",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, ~ and up to one other target creature can't be blocked this turn."
+      },
+      {
+        "text": "Whenever you sacrifice a Treasure, ~ and up to one other target creature can't be blocked this turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, ~ and up to one other target creature can't be blocked.",
+      "When ~ enters, ~ and up to one other target creature can't be blocked by Elves this turn.",
+      "When ~ enters, ~ and up to one other target creature can be blocked this turn."
+    ]
+  },
+  {
+    "id": "eff.edhb4.populate.times",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.36a",
+      "CR 701.36b",
+      "CR 608.2c"
+    ],
+    "pattern": "populate {n:Qty} times",
+    "build": {
+      "op": "action",
+      "action": "populate",
+      "who": {
+        "ref": "you"
+      },
+      "n": "$n"
+    },
+    "subject": "none",
+    "needs": [
+      "action:populate"
+    ],
+    "examples": [
+      {
+        "text": "Populate three times, then draw a card."
+      },
+      {
+        "text": "Draw two cards, then populate five times."
+      }
+    ],
+    "counterExamples": [
+      "Populate three cards.",
+      "Populate times."
+    ]
+  },
+  {
+    "id": "eff.edhb4.eachPlayer.returnsAll.twoColors.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 110.2a",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "each player returns all {a:Color} and all {b:Color} creature cards from their graveyard to the battlefield",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            {
+              "colors": [
+                "$a"
+              ],
+              "types": [
+                "Creature"
+              ]
+            },
+            {
+              "colors": [
+                "$b"
+              ],
+              "types": [
+                "Creature"
+              ]
+            }
+          ],
+          "zone": "graveyard",
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player returns all black and all red creature cards from their graveyard to the battlefield."
+      },
+      {
+        "text": "Each player returns all white and all green creature cards from their graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Each player returns all black or red creature cards from their graveyard to the battlefield.",
+      "Each player returns all black and all red creature cards from their graveyard to their hand.",
+      "Each player returns all black and all red artifact cards from their graveyard to the battlefield."
+    ]
+  }
+]

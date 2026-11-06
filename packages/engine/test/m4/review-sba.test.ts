@@ -101,8 +101,9 @@ describe('CR 614.1c, 306.5b: permanents that enter with counters get them before
     expect(s.objects[find(s, 'Test Growler', 'battlefield')]!.counters['+1/+1']).toBe(2);
   });
 
+  // combined copy: edh-next-137 (CR 107.3m; Nissa, Steward of Elements) reads a printed loyalty "X" as the X the spell was cast with (0 when none), so the asked case is a printed loyalty the engine cannot evaluate
   it('CR 306.5b, 704.5i: a planeswalker with a variable printed loyalty is asked for its loyalty counters, not put into the graveyard', () => {
-    const walker = compileCard({ name: 'Test Walker', layout: 'normal', mana_cost: '{0}', type_line: 'Legendary Planeswalker — Test', loyalty: 'X', oracle_text: '', colors: [] } as OracleCard);
+    const walker = compileCard({ name: 'Test Walker', layout: 'normal', mana_cost: '{0}', type_line: 'Legendary Planeswalker — Test', loyalty: '*', oracle_text: '', colors: [] } as OracleCard);
     let s = scenario([], { p1: { hand: ['Test Walker'] }, defs: [walker] });
     s = resolveTop(castIt(s, 'Test Walker'));
     expect(s.pending).toMatchObject({ kind: 'manualResolve' });

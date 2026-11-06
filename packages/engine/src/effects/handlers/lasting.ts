@@ -7,7 +7,7 @@
  * their one writer each: effects/perform-direct.ts#performEffectRecord (continuous effects, through core/durations.ts#addEffectRecord), triggers/delayed.ts#createDelayedTrigger, triggers/stack.ts#putReflexiveTrigger.
  */
 import { armDuration, sourceHolds } from '../../core/durations';
-import type { AbilityDef, DelayedWhen, Duration, ObjRef, PlayerPred, StaticEffect } from '../../types/ability';
+import type { AbilityDef, DelayedWhen, Duration, EffectStep, ObjRef, PlayerPred, StaticEffect } from '../../types/ability';
 import type { ContinuousEffectRec } from '../../types/state';
 import { abilityDefOnStack } from '../../rules/abilities';
 import { RULE_HOOK_ACTIONS } from '../../statics/hooks';
@@ -21,8 +21,9 @@ import { performControlSync, performEffectRecord } from '../perform-direct';
 import { COPY_SNAPSHOT_HOOK } from '../copy';
 import { askManual } from '../manual';
 import * as pipeline from '../propose';
-import { isCurrent } from '../refs';
-import { COND, FailsToDetermine, fixChosen, fixDuration, fixNode, fixPlayerPred, lockSet, mentionsSubject, prepareDeferred, TOP, varsOf } from './lasting-fix';
+import { costMovedSelfCard, isCurrent, linkValue, readInfo, resolveObjs, resolvePlayers } from '../refs';
+import { getChars } from '../../rules/characteristics';
+import { COND, FailsToDetermine, fixChosen, fixDuration, fixNode, fixPlayerPred, lockSet, mentionsSubject, prepareDeferred, STEP, TOP, varsOf } from './lasting-fix';
 import { bindActed } from './lifedamage';
 import type { ObjHandle } from '../../types/state';
 
@@ -31,7 +32,29 @@ const NOTHING: StepResult = { performed: false, count: 0 };
 const nameOfSource = (cx: ExecCtx): string => cx.g.nameOf(cx.source.id);
 
 /** MX2: `feature:copy.thisAbility` (model/cap-walk.ts), registered by model/capabilities.ts: the `effect` handler below states "this ability". */
-export const COPY_THIS_ABILITY_FEATURES: readonly string[] = ['copy.thisAbility'];
+export const COPY_THIS_ABILITY_FEATURES: readonly string[] = ['copy.thisAbility', 'copy.thisAbility.reflexive' /* edh-next-133: the `reflexive` handler below bakes "this ability" */];
+
+/**
+ * edh-next-133 (CR 707.9a, 603.12; Aurora Shifter: "you may pay {E}{E}. When you do, this creature becomes a copy of another target creature you control, except it has this ability and ..."): in the
+ * instructions of a reflexive triggered ability, "this ability" is the ability whose text it is (the printed one resolving now), not the reflexive ability: it is fixed now, as that ability itself.
+ * Null when such an exception is found but `self` is unknown (the caller leaves the reflexive part to the players).
+ */
+function bakeThisAbility(steps: EffectStep[], self: AbilityDef | undefined): EffectStep[] | null {
+  let unknown = false;
+  const walk = (x: unknown): unknown => {
+    if (Array.isArray(x)) return x.map(walk);
+    if (typeof x !== 'object' || x === null) return x;
+    const r = x as Record<string, unknown>;
+    if (r['op'] === 'effect' && Array.isArray(r['effects']) && (r['effects'] as StaticEffect[]).some(hasThisAbility)) {
+      if (self === undefined) { unknown = true; return x; }
+      return { ...r, effects: (r['effects'] as StaticEffect[]).map((e) => withThisAbility(e, self)) };
+    }
+    if (r['kind'] !== undefined && r['op'] === undefined) return x; // an ability of its own (quoted): its "this ability" is its own
+    return Object.fromEntries(Object.entries(r).map(([k, v]) => [k, walk(v)]));
+  };
+  const out = walk(steps) as EffectStep[];
+  return unknown ? null : out;
+}
 /** FAST5 T64: `feature:copy.choose` (types/ability.ts, the 1a modification's `choose`), registered by model/capabilities.ts; the choice is made by effects/copy.ts. */
 export const COPY_CHOOSE_FEATURES: readonly string[] = ['copy.choose'];
 
@@ -85,7 +108,68 @@ function neverStarts(cx: ExecCtx, d: Duration): string | null {
 }
 
 /** The effects one `StaticEffect` of the step becomes (CR 611.2c-d): usually one; one per object when a value depends on the object it modifies ("its power"). */
-function effectsToStore(cx: ExecCtx, e: StaticEffect, duration: Duration): StaticEffect[] {
+/**
+ * edh-combat-5 (CR 702.11d-f; Odric, Lunarch Marshal ruling 2020-01-24): a granted keyword with `likeAmong` becomes the variants (qualities) of that keyword the permanents the filter
+ * names have right now, or the plain keyword when one of them has it plain (nothing found: the plain keyword).
+ */
+function expandVariants(cx: ExecCtx, e: StaticEffect): StaticEffect {
+  const needs = (m: Extract<StaticEffect, { s: 'continuous' }>['mods'][number]): boolean => m.layer === 6 && (m.protectionFromColorsOf !== undefined || m.add?.some((a) => a.kind === 'keyword' && a.likeAmong !== undefined) === true);
+  if (e.s !== 'continuous' || !e.mods.some(needs)) return e;
+  const mods = e.mods.map((m) => {
+    if (m.layer !== 6 || !needs(m)) return m;
+    const add = (m.add ?? []).flatMap((a): AbilityDef[] => {
+      if (a.kind !== 'keyword' || a.likeAmong === undefined) return [a];
+      const { likeAmong, ...rest } = a;
+      const qualities = new Set<string | undefined>();
+      for (const h of resolveObjs(cx, { ref: 'each', filter: likeAmong })) for (const k of getChars(cx.g.s, h.id)?.keywords ?? []) if (k.keyword === a.keyword) qualities.add(k.quality);
+      if (qualities.size === 0 || qualities.has(undefined)) return [rest];
+      return [...qualities].map((quality) => ({ ...rest, quality }));
+    });
+    // edh-players-15 (CR 702.16a, 105.1, 608.2h, 400.7; Éowyn, Fearless Knight): "protection from each of that creature's colors": one protection for each color the object has (as it
+    // last existed when it has left the battlefield); an object that can't be found or has no color gives none
+    if (m.protectionFromColorsOf !== undefined) {
+      const colors = new Set<string>();
+      for (const h of resolveObjs(cx, m.protectionFromColorsOf)) for (const c of readInfo(cx, h)?.chars?.colors ?? []) colors.add(c);
+      const word: Record<string, string> = { W: 'white', U: 'blue', B: 'black', R: 'red', G: 'green' };
+      for (const c of colors) add.push({ kind: 'keyword', keyword: 'protection', quality: `color:${c}`, text: `protection from ${word[c] ?? c}` });
+    }
+    const { protectionFromColorsOf: _p, ...rest } = m;
+    return { ...rest, add };
+  });
+  return { ...e, mods };
+}
+
+/**
+ * edh-next-146 (CR 601.2a, 611.2c, 707.10; Hellish Rebuke, rulings 2021-07-23): "the player who cast ¤" in an ability this effect grants is the player who cast the spell that resolves,
+ * fixed now; a copy that was not cast names nobody (the granted ability then does nothing), and an effect of anything but a spell names nobody either.
+ */
+function fixGrantCaster(cx: ExecCtx, e: StaticEffect): StaticEffect {
+  const text = JSON.stringify(e);
+  if (!text.includes('"ref":"grantCaster"')) return e;
+  const caster = cx.stack?.kind === 'spell' && cx.stack.isCopy !== true ? cx.stack.caster : undefined;
+  const fixed = JSON.stringify({ ref: 'fixed', players: caster === undefined ? [] : [caster] });
+  return JSON.parse(text.split('{"ref":"grantCaster"}').join(fixed)) as StaticEffect;
+}
+
+/**
+ * edh-d-101: the action of a continuous effect that only grants "You may play / cast this card from your graveyard" to cards in your own graveyard (`each` cards you own there),
+ * or null. The granted ability is exactly a static ability that functions in the graveyard with that one permission of the card itself.
+ */
+function grantedSelfGraveyardPermit(e: StaticEffect): 'play' | 'cast' | null {
+  if (e.s !== 'continuous' || e.mods.length !== 1 || e.affects.ref !== 'each' || !('filter' in e.affects)) return null;
+  const f = e.affects.filter as unknown as Record<string, unknown> | undefined;
+  if (f === undefined || f['zone'] !== 'graveyard' || f['owner'] !== 'you' || f['isCard'] !== true || f['controller'] !== undefined) return null;
+  const m = e.mods[0]!;
+  if (m.layer !== 6 || (m.add ?? []).length !== 1 || Object.keys(m).some((k) => k !== 'layer' && k !== 'add' && (m as unknown as Record<string, unknown>)[k] !== undefined)) return null;
+  const a = m.add![0]!;
+  if (a.kind !== 'static' || JSON.stringify(a.zone) !== '["graveyard"]' || a.condition !== undefined || a.effects.length !== 1) return null;
+  const p = a.effects[0]!;
+  if (p.s !== 'permit' || (p.action !== 'play' && p.action !== 'cast')) return null;
+  return JSON.stringify({ ...p, action: 'x' }) === JSON.stringify({ s: 'permit', who: { ref: 'you' }, action: 'x', of: { self: true }, from: 'graveyard' }) ? p.action : null;
+}
+
+function effectsToStore(cx: ExecCtx, e0: StaticEffect, duration: Duration): StaticEffect[] {
+  const e = fixGrantCaster(cx, expandVariants(cx, e0));
   // CLOUD std-msh (CR 115.1, 608.2c): "... becomes a copy of that creature" after "up to one target creature" with none chosen: there is nothing to copy, so
   // the effect does nothing (it is not a copy left to apply by hand)
   if (e.s === 'continuous' && e.mods.some((m) => m.layer === '1a' && m.copyOf.ref === 'target' && (cx.targets.get(m.copyOf.id) ?? []).length === 0)) return [];
@@ -103,16 +187,55 @@ function effectsToStore(cx: ExecCtx, e: StaticEffect, duration: Duration): Stati
   // other card exiled this way with lesser mana value than it", Triple Triad): the objects are picked now, with every value of the filter fixed now (the mana value
   // of "it"), and the permission names exactly them from then on (statics/play-permits.ts reads only fixed objects). One that picks nothing permits nothing; a value
   // that can't be determined (there is no "it") permits nothing too (FailsToDetermine, CR 608.2b)
-  if (e.s === 'permit' && (e.action === 'play' || e.action === 'cast') && e.of !== undefined && Object.keys(e.of).length === 1 && e.of.is?.ref === 'each') {
+  const lockedGroup = e.s === 'permit' && (e.action === 'play' || e.action === 'cast');
+  // edh-d-99 (CR 607.2a, 611.2a, 400.7; King Narfi's Betrayal): ... and the same for the cards linked to the source ("until end of turn, you may cast spells from among cards exiled with this
+  // Saga"): the cards exiled with it as the effect begins, each one a new object once it leaves exile (CR 400.7), so a card cast this way is not cast again
+  if (lockedGroup && e.of !== undefined && Object.keys(e.of).length === 1 && (e.of.is?.ref === 'each' || e.of.is?.ref === 'linked')) {
     const fixed = fixNode(cx, e, TOP);
     const locked = lockSet(cx, fixed.of!.is!);
     if (locked.empty || locked.ref.ref !== 'fixed' || !('objects' in locked.ref)) return [];
     return [{ ...fixed, of: { is: locked.ref as ObjRef } }];
   }
+  // edh-replace-3 (CR 614.1a, 611.2a; Hallowed Moonlight, Mistcaller): the condition of a resolved replacement effect that reads the object it replaces ("and it wasn't cast",
+  // `wasCast` of the event's subject) is judged for each event it meets: its `event` references are that event's and stay as they are (as the `then` steps of a prevention do);
+  // what it says about this resolution (targets, names, X) is fixed now
+  if (e.s === 'replace' && e.condition !== undefined && JSON.stringify(e.condition).includes('"ref":"event"')) {
+    const { condition, ...rest } = e;
+    return [{ ...fixNode(cx, rest as StaticEffect, TOP), condition: fixNode(cx, condition, STEP) } as StaticEffect];
+  }
+  // edh-next-99 (CR 614.10, 614.10a, 502.1; Brine Elemental; also a phase or a turn): a one-use skip shield of a GROUP of players ("each opponent skips their next untap step") is one skip for
+  // EACH of them: one record per player, each with that player as `whose`, so one player's skipped step does not use up the others' (no player: nothing is skipped)
+  if (e.s === 'replace' && e.body.b === 'skip' && (e.replaces.ev === 'step' || e.replaces.ev === 'phase' || e.replaces.ev === 'beginTurn') && typeof e.replaces.whose === 'object' && e.shield !== undefined && e.shield.uses !== 'all') {
+    const ps = [...new Set(resolvePlayers(cx, e.replaces.whose))];
+    if (ps.length !== 1) return ps.map((p) => fixNode(cx, { ...e, replaces: { ...e.replaces, whose: { ref: 'fixed', players: [p] } } } as StaticEffect, TOP));
+  }
+  // edhd63 (CR 611.2c, 608.2h; Teyo, Geometric Tactician): "only the nearest opponent in the last chosen direction": the side chosen as the effect resolves, stored as the side itself (a later choice under the
+  // same link must not change an effect that already began)
+  if (e.s === 'restrict' && e.onlyNearest !== undefined && 'chosen' in e.onlyNearest) {
+    const picked = linkValue(cx, e.onlyNearest.chosen)?.values?.[0];
+    if (picked === 'left' || picked === 'right') return [fixNode(cx, { ...e, onlyNearest: { side: picked } } as StaticEffect, TOP)];
+  }
   if (e.s !== 'continuous') return [fixNode(cx, e, TOP)]; // rule-modifying: identities and values fixed, an `each` filter stays live (CR 611.2c)
+  // edh-d-101 (CR 611.2c, 113.6, 601.3, 305.1, 400.7; Kethis, the Hidden Hand): "Until end of turn, each legendary card in your graveyard gains "You may play this card from your graveyard."":
+  // the cards in your graveyard as the effect begins gain a permission that lets their owner (you) play each of them from there. That is the permission of exactly those objects for you
+  // for as long as the effect lasts (statics/play-permits.ts#isObjectPermit: a card that leaves the graveyard and returns is a new object without it, the 2019-07-12 ruling), so it is stored
+  // as such; the timing and land plays stay the usual ones (the ruling). Only that exact grant (model/cap-walk.ts#isGrantedSelfGraveyardPermit)
+  const granted = grantedSelfGraveyardPermit(e);
+  if (granted !== null) {
+    const locked = lockSet(cx, e.affects);
+    if (locked.empty || locked.ref.ref !== 'fixed' || !('objects' in locked.ref)) return [];
+    return [{ s: 'permit', who: fixNode(cx, { ref: 'you' }, TOP), action: granted, of: { is: locked.ref as ObjRef } } as StaticEffect];
+  }
   const locked = lockSet(cx, e.affects); // CR 611.2c: the affected set is determined now and never changes
   if (locked.empty) return [];
-  const affects = locked.ref;
+  let affects = locked.ref;
+  // edh-d-84 (CR 702.26b, 702.26d; Yes Man, Personal Securitron, ruling 2024-03-08): a permanent that is phased out as the effect begins is treated as though it doesn't
+  // exist: it is not in the affected set ("Target opponent gains control of ~" with ~ phased out in response changes nothing, so "When they do" never triggers)
+  if (affects.ref === 'fixed' && 'objects' in affects && affects.objects.some((h) => h.zone === 'battlefield' && cx.g.s.objects[h.id]?.phasedOut === true)) {
+    const kept = affects.objects.filter((h) => !(h.zone === 'battlefield' && cx.g.s.objects[h.id]?.phasedOut === true));
+    if (kept.length === 0) return [];
+    affects = { ...affects, objects: kept };
+  }
   if (!mentionsSubject(e.mods) || affects.ref !== 'fixed' || !('objects' in affects)) return [{ ...e, affects, mods: fixChosen(cx, fixNode(cx, e.mods, TOP)) }];
   const out: StaticEffect[] = [];
   for (const h of affects.objects) {
@@ -128,8 +251,18 @@ function effectsToStore(cx: ExecCtx, e: StaticEffect, duration: Duration): Stati
   return out;
 }
 
+/** edh-next-146: the steps with every `move` of `{ref:'self'}` (in the lists of instructions nested in them too, never in an ability a step creates) made a move of these objects. */
+function selfMovesTo(steps: EffectStep[], to: ObjHandle[]): EffectStep[] {
+  return steps.map((st) => {
+    const out: Record<string, unknown> = { ...st };
+    if (st.op === 'move' && JSON.stringify(st.what) === '{"ref":"self"}') out['what'] = { ref: 'fixed', objects: to.map((h) => ({ ...h })) };
+    if (st.op !== 'delay' && st.op !== 'reflexive') for (const k of ['do', 'then', 'else'] as const) if (Array.isArray(out[k])) out[k] = selfMovesTo(out[k] as EffectStep[], to);
+    return out as unknown as EffectStep;
+  });
+}
+
 /** CLOUD std-tmt: the value forms of the `effect` op this handler runs (`op:effect.as`: the objects a continuous effect affects are bound to the step's `as`). */
-export const EFFECT_OP_FORMS: readonly string[] = ['op:effect.as'];
+export const EFFECT_OP_FORMS: readonly string[] = ['op:effect.as', 'feature:keyword.likeAmong' /* edh-combat-5 */, 'feature:mod.protectionFromColorsOf' /* edh-players-15 */, 'feature:keyword.exceptAttached', 'feature:keyword.exceptAttached.kinds' /* edh-d-24 */ /* edh-perms-21 */, 'feature:ref.grantCaster' /* edh-next-146 */];
 
 export const LASTING_HANDLERS: OpHandlers = {
   /** CR 611.2: a resolved continuous effect (layers, rules, shields), with its duration; values and identities fixed as it is created (design 9.1). */
@@ -229,18 +362,25 @@ export const LASTING_HANDLERS: OpHandlers = {
     // CR 603.7: "that player's next end step", "when target player casts a spell": the players are the ones this resolution meant, fixed now (WP8 matches a
     // fixed player set, triggers/filters.ts#refPlayers).
     const w = step.when;
-    const when = w.at === 'event' ? { at: 'event' as const, event: fixNode(cx, w.event, COND) } : w.at === 'step' ? withWhose(w, fixPlayerPred(cx, w.whose)) : w;
+    const when = w.at === 'event' ? { at: 'event' as const, event: fixNode(cx, w.event, COND), ...(w.or !== undefined ? { or: w.or.map((p) => fixNode(cx, p, COND)) } : {}) } : w.at === 'step' ? withWhose(w, fixPlayerPred(cx, w.whose)) : w;
     const duration = step.duration ? fixDuration(cx, step.duration) : undefined;
+    // edh-combat-5 (CR 500.8, 603.7a): "At the beginning of that combat" waits for the phase the `extraPhase` step before it added (effects/handlers/game.ts); with none, nothing is created
+    const addedPhase = cx.vars.get('$addedPhase');
+    if (w.at === 'step' && w.phase === 'added' && addedPhase === undefined) return { performed: false, count: 0 };
+    // edh-next-146 (CR 400.7j, 603.7c; Plague Reaver): "Sacrifice this creature: ... Return this creature to the battlefield ... at the beginning of their next upkeep": a move of "~" the delayed
+    // trigger makes is a move of the card the cost made of the source (fixed now, so it is returned only if it is still where the cost put it); nothing else of "~" changes
+    const movedSelf = costMovedSelfCard(cx);
     const rec = createDelayedTrigger(g, {
       source: { id: cx.source.id, zone: cx.source.zone },
       controller: cx.controller,
       when,
-      do: prepared.node,
+      do: movedSelf === null ? prepared.node : selfMovesTo(prepared.node, movedSelf),
       captured,
-      vars: varsOf(cx),
+      vars: w.at === 'step' && w.phase === 'added' ? { ...varsOf(cx), $phase: addedPhase! } : varsOf(cx),
       ...(duration ? { duration } : {}),
       ...(step.once === true ? { once: true } : {}),
       ...(step.batch === true ? { batch: true } : {}),
+      ...(step.wholeBatch === true && step.batch === true ? { wholeBatch: true as const } : {}), // edh-players-13
       ...(targets !== undefined ? { targets } : {}),
     });
     if (duration?.d === 'until') armDuration(g, rec.id);
@@ -275,12 +415,19 @@ export const LASTING_HANDLERS: OpHandlers = {
       }),
     };
     const name = nameOfSource(cx);
+    // edh-next-133 (CR 707.9a, 603.12): "except it has this ability" in the reflexive instructions is the ability resolving now
+    const self = cx.stackId !== null && g.s.objects[cx.stackId] ? abilityDefOnStack(g.s, g.s.objects[cx.stackId]!) : undefined;
+    const baked = bakeThisAbility(steps.node, self);
+    if (baked === null) {
+      askManual(cx, step.span ?? `${name}: a copy effect "except it has this ability"`, 'the engine can\'t tell which ability "this ability" is (CR 707.9a)', undefined);
+      return NOTHING;
+    }
     putReflexiveTrigger(g, {
       source: { id: cx.source.id, zone: cx.source.zone },
       controller: cx.controller,
       text: step.span ?? `Reflexive triggered ability of ${name}.`,
       targets,
-      steps: steps.node,
+      steps: baked,
       bound,
       vars: varsOf(cx),
       context: cx.event,

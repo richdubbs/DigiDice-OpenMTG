@@ -1,0 +1,322 @@
+[
+  {
+    "id": "eff.edhn57.copyToken.player.except",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 111.2",
+      "CR 707.2",
+      "CR 707.9b"
+    ],
+    "pattern": "{p:Player} create[s] a token that's a copy of {o:Obj} , except {x:CopyExceptToken}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": "$p",
+      "except": "$x"
+    },
+    "subject": "player",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature with a hatch counter on it dies, you create a token that's a copy of that creature, except it's a Spirit in addition to its other types."
+      },
+      {
+        "text": "Destroy target creature. Its controller creates a token that's a copy of that creature, except it isn't legendary."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature with a hatch counter on it dies, you create a token that's a copy of that creature, except it's a Spirit.",
+      "Whenever a creature with a hatch counter on it dies, you create two tokens that are copies of that creature, except it's a Spirit in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.edhn57.copyToken.tappedAttacking.except",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 111.1",
+      "CR 508.4",
+      "CR 707.2",
+      "CR 707.9b"
+    ],
+    "pattern": "create a tapped and attacking token that's a copy of {o:Obj} , except {x:CopyExceptToken}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "tapped": true,
+      "attacking": true,
+      "except": "$x"
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create a tapped and attacking token that's a copy of another target creature you control, except it isn't legendary and it has haste."
+      },
+      {
+        "text": "Whenever ~ attacks, create a tapped and attacking token that's a copy of another target creature you control, except it's a Synth artifact creature in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create a token that's a copy of another target creature you control, except it isn't legendary and it has haste.",
+      "Whenever ~ attacks, create a tapped and attacking token that's a copy of another target creature you control, except it isn't legendary and it has haste until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn57.copyToken.tappedAttacking.notLegendary.subtype",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 508.4",
+      "CR 707.9b",
+      "CR 205.4a",
+      "CR 205.1b"
+    ],
+    "pattern": "create a tapped and attacking token that's a copy of {o:Obj} , except it isn't legendary and it's ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "tapped": true,
+      "attacking": true,
+      "except": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "remove": [
+              "Legendary"
+            ]
+          }
+        },
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create a tapped and attacking token that's a copy of another target creature you control, except it isn't legendary and it's an Illusion in addition to its other types."
+      },
+      {
+        "text": "Whenever ~ attacks, create a tapped and attacking token that's a copy of another target creature you control, except it isn't legendary and it's a Spirit in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create a tapped and attacking token that's a copy of another target creature you control, except it isn't legendary and it's an Illusion.",
+      "Whenever ~ attacks, create a token that's a copy of another target creature you control, except it isn't legendary and it's an Illusion in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.edhn57.player.copies.forEach.couldTarget",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 115.1",
+      "CR 601.2c"
+    ],
+    "pattern": "{p:Player} copies {o:Obj} for each {f:Filter} that ( the spell | spell ) could target",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": "$p",
+      "retargetEach": {
+        "ref": "each",
+        "filter": "$f"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each other",
+      "other",
+      "could"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player casts an instant spell that targets only a single Goblin, that player copies that spell for each Goblin you control that the spell could target. Each copy targets a different one of those Goblins."
+      },
+      {
+        "text": "Whenever a player casts a sorcery spell that targets only a single Golem, that player copies that spell for each artifact they control that the spell could target. Each copy targets a different one of those artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player casts an instant spell that targets only a single Goblin, that player copies that spell for each Goblin you control that the spell could target.",
+      "Whenever a player casts an instant spell that targets only a single Goblin, that player copies that spell for each Goblin you control that you could target. Each copy targets a different one of those Goblins."
+    ]
+  },
+  {
+    "id": "eff.edhn57.cont.base.noDuration",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 611.2a",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} has base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{X}: This creature has base power and toughness X/X."
+      },
+      {
+        "text": "{1}{R}: This creature has base power and toughness 5/1."
+      }
+    ],
+    "counterExamples": [
+      "{X}: This creature has base power and toughness +1/+1.",
+      "{X}: This creature gets base power and toughness X/X."
+    ]
+  },
+  {
+    "id": "eff.edhn57.forEachOfThem.copyToken",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 707.2",
+      "CR 111.1"
+    ],
+    "pattern": "for each of {t:Them} , create a token that's a copy of ( that creature | that permanent | that artifact )",
+    "build": {
+      "op": "forEach",
+      "over": "$t",
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Choose any number of target creatures you control. For each of them, create a token that's a copy of that creature."
+      },
+      {
+        "text": "Choose up to two target artifacts you control. For each of those artifacts, create a token that's a copy of that artifact."
+      }
+    ],
+    "counterExamples": [
+      "Choose any number of target creatures you control. For each of them, create two tokens that are copies of that creature.",
+      "Choose any number of target creatures you control. For each of them, create a token that's a copy of that creature, except it has haste until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn57.copyToken.tappedAttacking.linkedExiled.subtype",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 508.4",
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.1b"
+    ],
+    "pattern": "create a tapped and attacking token that's a copy of the exiled card , except it's ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "copy",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "tapped": true,
+      "attacking": true,
+      "except": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target creature with toughness 3 or less an opponent controls until ~ leaves the battlefield.\nWhenever ~ attacks, create a tapped and attacking token that's a copy of the exiled card, except it's a Spirit in addition to its other types."
+      },
+      {
+        "text": "When ~ enters, exile target creature with toughness 3 or less an opponent controls until ~ leaves the battlefield.\nWhenever ~ attacks, create a tapped and attacking token that's a copy of the exiled card, except it's a Wizard in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target creature with toughness 3 or less an opponent controls until ~ leaves the battlefield.\nWhenever ~ attacks, create a tapped and attacking token that's a copy of the exiled card, except it's a Spirit.",
+      "When ~ enters, exile target creature with toughness 3 or less an opponent controls until ~ leaves the battlefield.\nWhenever ~ attacks, create a token that's a copy of the exiled card, except it's a Spirit in addition to its other types."
+    ]
+  }
+]

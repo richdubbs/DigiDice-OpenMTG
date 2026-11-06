@@ -1,0 +1,389 @@
+[
+  {
+    "id": "eff.edhz10.search.desc.reveal.shuffleTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 401.2"
+    ],
+    "pattern": "search your library for {f:SearchDesc} , reveal it , then shuffle and put ( it | that card | the card ) on top",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "max": 1,
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for a creature card with mana value 4 or greater, reveal it, then shuffle and put that card on top."
+      },
+      {
+        "text": "Search your library for an artifact card with mana value 2 or less, reveal it, then shuffle and put it on top."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a creature card with mana value 4 or greater, then shuffle and put that card on top.",
+      "Search your library for a creature card with mana value 4 or greater, reveal it, then shuffle and put that card on the bottom.",
+      "Search your library for two creature cards with mana value 4 or greater, reveal them, then shuffle and put those cards on top."
+    ]
+  },
+  {
+    "id": "eff.edhz10.shuffle.rest.intoLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 401.3",
+      "CR 608.2c"
+    ],
+    "pattern": "[ then ] shuffle {r:Rest} into your library",
+    "build": [
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Reveal the top four cards of your library. You may put a land card from among them onto the battlefield. Then shuffle the rest into your library."
+      },
+      {
+        "text": "Look at the top three cards of your library. You may reveal a creature card from among them and put it into your hand. Shuffle the rest into your library."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top four cards of your library. You may put a land card from among them onto the battlefield. Then shuffle the rest into their library.",
+      "Reveal the top four cards of your library. You may put a land card from among them onto the battlefield. Then shuffle the rest into your graveyard.",
+      "Reveal the top four cards of your library. You may put a land card from among them onto the battlefield. Then put the rest into your library."
+    ]
+  },
+  {
+    "id": "eff.edhz10.search.anyNumber.totalMv",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 202.3",
+      "CR 608.2d"
+    ],
+    "pattern": "search your library for any number of {f:Filter} cards with total mana value {m:Qty} or less",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "min": 0,
+      "max": "any",
+      "groupLimit": {
+        "stat": "manaValue",
+        "cmp": {
+          "op": "<=",
+          "value": "$m"
+        }
+      },
+      "as": "search"
+    },
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "needs": [
+      "op:search.groupLimit"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for any number of creature cards with total mana value 5 or less, put them onto the battlefield, then shuffle."
+      },
+      {
+        "text": "Search your library for any number of artifact cards with total mana value 3 or less, put them into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for any number of creature cards with total mana value 5 or greater, put them onto the battlefield, then shuffle.",
+      "Search your library for any number of creature cards with total power 5 or less, put them onto the battlefield, then shuffle.",
+      "Search your library for up to two creature cards with total mana value 5 or less, put them onto the battlefield, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhz10.search.nCards",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23d",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library for {n:Qty} cards",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": {},
+      "min": "$n",
+      "max": "$n",
+      "as": "looked"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for three cards. Put one into your hand and the other into your graveyard. Then shuffle."
+      },
+      {
+        "text": "You gain 2 life. Search your library for two cards. Put one into your hand and the other into your graveyard. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for two cards. Put one into your hand and the other on the bottom of your library. Then shuffle.",
+      "Search your library for up to two cards. Put one into your hand and the other into your graveyard. Then shuffle.",
+      "Search target player's library for two cards. Put one into your hand and the other into your graveyard. Then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhz10.put.anyNumber.bf.underYourControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 107.1c"
+    ],
+    "pattern": "put any number of {f:Filter} onto the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "any",
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent exiles the top three cards of their library. You may put any number of artifact cards that player owns from exile onto the battlefield under your control."
+      },
+      {
+        "text": "Put any number of creature cards from your graveyard onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles the top three cards of their library. You may put any number of artifact cards that player owns from exile onto the battlefield tapped under your control.",
+      "Put any number of creature cards from your graveyard onto the battlefield under an opponent's control.",
+      "Put two creature cards from your graveyard onto the battlefield under your control."
+    ]
+  },
+  {
+    "id": "eff.edhz10.may.putHand.unlessSameNameExiled",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 201.2",
+      "CR 400.7"
+    ],
+    "pattern": "you may put {o:Obj} into your hand unless it has the same name as another card exiled this way",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "as": "putIntoHand",
+      "guard": {
+        "cond": "not",
+        "of": {
+          "cond": "matches",
+          "object": "$o",
+          "filter": {
+            "sharesWith": {
+              "with": {
+                "ref": "bound",
+                "name": "exiledThisWay"
+              },
+              "quality": "name"
+            }
+          }
+        }
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "hand"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "unless",
+      "same",
+      "another",
+      "this way"
+    ],
+    "needs": [
+      "op:repeat.until"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, exile the top card of your library. You may put that card into your hand unless it has the same name as another card exiled this way. Repeat this process until you put a card into your hand or you exile two cards with the same name, whichever comes first."
+      },
+      {
+        "text": "{T}: Exile the top card of your library. You may put that card into your hand unless it has the same name as another card exiled this way. Repeat this process until you put a card into your hand or you exile two cards with the same name, whichever comes first."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of your library. You may put that card into your hand unless it has the same name as another card in your graveyard. Repeat this process until you put a card into your hand or you exile two cards with the same name, whichever comes first.",
+      "Exile the top card of your library. You may put that card onto the battlefield unless it has the same name as another card exiled this way. Repeat this process until you put a card into your hand or you exile two cards with the same name, whichever comes first.",
+      "Exile the top card of your library. You must put that card into your hand unless it has the same name as another card exiled this way. Repeat this process until you put a card into your hand or you exile two cards with the same name, whichever comes first."
+    ]
+  },
+  {
+    "id": "eff.edhz10.repeatProcess.untilHandOrSameName",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 201.2"
+    ],
+    "pattern": "repeat this process until you put a card into your hand or you exile two cards with the same name , whichever comes first",
+    "build": {
+      "op": "repeat",
+      "times": 1,
+      "do": [],
+      "process": true,
+      "until": {
+        "cond": "any",
+        "of": [
+          {
+            "cond": "did",
+            "step": "putIntoHand"
+          },
+          {
+            "cond": "compare",
+            "left": {
+              "q": "mostSharingName",
+              "among": {
+                "ref": "bound",
+                "name": "exiledThisWay"
+              }
+            },
+            "op": ">=",
+            "right": 2
+          }
+        ]
+      },
+      "gather": {
+        "as": "exiledThisWay"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "same",
+      "or"
+    ],
+    "needs": [
+      "op:repeat.until"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, exile the top card of your library. You may put that card into your hand unless it has the same name as another card exiled this way. Repeat this process until you put a card into your hand or you exile two cards with the same name, whichever comes first."
+      },
+      {
+        "text": "{T}: Exile the top card of your library. You may put that card into your hand unless it has the same name as another card exiled this way. Repeat this process until you put a card into your hand or you exile two cards with the same name, whichever comes first."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of your library. You may put that card into your hand unless it has the same name as another card exiled this way. Repeat this process until you put a card into your hand.",
+      "Exile the top card of your library. You may put that card into your hand unless it has the same name as another card exiled this way. Repeat this process until you put a card into your hand and you exile two cards with the same name, whichever comes first.",
+      "Exile the top card of your library. You may put that card into your hand unless it has the same name as another card exiled this way. Repeat this process until you exile two cards with the same name, whichever comes first."
+    ]
+  }
+]

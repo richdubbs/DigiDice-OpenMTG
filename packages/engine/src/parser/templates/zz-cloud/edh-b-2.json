@@ -1,0 +1,315 @@
+[
+  {
+    "id": "rep.edhb2.players.skip.step.untap",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 502.1"
+    ],
+    "pattern": "( players | all players ) skip their untap steps",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "step",
+            "step": "untap",
+            "whose": "any"
+          },
+          "body": {
+            "b": "skip"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "skip",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "All players skip their untap steps."
+      },
+      {
+        "text": "All players skip their untap steps.\n{1}{R}, {T}: Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Players skip their draw steps.",
+      "Players skip their next untap step.",
+      "All opponents skip their untap steps.",
+      "All players skip their next untap steps."
+    ]
+  },
+  {
+    "id": "rst.edhb2.group.cant.haveKindCountersPut",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.6",
+      "CR 614.17",
+      "CR 101.2"
+    ],
+    "pattern": "{f:Filter} can't have {k:CounterKind} counters put on them",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "cant",
+      "action": "haveCountersPut",
+      "counter": "$k"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Artifact creatures you control can't have +1/+1 counters put on them."
+      },
+      {
+        "text": "Tapped creatures can't have -1/-1 counters put on them.\n{1}{R}, {T}: Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control can have +1/+1 counters put on them.",
+      "Creatures you control can't have counters put on them.",
+      "Creatures you control can't have +1/+1 counters put on them this turn.",
+      "Creatures you control can't have +1/+1 counters removed from them."
+    ]
+  },
+  {
+    "id": "sta.edhb2.attached.pump.xPlusOne.whereX",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 107.3",
+      "CR 303.4",
+      "CR 301.5"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets +x/+1 , where x is {q:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": "$q",
+          "toughness": 1
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Equipped creature gets +X/+1, where X is the number of Islands you control."
+      },
+      {
+        "text": "Enchanted creature gets +X/+1, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +X/+1 until end of turn, where X is the number of Islands you control.",
+      "Equipped creature gets +X/+2, where X is the number of Islands you control.",
+      "Equipped creature gets +X/+X, where X is the number of Islands you control.",
+      "Target creature gets +X/+1, where X is the number of Islands you control."
+    ]
+  },
+  {
+    "id": "sta.edhb2.aslong.self.grant.attackNoDefender",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 609.4",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 702.3b"
+    ],
+    "pattern": "as long as {c:Cond} , it has {a:Abilities} and can attack as though it didn't have defender",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is untapped, it has trample and can attack as though it didn't have defender."
+      },
+      {
+        "text": "As long as ~'s power is 4 or greater, it has flying and can attack as though it didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is untapped, it has trample and can block as though it didn't have defender.",
+      "As long as ~ is untapped, it has trample and can attack as though it didn't have flying.",
+      "If ~ is untapped, it has trample and can attack as though it didn't have defender.",
+      "As long as ~ is untapped, it has trample until end of turn and can attack as though it didn't have defender."
+    ]
+  },
+  {
+    "id": "sta.edhb2.self.notLegendary.ifToken",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 205.4a",
+      "CR 613.1d",
+      "CR 111.1"
+    ],
+    "pattern": "~ isn't legendary if ( it's | it is ) a token",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "token": true
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "supertypes": {
+                "remove": [
+                  "Legendary"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Flash, reach\n~ isn't legendary if it is a token."
+      },
+      {
+        "text": "~ isn't legendary if it is a token.\n{1}{R}, {T}: Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "~ isn't legendary if it's a creature.",
+      "~ isn't legendary if it's tapped.",
+      "~ is legendary if it's a token.",
+      "~ isn't legendary unless it's a token."
+    ]
+  },
+  {
+    "id": "eff.edhb2.prevent.damage.toAndBy.obj",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 120.2"
+    ],
+    "pattern": "( {d:Dur} , prevent all damage that would be dealt to and dealt by {o:Obj} | prevent all damage that would be dealt to and dealt by {o:Obj} {d:Dur} )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Prevent all damage that would be dealt to and dealt by target creature you control this turn."
+      },
+      {
+        "text": "Until your next turn, prevent all damage that would be dealt to and dealt by target artifact an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Prevent all combat damage that would be dealt to and dealt by target creature you control this turn.",
+      "{1}, {T}: Prevent all damage that would be dealt to and dealt by each creature you control this turn.",
+      "{1}, {T}: Prevent all damage that would be dealt to or dealt by target creature you control this turn.",
+      "{1}, {T}: Prevent all damage that would be dealt to target creature you control this turn."
+    ]
+  }
+]

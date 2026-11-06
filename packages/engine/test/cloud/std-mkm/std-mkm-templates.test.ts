@@ -43,6 +43,7 @@ const WHOLE_CORPUS: Readonly<Record<string, { cards: readonly string[]; line: Re
     line: /you may turn an? [a-z -]+ you control face up\./i,
     readOnly: { 'Zimone, Mystery Unraveler': 'the "X if C. Otherwise, Y." pair is one if/else step; the parse masks two sentences, which no golden step can stand for (harness rule: a mask is one or more elements)' },
   },
+  'eff.stdmkm.each.opponent.loselife.unless.they': { cards: ['Court of Ambition', 'Ob Nixilis, the Adversary'], line: /each opponent loses \w+ life unless they discard a card\./i }, // edh-replace-2 (6.9 deviation, named in its record)
   'eff.stdmkm.each.opponent.loselife.unless.discard.or.sacrifice': { cards: ['Polygraph Orb'], line: /each opponent loses \w+ life unless they discard a card or sacrifice/i },
   'eff.stdmkm.each.player.loselife.unless.they': { cards: ['Bellowing Mauler'], line: /each player loses \w+ life unless they/i },
   'sta.stdmkm.self.is.sized.subtype.creature.with.inaddition': { cards: ["Case of the Gorgon's Kiss"], line: /is an? \d+\/\d+ [A-Z][a-z]+ creature with [^.]+ in addition to its other types/ },
@@ -87,8 +88,9 @@ describe('std-mkm template file (design 6.3, 6.9; CONTRIBUTING "Adding a templat
       expect(['stable', 'experimental'], t.id).toContain(t.status);
       expect(t.since, t.id).toBe(8);
     }
-    // the general "each opponent loses N life unless they <cost>" waits for golden cards: every index card with it is partial for another reason
-    expect(STD_MKM.filter((t) => t.status === 'experimental').map((t) => t.id)).toEqual(['eff.stdmkm.each.opponent.loselife.unless.they']);
+    // the general "each opponent loses N life unless they <cost>" waited for golden cards (every index card with it was partial for another reason); edh-replace-2 promoted it
+    // on the two cards of the index that print it with a discard (Court of Ambition, Ob Nixilis, the Adversary): WHOLE_CORPUS
+    expect(STD_MKM.filter((t) => t.status === 'experimental').map((t) => t.id)).toEqual([]);
   });
   it('design 6.9: a stable std-mkm template has its evidence: three hand-verified golden cards, or every card of the corpus that prints the sentence', () => {
     const golden = review as { card: string; verified: string; expect?: string }[];

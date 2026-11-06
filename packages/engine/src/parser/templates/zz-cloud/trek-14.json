@@ -1,0 +1,239 @@
+[
+  {
+    "id": "eff.trek14.put.anotherOfThatKind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "put another counter of that kind on {o:Recipient}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "",
+      "count": 1,
+      "kindOfChoice": "counterKind"
+    },
+    "subject": "none",
+    "consumes": [
+      "put",
+      "another",
+      "counter",
+      "of",
+      "that",
+      "kind",
+      "on"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Choose a counter on target enchantment you control. Put another counter of that kind on it."
+      },
+      {
+        "text": "{T}: Choose a counter on target artifact. Put another counter of that kind on that artifact."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Put another counter of that kind on target artifact.",
+      "{T}: Choose a counter on target artifact. Put two other counters of that kind on that artifact.",
+      "{T}: Choose a counter on target artifact. Put another counter on that artifact."
+    ]
+  },
+  {
+    "id": "eff.trek14.put.plusOneSlashOne",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1a"
+    ],
+    "pattern": "put a + 1/1 counter on {o:Recipient}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "+1/+1",
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "put",
+      "counter",
+      "on"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you gain life, put a +1/1 counter on ~."
+      },
+      {
+        "text": "Whenever you gain life, put a +1/1 counter on target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you gain life, put a +1/2 counter on ~.",
+      "Whenever you gain life, put two +1/1 counters on ~.",
+      "Whenever you gain life, put a +1/1 counter."
+    ]
+  },
+  {
+    "id": "rep.trek14.enter.additionalCounter.forEachTypeAlready",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 205.3m"
+    ],
+    "pattern": "{f:Filter} enter with an additional {k:CounterKind} counter on them for each creature type among {g:Filter} you already control",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "distinct",
+                  "what": "creatureTypes",
+                  "among": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        "$g"
+                      ],
+                      "controller": "you"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Elves you control enter with an additional +1/+1 counter on them for each creature type among non-Goblin creatures you already control."
+      },
+      {
+        "text": "Artifact creatures you control enter with an additional +1/+1 counter on them for each creature type among artifact creatures you already control."
+      }
+    ],
+    "counterExamples": [
+      "Elves you control enter with an additional +1/+1 counter on them for each creature type among non-Goblin creatures you control.",
+      "Elves you control enter with an additional +1/+1 counter on them for each creature type among non-Goblin creatures an opponent already controls.",
+      "Elves you control enter with two additional +1/+1 counters on them for each creature type among non-Goblin creatures you already control.",
+      "Elves you control enter with an additional +1/+1 counter on them for each color among non-Goblin creatures you already control."
+    ]
+  },
+  {
+    "id": "eff.trek14.draw.forEveryNTypesAmong",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 107.1a",
+      "CR 205.3m"
+    ],
+    "pattern": "draw a card for every {m:Qty} creature types among {f:Filter}",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "math",
+        "op": "floorDiv",
+        "args": [
+          {
+            "q": "distinct",
+            "what": "creatureTypes",
+            "among": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          },
+          "$m"
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "every"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, draw a card for every three creature types among Elves you control."
+      },
+      {
+        "text": "At the beginning of combat on your turn, draw a card for every five creature types among creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, draw a card for each creature type among Elves you control.",
+      "At the beginning of your upkeep, draw two cards for every three creature types among Elves you control.",
+      "At the beginning of your upkeep, draw a card for every three colors among Elves you control."
+    ]
+  },
+  {
+    "id": "rid.trek14.mayCastCopies.free",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.12",
+      "CR 707.10",
+      "CR 608.2g"
+    ],
+    "pattern": "you may cast the copies without paying their mana costs",
+    "build": {
+      "$patchPrevious": {
+        "op": "cast",
+        "result": null,
+        "copyIn": "exile",
+        "optional": true,
+        "free": true,
+        "@require": {
+          "what.ref": "bound",
+          "result": "spell",
+          "newTargets": null,
+          "except": null,
+          "as": null
+        }
+      }
+    },
+    "examples": [
+      {
+        "text": "Exile target instant card from your graveyard. Copy that card X times, where X is the number of creatures you control. You may cast the copies without paying their mana costs."
+      },
+      {
+        "text": "Exile target sorcery card from your graveyard. Copy that card X times, where X is the number of lands you control. You may cast the copies without paying their mana costs. Exile ~."
+      }
+    ],
+    "counterExamples": [
+      "Exile target instant card from your graveyard. Copy that card X times, where X is the number of creatures you control. You may cast the copies.",
+      "Exile target instant card from your graveyard. Copy that card. You may cast the copies without paying their mana costs.",
+      "Copy target instant spell X times, where X is the number of creatures you control. You may cast the copies without paying their mana costs."
+    ],
+    "consumes": [
+      "may"
+    ],
+    "attachTo": "copy"
+  }
+]

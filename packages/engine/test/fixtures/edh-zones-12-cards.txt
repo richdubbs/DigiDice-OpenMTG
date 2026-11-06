@@ -1,0 +1,6 @@
+# edh-zones-12 (Commander effort, lane edh-zones; test/cloud/edh-zones-12, golden edh-zones-12-review.json): card that's an instant or sorcery and the copy-and-cast loop (Mizzix's Mastery), a historic card from among them, put a card exiled with ~ into its owner's graveyard, return each other card exiled with ~, copy each card exiled with ~
+Mizzix's Mastery
+Weatherlight
+Currency Converter
+Mimic Vat
+Arcane Bombardment

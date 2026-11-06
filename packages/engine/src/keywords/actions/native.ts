@@ -80,3 +80,9 @@ export const BEHOLD: ActionMacro = { name: 'behold', rule: 'CR 701.4a', native: 
  * "until the next turn of the controller" of a designation with requirements on the choice of defender. Run by effects/handlers/goad.ts.
  */
 export const GOAD: ActionMacro = { name: 'goad', rule: 'CR 701.15a', native: 'goad' };
+
+/**
+ * edh-next-3, CR 701.56a: time travel. Choosing among permanents you control and suspended cards you own that have a time counter, and adding or removing one counter
+ * for each, is no fixed list of steps; run by effects/handlers/actions-native-counters.ts.
+ */
+export const TIME_TRAVEL: ActionMacro = { name: 'timeTravel', rule: 'CR 701.56a', native: 'timeTravel' };

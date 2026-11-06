@@ -32,8 +32,9 @@ import type { ApplyMods, CharAbility } from './api';
 import { readLink } from './links';
 import { colorFromWord } from './match';
 import { CREATURE_TYPES, LAND_TYPES } from './subtypes';
+import { applyRulesTextOf } from './text-exchange';
 
-export type WordKind = Extract<Modification, { layer: 3 }>['changeWord']['kind'];
+export type WordKind = Extract<Modification, { changeWord: unknown }>['changeWord']['kind'];
 
 /** A text change with both words known: a color as its letter, a land or creature type as the type line prints it. */
 export interface WordChange {
@@ -59,7 +60,7 @@ function wordOf(w: string | ChosenWord, s: GameState, source: string | null): st
 }
 
 /** The change a layer 3 modification makes, or null when a word is undetermined, not a word of its kind, or the same word twice. */
-export function wordChangeOf(m: Extract<Modification, { layer: 3 }>['changeWord'], s: GameState, source: string | null): WordChange | null {
+export function wordChangeOf(m: Extract<Modification, { changeWord: unknown }>['changeWord'], s: GameState, source: string | null): WordChange | null {
   const fromRaw = wordOf(m.from, s, source);
   const toRaw = wordOf(m.to, s, source);
   if (fromRaw === undefined || toRaw === undefined) return null;
@@ -308,10 +309,12 @@ export function applyWordChange(c: Chars, ch: WordChange): Chars {
 }
 
 /** M6-8: the layer 3 applier. Each text change of the effect, in the order written (CR 613.1c); an undetermined or meaningless one changes nothing. */
-export const LAYER_3: ApplyMods | null = (c, mods, _subject, s, _all, fx) => {
+export const LAYER_3: ApplyMods | null = (c, mods, subject, s, all, fx) => {
   let out = c;
   for (const m of mods) {
     if (m.layer !== 3) continue;
+    // edh-next-120 (CR 612.5, 701.12h, 613.1c): a text box exchange: the object's rules text becomes the snapshot's (statics/text-exchange.ts)
+    if ('rulesTextOf' in m) { out = applyRulesTextOf(out, subject, s, all, fx); continue; }
     const ch = wordChangeOf(m.changeWord, s, fx?.source ?? null);
     if (ch) out = applyWordChange(out, ch);
   }

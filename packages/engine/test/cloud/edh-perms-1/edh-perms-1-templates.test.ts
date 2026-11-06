@@ -199,7 +199,7 @@ describe('edh-perms-1 parser and renderer changes (one test each)', () => {
     expect(JSON.stringify(f.abilities)).toContain('"ev":"state"');
     expect(fullyAutomated(face('When target land has no ice counters on it, sacrifice it.'))).toBe(false);
   });
-  it('render/np.ts (CR 109.2): "target creature you control other than ~" prints back as itself; a creature "you control other than" an opponent\'s object does not parse to it', () => {
+  it('render/np.ts (CR 115.1, 601.2c): "target creature you control other than ~" prints back as itself; a creature "you control other than" an opponent\'s object does not parse to it', () => {
     const f = face('Whenever you create a token, put a +1/+1 counter on target creature you control other than ~.', 'Creature — Elf');
     expect(fullyAutomated(f)).toBe(true);
     expect(JSON.stringify(f.abilities)).toContain('"other":true');

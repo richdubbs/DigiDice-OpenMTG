@@ -1,0 +1,208 @@
+[
+  {
+    "id": "eff.edhd52.forEach.playerCreatesN.tokens",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.6a",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 700.4"
+    ],
+    "pattern": "for each {n:Qty} , {p:Player} create[s] {m:Qty} {t:TokenDesc}",
+    "build": {
+      "op": "createToken",
+      "who": "$p",
+      "count": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$m",
+          "$n"
+        ]
+      },
+      "token": "$t"
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all creatures target player controls. For each creature that died this way, that player creates three 1/1 black Rat creature tokens."
+      },
+      {
+        "text": "Destroy all creatures target opponent controls. For each creature that died this way, that player creates two 2/2 black Zombie creature tokens."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all creatures target player controls. For each creature that died this way, you create two 2/2 black Zombie creature tokens.",
+      "Destroy all creatures target player controls. For each creature that died this way, that player creates a 2/2 black Zombie creature token.",
+      "Destroy all creatures target player controls. For each creature that died this way, that player creates two 2/2 black Zombie creature tokens tapped."
+    ],
+    "weak": 2
+  },
+  {
+    "id": "eff.edhd52.pump.andFights",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 701.14a",
+      "CR 701.14b",
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} {d:Dur} and fight[s] {b:Obj}",
+    "build": [
+      {
+        "op": "effect",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": "7c",
+                "power": "$pt.p",
+                "toughness": "$pt.t"
+              }
+            ]
+          }
+        ],
+        "duration": "$d"
+      },
+      {
+        "op": "fight",
+        "a": "$o",
+        "b": "$b"
+      }
+    ],
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you control gets +1/+1 until end of turn and fights target creature you don't control."
+      },
+      {
+        "text": "Target creature you control gets +2/+2 until end of turn and fights target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control gets +1/+1 until end of turn and fights each creature you don't control.",
+      "Target creature you control gets +1/+1 until end of turn and fights.",
+      "Target creature you control gets +1/+1 until end of turn and gains trample."
+    ]
+  },
+  {
+    "id": "rid.edhd52.fight.pumpBeforeIfCond",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.14a",
+      "CR 701.14b",
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 608.2c",
+      "CR 608.2e"
+    ],
+    "pattern": "the creature you control gets {pt:PT} {d:Dur} before it fights if {c:Cond}",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "op": "fight"
+        },
+        "@before": [
+          {
+            "op": "if",
+            "cond": "$c",
+            "then": [
+              {
+                "op": "effect",
+                "effects": [
+                  {
+                    "s": "continuous",
+                    "affects": "@previous.a",
+                    "mods": [
+                      {
+                        "layer": "7c",
+                        "power": "$pt.p",
+                        "toughness": "$pt.t"
+                      }
+                    ]
+                  }
+                ],
+                "duration": "$d"
+              }
+            ],
+            "else": []
+          }
+        ]
+      }
+    },
+    "attachTo": "fight",
+    "consumes": [
+      "if",
+      "before"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you control fights target creature you don't control. The creature you control gets +2/+2 until end of turn before it fights if you control a creature with power 4 or greater."
+      },
+      {
+        "text": "Target creature you control fights target creature an opponent controls. The creature you control gets +3/+3 until end of turn before it fights if you control a creature with power 5 or greater."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control fights target creature you don't control. The creature you control gets +2/+2 until end of turn after it fights if you control a creature with power 4 or greater.",
+      "Target creature you control fights target creature you don't control. The creature you control gets +2/+2 until end of turn before it fights.",
+      "Draw a card. The creature you control gets +2/+2 until end of turn before it fights if you control a creature with power 4 or greater."
+    ]
+  },
+  {
+    "id": "sta.edhd52.group.areSnow",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.4a",
+      "CR 604.1",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:Objs} are snow",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "add": [
+              "Snow"
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Lands you control are snow."
+      },
+      {
+        "text": "Creatures you control are snow."
+      }
+    ],
+    "counterExamples": [
+      "Permanents with ice counters on them are snow until end of turn.",
+      "Permanents with ice counters on them are nonsnow.",
+      "Permanents with ice counters on them are legendary."
+    ]
+  }
+]

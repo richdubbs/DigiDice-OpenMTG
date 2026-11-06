@@ -19,10 +19,10 @@ const levels = (type: string, text: string): string[] => abilitiesOf(type, text)
 describe('CR 611.3a, 604.1: a static ability the layers cannot evaluate is never classified full (WP22 review finding 1)', () => {
   it.each([
     // FAST5X E9: `happened` conditions are evaluated by statics/match.ts now (the test below): "as long as you gained life this turn" is full
-    ['Enchantment', 'Creatures you control that entered this turn have double strike.'], // filter enteredThisTurn (sta.grant.each)
+    ['Enchantment', 'Creatures you control that blocked this turn have double strike.'], // filter blockedThisTurn (sta.grant.each; edh-c-8: enteredThisTurn is evaluated now)
     ['Enchantment', 'Creatures you control that blocked this turn have lifelink.'], // filter blockedThisTurn (FAST5X E28: attackedThisTurn is evaluated now)
     ['Enchantment', 'Each creature that was dealt damage this turn has defender.'], // filter dealtDamageThisTurn (sta.each.grant)
-    ['Creature — Golem', '~ gets +1/+1 for each creature that entered this turn.'], // a counted set the layers never match (sta.obj.pump.foreach)
+    ['Creature — Golem', '~ gets +1/+1 for each creature that was dealt damage this turn.'], // a counted set the layers never match (sta.obj.pump.foreach)
     // CLOUD std-ecl: q:happenedCount is evaluated by statics/match.ts now (the test below): "the number of creatures that died this turn" is full
   ])('%s "%s" is not full', (type, text) => {
     const ls = levels(type, text);
@@ -58,10 +58,10 @@ describe('design 5.2: the walker names what statics/match.ts evaluates inside a 
   });
   it('CR 613.1: a filter, quantity and object reference inside a static continuous effect need `sfilter:` / `sq:` / `sref:`', () => {
     // FAST5X-4: `speed` is evaluated by the statics since then (CR 702.179f); `faceUpX` is not (it is the interpreter's only)
-    const def = { kind: 'static', text: 'x', effects: [{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], enteredThisTurn: true } }, mods: [{ layer: '7c', power: { q: 'faceUpX' }, toughness: 0 }] }] };
+    const def = { kind: 'static', text: 'x', effects: [{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], blockedThisTurn: true } }, mods: [{ layer: '7c', power: { q: 'faceUpX' }, toughness: 0 }] }] };
     const caps = capabilitiesOfDef(def);
-    expect(caps).toEqual(expect.arrayContaining(['sfilter:types', 'sfilter:enteredThisTurn', 'sref:each', 'sq:faceUpX']));
-    expect(missingCapabilities(def as unknown as AbilityDef, ENGINE_CAPABILITIES)).toEqual(expect.arrayContaining(['sfilter:enteredThisTurn', 'sq:faceUpX']));
+    expect(caps).toEqual(expect.arrayContaining(['sfilter:types', 'sfilter:blockedThisTurn', 'sref:each', 'sq:faceUpX']));
+    expect(missingCapabilities(def as unknown as AbilityDef, ENGINE_CAPABILITIES)).toEqual(expect.arrayContaining(['sfilter:blockedThisTurn', 'sq:faceUpX']));
   });
   it('CR 611.2c: a resolved continuous effect (an `effect` step) fixes its set and numbers at resolution, so it needs no `s...` name', () => {
     const def = { kind: 'spell', text: 'x', effect: { steps: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'] } }, mods: [{ layer: '7c', power: 1, toughness: 1 }] }] }] } };

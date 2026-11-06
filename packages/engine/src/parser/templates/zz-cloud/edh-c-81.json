@@ -1,0 +1,116 @@
+[
+  {
+    "id": "rid.edhv81.spent.gains.riot",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 601.2h",
+      "CR 611.2a",
+      "CR 400.7a"
+    ],
+    "pattern": "if that mana is spent on {f:SpellsCast} , it gains riot",
+    "build": {
+      "$patchPrevious": {
+        "rider": {
+          "spells": "$f",
+          "gains": {
+            "kind": "keyword",
+            "keyword": "riot",
+            "text": "riot"
+          },
+          "permanent": true
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "if"
+    ],
+    "needs": [
+      "feature:mana.spentRider",
+      "feature:mana.spentRider.permanent"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {G}. If that mana is spent on a creature spell, it gains riot."
+      },
+      {
+        "text": "{T}: Add {R}. If that mana is spent on a Dragon creature spell, it gains riot."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {G}. If that mana is spent on a creature spell, it gains riot until end of turn.",
+      "{T}: Add {G}. If that mana is spent on a creature spell, it gains trample.",
+      "{T}: Add {G}. If that mana is spent on a creature spell, it loses riot."
+    ]
+  },
+  {
+    "id": "eff.edhv81.may.becomes.pt.artifactCreature",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 611.2a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {o:Obj} become a {pt:BasePT} artifact creature",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "permanent"
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 4,
+                  "types": {
+                    "add": [
+                      "Artifact",
+                      "Creature"
+                    ]
+                  }
+                },
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of combat on your turn, you may have target noncreature artifact you control become a 0/0 artifact creature."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may have target artifact you control become a 1/1 artifact creature."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of combat on your turn, you may have target noncreature artifact you control become a 0/0 enchantment creature.",
+      "At the beginning of combat on your turn, you may have target noncreature artifact you control become a 0/0 artifact creature until end of turn.",
+      "At the beginning of combat on your turn, you may have target noncreature artifact you control become a +1/+1 artifact creature."
+    ]
+  }
+]

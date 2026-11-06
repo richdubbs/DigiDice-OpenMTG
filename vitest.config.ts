@@ -29,6 +29,9 @@ export default defineConfig({
   test: {
     // Says once per run whether the slow suites run.
     globalSetup: ['scripts/vitest-slow-notice.ts'],
+    // The template guards (G2: every one-word change of each example is compiled) grow with the template set; at the default 5 s several of them time
+    // out when the whole engine package runs, some even alone. 30 s for a test without its own limit (a test with an explicit limit keeps it).
+    testTimeout: 30_000,
     poolOptions: { forks: { isolate: true }, threads: { isolate: isolateAll } },
     projects: [
       {

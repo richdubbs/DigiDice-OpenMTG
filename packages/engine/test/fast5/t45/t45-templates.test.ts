@@ -194,7 +194,7 @@ describe('T45 parser and renderer support (the shapes the templates read are exa
     expect(json).toContain('"abilitySource":{"types":["Artifact"]}');
     expect(json).toContain('{"stackKind":"activatedAbility"},{"stackKind":"triggeredAbility"}');
     // two card types, or a quality other than a type or colorlessness, have no wording: manual, never approximate
-    expect(fullyAutomated(parse('Example Gem', 'Artifact', '{T}: Copy target activated or triggered ability you control from an artifact or creature source.'))).toBe(false);
+    expect(fullyAutomated(parse('Example Gem', 'Artifact', '{T}: Copy target activated or triggered ability you control from an artifact, creature or land source.'))).toBe(false); // edh-d-43: "from an artifact or creature source" (two types) is now read; three are still not
   });
   it('"targets only a single X you control" keeps "you control" with X; "with a single target" is one target (CR 115.9a, 115.9c)', () => {
     const a = parse('Example Engine', 'Enchantment', 'Whenever you cast an instant spell that targets only a single creature you control, draw a card.');

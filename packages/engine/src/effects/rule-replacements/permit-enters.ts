@@ -20,7 +20,7 @@ export const permitEntersReplacement: RuleReplacement = (g, e) => {
   const info = o?.stack;
   if (!o || o.zone !== 'stack' || !info || info.kind !== 'spell' || info.isCopy === true || info.permitEnters === undefined) return [];
   const def = {
-    s: 'replace', replaces: { ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }, body: { b: 'enters', counters: info.permitEnters.counters, ...(info.permitEnters.subtypes !== undefined ? { subtypes: info.permitEnters.subtypes } : {}) },
+    s: 'replace', replaces: { ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }, body: { b: 'enters', ...(info.permitEnters.tapped === true ? { tapped: true } : {}), counters: info.permitEnters.counters, ...(info.permitEnters.subtypes !== undefined ? { subtypes: info.permitEnters.subtypes } : {}), ...(info.permitEnters.abilities !== undefined ? { withAbilities: info.permitEnters.abilities } : {}) },
   } as ReplacementDef;
   const c: Candidate = {
     id: `rule:permitEnters:${o.id}`, def, source: { id: o.id, zone: 'stack' }, klass: 4, // CR 616.1e

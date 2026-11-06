@@ -141,6 +141,11 @@ describe('CR 614.8, 615: a regeneration body is a shield, so it needs the shield
   it('a static regeneration (no shield) is rejected', () => {
     bad(ab({ kind: 'static', text: 'x', effects: [{ s: 'replace', replaces: { ev: 'zoneChange', subject: { self: true }, from: 'battlefield', to: 'graveyard' }, body: { b: 'regeneration' } }] }), 'executable-gap');
   });
+  it('edh-c-45 (CR 701.19b): the one static regeneration is of a destruction, with no condition (Mossbridge Troll)', () => {
+    clean(ab({ kind: 'static', text: 'x', effects: [{ s: 'replace', replaces: { ev: 'action', verb: 'destroy', object: { self: true } }, body: { b: 'regeneration' } }] }));
+    bad(ab({ kind: 'static', text: 'x', effects: [{ s: 'replace', replaces: { ev: 'action', verb: 'sacrifice', object: { self: true } }, body: { b: 'regeneration' } }] }), 'executable-gap');
+    bad(ab({ kind: 'static', text: 'x', condition: { cond: 'exists', of: { ref: 'self' } }, effects: [{ s: 'replace', replaces: { ev: 'action', verb: 'destroy', object: { self: true } }, condition: { cond: 'exists', of: { ref: 'self' } }, body: { b: 'regeneration' } }] }), 'executable-gap');
+  });
 });
 
 describe('the worked examples stay clean under the stricter rules', () => {

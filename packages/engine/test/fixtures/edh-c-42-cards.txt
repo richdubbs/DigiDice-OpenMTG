@@ -1,0 +1,11 @@
+# edh-c-42 (Commander EDHREC ranks 29,001-29,500, first pass): amplify, recover, reveal-any-number-of-cards-from-hand counters, players/target player can't play lands, damage that would be dealt by ~ can't be prevented, half damage rounded down instead, "you control a Knight or a Soldier". After editing: npm run cards -- fixtures
+Canopy Crawler
+Ghastly Remains
+Arsenal Thresher
+Sun's Bounty
+Territorial Dispute
+Solfatara
+Excruciator
+Ghosts of the Innocent
+War Falcon
+Charging Binox

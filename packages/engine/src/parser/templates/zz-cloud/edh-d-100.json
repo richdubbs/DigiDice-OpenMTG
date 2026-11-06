@@ -1,0 +1,601 @@
+[
+  {
+    "id": "sta.edhd100.linked.eachPlayer.playLandOrSpell.anyColor.whenTheyDo.exileTop",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 305.1",
+      "CR 601.3",
+      "CR 609.4b",
+      "CR 603.2",
+      "CR 611.3a"
+    ],
+    "pattern": "during each player 's turn , that player may play a land or cast a spell from among cards exiled with ~ , and they may spend mana as though it were mana of any color to cast that spell . when they do , exile the top card of their library",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "active"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "anyManaColor": true,
+          "oncePerTurn": true,
+          "onUse": {
+            "steps": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "topCards",
+                  "player": {
+                    "ref": "event",
+                    "role": "player"
+                  },
+                  "count": 1
+                },
+                "to": {
+                  "zone": "exile"
+                },
+                "link": "exiled"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "each",
+      "may",
+      "any",
+      "when",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters and whenever an opponent loses the game, exile the top card of each player's library.\nDuring each player's turn, that player may play a land or cast a spell from among cards exiled with ~, and they may spend mana as though it were mana of any color to cast that spell. When they do, exile the top card of their library."
+      },
+      {
+        "text": "When ~ enters, exile the top two cards of each player's library.\nDuring each player's turn, that player may play a land or cast a spell from among cards exiled with ~, and they may spend mana as though it were mana of any color to cast that spell. When they do, exile the top card of their library."
+      }
+    ],
+    "counterExamples": [
+      "During each player's turn, that player may play a land or cast a spell from among cards exiled with ~, and they may spend mana as though it were mana of any color to cast that spell. When they do, exile the top card of your library.",
+      "During your turn, you may play a land or cast a spell from among cards exiled with ~, and you may spend mana as though it were mana of any color to cast that spell. When you do, exile the top card of your library."
+    ]
+  },
+  {
+    "id": "eff.edhd100.delay.whenYouCastIt.gainsActivatedOfThatCard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7c",
+      "CR 400.7",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 601.2i"
+    ],
+    "pattern": "when you cast {o:Obj} this turn , ~ gains all activated abilities of that card until end of turn",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+            "sameCardAs": "$o"
+          }
+        }
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "endOfTurn"
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": {
+                "ref": "self"
+              },
+              "mods": [
+                {
+                  "layer": 6,
+                  "addActivatedOf": {
+                    "ref": "event",
+                    "role": "spell"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "consumes": [
+      "all",
+      "until",
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "{1}: You may cast target creature card in a graveyard this turn. When you cast it this turn, ~ gains all activated abilities of that card until end of turn."
+      },
+      {
+        "text": "{2}{B}: You may cast target creature card in your graveyard this turn. When you cast it this turn, ~ gains all activated abilities of that card until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}: You may cast target creature card in a graveyard this turn. When you cast it this turn, ~ gains all triggered abilities of that card until end of turn.",
+      "{1}: You may cast target creature card in a graveyard this turn. When you cast it, ~ gains all activated abilities of that card until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhd100.thatPlayer.exilesTheCastSpell.linked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 406.1"
+    ],
+    "pattern": "that player exiles it",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "event",
+        "role": "spell"
+      },
+      "to": {
+        "zone": "exile"
+      },
+      "link": "exiled",
+      "as": "kpExiled"
+    },
+    "consumes": [],
+    "examples": [
+      {
+        "text": "When ~ enters, each player exiles the top three cards of their library.\nWhenever a player casts a spell from their hand, that player exiles it. If the player does, they may cast a spell from among other cards exiled with ~ without paying its mana cost."
+      },
+      {
+        "text": "When ~ enters, each player exiles the top two cards of their library.\nWhenever a player casts a spell from their hand, that player exiles it. If the player does, they may cast a spell from among other cards exiled with ~ without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each player exiles the top three cards of their library.\nWhenever a player casts a spell from their hand, that player exiles it. If the player does, they may cast a spell from among cards exiled with ~ without paying its mana cost.",
+      "When ~ enters, each player exiles the top three cards of their library.\nWhenever a player casts a spell from their hand, that player exiles it. If the player does, you may cast a spell from among other cards exiled with ~ without paying its mana cost."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhd100.ifPlayerDoes.mayCastOtherLinked.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2c",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9"
+    ],
+    "pattern": "if the player does , they may cast a spell from among other cards exiled with ~ without paying its mana cost",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "did",
+        "step": "kpExiled"
+      },
+      "then": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "event",
+            "role": "player"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "notTypes": [
+                "Land"
+              ],
+              "is": {
+                "ref": "linked",
+                "link": "exiled"
+              },
+              "zone": "exile",
+              "not": {
+                "is": {
+                  "ref": "bound",
+                  "name": "kpExiled"
+                }
+              }
+            }
+          },
+          "min": 0,
+          "max": 1,
+          "as": "cast"
+        },
+        {
+          "op": "cast",
+          "who": {
+            "ref": "event",
+            "role": "player"
+          },
+          "what": {
+            "ref": "bound",
+            "name": "cast"
+          },
+          "free": true
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "may",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each player exiles the top three cards of their library.\nWhenever a player casts a spell from their hand, that player exiles it. If the player does, they may cast a spell from among other cards exiled with ~ without paying its mana cost."
+      },
+      {
+        "text": "When ~ enters, each player exiles the top two cards of their library.\nWhenever a player casts a spell from their hand, that player exiles it. If the player does, they may cast a spell from among other cards exiled with ~ without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each player exiles the top three cards of their library.\nWhenever a player casts a spell from their hand, that player exiles it. If the player does, they may cast a spell from among cards exiled with ~ without paying its mana cost.",
+      "When ~ enters, each player exiles the top three cards of their library.\nWhenever a player casts a spell from their hand, that player exiles it. If the player does, you may cast a spell from among other cards exiled with ~ without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhd100.look.topOfEachOpponent.exileThoseFaceDown",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 406.3a",
+      "CR 401.5",
+      "CR 607.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "look at the top card of each opponent 's library and exile those cards face down",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "count": 1
+        },
+        "as": "seen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "seen"
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        }
+      }
+    ],
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, look at the top card of each opponent's library and exile those cards face down.\n{1}{B}, {T}: Choose one \u2014\n\u2022 Until end of turn, you may play a card exiled with ~ without paying its mana cost.\n\u2022 Each opponent loses 2 life and you gain 2 life."
+      },
+      {
+        "text": "Whenever ~ attacks, look at the top card of each opponent's library and exile those cards face down.\n{2}: Until end of turn, you may play a card exiled with ~ without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, look at the top card of each opponent's library and exile those cards.",
+      "When ~ enters, look at the top two cards of each opponent's library and exile those cards face down."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhd100.eot.play.linked.oneCard.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 305.1",
+      "CR 601.3",
+      "CR 118.9",
+      "CR 406.3a",
+      "CR 611.2a"
+    ],
+    "pattern": "until end of turn , you may play a card exiled with ~ without paying its mana cost",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "single": true,
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "until",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, look at the top card of each opponent's library and exile those cards face down.\n{1}{B}, {T}: Choose one \u2014\n\u2022 Until end of turn, you may play a card exiled with ~ without paying its mana cost.\n\u2022 Each opponent loses 2 life and you gain 2 life."
+      },
+      {
+        "text": "When ~ enters, exile the top three cards of target player's library.\n{1}, {T}: Until end of turn, you may play a card exiled with ~ without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top three cards of target player's library.\n{1}, {T}: Until end of turn, you may play cards exiled with ~ without paying their mana costs.",
+      "When ~ enters, exile the top three cards of target player's library.\n{1}, {T}: Until end of turn, you may play a card exiled with ~."
+    ]
+  },
+  {
+    "id": "eff.edhd100.cast.obj.payEnergyMv",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 202.3",
+      "CR 107.14",
+      "CR 608.2g",
+      "CR 601.2"
+    ],
+    "pattern": "you may cast {o:Obj} by paying an amount of {e} equal to its mana value rather than paying its mana cost",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "optional": true,
+      "costChange": {
+        "kind": "set",
+        "energy": "manaValue"
+      }
+    },
+    "consumes": [
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "First strike\nWhen ~ enters, you get {E}{E}. Then if you cast it from your hand, exile cards from the top of your library until you exile a nonland card. You may cast that card by paying an amount of {E} equal to its mana value rather than paying its mana cost."
+      },
+      {
+        "text": "When ~ enters, you get {E}{E}{E}. Then exile cards from the top of your library until you exile a nonland card. You may cast that card by paying an amount of {E} equal to its mana value rather than paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you get {E}{E}{E}. Then exile cards from the top of your library until you exile a nonland card. You may cast that card by paying an amount of {E} equal to its power rather than paying its mana cost.",
+      "When ~ enters, you get {E}{E}{E}. Then exile cards from the top of your library until you exile a nonland card. You may cast that card by paying {E} rather than paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhd100.eot.play.linked.all",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 305.1",
+      "CR 601.3",
+      "CR 611.2a"
+    ],
+    "pattern": "until end of turn , you may play cards exiled with ~",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "until",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Look at the top card of your library. You may exile it face down.\n{T}: Until end of turn, you may play cards exiled with ~. Spells you cast this way cost {2} less to cast."
+      },
+      {
+        "text": "When ~ enters, exile the top three cards of your library.\n{3}: Until end of turn, you may play cards exiled with ~. Spells you cast this way cost {1} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top three cards of your library.\n{3}: Until end of turn, you may cast spells from among cards exiled with ~ this turn.",
+      "When ~ enters, exile the top three cards of your library.\n{3}: Until your next turn, you may play cards exiled with ~."
+    ]
+  },
+  {
+    "id": "rid.edhd100.spellsCastThisWay.costLess",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 601.3",
+      "CR 608.2c"
+    ],
+    "pattern": "spells you cast this way cost {m:ManaCost} less to cast",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "op": "effect",
+          "effects.0.s": "permit",
+          "effects.0.action": "play",
+          "effects.0.of.is.ref": "linked",
+          "effects.1": null
+        },
+        "effects": [
+          {
+            "costChange": {
+              "@new": {
+                "kind": "reduce",
+                "mana": "$m"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Look at the top card of your library. You may exile it face down.\n{T}: Until end of turn, you may play cards exiled with ~. Spells you cast this way cost {2} less to cast."
+      },
+      {
+        "text": "When ~ enters, exile the top three cards of your library.\n{3}: Until end of turn, you may play cards exiled with ~. Spells you cast this way cost {1} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top three cards of your library.\n{3}: Until end of turn, you may play cards exiled with ~. Spells you cast this way cost {1} more to cast.",
+      "When ~ enters, exile the top three cards of your library.\n{3}: Until end of turn, you may play cards exiled with ~. Creature spells you cast this way cost {1} less to cast."
+    ],
+    "attachTo": "effect"
+  },
+  {
+    "id": "trg.edhd100.you.cycleSelfOrAnotherWhileOnBattlefield",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.29a",
+      "CR 702.29c",
+      "CR 603.2",
+      "CR 113.6k",
+      "CR 603.4"
+    ],
+    "pattern": "whenever you cycle ~ or cycle another card while ~ is on the battlefield",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "cycle",
+          "actor": "you",
+          "object": {
+            "self": true
+          }
+        },
+        {
+          "ev": "action",
+          "verb": "cycle",
+          "actor": "you",
+          "object": {
+            "other": true
+          }
+        }
+      ],
+      "while": {
+        "cond": "any",
+        "of": [
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "event",
+              "role": "subject"
+            },
+            "filter": {
+              "self": true
+            }
+          },
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "zone": "battlefield"
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "whenever",
+      "another",
+      "while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cycle ~ or cycle another card while ~ is on the battlefield, you may exile target creature. If you do, return that card to the battlefield under its owner's control at the beginning of the next end step.\nCycling {2}{W}"
+      },
+      {
+        "text": "Whenever you cycle ~ or cycle another card while ~ is on the battlefield, you gain 2 life.\nCycling {2}"
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cycle ~ or cycle another card while ~ is in your graveyard, you gain 2 life.\nCycling {2}",
+      "Whenever you cycle or discard another card, you gain 2 life.\nCycling {2}"
+    ]
+  }
+]

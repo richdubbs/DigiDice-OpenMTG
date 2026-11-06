@@ -12,7 +12,7 @@
     ],
     "counterExamples": [
       "At the beginning of each end step, draw a card.",
-      "At the beginning of the next end step, target player draws a card.",
+      "At the beginning of your next end step, target player draws a card.",
       "At the beginning of the next end step, draw a card for each Elf you control unless it is blue.",
       "At the beginning of your next end step, draw a card."
     ],
@@ -79,7 +79,7 @@
       "Draw a card at the beginning of your upkeep.",
       "Draw a card at the beginning of the next upkeep each turn."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 1
   },
   {

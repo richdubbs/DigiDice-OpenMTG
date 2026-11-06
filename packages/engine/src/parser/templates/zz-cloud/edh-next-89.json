@@ -1,0 +1,207 @@
+[
+  {
+    "id": "eff.edhn89.counter.unless.discardCard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.6a",
+      "CR 118.12",
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "counter {o:Obj} unless its controller discards a card",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "discard",
+            "count": 1
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "counter",
+          "what": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, counter target creature spell unless its controller discards a card."
+      },
+      {
+        "text": "When ~ enters, counter target noncreature spell unless its controller discards a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, counter target creature spell unless its controller discards their hand.",
+      "When ~ enters, counter target creature spell unless you discard a card.",
+      "When ~ enters, counter target creature spell if its controller discards a card."
+    ]
+  },
+  {
+    "id": "eff.edhn89.ifSelfHasCounters.removeThemAndTransform",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 122.1",
+      "CR 122.8",
+      "CR 701.28a",
+      "CR 608.2c",
+      "CR 712.14"
+    ],
+    "pattern": "then if ~ has {n:Qty} or more {k:CounterKind} counters on it , remove them and transform ~",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "counters": {
+            "kind": "$k",
+            "cmp": {
+              "op": ">=",
+              "value": "$n"
+            }
+          }
+        }
+      },
+      "then": [
+        {
+          "op": "removeCounters",
+          "from": {
+            "ref": "self"
+          },
+          "kind": "$k",
+          "count": "all"
+        },
+        {
+          "op": "changeFace",
+          "what": {
+            "ref": "self"
+          },
+          "to": "transform"
+        }
+      ]
+    },
+    "consumes": [
+      "then",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast an instant or sorcery spell, put a +1/+1 counter on ~. Then if ~ has seven or more charge counters on it, remove them and transform ~."
+      },
+      {
+        "text": "Whenever you cast a noncreature spell, put a time counter on ~. Then if ~ has three or more time counters on it, remove them and transform ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant or sorcery spell, put a +1/+1 counter on ~. Then if ~ has seven or more charge counters on it, transform ~.",
+      "Whenever you cast an instant or sorcery spell, put a +1/+1 counter on ~. Then if ~ has seven or more charge counters on it, remove one of them and transform ~.",
+      "Whenever you cast an instant or sorcery spell, put a +1/+1 counter on ~. Then if ~ has seven or fewer charge counters on it, remove them and transform ~."
+    ]
+  },
+  {
+    "id": "eff.edhn89.anyOpponent.mayHaveSelfDealDamage",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 120.3",
+      "CR 608.2c"
+    ],
+    "pattern": "any opponent may have ( it | ~ ) deal {n:Qty} damage to them",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "anyOne": true,
+      "do": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": {
+            "ref": "iterating"
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "any"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, any opponent may have it deal 3 damage to them. If a player does, sacrifice ~."
+      },
+      {
+        "text": "At the beginning of your upkeep, any opponent may have ~ deal 2 damage to them. If no one does, you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent may have it deal 3 damage to them. If a player does, sacrifice ~.",
+      "When ~ enters, any opponent may have it deal 3 damage to you. If a player does, sacrifice ~.",
+      "When ~ enters, any opponent may have it deal 3 damage to any target. If a player does, sacrifice ~."
+    ]
+  },
+  {
+    "id": "eff.edhn89.exchange.yourLife.power",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.12a",
+      "CR 613.4b",
+      "CR 119.5",
+      "CR 119.7",
+      "CR 119.8"
+    ],
+    "pattern": "exchange your life total with {o:Obj} 's power",
+    "build": {
+      "op": "exchange",
+      "a": {
+        "ref": "you"
+      },
+      "b": "$o",
+      "what": "lifePower"
+    },
+    "examples": [
+      {
+        "text": "{2}, {T}: Exchange your life total with ~'s power."
+      },
+      {
+        "text": "When ~ enters, exchange your life total with target creature's power."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Exchange your life total with ~'s toughness.",
+      "{2}, {T}: Exchange your hand with ~'s power.",
+      "{2}, {T}: Exchange ~'s power and toughness."
+    ]
+  }
+]

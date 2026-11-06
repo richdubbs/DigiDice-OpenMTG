@@ -1,0 +1,524 @@
+[
+  {
+    "id": "eff.edhd27.vote.secret.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 701.38b"
+    ],
+    "pattern": "each player secretly votes for a player , then those votes are revealed",
+    "build": {
+      "op": "action",
+      "action": "vote",
+      "who": {
+        "ref": "you"
+      },
+      "secret": true,
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "needs": [
+      "action:vote",
+      "feature:vote.players",
+      "feature:vote.secret"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly votes for a player, then those votes are revealed. Each player draws a card for each vote they received."
+      },
+      {
+        "text": "When ~ enters, each player secretly votes for a player, then those votes are revealed. For each vote you received, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each player secretly votes for a player.",
+      "Each player secretly votes for a banana, then those votes are revealed."
+    ]
+  },
+  {
+    "id": "eff.edhd27.vote.secret.anotherPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 701.38b"
+    ],
+    "pattern": "each player secretly votes for another player , then those votes are revealed",
+    "build": {
+      "op": "action",
+      "action": "vote",
+      "who": {
+        "ref": "you"
+      },
+      "secret": true,
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "notSelf": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then",
+      "another"
+    ],
+    "needs": [
+      "action:vote",
+      "feature:vote.players",
+      "feature:vote.secret",
+      "feature:vote.notSelf"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly votes for another player, then those votes are revealed. For each vote you received, draw a card."
+      },
+      {
+        "text": "Each player secretly votes for another player, then those votes are revealed. For each vote an opponent received, ~ deals 2 damage to that player and each creature that player controls."
+      }
+    ],
+    "counterExamples": [
+      "Each player secretly votes for another player.",
+      "Each player secretly votes for another banana, then those votes are revealed."
+    ]
+  },
+  {
+    "id": "eff.edhd27.vote.secret.object",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 701.38b"
+    ],
+    "pattern": "each player secretly votes for ( a | an ) {f:Filter} , then those votes are revealed",
+    "build": {
+      "op": "action",
+      "action": "vote",
+      "who": {
+        "ref": "you"
+      },
+      "secret": true,
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "needs": [
+      "action:vote",
+      "feature:vote.secret"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly votes for a creature you don't control, then those votes are revealed. For each creature with one or more votes, put that many stun counters on it, then tap it."
+      },
+      {
+        "text": "Each player secretly votes for a creature, then those votes are revealed. Destroy each creature with the most votes or tied for most votes."
+      }
+    ],
+    "counterExamples": [
+      "Each player secretly votes for target creature, then those votes are revealed. Destroy each creature with the most votes or tied for most votes.",
+      "Each player secretly votes for a creature you don't control."
+    ]
+  },
+  {
+    "id": "eff.edhd27.vote.secret.object.upToOne",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 701.38b"
+    ],
+    "pattern": "each player secretly votes for up to one {f:Filter} , then those votes are revealed",
+    "build": {
+      "op": "action",
+      "action": "vote",
+      "who": {
+        "ref": "you"
+      },
+      "secret": true,
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "upTo": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then",
+      "up to"
+    ],
+    "needs": [
+      "action:vote",
+      "feature:vote.secret",
+      "feature:vote.upTo"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly votes for up to one creature, then those votes are revealed. If no creature got votes, each player draws a card. Otherwise, destroy each creature with the most votes or tied for most votes."
+      },
+      {
+        "text": "Each player secretly votes for up to one nonland permanent, then those votes are revealed. Exile each permanent with the most votes or tied for most votes."
+      }
+    ],
+    "counterExamples": [
+      "Each player secretly votes for up to one target creature, then those votes are revealed. Destroy each creature with the most votes or tied for most votes.",
+      "Each player secretly votes for up to one creature."
+    ]
+  },
+  {
+    "id": "eff.edhd27.forEachVote.youReceived",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 608.2c"
+    ],
+    "pattern": "for each {q:VoteYou} , {e:Effects}",
+    "build": {
+      "op": "repeat",
+      "times": "$q",
+      "do": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "needs": [
+      "op:repeat",
+      "q:votesFor"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly votes for another player, then those votes are revealed. For each vote you received, draw a card."
+      },
+      {
+        "text": "When ~ enters, each player secretly votes for a player, then those votes are revealed. For each vote you received, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "For each vote you received, draw a card.",
+      "Each player secretly votes for a player, then those votes are revealed. For each vote an opponent received, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhd27.forEachOpponentVote.damageThatPlayerAndCreatures",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 608.2c",
+      "CR 120.3"
+    ],
+    "pattern": "for each {q:VoteOpp} , {src:Obj} deal[s] {n:Qty} damage to that player and each creature that player controls",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "do": [
+        {
+          "op": "repeat",
+          "times": "$q",
+          "do": [
+            {
+              "op": "damage",
+              "source": "$src",
+              "to": {
+                "ref": "iterating"
+              },
+              "amount": "$n",
+              "also": [
+                {
+                  "to": {
+                    "ref": "each",
+                    "filter": {
+                      "types": [
+                        "Creature"
+                      ],
+                      "controller": {
+                        "ref": "iterating"
+                      }
+                    }
+                  },
+                  "amount": "$n"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "as": "opponentVoted"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "needs": [
+      "op:forEach",
+      "op:repeat",
+      "q:votesFor"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly votes for another player, then those votes are revealed. For each vote an opponent received, ~ deals 2 damage to that player and each creature that player controls."
+      },
+      {
+        "text": "Each player secretly votes for a player, then those votes are revealed. For each vote an opponent received, ~ deals 3 damage to that player and each creature that player controls."
+      }
+    ],
+    "counterExamples": [
+      "For each vote an opponent received, ~ deals 2 damage to that player and each creature that player controls.",
+      "Each player secretly votes for a player, then those votes are revealed. For each vote you received, ~ deals 2 damage to that player and each creature that player controls."
+    ]
+  },
+  {
+    "id": "eff.edhd27.player.draw.forEachVoteTheyReceived",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} draw[s] a card for each {q:VoteThey}",
+    "build": {
+      "op": "draw",
+      "who": "$p",
+      "count": "$q"
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "needs": [
+      "op:draw",
+      "q:votesFor"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly votes for a player, then those votes are revealed. Each player draws a card for each vote they received."
+      },
+      {
+        "text": "When ~ enters, each player secretly votes for another player, then those votes are revealed. Each player draws a card for each vote they received."
+      }
+    ],
+    "counterExamples": [
+      "Each player secretly votes for a player, then those votes are revealed. Each player draws a card for each vote you received.",
+      "Each player draws a card for each vote they received."
+    ]
+  },
+  {
+    "id": "eff.edhd27.forEachVotedCreature.stunTap",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 608.2f"
+    ],
+    "pattern": "for each {v:VotedCreature} , put {n:ThatManyVotes} stun counters on it , then tap it",
+    "build": {
+      "op": "forEach",
+      "over": "$v",
+      "as": "votedObj",
+      "do": [
+        {
+          "op": "if",
+          "cond": {
+            "cond": "compare",
+            "left": "$n",
+            "op": ">=",
+            "right": 1
+          },
+          "then": [
+            {
+              "op": "putCounters",
+              "on": {
+                "ref": "bound",
+                "name": "votedObj"
+              },
+              "kind": "stun",
+              "count": "$n"
+            },
+            {
+              "op": "tap",
+              "what": {
+                "ref": "bound",
+                "name": "votedObj"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "needs": [
+      "op:forEach",
+      "op:if",
+      "op:putCounters",
+      "op:tap",
+      "q:votesFor"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly votes for a creature you don't control, then those votes are revealed. For each creature with one or more votes, put that many stun counters on it, then tap it."
+      },
+      {
+        "text": "Each player secretly votes for a creature, then those votes are revealed. For each creature with one or more votes, put that many stun counters on it, then tap it."
+      }
+    ],
+    "counterExamples": [
+      "For each creature with one or more votes, put that many stun counters on it, then tap it.",
+      "Each player secretly votes for a player, then those votes are revealed. For each creature with one or more votes, put that many stun counters on it, then tap it."
+    ]
+  },
+  {
+    "id": "eff.edhd27.eachPlayerNoVotes.may.putFromHand.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 110.2a"
+    ],
+    "pattern": "each player {n:NoVotesReceived} may put ( a | an ) {f:Filter} card from their hand onto the battlefield",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "unvoted",
+      "do": [
+        {
+          "op": "if",
+          "cond": {
+            "cond": "compare",
+            "left": "$n",
+            "op": "==",
+            "right": 0
+          },
+          "then": [
+            {
+              "op": "chooseObjects",
+              "who": {
+                "ref": "iterating"
+              },
+              "from": {
+                "ref": "each",
+                "filter": {
+                  "anyOf": [
+                    "$f"
+                  ],
+                  "zone": "hand",
+                  "owner": {
+                    "ref": "iterating"
+                  },
+                  "isCard": true
+                }
+              },
+              "min": 0,
+              "max": 1,
+              "as": "put"
+            },
+            {
+              "op": "move",
+              "what": {
+                "ref": "bound",
+                "name": "put"
+              },
+              "to": {
+                "zone": "battlefield",
+                "controller": "owner"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly votes for a player, then those votes are revealed. Each player who received no votes may put a permanent card from their hand onto the battlefield."
+      },
+      {
+        "text": "Each player secretly votes for another player, then those votes are revealed. Each player who received no votes may put a creature card from their hand onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Each player who received no votes may put a permanent card from their hand onto the battlefield.",
+      "Each player secretly votes for a player, then those votes are revealed. Each opponent who received no votes may put a permanent card from their hand onto the battlefield.",
+      "Each player secretly votes for a player, then those votes are revealed. Each player who received no votes puts a permanent card from their hand onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhd27.forEachCardDrawn.discardACard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.2",
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "for each {n:Qty} , discard a card",
+    "build": {
+      "op": "discard",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Draw two cards. For each card drawn this way, discard a card."
+      },
+      {
+        "text": "When ~ enters, draw three cards. For each card drawn this way, discard a card."
+      }
+    ],
+    "counterExamples": [
+      "For each card drawn this way, discard a card.",
+      "Draw two cards. For each creature you control, discard a card.",
+      "Draw two cards. For each card drawn this way, each opponent discards a card."
+    ]
+  }
+]

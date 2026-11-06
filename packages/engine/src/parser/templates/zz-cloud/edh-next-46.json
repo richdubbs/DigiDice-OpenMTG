@@ -1,0 +1,248 @@
+[
+  {
+    "id": "rid.edhn46.mana.youSpend.draw",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 603.2",
+      "CR 601.2h",
+      "CR 121.1"
+    ],
+    "pattern": "when you spend this mana to cast ( a | an ) {f:CastSpell} , draw {n:Qty} card[s]",
+    "build": {
+      "$patchPrevious": {
+        "whenSpent": {
+          "@new": {
+            "spells": "$f",
+            "do": [
+              {
+                "op": "draw",
+                "who": {
+                  "ref": "you"
+                },
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "when",
+      "spend"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {G}. When you spend this mana to cast a spell with mana value 5 or greater, draw a card."
+      },
+      {
+        "text": "{1}, {T}: Add {R}. When you spend this mana to cast a Dragon spell, draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Draw a card. When you spend this mana to cast a Dragon spell, draw a card.",
+      "{T}: Add {G}. If you spend this mana to cast a Dragon spell, draw a card.",
+      "{T}: Add {G}. When you spend this mana to cast a Dragon spell, each opponent draws a card."
+    ]
+  },
+  {
+    "id": "rep.edhn46.tokens.food.andTreasure",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 111.1",
+      "CR 111.10b"
+    ],
+    "pattern": "if you would create ( a | 1 ) food token , instead create ( a | 1 ) food token and ( a | 1 ) treasure token",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "createToken",
+            "player": "you",
+            "token": {
+              "subtypes": [
+                "Food"
+              ]
+            }
+          },
+          "body": {
+            "b": "modify",
+            "then": {
+              "as": "created",
+              "do": [
+                {
+                  "op": "createToken",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": {
+                    "q": "resultCount",
+                    "step": "created"
+                  },
+                  "token": {
+                    "predefined": "Food"
+                  },
+                  "exceptReplaced": true
+                },
+                {
+                  "op": "createToken",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": {
+                    "q": "resultCount",
+                    "step": "created"
+                  },
+                  "token": {
+                    "predefined": "Treasure"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would create 1 Food token, instead create 1 Food token and 1 Treasure token.\n{2}: Draw a card."
+      },
+      {
+        "text": "{4}: You gain 7 life.\nIf you would create 1 Food token, instead create a Food token and 1 Treasure token."
+      }
+    ],
+    "counterExamples": [
+      "If you would create a Food token, you may instead create a Food token and a Treasure token.",
+      "If an opponent would create a Food token, instead create a Food token and a Treasure token.",
+      "If you would create a Food token, instead create a Food token and two Treasure tokens."
+    ]
+  },
+  {
+    "id": "rid.edhn46.extraTurn.skipUntap",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.7",
+      "CR 502.1",
+      "CR 614.10",
+      "CR 608.2c"
+    ],
+    "pattern": "skip the untap step of that turn",
+    "build": {
+      "$patchPrevious": {
+        "skipUntap": true
+      }
+    },
+    "attachTo": "extraTurn",
+    "consumes": [
+      "skip"
+    ],
+    "examples": [
+      {
+        "text": "Target player takes an extra turn after this one. Skip the untap step of that turn."
+      },
+      {
+        "text": "Take an extra turn after this one. Skip the untap step of that turn. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Skip the untap step of that turn.",
+      "Take an extra turn after this one. Skip the draw step of that turn.",
+      "Take an extra turn after this one. Skip the untap step of your next turn."
+    ]
+  },
+  {
+    "id": "eff.edhn46.put.ownersLibrary.fifthFromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put {o:Obj} into its owner 's library fifth from the top",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "position": {
+          "nth": 5
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put target creature into its owner's library fifth from the top. Scry 1."
+      },
+      {
+        "text": "Put target artifact an opponent controls into its owner's library fifth from the top. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Put target creature into its owner's graveyard fifth from the top.",
+      "Put target creature into your library fifth from the top.",
+      "Put target creature into its owner's library fifth from the bottom."
+    ]
+  },
+  {
+    "id": "eff.edhn46.counters.distribute.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2d",
+      "CR 122.1",
+      "CR 608.2b",
+      "CR 115.1",
+      "CR 107.3"
+    ],
+    "pattern": "distribute x {k:CounterKind} counters among {o:Objs} , where x is {q:Qty}",
+    "build": {
+      "lower": "divide",
+      "step": {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k",
+        "count": "$q"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "distribute"
+    ],
+    "examples": [
+      {
+        "text": "Distribute X +1/+1 counters among any number of target creatures you control, where X is the number of creatures you control."
+      },
+      {
+        "text": "{2}{G}: Distribute X +1/+1 counters among one or two other target creatures you control, where X is your devotion to green."
+      }
+    ],
+    "counterExamples": [
+      "Distribute X +1/+1 counters among creatures you control, where X is the number of creatures you control.",
+      "Put X +1/+1 counters on one or two target creatures, where X is the number of creatures you control.",
+      "Distribute X +1/+1 counters among one or two target creatures, where X is the number of creatures you control unless it is blue."
+    ]
+  }
+]

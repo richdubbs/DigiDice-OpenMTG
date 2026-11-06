@@ -1,0 +1,336 @@
+[
+  {
+    "id": "eff.edht6.theyAre.subtypes.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:TheyAre} {st:PluralSubtype} in addition to their other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Return up to two target creature cards from your graveyard to the battlefield. They're Zombies in addition to their other types."
+      },
+      {
+        "text": "Put all creature cards from your graveyard onto the battlefield. They're Skeletons in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "Return up to two target creature cards from your graveyard to the battlefield. They're Zombies.",
+      "Return up to two target creature cards from your graveyard to the battlefield. They're Zombie in addition to their other types.",
+      "Return up to two target creature cards from your graveyard to the battlefield. They're Zombies in addition to their other types until end of turn.",
+      "Return up to two target creature cards from your graveyard to the battlefield. They're green Zombies in addition to their other colors and types."
+    ]
+  },
+  {
+    "id": "eff.edht6.forEachOpponent.mayPut.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 404.1",
+      "CR 608.2c",
+      "CR 400.7"
+    ],
+    "pattern": "for each opponent , you may put {o:OppTarget} onto the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": "$o",
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, for each opponent, you may put up to one target creature card from that player's graveyard onto the battlefield under your control."
+      },
+      {
+        "text": "Whenever ~ attacks, for each opponent, you may put up to one target artifact card from that player's graveyard onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each opponent, you may put up to one target creature card from your graveyard onto the battlefield under your control.",
+      "When ~ enters, for each opponent, you may put up to one target creature card from a graveyard onto the battlefield under your control.",
+      "When ~ enters, for each opponent, put up to one target creature card from that player's graveyard onto the battlefield under their control.",
+      "When ~ enters, for each opponent, you may put up to one target creature that player controls onto the battlefield under your control."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edht6.forEachOpponent.mayCast.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 404.1",
+      "CR 118.9",
+      "CR 608.2g"
+    ],
+    "pattern": "for each opponent , you may cast {o:OppTarget} without paying its mana cost",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "free": true,
+      "optional": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, you may cast up to one target instant card from that player's graveyard without paying its mana cost."
+      },
+      {
+        "text": "Whenever ~ attacks, for each opponent, you may cast up to one target sorcery card with mana value 3 or less from that player's graveyard without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each opponent, you may cast up to one target instant card from your graveyard without paying its mana cost.",
+      "When ~ enters, for each opponent, you may cast up to one target instant card from that player's graveyard.",
+      "When ~ enters, for each opponent, you may cast up to one target instant card from that player's graveyard by paying its mana cost.",
+      "When ~ enters, for each opponent, you may cast up to one target instant card from a graveyard without paying its mana cost."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edht6.joinForces.eachPlayerMayPayAnyAmount",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 118.12",
+      "CR 608.2d",
+      "CR 107.4"
+    ],
+    "pattern": "starting with you , each player may pay any amount of mana",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "startingWith": {
+        "ref": "you"
+      },
+      "cost": {
+        "mana": [
+          {
+            "kind": "generic",
+            "amount": 1
+          }
+        ]
+      },
+      "anyAmount": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "any"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player may pay any amount of mana. Each player draws X cards, where X is the total amount of mana paid this way."
+      },
+      {
+        "text": "Starting with you, each player may pay any amount of mana. You gain X life, where X is the total amount of mana paid this way."
+      }
+    ],
+    "counterExamples": [
+      "Starting with you, each opponent may pay any amount of mana. Each player draws X cards, where X is the total amount of mana paid this way.",
+      "Each player may pay any amount of mana. Each player draws X cards, where X is the total amount of mana paid this way.",
+      "Starting with you, each player may pay any amount of life. Each player draws X cards, where X is the total amount of mana paid this way.",
+      "Starting with you, each player may pay any amount of mana, then draws a card."
+    ]
+  },
+  {
+    "id": "eff.edht6.eachPlayer.searches.upToX.bf.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.24a",
+      "CR 107.3",
+      "CR 608.2h",
+      "CR 110.2a",
+      "CR 101.4",
+      "CR 102.3"
+    ],
+    "pattern": "each player searches their library for up to x {f:Filter} cards , where x is {q:Qty} , puts them onto the battlefield tapped , then shuffles",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "$q",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner",
+          "tapped": true
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "up to",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player searches their library for up to X basic land cards, where X is the number of creatures you control, puts them onto the battlefield tapped, then shuffles."
+      },
+      {
+        "text": "Each player searches their library for up to X Forest cards, where X is your life total, puts them onto the battlefield tapped, then shuffles. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each player searches their library for up to X basic land cards, where X is the number of creatures you control, puts them onto the battlefield, then shuffles.",
+      "Each player searches their library for up to X basic land cards, where X is the number of creatures you control, puts them into their hand, then shuffles.",
+      "Each opponent searches their library for up to X basic land cards, where X is the number of creatures you control, puts them onto the battlefield tapped, then shuffles.",
+      "Each player searches their library for X basic land cards, where X is the number of creatures you control, puts them onto the battlefield tapped, then shuffles."
+    ]
+  },
+  {
+    "id": "eff.edht6.dur.obj.gains.becomes.subtype.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 702.10a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gains {a:Abilities} and becomes ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control gains haste and becomes a Pirate in addition to its other types."
+      },
+      {
+        "text": "Until end of turn, target creature gains flying and becomes an Angel in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature you control gains haste and becomes a Pirate.",
+      "Until end of turn, target creature you control gains haste or becomes a Pirate in addition to its other types.",
+      "Target creature you control gains haste and becomes a Pirate in addition to its other types.",
+      "Until end of turn, target creature you control gains haste and becomes a Pirate in addition to its other creature types."
+    ]
+  }
+]

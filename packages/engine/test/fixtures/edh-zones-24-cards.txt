@@ -1,0 +1,6 @@
+# edh-zones-24 (Commander effort, lane edh-zones; test/cloud/edh-zones-24, golden edh-zones-24-review.json): Glimpse the Impossible (delayed end-step ability with an intervening "if any of those cards remain exiled", a token for each card put there, "Those tokens have"), Keen Duelist (you and target opponent each reveal the top card; life equal to the other's card), Duplicant (power, toughness and creature types of the last creature card exiled with it), Vorinclex // The Grand Evolution (up to two creature cards from among the milled cards), Teferi, Temporal Pilgrim (the opponent chooses and returns a permanent; each nonland permanent they control shuffled into its owner's library)
+Glimpse the Impossible
+Keen Duelist
+Duplicant
+Vorinclex // The Grand Evolution
+Teferi, Temporal Pilgrim

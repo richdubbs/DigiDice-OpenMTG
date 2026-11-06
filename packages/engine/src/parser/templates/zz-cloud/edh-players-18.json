@@ -1,0 +1,65 @@
+[
+  {
+    "id": "rep.edhp18.opponent.drawTwoOrMore.youAndThat",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 121.2",
+      "CR 614.6",
+      "CR 102.3"
+    ],
+    "pattern": "if an opponent would draw two or more cards , instead you and that player each draw a card",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "draw",
+        "actor": "opponent",
+        "atLeast": 2
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1
+          },
+          {
+            "op": "draw",
+            "who": {
+              "ref": "event",
+              "role": "player"
+            },
+            "count": 1
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "each",
+      "two",
+      "more"
+    ],
+    "examples": [
+      {
+        "text": "Flash\nIf an opponent would draw two or more cards, instead you and that player each draw a card."
+      },
+      {
+        "text": "Vigilance\nIf an opponent would draw two or more cards, instead you and that player each draw a card."
+      }
+    ],
+    "counterExamples": [
+      "If an opponent would draw three or more cards, instead you and that player each draw a card.",
+      "If you would draw two or more cards, instead you and that player each draw a card.",
+      "If an opponent would draw two or more cards, instead you and that player each draw two cards."
+    ]
+  }
+]

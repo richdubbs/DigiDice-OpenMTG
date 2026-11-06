@@ -26,7 +26,7 @@ describe('WP25 smoke: the run-time backstop is reported on partial cards too (G1
     const r = smokeCard(partialWith([{ op: 'frobnicate' }]));
     expect(r.failures.map((f) => f.kind)).toEqual(['unexpected-manual']);
     expect(r.failures[0]!.message).toMatch(/the engine cannot perform this step yet \(frobnicate\).*backstop/);
-  }, 60_000); // the first test of the file compiles every fixture card (fixtureRuns, 892 at the FAST5X batch 1 merge): over 5 s on a loaded machine
+  }, 240_000); // the first test of the file compiles every fixture card (fixtureRuns, 892 at the FAST5X batch 1 merge): over 5 s on a loaded machine; over 60 s under load at about 3,000 (Commander combined copy)
   it('CR 608.2: a partial card prompting for its own manual step is expected (no failure)', () => {
     const r = smokeCard(partialWith([
       { op: 'damage', source: { ref: 'self' }, to: { ref: 'target', id: 't0' }, amount: 3 },
@@ -98,6 +98,8 @@ describe('WP25 smoke: decision policy', { timeout: 60_000 }, () => {
     expect(answerFor({ ...base, kind: 'chooseOption', options: [{ id: 'a', label: 'a', disabled: 'no' }, { id: 'b', label: 'b' }], min: 1, max: 1 } as NonPriority, ctx)).toEqual({ kind: 'chooseOption', ids: ['b'] });
     expect(answerFor({ ...base, kind: 'chooseName', what: 'cardName' } as NonPriority, ctx)).toEqual({ kind: 'chooseName', name: 'Sample Card' });
     expect(answerFor({ ...base, kind: 'yesNo' } as NonPriority, ctx)).toEqual({ kind: 'yesNo', yes: true });
+    // shortcuts (engine docs/design/shortcuts.md 3, CR 727.2b): another player's proposed shortcut is let run
+    expect(answerFor({ ...base, kind: 'shortcut', proposer: 'p2', times: 3, steps: ['Pass priority'] } as NonPriority, ctx)).toEqual({ kind: 'shortcut' });
   });
 });
 
@@ -135,8 +137,8 @@ describe('WP25 smoke: the fixture set (G11)', { timeout: 60_000 }, () => {
     expect(s.resolved.triggered).toBeGreaterThan(0);
     expect(s.completed).toBe(s.tried - s.refused - s.byKind.stuck);
     // std-ry6: 600 s (was 300 s): the fixture set grew past 1,600 cards with card wave 2 and the run took 310-330 s at ~1,490 on a 4-CPU cloud machine (std-rw9 raised the
-    // mutation budgets for the same reason); the same G11 check runs inside the fixture gate
-  }, 600_000);
+    // mutation budgets for the same reason); the same G11 check runs inside the fixture gate. Commander combined copy: about 3,000 cards took 517 s alone, over 600 s under load
+  }, 1_200_000);
 });
 
 describe('WP25 smoke: the harness catches broken abilities', { timeout: 60_000 }, () => {

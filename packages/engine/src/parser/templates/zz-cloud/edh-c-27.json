@@ -1,0 +1,319 @@
+[
+  {
+    "id": "eff.edhv27.sacrifice.anyThenAddThatMuch",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 106.4",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "sacrifice any number of {f:Filter} , then add that much {t:ManaSym}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "controller": "you",
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "toSacrifice"
+      },
+      {
+        "op": "sacrifice",
+        "what": {
+          "ref": "bound",
+          "name": "toSacrifice"
+        },
+        "as": "sacrificed"
+      },
+      {
+        "op": "addMana",
+        "who": {
+          "ref": "you"
+        },
+        "dynamic": {
+          "kind": "ofType",
+          "type": "$t",
+          "count": {
+            "q": "resultCount",
+            "step": "sacrificed"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "any number",
+      "that much",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Sacrifice any number of artifacts, then add that much {R}."
+      },
+      {
+        "text": "Sacrifice any number of creatures, then add that much {G}."
+      }
+    ],
+    "counterExamples": [
+      "Sacrifice any number of lands, then add two {C}.",
+      "Sacrifice any number of lands, then add that much mana of any color.",
+      "Each player sacrifices any number of lands, then adds that much {C}."
+    ]
+  },
+  {
+    "id": "eff.edhv27.draw.thenDiscardThatMany",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 701.9a",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} draw[s] cards equal to the number of cards in their hand , then discard[s] that many cards",
+    "build": [
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": {
+          "q": "zoneSize",
+          "zone": "hand",
+          "of": "$p"
+        },
+        "as": "drawn"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": {
+          "q": "resultCount",
+          "step": "drawn"
+        }
+      }
+    ],
+    "subject": "player",
+    "priority": 1,
+    "consumes": [
+      "then",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent draws cards equal to the number of cards in their hand, then discards that many cards."
+      },
+      {
+        "text": "At the beginning of your upkeep, target player draws cards equal to the number of cards in their hand, then discards that many cards."
+      }
+    ],
+    "counterExamples": [
+      "Target player draws cards equal to the number of cards in their hand, then discards two cards.",
+      "Target player draws cards equal to the number of cards in your hand, then discards that many cards.",
+      "Target player draws cards equal to the number of cards in their hand, then discards that many cards at random."
+    ]
+  },
+  {
+    "id": "eff.edhv27.pump.each.additional",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 105.2"
+    ],
+    "pattern": "{o:Objs} get an additional {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "All creatures get -1/-1 until end of turn. Creatures that are red and/or blue get an additional -2/-2 until end of turn."
+      },
+      {
+        "text": "Creatures you control get an additional +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get an additional +1/+1.",
+      "Creatures you control get an additional until end of turn.",
+      "Creatures you control get additionally +1/+1 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv27.token.forEach.player",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 608.2c",
+      "CR 608.2e",
+      "CR 101.4"
+    ],
+    "pattern": "{p:Player} create[s] ( a | an ) {t:TokenDesc} for each {f:Filter}",
+    "build": {
+      "op": "createToken",
+      "who": "$p",
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      },
+      "token": "$t"
+    },
+    "subject": "player",
+    "priority": -1,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player creates a 2/2 black Zombie creature token for each untapped Swamp they control."
+      },
+      {
+        "text": "Each opponent creates a 1/1 white Soldier creature token for each creature they control."
+      }
+    ],
+    "counterExamples": [
+      "Each player creates two 1/1 green Cat creature tokens for each untapped Forest they control.",
+      "Each player creates a 1/1 green Cat creature token for each untapped Forest they control unless it is blue.",
+      "Each player creates a 1/1 green Cat creature token for each time they attacked this turn."
+    ]
+  },
+  {
+    "id": "eff.edhv27.moveCounters.allFromAll",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.5",
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "move all +1/+1 counters from all {f:Filter} onto {to:Obj}",
+    "build": {
+      "op": "moveCounters",
+      "from": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "to": "$to",
+      "kind": "+1/+1",
+      "count": "all"
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, move all +1/+1 counters from all artifacts onto it."
+      },
+      {
+        "text": "Whenever ~ attacks, move all +1/+1 counters from all creatures you control onto it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, move all -1/-1 counters from all creatures onto it.",
+      "When ~ enters, move all +1/+1 counters from each creature onto it.",
+      "When ~ enters, move all +1/+1 counters from all creatures onto it unless you pay {2}."
+    ]
+  },
+  {
+    "id": "sta.edhv27.all.areColorAndSubtypes",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 105.3",
+      "CR 205.3m"
+    ],
+    "pattern": "all {f:Filter} are {c:Color} and are {st:PluralSubtype} in addition to their other creature types",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "All Elves are red and are Wizards in addition to their other creature types."
+      },
+      {
+        "text": "All Merfolk are blue and are Pirates in addition to their other creature types."
+      }
+    ],
+    "counterExamples": [
+      "All Goblins are black and are Zombies.",
+      "All Goblins are black and blue and are Zombies in addition to their other creature types.",
+      "All Goblins are black and are Zombies in addition to their other colors."
+    ]
+  }
+]

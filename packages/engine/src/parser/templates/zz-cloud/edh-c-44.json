@@ -1,0 +1,186 @@
+[
+  {
+    "id": "eff.edhv44.each.grant.pump.whereX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 107.3"
+    ],
+    "pattern": "each {f:Filter} gains {a:Abilities} and gets {pt:PT} {d:Dur} , where X is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": {
+                "ref": "each",
+                "filter": "$f"
+              },
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control gains lifelink and gets +X/+X until end of turn, where X is the number of Elves you control."
+      },
+      {
+        "text": "Each Advisor and Monk you control gains vigilance and gets +X/+0 until end of turn, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control gains lifelink and gets +X/+X, where X is the number of Elves you control.",
+      "Each creature you control loses lifelink and gets +X/+X until end of turn, where X is the number of Elves you control.",
+      "Each creature you control gains lifelink and gets +X/+X until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv44.forEach.damageEachOpponent",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 120.2"
+    ],
+    "pattern": "for each {f:Filter} , ~ deals 1 damage to each opponent",
+    "build": {
+      "op": "damage",
+      "source": {
+        "ref": "self"
+      },
+      "to": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "amount": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top three cards of your library. For each red card exiled this way, ~ deals 1 damage to each opponent."
+      },
+      {
+        "text": "Sacrifice two lands. For each land sacrificed this way, ~ deals 1 damage to each opponent."
+      }
+    ],
+    "counterExamples": [
+      "Sacrifice two lands. For each land sacrificed this way, ~ deals 2 damage to each opponent.",
+      "Sacrifice two lands. For each land sacrificed this way, ~ deals 1 damage to target opponent.",
+      "Sacrifice two lands. For each land sacrificed this way, ~ deals 1 damage to you."
+    ]
+  },
+  {
+    "id": "eff.edhv44.forEach.copyToken.exceptBasePTColorSubtype",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 608.2f",
+      "CR 111.1",
+      "CR 205.1b"
+    ],
+    "pattern": "for each {f:Filter} , create a token that's a copy of ( it | that card ) , except it's a {pt:BasePT} {c:Color} {st:Subtypes}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          },
+          "except": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Exile two target creature cards from your graveyard. For each card exiled this way, create a token that's a copy of that card, except it's a 4/4 black Zombie."
+      },
+      {
+        "text": "Exile target creature card from your graveyard. For each card exiled this way, create a token that's a copy of it, except it's a 2/2 green Frog."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature card from your graveyard. For each card exiled this way, create a token that's a copy of that card, except it's a 4/4 black Zombie in addition to its other types.",
+      "Exile target creature card from your graveyard. For each card exiled this way, create a token that's a copy of that card, except it has haste.",
+      "Exile target creature card from your graveyard. For each card exiled this way, create a token that's a copy of that card, except it's black."
+    ]
+  }
+]

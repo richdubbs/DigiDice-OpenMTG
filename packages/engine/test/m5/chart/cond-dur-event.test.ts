@@ -38,7 +38,8 @@ describe('WP6 Cond (CR 603.4, 608.2, 118.12)', () => {
     ["you don't", { cond: 'did', step: '', $step: 'previous', not: true }],
     ['~ is tapped', { cond: 'matches', object: { ref: 'self' }, filter: { tapped: true } }],
     ["it's tapped", { cond: 'matches', object: itObj, filter: { tapped: true } }],
-    ["it's a creature card", { cond: 'matches', object: itObj, filter: { ...creature, isCard: true } }],
+    // edh-zones-12 (CR 108.2b): the pronoun of "it's a creature card" names a card, never a token the ability made (AnaphorInfo.cardNoun)
+    ["it's a creature card", { cond: 'matches', object: { ...itObj, $anaphor: { ...(itObj as { $anaphor: object }).$anaphor, cardNoun: true } }, filter: { ...creature, isCard: true } }],
     ['that creature has flying', { cond: 'matches', object: { ref: 'bound', name: '', $anaphor: { sort: 'object', number: 'singular', head: 'creature', text: 'that creature' } }, filter: { keyword: 'flying' } }],
     ['enchanted creature has power 4 or greater', { cond: 'matches', object: { ref: 'attachedTo' }, filter: { power: { op: '>=', value: 4 } } }],
     ['your life total is 5 or less', { cond: 'compare', left: { q: 'life', of: you }, op: '<=', right: 5 }],

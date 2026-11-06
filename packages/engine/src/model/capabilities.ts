@@ -38,18 +38,21 @@ import { installTokenClassifier, PREDEFINED_TOKENS } from '../effects/handlers/t
 import { OP_FORMS as COPY_OP_FORMS } from '../effects/handlers/tokens-copy';
 import { OP_FORMS as CAST_OP_FORMS } from '../effects/handlers/tokens-cast';
 import { OP_FORMS as CHANGE_TARGET_OP_FORMS } from '../effects/handlers/change-target';
+import { OP_FORMS as NEW_TARGETS_OP_FORMS } from '../effects/handlers/new-targets'; // edh-next-129
 import { TRIGGER_MOD_CAPABILITIES } from '../triggers/collect';
 import { OP_FORMS as DAY_NIGHT_OP_FORMS } from '../core/day-night';
 import { INITIATIVE_OP_FORMS } from '../core/designations';
 import { CITYS_BLESSING_OP_FORMS } from '../core/citys-blessing';
 import { OP_FORMS as LEVELS_OP_FORMS } from '../effects/handlers/levels';
 import { OP_FORMS as MOVE_OP_FORMS } from '../effects/handlers/zones-move';
+import { OP_FORMS as PHASE_OP_FORMS } from '../effects/handlers/zones-status';
 import { OP_FORMS as COUNTERS_OP_FORMS } from '../effects/handlers/counters';
 import { OP_FORMS as PAY_OP_FORMS } from '../effects/handlers/pay';
 import { OP_FORMS as SEARCH_OP_FORMS } from '../effects/handlers/cards-library';
 import { OP_FORMS as CHOOSE_OP_FORMS } from '../effects/handlers/choose';
 import { EXILE_UNTIL_OP_FORMS } from '../effects/handlers/actions-native';
 import { OP_FORMS as SACRIFICE_OP_FORMS } from '../effects/handlers/zones-remove';
+import { OP_FORMS as TREK18_OP_FORMS } from '../effects/handlers/trek-18'; // edh-d-88
 import { OP_FORMS as DISCARD_OP_FORMS } from '../effects/handlers/cards-draw';
 import { OP_FORMS as LIFE_OP_FORMS } from '../effects/handlers/lifedamage';
 import { OP_FORMS as OUTSIDE_OP_FORMS } from '../effects/handlers/outside';
@@ -60,7 +63,7 @@ import { LEVELS_FEATURES } from '../statics/levels';
 import { CONTROL_FEATURES, OP_FORMS as CONTROL_OP_FORMS } from '../core/control';
 import { CHOSEN_QUALITY_FEATURES } from '../statics/mods';
 import { COPY_CHOOSE_FEATURES, COPY_THIS_ABILITY_FEATURES, EFFECT_OP_FORMS } from '../effects/handlers/lasting';
-import { LIFE_TOUGHNESS_OP_FORMS } from '../effects/handlers/zones-status';
+import { ATTACH_OP_FORMS, HAND_LIBRARY_OP_FORMS, LIFE_TOUGHNESS_OP_FORMS, POWER_OP_FORMS, SACRIFICE_RETURN_OP_FORMS, TAP_OP_FORMS } from '../effects/handlers/zones-status';
 
 import { TOKEN_FEATURES } from '../effects/handlers/tokens-create';
 import { renderGate } from '../render/gate';
@@ -93,11 +96,17 @@ const stepLinks = (x: unknown, out: Set<string>): Set<string> => {
     // std-rh (CR 702.167c, 607.2a): a move that `remember`s objects in the link store of what it puts onto the battlefield (craft's "the exiled cards used to craft it")
     const rem = r['remember'];
     if (typeof rem === 'object' && rem !== null && typeof (rem as Record<string, unknown>)['link'] === 'string') out.add((rem as Record<string, string>)['link']!);
+    // edh-c-37 (CR 702.104a-b): tribute's replacement keeps whether the opponent paid under its link
+    const trib = r['tribute'];
+    if (typeof trib === 'object' && trib !== null && typeof (trib as Record<string, unknown>)['link'] === 'string') out.add((trib as Record<string, string>)['link']!);
     Object.values(r).forEach((y) => stepLinks(y, out));
   }
   return out;
 };
-installKeywordLinks(keywordRegistry.all().filter((d) => d.status === 'implemented' && d.expand !== undefined).map((d) => [d.name, [...stepLinks(d.expand, new Set())]] as const).filter(([, l]) => l.length > 0));
+installKeywordLinks([
+  ...keywordRegistry.all().filter((d) => d.status === 'implemented' && d.expand !== undefined).map((d) => [d.name, [...stepLinks(d.expand, new Set())]] as const).filter(([, l]) => l.length > 0),
+  ['delve', ['exiled']] as const, // edh-d-77 (CR 607.2a, 702.66a): the cards the delve payment exiles are recorded under "exiled" (keywords/hooks/delve.ts: the exileFrom part's link)
+]);
 
 // M6-5a (m6 design 3.8): the keywords whose expansion is an additional or alternative cost (kicker, buyback, evoke, ...). The cast path reads those costs from
 // the printed card only, so the walker marks such a keyword GRANTED to another object `feature:castCost.granted` (unregistered). INTERFACE CHANGE (cap-walk.ts).
@@ -128,6 +137,7 @@ export function buildEngineCapabilities(): Set<string> {
   // M6-3 INTERFACE CHANGE (m6 design 2.6, 7): the `changeFace` forms other than plain transform are capabilities once their entry exists in CHANGE_FACE
   // (faceUp/faceDown/manifest: M6-3, effects/handlers/face-ops.ts; convert/flip/delayedSelf: M6-4); the walker names them `op:changeFace.<form>` (cap-walk.ts)
   if (Object.hasOwn(OP_HANDLERS, 'changeFace') && Object.hasOwn(RENDERERS, 'changeFace')) add('op', keys(CHANGE_FACE).filter((f) => f !== 'transform').map((f) => `changeFace.${f}`));
+  if (Object.hasOwn(OP_HANDLERS, 'changeFace')) add('op', ['changeFace.faceUp.exile']); // edh-d-101 (CR 406.3): face-down cards in exile turned face up (effects/handlers/change-face.ts)
   add('cost', [...keys(COST_PART_IMPLS), ...COST_FORMS]); // kinds, then their value forms (model/forms.ts)
   add('ev', keys(EVENT_MATCHERS));
   add('cond', keys(COND_EVALUATORS));
@@ -169,6 +179,7 @@ export function buildEngineCapabilities(): Set<string> {
   // M6-12 INTERFACE CHANGE (m6 design 7, `OP_FORMS`): "cast it by paying [cost] rather than paying its mana cost" (op:cast.costChange, madness CR 702.35a-b)
   if (Object.hasOwn(OP_HANDLERS, 'cast')) for (const name of CAST_OP_FORMS) caps.add(name);
   if (Object.hasOwn(OP_HANDLERS, 'changeTarget')) for (const name of CHANGE_TARGET_OP_FORMS) caps.add(name); // edh-cast-1
+  if (Object.hasOwn(OP_HANDLERS, 'chooseNewTargets')) for (const name of NEW_TARGETS_OP_FORMS) caps.add(name); // edh-next-129 (CR 115.7)
   // M6-12 INTERFACE CHANGE (m6 design 7): "that ability triggers an additional time" for the reviewed causes (triggers/collect.ts, CR 603.2d)
   for (const name of TRIGGER_MOD_CAPABILITIES) caps.add(name);
   // M6-4 INTERFACE CHANGE (m6 design 7, `OP_FORMS`): "it becomes day / night" (op:designate.day|night) acts on daybound and nightbound permanents (core/day-night.ts)
@@ -191,10 +202,12 @@ export function buildEngineCapabilities(): Set<string> {
   for (const name of LEVELS_OP_FORMS) caps.add(name);
   // FAST4 MX1 INTERFACE CHANGE (`OP_FORMS`): "exile ... until ~ leaves the battlefield" (op:move.until, CR 610.3; effects/handlers/zones-move.ts, core/durations.ts)
   if (Object.hasOwn(OP_HANDLERS, 'move')) for (const name of MOVE_OP_FORMS) caps.add(name);
+  if (Object.hasOwn(OP_HANDLERS, 'phaseOut')) for (const name of PHASE_OP_FORMS) caps.add(name); // edh-perms-22: "phases out until ~ leaves the battlefield" (CR 610.3)
   if (Object.hasOwn(OP_HANDLERS, 'removeCounters')) for (const name of COUNTERS_OP_FORMS) caps.add(name); // FAST4 T31: "remove up to N counters"
   if (Object.hasOwn(OP_HANDLERS, 'pay')) for (const name of PAY_OP_FORMS) caps.add(name); // std-rx24: an exile cost's link (CR 607.2k)
   if (Object.hasOwn(OP_HANDLERS, 'search')) for (const name of SEARCH_OP_FORMS) caps.add(name); // FAST5 T42: "... cards with different names"
   if (Object.hasOwn(OP_HANDLERS, 'sacrificeChoice')) for (const name of SACRIFICE_OP_FORMS) caps.add(name); // FAST5 T66: "chooses a permanent of each permanent type and sacrifices the rest"
+  if (Object.hasOwn(OP_HANDLERS, 'reselectAttack')) for (const name of TREK18_OP_FORMS) caps.add(name); // edh-d-88: reselect "which player" (CR 508.7c)
   if (Object.hasOwn(OP_HANDLERS, 'exileUntil')) for (const name of EXILE_UNTIL_OP_FORMS) caps.add(name); // std-rx31: "until you exile cards with total mana value N or greater"
   if (Object.hasOwn(OP_HANDLERS, 'chooseObjects')) for (const name of CHOOSE_OP_FORMS) caps.add(name); // FAST5 T66: "up to two creature cards with total mana value 4 or less"
   if (Object.hasOwn(OP_HANDLERS, 'addMana')) for (const name of MANA_OP_FORMS) caps.add(name); // FAST5 MX6: firebending's mana lasts until end of combat
@@ -210,6 +223,8 @@ export function buildEngineCapabilities(): Set<string> {
   // MX2 INTERFACE CHANGE: layer-2 control runs (the stored controller is the controller after layer 2, core/control.ts; CR 613.1b), and with it the exchange of
   // control (op:exchange.control, CR 701.12b, effects/handlers/zones-status.ts)
   add('feature', CONTROL_FEATURES);
+  add('feature', ['spell.cleave']); // edh-next-100 (CR 702.148a): SpellAbilityDef.cleave, actions/cast.ts, effects/run.ts
+  add('feature', ['emblem.activated']); // edh-next-100 (CR 114.4, 113.6, 602.2; Ob Nixilis of the Black Oath): core/legal.ts lists the activated abilities of the player's emblems
   if (Object.hasOwn(OP_HANDLERS, 'exchange')) for (const name of CONTROL_OP_FORMS) caps.add(name);
   // MX2 INTERFACE CHANGE: a granted keyword's quality read from the linked color choice ("protection from the chosen color", CR 607.2d, statics/mods.ts)
   add('feature', CHOSEN_QUALITY_FEATURES);
@@ -222,6 +237,13 @@ export function buildEngineCapabilities(): Set<string> {
   add('feature', TOKEN_FEATURES); // cmd1: tokens created attacking a named player (effects/handlers/tokens-create.ts, CR 508.4)
   // p2-pt-1 INTERFACE CHANGE: the exchange of a player's life total and a creature's toughness (op:exchange.lifeToughness, CR 701.12a, 613.4b; effects/handlers/zones-status.ts)
   if (Object.hasOwn(OP_HANDLERS, 'exchange')) for (const name of LIFE_TOUGHNESS_OP_FORMS) caps.add(name);
+  // edh-mana-keywords-12: an Equipment attached to a planeswalker as though it were a creature (op:attach.asCreature, effects/handlers/zones-status.ts#attachable)
+  if (Object.hasOwn(OP_HANDLERS, 'attach')) for (const name of ATTACH_OP_FORMS) caps.add(name);
+  if (Object.hasOwn(OP_HANDLERS, 'tap')) for (const name of TAP_OP_FORMS) caps.add(name); // edh-d-94: "tapped this way" names only what the step tapped (CR 701.26a)
+  // edh-zones-26 INTERFACE CHANGE: Goblin Welder's simultaneous sacrifice and return (op:exchange.sacrificeReturn, CR 701.21a, 608.2b; effects/handlers/zones-status.ts)
+  if (Object.hasOwn(OP_HANDLERS, 'exchange')) for (const name of SACRIFICE_RETURN_OP_FORMS) caps.add(name);
+  if (Object.hasOwn(OP_HANDLERS, 'exchange')) for (const name of POWER_OP_FORMS) caps.add(name); // edh-c-13
+  if (Object.hasOwn(OP_HANDLERS, 'exchange')) for (const name of HAND_LIBRARY_OP_FORMS) caps.add(name); // edh-b-12
   // Last, because a keyword is advertised only when the capabilities its expansion needs exist (keywords/needs.ts), and a predefined token only when its own
   // abilities run (WP14 review). They read each other (a Vibranium token has indestructible; investigate creates a Clue), so they are added until nothing changes.
   for (let size = -1; size !== caps.size;) {

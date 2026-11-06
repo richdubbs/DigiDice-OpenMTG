@@ -80,12 +80,15 @@ describe('C10 guard G9 (design 6.8): examples and counter-examples', () => {
     for (const text of [
       'Each player may cast creature spells from their graveyard.',
       'You may cast creature spells from your graveyard by paying {2} rather than paying their mana costs.',
-      'You may cast spells that have a cycling ability from your graveyard.',
       'Once during each of your turns, you may play a historic land or cast a historic permanent spell from your graveyard.',
       'You may cast creature spells from your graveyard. If you cast a spell this way, it gains haste until end of turn.',
     ]) {
       expect(fullyAutomated(parsed(text, 'static')), text).toBe(false);
     }
+  });
+  // edh-c-14 (CR 702.29e, 601.2): "spells that have a cycling ability" is read (keyword cycling or typecycling), so this permit is honored now (Abandoned Sarcophagus)
+  it('"You may cast spells that have a cycling ability from your graveyard" is read since edh-c-14', () => {
+    expect(fullyAutomated(parsed('You may cast spells that have a cycling ability from your graveyard.', 'static'))).toBe(true);
   });
 });
 

@@ -7,8 +7,8 @@
 import type { OpHandlers } from '../api';
 import { discardHandler, drawHandler, millHandler } from './cards-draw';
 import { clashHandler, scryHandler, searchHandler, shuffleHandler, surveilHandler } from './cards-library';
-import { addManaHandler } from './cards-mana';
-import { lookHandler, pilesHandler, revealHandler, revealUntilHandler } from './cards-reveal';
+import { addManaHandler, emptyManaPoolHandler } from './cards-mana';
+import { guessHandler, lookHandler, pilesHandler, revealHandler, revealUntilHandler } from './cards-reveal';
 import { exileUntilStep } from './actions-native'; // Cloud std-eoe: "exile cards from the top of your library until you exile a nonland card"
 
 export const CARDS_HANDLERS: OpHandlers = {
@@ -22,10 +22,12 @@ export const CARDS_HANDLERS: OpHandlers = {
   search: searchHandler,
   shuffle: shuffleHandler,
   piles: pilesHandler,
+  guess: guessHandler, // edh-next-135 (CR 608.2d, 701.20a): "An opponent guesses whether the top card of your library is the chosen kind"
   addMana: addManaHandler,
   exileUntil: exileUntilStep, // Cloud std-eoe (CR 406.1, 608.2c)
   revealUntil: revealUntilHandler, // r3-dig (CR 701.20a, 608.2c)
   clash: clashHandler, // p2-player-rules-2 (CR 701.30): reveal the top card of a library, then top or bottom, as scry does
+  emptyManaPool: emptyManaPoolHandler, // edh-c-85 (CR 106.4, 500.5): "that player loses all unspent mana"
 };
 
 /**
@@ -41,4 +43,4 @@ export const CARDS_HANDLERS: OpHandlers = {
 // rules/sources.ts#spendAllows
 // std-lci: 'mana.rider.cantBeCountered' (CR 106.6, 101.2): actions/cast.ts leaves FLAG_CANT_BE_COUNTERED on a spell cast with such mana, and the counter op
 // honors it (effects/handlers/zones-remove.ts, and statics/hooks.ts#canBeCountered for every other asker); a copy never has it (rules/stack-objects.ts)
-export const FEATURES: readonly string[] = ['mana.restriction', 'mana.restriction.unlock', 'mana.eventProduced', 'mana.restriction.abilityKeyword', 'mana.restriction.turnFaceUp', 'mana.restriction.notSpells', 'mana.rider.cantBeCountered', 'mana.anyColor.from' /* r3-cost: cards-mana.ts, CR 106.1 */, 'piles.faceDown' /* r5-dig: cards-reveal.ts#faceDownPiles, CR 700.3 */, 'choose.cardKind' /* std-rx28: choose.ts and bodies/m5.ts ask a land or nonland card name, core/validate.ts checks it (CR 201.3) */, 'mana.spentRider.entersWith' /* pc-keywords-mana-2: core/mana-riders.ts, CR 614.1c */, 'mana.spentRider' /* std-mana-1: core/mana-riders.ts, CR 106.6 */, 'mana.couldProduce' /* p2-mana-1: cards-mana.ts#couldProduceTypes, CR 106.7 */, 'mana.devotionColor' /* p2-mana-2: cards-mana.ts, CR 700.5 */, 'mana.activation.hand' /* edh-mana-keywords-1: rules/mana.ts#manaAbilityDenial, a mana ability that works in the hand only, CR 113.6, 605.1a */]; // 'mana.restriction.unlock': FAST5X E8 (CR 709.5e, rules/sources.ts#spendAllows); 'mana.eventProduced': T38
+export const FEATURES: readonly string[] = ['mana.restriction', 'mana.restriction.unlock', 'mana.eventProduced', 'mana.restriction.abilityKeyword', 'mana.restriction.turnFaceUp', 'mana.restriction.foretell' /* edh-c-48 */, 'mana.restriction.notSpells', 'mana.rider.cantBeCountered', 'mana.anyColor.from' /* r3-cost: cards-mana.ts, CR 106.1 */, 'piles.faceDown' /* r5-dig: cards-reveal.ts#faceDownPiles, CR 700.3 */, 'piles.given' /* edh-next-135: cards-reveal.ts#givenPiles, CR 700.3, 406.3 */, 'choose.cardKind' /* std-rx28: choose.ts and bodies/m5.ts ask a land or nonland card name, core/validate.ts checks it (CR 201.3) */, 'mana.spentRider.entersWith' /* pc-keywords-mana-2: core/mana-riders.ts, CR 614.1c */, 'mana.spentRider' /* std-mana-1: core/mana-riders.ts, CR 106.6 */, 'mana.couldProduce' /* p2-mana-1: cards-mana.ts#couldProduceTypes, CR 106.7 */, 'mana.devotionColor' /* p2-mana-2: cards-mana.ts, CR 700.5 */, 'mana.activation.hand' /* edh-mana-keywords-1: rules/mana.ts#manaAbilityDenial, a mana ability that works in the hand only, CR 113.6, 605.1a */, 'mana.anyColor.distinct' /* edh-mana-keywords-3: cards-mana.ts, "two mana of different colors", CR 105.4, 106.1 */, 'mana.spentRider.permanent' /* edh-mana-keywords-4: core/mana-riders.ts, a gained keyword with no duration, CR 611.2a */, 'mana.restriction.notGeneric' /* edh-mana-keywords-7: rules/solver.ts, CR 106.6, 107.4b */, 'mana.restriction.costHasX' /* edh-mana-keywords-11: rules/sources.ts#spendAllows, CR 106.6, 107.3 */, 'mana.restriction.viaAlt' /* edh-d-22: rules/sources.ts#spendAllows, CR 118.9, 702.146a */, 'mana.anyOneColor.otherGroup' /* edh-d-22: cards-mana.ts, CR 106.1b */, 'mana.spentRider.untilNextTurn' /* edh-top-10: core/mana-riders.ts, CR 611.2a */, 'mana.activation.graveyard' /* edhd65-mana-ability-graveyard: rules/mana.ts#manaAbilityDenial, a mana ability that works in the graveyard only, CR 113.6m, 605.1a */, 'choose.chooser' /* edh-d-72: effects/bodies/m5.ts, CR 614.12a, 608.2d */]; // 'mana.restriction.unlock': FAST5X E8 (CR 709.5e, rules/sources.ts#spendAllows); 'mana.eventProduced': T38

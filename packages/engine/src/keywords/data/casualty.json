@@ -84,7 +84,15 @@
             "who": {
               "ref": "you"
             },
-            "newTargets": "may"
+            "newTargets": "may",
+            "except": {
+              "$ifParam": "copyExcept",
+              "then": "$copyExcept"
+            },
+            "startingLoyalty": {
+              "$ifParam": "copyLoyalty",
+              "then": "$copyLoyalty"
+            }
           }
         ]
       }

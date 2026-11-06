@@ -1,11 +1,11 @@
 {
- "measured": "2026-10-25",
- "revision": "f1118eb9",
+ "measured": "2026-10-30",
+ "revision": "3e3f9836",
  "all": {
-  "cards": 34635,
-  "full": 25148,
-  "partial": 5113,
-  "manual": 4374
+  "cards": 34804,
+  "full": 26901,
+  "partial": 3956,
+  "manual": 3947
  },
  "formats": [
   {
@@ -20,41 +20,41 @@
    "key": "pioneer",
    "label": "Pioneer",
    "cards": 15086,
-   "full": 13033,
-   "partial": 1528,
-   "manual": 525
+   "full": 13596,
+   "partial": 1103,
+   "manual": 387
   },
   {
    "key": "modern",
    "label": "Modern",
    "cards": 22718,
-   "full": 18886,
-   "partial": 2694,
-   "manual": 1138
+   "full": 19799,
+   "partial": 2053,
+   "manual": 866
   },
   {
    "key": "pauper",
    "label": "Pauper",
    "cards": 10881,
-   "full": 9823,
-   "partial": 634,
-   "manual": 424
+   "full": 9995,
+   "partial": 530,
+   "manual": 356
   },
   {
    "key": "legacy",
    "label": "Legacy",
    "cards": 31958,
-   "full": 24752,
-   "partial": 4979,
-   "manual": 2227
+   "full": 26359,
+   "partial": 3812,
+   "manual": 1787
   },
   {
    "key": "commander",
    "label": "Commander",
    "cards": 32116,
-   "full": 24793,
-   "partial": 5019,
-   "manual": 2304
+   "full": 26405,
+   "partial": 3849,
+   "manual": 1862
   }
  ],
  "standardSets": [
@@ -288,11 +288,11 @@
     "TRC",
     "TRK"
    ],
-   "cards": 258,
-   "full": 257,
-   "partial": 1,
+   "cards": 591,
+   "full": 591,
+   "partial": 0,
    "manual": 0,
-   "notInIndex": 0
+   "notInIndex": 36
   },
   {
    "code": "MDD",
@@ -303,9 +303,9 @@
     "MDD"
    ],
    "cards": 13,
-   "full": 9,
+   "full": 10,
    "partial": 3,
-   "manual": 1,
+   "manual": 0,
    "notInIndex": 0
   }
  ]

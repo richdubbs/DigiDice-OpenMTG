@@ -1,0 +1,135 @@
+[
+  {
+    "id": "rep.edhd78.enters.removeAllCounters.twiceThatMany",
+    "kind": "static",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 122.1",
+      "CR 122.6"
+    ],
+    "pattern": "as ~ enters , remove all counters from any number of {f:Filter} . ( it | ~ ) enters with x +1/+1 counters on it , where x is twice the number of counters removed this way",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "removeCounters": {
+              "filter": "$f",
+              "kind": "+1/+1",
+              "times": 2
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "any number",
+      "all",
+      "twice",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, remove all counters from any number of artifacts and creatures. ~ enters with X +1/+1 counters on it, where X is twice the number of counters removed this way."
+      },
+      {
+        "text": "As this creature enters, remove all counters from any number of lands, creatures, and planeswalkers. It enters with X +1/+1 counters on it, where X is twice the number of counters removed this way."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, remove all counters from any number of artifacts and creatures. ~ enters with X +1/+1 counters on it, where X is the number of counters removed this way.",
+      "As ~ enters, remove all counters from up to two artifacts. ~ enters with X +1/+1 counters on it, where X is twice the number of counters removed this way.",
+      "As ~ enters, remove all counters from any number of artifacts and creatures. ~ enters with X +1/+1 counters on it, where X is three times the number of counters removed this way.",
+      "As ~ enters, remove all counters from any number of artifacts and creatures. ~ enters with X -1/-1 counters on it, where X is twice the number of counters removed this way."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.edhd78.moveCounters.thenShuffleSelf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.5",
+      "CR 122.8",
+      "CR 701.24a",
+      "CR 400.3",
+      "CR 603.10a",
+      "CR 608.2h"
+    ],
+    "pattern": "put its counters on {b:Obj} , then shuffle ~ into its owner 's library",
+    "build": [
+      {
+        "op": "moveCounters",
+        "from": {
+          "ref": "event",
+          "role": "subject"
+        },
+        "to": "$b",
+        "kind": "any",
+        "count": "all"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "event",
+          "role": "subject"
+        },
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "ownerOf",
+            "object": {
+              "ref": "self"
+            }
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": {
+            "ref": "self"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:moveCounters.every"
+    ],
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, put its counters on target creature you control, then shuffle ~ into its owner's library."
+      },
+      {
+        "text": "When ~ leaves the battlefield, put its counters on up to one target artifact you control, then shuffle ~ into its owner's library."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, put its counters on target creature you control, then shuffle ~ into your library.",
+      "When ~ attacks, put its counters on target creature you control, then shuffle ~ into its owner's library.",
+      "When ~ dies, put its counters on target creature you control, then draw a card."
+    ],
+    "priority": 1
+  }
+]

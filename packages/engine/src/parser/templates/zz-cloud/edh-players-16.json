@@ -1,0 +1,47 @@
+[
+  {
+    "id": "eff.edhp16.mayPay.anyAmountOfLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 119.4",
+      "CR 608.2d"
+    ],
+    "pattern": "you may pay any amount of life",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "payLife",
+            "amount": 1
+          }
+        ]
+      },
+      "anyAmount": true
+    },
+    "consumes": [
+      "may",
+      "any"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may pay any amount of life. If you do, draw that many cards."
+      },
+      {
+        "text": "When this creature dies, you may pay any amount of life. When you do, it deals that much damage to target creature."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you may pay 2 life. If you do, draw that many cards.",
+      "At the beginning of your upkeep, each opponent may pay any amount of life. If you do, draw that many cards.",
+      "At the beginning of your upkeep, you may pay any amount of {R}. If you do, draw that many cards.",
+      "At the beginning of your upkeep, you may pay any amount of life and draw a card."
+    ]
+  }
+]

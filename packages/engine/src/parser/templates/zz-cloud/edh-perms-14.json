@@ -1,0 +1,257 @@
+[
+  {
+    "id": "rep.edhpm14.enter.additionalCounter.forManaFrom.plural",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 106.3",
+      "CR 601.2h"
+    ],
+    "pattern": "{f:Filter} enter with an additional {k:CounterKind} counter on them for each mana from ( a | an ) {g:Filter} spent to cast them",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "spellManaSpent",
+                  "of": {
+                    "ref": "subject"
+                  },
+                  "from": "$g"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "other",
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Other Elves you control enter with an additional +1/+1 counter on them for each mana from a Clue spent to cast them."
+      },
+      {
+        "text": "Artifact creatures you control enter with an additional +1/+1 counter on them for each mana from a Cave spent to cast them."
+      }
+    ],
+    "counterExamples": [
+      "Other Elves you control enter with an additional +1/+1 counter on them for each mana spent to cast them.",
+      "Other Elves you control enter with an additional +1/+1 counter on them for each mana from a Clue you control.",
+      "Other Elves you control enter with an additional +1/+1 counter on it for each mana from a Clue spent to cast it.",
+      "Other Elves you control enter with a +1/+1 counter on them for each mana from a Clue spent to cast them."
+    ]
+  },
+  {
+    "id": "rep.edhpm14.enter.additionalCounter.forManaFromSource",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 106.3",
+      "CR 205.2a",
+      "CR 601.2h"
+    ],
+    "pattern": "each {f:Filter} enters with an additional {k:CounterKind} counter on it for each mana from ( a | an ) {g:Filter} source spent to cast it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "spellManaSpent",
+                  "of": {
+                    "ref": "subject"
+                  },
+                  "from": "$g"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each Elf you control enters with an additional +1/+1 counter on it for each mana from a creature source spent to cast it."
+      },
+      {
+        "text": "Each artifact creature you control enters with an additional +1/+1 counter on it for each mana from a land source spent to cast it."
+      }
+    ],
+    "counterExamples": [
+      "Each Elf you control enters with an additional +1/+1 counter on it for each mana from a creature source you control.",
+      "Each Elf you control enters with an additional +1/+1 counter on it for each mana from a creature spent to cast it.",
+      "Each Elf you control enters with an additional +1/+1 counter on them for each mana from a creature source spent to cast it.",
+      "Each Elf you control enters with a +1/+1 counter on it for each mana from a creature source spent to cast it."
+    ]
+  },
+  {
+    "id": "rst.edhpm14.players.cant.getCounters",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 614.17",
+      "CR 101.2"
+    ],
+    "pattern": "( players | each player ) can't get counters",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "mode": "cant",
+      "action": "haveCountersPut"
+    },
+    "consumes": [
+      "can't",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player can't get counters."
+      },
+      {
+        "text": "Each player can't get counters.\n{1}{R}, {T}: Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each player can get counters.",
+      "Each player can't get poison counters.",
+      "Each opponent can't get counters.",
+      "Each player can't lose counters."
+    ]
+  },
+  {
+    "id": "rst.edhpm14.counters.cant.bePutOn",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.6",
+      "CR 614.17",
+      "CR 101.2"
+    ],
+    "pattern": "counters can't be put on {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "cant",
+      "action": "haveCountersPut"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Counters can't be put on legendary artifacts."
+      },
+      {
+        "text": "Counters can't be put on tapped creatures."
+      }
+    ],
+    "counterExamples": [
+      "Counters can be put on creatures.",
+      "Counters can't be removed from creatures.",
+      "Counters can't be put on creatures this turn.",
+      "+1/+1 counters can't be put on creatures."
+    ]
+  },
+  {
+    "id": "eff.edhpm14.copy.token.basePT.andSubtype",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.1b",
+      "CR 613.4b",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it's {pt:BasePT} and it's ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        },
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except it's 2/2 and it's a Rat in addition to its other types."
+      },
+      {
+        "text": "Exile target creature card from your graveyard. Create a token that's a copy of it, except it's 1/1 and it's a Spirit in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature you control, except it's 2/2 and it's a Rat.",
+      "Create a token that's a copy of target creature you control, except it's 2/2 and it's a Rat instead of its other types.",
+      "Create a token that's a copy of target creature you control, except it's 2/2 and it's not legendary.",
+      "Create a token that's a copy of target creature you control, except it's a Rat in addition to its other types and it's 2/2."
+    ],
+    "priority": 1
+  }
+]

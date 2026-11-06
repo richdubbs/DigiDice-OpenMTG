@@ -1,0 +1,713 @@
+[
+  {
+    "id": "abl.edhd32.pregame.reveal.firstUpkeep",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 103.6",
+      "CR 103.6b",
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 113.6"
+    ],
+    "pattern": "you may reveal ~ from your opening hand . if you do , at the beginning of the first upkeep , {e:Effects}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "effects": [
+        {
+          "s": "pregame",
+          "action": "reveal",
+          "optional": true,
+          "then": [
+            {
+              "op": "delay",
+              "when": {
+                "at": "step",
+                "step": "upkeep",
+                "next": true
+              },
+              "do": "$e"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may reveal ~ from your opening hand. If you do, at the beginning of the first upkeep, each opponent mills five cards."
+      },
+      {
+        "text": "You may reveal this card from your opening hand. If you do, at the beginning of the first upkeep, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "You may reveal ~ from your opening hand. If you do, at the beginning of the next upkeep, each opponent mills seven cards.",
+      "You may reveal ~ from your hand. If you do, at the beginning of the first upkeep, each opponent mills seven cards.",
+      "You may reveal ~ from your opening hand. At the beginning of the first upkeep, each opponent mills seven cards.",
+      "You may reveal ~ from your opening hand. If you do, at the beginning of the first end step, each opponent mills seven cards."
+    ]
+  },
+  {
+    "id": "abl.edhd32.pregame.reveal.firstMain",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 103.6",
+      "CR 103.6b",
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 113.6"
+    ],
+    "pattern": "you may reveal ~ from your opening hand . if you do , at the beginning of your first main phase of the game , {e:Effects}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "effects": [
+        {
+          "s": "pregame",
+          "action": "reveal",
+          "optional": true,
+          "then": [
+            {
+              "op": "delay",
+              "when": {
+                "at": "step",
+                "step": "main1",
+                "whose": "you",
+                "next": true,
+                "anyMain": true
+              },
+              "do": "$e"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may reveal ~ from your opening hand. If you do, at the beginning of your first main phase of the game, add {R}{R}."
+      },
+      {
+        "text": "You may reveal this card from your opening hand. If you do, at the beginning of your first main phase of the game, add {U}."
+      }
+    ],
+    "counterExamples": [
+      "You may reveal ~ from your opening hand. If you do, at the beginning of your first main phase, add {G}.",
+      "You may reveal ~ from your opening hand. If you do, at the beginning of your second main phase of the game, add {G}.",
+      "You may reveal ~ from your opening hand. If you do, at the beginning of the first main phase of the game, add {G}."
+    ]
+  },
+  {
+    "id": "abl.edhd32.pregame.reveal.firstUpkeep.tail",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 103.6",
+      "CR 103.6b",
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 113.6"
+    ],
+    "pattern": "you may reveal ~ from your opening hand . if you do , {e:Effects} at the beginning of your first upkeep",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "effects": [
+        {
+          "s": "pregame",
+          "action": "reveal",
+          "optional": true,
+          "then": [
+            {
+              "op": "delay",
+              "when": {
+                "at": "step",
+                "step": "upkeep",
+                "whose": "you",
+                "next": true
+              },
+              "do": "$e"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may reveal ~ from your opening hand. If you do, scry 2 at the beginning of your first upkeep."
+      },
+      {
+        "text": "You may reveal this card from your opening hand. If you do, draw a card at the beginning of your first upkeep."
+      }
+    ],
+    "counterExamples": [
+      "You may reveal ~ from your opening hand. If you do, scry 3 at the beginning of your next upkeep.",
+      "You may reveal ~ from your opening hand. If you do, scry 3 at the beginning of the first upkeep."
+    ]
+  },
+  {
+    "id": "eff.edhd32.piles.oppLooksTopFaceDown",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 700.3",
+      "CR 700.3a",
+      "CR 700.3d",
+      "CR 701.20e",
+      "CR 401.1"
+    ],
+    "pattern": "{p:Player} look[s] at the top {n:Qty} cards of your library and separate[s] them into a face-down pile and a face-up pile",
+    "build": [
+      {
+        "op": "look",
+        "who": "$p",
+        "at": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        "as": "looked"
+      },
+      {
+        "op": "piles",
+        "cards": {
+          "ref": "bound",
+          "name": "looked"
+        },
+        "separator": "$p",
+        "chooser": {
+          "ref": "you"
+        },
+        "chosen": "keep",
+        "other": "rest",
+        "faceDown": true
+      }
+    ],
+    "needs": [
+      "feature:piles.faceDown"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent looks at the top five cards of your library and separates them into a face-down pile and a face-up pile. Put one pile into your hand and the other into your graveyard."
+      },
+      {
+        "text": "When ~ enters, target opponent looks at the top two cards of your library and separates them into a face-down pile and a face-up pile. Put one pile into your hand and the other into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent looks at the top four cards of their library and separates them into a face-down pile and a face-up pile. Put one pile into your hand and the other into your graveyard.",
+      "Target opponent looks at the top four cards of your library and separates them into two piles. Put one pile into your hand and the other into your graveyard.",
+      "Target opponent looks at the top four cards of your library and separates them into a face-down pile and a face-up pile. An opponent chooses one of the piles. Put that pile into your hand and the other into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhd32.piles.graveyardCreatures",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 700.3",
+      "CR 700.3a",
+      "CR 700.3d",
+      "CR 608.2d",
+      "CR 700.3c"
+    ],
+    "pattern": "separate all creature cards in your graveyard into two piles",
+    "build": {
+      "op": "piles",
+      "cards": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+        }
+      },
+      "separator": {
+        "ref": "you"
+      },
+      "chooser": {
+        "ref": "anOpponent"
+      },
+      "chosen": "chosenPile",
+      "other": "otherPile"
+    },
+    "examples": [
+      {
+        "text": "You gain 2 life. Separate all creature cards in your graveyard into two piles. Exile the pile of an opponent's choice and return the other to the battlefield."
+      },
+      {
+        "text": "Draw a card. Separate all creature cards in your graveyard into two piles. Exile the pile of an opponent's choice and return the other to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Separate all creature cards in your graveyard into three piles. Exile the pile of an opponent's choice and return the other to the battlefield.",
+      "Separate all creature cards in all graveyards into two piles. Exile the pile of an opponent's choice and return the other to the battlefield.",
+      "Separate all creature cards in your graveyard into two piles. Exile the pile of your choice and return the other to the battlefield."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "eff.edhd32.piles.exileChosenReturnOther",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 700.3",
+      "CR 700.3a",
+      "CR 700.3d",
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 400.7"
+    ],
+    "pattern": "exile the pile of an opponent 's choice and return the other to the battlefield",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosenPile"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "otherPile"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "You gain 2 life. Separate all creature cards in your graveyard into two piles. Exile the pile of an opponent's choice and return the other to the battlefield."
+      },
+      {
+        "text": "Draw a card. Separate all creature cards in your graveyard into two piles. Exile the pile of an opponent's choice and return the other to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Separate all creature cards in your graveyard into two piles. Exile the pile of an opponent's choice and return the other to your hand.",
+      "Separate all creature cards in your graveyard into two piles. Exile the pile of your choice and return the other to the battlefield.",
+      "Exile the pile of an opponent's choice and return the other to the battlefield."
+    ],
+    "consumes": [
+      "other"
+    ]
+  },
+  {
+    "id": "eff.edhd32.piles.separateCreatures",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 700.3",
+      "CR 700.3a",
+      "CR 700.3d",
+      "CR 608.2d"
+    ],
+    "pattern": "separate all creatures {p:Player} control[s] into two piles",
+    "build": {
+      "op": "piles",
+      "cards": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "controller": "$p"
+        }
+      },
+      "separator": {
+        "ref": "you"
+      },
+      "chooser": "$p",
+      "chosen": "chosenPile",
+      "other": "otherPile"
+    },
+    "examples": [
+      {
+        "text": "Draw a card. Separate all creatures target player controls into two piles. Destroy all creatures in the pile of that player's choice. They can't be regenerated."
+      },
+      {
+        "text": "Separate all creatures target opponent controls into two piles. Destroy all creatures in the pile of that player's choice. They can't be regenerated."
+      }
+    ],
+    "counterExamples": [
+      "Separate all permanents target player controls into two piles. Destroy all creatures in the pile of that player's choice. They can't be regenerated.",
+      "Separate all creatures target player controls into three piles. Destroy all creatures in the pile of that player's choice. They can't be regenerated.",
+      "Separate all creatures you control into two piles. Destroy all creatures in the pile of that player's choice. They can't be regenerated.",
+      "Separate all creatures each player controls into two piles. Destroy all creatures in the pile of that player's choice. They can't be regenerated."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "eff.edhd32.piles.destroyChosenPile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 700.3",
+      "CR 700.3a",
+      "CR 700.3d",
+      "CR 608.2d",
+      "CR 701.8a"
+    ],
+    "pattern": "destroy all creatures in the pile of that player 's choice",
+    "build": {
+      "op": "destroy",
+      "what": {
+        "ref": "bound",
+        "name": "chosenPile"
+      }
+    },
+    "examples": [
+      {
+        "text": "Draw a card. Separate all creatures target player controls into two piles. Destroy all creatures in the pile of that player's choice. They can't be regenerated."
+      },
+      {
+        "text": "You gain 2 life. Separate all creatures target player controls into two piles. Destroy all creatures in the pile of that player's choice. They can't be regenerated."
+      }
+    ],
+    "counterExamples": [
+      "Separate all creatures target player controls into two piles. Destroy all permanents in the pile of that player's choice. They can't be regenerated.",
+      "Separate all creatures target player controls into two piles. Destroy all creatures in the pile of your choice. They can't be regenerated.",
+      "Destroy all creatures in the pile of that player's choice."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "eff.edhd32.piles.eachOpponentSeparatesCreatures",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 700.3",
+      "CR 700.3a",
+      "CR 700.3d",
+      "CR 608.2d"
+    ],
+    "pattern": "each opponent separates the creatures they control into two piles",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "opp",
+      "gather": "chosenPile",
+      "do": [
+        {
+          "op": "piles",
+          "cards": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": {
+                "ref": "iterating"
+              }
+            }
+          },
+          "separator": {
+            "ref": "iterating"
+          },
+          "chooser": {
+            "ref": "you"
+          },
+          "chosen": "chosenPile",
+          "other": "otherPile"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "You gain 2 life. Each opponent separates the creatures they control into two piles. For each opponent, you choose one of their piles. Each opponent sacrifices the creatures in their chosen pile."
+      },
+      {
+        "text": "Draw a card. Each opponent separates the creatures they control into two piles. For each opponent, you choose one of their piles. Each opponent sacrifices the creatures in their chosen pile."
+      }
+    ],
+    "counterExamples": [
+      "Each player separates the creatures they control into two piles. For each opponent, you choose one of their piles. Each opponent sacrifices the creatures in their chosen pile.",
+      "Each opponent separates the creatures they control into three piles. For each opponent, you choose one of their piles. Each opponent sacrifices the creatures in their chosen pile.",
+      "Each opponent separates the lands they control into two piles. For each opponent, you choose one of their piles. Each opponent sacrifices the creatures in their chosen pile."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edhd32.piles.youChooseTheirPile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 700.3",
+      "CR 700.3a",
+      "CR 700.3d",
+      "CR 608.2d"
+    ],
+    "pattern": "for each opponent , you choose one of their piles",
+    "build": [],
+    "examples": [
+      {
+        "text": "You gain 2 life. Each opponent separates the creatures they control into two piles. For each opponent, you choose one of their piles. Each opponent sacrifices the creatures in their chosen pile."
+      },
+      {
+        "text": "Draw a card. Each opponent separates the creatures they control into two piles. For each opponent, you choose one of their piles. Each opponent sacrifices the creatures in their chosen pile."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent separates the creatures they control into two piles. For each player, you choose one of their piles. Each opponent sacrifices the creatures in their chosen pile.",
+      "Each opponent separates the creatures they control into two piles. For each opponent, you choose two of their piles. Each opponent sacrifices the creatures in their chosen pile.",
+      "For each opponent, you choose one of their piles."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edhd32.piles.eachOpponentSacrificesChosen",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 700.3",
+      "CR 700.3a",
+      "CR 700.3d",
+      "CR 608.2d",
+      "CR 701.21a"
+    ],
+    "pattern": "each opponent sacrifices the creatures in their chosen pile",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "filter": {
+        "is": {
+          "ref": "bound",
+          "name": "chosenPile"
+        }
+      },
+      "count": 1,
+      "mode": "all"
+    },
+    "examples": [
+      {
+        "text": "You gain 2 life. Each opponent separates the creatures they control into two piles. For each opponent, you choose one of their piles. Each opponent sacrifices the creatures in their chosen pile."
+      },
+      {
+        "text": "Draw a card. Each opponent separates the creatures they control into two piles. For each opponent, you choose one of their piles. Each opponent sacrifices the creatures in their chosen pile."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent separates the creatures they control into two piles. For each opponent, you choose one of their piles. Each opponent sacrifices the permanents in their chosen pile.",
+      "Each opponent separates the creatures they control into two piles. For each opponent, you choose one of their piles. Each player sacrifices the creatures in their chosen pile.",
+      "Each opponent sacrifices the creatures in their chosen pile."
+    ],
+    "consumes": [
+      "each",
+      "chosen"
+    ]
+  },
+  {
+    "id": "eff.edhd32.piles.putChosenBattlefieldRestOwners",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 700.3",
+      "CR 608.2d",
+      "CR 400.3",
+      "CR 110.2a"
+    ],
+    "pattern": "put all cards from the pile of your choice onto the battlefield under your control and the rest into their owners' graveyards",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "keep"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "rest"
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Exile up to four target creature cards from graveyards. An opponent separates those cards into two piles. Put all cards from the pile of your choice onto the battlefield under your control and the rest into their owners' graveyards."
+      },
+      {
+        "text": "Exile up to three target creature cards from graveyards. An opponent separates those cards into two piles. Put all cards from the pile of your choice onto the battlefield under your control and the rest into their owners' graveyards."
+      }
+    ],
+    "counterExamples": [
+      "Exile up to five target creature cards from graveyards. An opponent separates those cards into two piles. Put all cards from the pile of your choice onto the battlefield under your control and the rest into your graveyard.",
+      "Exile up to five target creature cards from graveyards. An opponent separates those cards into two piles. Put all cards from the pile of your choice into your hand and the rest into their owners' graveyards.",
+      "Put all cards from the pile of your choice onto the battlefield under your control and the rest into their owners' graveyards."
+    ]
+  },
+  {
+    "id": "eff.edhd32.piles.putCardFromChosenThenRestBottom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 700.3",
+      "CR 608.2d",
+      "CR 401.4",
+      "CR 701.20a"
+    ],
+    "pattern": "put ( a | one ) card from the chosen pile into your hand , then put all other cards revealed this way on the bottom of your library in any order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "chosenPile"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "picked"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "picked"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "picked"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "chosen"
+        }
+      }
+    ],
+    "consumes": [
+      "all",
+      "chosen",
+      "other",
+      "this way",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top four cards of your library and separate them into two piles. An opponent chooses one of those piles. Put a card from the chosen pile into your hand, then put all other cards revealed this way on the bottom of your library in any order."
+      },
+      {
+        "text": "Reveal the top six cards of your library and separate them into two piles. An opponent chooses one of those piles. Put a card from the chosen pile into your hand, then put all other cards revealed this way on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top five cards of your library and separate them into two piles. An opponent chooses one of those piles. Put a card from the chosen pile into your hand, then put all other cards revealed this way on top of your library in any order.",
+      "Reveal the top five cards of your library and separate them into two piles. An opponent chooses one of those piles. Put a card from the chosen pile into your graveyard, then put all other cards revealed this way on the bottom of your library in any order.",
+      "Reveal the top five cards of your library and separate them into two piles. An opponent chooses one of those piles. Put all cards from the chosen pile into your hand, then put all other cards revealed this way on the bottom of your library in any order.",
+      "Put a card from the chosen pile into your hand, then put all other cards revealed this way on the bottom of your library in any order."
+    ]
+  }
+]

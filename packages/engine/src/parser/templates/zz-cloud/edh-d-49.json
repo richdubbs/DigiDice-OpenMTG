@@ -1,0 +1,243 @@
+[
+  {
+    "id": "sta.edhd49.rule.rollAdjust.once",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.2",
+      "CR 118.12"
+    ],
+    "pattern": "after you roll a die , you may {c:Cost} . if you do , increase or decrease the result by 1 . do this only once each turn",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "rollAdjust",
+          "cost": "$c",
+          "value": 1,
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "after",
+      "decrease",
+      "each",
+      "if",
+      "if you do",
+      "increase",
+      "may",
+      "once",
+      "only"
+    ],
+    "examples": [
+      {
+        "text": "After you roll a die, you may discard a card. If you do, increase or decrease the result by 1. Do this only once each turn."
+      },
+      {
+        "text": "After you roll a die, you may pay 2 life. If you do, increase or decrease the result by 1. Do this only once each turn."
+      }
+    ],
+    "counterExamples": [
+      "After you roll a die, you may pay 1 life. If you do, increase or decrease the result by 2. Do this only once each turn.",
+      "After an opponent rolls a die, you may pay 1 life. If you do, increase or decrease the result by 1. Do this only once each turn.",
+      "After you roll a die, you may pay 1 life. If you do, increase the result by 1. Do this only once each turn."
+    ]
+  },
+  {
+    "id": "sta.edhd49.rule.rollAdjust",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.2",
+      "CR 118.12"
+    ],
+    "pattern": "after you roll a die , you may {c:Cost} . if you do , increase or decrease the result by 1",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "rollAdjust",
+          "cost": "$c",
+          "value": 1
+        }
+      ]
+    },
+    "consumes": [
+      "after",
+      "decrease",
+      "if",
+      "if you do",
+      "increase",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "After you roll a die, you may sacrifice a creature. If you do, increase or decrease the result by 1."
+      },
+      {
+        "text": "After you roll a die, you may pay 3 life. If you do, increase or decrease the result by 1."
+      }
+    ],
+    "counterExamples": [
+      "After you roll a die, you may pay 1 life. If you do, increase or decrease the result by 3.",
+      "After you roll a die, you may pay 1 life. If you do, decrease the result by 1.",
+      "After each opponent rolls a die, you may pay 1 life. If you do, increase or decrease the result by 1."
+    ]
+  },
+  {
+    "id": "sta.edhd49.rule.rollReroll.once",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.2",
+      "CR 706.6",
+      "CR 118.12"
+    ],
+    "pattern": "once each turn , you may pay {m:ManaCost} to reroll one or more dice you rolled",
+    "build": {
+      "s": "rule",
+      "rule": "rollReroll",
+      "cost": {
+        "mana": "$m"
+      },
+      "oncePerTurn": true
+    },
+    "consumes": [
+      "each",
+      "if",
+      "may",
+      "once",
+      "reroll"
+    ],
+    "examples": [
+      {
+        "text": "Once each turn, you may pay {2} to reroll one or more dice you rolled."
+      },
+      {
+        "text": "Once each turn, you may pay {1}{R} to reroll one or more dice you rolled."
+      }
+    ],
+    "counterExamples": [
+      "You may pay {1} to reroll one or more dice you rolled.",
+      "Once each turn, you may pay {1} to reroll one or more dice an opponent rolled.",
+      "Once each turn, you may pay {1} to reroll a die you rolled."
+    ]
+  },
+  {
+    "id": "eff.edhd49.linked.returnUpToX.ownersHands.result",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 400.3",
+      "CR 706.2"
+    ],
+    "pattern": "return up to x cards from among cards exiled with ~ to their owners' hands , where x is the result",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": {
+          "q": "dieResult"
+        },
+        "as": "linkedReturned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "linkedReturned"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "their",
+      "up to",
+      "x"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you sacrifice an artifact, exile it.\n{2}, {T}: Roll a d6. Return up to X cards from among cards exiled with ~ to their owners' hands, where X is the result."
+      },
+      {
+        "text": "Whenever you sacrifice an artifact, exile it.\n{4}, {T}: Roll a d12. Return up to X cards from among cards exiled with ~ to their owners' hands, where X is the result."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you sacrifice an artifact, exile it.\n{3}, {T}: Roll a d10. Return up to X cards from among cards exiled with ~ to their owners' hands, where X is the number of cards in your hand.",
+      "Whenever you sacrifice an artifact, exile it.\n{3}, {T}: Roll a d10. Return up to X cards exiled with ~ to their owners' hands, where X is the result.",
+      "Whenever you sacrifice an artifact, exile it.\n{3}, {T}: Return up to X cards from among cards exiled with ~ to their owners' hands, where X is the result of the roll."
+    ]
+  },
+  {
+    "id": "eff.edhd49.rollDie.d20.keepHighest.attacked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 706.1",
+      "CR 706.6",
+      "CR 506.3",
+      "CR 608.2h"
+    ],
+    "pattern": "roll a d20 for each player being attacked and ignore all but the highest roll",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 20,
+      "count": {
+        "q": "opponentsAttacked"
+      },
+      "keepHighest": true
+    },
+    "consumes": [
+      "each",
+      "ignore",
+      "highest",
+      "all",
+      "but"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack, roll a d20 for each player being attacked and ignore all but the highest roll.\n1-9 | You gain 1 life.\n10-20 | Each opponent loses 1 life."
+      },
+      {
+        "text": "Whenever this creature and at least one other creature attack, roll a d20 for each player being attacked and ignore all but the highest roll.\n1-10 | Draw a card.\n11-20 | You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack, roll a d20 for each player being attacked and ignore all but the lowest roll.\n1-9 | You gain 1 life.\n10-20 | Each opponent loses 1 life.",
+      "Whenever you attack, roll a d20 for each opponent and ignore all but the highest roll.\n1-9 | You gain 1 life.\n10-20 | Each opponent loses 1 life.",
+      "Whenever you attack, roll two d20 and ignore all but the highest roll.\n1-9 | You gain 1 life.\n10-20 | Each opponent loses 1 life."
+    ]
+  }
+]

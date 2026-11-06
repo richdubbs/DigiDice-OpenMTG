@@ -12,5 +12,76 @@
   ],
   "reminder": "{cost}, Sacrifice this creature: Search your library for a creature card with the same mana value as this creature, put that card onto the battlefield, then shuffle. Transfigure only as a sorcery.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "activated",
+      "text": "{cost}, Sacrifice ~: Search your library for a creature card with the same mana value as ~, put that card onto the battlefield, then shuffle. Activate only as a sorcery.",
+      "zone": [
+        "battlefield"
+      ],
+      "sorcerySpeed": true,
+      "cost": {
+        "$costAdd": {
+          "base": "$cost",
+          "other": [
+            {
+              "kind": "sacrifice",
+              "self": true,
+              "count": 1,
+              "filter": {}
+            }
+          ]
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "search",
+            "who": {
+              "ref": "you"
+            },
+            "zone": "library",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "manaValue": {
+                "op": "==",
+                "value": {
+                  "q": "stat",
+                  "stat": "manaValue",
+                  "of": {
+                    "ref": "self"
+                  }
+                }
+              }
+            },
+            "max": 1,
+            "as": "found"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "found"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              }
+            }
+          },
+          {
+            "op": "shuffle",
+            "who": {
+              "ref": "you"
+            }
+          }
+        ]
+      }
+    }
+  ]
 }

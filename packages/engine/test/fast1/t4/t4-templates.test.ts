@@ -38,6 +38,9 @@ const BY_REVIEW = ['trg.battalion', 'eff.return.self.gy.hand', 'eff.return.self.
 const BY_NARROW: Readonly<Record<string, readonly string[]>> = {
   'eff.mana.additional.any': ['Regal Behemoth'],
   'eff.mana.additional.two.player': ['Market Festival', "Dawn's Reflection"],
+  // edh-c-75 (Commander ranks 27,501-28,000, 6.9 deviation): Insubordination; edh-c-94 (the end step of enchanted creature's controller is printed on three cards of the corpus): Aggression and
+  // Lingering Death (fast1-t4-review.json) and the scenario. Both rounds promoted the same template: one entry since the combined copy.
+  'trg.endstep.enchantedController': ['Aggression', 'Insubordination', 'Lingering Death'],
 };
 
 describe('FAST1 T4 template file (design 6.3, 6.9; CONTRIBUTING "Adding a template")', () => {

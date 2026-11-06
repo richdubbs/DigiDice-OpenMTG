@@ -183,7 +183,9 @@ describe('std-rx27 model (CR 607.2a, 601.3e, 609.4b, 118.9, 614.1c, 400.7): the 
   it('a resolved effect with a rider form, or a rider the engine does not read, is a form nothing registers (fail closed)', () => {
     const lasting = { kind: 'activated', cost: { mana: [{ kind: 'generic', amount: 1 }] }, effect: { targets: [], steps: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [
       { s: 'permit', who: { ref: 'you' }, action: 'cast', of: { is: { ref: 'linked', link: 'exiled' }, owner: 'you' }, entersWith: [{ kind: 'finality', count: 1 }] }] }] } };
-    expect(capabilitiesOfDef(lasting as never)).toContain('feature:permit.cast.linked.lasting');
+    // combined copy: edh-d-99 (King Narfi's Betrayal) registers the plain resolved form feature:permit.cast.linked.lasting; the rider form is feature:permit.cast.linked.riders.lasting, which nothing registers
+    expect(capabilitiesOfDef(lasting as never)).toContain('feature:permit.cast.linked.riders.lasting');
+    expect(ENGINE_CAPABILITIES.has('feature:permit.cast.linked.riders.lasting')).toBe(false);
     // (std-exile-play-2-1 registers an additional cost on this form, `feature:permit.cast.linked.addCost`; a count of spells is still a rider nothing reads)
     const odd = { kind: 'static', effects: [{ s: 'permit', who: { ref: 'you' }, action: 'cast', of: { is: { ref: 'linked', link: 'exiled' } }, count: 2 }] };
     expect(capabilitiesOfDef(odd as never).some((c) => !ENGINE_CAPABILITIES.has(c))).toBe(true);
@@ -191,12 +193,14 @@ describe('std-rx27 model (CR 607.2a, 601.3e, 609.4b, 118.9, 614.1c, 400.7): the 
 });
 
 describe('std-rx27 model (CR 601.3, 611.2a): "you may play a card exiled with ~" is one card, only for a permission that lasts until end of turn', () => {
-  it('the one-card field is registered on a permission for named objects until end of turn; with another duration it is a form nothing registers', () => {
+  it('the one-card field is registered on a permission for named objects, whatever its duration (edh-cast-10: the counter outlasts the turn, core/turn.ts); on a permission for a description it is a form nothing registers', () => {
     const permit = { s: 'permit', who: { ref: 'you' }, action: 'play', of: { is: { ref: 'linked', link: 'exiled' } }, single: true };
     const eot = { kind: 'triggered', trigger: { on: [{ ev: 'attacks', attacker: { self: true } }] }, effect: { targets: [], steps: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [permit] }] } };
     const next = { kind: 'triggered', trigger: { on: [{ ev: 'attacks', attacker: { self: true } }] }, effect: { targets: [], steps: [{ op: 'effect', duration: { d: 'untilYourNextTurn' }, effects: [permit] }] } };
     expect(capabilitiesOfDef(eot as never)).toContain('feature:permit.play.single');
-    expect(capabilitiesOfDef(next as never)).toContain('feature:permit.play.single.other');
+    expect(capabilitiesOfDef(next as never)).toContain('feature:permit.play.single'); // (edh-cast-10: before, only "until end of turn" had it, the counter being reset each turn)
+    const described = { kind: 'triggered', trigger: { on: [{ ev: 'attacks', attacker: { self: true } }] }, effect: { targets: [], steps: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ ...permit, of: { types: ['Land'] } }] }] } };
+    expect(capabilitiesOfDef(described as never)).toContain('feature:permit.play.single.other');
     expect(ENGINE_CAPABILITIES.has('feature:permit.play.single.other')).toBe(false);
   });
 });

@@ -1,0 +1,898 @@
+[
+  {
+    "id": "rep.edhd63.enters.choose.twoAbilities",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 702.1"
+    ],
+    "pattern": "as ~ enters , choose two abilities from among {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "option",
+                "link": "abilities",
+                "options": [
+                  "$a.0.keyword",
+                  "$a.1.keyword",
+                  "$a.2.keyword"
+                ],
+                "min": 2,
+                "max": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As this creature enters, choose two abilities from among flying, deathtouch, and haste."
+      },
+      {
+        "text": "As this artifact enters, choose two abilities from among reach, trample, and menace."
+      }
+    ],
+    "counterExamples": [
+      "As this creature enters, choose two abilities from among first strike and vigilance.",
+      "As this creature enters, choose one ability from among first strike, vigilance, and lifelink.",
+      "As this creature enters, choose two abilities from among first strike, vigilance, lifelink, and flying."
+    ]
+  },
+  {
+    "id": "sta.edhd63.group.haveEachChosen",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 607.2d",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "{f:Filter} have each of the chosen abilities",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "addChosen": "abilities"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "chosen"
+    ],
+    "needs": [
+      "feature:layer6.addChosen"
+    ],
+    "examples": [
+      {
+        "text": "As this creature enters, choose two abilities from among flying, deathtouch, and haste.\nSoldiers you control have each of the chosen abilities."
+      },
+      {
+        "text": "As this artifact enters, choose two abilities from among reach, trample, and menace.\nCreatures you control have each of the chosen abilities."
+      }
+    ],
+    "counterExamples": [
+      "Humans you control have each of the chosen abilities until end of turn.",
+      "Humans you control have the chosen ability.",
+      "Humans you control gain each of the chosen abilities."
+    ]
+  },
+  {
+    "id": "rep.edhd63.enters.choose.twoPlayers",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 102.1"
+    ],
+    "pattern": "as ~ enters , choose two players",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "player",
+                "link": "chosenPlayers",
+                "min": 2,
+                "max": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As this creature enters, choose two players."
+      },
+      {
+        "text": "As ~ enters, choose two players."
+      }
+    ],
+    "counterExamples": [
+      "As this creature enters, choose two opponents.",
+      "As this creature enters, choose two players at random.",
+      "As this creature enters, choose three players.",
+      "When this creature enters, choose two players."
+    ]
+  },
+  {
+    "id": "trg.edhd63.damage.toOneOfChosenPlayers",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 120.2",
+      "CR 607.2d"
+    ],
+    "pattern": "whenever damage is dealt to one of the chosen players",
+    "build": {
+      "on": [
+        {
+          "ev": "damage",
+          "recipient": {
+            "player": {
+              "ref": "linked",
+              "link": "chosenPlayers"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Whenever damage is dealt to one of the chosen players, you gain 1 life.\nAs this creature enters, choose two players."
+      },
+      {
+        "text": "Whenever damage is dealt to one of the chosen players, draw a card.\nAs this creature enters, choose two players."
+      }
+    ],
+    "counterExamples": [
+      "Whenever damage is dealt to one of your opponents, you gain 1 life.",
+      "Whenever damage is dealt to the chosen player, you gain 1 life.",
+      "As this creature enters, choose two players.\nWhenever combat damage is dealt to one of the chosen players, you gain 1 life."
+    ]
+  },
+  {
+    "id": "eff.edhd63.otherChosenPlayer.alsoLosesThatMuch",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2h",
+      "CR 607.2d"
+    ],
+    "pattern": "the other chosen player also loses that much life",
+    "build": {
+      "op": "loseLife",
+      "who": {
+        "ref": "otherOf",
+        "of": {
+          "ref": "linked",
+          "link": "chosenPlayers"
+        },
+        "than": {
+          "ref": "event",
+          "role": "recipient"
+        }
+      },
+      "amount": {
+        "q": "eventAmount"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "other",
+      "chosen",
+      "also",
+      "that much"
+    ],
+    "examples": [
+      {
+        "text": "Whenever damage is dealt to one of the chosen players, the other chosen player also loses that much life.\nAs this creature enters, choose two players."
+      },
+      {
+        "text": "Whenever damage is dealt to one of the chosen players, the other chosen player also loses that much life.\nAs this artifact enters, choose two players."
+      }
+    ],
+    "counterExamples": [
+      "Whenever damage is dealt to one of the chosen players, the other chosen player loses that much life.",
+      "Whenever damage is dealt to one of the chosen players, the other player also loses that much life."
+    ]
+  },
+  {
+    "id": "rep.edhd63.damage.doubleBetweenChosenPlayers",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 607.2d",
+      "CR 614.5"
+    ],
+    "pattern": "if a source controlled by one of the chosen players would deal damage to the other chosen player or a permanent that player controls , that source deals double that damage to that player or permanent instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "controller": {
+                "ref": "linked",
+                "link": "chosenPlayers"
+              }
+            },
+            "recipient": {
+              "player": {
+                "ref": "linked",
+                "link": "chosenPlayers"
+              },
+              "object": {
+                "controller": {
+                  "ref": "linked",
+                  "link": "chosenPlayers"
+                }
+              }
+            },
+            "toOtherThanSourceController": true
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "mul": 2
+            }
+          }
+        }
+      ]
+    },
+    "needs": [
+      "feature:ev.damage.toOtherThanSourceController"
+    ],
+    "examples": [
+      {
+        "text": "As this creature enters, choose two players.\nIf a source controlled by one of the chosen players would deal damage to the other chosen player or a permanent that player controls, that source deals double that damage to that player or permanent instead."
+      },
+      {
+        "text": "As ~ enters, choose two players.\nIf a source controlled by one of the chosen players would deal damage to the other chosen player or a permanent that player controls, that source deals double that damage to that player or permanent instead."
+      }
+    ],
+    "counterExamples": [
+      "If a source controlled by one of the chosen players would deal damage to a player or a permanent that player controls, that source deals double that damage to that player or permanent instead.",
+      "If a source controlled by one of the chosen players would deal damage to the other chosen player or a permanent that player controls, that source deals triple that damage to that player or permanent instead."
+    ],
+    "consumes": [
+      "if",
+      "would",
+      "chosen",
+      "other",
+      "double",
+      "instead",
+      "controlled"
+    ]
+  },
+  {
+    "id": "eff.edhd63.counters.putOrRemoveOne",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "put {n:Qty} {k:CounterKind} counter[s] on {o:Obj} or remove one from it",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "counterMode",
+        "link": "counterMode",
+        "options": [
+          "put",
+          "remove"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterMode",
+          "equals": "put"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k",
+            "count": "$n"
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterMode",
+          "equals": "remove"
+        },
+        "then": [
+          {
+            "op": "removeCounters",
+            "from": "$o",
+            "kind": "$k",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "{4}: Put a charge counter on this artifact or remove one from it."
+      },
+      {
+        "text": "{2}: Put a +1/+1 counter on this creature or remove one from it."
+      }
+    ],
+    "counterExamples": [
+      "{3}: Put a charge counter on this artifact or remove two from it.",
+      "{3}: Put a charge counter on this artifact and remove one from it.",
+      "{3}: Put a charge counter on this artifact or remove one from another artifact."
+    ]
+  },
+  {
+    "id": "eff.edhd63.choose.leftOrRight",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4"
+    ],
+    "pattern": "choose left or right",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "option",
+      "as": "direction",
+      "link": "direction",
+      "options": [
+        "left",
+        "right"
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "left",
+      "right",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Choose left or right. Each player gains control of all creatures controlled by the next player in the chosen direction."
+      },
+      {
+        "text": "{2}{U}, {T}: Choose left or right. Each player gains control of all artifacts controlled by the next player in the chosen direction."
+      }
+    ],
+    "counterExamples": [
+      "-6: Choose up or down.",
+      "-6: Choose left or right at random.",
+      "-6: Choose left, right, or center."
+    ]
+  },
+  {
+    "id": "eff.edhd63.eachPlayer.gainControl.nextInChosenDirection",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 108.4",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b"
+    ],
+    "pattern": "each player gains control of all {f:Filter} controlled by the next player in the chosen direction",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "seat",
+                "side": "left",
+                "chosen": "direction",
+                "of": {
+                  "ref": "controllerOf",
+                  "object": {
+                    "ref": "subject"
+                  }
+                },
+                "inverse": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "chosen",
+      "controlled",
+      "each",
+      "next"
+    ],
+    "needs": [
+      "feature:ref.seat.chosen"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Choose left or right. Each player gains control of all creatures controlled by the next player in the chosen direction."
+      },
+      {
+        "text": "{2}{U}, {T}: Choose left or right. Each player gains control of all artifacts controlled by the next player in the chosen direction."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Each player gains control of all creatures controlled by the next player in the chosen direction.",
+      "{T}: Choose left or right. Each opponent gains control of all creatures controlled by the next player in the chosen direction.",
+      "{T}: Choose left or right. Each player gains control of all creatures controlled by the next player in that direction until end of turn."
+    ]
+  },
+  {
+    "id": "rep.edhd63.enters.choose.leftOrRight",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 101.4"
+    ],
+    "pattern": "as ~ enters , choose left or right",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "option",
+                "link": "direction",
+                "options": [
+                  "left",
+                  "right"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As this creature enters, choose left or right."
+      },
+      {
+        "text": "As ~ enters, choose left or right."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, choose left or right.",
+      "As this creature enters, choose left, right, or up.",
+      "As this creature enters, choose up or down."
+    ]
+  },
+  {
+    "id": "sta.edhd63.attackOnlyNearest.chosenDirection",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 506.2",
+      "CR 101.4",
+      "CR 607.2d"
+    ],
+    "pattern": "each player may attack only the nearest opponent in the chosen direction and planeswalkers controlled by that opponent",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            }
+          },
+          "mode": "cant",
+          "action": "attack",
+          "onlyNearest": {
+            "chosen": "direction"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen",
+      "controlled",
+      "each",
+      "may",
+      "only",
+      "opponent",
+      "planeswalkers",
+      "that"
+    ],
+    "needs": [
+      "feature:restrict.onlyNearest.attack"
+    ],
+    "examples": [
+      {
+        "text": "As this creature enters, choose left or right.\nEach player may attack only the nearest opponent in the chosen direction and planeswalkers controlled by that opponent."
+      },
+      {
+        "text": "As ~ enters, choose left or right.\nEach player may attack only the nearest opponent in the chosen direction and planeswalkers controlled by that opponent."
+      }
+    ],
+    "counterExamples": [
+      "As this creature enters, choose left or right.\nEach player may attack only the nearest opponent in the chosen direction.",
+      "As this creature enters, choose left or right.\nEach opponent may attack only the nearest opponent in the chosen direction and planeswalkers controlled by that opponent.",
+      "As this creature enters, choose left or right.\nEach player may attack only the nearest opponent in the chosen direction and planeswalkers controlled by that opponent until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhd63.attackOnlyNearest.lastChosenDirection",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 506.2",
+      "CR 101.4",
+      "CR 607.2d"
+    ],
+    "pattern": "each player may attack only the nearest opponent in the last chosen direction and planeswalkers controlled by that opponent",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            }
+          },
+          "mode": "cant",
+          "action": "attack",
+          "onlyNearest": {
+            "chosen": "direction",
+            "last": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen",
+      "controlled",
+      "each",
+      "last",
+      "may",
+      "only",
+      "opponent",
+      "planeswalkers",
+      "that"
+    ],
+    "needs": [
+      "feature:restrict.onlyNearest.attack"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Choose left or right.\nEach player may attack only the nearest opponent in the last chosen direction and planeswalkers controlled by that opponent."
+      },
+      {
+        "text": "At the beginning of your upkeep, choose left or right.\nEach player may attack only the nearest opponent in the last chosen direction and planeswalkers controlled by that opponent."
+      }
+    ],
+    "counterExamples": [
+      "When this artifact enters and at the beginning of your upkeep, choose left or right.\nEach player may attack only the nearest opponent in the last chosen direction.",
+      "{T}: Choose left or right.\nEach player may attack only the nearest opponent in the last chosen direction and planeswalkers controlled by that opponent until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhd63.dur.attackOnlyNearest.lastChosenDirection",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 506.2",
+      "CR 101.4",
+      "CR 611.2a",
+      "CR 608.2h"
+    ],
+    "pattern": "{d:Dur} , each player may attack only the nearest opponent in the last chosen direction and planeswalkers controlled by that opponent",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            }
+          },
+          "mode": "cant",
+          "action": "attack",
+          "onlyNearest": {
+            "chosen": "direction",
+            "last": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "chosen",
+      "controlled",
+      "each",
+      "last",
+      "may",
+      "only",
+      "opponent",
+      "planeswalkers",
+      "that"
+    ],
+    "needs": [
+      "feature:restrict.onlyNearest.attack"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Choose left or right. Until your next turn, each player may attack only the nearest opponent in the last chosen direction and planeswalkers controlled by that opponent."
+      },
+      {
+        "text": "{2}{W}, {T}: Choose left or right. Until end of turn, each player may attack only the nearest opponent in the last chosen direction and planeswalkers controlled by that opponent."
+      }
+    ],
+    "counterExamples": [
+      "-2: Choose left or right. Each player may attack only the nearest opponent in the last chosen direction and planeswalkers controlled by that opponent.",
+      "{T}: Choose left or right. Each player may attack only the nearest opponent in the last chosen direction and planeswalkers controlled by that opponent until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhd63.startingWithYou.eachPlayerChoosesCreatureNext",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "starting with you and proceeding in the chosen direction , each player chooses a creature controlled by the next player in that direction",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "chooser",
+      "inDirection": "direction",
+      "gather": "chosen",
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "iterating"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": {
+                "ref": "seat",
+                "side": "left",
+                "chosen": "direction",
+                "of": {
+                  "ref": "iterating"
+                }
+              }
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "chosen"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "starting",
+      "each",
+      "chosen",
+      "next",
+      "direction"
+    ],
+    "needs": [
+      "feature:ref.seat.chosen",
+      "op:forEach.inDirection"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Choose left or right. Starting with you and proceeding in the chosen direction, each player chooses a creature controlled by the next player in that direction. Each player gains control of the creature they chose."
+      },
+      {
+        "text": "When this creature enters, choose left or right. Starting with you and proceeding in the chosen direction, each player chooses a creature controlled by the next player in that direction. Each player gains control of the creature they chose."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Choose left or right. Starting with you and proceeding in the chosen direction, each player chooses a land controlled by the next player in that direction. Each player gains control of the land they chose.",
+      "{T}: Choose left or right. Starting with you, each player chooses a creature controlled by the next player in that direction. Each player gains control of the creature they chose."
+    ]
+  },
+  {
+    "id": "eff.edhd63.eachPlayer.gainsControlOfCreatureTheyChose",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 108.4",
+      "CR 611.2c",
+      "CR 613.1b"
+    ],
+    "pattern": "each player gains control of the creature they chose",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "bound",
+            "name": "chosen"
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "seat",
+                "side": "left",
+                "chosen": "direction",
+                "inverse": true,
+                "of": {
+                  "ref": "controllerOf",
+                  "object": {
+                    "ref": "subject"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "chosen"
+    ],
+    "needs": [
+      "feature:ref.seat.chosen"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Choose left or right. Starting with you and proceeding in the chosen direction, each player chooses a creature controlled by the next player in that direction. Each player gains control of the creature they chose."
+      },
+      {
+        "text": "When this creature enters, choose left or right. Starting with you and proceeding in the chosen direction, each player chooses a creature controlled by the next player in that direction. Each player gains control of the creature they chose."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Each player gains control of the creature they chose.",
+      "{T}: Choose left or right. Starting with you and proceeding in the chosen direction, each player chooses a creature controlled by the next player in that direction. Each player gains control of the creature they chose until end of turn."
+    ]
+  }
+]

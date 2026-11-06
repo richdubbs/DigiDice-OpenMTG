@@ -1,0 +1,48 @@
+[
+  {
+    "id": "eff.edhpm20.return.bf.control.additionalCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 122.6",
+      "CR 400.7",
+      "CR 614.1c"
+    ],
+    "pattern": "return {o:Objs} to the battlefield under your control with {n:Qty} additional {k:CounterKind} counter[s] on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "counters": [
+          {
+            "kind": "$k",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Return target artifact card from a graveyard to the battlefield under your control with three additional charge counters on it."
+      },
+      {
+        "text": "Whenever a nontoken creature an opponent controls dies, return it to the battlefield under your control with an additional +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Return target artifact card from a graveyard to your hand under your control with three additional charge counters on it.",
+      "Return target artifact card from a graveyard to the battlefield under its owner's control with three additional charge counters on it.",
+      "Return target artifact card from a graveyard to the battlefield under your control tapped with three additional charge counters on it."
+    ]
+  }
+]

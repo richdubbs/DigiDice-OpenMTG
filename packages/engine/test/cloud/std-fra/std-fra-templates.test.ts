@@ -145,7 +145,8 @@ describe('std-fra "never silently wrong" (the lint and the lowering fail closed)
   });
   it('"gains your choice of A, B, or C" without a duration, with a fourth keyword, or with "and" is not this reading', () => {
     expect(full('Target creature you control gains your choice of flying, vigilance, or menace.', 'Instant')).toBe(false);
-    expect(full('Target creature you control gains your choice of flying, vigilance, menace, or reach until end of turn.', 'Instant')).toBe(false);
+    // edh-d-51: a fourth keyword is eff.edhd51.gains.choice4's reading now (its own wording is read by that template, with four options built)
+    expect(full('Target creature you control gains your choice of flying, vigilance, menace, reach, or trample until end of turn.', 'Instant')).toBe(false);
   });
   it('"Then" opening a sentence only sequences what the sentence after it says; a sentence "Then" cannot read stays manual', () => {
     expect(full('Create a Treasure token. Then blorf target creature.', 'Sorcery')).toBe(false);

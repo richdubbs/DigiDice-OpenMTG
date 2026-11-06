@@ -1,0 +1,4 @@
+# edh-c-111 (Commander effort, coordinator C, EDHREC ranks 19,501-20,000, later pass). After editing: npm run cards -- fixtures
+Relic Amulet
+Grim Contest
+Sphinx of the Chimes

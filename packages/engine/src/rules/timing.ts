@@ -8,8 +8,9 @@ import type { GameObject, GameState } from '../types/state';
 import { deny, type Denial } from './denial';
 import { charsOfObject, hasKeyword, type Chars } from './characteristics';
 import { gameOf, hookpoints } from './hookpoints';
-import { activatesAsUnactivated, additionalActivations } from '../statics/hooks';
+import { activatesAsUnactivated, additionalActivations, castsOnlySorcerySpeed, withoutOffTimingPermits } from '../statics/hooks';
 
+export { castsOnlySorcerySpeed }; // edh-cast-3: actions/cast.ts asks it too (it may not import statics/hooks)
 export const isMainPhase = (s: GameState): boolean => s.turn.step === 'main1' || s.turn.step === 'main2';
 
 /**
@@ -25,11 +26,19 @@ export function sorceryTiming(s: GameState, player: PlayerId, what: string, rule
 
 /** Whether a spell with these characteristics may be cast now (CR 117.1a): instants and flash any time, others at sorcery timing. */
 export function castTiming(s: GameState, player: PlayerId, spell: ObjectId, c: Chars): Denial | null {
+  // edh-cast-3 (CR 117.1a, 101.2; Teferi, Time Raveler): a player who can cast spells only any time they could cast a sorcery has no instant or flash timing
+  if (castsOnlySorcerySpeed(s, player)) return sorceryTiming(s, player, 'cast a spell (an effect says you can cast spells only any time you could cast a sorcery)', 'CR 101.2');
   if (c.types.includes('Instant')) return null; // CR 304.1
   if (hookpoints.castsAsInstant(gameOf(s), spell, player, c)) return null; // flash, CR 702.8a, and "as though it had flash" (rules/hookpoints.ts)
   const kind = c.types.includes('Sorcery') ? 'a sorcery' : 'a spell that is not an instant and has no flash';
   return sorceryTiming(s, player, `cast ${kind}`, c.types.includes('Sorcery') ? 'CR 307.1' : 'CR 117.1a');
 }
+
+/**
+ * edh-perms-4 (CR 601.3b, 601.3; Necromancy): does anything besides the spell's own "you may cast this spell as though it had flash. If you cast it any time a sorcery couldn't have been cast,
+ * ... sacrifices it" give it flash? With another source the player uses that one and the sacrifice does not apply (Scryfall ruling 2022-12-08 of Necromancy).
+ */
+export const flashWithoutOffTimingPermit = (s: GameState, player: PlayerId, spell: ObjectId, c: Chars): boolean => withoutOffTimingPermits(() => hookpoints.castsAsInstant(gameOf(s), spell, player, c));
 
 /** The turn number on which the player's most recent turn began (CR 302.6). */
 function recentTurn(s: GameState, player: PlayerId): number {
@@ -63,7 +72,12 @@ export function abilityTiming(s: GameState, player: PlayerId, source: GameObject
     // r4-mech (CR 606.3): "you may activate loyalty abilities of ... any time you could cast an instant" lifts the timing, never the one-each-turn limit
     const d = hookpoints.loyaltyAsInstant(gameOf(s), source.id, player) ? null : sorceryTiming(s, player, 'activate a loyalty ability', 'CR 606.3');
     if (d) return d;
-    if ((s.turnActivations[`${source.id}|loyalty`] ?? 0) > 0) return deny('Only one loyalty ability of each permanent can be activated each turn.', 'CR 606.3');
+    // edh-players-6 (CR 606.3, 602.5b): one each turn, plus the extra activations "You may activate the loyalty abilities of planeswalkers you control twice each turn rather than
+    // only once" (Oath of Teferi) and "you may activate one of its loyalty abilities once this turn as though none ... have been activated" (The Chain Veil) allow
+    // (rule additionalActivation with the keyword 'loyalty', statics/hooks.ts#additionalActivations); the count is kept per permanent (activate.ts)
+    // "twice each turn rather than only once" SETS the limit to two (two such permanents still allow two, Oath of Teferi ruling); "as though none ... activated" adds one each time
+    const loyaltyMax = (additionalActivations(s, source.id, 'loyalty:twice') > 0 ? 2 : 1) + additionalActivations(s, source.id, 'loyalty');
+    if ((s.turnActivations[`${source.id}|loyalty`] ?? 0) >= loyaltyMax) return deny(loyaltyMax === 1 ? 'Only one loyalty ability of each permanent can be activated each turn.' : `Only ${loyaltyMax} loyalty abilities of each permanent can be activated each turn.`, 'CR 606.3');
   }
   return activationRestrictionDenial(s, player, source, key, def);
 }
@@ -75,7 +89,8 @@ export function abilityTiming(s: GameState, player: PlayerId, source: GameObject
  */
 export function activationRestrictionDenial(s: GameState, player: PlayerId, source: GameObject, key: string, def: ActivatedAbilityDef): Denial | null {
   if (def.sorcerySpeed) {
-    const d = sorceryTiming(s, player, 'activate this ability', 'CR 602.5d');
+    // edh-mana-keywords-8 (CR 702.6a, 602.5d): "you may activate equip abilities any time you could cast an instant" lifts an equip ability's sorcery timing
+    const d = (def.keyword === 'equip' || (def.prov?.by === 'keyword' && def.prov.id === 'equip')) && hookpoints.equipAsInstant(gameOf(s), source.id, player) ? null : sorceryTiming(s, player, 'activate this ability', 'CR 602.5d');
     if (d) return d;
   }
   // "Activate only once each turn." (CR 602.5b), and "only once" per game (exhaust, CR 702.177a): counted on the object, so a new object (CR 400.7) has its use back.

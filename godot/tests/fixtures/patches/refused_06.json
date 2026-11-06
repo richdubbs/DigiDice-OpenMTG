@@ -1,0 +1,1 @@
+{"name":"refused_06","before":{"a":{"b":[1,2]},"s":"x"},"ops":[{"op":"set","path":["a"]}],"error":"A set operation has no value."}

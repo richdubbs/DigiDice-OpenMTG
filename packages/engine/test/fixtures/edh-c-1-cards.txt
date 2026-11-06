@@ -1,0 +1,13 @@
+# edh-c-1 (Commander lane edh-c, EDHREC ranks 15,001-15,625): enters counters on ~, filtered discard, shuffle trigger, third spell, no creature died, life lost this way, equip costs, plus-N damage. After editing: npm run cards -- fixtures
+Michelangelo, On the Scene
+Hypothesizzle
+Cosi's Trickster
+Vance's Blasting Cannons // Spitfire Bastion
+Titan Hunter
+Hurska Sweet-Tooth
+Hollow One
+Auriok Steelshaper
+Invasion of Regatha // Disciples of the Inferno
+Warriors' Lesson
+Sophina, Spearsage Deserter
+Dokuchi Silencer

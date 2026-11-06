@@ -1,0 +1,469 @@
+[
+{
+"card": "Minds Aglow",
+"expect": "full",
+"verified": "edh-top-6 review (Commander effort, EDHREC top 5,000 rank 3767), by hand against the Oracle text, the Scryfall ruling (fetched 2026-10-29: the drawing is not optional) and the Comprehensive Rules (media.wizards.com text 2026-09-25): join forces, each player in turn order beginning with the caster (CR 101.4) may pay any amount of mana (CR 118.12, 608.2d; the engine offers each payer the most their mana can pay, op pay with startingWith and anyAmount, effects/handlers/pay.ts) (new template eff.edht6.joinForces.eachPlayerMayPayAnyAmount), then each player draws X cards where X is the total paid by all of them (the quantity resultCount of the payment, 'the total amount of mana paid this way', parser/holes/qty.ts) (existing template eff.fxz.draw.whereX)",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"anyAmount": true,
+"as": "b0",
+"cost": {
+"mana": [
+{
+"amount": 1,
+"kind": "generic"
+}
+]
+},
+"op": "pay",
+"startingWith": {
+"ref": "you"
+},
+"who": {
+"ref": "each",
+"who": "player"
+}
+},
+{
+"count": {
+"q": "resultCount",
+"step": "b0"
+},
+"op": "draw",
+"who": {
+"ref": "each",
+"who": "player"
+}
+}
+],
+"targets": []
+},
+"kind": "spell"
+}
+]
+}
+]
+},
+{
+"card": "Collective Voyage",
+"expect": "full",
+"verified": "edh-top-6 review (Commander effort, EDHREC top 5,000 rank 4585), by hand against the Oracle text, the Scryfall ruling (fetched 2026-10-29: any number of basic lands up to X including zero, searching and shuffling is not optional) and the Comprehensive Rules (media.wizards.com text 2026-09-25): the join forces payment as Minds Aglow (eff.edht6.joinForces.eachPlayerMayPayAnyAmount), then each player searches their own library for up to X basic land cards, X the total paid (CR 701.23a-b), puts them onto the battlefield tapped under their own control (CR 110.2a) and shuffles their library (CR 701.24a) (new template eff.edht6.eachPlayer.searches.upToX.bf.tapped)",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"anyAmount": true,
+"as": "b0",
+"cost": {
+"mana": [
+{
+"amount": 1,
+"kind": "generic"
+}
+]
+},
+"op": "pay",
+"startingWith": {
+"ref": "you"
+},
+"who": {
+"ref": "each",
+"who": "player"
+}
+},
+{
+"as": "b1",
+"filter": {
+"supertypes": [
+"Basic"
+],
+"types": [
+"Land"
+]
+},
+"max": {
+"q": "resultCount",
+"step": "b0"
+},
+"min": 0,
+"op": "search",
+"who": {
+"ref": "each",
+"who": "player"
+},
+"zone": "library"
+},
+{
+"op": "move",
+"to": {
+"controller": "owner",
+"tapped": true,
+"zone": "battlefield"
+},
+"what": {
+"name": "b1",
+"ref": "bound"
+}
+},
+{
+"op": "shuffle",
+"who": {
+"ref": "each",
+"who": "player"
+}
+}
+],
+"targets": []
+},
+"kind": "spell"
+}
+]
+}
+]
+},
+{
+"card": "Diluvian Primordial",
+"expect": "full",
+"verified": "edh-top-6 review (Commander effort, EDHREC top 5,000 rank 3758), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-29: one target per opponent; cast one at a time without paying their mana costs; a card not cast stays in the graveyard; exiled even if countered) and the Comprehensive Rules (media.wizards.com text 2026-09-25): flying; when it enters, at most one instant or sorcery card in each opponent's graveyard is a target (CR 115.1, 601.2c) and you may cast them without paying their mana costs (CR 118.9, 608.2g) (new template eff.edht6.forEachOpponent.mayCast.free); a spell cast this way that would be put into a graveyard is exiled instead (CR 614.1a), the rider rid.rx27.forEachCast.exileInstead extended to a cast step (attachTo cast)",
+"faces": [
+{
+"abilities": [
+{
+"keyword": "flying",
+"kind": "keyword"
+},
+{
+"effect": {
+"steps": [
+{
+"free": true,
+"graveyardInstead": {
+"to": {
+"zone": "exile"
+}
+},
+"op": "cast",
+"optional": true,
+"what": {
+"id": "t0",
+"ref": "target"
+},
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": [
+{
+"filter": {
+"isCard": true,
+"owner": "opponent",
+"types": [
+"Instant",
+"Sorcery"
+],
+"zone": "graveyard"
+},
+"id": "t0",
+"kind": "object",
+"max": 1,
+"min": 0,
+"perOpponent": true
+}
+]
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "zoneChange",
+"subject": {
+"self": true
+},
+"to": "battlefield"
+}
+]
+}
+}
+]
+}
+]
+},
+{
+"card": "Afterlife from the Loam",
+"expect": "full",
+"verified": "edh-top-6 review (Commander effort, EDHREC top 5,000 rank 4096), by hand against the Oracle text (no Scryfall rulings) and the Comprehensive Rules (media.wizards.com text 2026-09-25): delve; the sorcery announces at most one target creature card in each player's graveyard, yours too (CR 115.1, 601.2c: perPlayer, owner of a card in a graveyard, CR 404.1) (existing template eff.stdrx30.forEachPlayer.chooseTargets), puts those cards onto the battlefield under your control (eff.put.bf) and they are Zombies in addition to their other types, no duration, for the objects it moved (CR 205.3m, 611.2a, 611.2c, 613.1d) (new template eff.edht6.theyAre.subtypes.inAddition)",
+"faces": [
+{
+"abilities": [
+{
+"keyword": "delve",
+"kind": "keyword"
+},
+{
+"effect": {
+"steps": [
+{
+"as": "b0",
+"op": "move",
+"to": {
+"controller": {
+"ref": "you"
+},
+"zone": "battlefield"
+},
+"what": {
+"id": "t0",
+"ref": "target"
+}
+},
+{
+"duration": {
+"d": "permanent"
+},
+"effects": [
+{
+"affects": {
+"name": "b0",
+"ref": "bound"
+},
+"mods": [
+{
+"layer": 4,
+"subtypes": {
+"add": [
+"Zombie"
+]
+}
+}
+],
+"s": "continuous"
+}
+],
+"op": "effect"
+}
+],
+"targets": [
+{
+"filter": {
+"isCard": true,
+"types": [
+"Creature"
+],
+"zone": "graveyard"
+},
+"id": "t0",
+"kind": "object",
+"max": 1,
+"min": 0,
+"perPlayer": true
+}
+]
+},
+"kind": "spell"
+}
+]
+}
+]
+},
+{
+"card": "Coercive Recruiter",
+"expect": "full",
+"verified": "edh-top-6 review (Commander effort, EDHREC top 5,000 rank 3764), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-29: can target any creature, itself or the one that triggered it too; Auras and Equipment stay) and the Comprehensive Rules (media.wizards.com text 2026-09-25): whenever it or another Pirate you control enters (CR 603.2; it is a Pirate itself, so the trigger is a Pirate you control entering), gain control of target creature until end of turn (CR 701.26b, 611.2a, 613.1b) (existing eff.cont.control), untap that creature (CR 701.26b; 'that creature' is the target, not the creature that entered: lower/anaphora.ts, Mention.enteredObject) (existing eff.untap) and until end of turn it gains haste and becomes a Pirate in addition to its other types, one lasting effect of two changes (CR 702.10a, 205.3m, 613.1d, 613.1f) (new template eff.edht6.dur.obj.gains.becomes.subtype.inAddition)",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"duration": {
+"d": "endOfTurn"
+},
+"effects": [
+{
+"affects": {
+"id": "t0",
+"ref": "target"
+},
+"mods": [
+{
+"controller": {
+"ref": "you"
+},
+"layer": 2
+}
+],
+"s": "continuous"
+}
+],
+"op": "effect"
+},
+{
+"op": "untap",
+"what": {
+"id": "t0",
+"ref": "target"
+}
+},
+{
+"duration": {
+"d": "endOfTurn"
+},
+"effects": [
+{
+"affects": {
+"id": "t0",
+"ref": "target"
+},
+"mods": [
+{
+"layer": 4,
+"subtypes": {
+"add": [
+"Pirate"
+]
+}
+},
+{
+"add": [
+{
+"keyword": "haste",
+"kind": "keyword"
+}
+],
+"layer": 6
+}
+],
+"s": "continuous"
+}
+],
+"op": "effect"
+}
+],
+"targets": [
+{
+"filter": {
+"types": [
+"Creature"
+]
+},
+"id": "t0",
+"kind": "object",
+"max": 1,
+"min": 1
+}
+]
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "zoneChange",
+"subject": {
+"controller": "you",
+"subtypes": [
+"Pirate"
+]
+},
+"to": "battlefield"
+}
+]
+}
+}
+]
+}
+]
+},
+{
+"card": "Breeches, Brazen Plunderer",
+"expect": "full",
+"verified": "edh-top-6 review (Commander effort, EDHREC top 5,000 rank 4748), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-29: a card is exiled from each opponent who was dealt damage, not from all of them; normal timing and costs apply to the exiled cards; cards not played stay exiled) and the Comprehensive Rules (media.wizards.com text 2026-09-25): menace; whenever one or more Pirates you control deal damage to your opponents, once for the whole batch (CR 603.2c), exile the top card of the library of each opponent the damage was dealt to (the event's recipients as a group, CR 102.3, 401.2), and you may play those cards this turn and spend mana as though it were mana of any color to cast those spells (CR 609.4b, 107.4c, 611.2a) (existing eff.pcep1.play.group.dur.anyColor, made stable by this card); partner (CR 702.124)",
+"faces": [
+{
+"abilities": [
+{
+"keyword": "menace",
+"kind": "keyword"
+},
+{
+"effect": {
+"steps": [
+{
+"as": "b0",
+"op": "move",
+"to": {
+"zone": "exile"
+},
+"what": {
+"count": 1,
+"player": {
+"ref": "event",
+"role": "recipient"
+},
+"ref": "topCards"
+}
+},
+{
+"duration": {
+"d": "endOfTurn"
+},
+"effects": [
+{
+"action": "play",
+"anyManaColor": true,
+"of": {
+"is": {
+"name": "b0",
+"ref": "bound"
+}
+},
+"s": "permit",
+"who": {
+"ref": "you"
+}
+}
+],
+"op": "effect"
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"batch": true,
+"on": [
+{
+"ev": "damage",
+"recipient": {
+"player": "opponent"
+},
+"source": {
+"controller": "you",
+"subtypes": [
+"Pirate"
+]
+}
+}
+],
+"wholeBatch": true
+}
+},
+{
+"keyword": "partner",
+"kind": "keyword"
+}
+]
+}
+]
+},
+{"card":"Sepulchral Primordial","expect":"full","verified":"edh-top-6 review (Commander effort, EDHREC top 5,000 rank 2187), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-29: the creature cards enter simultaneously; one target per opponent) and the Comprehensive Rules (media.wizards.com text 2026-09-25): intimidate; when it enters, one target spec of at most one creature card in each opponent's graveyard (CR 115.1, 601.2c: perOpponent, a card in a graveyard is its owner's, CR 404.1), and you choose any number of those targets, one \"you may\" for each opponent's card (a chooseObjects of the targets, CR 608.2d), and the cards chosen are put onto the battlefield under your control together (one move, CR 110.2a) (new template eff.edht6.forEachOpponent.mayPut.bf)","faces":[{"abilities":[{"keyword":"intimidate","kind":"keyword"},{"effect":{"steps":[{"as":"b0","from":{"id":"t0","ref":"target"},"max":"any","min":0,"op":"chooseObjects","who":{"ref":"you"}},{"op":"move","to":{"controller":{"ref":"you"},"zone":"battlefield"},"what":{"name":"b0","ref":"bound"}}],"targets":[{"filter":{"isCard":true,"owner":"opponent","types":["Creature"],"zone":"graveyard"},"id":"t0","kind":"object","max":1,"min":0,"perOpponent":true}]},"kind":"triggered","trigger":{"on":[{"ev":"zoneChange","subject":{"self":true},"to":"battlefield"}]}}]}]}
+]

@@ -12,6 +12,7 @@ import { charsOfObject, hasKeyword, ptNumbers, type Chars } from './characterist
 import { addCounters } from './counters';
 import { gainLife, givePoison, loseLife } from './life';
 import { hasProtectionFrom } from './protection';
+import { damageAsInfect, damageAsWither, lethalThreshold, damageLeavesOneLoyalty } from '../statics/hooks';
 
 export interface DamageSource {
   id: ObjectId;
@@ -113,10 +114,10 @@ const isPlayer = (g: Game, id: string): boolean => g.s.players.some((p) => p.id 
  * beyond its defense. Several of those types: the greatest (CR 120.10). Indestructible changes nothing (CR 702.12b is about destruction, not lethal damage).
  * NaN when a creature's toughness is not a number.
  */
-function excessOf(o: { damage: number; counters: Record<string, number> }, tc: Chars, amount: number, deathtouch: boolean): number {
+function excessOf(o: { damage: number; counters: Record<string, number> }, tc: Chars, amount: number, deathtouch: boolean, lethalAt?: number | null): number {
   const candidates: number[] = [];
   if (tc.types.includes('Creature')) {
-    const t = ptNumbers(tc).toughness;
+    const t = lethalAt !== undefined ? lethalAt : ptNumbers(tc).toughness; // edh-next-145 (CR 120.10, 120.6): the number lethal damage is checked against (Zilortha: the power)
     if (t === null) return NaN;
     const room = Math.max(0, t - o.damage);
     const lethal = deathtouch ? Math.min(1, room) : room; // CR 120.4a, 702.2c
@@ -125,6 +126,21 @@ function excessOf(o: { damage: number; counters: Record<string, number> }, tc: C
   if (tc.types.includes('Planeswalker')) candidates.push(Math.max(0, amount - Math.max(0, o.counters['loyalty'] ?? 0)));
   if (tc.types.includes('Battle')) candidates.push(Math.max(0, amount - Math.max(0, o.counters['defense'] ?? 0)));
   return candidates.length === 0 ? 0 : Math.max(...candidates);
+}
+
+/**
+ * edh-replace-4 (CR 120.4a, 120.10, 702.2c; Ram Through ruling 2020-04-17): how much of `amount` damage a source would deal to a CREATURE is excess damage, read the way
+ * `dealDamage` reads it (lethal damage = toughness minus damage already marked, 1 from a deathtouch source), BEFORE any replacement or prevention effect and whether or
+ * not the creature is indestructible or protected from the source. 0 for a player, a non-creature or a creature whose toughness is not a number.
+ */
+export function excessDamageToCreature(g: Game, sourceId: ObjectId, target: ObjectId, amount: number): number {
+  const o = g.maybeObj(target);
+  if (!o || o.zone !== 'battlefield' || o.phasedOut) return 0;
+  const tc = charsOfObject(g.s, o);
+  if (!tc.types.includes('Creature') || amount <= 0) return 0;
+  const src = damageSource(g, sourceId);
+  const x = excessOf(o, tc, amount, src !== null && hasKeyword(src.chars, 'deathtouch'), lethalThreshold(g.s, o.id, tc));
+  return Number.isNaN(x) ? 0 : x;
 }
 
 /**
@@ -151,8 +167,9 @@ export function dealDamage(g: Game, sourceId: ObjectId | null, target: ObjectId 
     if (p.hasLost) return 0;
     targetName = p.name;
     dealt = amount;
-    if (src && hasKeyword(src.chars, 'infect')) {
-      givePoison(g, target, amount, `infect damage from ${srcName}`); // CR 120.3b
+    // edh-next-49 (CR 120.3b): Phyrexian Unlife, "all damage is dealt to you as though its source had infect": the poison counters are given as an infect source's are, by its controller
+    if (src && (hasKeyword(src.chars, 'infect') || (g.infectAtProposal?.get(target) ?? damageAsInfect(g.s, target)))) {
+      givePoison(g, target, amount, `infect damage from ${srcName}`, src.controller); // CR 120.3b, 122.6
       results.push('poison');
     } else {
       const cause = `damage from ${srcName}`;
@@ -161,7 +178,7 @@ export function dealDamage(g: Game, sourceId: ObjectId | null, target: ObjectId 
     }
     if (combat && src) {
       const toxic = src.chars.keywords.reduce((n, k) => n + (k.keyword === 'toxic' && typeof k.amount === 'number' ? k.amount : 0), 0); // CR 702.164b: total toxic value
-      if (toxic > 0) givePoison(g, target, toxic, `toxic ${toxic} from ${srcName}`); // CR 120.3g
+      if (toxic > 0) givePoison(g, target, toxic, `toxic ${toxic} from ${srcName}`, src.controller); // CR 120.3g, 122.6
     }
   } else {
     const o = g.obj(target);
@@ -177,10 +194,10 @@ export function dealDamage(g: Game, sourceId: ObjectId | null, target: ObjectId 
       return 0;
     }
     dealt = amount;
-    excess = excessOf(o, tc, amount, src !== null && hasKeyword(src.chars, 'deathtouch')); // FAST5X E16 (CR 120.4a, 120.10): before the results are processed
+    excess = excessOf(o, tc, amount, src !== null && hasKeyword(src.chars, 'deathtouch'), lethalThreshold(g.s, o.id, tc)); // FAST5X E16 (CR 120.4a, 120.10): before the results are processed
     if (isCreature) {
-      if (src && (hasKeyword(src.chars, 'wither') || hasKeyword(src.chars, 'infect'))) {
-        addCounters(g, target, '-1/-1', amount, src.controller); // CR 120.3d; FAST5X E21: the controller of the source puts them (CR 122.6)
+      if ((src && (hasKeyword(src.chars, 'wither') || hasKeyword(src.chars, 'infect'))) || damageAsWither(g.s)) { // edh-d-44 (CR 702.80a): or an effect deals all damage as though its source had wither
+        addCounters(g, target, '-1/-1', amount, src?.controller); // CR 120.3d; FAST5X E21: the controller of the source puts them (CR 122.6)
         results.push(`${amount} -1/-1 counter${amount === 1 ? '' : 's'}`);
       } else {
         o.damage += amount; // CR 120.3e
@@ -188,7 +205,11 @@ export function dealDamage(g: Game, sourceId: ObjectId | null, target: ObjectId 
       if (src && hasKeyword(src.chars, 'deathtouch')) o.deathtouchDamaged = true; // CR 702.2b, 704.5h
     }
     if (isWalker) {
-      const lost = -addCounters(g, target, 'loyalty', -amount); // CR 120.3c
+      // edh-d-94 (CR 120.3c, 614.1a; Deification): damage that would remove every loyalty counter removes all but one instead (the damage itself is dealt in full)
+      const have = Math.max(0, o.counters['loyalty'] ?? 0);
+      const keepOne = amount >= have && have > 0 && damageLeavesOneLoyalty(g.s, target);
+      if (keepOne) g.log(`${targetName} keeps one loyalty counter: all but one of the counters the damage would remove are removed.`, { rules: ['CR 120.3c', 'CR 614.1a'], level: 'info' });
+      const lost = -addCounters(g, target, 'loyalty', -(keepOne ? have - 1 : amount)); // CR 120.3c
       results.push(`${lost} loyalty removed`);
     }
     if (isBattle) {

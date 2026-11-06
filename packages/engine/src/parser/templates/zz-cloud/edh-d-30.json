@@ -1,0 +1,370 @@
+[
+  {
+    "id": "eff.edhd30.becomes.ptColorSubtype.creatureWith.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} creature with {a:Abilities} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of combat on your turn, up to one target artifact you control becomes a 2/2 black Bat creature with flying and haste in addition to its other types."
+      },
+      {
+        "text": "{2}: Target land you control becomes a 3/3 green Elemental creature with trample in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Target land you control becomes a 3/3 green Elemental creature with trample.",
+      "{2}: Target land you control becomes a 3/3 Elemental creature with trample in addition to its other types.",
+      "{2}: Target land you control becomes a 3/3 green Elemental creature with trample in addition to its other types until end of turn.",
+      "{2}: Target land you control becomes a 3/3 green Elemental creature with trample in addition to its other colors and types."
+    ]
+  },
+  {
+    "id": "eff.edhd30.dur.loseall.cantAttackBlock",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 613.1f",
+      "CR 508.1c",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} loses all abilities and can't attack or block",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature loses all abilities and can't attack or block."
+      },
+      {
+        "text": "{2}, {T}: For as long as ~ remains tapped, another target permanent loses all abilities and can't attack or block."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature loses all abilities and can attack or block.",
+      "Until end of turn, target creature loses flying and can't attack or block.",
+      "Target creature loses all abilities and can't attack or block."
+    ]
+  },
+  {
+    "id": "sta.edhd30.each.getsHasIs.inAddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 205.1b"
+    ],
+    "pattern": "each {f:Filter} gets {pt:PT} , has {a:Abilities} , and is ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control but don't own gets +1/+1, has menace, and is a Rogue in addition to its other types."
+      },
+      {
+        "text": "Each other Elf you control gets +1/+1, has trample and haste, and is a Warrior in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control but don't own gets +1/+1, has menace, and is a Rogue.",
+      "Each creature you control but don't own gets +1/+1, loses menace, and is a Rogue in addition to its other types.",
+      "Each creature you control but don't own gets +1/+1, has menace, and is a Rogue in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhd30.each.isEveryLandType.inAddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 205.3i",
+      "CR 305.6"
+    ],
+    "pattern": "each {f:Filter} is every land type in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": [
+              "Plains",
+              "Island",
+              "Swamp",
+              "Mountain",
+              "Forest",
+              "Cave",
+              "Desert",
+              "Gate",
+              "Lair",
+              "Locus",
+              "Mine",
+              "Planet",
+              "Power-Plant",
+              "Sphere",
+              "Tower",
+              "Town",
+              "Urza's"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "every",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Each land you control is every land type in addition to its other types."
+      },
+      {
+        "text": "Each land an opponent controls is every land type in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Each land you control is every land type.",
+      "Each land you control is every basic land type in addition to its other types.",
+      "Each land you control is every land type in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhd30.each.isEveryCreatureType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 205.3m",
+      "CR 702.73a"
+    ],
+    "pattern": "each {f:Filter} is every creature type",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "all": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "every"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control is every creature type."
+      },
+      {
+        "text": "Each artifact creature an opponent controls is every creature type."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control is every creature type until end of turn.",
+      "Each creature you control is every land type.",
+      "Each creature you control is every creature type in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.edhd30.dur.becomes.subtypeCreature.inAddition.andGains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 604.3a",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {st:Subtypes} creature in addition to its other types and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{W}: Until end of turn, ~ becomes a Monk Avatar creature in addition to its other types and gains \"This creature gets +1/+1 for each creature you control.\""
+      },
+      {
+        "text": "{2}: Until end of turn, target land you control becomes a Treefolk creature in addition to its other types and gains \"{T}: Add {G}.\""
+      }
+    ],
+    "counterExamples": [
+      "{W}: ~ becomes a Monk Avatar creature in addition to its other types and gains \"This creature gets +1/+1 for each creature you control on it.\"",
+      "{W}: Until end of turn, ~ becomes a Monk Avatar creature and gains \"This creature gets +1/+1 for each creature you control on it.\"",
+      "{W}: Until end of turn, ~ becomes a Monk Avatar creature in addition to its other types and loses \"This creature gets +1/+1 for each creature you control on it.\""
+    ]
+  }
+]

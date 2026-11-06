@@ -10,16 +10,18 @@
  */
 import type { Game } from '../core/game';
 import { EngineBug } from '../core/game';
-import { ENTERING_TOGETHER } from './entering-together';
+import { closeEnteringGroup, ENTERING_TOGETHER, installShieldRemover } from './entering-together';
 import { createToken, drawCard, moveObject, shuffleLibrary, type MoveOptions, type PutEnteringCounters } from '../core/zones';
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { PayCostDecision } from '../types/decisions';
 import { type ContinuousEffectRec, type GameObject, type ObjHandle } from '../types/state';
-import type { LinkId } from '../types/ability';
+import type { AbilityDef, LinkId, Modification } from '../types/ability';
 import type { CostPlan } from '../rules/cost';
 import { addCounters } from '../rules/counters';
 import { becomePrepared } from '../core/prepare';
-import { enterAttackingChoosing } from '../rules/status';
+import { markLost } from '../core/loss';
+import { createEmblem } from '../core/emblems';
+import { chooseAsAttached, enterAttackingChoosing } from '../rules/status';
 import { dealDamage, type DamageOptions } from '../rules/damage';
 import { destroy, type DestroyOptions, type DestroyResult } from '../rules/destroy';
 import { changeLife, gainLife, givePoison, loseLife } from '../rules/life';
@@ -107,7 +109,14 @@ export function performLifeEvent(g: Game, e: Ev<'life'>): Performed {
 /** std-library-4 (CR 119.4): a payment of life no replacement replaced: the life total changes by the amount paid (proposed by rules/life.ts#payLife). */
 export function performPayLifeEvent(g: Game, e: Ev<'payLife'>): Performed {
   changeLife(g, e.player, -e.amount, e.cause ?? 'paid', e.rules ?? ['CR 119.4']);
+  g.emit({ type: 'lifePaid', player: e.player, amount: e.amount }); // edh-next-109 (CR 119.4): "whenever you pay life"
   return done(e, [], e.amount);
+}
+
+/** edh-replace-7 (CR 104.3): a loss of the game no replacement replaced: the player has lost it (proposed by core/sba.ts#markLost). */
+export function performLoseGameEvent(g: Game, e: Ev<'loseGame'>): Performed {
+  markLost(g, e.player, e.reason, e.rules);
+  return done(e, [], 1);
 }
 
 export function performDrawEvent(g: Game, e: Ev<'draw'>): Performed {
@@ -136,7 +145,7 @@ export function performCountersEvent(g: Game, e: Ev<'counters'>): Performed {
 
 export function performDestroyEvent(g: Game, e: Ev<'destroy'>, caller: CallerOptions = {}): Performed {
   if (!isLive(g, e.object.id, e.object.zone)) return done(e, [], 0, { destroyed: 'none' });
-  const r = destroy(g, e.object.id, { ...caller.destroy, cantRegenerate: !e.canRegenerate || caller.destroy?.cantRegenerate === true, proposed: true }); // CR 701.8, 701.19
+  const r = destroy(g, e.object.id, { ...caller.destroy, cantRegenerate: !e.canRegenerate || caller.destroy?.cantRegenerate === true, proposed: true, ...(e.by !== undefined ? { by: e.by } : {}) }); // CR 701.8, 701.19
   return done(e, [], r === 'destroyed' ? 1 : 0, { destroyed: r });
 }
 
@@ -207,6 +216,8 @@ function applyEnterFacts(g: Game, id: ObjectId, d: DestinationFacts, used?: Read
     const what = d.chosen.filter((c) => c.objects === undefined).map((c) => (c.values ?? c.players?.map((p) => g.player(p).name) ?? []).join(', ')).join('; ');
     g.log(`${name} enters with ${what} chosen.`, { rules: ['CR 614.12a', 'CR 607.2d'], level: 'info' });
   }
+  // edh-next-137 (CR 614.12, 114.2, 607.2a; Tibalt, Cosmic Impostor): the emblems it gives as it enters, whose abilities read this permanent's links (GameObject.linksFrom)
+  for (const em of d.emblems ?? []) createEmblem(g, em.player, em.abilities, name, {}, id);
   if (d.tapped && o.tapped) g.log(`${name} enters tapped.`, { rules: ['CR 614.1c'], level: 'info' });
   const putCounters = putEnteringCounters(g, () => used);
   for (const c of d.counters ?? []) {
@@ -216,6 +227,7 @@ function applyEnterFacts(g: Game, id: ObjectId, d: DestinationFacts, used?: Read
     if (put > 0) g.log(`${name} enters with ${put} ${c.kind} counter${put === 1 ? '' : 's'} on it.`, { rules: ['CR 614.1c', 'CR 122.6'], level: 'info' });
   }
   if (d.attachTo !== undefined) {
+    chooseAsAttached(g, id, d.attachTo); // edh-next-146 (CR 701.3a, 607.2d): an attachment that enters attached becomes attached too
     o.attachedTo = d.attachTo;
     g.emit({ type: 'attached', objectId: id, to: d.attachTo });
     const host = g.s.players.find((p) => p.id === d.attachTo)?.name ?? g.nameOf(d.attachTo);
@@ -253,6 +265,61 @@ function applyEnterFacts(g: Game, id: ObjectId, d: DestinationFacts, used?: Read
       effect: { s: 'continuous', affects: { ref: 'fixed', objects: [{ id, zone: 'battlefield' }] }, mods: [{ layer: 4, subtypes: { add: [...d.subtypes] } }] },
     });
     g.log(`${name} enters as ${d.subtypes.join(' ')} in addition to its other types.`, { rules: ['CR 614.1c', 'CR 205.1b'], level: 'info' });
+  }
+  // edh-next-140 (CR 614.1c, 613.1d, 613.1f, 205.1a; Harold and Bob, rulings 2024-03-08): it enters as an Aura enchantment, exactly Enchantment and Aura (its name, colors and supertypes stay),
+  // with "Enchant ..." and the new abilities, the others lost when the effect says so: layers 4 and 6 on the new object, from the moment it enters (its host was chosen before it moved)
+  if (d.asAura !== undefined) {
+    const enchant: AbilityDef = { kind: 'keyword', keyword: 'enchant', filter: d.asAura.enchant, text: 'Enchant' } as AbilityDef;
+    g.s.continuousEffects.push({
+      id: g.newEffectId(),
+      source: { id, zone: 'battlefield' },
+      sourceName: name,
+      controller: o.controller,
+      timestamp: o.timestamp, // from the moment it enters (CR 613.7d)
+      startedTurn: g.s.turn.number,
+      duration: { d: 'permanent' }, // for as long as it is this object (CR 400.7, 611.2c)
+      effect: { s: 'continuous', affects: { ref: 'fixed', objects: [{ id, zone: 'battlefield' }] }, mods: [
+        { layer: 4, types: { set: ['Enchantment'] }, subtypes: { set: ['Aura'] } } as Modification,
+        { layer: 6, ...(d.asAura.losesOthers === true ? { removeAll: true } : {}), add: [enchant, ...d.asAura.abilities] } as Modification,
+      ] },
+    });
+    g.log(`${name} enters as an Aura enchantment${d.asAura.losesOthers === true ? ' with no other abilities' : ''}.`, { rules: ['CR 614.1c', 'CR 303.4f', 'CR 613.1d'], level: 'info' });
+  }
+  // edh-next-146 (CR 614.1c, 613.2a, 707.2; Corrupted Shapeshifter): "As ~ enters, it becomes your choice of ...": the chosen creature, a copiable effect of the new object from the moment it
+  // enters (an `asEntry` record: its modifications apply in layer 1a, statics/copy.ts#LAYER_1A, and a copy of it copies them, statics/copy.ts#copiableOrWhy)
+  if (d.becomesAsEntry !== undefined) {
+    g.s.continuousEffects.push({
+      id: g.newEffectId(),
+      source: { id, zone: 'battlefield' },
+      sourceName: name,
+      controller: o.controller,
+      timestamp: o.timestamp, // from the moment it enters (CR 613.7d)
+      startedTurn: g.s.turn.number,
+      duration: { d: 'permanent' }, // for as long as it is this object (CR 400.7, 611.2c)
+      effect: { s: 'continuous', affects: { ref: 'fixed', objects: [{ id, zone: 'battlefield' }] }, mods: d.becomesAsEntry.mods },
+      asEntry: true,
+    });
+    g.log(`${name} enters as ${d.becomesAsEntry.label}.`, { rules: ['CR 614.1c', 'CR 613.2a'], level: 'info' });
+  }
+  // edh-perms-21 (CR 614.1c, 205.1b, 613.1d, 613.4b; Displaced Dinosaurs): "it becomes a 7/7 Dinosaur creature in addition to its other types": layers 4 and 7b on the new object, from the moment it enters
+  if (d.becomes !== undefined) {
+    const bc = d.becomes;
+    const mods: Modification[] = [];
+    if ((bc.types?.length ?? 0) > 0 || (bc.subtypes?.length ?? 0) > 0) {
+      mods.push({ layer: 4, ...(bc.types !== undefined && bc.types.length > 0 ? { types: { add: [...bc.types] } } : {}), ...(bc.subtypes !== undefined && bc.subtypes.length > 0 ? { subtypes: { add: [...bc.subtypes] } } : {}) } as Modification);
+    }
+    if (bc.power !== undefined) mods.push({ layer: '7b', power: bc.power, toughness: bc.toughness! });
+    g.s.continuousEffects.push({
+      id: g.newEffectId(),
+      source: { id, zone: 'battlefield' },
+      sourceName: name,
+      controller: o.controller,
+      timestamp: o.timestamp, // from the moment it enters (CR 613.7d)
+      startedTurn: g.s.turn.number,
+      duration: { d: 'permanent' }, // for as long as it is this object (CR 400.7, 611.2c)
+      effect: { s: 'continuous', affects: { ref: 'fixed', objects: [{ id, zone: 'battlefield' }] }, mods },
+    });
+    g.log(`${name} enters as ${bc.power !== undefined ? `a ${bc.power}/${bc.toughness} ` : ''}${[...(bc.subtypes ?? []), ...(bc.types ?? [])].join(' ')} in addition to its other types.`, { rules: ['CR 614.1c', 'CR 205.1b'], level: 'info' });
   }
 }
 
@@ -296,7 +363,7 @@ function performCreateToken(g: Game, e: Ev<'createToken'>): ObjectId[] {
     out.push(id);
     ENTERING_TOGETHER.get(g)?.add(id);
   }
-  } finally { if (previousGroup) ENTERING_TOGETHER.set(g, previousGroup); else ENTERING_TOGETHER.delete(g); }
+  } finally { closeEnteringGroup(g, ENTERING_TOGETHER.get(g) === previousGroup ? undefined : ENTERING_TOGETHER.get(g)) /* edh-next-122 */; if (previousGroup) ENTERING_TOGETHER.set(g, previousGroup); else ENTERING_TOGETHER.delete(g); }
   if (out.length > 0) g.log(`${g.player(e.player).name} creates ${out.length === 1 ? 'a' : out.length} ${def.name} token${out.length === 1 ? '' : 's'}.`, { rules: ['CR 111.1', 'CR 701.7a'], level: 'action' });
   return out;
 }
@@ -315,6 +382,7 @@ export function setShieldLeft(g: Game, recId: string, left: number): void {
   if (left > 0) rec.usesLeft = left;
   else g.s.continuousEffects = g.s.continuousEffects.filter((r) => r !== rec);
 }
+installShieldRemover((g, id) => setShieldLeft(g as Game, id, 0)); // edh-next-122: a batch shield used up when its group has entered (effects/entering-together.ts)
 
 // ---- counters (CR 122) ------------------------------------------------------------------------------------------------------------
 
@@ -323,12 +391,13 @@ function performCounters(g: Game, e: Ev<'counters'>): number {
   if (typeof e.on !== 'string') {
     if (!isLive(g, e.on.id, e.on.zone)) return 0;
     // FAST5X E21 (CR 122.6, 122.6a): who puts them: the player the proposal names, else (counters it enters with, a rule's or a replacement's) its controller
-    const by = e.change === 'put' ? e.by ?? (e.cause === 'replacement' || e.cause === 'rule' ? g.s.objects[e.on.id]?.controller : undefined) : undefined;
+    // edhd68 (CR 122.1, 603.2; Watcher of Hours): a removal names who removed the counters only when the proposal says so (an effect or a cost the player pays)
+    const by = e.change === 'put' ? e.by ?? (e.cause === 'replacement' || e.cause === 'rule' ? g.s.objects[e.on.id]?.controller : undefined) : e.by;
     return Math.abs(addCounters(g, e.on.id, e.kind, delta, by)); // CR 122.1, 122.6
   }
   const p = g.player(e.on as PlayerId);
   if (e.kind === 'poison' && delta > 0) {
-    givePoison(g, p.id, delta, 'an effect'); // CR 122.1f
+    givePoison(g, p.id, delta, 'an effect', e.by); // CR 122.1f, 122.6
     return delta;
   }
   const before = e.kind === 'poison' ? p.poison : Object.hasOwn(p.counters, e.kind) ? p.counters[e.kind]! : 0;

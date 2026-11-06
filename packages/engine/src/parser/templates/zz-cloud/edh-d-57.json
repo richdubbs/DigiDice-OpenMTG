@@ -1,0 +1,483 @@
+[
+  {
+    "id": "rep.edhd57.nextLoseGame.insteadEffects",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 615.7",
+      "CR 104.3"
+    ],
+    "pattern": "the next time you would lose the game {d:Dur} , instead {e:Effects}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "loseGame",
+            "player": "you"
+          },
+          "body": {
+            "b": "instead",
+            "do": "$e"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "The next time you would lose the game this turn, instead draw four cards and your life total becomes 2."
+      },
+      {
+        "text": "{2}: The next time you would lose the game this turn, instead you gain 5 life."
+      }
+    ],
+    "counterExamples": [
+      "The next time you would lose the game this turn, draw four cards and your life total becomes 2.",
+      "The next time an opponent would lose the game this turn, instead draw four cards and your life total becomes 2.",
+      "If you would lose the game this turn, instead draw four cards and your life total becomes 2."
+    ]
+  },
+  {
+    "id": "rep.edhd57.firstTokensYourTurn.chooseCopies",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 616.1",
+      "CR 707.2",
+      "CR 111.1"
+    ],
+    "pattern": "the first time you would create one or more tokens during each of your turns , you may instead choose a creature other than ~ and create that many tokens that are copies of that creature",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you"
+      },
+      "optional": true,
+      "condition": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "turnOf",
+            "whose": "you"
+          },
+          {
+            "cond": "not",
+            "of": {
+              "cond": "happened",
+              "event": {
+                "ev": "createToken",
+                "player": "you"
+              },
+              "scope": "turn"
+            }
+          }
+        ]
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "you"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "other": true,
+                "zone": "battlefield"
+              }
+            },
+            "min": 1,
+            "max": 1,
+            "as": "copiedCreature"
+          },
+          {
+            "op": "copy",
+            "what": {
+              "ref": "bound",
+              "name": "copiedCreature"
+            },
+            "result": "token",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "eventAmount"
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "would",
+      "may",
+      "instead",
+      "that many",
+      "each",
+      "other",
+      "choose",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "The first time you would create one or more tokens during each of your turns, you may instead choose a creature other than ~ and create that many tokens that are copies of that creature."
+      },
+      {
+        "text": "The first time you would create one or more tokens during each of your turns, you may instead choose a creature other than this creature and create that many tokens that are copies of that creature."
+      }
+    ],
+    "counterExamples": [
+      "The first time you would create one or more tokens during each of your turns, you may instead create that many tokens that are copies of that creature.",
+      "The first time you would create one or more tokens each turn, you may instead choose a creature other than ~ and create that many tokens that are copies of that creature.",
+      "The first time you would create one or more tokens during each of your turns, you may instead choose a creature and create that many tokens that are copies of that creature."
+    ]
+  },
+  {
+    "id": "eff.edhd57.damage.double.anySources.toPermanentOrPlayer.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 611.2a",
+      "CR 120.1",
+      "CR 120.3"
+    ],
+    "pattern": "if any source you control would deal damage to a permanent or player {d:Dur} , it deals double that damage to that permanent or player instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "controller": "you"
+            }
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "mul": 2
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "any",
+      "would",
+      "instead",
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "If any source you control would deal damage to a permanent or player this turn, it deals double that damage to that permanent or player instead."
+      },
+      {
+        "text": "{2}{R}: If any source you control would deal damage to a permanent or player this turn, it deals double that damage to that permanent or player instead."
+      }
+    ],
+    "counterExamples": [
+      "If any source you control would deal damage to a permanent or player this turn, it deals triple that damage to that permanent or player instead.",
+      "If any source an opponent controls would deal damage to a permanent or player this turn, it deals double that damage to that permanent or player instead.",
+      "If any source you control would deal damage to a permanent or player, it deals double that damage to that permanent or player instead.",
+      "If any source you control would deal damage to a player this turn, it deals double that damage to that player instead."
+    ]
+  },
+  {
+    "id": "sta.edhd57.asLongAs.damageWould.more",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , if {e:DamageWould} , ( it | that source ) deals {m:DamageMore} instead",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": "$e",
+          "body": {
+            "b": "modify",
+            "amount": "$m.change"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Knight, if a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus 2 instead."
+      },
+      {
+        "text": "As long as you have no cards in hand, if a creature you control would deal combat damage to a player, it deals that much damage plus 1 instead."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Knight, if a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus 2 instead as long as you control a Knight.",
+      "If a source you control would deal noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus 3 instead.",
+      "As long as you control a Knight, a source you control deals noncombat damage to an opponent or a permanent an opponent controls, it deals that much damage plus 2 instead."
+    ]
+  },
+  {
+    "id": "rep.edhd57.asLongAs.youDraw.mayInsteadTutor",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 121.1",
+      "CR 611.3a",
+      "CR 701.23a"
+    ],
+    "pattern": "as long as {c:Cond} , if you would draw a card , you may instead search your library for a card , put that card into your hand , then shuffle",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "draw",
+            "player": "you"
+          },
+          "optional": true,
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "search",
+                "who": {
+                  "ref": "you"
+                },
+                "zone": "library",
+                "filter": {},
+                "max": 1,
+                "as": "search"
+              },
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "search"
+                },
+                "to": {
+                  "zone": "hand"
+                }
+              },
+              {
+                "op": "shuffle",
+                "who": {
+                  "ref": "you"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "if",
+      "would",
+      "may",
+      "instead",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Knight, if you would draw a card, you may instead search your library for a card, put that card into your hand, then shuffle."
+      },
+      {
+        "text": "As long as you have no cards in hand, if you would draw a card, you may instead search your library for a card, put that card into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Knight, if you would draw a card, search your library for a card, put that card into your hand, then shuffle instead.",
+      "If you would draw a card, you may instead search your library for a card, put that card into your hand, then shuffle.",
+      "As long as you control a Knight, if an opponent would draw a card, you may instead search your library for a card, put that card into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "rep.edhd57.combatDamageToPlayer.insteadMill",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 701.17a"
+    ],
+    "pattern": "if {f:Filter} would deal combat damage to a player , instead that player mills that many cards",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$f",
+            "recipient": {
+              "player": "any"
+            },
+            "combat": true
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "mill",
+                "who": {
+                  "ref": "event",
+                  "role": "recipient"
+                },
+                "count": {
+                  "q": "eventAmount"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "If a Skeleton you control would deal combat damage to a player, instead that player mills that many cards."
+      },
+      {
+        "text": "If a creature you control would deal combat damage to a player, instead that player mills that many cards."
+      }
+    ],
+    "counterExamples": [
+      "If a Skeleton you control would deal combat damage to a player, that player mills that many cards.",
+      "If a Skeleton you control would deal damage to a player, instead that player mills that many cards.",
+      "If a Skeleton you control would deal combat damage to a player, instead you mill that many cards."
+    ]
+  },
+  {
+    "id": "eff.edhd57.redirect.nextSourceOfChoice.obj.toYou",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.9",
+      "CR 609.7a",
+      "CR 615.7"
+    ],
+    "pattern": "the next time a source of your choice would deal damage to {o:Obj} {d:Dur} , that source deals that damage to you instead",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "recipient": {
+                "object": {
+                  "is": "$o"
+                }
+              }
+            },
+            "body": {
+              "b": "redirect",
+              "to": {
+                "ref": "you"
+              }
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "would",
+      "next",
+      "instead",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "{0}: The next time a source of your choice would deal damage to target Elf this turn, that source deals that damage to you instead."
+      },
+      {
+        "text": "{2}: The next time a source of your choice would deal damage to target creature you control this turn, that source deals that damage to you instead."
+      }
+    ],
+    "counterExamples": [
+      "{0}: The next time a source of your choice would deal damage to target Elf this turn, prevent that damage.",
+      "{0}: The next time a source of your choice would deal damage to target Elf, that source deals that damage to you instead.",
+      "{0}: The next time a source of your choice would deal damage to target Elf this turn, that source deals that damage to ~ instead."
+    ]
+  }
+]

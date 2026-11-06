@@ -30,7 +30,7 @@
  */
 import type { Game } from '../core/game';
 import type { EventContext, FaceDownInfo, LinkValue, ObjHandle } from '../types/state';
-import type { AbilityDef, CopyExcept, CounterSpec, EffectProgram, Name, EffectStep, EffectOp, Duration, ObjectFilter, ReplacementDef, TurnPhase } from '../types/ability';
+import type { AbilityDef, CopyExcept, CounterSpec, EffectProgram, Name, EffectStep, EffectOp, Duration, Modification, ObjectFilter, ReplacementDef, TurnPhase } from '../types/ability';
 import type { Performed } from './perform';
 import type { CardId, ObjectId, PlayerId } from '../types/ids';
 import type { GameObject, LastKnown, StackInfo, TargetChoice, ZoneKind } from '../types/state';
@@ -47,6 +47,12 @@ export interface Binding {
    * effects/handlers/choose.ts for a `damageSource` choice.
    */
   keepsLeft?: true;
+  /**
+   * trek-17 (CR 701.20a, 121.1, 608.2c; Ambassador K'Ehleyr, Alexander, Ship's Fool): the objects are cards a `reveal` step of this resolution revealed. The cards stay the group wherever the resolution moves them
+   * ("for each nonland card revealed this way", counted after "each player reveals the top card of their library, then draws a card"): effects/refs.ts#followRevealedBinding follows each one
+   * through its zone changes, but only for an `each` filter with zone 'any' whose `is` is this binding (edh-fix-6); every other reference keeps the objects as bound.
+   */
+  revealed?: true;
 }
 
 export interface StepResult {
@@ -70,6 +76,10 @@ export interface StepResult {
    * permanents), read by `{q:'damageDealt'}` ("you gain life equal to the damage dealt this way"). Absent for every other step.
    */
   dealt?: number;
+  /** edh-next-109 ADDITION (optional), CR 120.3, 608.2h: of a `damage` step, the total amount it said it deals (before any prevention), read by `{q:'damageDealt', stated:true}` ("... and you gain that much life"). */
+  stated?: number;
+  /** edh-next-128 ADDITION (optional), CR 705.2, 608.2c: of a called `flipCoin` of several coins, the flips lost, read by `{q:'resultCount', lost: true}` ("for each flip you lose"). */
+  lost?: number;
   /**
    * FAST5X E17 ADDITION (optional): the last known information of the objects the step actually moved, as they were before it moved them (CR 608.2h; a token
    * that ceased to exist too). Set by `destroy` (effects/handlers/zones-remove.ts); read by `{cond:'did', which}` ("a creature you controlled was destroyed
@@ -79,6 +89,8 @@ export interface StepResult {
    * `{q:'resultCount', which}` ("for each creature destroyed this way", CR 608.2c, 608.2h) as well.
    */
   before?: LastKnown[];
+  /** edh-perms-22: the objects a move was applied to as each last existed, wherever a replacement effect sent it (`{q:'resultCount', attempted}`). */
+  attempted?: LastKnown[];
   /**
    * std-rw9 ADDITION (optional), CR 701.8a, 614.6, 608.2c: of a `destroy` step, the zone each object of `before` went to (same order; null when it ceased to exist), so
    * `{cond:'did', which, to:'graveyard'}` ("if a creature card is put into a graveyard this way") reads only what really went to a graveyard (a replacement may have
@@ -121,6 +133,11 @@ export interface StepResult {
    */
   votes?: Map<string, number>;
   /**
+   * edh-players-17 ADDITION (optional), CR 701.38a, 701.38d: of a vote, the players who voted for each choice, one entry per vote, in the order the votes were cast (turn order
+   * from the player who started; every choice is listed, none included), read by the player reference `votedFor` ("for each money vote, ... the voter"). Absent for every other step.
+   */
+  voters?: Map<string, PlayerId[]>;
+  /**
    * r5-fxz ADDITION (optional), CR 701.25a, 701.22a: of a `surveil` or `scry` step, the cards its players left on top of their libraries, as they are there
    * (read by `{q:'resultCount', which}` in place of `before`: "for each card you put on top of your library"). Absent for every other step.
    */
@@ -137,6 +154,8 @@ export interface TargetSlot {
   player?: PlayerId;
   /** Result of the CR 608.2b re-check. */
   legal: boolean;
+  /** edh-d-83 (CR 608.2b): the player a per-player target was chosen for (TargetChoice.for). */
+  for?: PlayerId;
 }
 
 /** One resolution. Rebuilt on every re-execution, never stored in GameState. */
@@ -151,8 +170,10 @@ export interface ExecCtx {
    * read it instead of the stack object (design 8.6: never read the stack object after makeCtx): CR 701.27f compares it with the permanent's timestamp.
    */
   stackTimestamp?: number;
-  /** edh-perms-1 (CR 614.6, 603.2e): set while a replacement makes tokens INSTEAD of a creation that entered them tapped: the replacing tokens enter tapped too (not "becomes tapped"). */
+  /** edh-perms-1 (CR 614.6, 110.5b): set while a replacement makes tokens INSTEAD of a creation that entered them tapped: the replacing tokens enter tapped too (not "becomes tapped"). */
   insteadTapped?: true;
+  /** edh-fix-1 (CR 614.6, 122.6): the counters the replaced creation entered its tokens with ("incubate"): tokens a replacement makes (instead, or in addition) enter with them too. */
+  insteadCounters?: { kind: string; count: number }[];
   controller: PlayerId;
   /** The effective program: chosen modes' programs concatenated in printed order (CR 700.2d), then the ability's own steps. */
   program: EffectProgram;
@@ -165,6 +186,8 @@ export interface ExecCtx {
   vars: Map<string, number>;
   /** p2-mana-1 INTERFACE CHANGE (additive): a mana ability run at once (no stack object): the X announced for its cost (rules/mana.ts#counterXPart, CR 107.3a). */
   manaX?: number;
+  /** edh-top-2 INTERFACE CHANGE (additive), CR 605.3b, 400.7j: a mana ability run at once (no stack object): the cards its cost exiled, by their ids in exile (ObjRef `costExiled`). */
+  manaPaid?: { exiled?: { self?: string; others: string[] }; /** edh-next-47 (CR 605.3b, 608.2h): the permanents its cost sacrificed (ObjRef `costSacrificed`). */ sacrificed?: string[] };
   /** Iteration variable inside forEach. */
   iterating?: PlayerId | ObjHandle;
   /**
@@ -203,15 +226,22 @@ export type Proposed =
   }
   /**
    * Cloud r3-repl INTERFACE CHANGE (additive): `cause`, the text the life log names ("damage from X" for the life loss damage causes, CR 120.3a; rules/damage.ts
-   * proposes that loss through the life-loss funnel so effects that modify life loss apply to it, CR 614.1a).
+   * proposes that loss through the life-loss funnel so effects that modify life loss apply to it, CR 614.1a). edh-players-3: `fromDamage`, that loss (CR 120.3a),
+   * which "damage that would reduce your life total ..." replaces and a plain loss of life does not match.
    */
-  | { ev: 'life'; change: 'gain' | 'loss'; player: PlayerId; amount: number; cause?: string }
+  | { ev: 'life'; change: 'gain' | 'loss'; player: PlayerId; amount: number; cause?: string; fromDamage?: true; effectController?: PlayerId /* edh-d-54: the controller of the resolving spell or ability whose instructions cause this gain */ }
   | { ev: 'draw'; player: PlayerId }
   /**
    * std-library-4 INTERFACE CHANGE (additive): a payment of life a player can make (rules/life.ts#payLife: a cost, a Phyrexian mana symbol, an effect's payment;
    * effects/proposal-kinds/pay-life.ts, CR 119.4, 614.1a), proposed before the life total changes. `cause` and `rules` are the log's.
    */
   | { ev: 'payLife'; player: PlayerId; amount: number; cause?: string; rules?: string[] }
+  /**
+   * edh-replace-7 INTERFACE CHANGE (additive): a player's loss of the game, proposed before the player is marked as having lost (core/sba.ts#markLost: the state-based actions
+   * of CR 704.5a-c, 704.6c, the "loses the game" effect, CR 104.3e; never a concession, CR 104.3a, which no effect can replace), so "If you would lose the game, instead ..." (The Golden
+   * Throne) replaces it (effects/proposal-kinds/lose-game.ts, CR 614.1a). A player who can't lose the game is never proposed (CR 104.3b, the ruling of The Golden Throne 2022-10-07).
+   */
+  | { ev: 'loseGame'; player: PlayerId; reason: string; rules: string[] }
   /** Cloud r3-repl INTERFACE CHANGE (additive): one player's mill of `count` cards, proposed before any card moves (effects/proposal-kinds/mill.ts, CR 701.17a, 614.1a). */
   | { ev: 'mill'; player: PlayerId; count: number }
   /** Cloud r4-repl INTERFACE CHANGE (additive): one player's draw of `count` cards, proposed before any card is drawn (effects/proposal-kinds/draw-many.ts, CR 121.2, 614.1a). */
@@ -222,6 +252,11 @@ export type Proposed =
   | { ev: 'explore'; object: ObjHandle; player: PlayerId }
   /** p2-replace-events-2 INTERFACE CHANGE (additive): one proliferate of a player, proposed before it runs (effects/proposal-kinds/proliferate.ts, CR 701.34a, 614.1a). */
   | { ev: 'proliferate'; player: PlayerId }
+  /**
+   * edh-zones-14 INTERFACE CHANGE (additive): one search of a zone of a player, proposed before the searcher looks at it (effects/proposal-kinds/search.ts, CR 701.23a,
+   * 614.1a). `top`, when a replacement set it: only the top N cards of that library are searched (Aven Mindcensor).
+   */
+  | { ev: 'search'; player: PlayerId; owner: PlayerId; zone: ZoneKind; top?: number }
   /** p2-replace-events-3 INTERFACE CHANGE (additive): one player's scry of N cards, proposed before they look (effects/proposal-kinds/scry.ts, CR 701.22a, 614.1a). */
   | { ev: 'scry'; player: PlayerId; count: number }
   /** `from` is null for a token entering as it is created (CR 111.1, 616.1g; WP11 review interface change, a widening). */
@@ -240,7 +275,7 @@ export type Proposed =
    * FAST5X E28 INTERFACE CHANGE (additive): `stateBased`, the destruction of a state-based action (lethal damage, deathtouch damage: CR 704.5g-h), not "as the
    * result of an effect" (a shield counter's replacement does not apply to it, CR 122.1c).
    */
-  | { ev: 'destroy'; object: ObjHandle; canRegenerate: boolean; stateBased?: true }
+  | { ev: 'destroy'; object: ObjHandle; canRegenerate: boolean; stateBased?: true; by?: PlayerId /* edh-players-22 (CR 109.5, 701.8a): the controller of the spell or ability that destroys it */ }
   | { ev: 'step'; step: string; whose: PlayerId }
   // ---- M6-0 ADDITIONS (m6 design 2.4). Each kind has an entry in effects/registries.ts#PROPOSAL_KINDS; the four below are stubs (no capability, proposed by
   // nobody) until their owners land: phase/turn M6-1, turnFaceUp M6-3, transform M6-4.
@@ -301,8 +336,14 @@ export type { ReplacementChain } from '../core/game';
 export type ProposeSimultaneous = (g: Game, events: Proposed[]) => (Performed | null)[];
 
 export interface DestinationFacts {
+  /** edh-next-137 (CR 614.12, 114.2; Tibalt, Cosmic Impostor): the emblems the entering permanent's `enters` body gives (`emblem`), made right after it enters, reading its links. */
+  emblems?: { player: PlayerId; abilities: AbilityDef[] }[];
   /** FAST5 T36: the controller of the spell or ability whose effect performs a discard (`zoneChange.byOpponent`, CR 701.9a); absent for a cost, the cleanup step or a rule. */
   causedBy?: PlayerId;
+  /** edh-perms-9 (CR 608.2): the source of the resolving ability whose effect puts the object onto the battlefield (the `zoneChanged` event's `viaSource`). */
+  viaSource?: ObjectId;
+  /** edh-next-122 (CR 702.128b): the token entering was created by a resolving embalm ability (the `embalmed` copy step); read by an "except if ~ was embalmed" copy (effects/enters-parts/copy.ts). */
+  embalmed?: true;
   tapped?: boolean;
   /** trek-8 (CR 614.1c, 508.4): it enters as an attacking creature (effects/perform-events.ts#applyEnterFacts). */
   attacking?: boolean;
@@ -329,6 +370,12 @@ export interface DestinationFacts {
   abilities?: AbilityDef[];
   /** std-freecast-2 (CR 614.1c, 205.1b): it enters as these subtypes in addition to its other types: a layer 4 effect on the new object. */
   subtypes?: string[];
+  /** edh-perms-21 (CR 614.1c, 205.1b, 613.1d, 613.4b): it enters as these types and subtypes in addition to its other types, with this base power and toughness (layers 4 and 7b on the new object). */
+  becomes?: { types?: string[]; subtypes?: string[]; power?: number; toughness?: number };
+  /** edh-next-140 (CR 303.4f, 614.1c, 613.1d, 613.1f; Harold and Bob): it enters as an Aura enchantment with these abilities (types/ability.ts DestinationBase.asAura); `attachTo` is its host. */
+  asAura?: { enchant: import('../types/ability').ObjectFilter; abilities: import('../types/ability').AbilityDef[]; losesOthers?: true };
+  /** edh-next-146 (CR 614.1c, 613.2a): the option of `becomesOneOf` chosen as it enters: its modifications, written as one `asEntry` (layer 1a, copiable) record on the new object. */
+  becomesAsEntry?: { mods: Modification[]; label: string };
   // ---- M6-0 ADDITIONS (m6 design 2.4; written by the ENTERS_PARTS / DESTINATION_PARTS of their owners, carried by core/zones.ts#MoveOptions.enter) ----
   /** CR 712.14a, 616.1d: it enters with its back face up (M6-4). */
   transformed?: boolean;

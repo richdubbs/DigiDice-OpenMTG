@@ -47,7 +47,8 @@ const READINGS: readonly [string, string, unknown][] = [
   ['CR 202.3: "you control the creature with the greatest mana value or tied for the greatest mana value"', 'At the beginning of your upkeep, if you control the creature with the greatest mana value or tied for the greatest mana value, you gain 1 life.',
     { cond: 'all', of: [{ cond: 'exists', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } } }, { cond: 'compare', left: { q: 'stat', stat: 'manaValue', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, agg: 'max' }, op: '>=', right: { q: 'stat', stat: 'manaValue', of: { ref: 'each', filter: { types: ['Creature'] } }, agg: 'max' } }] }],
   ['CR 601.2a, 400.7d: "you didn\'t cast it from your hand" (the creature that entered)', "Whenever a creature you control enters, if you didn't cast it from your hand, you gain 1 life.",
-    { cond: 'not', of: { cond: 'wasCast', from: 'hand', object: { ref: 'event', role: 'subject' } } }],
+    // edh-players-7 added `by: 'you'` (CR 601.2a: "you cast it" names the caster; an opponent's cast of it is not "you cast it from your hand")
+    { cond: 'not', of: { cond: 'wasCast', from: 'hand', by: 'you', object: { ref: 'event', role: 'subject' } } }],
   ['CR 601.2h: "no mana was spent to cast it" (the spell of a cast trigger)', 'Whenever an opponent casts a spell, if no mana was spent to cast it, you draw a card.',
     { cond: 'compare', left: { q: 'spellManaSpent', of: { ref: 'event', role: 'spell' } }, op: '==', right: 0 }],
   ['CR 122.1: "there are ten or more counters among creatures you control"', 'At the beginning of your upkeep, if there are ten or more counters among creatures you control, you gain 5 life.',

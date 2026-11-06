@@ -1,0 +1,755 @@
+[
+  {
+    "id": "eff.edhn63.counters.remove.among.n",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "remove {n:Qty} {k:CounterKind} counter[s] from among {o:Objs}",
+    "build": {
+      "op": "removeCounters",
+      "from": "$o",
+      "kind": "$k",
+      "count": "$n",
+      "among": true
+    },
+    "subject": "none",
+    "needs": [
+      "op:removeCounters.among"
+    ],
+    "examples": [
+      {
+        "text": "Remove two charge counters from among artifacts you control."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may remove three quest counters from among permanents you control."
+      }
+    ],
+    "counterExamples": [
+      "Remove two charge counters from target artifact.",
+      "Remove a counter from among artifacts you control.",
+      "Remove two charge counters from among artifacts you control for each Elf you control."
+    ]
+  },
+  {
+    "id": "eff.edhn63.counters.remove.among.upTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "remove up to {n:Qty} {k:CounterKind} counter[s] from among {o:Objs}",
+    "build": {
+      "op": "removeCounters",
+      "from": "$o",
+      "kind": "$k",
+      "count": "$n",
+      "upTo": true,
+      "among": true
+    },
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "needs": [
+      "op:removeCounters.among"
+    ],
+    "examples": [
+      {
+        "text": "Remove up to three charge counters from among artifacts you control."
+      },
+      {
+        "text": "You may remove up to two time counters from among all permanents."
+      }
+    ],
+    "counterExamples": [
+      "Remove up to three charge counters from target artifact.",
+      "Remove three charge counters from among artifacts you control.",
+      "Remove up to three counters from among artifacts you control."
+    ]
+  },
+  {
+    "id": "eff.edhn63.counters.remove.among.anyNumber.kind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 107.1c"
+    ],
+    "pattern": "remove any number of {k:CounterKind} counters from among {o:Objs}",
+    "build": {
+      "op": "removeCounters",
+      "from": "$o",
+      "kind": "$k",
+      "count": "all",
+      "upTo": true,
+      "among": true
+    },
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "needs": [
+      "op:removeCounters.among"
+    ],
+    "examples": [
+      {
+        "text": "You may remove any number of charge counters from among artifacts you control."
+      },
+      {
+        "text": "Remove any number of +1/+1 counters from among creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Remove any number of +1/+1 counters from target creature.",
+      "Remove all +1/+1 counters from among creatures you control.",
+      "Remove any number of counters from among creatures you control."
+    ]
+  },
+  {
+    "id": "eff.edhn63.counters.remove.among.anyNumber",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 107.1c"
+    ],
+    "pattern": "remove any number of counters from among {o:Objs}",
+    "build": {
+      "op": "removeCounters",
+      "from": "$o",
+      "kind": "any",
+      "count": "all",
+      "upTo": true,
+      "among": true
+    },
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "needs": [
+      "op:removeCounters.among"
+    ],
+    "examples": [
+      {
+        "text": "Remove any number of counters from among artifacts you control."
+      },
+      {
+        "text": "Remove any number of counters from among permanents on the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Remove any number of counters from target creature.",
+      "Remove all counters from among creatures you control.",
+      "Remove any number of +1/+1 counters from among creatures you control."
+    ]
+  },
+  {
+    "id": "eff.edhn63.counters.move.among.kind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.5",
+      "CR 608.2d"
+    ],
+    "pattern": "move any number of {k:CounterKind} counters from {a:Objs} ( onto | to ) {b:Obj}",
+    "build": {
+      "op": "moveCounters",
+      "from": "$a",
+      "to": "$b",
+      "kind": "$k",
+      "count": "all",
+      "upTo": true,
+      "among": true
+    },
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "needs": [
+      "op:moveCounters.among"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card, then move any number of charge counters from artifacts you control onto target artifact."
+      },
+      {
+        "text": "Move any number of +1/+1 counters from Elves you control onto target creature."
+      }
+    ],
+    "counterExamples": [
+      "Move any number of +1/+1 counters from target creature onto another target creature.",
+      "Move any number of +1/+1 counters from artifacts you control onto each creature.",
+      "Move any number of counters from artifacts you control onto target creature."
+    ]
+  },
+  {
+    "id": "eff.edhn63.counters.put.sameAsEvent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "put the same number and kind of counters on {o:Obj}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "any",
+      "count": 1,
+      "ofEvent": "same"
+    },
+    "subject": "none",
+    "consumes": [
+      "same"
+    ],
+    "needs": [
+      "op:putCounters.ofEvent"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you put one or more counters on a creature, put the same number and kind of counters on ~."
+      },
+      {
+        "text": "Whenever you put one or more counters on another creature, you may put the same number and kind of counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "Put the same number and kind of counters on ~.",
+      "Whenever you put one or more counters on a creature, put the same number of +1/+1 counters on ~.",
+      "Whenever you put one or more counters on a creature, put the same kind of counters on ~."
+    ]
+  },
+  {
+    "id": "eff.edhn63.counters.put.oneOfEachKind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "put one of each of those kinds of counters on {o:Obj}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "any",
+      "count": 1,
+      "ofEvent": "oneEach"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "needs": [
+      "op:putCounters.ofEvent"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you put one or more counters on ~, put one of each of those kinds of counters on up to one other target creature."
+      },
+      {
+        "text": "Whenever you put one or more counters on a creature, put one of each of those kinds of counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "Put one of each of those kinds of counters on ~.",
+      "Whenever you put one or more counters on a creature, put one of each kind of counter on ~.",
+      "Whenever you put one or more counters on a creature, put two of each of those kinds of counters on ~."
+    ]
+  },
+  {
+    "id": "eff.edhn63.counters.put.sameAsEvent.theyPut",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "they put the same number and kind of counters on {o:Obj}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "any",
+      "count": 1,
+      "ofEvent": "same",
+      "by": {
+        "ref": "event",
+        "role": "player"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "same",
+      "they"
+    ],
+    "needs": [
+      "op:putCounters.ofEvent",
+      "op:putCounters.by"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent puts one or more counters on a permanent they control, they put the same number and kind of counters on ~."
+      },
+      {
+        "text": "Whenever an opponent puts one or more +1/+1 counters on a creature they control, they put the same number and kind of counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent puts one or more counters on a creature they control, they put the same number of +1/+1 counters on ~.",
+      "Whenever an opponent puts one or more counters on a creature they control, you put the same number and kind of counters on ~.",
+      "They put the same number and kind of counters on ~."
+    ]
+  },
+  {
+    "id": "rep.edhn63.enters.counterForEachCounterOn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "~ enters with ( a | an ) {k:CounterKind} counter on it for each {j:CounterKind} counter on {g:Objs}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "counters",
+                  "on": "$g",
+                  "kind": "$j"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a +1/+1 counter on it for each loyalty counter on planeswalkers your opponents control."
+      },
+      {
+        "text": "~ enters with a +1/+1 counter on it for each charge counter on artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a +1/+1 counter on it for each loyalty counter on target planeswalker.",
+      "~ enters with two +1/+1 counters on it for each loyalty counter on planeswalkers you control.",
+      "~ enters with a +1/+1 counter on it for each counter on planeswalkers you control."
+    ]
+  },
+  {
+    "id": "rep.edhn63.enters.choiceOfThreeCounters",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 122.1b"
+    ],
+    "pattern": "~ enters with your choice of ( a | an ) {k1:ListedCounterKind} , {k2:ListedCounterKind} , or {k3:ListedCounterKind} counter on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choice": [
+              {
+                "label": "$k1",
+                "counters": [
+                  {
+                    "kind": "$k1",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "label": "$k2",
+                "counters": [
+                  {
+                    "kind": "$k2",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "label": "$k3",
+                "counters": [
+                  {
+                    "kind": "$k3",
+                    "count": 1
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "your",
+      "choice",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with your choice of a flying, trample, or vigilance counter on it."
+      },
+      {
+        "text": "~ enters with your choice of a +1/+1, first strike, or vigilance counter on it."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with your choice of a flying counter or a trample counter on it.",
+      "~ enters with your choice of a flying, trample, or vigilance counter on target creature.",
+      "~ enters with a flying, trample, or vigilance counter on it."
+    ]
+  },
+  {
+    "id": "rep.edhn63.enters.twoDifferentOfThreeCounters",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 122.1b"
+    ],
+    "pattern": "~ enters with your choice of two different counters on it from among {k1:ListedCounterKind} , {k2:ListedCounterKind} , and {k3:ListedCounterKind}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choice": [
+              {
+                "label": "first and second",
+                "counters": [
+                  {
+                    "kind": "$k1",
+                    "count": 1
+                  },
+                  {
+                    "kind": "$k2",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "label": "first and third",
+                "counters": [
+                  {
+                    "kind": "$k1",
+                    "count": 1
+                  },
+                  {
+                    "kind": "$k3",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "label": "second and third",
+                "counters": [
+                  {
+                    "kind": "$k2",
+                    "count": 1
+                  },
+                  {
+                    "kind": "$k3",
+                    "count": 1
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "your",
+      "choice",
+      "different",
+      "among"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with your choice of two different counters on it from among first strike, reach, and haste."
+      },
+      {
+        "text": "~ enters with your choice of two different counters on it from among flying, trample, and vigilance."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with your choice of two counters on it from among menace, deathtouch, and lifelink.",
+      "~ enters with your choice of two different counters on it from among menace and lifelink.",
+      "~ enters with your choice of three different counters on it from among menace, deathtouch, and lifelink."
+    ]
+  },
+  {
+    "id": "eff.edhn63.counters.put.choiceFromAmong4",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1b",
+      "CR 608.2d"
+    ],
+    "pattern": "put your choice of a counter from among {k1:ListedCounterKind} , {k2:ListedCounterKind} , {k3:ListedCounterKind} , and {k4:ListedCounterKind} on {o:Obj}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "counterChoice",
+        "link": "counterChoice",
+        "options": [
+          "$k1",
+          "$k2",
+          "$k3",
+          "$k4"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k1"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k1",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k2"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k2",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k3"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k3",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k4"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k4",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, put your choice of a counter from among flying, trample, haste, and reach on ~."
+      },
+      {
+        "text": "When ~ enters, put your choice of a counter from among first strike, vigilance, deathtouch, and lifelink on target creature."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put your choice of a flying, trample, haste, or reach counter on ~.",
+      "When ~ enters, put your choice of a counter from among flying, trample, and haste on ~.",
+      "When ~ enters, put a counter from among flying, trample, haste, and reach on ~."
+    ],
+    "consumes": [
+      "among",
+      "choice",
+      "your"
+    ]
+  },
+  {
+    "id": "eff.edhn63.drawAndLoseEqual",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "you draw cards and lose life equal to {n:Qty}",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n"
+      },
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": "$n"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "Remove any number of counters from among artifacts you control. You draw cards and lose life equal to the number of counters removed this way."
+      },
+      {
+        "text": "Remove up to three charge counters from among artifacts you control. You draw cards and lose life equal to the number of charge counters removed this way."
+      }
+    ],
+    "counterExamples": [
+      "You draw cards and lose life equal to the number of creatures you control.",
+      "Remove any number of counters from among artifacts you control. You draw cards equal to the number of counters removed this way.",
+      "Remove any number of counters from among artifacts you control. Target player draws cards and loses life equal to the number of counters removed this way."
+    ]
+  },
+  {
+    "id": "eff.edhn63.counters.put.sameNumberEachKind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "put the same number of each kind of counter on {o:Obj}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "any",
+      "count": 1,
+      "copyFrom": {
+        "ref": "self"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "same",
+      "each"
+    ],
+    "needs": [
+      "op:putCounters.copyFrom"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a nontoken creature you control enters, if ~ has counters on it, put the same number of each kind of counter on that creature."
+      },
+      {
+        "text": "Whenever another creature you control enters, if ~ has counters on it, put the same number of each kind of counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a nontoken creature you control enters, if ~ has counters on it, put the same number of +1/+1 counters on that creature.",
+      "Whenever a nontoken creature you control enters, if ~ has counters on it, put the same kind of counter on that creature.",
+      "Put the same number of each kind of counter on that creature."
+    ]
+  }
+]

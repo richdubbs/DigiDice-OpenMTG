@@ -403,7 +403,7 @@
     "id": "sta.p2pt2.each.pump.foreach.equipment.attached",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 604.1",
       "CR 611.3a",
@@ -625,7 +625,7 @@
     "id": "eff.p2pt2.dur.group.get.foreach.and.gain",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 611.2a",
       "CR 611.2c",

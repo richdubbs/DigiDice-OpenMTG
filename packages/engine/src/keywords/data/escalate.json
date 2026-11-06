@@ -12,5 +12,8 @@
   ],
   "reminder": "Pay this cost for each mode chosen beyond the first.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "modifies": {
+    "kind": "escalate"
+  }
 }

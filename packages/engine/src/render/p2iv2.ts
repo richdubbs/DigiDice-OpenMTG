@@ -22,9 +22,19 @@ function notPhrase(of: Condition, st: RenderState): string | null {
     && typeof of.event.player === 'object' && of.event.player !== null) {
     return `${K.player(of.event.player as PlayerRef, st, 'subject').text} didn't cast a spell this turn`;
   }
+  // edh-c-62 (CR 601.2i; Predatory Advantage): "that player didn't cast a creature spell this turn": a spell of a description
+  if (of.cond === 'happened' && keysAre(of, ['cond', 'event', 'scope']) && of.scope === 'turn' && of.event.ev === 'cast' && keysAre(of.event, ['ev', 'player', 'spell'])
+    && typeof of.event.player === 'object' && of.event.player !== null && of.event.spell !== undefined) {
+    return `${K.player(of.event.player as PlayerRef, st, 'subject').text} didn't cast ${K.np({ ...of.event.spell, stackKind: 'spell' }, st, { det: 'a' })} this turn`;
+  }
   // "it didn't have decayed" (CR 608.2h): one keyword the object did not have as it last existed
   if (of.cond === 'matches' && keysAre(of.filter, ['keyword']) && typeof of.filter.keyword === 'string' && json(of.object) !== SELF) {
     return `${K.obj(of.object, st, 'subject').text} didn't have ${of.filter.keyword}`;
+  }
+  // edh-c-94 (CR 303.4; Hakim, Loreweaver): "~ isn't enchanted", no Aura is attached to the object itself
+  if (of.cond === 'matches' && json(of.object) === SELF && keysAre(of.filter, ['enchanted']) && of.filter.enchanted === true) {
+    const self = K.obj({ ref: 'self' }, st, 'subject').text;
+    return alt(`${self} isn't enchanted`, `${self} is not enchanted`);
   }
   // "all nonland permanents you control are white" (CR 105.2): no permanent of the description you control that isn't of the color
   if (of.cond === 'exists' && of.atLeast === undefined && of.of.ref === 'each' && 'filter' in of.of) {
@@ -48,6 +58,10 @@ function phrase(c: Condition, st: RenderState): string | null {
     case 'not': return notPhrase(c.of, st);
     // "this creature is enchanted" (CR 303.4)
     case 'matches':
+      // edhv31 (CR 303.4, 301.5; Novice Knight): "this creature is enchanted or equipped"
+      if (json(c.object) === SELF && json(c.filter) === json({ anyOf: [{ enchanted: true }, { equipped: true }] })) return `${K.obj({ ref: 'self' }, st, 'subject').text} is enchanted or equipped`;
+      // edh-c-103 (CR 303.4; Krond the Dawn-Clad): "if it's enchanted": the object the trigger's event names, said as "it" (the gate reads "it's" as "it is")
+      if (c.object.ref === 'event' && keysAre(c.filter, ['enchanted']) && c.filter.enchanted === true) return `${K.obj(c.object, st, 'subject').text} is enchanted`;
       return json(c.object) === SELF && keysAre(c.filter, ['enchanted']) && c.filter.enchanted === true ? `${K.obj({ ref: 'self' }, st, 'subject').text} is enchanted` : null;
     // "that creature's power is greater than this creature's" (CR 208.1); "4 or more damage was dealt to it this turn" (CR 120.1)
     case 'compare': {

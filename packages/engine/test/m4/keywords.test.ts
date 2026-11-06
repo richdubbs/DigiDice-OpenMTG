@@ -121,10 +121,11 @@ describe('automation is classified honestly', () => {
     }
   });
 
-  // W3 integration: ward is implemented since WP32 (keyword:ward), so the unimplemented keyword here was rampage (CR 702.23); CMD3 implements rampage, so it is absorb (CR 702.64).
-  it('a mixed line automates what it can and keeps the rest as manual text: "Flying, absorb 2" is partial', () => {
-    const d = compile('Flying, absorb 2');
-    expect(d.automation).toMatchObject({ level: 'partial', unsupported: ['absorb 2'] });
+  // W3 integration: ward is implemented since WP32 (keyword:ward), so the unimplemented keyword here was rampage (CR 702.23); CMD3 implements rampage, so it was absorb
+  // (CR 702.64); the Commander rounds of 2026-10-31 implement absorb and (edh-c-114) frenzy, and edh-d-3 implements gravestorm (CR 702.69), so it is epic (CR 702.50).
+  it('a mixed line automates what it can and keeps the rest as manual text: "Flying, epic" is partial', () => {
+    const d = compile('Flying, epic');
+    expect(d.automation).toMatchObject({ level: 'partial', unsupported: ['epic'] });
     expect(d.faces[0]!.abilities.map((a) => a.kind)).toEqual(['keyword', 'manual']);
   });
 
@@ -159,7 +160,7 @@ describe('automation is classified honestly', () => {
       if (hasManual) expect(d.automation.level, name).not.toBe('full');
     }
     expect([...seen].sort()).toEqual(expect.arrayContaining(['flying', 'first strike', 'double strike', 'deathtouch', 'lifelink', 'trample', 'vigilance', 'protection', 'landwalk', 'toxic', 'enchant', 'hexproof', 'shroud', 'indestructible']));
-  }, 120_000); // every fixture card is compiled: the set grows with every package, so the default 5 s is not enough on a busy machine
+  }, 1_800_000); // every fixture card is compiled: the set grows with every package (about 100 s alone at 3,300 cards in 2026-10), so 120 s timed out in whole-engine runs (30 min since 2026-11-05: about 450 s in whole-engine runs at 6,610 fixture cards)
 
   it('the official keyword list (CR 702) is available with rule numbers', () => {
     expect(KEYWORD_RULES.get('deathtouch')).toBe('702.2');

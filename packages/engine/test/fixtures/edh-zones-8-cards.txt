@@ -1,0 +1,7 @@
+# edh-zones-8 (Commander effort, lane edh-zones; test/cloud/edh-zones-8, golden edh-zones-8-review.json): tempting offer by search, put all F tapped / untapped and the rest on the bottom, shuffle the rest of the revealed cards, graveyard and hand shuffle, any number onto the battlefield and the rest into your hand
+Tempt with Discovery
+Animist's Awakening
+Kindred Summons
+Muxus, Goblin Grandee
+Trenzalore Clocktower
+Genesis Ultimatum

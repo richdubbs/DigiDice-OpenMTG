@@ -1,0 +1,5 @@
+# edh-top-5 (Commander lane edh-top): goad each creature that had counters put on it this way, attack bans on the owner and entering under an opponent's control, gain control + untap + counter, a Dur-first play permission with mana of any color. After editing: npm run cards -- fixtures
+Xantcha, Sleeper Agent
+Agitator Ant
+Spectacular Showdown
+You Find Some Prisoners

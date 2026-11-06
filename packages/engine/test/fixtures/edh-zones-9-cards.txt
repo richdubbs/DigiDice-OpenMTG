@@ -1,0 +1,13 @@
+# edh-zones-9 (Commander effort, lane edh-zones; test/cloud/edh-zones-9, golden edh-zones-9-review.json): each player puts a creature card from their graveyard, discard the whole hand and draw that many, a card from the hand on top, discard unless a land card, a random card of the graveyard, "both cards" after an exile and a search, "and/or" in a search, a counter into the hand, all cards exiled with ~, a name ending with "!"
+Exhume
+Forgotten Creation
+Enter the Infinite
+Compulsive Research
+Deadbridge Chant
+Sword of Hearth and Home
+Axgard Armory
+Remand
+Bag of Holding
+Gisa, Glorious Resurrector
+Open the Gates
+Blood for the Blood God!

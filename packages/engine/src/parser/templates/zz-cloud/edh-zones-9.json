@@ -1,0 +1,428 @@
+[
+  {
+    "id": "eff.edhz9.eachPlayer.putFromGraveyard.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "each player puts ( a | an ) {f:Filter} card from their graveyard onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": {
+              "ref": "iterating"
+            },
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player puts a Goblin card from their graveyard onto the battlefield."
+      },
+      {
+        "text": "Each player puts an artifact card from their graveyard onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Each player may put a Goblin card from their graveyard onto the battlefield.",
+      "Each player puts a Goblin card from their hand onto the battlefield.",
+      "Each opponent puts a Goblin card from their graveyard onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhz9.discard.allCards.you",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 109.5"
+    ],
+    "pattern": "discard all the cards in your hand",
+    "build": {
+      "op": "discard",
+      "who": {
+        "ref": "you"
+      },
+      "count": "hand"
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Discard all the cards in your hand."
+      },
+      {
+        "text": "You may discard all the cards in your hand. If you do, draw that many cards."
+      }
+    ],
+    "counterExamples": [
+      "Discard all the cards in your library.",
+      "Discard all the cards in an opponent's hand."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhz9.put.handCard.top",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put ( a | one ) card from your hand on top of your library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "back"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "back"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw two cards, then put a card from your hand on top of your library."
+      },
+      {
+        "text": "Put a card from your hand on top of your library. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Put a card from your hand on the bottom of your library.",
+      "Put a card from your graveyard on top of your library.",
+      "Put two cards from your hand on top of your library."
+    ]
+  },
+  {
+    "id": "eff.edhz9.discard.unlessTheyCost",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard[s] {n:Qty} cards unless they {c:Cost}",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": "$c",
+      "else": [
+        {
+          "op": "discard",
+          "who": "$p",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Target player draws a card. Then that player discards two cards unless they discard a Goblin card."
+      },
+      {
+        "text": "Target player discards three cards unless they sacrifice a creature."
+      }
+    ],
+    "counterExamples": [
+      "Target player discards two cards unless you discard a Goblin card.",
+      "Target player discards two cards if they discard a Goblin card.",
+      "Target player mills two cards unless they discard a Goblin card."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhz9.choose.randomInYourGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 404.1",
+      "CR 400.7"
+    ],
+    "pattern": "choose ( a | one ) card at random in your graveyard",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "random": true,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, choose a card at random in your graveyard. If it's an artifact card, put it onto the battlefield. Otherwise, put it into your hand."
+      },
+      {
+        "text": "Choose a card at random in your graveyard. If it's a land card, put it onto the battlefield. Otherwise, put it into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Choose a card in your graveyard. If it's a land card, put it onto the battlefield. Otherwise, put it into your hand.",
+      "Choose a card at random in an opponent's graveyard. If it's a land card, put it onto the battlefield. Otherwise, put it into your hand.",
+      "Choose a card at random in your hand. If it's a land card, put it onto the battlefield. Otherwise, put it into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhz9.search.oneOfEach.andOr",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 401.2"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} card and/or ( a | an ) {g:Filter} card",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "max": 1,
+      "and": [
+        "$g"
+      ],
+      "as": "search"
+    },
+    "subject": "none",
+    "consumes": [
+      "and"
+    ],
+    "needs": [
+      "op:search.and"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for a Swamp card and/or an Island card, reveal them, put them into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for an artifact card and/or a Saga card, reveal them, put them into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a Swamp card or an Island card, reveal it, put it into your hand, then shuffle.",
+      "Search your library for a Swamp card and/or two Island cards, reveal them, put them into your hand, then shuffle.",
+      "Search your graveyard for a Swamp card and/or an Island card, reveal them, put them into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "rid.edhz9.countered.hand",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.6a",
+      "CR 608.2c",
+      "CR 614.15",
+      "CR 400.3"
+    ],
+    "pattern": "if that spell is countered this way , put it into its owner 's hand instead of into that player 's graveyard",
+    "build": {
+      "$patchPrevious": {
+        "to": {
+          "@new": {
+            "zone": "hand"
+          }
+        }
+      }
+    },
+    "attachTo": "counter",
+    "consumes": [
+      "if",
+      "this way",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Counter target creature spell. If that spell is countered this way, put it into its owner's hand instead of into that player's graveyard."
+      },
+      {
+        "text": "Counter target sorcery spell. If that spell is countered this way, put it into its owner's hand instead of into that player's graveyard. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. If that spell is countered this way, put it into its owner's hand instead of into that player's graveyard.",
+      "Counter target spell. If that spell is countered this way, put it into its owner's hand.",
+      "Counter target spell. If that spell is countered this way, put it into its owner's library instead of into that player's graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhz9.linked.returnAll.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 400.3",
+      "CR 404.1"
+    ],
+    "pattern": "return all cards exiled with ~ to their owner 's hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ becomes tapped, exile the top card of your library face down.\n{4}, Sacrifice ~: Return all cards exiled with ~ to their owner's hand."
+      },
+      {
+        "text": "When ~ enters, exile up to two target creatures your opponents control.\nAt the beginning of your end step, return all cards exiled with ~ to their owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes tapped, exile the top card of your library face down.\n{4}, Sacrifice ~: Return all cards exiled with ~ to your hand.",
+      "Whenever ~ becomes tapped, exile the top card of your library face down.\n{4}, Sacrifice ~: Return all cards exiled with ~ to their owner's graveyard.",
+      "{4}, Sacrifice ~: Return all cards exiled with ~ to their owner's hand."
+    ]
+  },
+  {
+    "id": "eff.edhz9.linked.putAll.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "put all {f:Filter} cards exiled with ~ onto the battlefield under your control",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "any",
+          "isCard": true,
+          "anyOf": [
+            "$f"
+          ]
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to two target creature cards from a graveyard.\nAt the beginning of your upkeep, put all Goblin cards exiled with ~ onto the battlefield under your control."
+      },
+      {
+        "text": "When ~ enters, exile up to two target artifact cards from a graveyard.\nAt the beginning of your end step, put all artifact cards exiled with ~ onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to two target creature cards from a graveyard.\nAt the beginning of your upkeep, put all Goblin cards exiled with ~ onto the battlefield under their owners' control.",
+      "When ~ enters, exile up to two target creature cards from a graveyard.\nAt the beginning of your upkeep, put all Goblin cards exiled with ~ into your hand.",
+      "At the beginning of your upkeep, put all Goblin cards exiled with ~ onto the battlefield under your control."
+    ]
+  }
+]

@@ -192,13 +192,17 @@ describe('CR 608.2c, 701.20e: "... If it\'s a land card, you may put it onto the
     expect(findAll(s, 'Test Pup', 'battlefield', 'p1')).toHaveLength(1);
   });
 
-  it('CR 608.2c: "Otherwise" answers the condition, not the choice: a land you choose not to put onto the battlefield stays on top', () => {
-    const s0 = scenario([], { defs: DEFS, p1: { battlefield: ['Test Burrowkeeper'], hand: ['Test Pup'], library: ['Test Grove'] } });
-    const grove = topOf(s0, 'p1')!;
+  // edh-fix-4: look1 first pinned "a land you choose not to put onto the battlefield stays on top". edh-misc-4 (owner decision 2026-10-27, the Treasure Chest ruling) changed
+  // "If X, you may Y. Otherwise, Z" so that Z also happens when Y is declined, and the rulings of the card that prints THIS wording say the same: Fecund Greenshell (2024-07-26)
+  // "If the top card of your library is a land card, you may choose to put it into your hand rather than onto the battlefield tapped." Treasure Chest (2021-07-23) "The
+  // 'otherwise' in the last ability refers to whether or not you put it onto the battlefield, not whether or not it's an artifact card." So the old pin was wrong, not the new play.
+  it('CR 608.2c (Fecund Greenshell ruling 2024-07-26): "Otherwise" answers whether you put it onto the battlefield: a land you choose not to put there goes to your hand', () => {
+    const s0 = scenario([], { defs: DEFS, p1: { battlefield: ['Test Burrowkeeper'], hand: ['Test Pup'], library: ['Test Grove', 'Test Idol'] } });
     const { s, asked } = cast(s0, 'Test Pup', false);
     expect(asked).toBe(1);
-    expect(topOf(s, 'p1')).toBe(grove);
-    expect(handNames(s)).toEqual([]);
+    expect(handNames(s)).toEqual(['Test Grove']);
+    expect(findAll(s, 'Test Grove', 'battlefield', 'p1')).toHaveLength(0);
+    expect(libraryNames(s, 'p1')[0]).toBe('Test Idol'); // the Idol under it is on top again; nothing was lost
   });
 });
 

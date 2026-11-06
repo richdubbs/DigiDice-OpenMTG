@@ -12,5 +12,25 @@
   ],
   "reminder": "You may cast this spell for its cleave cost. If you do, remove the words in square brackets.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Cleave {cost}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$cost",
+          "name": "cleave"
+        }
+      ]
+    }
+  ]
 }

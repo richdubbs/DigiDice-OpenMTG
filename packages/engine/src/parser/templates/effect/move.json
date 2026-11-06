@@ -218,7 +218,7 @@
       { "text": "Put target Ninja card from your graveyard onto the battlefield tapped and attacking." }
     ],
     "counterExamples": ["Put target creature card from your graveyard onto the battlefield tapped and blocking.", "Put target creature card from your graveyard onto the battlefield attacking target opponent."],
-    "status": "experimental",
+    "status": "stable",
     "since": 1
   },
   {
@@ -233,7 +233,7 @@
       { "text": "Put target nonblue creature card from a graveyard onto the battlefield under its owner's control." }
     ],
     "counterExamples": ["Put target creature card from a graveyard onto the battlefield under your control.", "Put target creature card from a graveyard onto the battlefield under its controller's control."],
-    "status": "experimental",
+    "status": "stable",
     "since": 1
   },
   {
@@ -308,7 +308,7 @@
       { "text": "Put up to two target creature cards from your graveyard on the bottom of your library in any order." }
     ],
     "counterExamples": ["Put all land cards from your graveyard on the bottom of your library in a random order.", "Put all land cards from your graveyard on top of your library in any order."],
-    "status": "experimental",
+    "status": "stable",
     "since": 1
   }
 ]

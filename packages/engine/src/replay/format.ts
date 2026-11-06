@@ -22,8 +22,13 @@ import { COMPILER_VERSION } from '../cards/compile';
 import { ABILITY_MODEL_VERSION } from '../types/ability';
 
 export const REPLAY_FORMAT = 'openmtg-replay';
-/** The replay format this engine writes and reads; older files are brought up to it by the upgrade chain (upgrade.ts). */
-export const REPLAY_FORMAT_VERSION = 1;
+/**
+ * The replay format this engine writes and reads; older files are brought up to it by the upgrade chain (upgrade.ts).
+ *  1. The first (RPL-0).
+ *  2. Shortcuts (docs/design/shortcuts.md 6): the action `shortcut` and the answer kind `shortcut` were added (core/action-shape.ts' rule: an older reader
+ *     refuses them as malformed, so it must refuse the file as newer). A version 1 file is a version 2 file as it is (`REPLAY_UPGRADES[1]`).
+ */
+export const REPLAY_FORMAT_VERSION = 2;
 export const BUG_REPORT_FORMAT = 'openmtg-bug-report';
 export const BUG_REPORT_FORMAT_VERSION = 1;
 /** The file name extension of an exported replay (design D9). */

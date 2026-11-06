@@ -1,0 +1,12 @@
+# edh-c-11 (Commander lane edh-c, EDHREC ranks 16,876 to 17,500, second pass): see packages/engine/src/parser/templates/zz-cloud/edh-c-11.json. After editing: npm run cards -- fixtures
+Predatory Rampage
+Act of Heroism
+Energy Arc
+Iron Man, Futurist Paragon
+Minsc, Beloved Ranger
+Revenge of the Hunted
+Xathrid Gorgon
+Akoum Battlesinger
+Goblin Bangchuckers
+Compelling Deterrence
+Loreseeker's Stone

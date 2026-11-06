@@ -1,0 +1,473 @@
+[
+  {
+    "id": "sta.edhb5.damageToSelf.whileCounter.prevent.then",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 614.1a",
+      "CR 122.1"
+    ],
+    "pattern": "if damage would be dealt to ~ while it has a +1/+1 counter on it , prevent that damage and remove {n:Qty} +1/+1 counter[s] from ~",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "condition": {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "counters": {
+                "kind": "+1/+1"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "removeCounters",
+                "from": {
+                  "ref": "self"
+                },
+                "kind": "+1/+1",
+                "count": "$n"
+              }
+            ],
+            "oncePerBatch": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent",
+      "while"
+    ],
+    "examples": [
+      {
+        "text": "If damage would be dealt to ~ while it has a +1/+1 counter on it, prevent that damage and remove two +1/+1 counters from ~."
+      },
+      {
+        "text": "If damage would be dealt to ~ while it has a +1/+1 counter on it, prevent that damage and remove three +1/+1 counters from ~."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to ~ while it has a charge counter on it, prevent that damage and remove two charge counters from ~.",
+      "If damage would be dealt to ~ while it has a +1/+1 counter on it, prevent that damage or remove two +1/+1 counters from ~.",
+      "If damage would be dealt to ~ while it has a +1/+1 counter on it, prevent that damage and remove two +1/+1 counters from ~ this turn."
+    ]
+  },
+  {
+    "id": "eff.edhb5.mill.foreach",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2h",
+      "CR 109.5"
+    ],
+    "pattern": "{p:Player} mill[s] a card for each {f:Filter}",
+    "build": {
+      "op": "mill",
+      "who": "$p",
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, target player mills a card for each Shrine you control."
+      },
+      {
+        "text": "When ~ enters, each opponent mills a card for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, target player mills two cards for each Shrine you control.",
+      "At the beginning of your upkeep, target player mills a card for each Shrine you control at random.",
+      "At the beginning of your upkeep, target player mills a card for each Shrine you control unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.edhb5.discardHand.drawThatManyPlus",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "discard all the cards in your hand , then draw that many cards plus {n:Qty}",
+    "build": [
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": "hand",
+        "as": "discarded"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "math",
+          "op": "+",
+          "args": [
+            {
+              "q": "resultCount",
+              "step": "discarded"
+            },
+            "$n"
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "that many",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Discard all the cards in your hand, then draw that many cards plus one. Scry 1."
+      },
+      {
+        "text": "Discard all the cards in your hand, then draw that many cards plus two."
+      }
+    ],
+    "counterExamples": [
+      "Discard all the cards in your hand, then draw that many cards minus one.",
+      "Discard two cards, then draw that many cards plus one.",
+      "Discard all the cards in your hand, then draw two cards plus one."
+    ]
+  },
+  {
+    "id": "eff.edhb5.player.discardThenDraw",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard[s] a card , then draw[s] a card",
+    "build": [
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": 1
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": 1
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target player discards a card, then draws a card."
+      },
+      {
+        "text": "When ~ enters, each opponent discards a card, then draws a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target player discards a card, then draws two cards.",
+      "When ~ enters, target player discards two cards, then draws a card.",
+      "When ~ enters, target player discards a card at random, then draws a card."
+    ]
+  },
+  {
+    "id": "trg.edhb5.you.castFromGy.orActivateGy",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 601.2",
+      "CR 602.2",
+      "CR 112.1"
+    ],
+    "pattern": "whenever you cast a spell from your graveyard or activate an ability of a card in your graveyard",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+            "owner": "you"
+          },
+          "from": "graveyard"
+        },
+        {
+          "ev": "activate",
+          "player": "you",
+          "source": {
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          },
+          "manaAbility": false
+        },
+        {
+          "ev": "activate",
+          "player": "you",
+          "source": {
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          },
+          "manaAbility": true
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell from your graveyard or activate an ability of a card in your graveyard, draw a card."
+      },
+      {
+        "text": "Whenever you cast a spell from your graveyard or activate an ability of a card in your graveyard, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell from your graveyard and activate an ability of a card in your graveyard, draw a card.",
+      "Whenever you cast a spell from your hand or activate an ability of a card in your graveyard, draw a card.",
+      "Whenever you cast a spell from your graveyard or activate an ability of a card in exile, draw a card."
+    ]
+  },
+  {
+    "id": "trg.edhb5.nOrMoreCreatures.attack",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 603.2c",
+      "CR 508.1",
+      "CR 508.3a"
+    ],
+    "pattern": "whenever {n:Qty} or more creatures attack",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "types": [
+              "Creature"
+            ]
+          },
+          "count": {
+            "op": ">=",
+            "value": "$n"
+          }
+        }
+      ],
+      "batch": true
+    },
+    "consumes": [
+      "whenever",
+      "or more"
+    ],
+    "examples": [
+      {
+        "text": "Whenever two or more creatures attack, you gain 1 life."
+      },
+      {
+        "text": "Whenever three or more creatures attack, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever two or more creatures you control attack, you gain 1 life.",
+      "Whenever two or fewer creatures attack, you gain 1 life.",
+      "Whenever two or more creatures attack you, you gain 1 life."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhb5.control.each",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 110.2"
+    ],
+    "pattern": "gain control of each {f:Filter} [{d:Dur}]",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "d": "permanent"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Gain control of each noncommander creature with power 2 or less."
+      },
+      {
+        "text": "Gain control of each creature with toughness 1 or less until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Gain control of each creature your opponents control unless an opponent pays {3}.",
+      "Gain control of each of two creatures your opponents control until end of turn.",
+      "Lose control of each creature your opponents control until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhb5.shufflesIntoLibrary.thenVillainous",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 701.55",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} shuffle[s] {o:Objs} into their library , then face[s] a villainous choice -- they lose {n:Qty} life , or they shuffle another creature they own into their library",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "library",
+          "owner": "$p"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      },
+      {
+        "op": "may",
+        "who": "$p",
+        "do": [
+          {
+            "op": "loseLife",
+            "who": "$p",
+            "amount": "$n"
+          }
+        ],
+        "otherwise": [
+          {
+            "op": "chooseObjects",
+            "who": "$p",
+            "from": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "owner": "$p"
+              }
+            },
+            "min": 1,
+            "max": 1,
+            "as": "shuffledAway"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "shuffledAway"
+            },
+            "to": {
+              "zone": "library",
+              "owner": "$p"
+            }
+          },
+          {
+            "op": "shuffle",
+            "who": "$p"
+          }
+        ],
+        "villainous": true
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then",
+      "or",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Target creature's owner shuffles it into their library, then faces a villainous choice -- They lose 7 life, or they shuffle another creature they own into their library."
+      },
+      {
+        "text": "Target creature's owner shuffles it into their library, then faces a villainous choice -- They lose 3 life, or they shuffle another creature they own into their library."
+      }
+    ],
+    "counterExamples": [
+      "Target creature's owner shuffles it into their library, then faces a villainous choice -- They lose 7 life.",
+      "Target creature's owner shuffles it into their library, then faces a choice -- They lose 7 life, or they shuffle another creature they own into their library.",
+      "Target creature's owner shuffles it into their library, then faces a villainous choice -- They lose 7 life, or they shuffle two other creatures they own into their library."
+    ]
+  }
+]

@@ -1,0 +1,13 @@
+# edh-next-8 (Commander lane edh-next, EDHREC ranks 10,001-12,500, second pass): costs less for each creature type / counter / opponent, each player searches for up to N lands, target player untaps / has artifacts returned, equipped creatures you control, three negations, each creature attacks, block an additional N creatures. After editing: npm run cards -- fixtures
+Valiant Changeling
+Lumbering Megasloth
+Avatar of Growth
+Early Harvest
+Hurkyl's Recall
+Relentless Rats
+Meria, Scholar of Antiquity
+Hexgold Hoverwings
+Long-Lost Lances
+Goblin Diplomats
+Victim of Night
+Watcher in the Web

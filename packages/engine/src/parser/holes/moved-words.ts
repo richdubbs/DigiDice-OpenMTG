@@ -11,10 +11,10 @@
  */
 import type { ObjectFilter } from '../../types/ability';
 import type { HoleCtx } from './core';
-import { P, phraseAt } from './core';
+import { P, anaphorObj, phraseAt } from './core';
 
 /** The kinds of instruction a "<participle> this way" names. */
-export type MovedKind = 'destroyed' | 'exiled' | 'discarded' | 'sacrificed' | 'graveyard' | 'battlefield' | 'hand' | 'top';
+export type MovedKind = 'destroyed' | 'exiled' | 'discarded' | 'sacrificed' | 'graveyard' | 'battlefield' | 'hand' | 'top' | 'milled';
 
 /**
  * The words of each kind after the noun phrase (passive), "this way" included, and what they add to the description: "your hand" / "your graveyard" are the
@@ -34,6 +34,9 @@ export const PASSIVE: readonly (readonly [readonly string[], MovedKind, ObjectFi
   [P('put into your graveyard this way'), 'graveyard', { owner: 'you' }],
   [P('put onto the battlefield this way'), 'battlefield', {}],
   [P('returned to your hand this way'), 'hand', { owner: 'you' }],
+  // edh-d-35 (CR 608.2c, 400.3; Blex, Vexing Pest's Search for Blex): "You lose 3 life for each card you put into your hand this way" after a dig into the hand
+  [P('put into your hand this way'), 'hand', { owner: 'you' }],
+  [P('you put into your hand this way'), 'hand', { owner: 'you' }],
   [P("returned to their owners' hands this way"), 'hand', {}],
   [P("returned to its owner 's hand this way"), 'hand', {}], // r4-moved: the tokens of "owner's" ("owner", "'s"), as parser/holes/cost.ts writes them; the row never matched before
   // r5-fxz (CR 701.25a, 701.22a): "for each card you put on top of your library" after a surveil or a scry: the cards it left on top (no "this way": Oracle omits it)
@@ -43,6 +46,9 @@ export const PASSIVE: readonly (readonly [readonly string[], MovedKind, ObjectFi
 /** pc-tokens-1: the words in front of a passive in a relative clause ("you controlled that was destroyed this way", "you controlled that were sacrificed this way"), with what they add. */
 const RELATIVE_FRONTS: readonly (readonly [readonly (readonly string[])[], ObjectFilter])[] = [
   [[P('you controlled that was'), P('you controlled that were')], { controller: 'you' }],
+  // edh-players-16 (CR 608.2c, 608.2h, 400.7; Deadly Tempest): "the number of creatures they controlled that were destroyed this way": the player the sentence iterates (the
+  // anaphor "they", which the lowering binds to the group's player, or leaves the sentence manual), as the object last existed on the battlefield
+  [[P('they controlled that was'), P('they controlled that were')], { controller: anaphorObj({ sort: 'any', number: 'plural', text: 'they' }) as unknown as ObjectFilter['controller'] }],
 ];
 
 /** The destination a kind of move has (`did.to`); the other kinds are actions that report what they moved wherever it went (CR 701.8a, 701.9a, 701.21a). */
@@ -52,18 +58,19 @@ export const MOVED_OP: Readonly<Partial<Record<MovedKind, 'sacrifice' | 'discard
 
 /**
  * Whether `step` (an effect step of the model, as a record) is an instruction of that kind: the instruction a "<participle> this way" can name. A destroy, a
- * sacrifice (the op of "sacrifice ~" or of a player's choice, CR 701.21a), a discard; a move whose destination is that zone, with nothing delayed; a mill puts cards
+ * sacrifice (the op of "sacrifice ~" or of a player's choice, CR 701.21a), a discard; a move whose destination is that zone, with nothing delayed (a count "exiled this way" may be of an exile with an `until`, edh-zones-15: `allowUntil`, read by lower/quantities.ts); a mill puts cards
  * into a graveyard.
  */
-export function movedBy(step: Record<string, unknown>, kind: MovedKind): boolean {
+export function movedBy(step: Record<string, unknown>, kind: MovedKind, allowUntil = false): boolean {
   const op = step['op'];
   if (kind === 'destroyed') return op === 'destroy';
   if (kind === 'sacrificed') return op === 'sacrifice' || op === 'sacrificeChoice';
   if (kind === 'discarded') return op === 'discard';
+  if (kind === 'milled') return op === 'mill'; // edh-perms-20
   if (kind === 'top') return op === 'surveil' || op === 'scry'; // r5-fxz: what it left on top of the library (StepResult.kept)
   if (kind === 'graveyard' && op === 'mill') return true; // a mill puts cards into a graveyard (CR 701.17a): "Mill X cards. ... for each creature card put into your graveyard this way"
   const to = step['to'];
-  return op === 'move' && typeof to === 'object' && to !== null && (to as Record<string, unknown>)['zone'] === MOVED_TO[kind] && step['until'] === undefined;
+  return op === 'move' && typeof to === 'object' && to !== null && (to as Record<string, unknown>)['zone'] === MOVED_TO[kind] && (step['until'] === undefined || (allowUntil && kind === 'exiled'));
 }
 
 /** The marker key of the post-modifier (never part of the model: lower/quantities.ts takes it out, lower/normalize.ts refuses a leftover one). */

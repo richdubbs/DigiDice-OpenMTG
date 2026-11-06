@@ -253,18 +253,18 @@ function DamageStage({ d, view, amounts, order, auto, busy, problem, names, onAm
 }
 
 /** Why a division can't be confirmed yet (CR 601.2d: each target gets at least 1, and the amounts add up to exactly the total), or null when it can. */
-export function divisionProblem(total: number, amounts: readonly number[]): string | null {
+export function divisionProblem(total: number, amounts: readonly number[], upTo = false): string | null {
   if (!amounts.every((n) => Number.isInteger(n) && n >= 1)) return 'Each target needs at least 1 (CR 601.2d).';
   const sum = amounts.reduce((a, b) => a + b, 0);
-  if (sum > total) return `${sum - total} too many: divide exactly ${total} (CR 601.2d).`;
-  if (sum < total) return `${total - sum} left to divide (CR 601.2d).`;
+  if (sum > total) return `${sum - total} too many: divide ${upTo ? 'at most' : 'exactly'} ${total} (CR 601.2d).`;
+  if (sum < total && !upTo) return `${total - sum} left to divide (CR 601.2d).`; // edh-perms-22: "up to" lets the caster divide less
   return null;
 }
 
 export function ChooseDivisionPrompt({ d, answer, busy }: PromptProps<'chooseDivision'>) {
   const [amounts, setAmounts] = useState<number[]>(() => defaultDivision(d.total, d.targets.length));
   const sum = amounts.reduce((a, b) => a + (Number.isNaN(b) ? 0 : b), 0);
-  const problem = divisionProblem(d.total, amounts);
+  const problem = divisionProblem(d.total, amounts, d.upTo === true);
   const ok = problem === null;
   const submit = () => answer({ kind: 'chooseDivision', amounts });
   const what = d.what === 'damage' ? 'damage' : d.what === 'counters' ? 'counters' : '';
@@ -272,7 +272,7 @@ export function ChooseDivisionPrompt({ d, answer, busy }: PromptProps<'chooseDiv
   return (
     <>
       <p className="prompt-detail">
-        Divide {d.total} {what} among the targets; each gets at least 1 (CR 601.2d). {sum} of {d.total} divided.
+        Divide {d.upTo === true ? 'up to ' : ''}{d.total} {what} among the targets; each gets at least 1 (CR 601.2d). {sum} of {d.total} divided.
       </p>
       <table className="prompt-table">
         <tbody>

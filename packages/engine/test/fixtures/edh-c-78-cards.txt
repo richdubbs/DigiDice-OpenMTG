@@ -1,0 +1,8 @@
+# edh-c-78 (Commander EDHREC ranks 18,001-18,500, later pass): a counter trigger about ~ with "it", a color-and-creature-type identity with base power and toughness for as long as the object has a counter, an optional redirection of creature damage to you, a guarded put onto the battlefield, a hexproof waiver for opponents, each object entering tapped, "excess damage was dealt to a creature". After editing: npm run cards -- fixtures
+Dreamdrinker Vampire
+Sauron, Dino Devotee
+Blood of the Martyr
+Vikya, Scorching Stalwart
+Agadeem Occultist
+Kaya, Bane of the Dead
+Ashling's Prerogative

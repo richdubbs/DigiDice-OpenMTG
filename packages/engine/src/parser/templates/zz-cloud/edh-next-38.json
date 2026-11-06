@@ -1,0 +1,124 @@
+[
+  {
+    "id": "eff.edhn38.nextSpell.costsLess.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 107.3",
+      "CR 608.2h",
+      "CR 611.2"
+    ],
+    "pattern": "the next {f:Filter} you cast this turn costs {x} less to cast , where x is {q:Qty}",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "reduce",
+      "amount": "$q"
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "less"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you scry, the next sorcery spell you cast this turn costs {X} less to cast, where X is the number of cards looked at while scrying this way."
+      },
+      {
+        "text": "Whenever you scry, the next creature spell you cast this turn costs {X} less to cast, where X is the number of cards looked at while scrying this way."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you scry, the next sorcery spell you cast this turn costs {X} more to cast, where X is the number of cards looked at while scrying this way.",
+      "Whenever you scry, the next sorcery spell an opponent casts this turn costs {X} less to cast, where X is the number of cards looked at while scrying this way.",
+      "Whenever you scry, the next sorcery spell you cast costs {X} less to cast, where X is the number of cards looked at while scrying this way.",
+      "Whenever you scry, the next sorcery spell you cast this turn costs {X} less to cast, where X is the number of Wizards you control."
+    ]
+  },
+  {
+    "id": "eff.edhn38.nextSpell.costsLess.whereX.resolves",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 107.3",
+      "CR 608.2h",
+      "CR 611.2"
+    ],
+    "pattern": "the next {f:Filter} you cast this turn costs {x} less to cast , where x is {q:Qty} as this ability resolves",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "reduce",
+      "amount": "$q"
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "less"
+    ],
+    "examples": [
+      {
+        "text": "{T}: The next sorcery spell you cast this turn costs {X} less to cast, where X is the number of Elves you control as this ability resolves."
+      },
+      {
+        "text": "{T}: The next creature spell you cast this turn costs {X} less to cast, where X is the number of Wizards you control as this ability resolves."
+      }
+    ],
+    "counterExamples": [
+      "{T}: The next sorcery spell you cast this turn costs {X} more to cast, where X is the number of Wizards you control as this ability resolves.",
+      "{T}: The next sorcery spell an opponent casts this turn costs {X} less to cast, where X is the number of Wizards you control as this ability resolves.",
+      "{T}: The next sorcery spell you cast this turn costs {X} less to cast, where X is the number of Wizards you control as this ability resolved."
+    ]
+  },
+  {
+    "id": "eff.edhn38.put.another",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2c"
+    ],
+    "pattern": "put another +1/+1 counter on {o:Objs}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "+1/+1",
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "put",
+      "another",
+      "counter",
+      "on"
+    ],
+    "examples": [
+      {
+        "text": "Put another +1/+1 counter on target creature."
+      },
+      {
+        "text": "Draw a card, then put another +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Put another counter on target creature.",
+      "Put another +1/+1 counter on target creature for each Elf you control.",
+      "Put another two +1/+1 counters on target creature.",
+      "Put another -1/-1 counter on target creature."
+    ]
+  }
+]

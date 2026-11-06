@@ -76,7 +76,7 @@ describe('scry (CR 701.22)', () => {
     const none = runOn(s, id, prog([{ op: 'scry', who: you, count: 0 }]));
     expect(none.events).toEqual([]);
     const one = runOn(s, id, prog([{ op: 'scry', who: you, count: 1 }]), [{ kind: 'chooseObjects', ids: [] }]);
-    expect(one.events.filter((e) => e.type === 'actionPerformed')).toEqual([{ type: 'actionPerformed', verb: 'scry', actor: 'p1' }]);
+    expect(one.events.filter((e) => e.type === 'actionPerformed')).toEqual([{ type: 'actionPerformed', verb: 'scry', actor: 'p1', x: 1 }]); // edh-next-38 (CR 701.22a): x = the cards looked at (one), the event's amount
   });
 
   it('CR 701.22c: when several players scry, each decides in APNAP order and the cards move afterwards', () => {

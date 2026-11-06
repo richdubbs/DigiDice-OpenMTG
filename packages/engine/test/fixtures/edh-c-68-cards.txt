@@ -1,0 +1,11 @@
+# edh-c-68 (Commander lane edh-c, EDHREC ranks 26,001-26,500, second pass): divided damage counted as cast, X plus a number of life, "your team controls", discard then draw as many, a list of three descriptions that become tapped, noncreature sources dealing damage, the player or planeswalker a blocked creature attacks, an untap lock while ~ stays on the battlefield, an Aura put onto the battlefield attached to ~. After editing: npm run cards -- fixtures
+Volcanic Wind
+An-Havva Inn
+Bull-Rush Bruiser
+Forget
+Royal Decree
+Tamanoa
+Rakdos Roustabout
+Somnophore
+Iridescent Drake
+Origin of Iron Man

@@ -72,7 +72,11 @@ export const FEATURES: readonly string[] = [
   'replace.createToken.token', // Cloud r3-repl: "if one or more creature tokens would be created" (effects/replacements.ts#tokenDefMatches, CR 111.1, 614.1a)
   'replace.draw.exceptFirstInDrawStep', // Cloud r5-repl: "except the first one you draw in each of your draw steps" (effects/replacements.ts#matchProposed, CR 504.1)
   'replace.life.loss.fromDamage', // Cloud r3-repl: damage's life loss is proposed (rules/damage.ts#installLifeLossFunnel, CR 120.3a, 614.1a)
+  'replace.life.toAtMost', // edh-d-86: "If your life total would be reduced to 0 or less" (effects/replacements.ts#matchProposed: a loss or a payment of life, CR 119.3, 119.4, 614.1a)
+  'replace.life.byController', // edh-d-54: "If a spell or ability would cause its controller to gain life" (effects/replacements.ts#matchProposed, lifedamage.ts#proposeLifeChange, CR 614.1a)
+  'shield.batch', // edh-next-122: "the next time one or more creatures or planeswalkers enter" (effects/replace-bodies.ts#applyBody, effects/entering-together.ts; CR 614.1c, 616.1)
   'replace.beginTurn.extra', // p2-replace-events-3: "would begin an extra turn" (the turn proposal's `extra`, triggers/match.ts#beginTurn, CR 500.7, 614.10)
+  'replace.draw.firstEachTurn', // edh-d-98: "the first time you would draw a card each turn" (effects/replacements.ts#matchProposed, turnStats.drawsProposed, CR 121.2, 614.1a)
 ];
 
 /**
@@ -107,6 +111,12 @@ export function proposeResult(g: Game, e: Proposed, caller: CallerOptions = {}, 
  */
 export function runPipeline(g: Game, e: Proposed, shares?: ReadonlyMap<string, number>): Proposed | null {
   if (isZero(e)) return null; // CR 614.7a: 0 damage, 0 life, 0 counters, 0 tokens is no event; nothing can replace it
+  // edh-d-98 (CR 121.2, 614.1a; Scion of Halaster): every card a player would draw is counted as it is proposed, before any replacement applies to it (`turnStats.drawsProposed`): "the
+  // first time you would draw a card each turn" is the first such proposal of the turn, whether it was then replaced or not (a replaced draw's own "then draw a card" is the second)
+  if (e.ev === 'draw') {
+    const ts = g.s.players.find((p) => p.id === e.player)?.turnStats;
+    if (ts !== undefined) ts.drawsProposed = (ts.drawsProposed ?? 0) + 1;
+  }
   const cantHappen = forbiddenBy(g, e) !== null;
   // CR 614.5, M6-1 (m6 design D3, E2, 3.1.5): the effects already applied to this event and to the events it replaces, per BRANCH: a proposal made while a
   // body of another proposal runs (the steps of an `instead`, the counters an entering permanent gets) starts from that proposal's set, a copy of it.
@@ -168,7 +178,7 @@ function unpreventableIfRuled(g: Game, e: Proposed): Proposed {
 }
 
 export const isZero = (e: Proposed): boolean =>
-  (e.ev === 'damage' || e.ev === 'life') ? e.amount <= 0 : e.ev === 'counters' || e.ev === 'createToken' || e.ev === 'mill' || e.ev === 'drawMany' ? e.count <= 0 : false;
+  (e.ev === 'damage' || e.ev === 'life') ? e.amount <= 0 : e.ev === 'counters' || e.ev === 'createToken' || e.ev === 'mill' || e.ev === 'drawMany' || e.ev === 'scry' ? e.count <= 0 : false;
 
 /**
  * Several effects whose order cannot change the outcome need no choice: "as it enters" bodies without a choice or a payment (tapped, counters, abilities)

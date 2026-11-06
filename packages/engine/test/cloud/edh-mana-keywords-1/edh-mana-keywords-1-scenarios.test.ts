@@ -2,13 +2,13 @@
  * Commander lane edh-mana-keywords, round edh-mana-keywords-1: the round's engine concepts played through the engine with synthetic cards (invented names and
  * wordings, design 6.10), compiled by the game's default compiler. CR cites from memory, unverified (rules/cr/ is not in the cloud checkout).
  *
- *   CR 113.6, 605.1a, 602.2    "Exile this card from your hand: Add {G}.": a mana ability that works in its owner's hand only
+ *   CR 113.6m, 605.1a, 602.2   "Exile this card from your hand: Add {G}.": a mana ability that works in its owner's hand only
  *   CR 105.2, 106.5            "Add one mana of any color among legendary creatures you control": the colors those permanents have; none: no mana
  *   CR 702.6a, 702.6c, 205.4   "Equip legendary creature {1}": attaches only to a legendary creature its controller controls
  *   CR 607.2a, 106.5           "Add one mana of any of the exiled card's colors": the colors of the card this permanent exiled; none exiled or a colorless one: no mana
- *   CR 602.5d, 605.3a          "Discard your hand, Sacrifice ~: Add three mana of any one color. Activate only as an instant.": the whole cost, then one color
- *   CR 603.2d, 109.4           "If a triggered ability of a Goblin or another Elf you control triggers, that ability triggers an additional time"
- *   CR 106.1, 106.7, 614.15    "Add one mana of any type that a land you control could produce. If ~ has a +1/+1 counter on it, add three mana of that type instead."
+ *   CR 602.5e, 605.3a          "Discard your hand, Sacrifice ~: Add three mana of any one color. Activate only as an instant.": the whole cost, then one color
+ *   CR 603.2d                 "If a triggered ability of a Goblin or another Elf you control triggers, that ability triggers an additional time"
+ *   CR 106.1b, 106.7, 614.15    "Add one mana of any type that a land you control could produce. If ~ has a +1/+1 counter on it, add three mana of that type instead."
  */
 import { describe, expect, it } from 'vitest';
 import { act, answer, castAuto, find, life, pass, scenario } from '../../m3/scenario';
@@ -39,7 +39,7 @@ function tapFor(s0: GameState, source: ObjectId, colors: string[] = []): { s: Ga
   return { s, asked };
 }
 
-describe('CR 113.6, 605.1a, 602.2: "Exile this card from your hand: Add {G}." (a mana ability that works in the hand)', () => {
+describe('CR 113.6m, 605.1a, 602.2: "Exile this card from your hand: Add {G}." (a mana ability that works in the hand)', () => {
   const GUIDE = card('Test Spirit Guide', 'Creature — Spirit', 'Exile this card from your hand: Add {G}.', { pt: ['2', '2'], cost: '{2}{G}', colors: ['G'] });
   it('is automated; in your hand it is offered and exiling the card adds {G}', () => {
     expect(automated(GUIDE)).toBe(true);
@@ -74,7 +74,7 @@ describe('CR 105.2, 106.5: "Add one mana of any color among legendary creatures 
     expect(automated(MOX) && automated(LAND) && automated(YARD)).toBe(true);
     const s0 = scenario([], { p1: { battlefield: ['Test Saga Mox', 'Test Blue Hero', 'Test Green Elf'] }, p2: { battlefield: ['Test Red Hero'] }, defs });
     const r = tapFor(s0, find(s0, 'Test Saga Mox', 'battlefield', 'p1'));
-    expect(r.asked).toEqual([]); // one color only: no question (CR 106.5)
+    expect(r.asked).toEqual([]); // one color only: no question
     expect(poolOf(r.s)).toBe('U');
     const s1 = scenario([], { p1: { battlefield: ['Test Saga Mox', 'Test Blue Hero', 'Test Red Hero'] }, defs });
     const r1 = tapFor(s1, find(s1, 'Test Saga Mox', 'battlefield', 'p1'), ['R']);
@@ -163,7 +163,7 @@ describe('CR 702.6a, 702.6c, 205.4: "Equip legendary creature {1}"', () => {
   });
 });
 
-describe('CR 603.2d, 109.4: "If a triggered ability of a Goblin or another Elf you control triggers, that ability triggers an additional time."', () => {
+describe('CR 603.2d: "If a triggered ability of a Goblin or another Elf you control triggers, that ability triggers an additional time."', () => {
   const DOUBLER = card('Test Echo Sage', 'Creature — Elf Wizard', 'If a triggered ability of a Goblin or another Elf you control triggers, that ability triggers an additional time.', { pt: ['1', '1'], cost: '{1}{G}', colors: ['G'] });
   const GOBLIN = card('Test Pinger', 'Creature — Goblin', 'Whenever you cast a spell, you gain 1 life.', { pt: ['1', '1'], cost: '{R}', colors: ['R'] });
   const ELF = card('Test Elf Pinger', 'Creature — Elf', 'Whenever you cast a spell, you gain 1 life.', { pt: ['1', '1'], cost: '{G}', colors: ['G'] });
@@ -192,7 +192,7 @@ describe('CR 603.2d, 109.4: "If a triggered ability of a Goblin or another Elf y
   });
 });
 
-describe('CR 106.1, 106.7, 614.15: "{T}: Add one mana of any type that a land you control could produce. If ~ has a +1/+1 counter on it, add three mana of that type instead."', () => {
+describe('CR 106.1b, 106.7, 614.15: "{T}: Add one mana of any type that a land you control could produce. If ~ has a +1/+1 counter on it, add three mana of that type instead."', () => {
   const DRUID = card('Test Incubator', 'Creature — Elf Druid', '{T}: Add one mana of any type that a land you control could produce. If this creature has a +1/+1 counter on it, add three mana of that type instead.', { pt: ['0', '2'], cost: '{1}{G}', colors: ['G'] });
   const FOREST = card('Test Forest', 'Basic Land — Forest', '{T}: Add {G}.');
   const ISLAND = card('Test Island', 'Basic Land — Island', '{T}: Add {U}.');

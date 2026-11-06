@@ -1,0 +1,9 @@
+# edh-players-20 (Commander lane edh-players; test/cloud/edh-players-20, golden edh-players-20-review.json)
+# an opponent attacking another opponent; the controller of a batch's creatures; the sacrificed permanent a commander; each of those creatures; a pronoun in a draw's count; exactly 1 life lost; a tap that is not the attack's
+Karazikar, the Eye Tyrant
+Nelly Borca, Impulsive Accuser
+Tevesh Szat, Doom of Fools
+Cauldron of Souls
+Titan of Littjara
+Ob Nixilis, Captive Kingpin
+Verity Circle

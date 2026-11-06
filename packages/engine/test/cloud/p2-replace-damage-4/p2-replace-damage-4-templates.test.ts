@@ -32,9 +32,10 @@ const NARROW: Readonly<Record<string, readonly string[]>> = {
   'sta.p2rd4.prevent.duringYourTurn.toYou': ['Personal Sanctuary'],
   'sta.p2rd4.prevent.duringYourTurn.toObj': ['Guardian Naga // Banishing Coils'],
   'eff.p2rd4.prevent.nextTime.objWouldDeal.toYou': ['Mercenaries'],
+  'eff.p2rd4.prevent.nextTime.objWouldDeal': ['Dazzling Reflection'], // edh-d-15 (EDHREC rank 13,645, top 20,000, opened by the owner 2026-10-30): made stable again once a shield over simultaneous damage prevents all of it
 };
 /** Templates kept experimental (no golden card of the tuning half or Standard prints them; design 6.9). */
-const EXPERIMENTAL: readonly string[] = ['eff.p2rd4.prevent.nextTime.objWouldDeal']; // its one card of the index is held-out (design 6.12): no evidence
+const EXPERIMENTAL: readonly string[] = []; // edh-d-15 made eff.p2rd4.prevent.nextTime.objWouldDeal stable on Dazzling Reflection (the 6.9 narrow-wording deviation; edh-d-3 had put it back for the simultaneous-damage fault, fixed in effects/damage-batch.ts)
 const OPTS = defaultParseOptions({ templates: [...TEMPLATE_SET], capabilities: ENGINE_CAPABILITIES }); // what a decklist card gets (design 5.2; `needs`)
 
 /** The type line an example needs: an Equipment or an Aura when it names the equipped or enchanted creature, a creature when it names ~ or has an activated or triggered ability, else an enchantment or an instant. */

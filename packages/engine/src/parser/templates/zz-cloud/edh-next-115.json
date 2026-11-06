@@ -1,0 +1,25 @@
+[
+  {
+    "id": "sta.edhn115.spells.demonstrate",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": ["CR 702.144a", "CR 604.1", "CR 613.1f", "CR 601.2"],
+    "pattern": "{f:Filter} you cast have demonstrate",
+    "build": {
+      "s": "continuous",
+      "affects": { "ref": "each", "filter": { "anyOf": ["$f"], "controller": "you", "not": { "stackKind": "copy", "zone": "stack" }, "zone": "stack" } },
+      "mods": [{ "layer": 6, "add": [{ "kind": "keyword", "keyword": "demonstrate", "text": "demonstrate" }] }]
+    },
+    "subject": "none",
+    "examples": [
+      { "text": "Creature spells you cast have demonstrate." },
+      { "text": "Red instant spells you cast have demonstrate." }
+    ],
+    "counterExamples": [
+      "Creature spells your opponents cast have demonstrate.",
+      "Creature spells you cast have convoke.",
+      "Creature spells you cast have demonstrate until end of turn."
+    ]
+  }
+]

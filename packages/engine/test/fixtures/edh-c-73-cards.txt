@@ -1,0 +1,11 @@
+# edh-c-73 (Commander lane edh-c, EDHREC ranks 22,501-23,000, second pass): see packages/engine/src/parser/templates/zz-cloud/edh-c-73.json. After editing: npm run cards -- fixtures
+Conductor of Cacophony
+Telim'Tor's Edict
+Jagged Poppet
+Skull Raid
+Tracker's Instincts
+Soldevi Digger
+Hum of the Radix
+One with the Stars
+Hazezon Tamar
+Wojek Embermage

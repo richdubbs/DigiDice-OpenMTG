@@ -1,0 +1,322 @@
+[
+  {
+    "id": "eff.edhp4.untapAll.gainControl.them",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.26b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 608.2c"
+    ],
+    "pattern": "untap all {f:Filter} and gain control of them {d:Dur}",
+    "build": [
+      {
+        "op": "untap",
+        "what": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "as": "them"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": {
+              "ref": "bound",
+              "name": "them"
+            },
+            "mods": [
+              {
+                "layer": 2,
+                "controller": {
+                  "ref": "you"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Untap all Goblins and gain control of them until end of turn."
+      },
+      {
+        "text": "Untap all lands target player controls and gain control of them until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Untap all creatures and gain control of them.",
+      "Untap all creatures and gain control of them unless an opponent pays {3}.",
+      "Untap all creatures and lose control of them until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhp4.player.mayHave.youDraw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} may have you draw {n:Qty} card[s]",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent may have you draw two cards. If they don't, you mill two cards."
+      },
+      {
+        "text": "When ~ enters, target opponent may have you draw a card. If they don't, you gain 4 life."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent may draw three cards. If they don't, you mill three cards.",
+      "When ~ enters, you may have target opponent draw three cards. If you do, you mill three cards.",
+      "When ~ enters, target opponent may have you draw three cards at random."
+    ]
+  },
+  {
+    "id": "eff.edhp4.becomes.color.andGains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 105.3",
+      "CR 702.10a"
+    ],
+    "pattern": "{o:Obj} becomes {c:Color} and gains {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Target creature becomes green and gains trample until end of turn."
+      },
+      {
+        "text": "Target artifact creature becomes blue and gains flying until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature becomes red and gains haste.",
+      "Target creature becomes red and green and gains haste until end of turn.",
+      "Target creature becomes red and loses flying until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhp4.draw.nAdditional",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 504.1",
+      "CR 504.2"
+    ],
+    "pattern": "{p:Player} draw[s] {n:Qty} additional cards",
+    "build": {
+      "op": "draw",
+      "who": "$p",
+      "count": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each opponent's draw step, that player draws two additional cards."
+      },
+      {
+        "text": "At the beginning of each opponent's draw step, that player draws three additional cards."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each player's draw step, that player draws two additional cards unless they pay {3}.",
+      "At the beginning of each player's draw step, that player draws two additional lands.",
+      "At the beginning of each player's draw step, that player draws two cards."
+    ]
+  },
+  {
+    "id": "eff.edhp4.sacrificeChoice.andGetsCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 122.1",
+      "CR 122.1f",
+      "CR 608.2c",
+      "CR 608.2e"
+    ],
+    "pattern": "{p:Player} sacrifice[s] {n:Qty} {f:Filter} of their choice and get[s] {m:Qty} {k:CounterKind} counter[s]",
+    "build": [
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$f",
+        "count": "$n"
+      },
+      {
+        "op": "putCounters",
+        "on": "$p",
+        "kind": "$k",
+        "count": "$m"
+      }
+    ],
+    "subject": "player",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Each opponent sacrifices an artifact of their choice and gets a poison counter."
+      },
+      {
+        "text": "Target player sacrifices two creatures of their choice and gets three poison counters."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent sacrifices an artifact of your choice and gets a poison counter.",
+      "Each opponent sacrifices an artifact of their choice or gets a poison counter.",
+      "Each opponent sacrifices an artifact of their choice and you get a poison counter."
+    ]
+  },
+  {
+    "id": "eff.edhp4.target.attack.nodefender",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.3b",
+      "CR 609.4",
+      "CR 611.2a",
+      "CR 508.1a"
+    ],
+    "pattern": "{o:Obj} can attack this turn as though it didn't have defender",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "each",
+            "who": "player"
+          },
+          "action": "attackAsThoughNoDefender",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "{2}{U}: Target creature with defender can attack this turn as though it didn't have defender."
+      },
+      {
+        "text": "{2}: Target Wall you control can attack this turn as though it didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "{1}{G}: Target creature with defender can attack as though it didn't have defender.",
+      "{1}{G}: Target creature with defender can block this turn as though it didn't have defender.",
+      "{1}{G}: Target creature with defender can attack this turn as though it didn't have flying."
+    ],
+    "priority": -1
+  },
+  {
+    "id": "eff.edhp4.draw.nAdditional.you",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 504.1",
+      "CR 504.2"
+    ],
+    "pattern": "draw {n:Qty} additional cards",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your draw step, draw three additional cards."
+      },
+      {
+        "text": "At the beginning of your draw step, draw four additional cards."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your draw step, draw two additional lands.",
+      "At the beginning of your draw step, draw two additional cards unless you pay {3}.",
+      "At the beginning of your draw step, draw two cards."
+    ]
+  }
+]

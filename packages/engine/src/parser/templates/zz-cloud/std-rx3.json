@@ -96,7 +96,7 @@
     "id": "eff.stdrx3.permit.free.play.group.durFirst",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 118.9",
       "CR 601.2b",
@@ -148,7 +148,7 @@
     "id": "eff.stdrx3.permit.free.cast.obj.durFirst",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 118.9",
       "CR 601.2b",
@@ -200,7 +200,7 @@
     "id": "eff.stdrx3.permit.free.play.obj.durFirst",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 118.9",
       "CR 601.2b",

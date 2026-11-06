@@ -1,0 +1,138 @@
+[
+  {
+    "id": "sta.edhv31.blockAsThough.selfAttackers",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 609.4",
+      "CR 702.28b"
+    ],
+    "pattern": "~ can block creatures with {k:Abilities} as though they didn't have {a:Abilities}",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "blockAsThough",
+      "of": {
+        "self": true
+      },
+      "attacker": {
+        "types": [
+          "Creature"
+        ]
+      },
+      "asThough": "$a.0.text"
+    },
+    "consumes": [
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "~ can block creatures with horsemanship as though they didn't have horsemanship."
+      },
+      {
+        "text": "~ can block creatures with fear as though they didn't have fear."
+      }
+    ],
+    "counterExamples": [
+      "~ can block creatures with fear as though they had fear.",
+      "~ can block creatures with fear as though they didn't have intimidate.",
+      "~ can block creatures with fear this turn as though they didn't have fear.",
+      "~ can't block creatures with fear as though they didn't have fear."
+    ]
+  },
+  {
+    "id": "eff.edhv31.damage.andUnpreventable",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 615.12"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient} and the damage can't be prevented",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "unpreventable": true
+    },
+    "subject": "object",
+    "consumes": [
+      "can't",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 4 damage to any target and the damage can't be prevented."
+      },
+      {
+        "text": "~ deals 3 damage to target creature and the damage can't be prevented."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 4 damage to any target and the damage can be prevented.",
+      "~ deals 4 damage to any target and that damage can't be prevented this turn.",
+      "~ deals 4 damage to any target and the damage can't be redirected."
+    ]
+  },
+  {
+    "id": "eff.edhv31.pumpGrant.noDuration",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} and gain[s] {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ],
+      "duration": {
+        "d": "permanent"
+      }
+    },
+    "subject": "object",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/+2 and gains horsemanship."
+      },
+      {
+        "text": "Target creature gets +1/+1 and gains flying."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+2 or gains horsemanship.",
+      "Target creature gets +2/+2 and loses flying.",
+      "Target creature gets +2/+2 and gains horsemanship until end of turn."
+    ]
+  }
+]

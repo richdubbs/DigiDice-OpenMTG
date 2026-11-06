@@ -15,9 +15,10 @@ import { keptPreparedCopy, preparedCopiesToMake } from './prepare';
 import { auraAttachedLegally, equipmentAttachedLegally, isAura, isEquipment, isFortification } from '../rules/attachment';
 import { charsOfObject, hasKeyword, ptNumbers, readingStable, type Chars } from '../rules/characteristics';
 import { addCounters } from '../rules/counters';
+import { hostFrom } from '../rules/status';
 import { removeFromCombat } from '../rules/combat-state';
 import { destroyMany } from '../rules/destroy';
-import { zeroLoyaltyKept } from '../statics/hooks';
+import { lethalByPowerReader, lethalThreshold, zeroLoyaltyKept } from '../statics/hooks';
 import type { Game } from './game';
 import { chooseSiegeProtector, leavingTogether, moveObject, zoneArray } from './zones';
 import { legendRuleExempt } from '../statics/hooks';
@@ -76,6 +77,17 @@ function cease(g: Game, o: GameObject, why: string, rule: string): void {
 }
 
 /**
+ * edh-next-66 (CR 111.7, 704.5d; Sway of the Stars, The Great Aurora rulings 2005-02-01, 2015-06-22): a token an effect has just put into a library ceases to exist at once, for
+ * the rest of that effect: it is not shuffled with the library and can't be drawn, while the move still counted it ("Tokens shuffled into a library count toward the number of
+ * cards drawn"). Only a token in a library; anything else is left to the state-based action pass.
+ */
+export function ceaseTokenInLibrary(g: Game, id: ObjectId): void {
+  const o = g.s.objects[id];
+  if (!o || o.kind !== 'token' || o.zone !== 'library') return;
+  cease(g, o, 'token', 'CR 704.5d');
+}
+
+/**
  * Put a permanent into its owner's graveyard for a state-based action. WP11 INTERFACE CHANGE (review): the move goes through the proposal pipeline, which may
  * drop it (a "can't leave" effect, CR 614.17); then nothing happened, and false is returned so the pass does not count it (no endless loop of SBA passes).
  */
@@ -88,7 +100,9 @@ const toGraveyard = (g: Game, o: GameObject, why: string, rules: string[]): bool
 };
 
 function unattach(g: Game, o: GameObject, why: string, rules: string[]): void {
+  const from = o.attachedTo === undefined ? {} : hostFrom(g, o.attachedTo);
   delete o.attachedTo;
+  g.emit({ type: 'attached', objectId: o.id, to: null, ...from }); // edh-perms-10 (CR 701.3d): "becomes unattached" by a state-based action too (704.5n, 704.5p)
   g.log(`${g.nameOf(o.id)} becomes unattached (${why}).`, { rules, level: 'action' });
 }
 
@@ -170,12 +184,15 @@ function findObjectSbas(g: Game, bf: readonly Item[]): Found {
 
   const zeroToughness: Item[] = [];
   const toDestroy: Found['toDestroy'] = [];
+  const byPower = lethalByPowerReader(s); // edh-next-145: the rule sources gathered once for the pass
   for (const it of bf) {
     if (!it.c.types.includes('Creature')) continue;
     const t = ptNumbers(it.c).toughness; // null: a "*" toughness the engine can't evaluate yet (milestone 6), which is never judged by its value
     if (t !== null && t <= 0) { zeroToughness.push(it); continue; } // CR 704.5f
     if (hasKeyword(it.c, 'indestructible')) continue; // CR 702.12b: ignores lethal damage and deathtouch damage
-    if (t !== null && it.o.damage >= t) toDestroy.push({ it, why: 'lethal damage', rule: 'CR 704.5g' });
+    // edh-next-145 (CR 704.5g, 120.6; Zilortha, Strength Incarnate): the damage is checked against the power when a rule says so (statics/hooks.ts#lethalThreshold)
+    const lethal = lethalThreshold(s, it.o.id, it.c, byPower);
+    if (lethal !== null && it.o.damage >= lethal) toDestroy.push({ it, why: 'lethal damage', rule: 'CR 704.5g' });
     else if (it.o.deathtouchDamaged) toDestroy.push({ it, why: 'damage from a source with deathtouch', rule: 'CR 704.5h' }); // any amount is lethal, whatever the toughness (CR 704.5h)
   }
   const walkersAtZero = bf.filter(({ o, c }) => c.types.includes('Planeswalker') && (o.counters.loyalty ?? 0) <= 0 && !zeroLoyaltyKept(s, o.id)); // CR 704.5i (r4-mech: unless exempt)
@@ -285,6 +302,17 @@ export function performObjectSbas(g: Game): boolean {
     legendLosers.push(...group.filter((x) => x.o.id !== keep));
   }
 
+  // Soulbond pairs (CR 702.95e): a paired creature becomes unpaired if another player gains control of it or its partner, if either stops being a creature or leaves the
+  // battlefield. Not a state-based action of CR 704.5, but it takes effect the same way: before anyone gets priority.
+  const unpairs: GameObject[] = [];
+  for (const it of bf) {
+    if (it.o.pairedWith === undefined) continue;
+    const mate = bf.find((x) => x.o.id === it.o.pairedWith);
+    const holds = mate !== undefined && mate.o.pairedWith === it.o.id && it.c.types.includes('Creature') && mate.c.types.includes('Creature')
+      && it.o.controller === it.o.pairedBy && mate.o.controller === it.o.pairedBy;
+    if (!holds) unpairs.push(it.o);
+  }
+
   // ---- Perform -----------------------------------------------------------------------------------------------------------------
   // FAST5X E28 review (CR 704.3, 603.10a): the actions are performed at the same time, so every permanent that leaves is as it was when they were checked (the
   // characteristics worked out above), whichever moves first; review 2026-10-26 F33: only the permanents the pass may move (`leaversOf`)
@@ -358,6 +386,14 @@ export function performObjectSbas(g: Game): boolean {
     for (const u of unattachs) {
       if (moved(u.o) || u.o.attachedTo === undefined) continue;
       unattach(g, u.o, u.why, [u.rule]); any = true;
+    }
+    for (const o of unpairs) {
+      if (o.pairedWith === undefined) continue;
+      const mate = s.objects[o.pairedWith];
+      if (mate !== undefined && mate.pairedWith === o.id) { delete mate.pairedWith; delete mate.pairedBy; }
+      delete o.pairedWith; delete o.pairedBy;
+      g.log(`${g.nameOf(o.id)} is no longer paired.`, { rules: ['CR 702.95e'], level: 'info' });
+      any = true;
     }
     for (const it of annihilate) {
       if (moved(it.o)) continue;

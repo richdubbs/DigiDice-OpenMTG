@@ -1,0 +1,1 @@
+{"name":"ops_01","before":{"a":{"b":[1,2,3]}},"ops":[{"op":"splice","path":["a","b"],"at":1,"del":1,"add":[9,8]},{"op":"set","path":["a","c"],"value":{"d":1}},{"op":"set","path":["a","c","e"],"value":2}],"after":{"a":{"b":[1,9,8,3],"c":{"d":1,"e":2}}}}

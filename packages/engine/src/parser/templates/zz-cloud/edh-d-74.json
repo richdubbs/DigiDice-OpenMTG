@@ -1,0 +1,266 @@
+[
+  {
+    "id": "eff.edhd74.player.exile.allLibrary",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 406.2",
+      "CR 608.2c",
+      "CR 109.4"
+    ],
+    "pattern": "{p:Player} exile[s] all cards from their library",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": "library",
+          "owner": "$p",
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player draws a card, that player exiles all cards from their library."
+      },
+      {
+        "text": "When ~ enters, target opponent exiles all cards from their library."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent exiles all cards from your library.",
+      "When ~ enters, target opponent exiles all cards from their graveyard.",
+      "When ~ enters, target opponent exiles the top card of their library."
+    ]
+  },
+  {
+    "id": "eff.edhd74.forEach.itsController.sacrificesPermanentOfChoice.unlessPay",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 608.2c",
+      "CR 608.2f",
+      "CR 701.21a"
+    ],
+    "pattern": "for each {f:Filter} , its controller sacrifices a permanent of their choice unless they pay {c:Cost}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "eachUnlessPay",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "bound",
+              "name": "eachUnlessPay"
+            }
+          },
+          "cost": "$c",
+          "else": [
+            {
+              "op": "sacrificeChoice",
+              "who": {
+                "ref": "controllerOf",
+                "object": {
+                  "ref": "bound",
+                  "name": "eachUnlessPay"
+                }
+              },
+              "filter": {},
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "For each artifact, its controller sacrifices a permanent of their choice unless they pay {2}."
+      },
+      {
+        "text": "For each land, its controller sacrifices a permanent of their choice unless they pay {3}."
+      }
+    ],
+    "counterExamples": [
+      "For each creature, its controller sacrifices a creature of their choice unless they pay {1}.",
+      "For each creature, you sacrifice a permanent of your choice unless they pay {1}.",
+      "For each creature, its controller sacrifices a permanent of their choice if they pay {1}."
+    ]
+  },
+  {
+    "id": "eff.edhd74.forEach.spellAndAbility.opponents.counterItUnlessPay",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 701.6a",
+      "CR 608.2c",
+      "CR 608.2f"
+    ],
+    "pattern": "for each spell and ability your opponents control , counter it unless its controller pays {c:Cost}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": {
+          "zone": "stack",
+          "controller": "opponent",
+          "anyOf": [
+            {
+              "stackKind": "spell"
+            },
+            {
+              "stackKind": "ability"
+            }
+          ]
+        }
+      },
+      "as": "eachUnlessPay",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "bound",
+              "name": "eachUnlessPay"
+            }
+          },
+          "cost": "$c",
+          "else": [
+            {
+              "op": "counter",
+              "what": {
+                "ref": "bound",
+                "name": "eachUnlessPay"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "For each spell and ability your opponents control, counter it unless its controller pays {3}."
+      },
+      {
+        "text": "For each spell and ability your opponents control, counter it unless its controller pays {2}{U}."
+      }
+    ],
+    "counterExamples": [
+      "For each spell and ability you control, counter it unless its controller pays {4}.",
+      "For each spell and ability your opponents control, counter it unless you pay {4}.",
+      "For each spell your opponents control, counter it unless its controller pays {4}."
+    ]
+  },
+  {
+    "id": "eff.edhd74.forEach.itsController.sacrificesIt.unlessPayLife",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 119.4",
+      "CR 608.2c",
+      "CR 608.2f",
+      "CR 701.21a"
+    ],
+    "pattern": "for each {f:Filter} , its controller sacrifices it unless they pay {n:Qty} life",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "eachUnlessPay",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "bound",
+              "name": "eachUnlessPay"
+            }
+          },
+          "cost": {
+            "other": [
+              {
+                "kind": "payLife",
+                "amount": "$n"
+              }
+            ]
+          },
+          "else": [
+            {
+              "op": "sacrificeChoice",
+              "who": {
+                "ref": "controllerOf",
+                "object": {
+                  "ref": "bound",
+                  "name": "eachUnlessPay"
+                }
+              },
+              "filter": {
+                "is": {
+                  "ref": "bound",
+                  "name": "eachUnlessPay"
+                }
+              },
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "For each artifact, its controller sacrifices it unless they pay X life."
+      },
+      {
+        "text": "For each land, its controller sacrifices it unless they pay 2 life."
+      }
+    ],
+    "counterExamples": [
+      "For each creature, its controller sacrifices it unless they pay {1}.",
+      "For each creature, you sacrifice it unless they pay X life.",
+      "For each creature, its controller sacrifices it unless they pay X mana."
+    ]
+  }
+]

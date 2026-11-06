@@ -1,0 +1,476 @@
+[
+  {
+    "id": "eff.edhd21.isOrBecomes.subtype.inaddition.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3a",
+      "CR 305.7",
+      "CR 613.1d",
+      "CR 611.2a",
+      "CR 611.2b"
+    ],
+    "pattern": "{o:Obj} ( is | becomes ) ( a | an ) {st:Subtypes} in addition to its other types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Put a blorp counter on target land. That land is a Swamp in addition to its other types for as long as it has a blorp counter on it."
+      },
+      {
+        "text": "Tap target creature. It becomes a Bear in addition to its other types until end of turn."
+      },
+      {
+        "text": "Tap target creature. It becomes a Zombie in addition to its other types for as long as it remains tapped."
+      }
+    ],
+    "counterExamples": [
+      "Put a blorp counter on target land. That land is a Swamp for as long as it has a blorp counter on it.",
+      "Put a blorp counter on target land. That land is a Swamp in addition to its other colors for as long as it has a blorp counter on it.",
+      "Put a blorp counter on target land. That land is a Swamp artifact in addition to its other types for as long as it has a blorp counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhd21.eachOfThem.is.ptSubtype.withAbilities.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 608.2c"
+    ],
+    "pattern": "each of {g:Them} is ( a | an ) {pt:BasePT} {st:Subtypes} with {a:Abilities} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$g",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "in addition",
+      "other",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Return all creature cards from your graveyard to the battlefield. Each of them is a 1/1 Zombie with flying in addition to its other types."
+      },
+      {
+        "text": "Return up to two target creature cards from your graveyard to the battlefield. Each of them is a 2/2 Spirit with menace and trample in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Return all creature cards from your graveyard to the battlefield. Each of them is a 1/1 Zombie with flying.",
+      "Return all creature cards from your graveyard to the battlefield. Each of them is a 1/1 Zombie with flying in addition to its other colors.",
+      "Return all creature cards from your graveyard to the battlefield. Each of them is a 1/1 Zombie with flying in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhd21.it.is.ptSubtypeCreature.withAbilities.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 608.2c"
+    ],
+    "pattern": "( {o:ItIs} | {o:Obj} is ) ( a | an ) {pt:BasePT} {st:Subtypes} creature with {a:Abilities} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Return target artifact card from your graveyard to the battlefield. It's a 1/1 Spirit creature with flying in addition to its other types."
+      },
+      {
+        "text": "Return target enchantment card from your graveyard to the battlefield. That permanent is a 3/3 Zombie creature with trample and haste in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Return target artifact card from your graveyard to the battlefield. It's a 1/1 Spirit creature with flying.",
+      "Return target artifact card from your graveyard to the battlefield. It's a 1/1 Spirit creature with flying in addition to its other colors.",
+      "Return target artifact card from your graveyard to the battlefield. It's a 1/1 Spirit creature with flying in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhd21.eachOfThem.is.colorSubtype.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.3",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 608.2c"
+    ],
+    "pattern": "each of {g:Them} is ( a | an ) {c:Color} {st:Subtypes} in addition to its other colors and types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$g",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "add": [
+                  "$c"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "in addition",
+      "other",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Return all creature cards from your graveyard to the battlefield. Each of them is a blue Spirit in addition to its other colors and types."
+      },
+      {
+        "text": "Return up to two target creature cards from your graveyard to the battlefield. Each of those creatures is a red Zombie in addition to its other colors and types."
+      }
+    ],
+    "counterExamples": [
+      "Return all creature cards from your graveyard to the battlefield. Each of them is a blue Spirit in addition to its other types.",
+      "Return all creature cards from your graveyard to the battlefield. Each of them is a Spirit in addition to its other colors and types.",
+      "Return all creature cards from your graveyard to the battlefield. Each of them is a blue Spirit in addition to its other colors and types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhd21.self.aslong.isSubtypeCreature.inAddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 205.3m"
+    ],
+    "pattern": "as long as {c:Cond} , it's ( a | an ) {st:Subtypes} creature in addition to its other types",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ has three or more blorp counters on it, it's a Zombie creature in addition to its other types."
+      },
+      {
+        "text": "As long as ~ is tapped, it's an Elf Druid creature in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is tapped, it's a Zombie creature.",
+      "As long as ~ is tapped, it's a Zombie creature in addition to its other colors.",
+      "As long as ~ is tapped, it's a Zombie creature in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhd21.each.isSubtype.inAddition.hasAbilities",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 205.1b",
+      "CR 205.3m"
+    ],
+    "pattern": "each {f:Filter} is ( a | an ) {st:Subtypes} in addition to its other types and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Each creature your opponents control is an Illusion in addition to its other types and has flying."
+      },
+      {
+        "text": "Each artifact you control is a Golem in addition to its other types and has \"{T}: Add {C}.\""
+      }
+    ],
+    "counterExamples": [
+      "Each creature your opponents control is an Illusion and has flying.",
+      "Each creature your opponents control is an Illusion in addition to its other colors and has flying.",
+      "Each creature your opponents control is an Illusion in addition to its other types and gains flying until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhd21.attached.pumpHasQuoted.thenItIsSubtype",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 205.1b",
+      "CR 113.3d",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} and has {a:Abilities} it's ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +2/+2 and has flying and \"{1}: This creature gets +1/+0 until end of turn.\" It's a Dragon in addition to its other types."
+      },
+      {
+        "text": "Equipped creature gets +1/+0 and has haste and \"{T}: Add {C}.\" It's a Samurai in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+0 and has haste and \"{T}: Add {C}.\" It's a Samurai.",
+      "Equipped creature gets +1/+0 and has haste and \"{T}: Add {C}.\" It's a Samurai in addition to its other colors.",
+      "Equipped creature gets +1/+0 and has haste and \"{T}: Add {C}.\" It's a Samurai in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhd21.each.hasChosenType.inAddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 607.2d",
+      "CR 613.1d",
+      "CR 604.3"
+    ],
+    "pattern": "each {f:Filter} has the chosen creature type in addition to its other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "chosen": "type"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "chosen",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a creature type.\nEach land card in your graveyard has the chosen creature type in addition to its other types."
+      },
+      {
+        "text": "As ~ enters, choose a creature type.\nEach artifact you control has the chosen creature type in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a creature type.\nEach land card in your graveyard has the chosen creature type.",
+      "As ~ enters, choose a color.\nEach land card in your graveyard has the chosen creature type in addition to its other types.",
+      "As ~ enters, choose a creature type.\nEach land card in your graveyard has the chosen creature type in addition to its other colors."
+    ]
+  }
+]

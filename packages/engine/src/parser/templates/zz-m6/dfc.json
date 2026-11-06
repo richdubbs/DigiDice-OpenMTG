@@ -152,7 +152,7 @@
       "Convert ~ unless you pay {2}.",
       "Convert each creature you control."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 6
   },
   {

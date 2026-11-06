@@ -1,0 +1,143 @@
+[
+  {
+    "id": "kw.edhd10.equip.onceEachTurn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.6a",
+      "CR 602.5b",
+      "CR 118.1"
+    ],
+    "pattern": "equip {c:Cost} . activate only once each turn",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": "$c",
+      "limit": {
+        "per": "turn",
+        "max": 1
+      }
+    },
+    "needs": [
+      "keyword:equip"
+    ],
+    "consumes": [
+      "only",
+      "each"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Equip {1}. Activate only once each turn."
+      },
+      {
+        "text": "Equip {3}. Activate only once each turn."
+      }
+    ],
+    "counterExamples": [
+      "Equip {1}. Activate only twice each turn.",
+      "Equip {1}. Activate only as a sorcery.",
+      "Equip {1}. Activate only once each game.",
+      "Equip {1}. Activate only once each turn if you control a creature."
+    ]
+  },
+  {
+    "id": "sta.edhd10.control.monarch",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1b",
+      "CR 303.4",
+      "CR 725.1"
+    ],
+    "pattern": "the monarch controls {o:Obj}",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 2,
+          "controller": {
+            "ref": "monarch"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "The monarch controls equipped creature."
+      },
+      {
+        "text": "The monarch controls enchanted artifact."
+      }
+    ],
+    "counterExamples": [
+      "The monarch controls enchanted creature until end of turn.",
+      "The monarch doesn't control enchanted creature.",
+      "The monarch controls target creature.",
+      "An opponent controls enchanted creature."
+    ]
+  },
+  {
+    "id": "sta.edhd10.attached.mustAttack.cantAttackYou",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 508.1b",
+      "CR 604.1",
+      "CR 101.2",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature attacks each combat if able and can't attack you",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "mustIfAble",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "if",
+      "if able",
+      "can't",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature attacks each combat if able and can't attack you."
+      },
+      {
+        "text": "Equipped creature gets +3/+4.\nEquipped creature attacks each combat if able and can't attack you."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature attacks each combat if able and can't attack you or planeswalkers you control.",
+      "Enchanted creature attacks each combat if able and can't attack its owner.",
+      "Enchanted creature attacks each combat if able and can't block you.",
+      "Enchanted creature attacks each combat if able and can attack you."
+    ]
+  }
+]

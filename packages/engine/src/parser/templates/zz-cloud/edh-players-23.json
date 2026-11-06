@@ -1,0 +1,302 @@
+[
+  {
+    "id": "eff.edhp23.itsController.maySacrificeIt.elseDamage",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 701.21a",
+      "CR 120.3",
+      "CR 109.4"
+    ],
+    "pattern": "its controller may sacrifice {o:Obj} . if they don't , ~ deals {n:Qty} damage to that player",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "do": [
+        {
+          "op": "sacrificeChoice",
+          "who": {
+            "ref": "controllerOf",
+            "object": "$o"
+          },
+          "filter": {
+            "is": "$o"
+          },
+          "count": 1
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": {
+            "ref": "controllerOf",
+            "object": "$o"
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, choose up to one target creature. Its controller may sacrifice it. If they don't, ~ deals 3 damage to that player."
+      },
+      {
+        "text": "When ~ enters, choose target artifact. Its controller may sacrifice it. If they don't, ~ deals 2 damage to that player."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose target artifact. Its controller may sacrifice it. If they do, ~ deals 2 damage to that player.",
+      "When ~ enters, choose target artifact. Its owner may sacrifice it. If they don't, ~ deals 2 damage to that player.",
+      "When ~ enters, choose target artifact. Its controller may sacrifice it. If they don't, ~ deals 2 damage to you."
+    ]
+  },
+  {
+    "id": "eff.edhp23.loseLife.unlessTheyPay",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 119.3",
+      "CR 109.5"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life unless they pay {c:Cost}",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": "$c",
+      "else": [
+        {
+          "op": "loseLife",
+          "who": "$p",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a source an opponent controls deals damage to you, that source's controller loses 3 life unless they pay {2}."
+      },
+      {
+        "text": "When ~ enters, target opponent loses 4 life unless they pay {1}."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a source an opponent controls deals damage to you, that source's controller loses 3 life unless you pay {2}.",
+      "Whenever a source an opponent controls deals damage to you, that source's controller gains 3 life unless they pay {2}.",
+      "Whenever a source an opponent controls deals damage to you, that source's controller loses 3 life if they pay {2}."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhp23.incubate.times",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.53a",
+      "CR 111.10i",
+      "CR 107.3a",
+      "CR 608.2c"
+    ],
+    "pattern": "incubate {n:Qty} {t:Qty} times",
+    "build": {
+      "op": "repeat",
+      "times": "$t",
+      "do": [
+        {
+          "op": "action",
+          "action": "incubate",
+          "who": {
+            "ref": "you"
+          },
+          "n": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "needs": [
+      "action:incubate"
+    ],
+    "examples": [
+      {
+        "text": "Incubate 3 four times, then draw a card."
+      },
+      {
+        "text": "You gain 2 life, then incubate 1 three times."
+      }
+    ],
+    "counterExamples": [
+      "Incubate 3 four cards, then draw a card.",
+      "Incubate four times, then draw a card.",
+      "Investigate 3 four times, then draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhp23.sacrifice.oneOrMore",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d"
+    ],
+    "pattern": "sacrifice one or more {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "controller": "you",
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 1,
+        "max": "any",
+        "as": "toSacrifice"
+      },
+      {
+        "op": "sacrifice",
+        "what": {
+          "ref": "bound",
+          "name": "toSacrifice"
+        }
+      }
+    ],
+    "subject": "none",
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Sacrifice one or more lands. You gain 2 life for each land sacrificed this way."
+      },
+      {
+        "text": "Sacrifice one or more creatures. Draw a card for each creature sacrificed this way."
+      }
+    ],
+    "counterExamples": [
+      "Sacrifice two lands. You gain 2 life for each land sacrificed this way.",
+      "Each player sacrifices one or more permanents. You gain 2 life for each permanent sacrificed this way.",
+      "Sacrifice one or more permanents. You gain 2 life for each permanent destroyed this way."
+    ]
+  },
+  {
+    "id": "eff.edhp23.forEach.draw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "for each {f:Filter} , draw a card",
+    "build": {
+      "op": "repeat",
+      "times": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Sacrifice X lands. For each land sacrificed this way, draw a card."
+      },
+      {
+        "text": "Discard any number of cards. For each card discarded this way, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Sacrifice X lands. For each land sacrificed this way, draw two cards.",
+      "Sacrifice X lands. For each land sacrificed this way, target player draws a card.",
+      "Sacrifice X lands. For each land sacrificed this way, discard a card."
+    ]
+  },
+  {
+    "id": "eff.edhp23.filter.enterTapped.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{f:Filter} enter tapped this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Lands you control enter tapped this turn."
+      },
+      {
+        "text": "Artifacts your opponents control enter tapped this turn."
+      }
+    ],
+    "counterExamples": [
+      "Lands you control enter tapped.",
+      "Lands you control enter untapped this turn.",
+      "Lands you control enter tapped until your next turn."
+    ]
+  }
+]

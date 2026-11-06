@@ -1,0 +1,7 @@
+# edh-c-102 (Commander EDHREC ranks 29,001-29,500, third pass): the cards put to their owner's graveyard/hand from a linked exile, count permanents then life total becomes that number. After editing: npm run cards -- fixtures
+Gravegouger
+Kyren Archive
+Parallax Nexus
+Touch of the Eternal
+Martyr's Cry
+Ritual of the Returned

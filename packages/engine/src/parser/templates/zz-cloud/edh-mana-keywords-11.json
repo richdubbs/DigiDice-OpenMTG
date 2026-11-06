@@ -1,0 +1,193 @@
+[
+  {
+    "id": "rid.edhmk11.mana.costHasX",
+    "kind": "rider",
+    "since": 11,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 107.3",
+      "CR 608.2c"
+    ],
+    "pattern": "spend this mana only on costs that contain {x}",
+    "build": {
+      "$patchPrevious": {
+        "restriction": {
+          "costHasX": true
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "only"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {C} for each lore counter on this artifact. Spend this mana only on costs that contain {X}."
+      },
+      {
+        "text": "{T}: Add {R}{R}. Spend this mana only on costs that contain {X}."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {R}{R}. Spend this mana only on costs that contain {Y}.",
+      "{T}: Add {R}{R}. Spend this mana only on spells that contain {X}.",
+      "{T}: Add {R}{R}. Spend this mana only on costs that contain {X} this turn."
+    ]
+  },
+  {
+    "id": "eff.edhmk11.counter.exileWithCounters.gainsSuspend",
+    "kind": "effect",
+    "since": 11,
+    "status": "stable",
+    "cr": [
+      "CR 701.6a",
+      "CR 614.15",
+      "CR 122.1",
+      "CR 702.62a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 608.2c"
+    ],
+    "pattern": "counter {o:Objs} . if the spell is countered this way , exile it with {n:Qty} time counters on it instead of putting it into its owner 's graveyard . if it doesn't have suspend , it gains suspend",
+    "build": [
+      {
+        "op": "counter",
+        "what": "$o",
+        "to": {
+          "zone": "exile",
+          "counters": [
+            {
+              "kind": "time",
+              "count": "$n"
+            }
+          ]
+        },
+        "as": "exiled"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "not",
+          "of": {
+            "cond": "matches",
+            "object": {
+              "ref": "bound",
+              "name": "exiled"
+            },
+            "filter": {
+              "keyword": "suspend"
+            }
+          }
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "permanent"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "bound",
+                  "name": "exiled"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "suspend",
+                        "text": "suspend"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "if",
+      "this way",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Counter target creature spell. If the spell is countered this way, exile it with two time counters on it instead of putting it into its owner's graveyard. If it doesn't have suspend, it gains suspend."
+      },
+      {
+        "text": "Counter target noncreature spell. If the spell is countered this way, exile it with four time counters on it instead of putting it into its owner's graveyard. If it doesn't have suspend, it gains suspend."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell. If the spell is countered this way, exile it with three time counters on it instead of putting it into its owner's graveyard. If it doesn't have suspend, it gains flying.",
+      "Counter target spell. If the spell is countered this way, exile it with three time counters on it instead of putting it into its owner's graveyard. It gains suspend.",
+      "Counter target spell. If the spell is countered this way, exile it with three charge counters on it instead of putting it into its owner's graveyard. If it doesn't have suspend, it gains suspend.",
+      "Counter target spell. If the spell is countered this way, exile it instead of putting it into its owner's graveyard. If it doesn't have suspend, it gains suspend."
+    ]
+  },
+  {
+    "id": "eff.edhmk11.exile.cardFromHand.atRandom",
+    "kind": "effect",
+    "since": 11,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 608.2d",
+      "CR 400.3",
+      "CR 402.3"
+    ],
+    "pattern": "{p:Player} exile[s] a card from their hand at random",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "picked"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "picked"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "exiled"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player exiles a card from their hand at random. You gain 1 life."
+      },
+      {
+        "text": "{T}: Target opponent exiles a card from their hand at random. If it's a land card, you may put it onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target opponent exiles a card from their hand. You gain 1 life.",
+      "{T}: Target opponent exiles two cards from their hand at random. You gain 1 life.",
+      "{T}: Target opponent exiles a card from their graveyard at random. You gain 1 life."
+    ]
+  }
+]

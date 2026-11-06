@@ -132,7 +132,7 @@ describe('std-exile-play-1-1 guard G2 (design 6.8): a nonsense word never leaves
           expect(fullyAutomated(parsedWith(t, mutated)), mutated).toBe(false);
         });
       }
-    });
+    }, 60_000); // the whole engine package under load: each guard compiles every one-word change of its examples (about 3 s alone)
   }
 });
 

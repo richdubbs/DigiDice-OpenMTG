@@ -1,0 +1,5 @@
+# edh-c-21 (Commander EDHREC ranks 18,751-19,375, third pass): draw then discard that many, one card of each of four land subtypes, any number of basic lands put on top, mill then counters for the creature cards milled. After editing: npm run cards -- fixtures
+Last Stand
+Shard Convergence
+Scouting Trek
+Colossal Badger // Dig Deep

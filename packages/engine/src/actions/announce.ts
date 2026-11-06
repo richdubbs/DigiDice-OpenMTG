@@ -41,9 +41,11 @@ export const FEATURES: readonly string[] = [
   'modes.override', 'modes.chooser', 'modes.cost',
   'modes.pawprints', // std-blb (CR 700.2i): chooseModes refuses a choice whose pawprints total more than the budget
   'modes.repeatTargets', // std-blb (CR 700.2d, 115.3): rules/mode-instances.ts
-  'target.distinct', 'target.divide', 'target.groupLimit', 'target.sameOwner', 'target.differentNames', 'target.perOpponent', 'target.perPlayer' /* r5-fxb */, 'target.sharedCardType', 'target.onlyIf', 'target.chooser', 'target.random' /* p2-damage-2 */, 'target.playerRef',
+  'target.distinct', 'target.divide', 'target.groupLimit', 'target.sameOwner', 'target.differentNames', 'target.differentManaValues' /* edh-top-3 */, 'target.perOpponent', 'target.perOpponent.poison' /* edh-d-96 */, 'target.perPlayer' /* r5-fxb */, 'target.eachWithOne' /* edh-next-127 */, 'target.sharedCardType', 'target.onlyIf', 'target.chooser', 'target.random' /* p2-damage-2 */, 'target.playerRef', 'target.divide.upTo' /* edh-perms-22 */,
   'activate.onlyIf', 'limit.game', 'activate.costChange',
   'activate.costChange.if', // r4-cost (CR 601.2f, 602.2b): "This ability costs {1} less to activate during your turn" (actions/activate.ts#costChangeOf)
+  'activate.opponentsOnly', // edh-c-103: actions/activate.ts#activationDenialIn lets an opponent of the controller activate it, not the controller (CR 602.2)
+  'activate.attackedPlayerOnly', // edh-d-88: actions/activate.ts#activationDenialIn lets only the player the source is attacking activate it (CR 602.2; Capricopian)
   'activate.anyPlayer', // MX5: actions/activate.ts#activationDenialIn lets any player activate it (CR 602.2)
   'mana.whenSpent', // std-copy-3 (CR 106.6, 603.2): "When that mana is spent to cast ...": rules/mana.ts carries it on the mana, actions/cast.ts#manaSpentTriggers puts it on the stack
   'activate.xMin', // std-rx12 (CR 107.3a, 602.2b): "X can't be 0.": actions/activate.ts offers only values of X at least `xMin`
@@ -51,13 +53,32 @@ export const FEATURES: readonly string[] = [
   'activate.tapForMana', // std-rx27 (CR 601.2h, 602.2b): tap creatures rather than pay the generic mana of an activation cost (actions/activate.ts, rules/payment-options.ts)
   'activate.loyaltyX', // std-r9 (CR 606.4, 107.3a): "−X", announced as X and removed from the loyalty (rules/cost.ts#planFromCostDef)
   'target.sharedCreatureType', // CLOUD std-ecl: rules/targets.ts#sharedCreatureTypeHolds ("two target creature cards that share a creature type", CR 205.3m, 115.1)
+  'target.equalToughness', // edh-next-126: rules/targets.ts#equalToughnessHolds ("any number of target creatures with equal toughness", CR 208.1, 115.1) and effects/ctx.ts#checkAll (CR 608.2b)
   'target.differentControllers', // CLOUD std-tmt: actions/announce-targets.ts asks again when two targets have one controller (CR 115.1, 601.2c)
   'target.sameController', // std-rx30: actions/announce-targets.ts asks again when two targets have different controllers (CR 115.1, 601.2c)
   'target.perCardType', // std-cardcopy-7: actions/announce-targets.ts asks again when the targets can't be one of each card type (CR 115.1, 601.2c, 205.2a)
   'modes.unchosen', // r3-choose (CR 700.2, 603.3c): "choose one that hasn't been chosen [this turn]" (usedModes, rememberModes)
   'modes.triggerX', // r5-cost (CR 107.3m, 603.3c): a triggered ability's "choose up to X --" reads the X its source was cast with (modeLimits)
+  'modes.mayChoose', // edh-players-19 (CR 700.2, 603.3c): "you may choose two": no mode, or exactly `max` of them (chooseModes)
   'modes.random', // p2-modal-2 (CR 700.2): "choose one at random --" picks the modes with the game's random number generator (chooseModes); `override.chosen` lets the player choose
   ...ANNOUNCE_READABLE,
+  'modes.escalate', // edh-mana-keywords-2 (CR 702.120a): modeCosts adds the escalate cost for each mode after the first
+  'activate.spendOnlyChosen', // edh-mana-keywords-8 (CR 106.6, 602.2b): "Spend only mana of the chosen color to activate this ability." (actions/activate.ts#abilityPlan)
+  'target.player.dealtCombatDamageBySource', // edh-cast-13 (CR 115.1, 510.2): "target player who was dealt combat damage by ~ this turn" (rules/targets.ts, effects/ctx.ts)
+  'target.player.dealtDamage', // edh-next-86 (CR 115.4, 120.1): "any target that was dealt damage this turn" (rules/targets.ts, rules/history.ts#playerDealtDamageThisTurn)
+  'target.player.lostLife', // edh-c-34 (CR 115.1, 119.3): "target player who lost life this turn" (rules/targets.ts, effects/ctx.ts)
+  'target.player.activePlayer', // trek-16 (CR 115.1, 500.1): "target opponent whose turn it is" (rules/targets.ts, effects/ctx.ts)
+  'mana.whenSpent.abilities', // edh-cast-15 (CR 106.6, 602.2, 603.2): "When you spend this mana to cast a spell or activate an ability": actions/activate.ts calls actions/cast.ts#manaSpentTriggers for an ability too
+  'target.player.otherThan', // edh-cast-15 (CR 115.1, 608.2b): "choose another target player" (the player who cast the spell is not a legal choice; rules/targets.ts, effects/ctx.ts)
+  'target.sharedPermanentType', // edh-next-54: rules/targets.ts#sharedCardTypeHolds ("two target permanents that share a permanent type", CR 110.4, 205.2a)
+  'spell.spendOnlyX', // edh-next-85 (CR 107.3a, 106.6): "Spend only black mana on X." before a spell's effect (actions/cast.ts#base, rules/cost.ts#substituteX)
+  'activate.spendOnlyX', // edh-next-85 (CR 107.3a, 106.6): "Spend only black mana on X." (actions/activate.ts#abilityPlan, rules/cost.ts#substituteX)
+  'target.chooser.eventSubjectController', // edh-next-134 (CR 603.3d): "its controller chooses target ..." (actions/announce-targets.ts#chooserOf)
+  'spell.xMin', // edh-d-98 (CR 107.3, 601.2b): "X can't be 0." of a spell: actions/cast.ts announces X from 1 and refuses a cast with no X announced
+  'modes.countIsX', // edh-next-139 (CR 601.2b, 601.4): "Choose X." (modeLimits, actions/cast.ts announces X as the number of modes)
+  'activate.xIs', // edh-next-132 (CR 107.3c, 602.2b): "X is the mana value of that card": actions/activate.ts#definedX, no X announced
+  'target.chooserElse', // edh-d-87 (CR 601.7a; Bladegriff Prototype): actions/announce-targets.ts#chooserOf
+  'target.chooserControls', // edh-next-146: actions/announce-targets.ts (CR 601.7a)
 ];
 
 /** Whether this build honors a capability that `model/forms.ts` names (`target:<kind>` or `feature:<name>`). */
@@ -104,6 +125,8 @@ export function modeCosts(programs: EffectProgram[], modes: number[] | undefined
     const c = modal.options[m]?.cost;
     if (c) out.push(c);
   }
+  // edh-mana-keywords-2 (CR 702.120a): escalate: the cost once for each mode chosen beyond the first
+  if (modal.escalate !== undefined) for (let i = 1; i < (modes ?? []).length; i++) out.push(modal.escalate);
   return out;
 }
 
@@ -113,6 +136,10 @@ export function modeCosts(programs: EffectProgram[], modes: number[] | undefined
  * (actions/announce-cond.ts#announceQty, as a calculated number of targets is); one that can't be read there gives null too.
  */
 function modeLimits(env: AnnounceEnv, spec: ModeSpec): { min: ModeSpec['min']; max: ModeSpec['max'] } | null {
+  // edh-next-139 (CR 601.2b, 601.4, 700.2d; Doomsday Confluence): "Choose X.": the number of modes chosen IS the X the spell is then cast with, so the modes are chosen first, from none
+  // up to the largest X the caster can pay for (`xMax`, actions/cast.ts), and X is that number (the X announcement offers only it). Only a spell being cast: anything else can't
+  // review fix (CR 107.3b): cast without paying its mana cost, the spell's X is 0 (no `xMax` is worked out then): no mode at all
+  if (spec.countIsX === true) return env.modeMemory?.triggered === true ? null : env.x !== undefined ? { min: env.x, max: env.x } : { min: 0, max: env.xMax ?? 0 };
   const fixed = (c: ModeSpec['min']): ModeSpec['min'] | null => {
     // r5-cost (CR 107.3m, 603.3c): a triggered ability announces no X: its X is the X its source was cast with (the trigger's `x`, triggers/stack.ts), 0 for a
     // source not cast. A spell's or activated ability's X is announced after the modes (CR 601.2b): nothing to read yet, so it can't be chosen
@@ -299,6 +326,8 @@ export function chooseModes(
     return all;
   }
   const chooser = chooserOf(g, player, spec.chooser, sourceId, new Map());
+  // edh-players-19 (CR 700.2, 603.3c; Shadrix Silverquill): "you may choose two": no mode, or exactly that many (the ruling: never one); with fewer usable modes none can be chosen
+  if (spec.mayChoose === true && max < specMax) return [];
   const ans = g.choose({
     kind: 'chooseOption',
     player: chooser,
@@ -307,10 +336,12 @@ export function chooseModes(
     min,
     max,
     ...(spec.allowRepeat ? { allowRepeat: true } : {}),
+    ...(spec.mayChoose === true ? { noneOrAll: true as const } : {}), // edh-players-19
     cancellable: chooser === player,
     rules: ['CR 601.2b', 'CR 700.2'],
   });
   const chosen = ans.ids.map(Number).sort((a, b) => a - b);
+  if (spec.mayChoose === true && chosen.length !== 0 && chosen.length !== specMax) throw new IllegalAnswer(`${what}: you may choose no modes or exactly ${specMax}, not ${chosen.length}.`, ['CR 700.2', 'CR 603.3c']);
   // p2-modal-1 (CR 700.2, 115.3): "Each mode must target a different player": a set of modes with no legal set of targets together is refused and asked again
   // when a legal set of `min` or more modes exists, and is no legal choice otherwise (a triggered ability is then removed, CR 603.3c, 603.3d)
   if (!spec.allowRepeat && crossModeDistinct(spec) && !modeSetFeasible(g.s, spec, chosen, player, sourceId, stackId, env)) {

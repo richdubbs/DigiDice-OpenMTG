@@ -1,0 +1,11 @@
+{
+  "id": "d2",
+  "player": "p1",
+  "prompt": "Alice: keep this hand or take a mulligan?",
+  "rules": [
+    "CR 103.5"
+  ],
+  "kind": "mulligan",
+  "handSize": 6,
+  "mulligans": 0
+}

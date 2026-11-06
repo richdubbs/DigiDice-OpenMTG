@@ -19,6 +19,9 @@ export { isMultiplayer, placements, playersInGame, seatNeighbor, type Placement 
 export { viewFor, canSee, lkiVisible, unaliasAction, HIDDEN_DEF, type GameView } from './core/view';
 export { controllerOfPlayer, decidingPlayer, mayActAs, playersControlledBy } from './core/player-control'; // std-control-3: controlling another player (CR 723)
 export { replay, GameSession, type ReplayResult } from './core/replay';
+// Shortcuts INTERFACE CHANGE (additive; docs/design/shortcuts.md; CR 727): the bounds of a proposal and of the recorded actions of a turn, and the pure readers
+// a client or a bot may use (the steps in words, what a view shows).
+export { SHORTCUT_MAX_STEPS, SHORTCUT_MAX_TIMES, TURN_ACTIONS_KEPT, shortcutStepLabel, shortcutViewOf, type RecordedAction } from './core/shortcut';
 // RPL-0 INTERFACE CHANGE (additive; replays design 13): the replay contracts. The open view and the view schema (core/view.ts), the event redaction shared
 // by packages/net and the client (core/view-events.ts, moved from net game/redact.ts), checkpoint digests (core/digest.ts), view patches (core/view-patch.ts,
 // moved from the parked milestone 13 branch) and the replay and bug report files (replay/*). All browser-safe.
@@ -34,6 +37,7 @@ export { actionShapeProblem, unknownActionField, ACTION_BOUNDS, type ActionShape
 export { cleanText, hasControl, CONTROL_CLASS } from './util/shown-text';
 export { IllegalAction, IllegalAnswer, EngineBug } from './core/game';
 export { chooseObjectsLimitHolds } from './core/validate'; // FAST5 T66: a bot's or a UI's choice keeps the total a chooseObjects decision limits
+export { chooseObjectsTypesHold } from './core/validate'; // edh-d-85: ... and the card types a chooseObjects decision asks for among a nonempty set
 export { compileCard, parseTypeLine, noAbilityCompiler, pipelineCompiler, defaultCompileSources, COMPILER_VERSION, type AbilityCompiler, type ParsedTypeLine } from './cards/compile';
 export { legalActions, listLegalActions, isByHandKind, type LegalAction } from './core/legal';
 export { byHandAbilities, byHandUser, type ByHandKind, type ByHandInfo } from './rules/by-hand';

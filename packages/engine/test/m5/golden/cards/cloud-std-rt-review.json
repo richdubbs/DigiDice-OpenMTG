@@ -248,10 +248,32 @@
       {
         "abilities": [
           {
+            "effects": [
+              {
+                "applies": {
+                  "caster": "you",
+                  "spells": {
+                    "not": {
+                      "owner": "you"
+                    },
+                    "zone": "stack"
+                  }
+                },
+                "change": {
+                  "floor": "zero",
+                  "generic": 1,
+                  "kind": "reduce"
+                },
+                "s": "costMod"
+              }
+            ],
+            "kind": "static"
+          },
+          {
             "effect": {
               "steps": [
                 {
-                  "as": "seen",
+                  "as": "b0",
                   "at": {
                     "count": 1,
                     "player": {
@@ -272,7 +294,7 @@
                     "zone": "exile"
                   },
                   "what": {
-                    "name": "seen",
+                    "name": "b0",
                     "ref": "bound"
                   }
                 },
@@ -286,7 +308,7 @@
                       "anyManaType": true,
                       "of": {
                         "is": {
-                          "name": "seen",
+                          "name": "b0",
                           "ref": "bound"
                         }
                       },

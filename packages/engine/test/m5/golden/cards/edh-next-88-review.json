@@ -1,0 +1,371 @@
+[
+ {
+  "card": "Geyadrone Dihada",
+  "expect": "full",
+  "verified": "edh-next-88 review (EDHREC top 20,000), by hand against the Oracle text and the rules (CR cites from memory, unverified): protection quality counter:corruption = sources that have a corruption counter on them now (CR 702.16a, 122.1); the loyalty abilities were already understood (+1 lose/gain 2 and a counter on up to one other target creature or planeswalker, -3 control until end of turn, untap, counter, haste, -7 gain control of each permanent with a corruption counter)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "protection",
+      "kind": "keyword",
+      "quality": "counter:corruption"
+     },
+     {
+      "cost": {
+       "loyalty": 1
+      },
+      "effect": {
+       "steps": [
+        {
+         "amount": 2,
+         "op": "loseLife",
+         "who": {
+          "ref": "each",
+          "who": "opponent"
+         }
+        },
+        {
+         "amount": 2,
+         "op": "gainLife",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "count": 1,
+         "kind": "corruption",
+         "on": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "op": "putCounters"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "other": true,
+          "types": [
+           "Creature",
+           "Planeswalker"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 0
+        }
+       ]
+      },
+      "isLoyalty": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "loyalty": -3
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "controller": {
+              "ref": "you"
+             },
+             "layer": 2
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        },
+        {
+         "op": "untap",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        },
+        {
+         "count": 1,
+         "kind": "corruption",
+         "on": {
+          "id": "t0",
+          "ref": "target"
+         },
+         "op": "putCounters"
+        },
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "id": "t0",
+            "ref": "target"
+           },
+           "mods": [
+            {
+             "add": [
+              {
+               "keyword": "haste",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "types": [
+           "Creature",
+           "Planeswalker"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "isLoyalty": true,
+      "kind": "activated"
+     },
+     {
+      "cost": {
+       "loyalty": -7
+      },
+      "effect": {
+       "steps": [
+        {
+         "duration": {
+          "d": "permanent"
+         },
+         "effects": [
+          {
+           "affects": {
+            "filter": {
+             "counters": {
+              "kind": "corruption"
+             }
+            },
+            "ref": "each"
+           },
+           "mods": [
+            {
+             "controller": {
+              "ref": "you"
+             },
+             "layer": 2
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "isLoyalty": true,
+      "kind": "activated"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Mythos of Nethroi",
+  "expect": "full",
+  "verified": "edh-next-88 review (EDHREC top 20,000), by hand against the Oracle text and the rules (CR cites from memory, unverified): \"if it's a creature or if {G}{W} was spent to cast this spell\" is any(target is a creature, all(green mana spent, white mana spent)) judged on resolution (CR 601.2h, 106.1, 608.2c); the other half of the Oracle is reused (eff.r4dig.destroy.if)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "guard": {
+          "cond": "any",
+          "of": [
+           {
+            "cond": "all",
+            "of": [
+             {
+              "cond": "wasCast",
+              "spent": {
+               "atLeast": 1,
+               "color": "G"
+              }
+             },
+             {
+              "cond": "wasCast",
+              "spent": {
+               "atLeast": 1,
+               "color": "W"
+              }
+             }
+            ]
+           },
+           {
+            "cond": "matches",
+            "filter": {
+             "types": [
+              "Creature"
+             ]
+            },
+            "object": {
+             "id": "t0",
+             "ref": "target"
+            }
+           }
+          ]
+         },
+         "op": "destroy",
+         "what": {
+          "id": "t0",
+          "ref": "target"
+         }
+        }
+       ],
+       "targets": [
+        {
+         "filter": {
+          "notTypes": [
+           "Land"
+          ]
+         },
+         "id": "t0",
+         "kind": "object",
+         "max": 1,
+         "min": 1
+        }
+       ]
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Impending Flux",
+  "expect": "full",
+  "verified": "edh-next-88 review (EDHREC top 20,000), by hand against the Oracle text and the rules (CR cites from memory, unverified): X = 1 plus the casts of this turn by you whose spell was not cast from the hand (the cast history's notFrom), damage to each opponent and each creature an opponent controls (CR 601.2a, 608.2h); foretell is the existing keyword",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "also": [
+          {
+           "amount": {
+            "args": [
+             1,
+             {
+              "by": "you",
+              "event": {
+               "ev": "cast",
+               "notFrom": "hand",
+               "player": "you"
+              },
+              "q": "happenedCount",
+              "scope": "turn"
+             }
+            ],
+            "op": "+",
+            "q": "math"
+           },
+           "to": {
+            "filter": {
+             "anyOf": [
+              {
+               "types": [
+                "Creature"
+               ]
+              }
+             ],
+             "controller": "opponent"
+            },
+            "ref": "each"
+           }
+          }
+         ],
+         "amount": {
+          "args": [
+           1,
+           {
+            "by": "you",
+            "event": {
+             "ev": "cast",
+             "notFrom": "hand",
+             "player": "you"
+            },
+            "q": "happenedCount",
+            "scope": "turn"
+           }
+          ],
+          "op": "+",
+          "q": "math"
+         },
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "each",
+          "who": "opponent"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     },
+     {
+      "cost": {
+       "mana": [
+        {
+         "amount": 1,
+         "kind": "generic"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        },
+        {
+         "color": "R",
+         "kind": "colored"
+        }
+       ]
+      },
+      "keyword": "foretell",
+      "kind": "keyword"
+     }
+    ]
+   }
+  ]
+ }
+]

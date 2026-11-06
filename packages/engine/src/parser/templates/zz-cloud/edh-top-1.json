@@ -1,0 +1,214 @@
+[
+  {
+    "id": "abl.edht1.pregame.begin.notStarting.counter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 103.1",
+      "CR 103.6",
+      "CR 103.6a",
+      "CR 113.6",
+      "CR 122.1"
+    ],
+    "pattern": "if ~ is in your opening hand and you're not the starting player , you may begin the game with ( it | ~ ) on the battlefield with a luck counter on it . if you do , exile a card from your hand",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "effects": [
+        {
+          "s": "pregame",
+          "action": "beginOnBattlefield",
+          "optional": true,
+          "notStarting": true,
+          "counters": {
+            "kind": "luck",
+            "count": 1
+          },
+          "exileFromHand": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "may",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "If ~ is in your opening hand and you're not the starting player, you may begin the game with it on the battlefield with a luck counter on it. If you do, exile a card from your hand."
+      },
+      {
+        "text": "If this creature is in your opening hand and you're not the starting player, you may begin the game with it on the battlefield with a luck counter on it. If you do, exile a card from your hand."
+      }
+    ],
+    "counterExamples": [
+      "If ~ is in your opening hand, you may begin the game with it on the battlefield with a luck counter on it. If you do, exile a card from your hand.",
+      "If ~ is in your opening hand and you're not the starting player, you may begin the game with it on the battlefield with a luck counter on it.",
+      "If ~ is in your opening hand and you're the starting player, you may begin the game with it on the battlefield with a luck counter on it. If you do, exile a card from your hand.",
+      "If ~ is in your opening hand and you're not the starting player, you may begin the game with it in exile with a luck counter on it. If you do, exile a card from your hand."
+    ]
+  },
+  {
+    "id": "sta.edht1.top.lands.cast.cond",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.1",
+      "CR 305.2",
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 401.5",
+      "CR 611.3a",
+      "CR 604.1"
+    ],
+    "pattern": "as long as {c:Cond} , you may play lands and cast {f:Filter} from the top of your library",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "types": [
+              "Land"
+            ]
+          },
+          "fromTop": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "fromTop": true
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Forest, you may play lands and cast spells from the top of your library."
+      },
+      {
+        "text": "As long as you control two or more artifacts, you may play lands and cast Elf spells from the top of your library."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Forest, you may play lands and cast spells from your graveyard.",
+      "As long as you control a Forest, you may play lands or cast spells from the top of your library.",
+      "As long as you control a Forest, your opponents may play lands and cast spells from the top of your library."
+    ]
+  },
+  {
+    "id": "eff.edht1.exileTop.faceDown.look",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 406.3",
+      "CR 401.1",
+      "CR 701.20e"
+    ],
+    "pattern": "exile the top card of your library face down and look at it",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": 1
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        },
+        "as": "exiled"
+      },
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "bound",
+          "name": "exiled"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exile the top card of your library face down and look at it."
+      },
+      {
+        "text": "Draw a card. Exile the top card of your library face down and look at it."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of your library face down.",
+      "Exile the top card of your library and look at it.",
+      "Exile the top card of target opponent's library face down and look at it."
+    ]
+  },
+  {
+    "id": "eff.edht1.delay.whenLeaves",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 603.10a",
+      "CR 700.4"
+    ],
+    "pattern": "when {o:ThatToken} leaves the battlefield , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "is": "$o"
+          },
+          "from": "battlefield"
+        }
+      },
+      "do": "$x"
+    },
+    "subject": "none",
+    "consumes": [
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "Create a 1/1 white Soldier creature token. When that token leaves the battlefield, draw a card."
+      },
+      {
+        "text": "Create a 1/1 white Soldier creature token. When that token leaves the battlefield, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+0 until end of turn. When it leaves the battlefield this turn, draw a card.",
+      "Target creature gets +2/+0 until end of turn. When it dies, draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever it leaves the battlefield, draw a card.",
+      "Return target creature card from your graveyard to the battlefield. When that creature leaves the battlefield, you lose 2 life.",
+      "Exile target creature you control, then return it to the battlefield under its owner's control. When it leaves the battlefield, draw a card."
+    ]
+  }
+]

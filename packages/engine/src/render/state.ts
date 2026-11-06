@@ -11,17 +11,25 @@ import type { Person } from './text';
 
 /** What the renderer remembers about something that was named. */
 export interface RefInfo {
+  /** edh-players-21: the objects every player of a group chose for themselves and exiled (render/fold-edhp21.ts); read by render/qty.ts#statPhrase. */
+  ownExile?: true;
+  /** edh-zones-22: on the hits of a counted reveal until, their plural description as the reveal said it ("creature cards"); a later "all <description> revealed this way" must say the same (render/fold-edhzones22.ts). */
+  hitsAre?: string;
   /** Singular head nouns usable in "that <noun>" ("creature", "card", "permanent"). The first is the preferred one. */
   nouns: string[];
   plural: boolean;
   /** A player rather than an object. */
   player?: boolean;
+  /** edh-players-10 ADDITION (optional), CR 608.2c: the player an instruction "Choose an opponent." named; a later such choice names the player anew (steps-flow.ts#chooseValue drops the earlier one). */
+  rebinds?: 'chosenPlayer';
   /**
    * std-combat-1 ADDITION (optional), CR 603.12, 608.2c: on a move's result (`r:<name>`), the binding of the objects it moved, the choice whose objects it put onto the
    * battlefield ("you may put any number of Equipment cards from among them onto the battlefield", render/fold.ts#putAnyFromGroup): a reflexive trigger that waits for what
    * it moved ("When you put one or more Equipment onto the battlefield this way, ...") names them "them" (render/steps-lasting.ts#reflexive makes them its focus).
    */
   movedBinding?: string;
+  /** edh-mana-keywords-10 ADDITION (optional), CR 400.7: the binding was put onto the battlefield by a move of the ability, so a later exile of it is "exile them again" (render/steps-zones.ts#move). */
+  returned?: true;
   /** The binding of an optional choice: a `did` guard on it adds no words (the anaphor "that creature" already presupposes the choice). */
   optional?: boolean;
   /** Extra whole phrases an anaphor to this thing may use ("one pile", "the other pile"). */
@@ -36,6 +44,14 @@ export interface RefInfo {
    * way", CR 608.2c): `{is: <this binding>, ...filter}` prints as the filter's noun phrase followed by these words (np.ts#build).
    */
   thisWay?: string;
+  /** edh-perms-6 ADDITION (optional), CR 111.1, 707.9, 608.2c: on a step's result (`r:<name>`), the step created a token or a token copy: "if you didn't create a token this way" (render/cond.ts). */
+  tokenMade?: true;
+  /** edh-next-142 ADDITION (optional), CR 701.20a, 608.2c: on a step's result (`r:<name>`), the step is an option to reveal one named card: "if you don't reveal it" (render/cond.ts). */
+  revealMade?: true;
+  /** edh-d-28 ADDITION (optional), CR 705.1: on a step's result (`r:<name>`), a flip of exactly two coins: "if both coins come up heads / tails" (render/cond.ts). */
+  twoCoins?: true;
+  /** edh-top-9 ADDITION (optional), CR 701.12a, 608.2c: on a step's result (`r:<name>`), the step exchanged something: "if you don't or can't make an exchange" (render/cond.ts). */
+  exchanged?: true;
   /** Where the thing came from when it was found or revealed ("library", "graveyard"): the verb of moving it follows (CR 400.3). */
   zone?: string;
   /** The player who acted, for a binding that records whether they did ("if you do", "if that player does"). */
@@ -44,14 +60,38 @@ export interface RefInfo {
   searched?: true;
   /** std-combat-2 (CR 118.12, 608.2d): a payment made a chosen number of times (`pay.upTo`): its count is "that many" of the modes after it (render/program.ts#modeHeader). */
   paidUpTo?: true;
+  /** edh-replace-5 (CR 118.12, 608.2d): a payment of any amount (`pay.anyAmount`): its count is "that much" damage or life (render/steps-life.ts#damageClause). */
+  paidAny?: true;
+  /** edh-d-90 (CR 107.3, 608.2h; Campsite Cuisine): the count of this sacrifice is the X of "you may sacrifice X Foods" (parser/lower/edhd90.ts): said "X" after it (render/qty.ts). */
+  xWord?: true;
+  /** edhn81 (CR 118.12, 603.12): the payment of any amount was written "you may pay {1}{W} any number of times": its reflexive trigger may be "when you pay this cost one or more times" (render/steps-lasting.ts). */
+  paidTimes?: true;
+  /** edh-next-32 (CR 107.14): the payment of any amount was of energy, said "the amount of {E} paid this way" (render/qty.ts). */
+  paidEnergy?: true;
+  /** edh-top-6 (CR 118.12, 608.2d): a payment of any amount of mana by a group of players in turn (`pay.startingWith`): its count is "the total amount of mana paid this way" (render/qty.ts). */
+  paidTotalMana?: true;
   /** std-rx32 ADDITION (optional): the binding of an attach of targets (CR 701.3a): "one or more <noun> become attached to <to> this way" (render/steps-lasting.ts#reflexive). */
   attachedThisWay?: { noun: string; to: ObjRef };
   /** std-rq ADDITION (optional): the binding records whether any one player of a group did it ("any opponent may ...": "if a player does", render/cond.ts). */
   anyOne?: true;
   /** std-rx31 ADDITION (optional): the binding records whether you cast a spell you were offered to cast ("You may cast it. Otherwise, ...", render/steps-flow.ts). */
   castOption?: true | 'inIf';
+  /** edh-d-59 (Helmut Zemo): the optional cast named a target card, so "if you cast a spell this way" says the same as "if you do" (render/cond.ts#did). */
+  castTarget?: true;
+  /** edh-d-96 (Epic Experiment): the chosen cards of a free cast from among exiled cards were cast (render/fold.ts#castAnyFromExiledFree), so their group's rest is also "all cards exiled this way that weren't cast" (render/refs.ts). */
+  castChosen?: true;
   /** pc-tokens-1 ADDITION (optional), CR 608.2d, 101.4: the binding records which players of a group did the optional action of "each opponent may ..." ("For each opponent who does, ...", render/steps-flow.ts#repeat). */
   eachMay?: 'opponent' | 'player';
+  /** edh-next-91 ADDITION (optional), CR 608.2c, 608.2d: the objects are one each opponent chose (at most one each, then moved): "For each opponent who does, ..." counts them (render/steps-flow.ts#repeat). */
+  eachChoseMoved?: 'opponent';
+  /** edh-zones-8 ADDITION (optional), CR 701.23a, 608.2d: the `eachMay` option begins with a search of that player's own library ("For each opponent who searches a library this way, ...", render/steps-flow.ts#repeat). */
+  eachMaySearches?: true;
+  /** edh-players-11 ADDITION (optional), CR 608.2c: the `eachMay` option is one draw by that player ("each player who drew a card this way", render/refs.ts#player `bound`). */
+  eachMayDraws?: true;
+  /** edh-players-14 ADDITION (optional), CR 701.9a, 608.2c: the `eachMay` option begins with discarding that player's hand ("each opponent who discarded their hand this way", render/refs.ts#player `bound`). */
+  eachMayDiscardsHand?: true;
+  /** edh-next-43 ADDITION (optional), CR 701.9a, 608.2c: the `eachMay` option is discarding one card ("each player who discarded a card this way", Borderland Explorer). */
+  eachMayDiscardsOne?: true;
   /** std-rx31 ADDITION (optional): the binding records a move of the one card a choice revealed ("If you didn't put the revealed card onto the battlefield this way", render/cond.ts). */
   revealedPut?: true;
   /**
@@ -81,6 +121,10 @@ export interface RefInfo {
    * (fold.ts#putAllFromGroupAndRest, written by steps-cards.ts reveal).
    */
   revealedTop?: true;
+  /** edh-next-76: the binding of a look at ONE top card of a library (render/steps-cards.ts#look), which a later reveal of that card also reveals */
+  lookedTop?: true;
+  /** edh-c-97 ADDITION (optional): the binding is the card a `revealUntil` stopped at (one card), written by steps-cards.ts revealUntil (fold-edhv97.ts). */
+  revealedUntilHit?: true;
   /**
    * std-rx1 ADDITION (optional): the binding is the cards a choice among a group in a library chose and a reveal then revealed ("You may reveal up to two creature
    * and/or land cards from among them"): they are also "<cards> revealed this way" (fold.ts#putAllRevealedSplit, written by fold.ts#chooseUpToFromGroupThenReveal).
@@ -91,6 +135,13 @@ export interface RefInfo {
    * destroyed this way", "if a creature card was exiled this way" (render/moved.ts). Written by the step renderers under `r:<name>`.
    */
   moved?: MovedKind;
+  /** edh-c-100 ADDITION (optional): on the `r:<name>` of a `mill` of ONE target player, the cards are "put into their graveyard this way" (render/moved.ts). */
+  onePlayer?: true;
+  /**
+   * edh-perms-5 ADDITION (optional), CR 700.4: on the `r:<name>` of a `destroy` of one announced target, that target: "Destroy target creature. If that creature dies this way, ..."
+   * is the same `did` as "if a creature card is put into a graveyard this way" (render/cond.ts#did). Written by render/steps-zones.ts#destroy.
+   */
+  diesRef?: ObjRef;
   /**
    * audit-fix-1 ADDITION (optional): for a `sacrificeChoice` binding, who sacrificed (its `who`, as JSON): "another" after it excludes only what you sacrificed
    * (render/fold-stdlibrary2.ts#returnAnotherThanSacrificed; written by render/steps-zones.ts#sacrificeChoice).
@@ -107,13 +158,19 @@ export interface RefInfo {
    * participle-only, parser/lower/mentions.ts#exiledRestOf).
    */
   exiledBy?: PlayerRef;
+  /** trek-21: the cards were the top cards of that player's library, exiled by an "exiles the top N cards" step (not an exile-until). */
+  exiledTop?: true;
+  /** edh-zones-16 ADDITION (optional): the binding is the card(s) a `revealUntil` of another player stopped at, and this is who revealed: "They put that card onto the battlefield ..." (render/fold.ts#putThatAndRest). */
+  revealedBy?: PlayerRef;
+  /** edh-next-143 ADDITION (optional): the binding is the top cards of their own library that a player other than you revealed ("Target opponent reveals the top X cards of their library"), and this is that player: "That player puts the rest on the bottom of their library in a random order" (render/steps-zones.ts#revealedTopRestOfOther). */
+  revealedTopBy?: PlayerRef;
 }
 
 /** std-tla: the info key (RenderState.info) of a mill step's name, for "<card> milled this way" (render/cond.ts#existsPhrase; set by steps-cards.ts and fold.ts). */
 export const MILLED_KEY = 'milled:';
 
 /** Cloud C7: the kinds of instruction a "<participle> this way" names (parser/holes/moved-words.ts#MovedKind; render may not import the parser). */
-export type MovedKind = 'destroyed' | 'exiled' | 'discarded' | 'sacrificed' | 'graveyard' | 'battlefield' | 'hand' | 'top';
+export type MovedKind = 'destroyed' | 'exiled' | 'discarded' | 'sacrificed' | 'graveyard' | 'battlefield' | 'hand' | 'top' | 'milled';
 
 export interface RenderState {
   ctx: RenderContext;
@@ -124,6 +181,8 @@ export interface RenderState {
   specs: Map<string, TargetSpec>;
   /** The events of the trigger being rendered, for `{ref:'event'}` references. */
   trigger: EventPattern[] | null;
+  /** edh-next-75: the trigger being rendered functions only in the command zone with "~ is in the command zone" as its intervening "if" (render/abil.ts); the condition has no wording elsewhere. */
+  commandOnlyTrigger?: boolean;
   /** Key of the player who is the subject of the clause being written ('you', 'ctrl:t:t0', ...), or null when it is the controller by default. */
   actor: string | null;
   /** FAST2 T10: the identity of a thing the reference being written cannot be ("attach ~ to it": not ~ itself, CR 301.5c), so it is no other antecedent. */
@@ -135,6 +194,8 @@ export interface RenderState {
   ownSubject?: string;
   /** FAST2 T10: the reference being written is what "sacrifice" or "destroy" acts on: a permanent, never a spell or ability (CR 701.8a, 701.21a). */
   permanentOnly?: boolean;
+  /** edh-c-62: set while a clause that Oracle also joins with ", and" is being rendered (render/steps-lasting.ts#effect), so it is not wrapped twice. */
+  commaAndDone?: true;
   /**
    * std-exile-play-1-2 ADDITION (optional): the reference being written is the object of a power or toughness ("equal to its power"): an instant or sorcery has
    * neither (CR 208.1, 208.3), so the instant or sorcery itself is never what "its" names there (refs.ts#candidateCheck; the parser never makes the damage source
@@ -158,6 +219,12 @@ export interface RenderState {
    * object's own "enters" trigger, so a bare pronoun for a target of that ability (or what its event or a move made of it) is never the object itself.
    */
   inOwnEnters?: boolean;
+  /** edh-c-77 (CR 603.7c, 109.5; Mage Hunters' Onslaught): inside the body of an event-timed delayed trigger whose event names a description of its object, "its controller" is that object (the parser's Mention.delayOwn, lower/anaphora.ts). */
+  inDelayEvent?: boolean;
+  /** edh-next-79: the instructions of a delayed trigger are being said (render/fold-edhn79.ts joins a return and the grant to the returned group only there). */
+  inDelayBody?: boolean;
+  /** edh-c-77: the object of "its controller" is being said (refs.ts, the parser's AnaphorInfo.selfLast). */
+  controllerOfPronoun?: boolean;
   /** Standard round 5, r5-trig: ... and one occurrence for the whole batch (TriggerDef.wholeBatch): its objects are a group even where one occurrence is one object. */
   triggerWholeBatch?: boolean;
   /**
@@ -189,7 +256,7 @@ export interface RenderState {
    * object itself is a card in that graveyard, so moving it reads "~ from your graveyard" as well as "~". r4-fxz: 'hand' for an activated ability that functions
    * only in its owner's hand ("Put this card from your hand onto the battlefield", CR 113.6m).
    */
-  selfZone?: 'graveyard' | 'hand';
+  selfZone?: 'graveyard' | 'hand' | 'command'; // edh-misc-2: 'command' for an activated ability that functions only in the command zone ("Put ~ onto the battlefield from the command zone", CR 903.6)
   /**
    * FAST3 T13 ADDITION (optional): set by the fold of a `chooseValue` made as the ability resolves (render/fold.ts#choiceThenEffect) for the one effect after
    * it: the link of that choice and how the text names it ("creature type", "basic land type"). The noun phrase ("creatures of the creature type of your
@@ -197,11 +264,29 @@ export interface RenderState {
    */
   choiceWords?: Map<string, { words: string; quality: string; used: number }>;
   /**
+   * edh-players-13 ADDITION (optional): the links a `chooseValue` of several players made ("Each player chooses a creature type."): what such a choice chose is "a type chosen
+   * this way" (render/np.ts), not "the chosen type" (one chooser's). Shared by reference with every clone of the state.
+   */
+  groupChoices?: Set<string>;
+  /**
+   * edh-next-9 ADDITION (optional): the links of a creature type chosen in a sentence of its own that excludes a fixed type ("Choose a creature type other than Wall."): the type
+   * change that sets it says "becomes that type" (render/mods.ts); the fold into "of your choice" does not apply to such a choice. Shared by reference with every clone.
+   */
+  otherThanTypeLinks?: Set<string>;
+  /** edh-perms-15 ADDITION (optional): the link of the last "choose a counter on ..." said, which "another counter of that kind" (putCounters `kindOfChoice`) reads. */
+  counterKindLink?: string;
+  /** edh-next-128 ADDITION (optional): the link of the last "choose a kind of counter ... that ~ doesn't have on it" said, which "put a counter of that kind" reads. */
+  counterKindFresh?: string;
+  /** edh-next-128 ADDITION (optional): the number of dice of the last roll said ("many": a computed number), which "for each result of N" and "if you rolled doubles" read. */
+  diceRolled?: number | 'many';
+  /**
    * FAST5 T69 ADDITION (optional): the JSON of a calculated quantity that the text names "x" in a target count ("up to X target creatures you control get +X/+X until
    * end of turn, where X is the number of colors among permanents you control", CR 107.3c, 601.2c): set by the lasting effect that says it (steps-lasting.ts), read
    * by the count words of a target phrase (refs.ts#countWord).
    */
   xCount?: string;
+  /** edh-next-39 ADDITION (optional): the effect being written is that of an activated ability (render/abil.ts#activated): "as you activate this ability" names the time its targets are announced (CR 602.2b). */
+  activating?: true;
   /**
    * std-rx5 ADDITION (optional): the activated ability being written pays "Remove any number of <kind> counters from ~" (CostPart `anyNumber`): its X is that
    * number, which the effect calls "that many" / "that much" (render/qty.ts; set by render/abil.ts#activated).
@@ -212,6 +297,11 @@ export interface RenderState {
    * X is the number of those counters, which a "for each" of the effect calls "for each <kind> counter removed this way" (render/qty.ts#countParts).
    */
   costCountersX?: string;
+  /**
+   * edhc5 ADDITION (optional): the spell's optional additional cost named `name` announced a number ("you may exile any number of blue cards from your hand"): the noun
+   * its count is called by a cost reduction, "for each card exiled this way" (render/stat.ts#additionalCost records it, render/qty.ts reads it for `costCount`).
+   */
+  costCountNouns?: Record<string, { plural: string; singular: string }>;
   /**
    * p2-counters-move-2 ADDITION (optional): the activated ability being written pays "Remove all <kind> counters from ~" (CostPart `all`): its X is printed
    * nowhere, so the effect names it "the number of <kind> counters removed this way" (render/qty.ts; set by render/abil.ts#activated).
@@ -296,6 +386,7 @@ export function cloneState(st: RenderState): RenderState {
     ...(st.interveningIf !== undefined ? { interveningIf: st.interveningIf } : {}),
     ...(st.stepIf !== undefined ? { stepIf: st.stepIf } : {}),
     ...(st.xCount !== undefined ? { xCount: st.xCount } : {}),
+    ...(st.activating === true ? { activating: true as const } : {}),
     ...(st.focus !== undefined ? { focus: st.focus } : {}),
     ...(st.theyFocus !== undefined ? { theyFocus: st.theyFocus } : {}),
     ...(st.focusSeen !== undefined ? { focusSeen: st.focusSeen } : {}),
@@ -303,6 +394,9 @@ export function cloneState(st: RenderState): RenderState {
     ...(st.chosen !== undefined ? { chosen: st.chosen } : {}),
     ...(st.chosenPair !== undefined ? { chosenPair: st.chosenPair } : {}),
     ...(st.costAllCountersX !== undefined ? { costAllCountersX: st.costAllCountersX } : {}), // p2-counters-move-2
+    ...(st.groupChoices !== undefined ? { groupChoices: st.groupChoices } : {}), // edh-players-13
+    ...(st.otherThanTypeLinks !== undefined ? { otherThanTypeLinks: st.otherThanTypeLinks } : {}), // edh-next-9
+    ...(st.counterKindLink !== undefined ? { counterKindLink: st.counterKindLink } : {}), // edh-perms-15
   };
 }
 
@@ -367,15 +461,17 @@ export function playerKey(ref: PlayerRef | 'you' | 'opponent' | 'any'): string |
       return k === null ? null : `own:${k}`;
     }
     case 'anOpponent': return 'opp';
+    case 'randomOpponent': return 'rndopp'; // trek-17
     case 'event': return `e:${ref.role}`;
     case 'bound': return `b:${ref.name}`;
     case 'linked': return `l:${ref.link}`;
     case 'active': return 'active';
     case 'defending': return 'defending';
     case 'iterating': return 'iter';
+    case 'chose': return `chose:${ref.link}:${ref.value}`; // edh-next-143: "each friend" / "each foe" (render/refs.ts#playerInner), "their library" when it is the subject
     case 'seat': { // M12-1 (m12 design D6): "the player to your left" is named again as "that player"
       const of = ref.of === undefined ? 'you' : playerKey(ref.of);
-      return of === null ? null : `seat:${ref.side}:${of}`;
+      return of === null ? null : `seat:${ref.chosen !== undefined ? `chosen:${ref.chosen}${ref.inverse === true ? ':inverse' : ''}` : ref.side}:${of}`;
     }
     default: return null;
   }
@@ -409,10 +505,10 @@ export function collectSpecs(def: { effect?: { targets: TargetSpec[]; modes?: { 
   };
   const visitSteps = (steps: unknown[]): void => {
     for (const s of steps) {
-      const step = s as { op?: string; targets?: TargetSpec[]; do?: unknown[]; then?: unknown[]; else?: unknown[]; otherwise?: unknown[]; onWin?: unknown[]; onLose?: unknown[]; table?: { do: unknown[] }[] };
+      const step = s as { op?: string; targets?: TargetSpec[]; do?: unknown[]; then?: unknown[]; else?: unknown[]; otherwise?: unknown[]; onWin?: unknown[]; onLose?: unknown[]; onTails?: unknown[]; table?: { do: unknown[] }[] };
       if (step.op === 'reflexive' || step.op === 'delay') for (const t of step.targets ?? []) into.set(t.id, t); // std-tdm: a delayed trigger's own targets
       if (step.op === 'reflexive') for (const o of (step as { modes?: { options: { program: unknown }[] } }).modes?.options ?? []) visitProgram(o.program as never); // r5-cost: a reflexive trigger's modes
-      for (const list of [step.do, step.then, step.else, step.otherwise, step.onWin, step.onLose]) if (Array.isArray(list)) visitSteps(list);
+      for (const list of [step.do, step.then, step.else, step.otherwise, step.onWin, step.onLose, step.onTails]) if (Array.isArray(list)) visitSteps(list);
       for (const row of step.table ?? []) visitSteps(row.do);
     }
   };

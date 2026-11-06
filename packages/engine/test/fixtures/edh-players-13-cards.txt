@@ -1,0 +1,7 @@
+# edh-players-13 (Commander lane edh-players; test/cloud/edh-players-13, golden edh-players-13-review.json)
+# each player's own choice (a creature type, fame or fortune, money / friends / secrets) and "a type chosen this way" / "for each player who chose ..."; for each evidence vote; a delayed "one or more ... to one or more players this turn"
+Patriarch's Bidding
+Master of Ceremonies
+Seize the Spotlight
+Tivit, Seller of Secrets
+Forth Eorlingas!

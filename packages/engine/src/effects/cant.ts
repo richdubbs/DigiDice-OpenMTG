@@ -24,6 +24,7 @@ export const FORBIDDEN_ACTIONS: readonly RuleAction[] = [
   'receiveDamage', 'dealDamage', 'gainLife', 'loseLife', 'draw', 'enter', 'leave', 'beExiled', 'beDestroyed', 'haveCountersPut',
   'preventDamage', 'beRegenerated', 'payLife',
   'preventCombatDamage', // r5-repl: "combat damage can't be prevented" (CR 615.12, 510.2), effects/propose.ts#unpreventableIfRuled
+  'haveStunCountersRemoved', // edh-players-22: "stun counters can't be removed from ..." (CR 122.1d, 614.17)
 ];
 
 /** Is the action forbidden by a "can't" effect (CR 614.17)? Only for the wired actions. Pure. */

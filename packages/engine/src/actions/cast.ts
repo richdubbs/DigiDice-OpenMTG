@@ -27,13 +27,13 @@
  *   - "That spell can't be countered" leaves `FLAG_CANT_BE_COUNTERED` in `StackInfo.flags` of the spell; `hookpoints.canBeCountered` consumers (WP10 / WP16) read that flag.
  */
 import type { Action } from '../types/actions';
-import type { CostDef, CounterSpec, Destination, EffectProgram, KeywordAbilityDef, Quantity } from '../types/ability';
+import type { AbilityDef, CostDef, CounterSpec, Destination, EffectProgram, EffectStep, KeywordAbilityDef, ObjectFilter, Quantity } from '../types/ability';
 import type { CardDef } from '../types/card';
 import type { ObjectId, PlayerId } from '../types/ids';
-import { castOriginOf, type CostsPaid, type GameObject, type GameState, type ManaUnit } from '../types/state';
-import { matchesFilter } from '../rules/filter';
+import { castOriginOf, type CastOrigin, type CostsPaid, type GameObject, type GameState, type ManaUnit, type ObjHandle } from '../types/state';
+import { findObjects, matchesFilter } from '../rules/filter';
 import { filterCtxOutside } from '../rules/filter-env';
-import { putReflexiveTrigger } from '../triggers/stack';
+import { permitOnUseTrigger, putReflexiveTrigger } from '../triggers/stack';
 import { holdStill } from '../statics/stable-scope';
 import { keywordRegistry } from '../keywords/registry';
 import { Game, IllegalAction } from '../core/game';
@@ -43,31 +43,33 @@ import { charsOfObject, combinedChars, faceChars, hasKeyword, hasSubtype, hasTyp
 import { charAbilitiesOfBase, keywordsOfAbilities, printedKeywordExpansions } from '../statics/abilities';
 import { auraTargetProgram } from '../rules/attachment';
 import { castRestrictionDenial, castRestrictionOf, isCastRestrictionLine } from '../rules/cast-restriction';
-import { addPlans, costFilterHasX, manaCostText, costHasX, countX, emptyPlan, payableXs, planFromCostDef, planFromCostDefs, substituteX, type CostPlan, type CostX, type PlanPart } from '../rules/cost';
+import { addPlans, applyOnlyX, costFilterHasX, manaCostText, costHasX, countX, emptyPlan, payableXs, planFromCostDef, planFromCostDefs, substituteX, type CostPlan, type CostX, type PlanPart } from '../rules/cost';
 import { hasRestrictedMana, type SpendContext } from '../rules/sources';
 import { programFiltersMentionX } from '../rules/targets';
 import { deny, assertAllowed, throwDenial, type Denial } from '../rules/denial';
-import { happenedCountOf } from '../rules/history';
+import { distinctHistory, happenedCountOf, happenedPlayersOf, opponentsAttackedCount } from '../rules/history';
 import { gameOf, hookpoints } from '../rules/hookpoints';
 import { payPlan, resolveAnyCounts } from '../rules/pay';
-import { applyPaymentOptions, emergePayableCandidates, emergeReduction, payableWithOptions, reduceGeneric } from '../rules/payment-options';
+import { applyPaymentOptions, emergePayableCandidates, emergeReduction, offeringReduction, payableWithOptions, reduceGeneric } from '../rules/payment-options';
 import { partCandidates } from '../rules/cost-pick';
-import { castTiming, splitSecondDenial } from '../rules/timing';
+import { castsOnlySorcerySpeed, castTiming, flashWithoutOffTimingPermit, sorceryTiming, splitSecondDenial } from '../rules/timing';
 import { announceCond, type AnnounceEnv } from './announce-cond';
+import { CLEAVE, effectFor } from '../effects/cleave';
 import { OVERLOAD, overloadablePrograms } from '../effects/overload';
 import { announceTargets, chooseModes, chooseX, describeTargets, effectivePrograms, emitBecameTarget, modeCosts, modesDenial, programsDenial } from './announce';
 import { CAST_OPTION_PROVIDERS, castOptionProvider, castOptionsOf, isKickerName, type AdditionalOption, type AlternativeOption, type CastOptionProvider } from './cast-options';
+import { announceSplice } from './cast-splice';
 import { announceMandatoryCosts, announceOptionalCosts, commanderTaxCost, countCap, groupedCostsDenial, ungroupedMandatoryCosts, withAnnouncedCount } from './cast-costs';
 import { commanderOfCard, isCommander } from '../statics/commander';
 import { costModsFor, modifyMana, type CostModHit } from '../statics/costmods';
 import { spellTargetTotal } from '../rules/target-total';
 import { charsViewOf, overlayAsSpell } from '../statics/rule-sources';
 import { evalQuantity } from '../statics/match';
-import { anyManaColorPermit, anyManaTypePermit, type GrantedAlternative, grantedAlternatives, graveyardInsteadPermit, graveyardMethod, graveyardMethodIndex, graveyardPermitUses, type GraveyardUse, isGrantedAltMethod, isLinkedFreeMethod, isNamedFreeMethod, lifeCostOf, linkedPermitLifeCost, linkedPermitUses, type LinkedUse, namedPermit, namedPermitAdventureOnly, namedPermitIncrease, namedSingleKey, outsideCastUses, paidCastPermitted, playPermitted, staticAnyManaType, topPermitFor } from '../statics/play-permits';
+import { onCastPermits, anyManaColorPermit, colorlessAnyColorPermit, anyManaTypePermit, type GrantedAlternative, grantedAlternatives, graveyardInsteadPermit, graveyardMethod, graveyardMethodIndex, graveyardPermitUses, type GraveyardUse, isGrantedAltMethod, isLinkedFreeMethod, isNamedFreeMethod, lifeCostOf, linkedPermitLifeCost, linkedPermitUses, type LinkedUse, namedPermit, namedPermitAdventureOnly, namedPermitIncrease, namedPermitSpellKeyword, namedPermitReduce, namedPermitTypesAllow, namedSingleKey, outsideCastUses, paidCastPermitted, playPermitted, staticAnyManaType, topPermitFor } from '../statics/play-permits';
 import { installResolutionCaster, type ResolutionCastOptions } from '../effects/cast-hook';
 import { recordCastChecks } from './cast-checks';
-import { lockNextSpellKeywords, takeNextSpellRiders } from '../core/turn-effects';
-import { applySpentRiders } from '../core/mana-riders';
+import { lockAsCastGrants, lockNextSpellKeywords, takeNextSpellRiders } from '../core/turn-effects';
+import { applySpentRiders, giveSpellKeywordUntilEot } from '../core/mana-riders';
 import { emitCrime, recordSpellMana } from '../rules/crime';
 
 /**
@@ -95,13 +97,13 @@ export function keywordOf(c: Chars, keyword: string): KeywordAbilityDef | undefi
  * The spell abilities of a face (CR 113.3a): the programs that run when the spell resolves. An Aura spell also requires a target,
  * which its enchant ability defines (CR 303.4a); it has no steps because attaching is part of entering the battlefield (CR 303.4f).
  */
-export function spellPrograms(c: Chars): EffectProgram[] {
+export function spellPrograms(c: Chars, cleaved = false): EffectProgram[] {
   // std-ry3 (CR 601.2c, 702.113b): `faceChars` holds printed abilities only, so the spell abilities a printed keyword stands for (awaken's land target) are
   // expanded here, as castOptionsOf does for costs; a keyword already expanded in `c` is not expanded twice. They follow the printed abilities, as in the
   // characteristics of the spell on the stack (statics/abilities.ts#charAbilitiesOfBase), so the announced targets line up with core/resolve.ts's programs
   const expanded = new Set(c.abilities.flatMap((a) => (a.parent !== undefined ? [a.parent] : [])));
   const all = [...c.abilities, ...printedKeywordExpansions(c.abilities.filter((a) => !expanded.has(a.key)), c)];
-  const programs = withModalKeywords(c, all.flatMap((a) => (a.def.kind === 'spell' ? [a.def.effect] : [])));
+  const programs = withModalKeywords(c, all.flatMap((a) => (a.def.kind === 'spell' ? [effectFor(a.def, cleaved)] : [])));
   const aura = auraTargetProgram(c);
   return aura ? [aura, ...programs] : programs;
 }
@@ -113,6 +115,13 @@ export function spellPrograms(c: Chars): EffectProgram[] {
  * (no printed card has both); the override is read only while announcing, so the resolution is unchanged (CR 700.2).
  */
 function withModalKeywords(c: Chars, programs: EffectProgram[]): EffectProgram[] {
+  // edh-mana-keywords-2 (CR 702.120a): escalate: its cost is paid for each mode chosen beyond the first (`ModeSpec.escalate`, read by announce.ts#modeCosts); several escalate
+  // abilities on one spell (or one with an unreadable cost) limit it to one mode, below (fail closed)
+  const escalates = c.keywords.filter((k) => keywordRegistry.get(k.keyword)?.modifies?.kind === 'escalate' && keywordRegistry.get(k.keyword)?.status === 'implemented' && k.cost !== undefined);
+  const hasEscalate = c.keywords.some((k) => keywordRegistry.get(k.keyword)?.modifies?.kind === 'escalate' && keywordRegistry.get(k.keyword)?.status === 'implemented');
+  // an escalate that can't be read (two of them, or a cost that didn't parse) allows one mode only: extra modes are never free
+  if (hasEscalate && escalates.length !== 1) programs = programs.map((p) => (p.modes ? { ...p, modes: { ...p.modes, min: 1, max: 1 } } : p));
+  if (escalates.length === 1) programs = programs.map((p) => (p.modes && p.modes.escalate === undefined ? { ...p, modes: { ...p.modes, escalate: JSON.parse(JSON.stringify(escalates[0]!.cost)) as NonNullable<typeof p.modes.escalate> } } : p));
   const whens = c.keywords.flatMap((k) => {
     const m = keywordRegistry.get(k.keyword)?.modifies;
     return m !== undefined && m.kind === 'modal' && keywordRegistry.get(k.keyword)?.status === 'implemented' ? [m.chooseAll.when] : [];
@@ -159,6 +168,8 @@ export interface CastInfo {
   gyPermit?: GraveyardUse;
   /** std-exile-play-1-3 (CR 601.2f): "Each spell cast this way costs {1} more to cast": the increase of the permission for named objects it is cast with. */
   permitIncrease?: CostDef;
+  /** edh-d-100 (CR 601.2f, 118.7): "Spells you cast this way cost {2} less to cast": the generic mana the permission for named objects it is cast with takes off the total cost. */
+  permitReduce?: number;
   /**
    * std-rx27 INTERFACE CHANGE (additive): cast from exile by a static linked permission with riders (CR 601.3, 607.2a; statics/play-permits.ts#linkedPermitUses):
    * its once-each-turn counter (spent as the card moves to the stack) and the counters the permanent enters with (CR 614.1c, recorded on the spell).
@@ -166,20 +177,34 @@ export interface CastInfo {
   linkedPermit?: LinkedUse;
   /** std-rx27 (CR 614.1c): cast from the top of the library with a permission whose "enters with" rider applies to this spell (recorded on the spell). */
   topEnters?: { counters: CounterSpec[]; source: string };
+  /** edh-cast-12 (CR 611.2c, 702.10a): cast from the top of the library with a permission whose rider gives the spell a keyword until end of turn (PermissionDef.gainsThisTurn). */
+  topGains?: { keyword: KeywordAbilityDef; source: string };
+  /** edh-d-91 (CR 601.2a, 601.2f, 702.41a): cast with permissions for named objects that give the spell a keyword ("If you do, it has affinity for artifacts", PermissionDef.spellKeyword). */
+  permitKeyword?: KeywordAbilityDef;
   /** std-rx27 (CR 601.3): cast with a one-card permission ("you may play a card exiled with ~"): its counter, spent as the card moves to the stack. */
   singleKey?: string;
   /** std-rx10 (CR 601.3b, 118.8): the additional cost of the permission this spell is cast with as though it had flash ("if you behold a Dragon ..."). */
   flashAddCost?: CostDef;
+  /** edht4 (CR 601.3b, 601.2c; Timely Ward): cast as though it had flash only if it targets a match of one of these filters (`PermissionDef.ifTargets`): the targets chosen are checked at announcement. */
+  flashIfTargets?: ObjectFilter[];
+  /** edh-d-44 (CR 601.3b, 107.3a; Silver Scrutiny): cast as though it had flash only with X at most this number (`PermissionDef.ifXAtMost`, the largest of the permissions that apply): X is offered up to it and checked when announced. */
+  flashXLimit?: number;
+  /** edh-d-44 (CR 601.2f, 118.8; Into the Pit): the additional cost of the top-card permission the spell is cast with (`PermissionDef.addCost`) */
+  topAddCost?: CostDef;
+  /** edh-perms-4 (CR 601.3b, 603.7): cast off sorcery timing with only its own flash permission (`PermissionDef.offTimingSacrifice`): recorded on the spell (`StackInfo.offTimingSacrifice`). */
+  offTimingSacrifice?: true;
   /**
    * FAST5X E29 INTERFACE CHANGE (additive), CR 609.4b: "mana of any type can be spent to cast that spell" (a permission's `anyManaType`, or a resolving effect's
    * `ResolutionCastOptions.anyManaType`): the spell's payments have `SpendContext.anyType`.
    */
-  anyManaType?: true | 'color';
+  anyManaType?: true | 'color' | 'colorless'; // edh-d-97: 'colorless', colorless mana as though it were mana of any color
   /**
    * r5-repl INTERFACE CHANGE (additive), CR 614.1a: cast with a permission for this object that says "If that spell would be put into a graveyard, exile it
    * instead" (statics/play-permits.ts#graveyardInsteadPermit): recorded on the spell (`StackInfo.permitGraveyardInstead`).
    */
   permitGraveyard?: { to: Destination; source: string };
+  /** edh-next-127 (CR 603.7a, 601.2i): the delayed "When you cast a spell this way" triggers of the permissions it is cast with (statics/play-permits.ts#onCastPermits). */
+  permitOnCast?: { steps: EffectStep[]; controller: PlayerId; source: ObjHandle | null; name: string }[];
   /**
    * r3-cost INTERFACE CHANGE (additive), CR 118.9, 601.2b: cast for an alternative cost another object's static ability gives the spell ("You may pay
    * {W}{U}{B}{R}{G} rather than pay the mana cost for spells you cast"; statics/play-permits.ts#grantedAlternatives): its once-each-turn counter is spent as
@@ -200,7 +225,7 @@ export function castMethods(s: GameState, id: ObjectId, face: number, player?: P
   // r3-cost (CR 118.9, 601.2b): the alternative costs other objects' static abilities give the spell, for the player who would cast it (default: its owner)
   own.push(...grantedAlternatives(s, player ?? o.owner, id, faceChars(def, face)).map((g) => g.method));
   // C10 (CR 601.3): several graveyard permissions that let its owner cast it in different ways (an additional cost, a rider) are a choice: one method each
-  const gy = o.zone === 'graveyard' && o.kind === 'card' ? graveyardPermitUses(s, o.owner, id, faceChars(def, face)) : [];
+  const gy = o.zone === 'graveyard' && o.kind === 'card' ? graveyardPermitUses(s, player ?? o.owner, id, faceChars(def, face)) : []; // edh-zones-27: the caster's (any graveyard)
   if (gy.length > 1) own.push(...gy.map((_, i) => graveyardMethod(i + 1)));
   // std-rx27 (CR 601.3): likewise several paid ways linked permissions let the player cast a card from exile (a free one is its granted alternative cost)
   const lnk = o.zone === 'exile' && o.kind === 'card' && player !== undefined ? linkedPermitUses(s, player, id, faceChars(def, face)).filter((u) => u.free !== true) : [];
@@ -293,7 +318,8 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
   // WP14 INTERFACE CHANGE (`during`): an effect that instructs or allows a player to cast a card while it resolves (CR 608.2g) gives the permission the zone,
   // ownership and timing checks below stand for; casting otherwise follows 601.2a-i unchanged.
   // FAST4 T31 (CR 601.2a, 611.2): "you may play that card this turn": an effect allows this player to cast this very card from where it is (statics/play-permits.ts)
-  const permitted = !during && (method === undefined || grantedPick) && o.zone !== 'hand' && playPermitted(s, player, id, false);
+  // edh-next-143 (CR 601.3; Sen Triplets): or a card in another player's hand ("you may ... cast spells from that player's hand", statics/play-permits.ts#handOfCandidates)
+  const permitted = !during && (method === undefined || grantedPick) && (o.zone !== 'hand' || o.owner !== player) && playPermitted(s, player, id, false);
   // FAST5X E14 (CR 601.3, 401.5): the card on top of the player's library that only a top-card permission allows: its qualities are checked below on the
   // face being cast (CR 601.3e)
   const byTop = permitted && o.zone === 'library' && !namedPermit(s, player, id, false);
@@ -341,6 +367,11 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
   if (adventureOnly && !(o.zone === 'graveyard' && o.owner === player && graveyardPermitUses(s, player, id, faceChars(def, face)).length > 0)) {
     return { denial: deny(`${def.name} may be cast this way only as an Adventure.`, 'CR 715.3', 'CR 715.3a') };
   }
+  // edh-zones-11 (CR 601.3, 205.2; Vivien, Champion of the Wilds): "you may cast it if it's a creature spell": a permission for named objects with a limit of card types
+  // covers the face being cast only when it has one of them (statics/play-permits.ts#namedPermitTypesAllow)
+  if (permitted && !fused && o.zone !== 'hand' && !fromCommand && !namedPermitTypesAllow(s, player, id, faceChars(def, face))) {
+    return { denial: deny(`${def.name} may be cast this way only as a spell of the card types the permission names.`, 'CR 601.3', 'CR 205.2') };
+  }
   const printed = fused ? combinedChars(def) : faceChars(def, face);
   // M6-0 (m6 design 2.6): a method that is not one of the card's own alternative costs may be a cast option provider's (face down, back face, prototype,
   // prepare, mutate). Its characteristics apply from the moment the spell is announced (CR 708.4, 718.3a-b, 712.8c), so every check below (timing, "can't
@@ -366,6 +397,21 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
       if (during.free) return { denial: deny('Only one alternative cost can be applied to a spell.', 'CR 118.9a') };
       alt = { name: during.alternative.name, cost: during.alternative.cost };
     }
+    // edh-next-49 (CR 118.9, 202.3): "by paying life equal to its mana value rather than paying its mana cost" on a spell cast as an effect resolves: the spell's own life payment
+    if (during.lifeManaValue === true) {
+      if (during.free || during.alternative) return { denial: deny('Only one alternative cost can be applied to a spell.', 'CR 118.9a') };
+      const life = lifeCostOf(chars);
+      if (life === 'unsupported') return { denial: deny(`${chars.name} has a {Y} or {Z} in its mana cost: pay its life cost by hand.`, 'CR 118.9', 'CR 107.3') };
+      alt = { name: 'payLife', cost: life };
+    }
+    // edh-d-100 (CR 118.9, 202.3, 107.14; Amped Raptor): "by paying an amount of {E} equal to its mana value rather than paying its mana cost": the energy payment of the spell's own mana value
+    if (during.energyManaValue === true) {
+      if (during.free || during.alternative || during.lifeManaValue === true) return { denial: deny('Only one alternative cost can be applied to a spell.', 'CR 118.9a') };
+      const life = lifeCostOf(chars);
+      if (life === 'unsupported') return { denial: deny(`${chars.name} has a {Y} or {Z} in its mana cost: pay its energy cost by hand.`, 'CR 118.9', 'CR 107.3') };
+      const amount = life.other?.[0]?.kind === 'payLife' ? life.other[0].amount : 0;
+      alt = { name: 'payEnergy', cost: { other: [{ kind: 'payEnergy', amount }] } };
+    }
   } else if (method === undefined || fused) {
     if (o.zone === 'hand') {
       if (aftermath) return { denial: deny(`${chars.name} has aftermath: it can't be cast from any zone other than a graveyard.`, 'CR 702.127a') };
@@ -384,7 +430,7 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
     if (aftermath && o.zone !== 'graveyard') return { denial: deny(`${chars.name} has aftermath: it can't be cast from any zone other than a graveyard.`, 'CR 702.127a') };
     grantedUse = grantedAlternatives(s, player, id, chars).find((g) => g.method === method);
     if (!grantedUse) return { denial: deny(`No effect lets you pay that alternative cost for ${chars.name} now.`, 'CR 118.9', 'CR 601.2b') };
-    alt = { name: grantedUse.name, cost: grantedUse.cost };
+    alt = { name: grantedUse.name, cost: grantedUse.cost, ...(grantedUse.flash === true ? { instantSpeed: true } : {}) }; // edh-d-44 (CR 601.3b): "If you cast a spell this way, you may cast it as though it had flash"
   } else if (provider) {
     // M6-0: the provider decides where from (CR 702.37a: any zone it could be cast from) and the cost (an alternative cost, CR 118.9, or the normal one)
     if (!provider.offers(view!, o, player)) return { denial: deny(`${printed.name} can't be cast that way (${provider.name}) now.`, 'CR 601.2b', 'CR 601.3') };
@@ -409,7 +455,7 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
     if (life !== null) alt = { name: 'payLife', cost: life };
   }
   // FAST5X E14 (CR 601.3, 601.3e): "You may cast creature spells from the top of your library": the permission must cover this face as the spell it would be
-  const topUse = byTop ? topPermitFor(s, player, id, false, chars) : null;
+  const topUse = byTop ? topPermitFor(s, player, id, false, chars, (u) => u.addCost === undefined || payableWithOptions(s, player, id, planFromCostDef(u.addCost, 0)) === null) : null;
   if (byTop && topUse === null) return { denial: deny(`No effect lets you cast ${chars.name} from the top of your library.`, 'CR 601.3', 'CR 601.3e') };
   // std-exile-play-1-1 (CR 118.9, 118.9a, 202.3): "If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost" on the top-card permission
   // used (Gwenom, Remorseless): that alternative cost is the spell's, and no other alternative cost can be combined with it
@@ -422,7 +468,9 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
   // C10 (CR 601.3, 601.3e): a card in the caster's own graveyard that only a graveyard permission allows (an aftermath half needs none, CR 702.127a; a
   // permission that names the card wins: it adds nothing to the cost): the permission must cover this face as the spell it would be, and with several
   // different ways the player picks one (the `permission:<n>` methods)
-  const byGraveyard = permitted && o.zone === 'graveyard' && o.owner === player && !aftermath && !fused && (!namedPermit(s, player, id, false) || adventureOnly);
+  const byGraveyard = permitted && o.zone === 'graveyard' && !aftermath && !fused && (!namedPermit(s, player, id, false) || adventureOnly); // edh-zones-27: and a card in another graveyard a permission "from any graveyard" names
+  // edh-zones-27 (review; CR 702.127a, 404.1): an aftermath half is cast from its owner's graveyard by its own ability; in another player's graveyard only a permission "from any graveyard" that covers it lets it be cast
+  if (permitted && aftermath && o.zone === 'graveyard' && o.owner !== player && graveyardPermitUses(s, player, id, chars).length === 0) return { denial: deny(`No effect lets you cast ${chars.name} from that graveyard.`, 'CR 601.3', 'CR 702.127a') };
   let gyUse: GraveyardUse | undefined;
   if (byGraveyard) {
     const uses = graveyardPermitUses(s, player, id, chars);
@@ -473,22 +521,47 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
 
   // CR 608.2g: cast during the resolution, whatever the card type's timing. FAST5X E7 (CR 702.190a): an alternative cost that may be paid "any time you could
   // cast an instant" (sneak) gives the spell instant timing; its `when` (checked below) keeps it to the step it names
-  let timing = during || alt?.instantSpeed === true ? null : castTiming(s, player, id, chars);
+  // edh-cast-3 (CR 101.2, 117.1a; Teferi, Time Raveler): a player who can cast spells only any time they could cast a sorcery gets no sneak timing and no priced flash either
+  // (the restriction wins over a permission); a cast during a resolution (cascade) is not judged by timing here
+  // (CR 307.5: a cast during a resolution (cascade, discover) is not "any time they could cast a sorcery" either: the player has no priority and the stack is not empty)
+  const sorceryOnly = castsOnlySorcerySpeed(s, player);
+  let timing = during ? (sorceryOnly ? deny('An effect says you can cast spells only any time you could cast a sorcery, which a resolving effect is not.', 'CR 307.5', 'CR 101.2') : null)
+    : alt?.instantSpeed === true && !sorceryOnly ? null : castTiming(s, player, id, chars);
   // FAST5 T56 (CR 601.3b, 601.2f): "You may cast this spell as though it had flash if you pay {2} more to cast it": only when it could not be cast now without the permission, and
   // then the increase is part of the total cost (an additional cost besides the mana cost); the cheapest of several such permissions
   let flashExtra = 0;
   // std-rx10 (CR 601.3b, 601.2b, 118.8): "... as though it had flash if you behold a Dragon as an additional cost to cast it": a permission whose price is an
   // additional cost; only one such permission (two would be a choice of which cost to pay that this build does not offer, so none is used then)
   let flashAddCost: CostDef | undefined;
-  if (timing) {
+  if (timing && !sorceryOnly) {
     const prices = hookpoints.castFlashCosts(gameOf(s), id, player, chars);
     if (prices.length > 0) { flashExtra = Math.min(...prices); timing = null; }
   }
-  if (timing) {
+  if (timing && !sorceryOnly) {
     const adds = hookpoints.castFlashAddCosts(gameOf(s), id, player, chars);
     if (adds.length === 1) { flashAddCost = adds[0]; timing = null; }
   }
+  // edht4 (CR 601.3b, 601.2c; Timely Ward): "... as though it had flash if it targets a commander": the player may begin to cast it when something it could target matches (601.3b); the targets
+  // chosen are then required to include a match (announcement, below)
+  let flashIfTargets: ObjectFilter[] | undefined;
+  if (timing && !sorceryOnly) {
+    const fs = hookpoints.castFlashIfTargets(gameOf(s), id, player, chars);
+    const fctx = fs.length > 0 ? filterCtxOutside(s, { controller: player, sourceId: id }) : undefined;
+    if (fctx !== undefined && fs.some((f) => findObjects(s, f, fctx).length > 0)) { flashIfTargets = fs; timing = null; }
+  }
+  // edh-d-44 (CR 601.3b, 601.2b, 107.3a; Silver Scrutiny): "... as though it had flash if X is 3 or less": the player may begin to cast it (601.3b); X is announced next and may not exceed the limit
+  let flashXLimit: number | undefined;
+  if (timing && !sorceryOnly) {
+    const limits = hookpoints.castFlashXLimit(gameOf(s), id, player, chars);
+    if (limits.length > 0) { flashXLimit = Math.max(...limits); timing = null; }
+  }
+  // edh-d-44 (CR 601.3b, 702.8a; Elsha of the Infinite): "If you cast a spell this way, you may cast it as though it had flash": the top-card permission it is cast with
+  if (timing && !sorceryOnly && topUse?.flash === true) timing = null;
   if (timing) return { denial: timing };
+  // edh-perms-4 (CR 601.3b, 603.7; Necromancy): "If you cast it any time a sorcery couldn't have been cast, ... sacrifices it": the card's own flash permission is the only thing that lets it be cast now
+  // (not during another spell's resolution, CR 608.2g, which needs no permission; not with another source of flash, which the player would use)
+  const offTimingSacrifice = !during && alt?.instantSpeed !== true && !hasType(chars, 'Instant') && chars.abilities.some((a) => hasOffTimingPermit(a.def)) && sorceryTiming(s, player, 'cast a spell', 'CR 117.1a') !== null
+    && !flashWithoutOffTimingPermit(s, player, id, chars);
   // CR 205.4e (AF1, audit FAST1 defect 1): a rule that applies however the spell is cast, from a resolving effect too (CR 601.3).
   const legendary = legendarySpellDenial(s, player, chars);
   if (legendary) return { denial: legendary };
@@ -500,7 +573,7 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
     }
   }
   // Restrictions imposed by other objects' static abilities ("can't cast", CR 101.2) come through the rule hookpoints (WP16 fills them in).
-  const hook = hookpoints.canCast(gameOf(s), id, player, face, { ...(method !== undefined ? { method } : {}), ...(fused ? { fused: true } : {}), ...(chars !== printed ? { chars } : {}) }); // CR 709.3a: the face being cast; M6-0: a cast option's characteristics
+  const hook = hookpoints.canCast(gameOf(s), id, player, face, { ...(method !== undefined ? { method } : {}), ...(fused ? { fused: true } : {}), ...(chars !== printed ? { chars } : {}), ...(during?.free === true ? { xZero: true as const } : {}) }); // CR 709.3a: the face being cast; M6-0: a cast option's characteristics
   if (hook) return { denial: hook };
 
   // FAST5X E6 (CR 702.187b): mayhem: "As long as you discarded this card this turn": the card in the graveyard is the object a discard put there this turn
@@ -514,7 +587,7 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
   }
   // p2-cost-statics-1 (CR 118.9, 601.2b): an alternative cost's condition reads this turn's history ("If an opponent cast a blue spell this turn", model/forms.ts
   // 'altCost'), complete whenever a spell can be cast (it is written before a player receives priority, CR 117.3)
-  const aenv: AnnounceEnv = { s, player, sourceId: id, costsPaid: alt ? { alternative: alt.name } : {}, castFrom: castOriginOf(o), ...(alt?.when ? { history: true as const } : {}) };
+  const aenv: AnnounceEnv = { s, player, sourceId: id, costsPaid: alt ? { alternative: alt.name } : {}, castFrom: castOriginOf(o, player), ...(alt?.when ? { history: true as const } : {}) };
   if (alt?.when) {
     // p2-modal-2 (CR 601.2b, 118.9): the alternative cost is chosen as the spell is cast, so "If you've cast another white spell this turn" reads the turn's history so
     // far (model/cap-walk.ts declares the condition in position 'mode', as a mode count's override: both read the history, model/forms.ts)
@@ -525,7 +598,13 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
 
   // M6-0: targets a cast option adds (mutate's non-Human creature with the same owner, CR 702.140a) are announced with the spell's own (CR 601.2c)
   const extra = provider?.extraTargets?.(view!, o);
-  const ownPrograms = extra && extra.length > 0 ? [...spellPrograms(chars), { targets: extra, steps: [] }] : spellPrograms(chars);
+  // edh-next-100 (CR 702.148a-b; Wash Away): cast for its cleave cost the spell is read without the words in square brackets (SpellAbilityDef.cleave); a spell that has no such
+  // reading (the parser read only one) is not offered for it (fail closed)
+  if (alt?.name === CLEAVE && !chars.abilities.some((a) => a.def.kind === 'spell' && a.def.cleave !== undefined)) {
+    return { denial: deny(`This engine build has no reading of ${chars.name} without the words in square brackets, so it is not offered with cleave.`, 'CR 702.148a') };
+  }
+  const cleaved = alt?.name === CLEAVE;
+  const ownPrograms = extra && extra.length > 0 ? [...spellPrograms(chars, cleaved), { targets: extra, steps: [] }] : spellPrograms(chars, cleaved);
   // CR 702.96a-b: cast for its overload cost the spell has no targets and says "each" where it said "target" (actions/overload.ts); a spell that can't be rewritten
   // faithfully is not offered for it (fail closed)
   const manualSpell = chars.abilities.some((a) => a.def.kind === 'manual' && (a.def.shape === 'spell' || a.def.shape === 'unknown'));
@@ -540,15 +619,19 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
   // FAST5X E29 (CR 609.4b): "mana of any type can be spent to cast that spell" (the permission it is cast with, or the resolving effect)
   // CLOUD std-fdn (CR 609.4b): or a static ability lets the caster spend mana of any type to cast spells like this one ("... to cast creature spells")
   // Standard round I (CR 609.4b, 107.4c): 'color' when a static ability only lets the caster spend mana as though it were mana of any color
-  const anyManaType: boolean | 'color' = during?.anyManaType === true || (permitted && !byTop && !fused && anyManaTypePermit(s, player, id))
+  // edh-d-97 (CR 609.4b, 107.4c; Abstruse Appropriation): 'colorless' when the permission only lets colorless mana be spent as though it were mana of any color (any wider one wins)
+  const anyManaType0: boolean | 'color' = during?.anyManaType === true || (permitted && !byTop && !fused && anyManaTypePermit(s, player, id))
     || linkUse?.anyManaType === true // std-rx27: the linked permission it is cast with
-    ? true : staticAnyColorOrType(staticAnyManaType(s, player, id, chars), permitted && !byTop && !fused && anyManaColorPermit(s, player, id));
+    ? true : staticAnyColorOrType(staticAnyManaType(s, player, id, chars), (permitted && !byTop && !fused && anyManaColorPermit(s, player, id)) || linkUse?.anyManaColor === true || (!fused && topUse?.anyManaColor === true)); // edh-next-62: the linked permission it is cast with; edh-next-143: the top-card permission of another player's library it is cast with
+  const anyManaType: boolean | 'color' | 'colorless' = anyManaType0 !== false ? anyManaType0 : permitted && !byTop && !fused && colorlessAnyColorPermit(s, player, id) ? 'colorless' : false;
   // FAST5X E23 (CR 601.2a, 708.4, 202.3e): the spell is read as it would be: this face, face down when cast face down, with the X the plan is for
   const spendFor = (x: CostX): SpendContext => ({
-    kind: 'spell', id, face, ...(provider?.faceDown === true ? { faceDown: true as const } : {}), ...(typeof x === 'number' ? { x } : {}), ...(anyManaType ? { anyType: anyManaType === 'color' ? ('color' as const) : (true as const) } : {}),
+    kind: 'spell', id, face, ...(altCost === undefined && during?.free !== true ? { plain: true as const } : {}), ...(provider?.faceDown === true ? { faceDown: true as const } : {}), ...(alt !== undefined ? { viaAlt: alt.name } : {}), ...(typeof x === 'number' ? { x } : {}), ...(anyManaType ? { anyType: anyManaType === 'color' || anyManaType === 'colorless' ? anyManaType : (true as const) } : {}),
   });
+  // edh-next-85 (CR 107.3a, 106.6; Consume Spirit): "Spend only black mana on X." is the spell's own, its mana cost's X is paid with that color only
+  const onlyX = (chars.abilities.find((a) => a.def.kind === 'spell')?.def as { spendOnlyX?: 'W' | 'U' | 'B' | 'R' | 'G' } | undefined)?.spendOnlyX;
   const base = (x: CostX): CostPlan => {
-    const plan: CostPlan = { ...(altCost ? planFromCostDef(altCost, x) : during?.free ? emptyPlan() : { ...emptyPlan(), mana: substituteX(chars.manaCost, typeof x === 'number' ? x : 0) }), spend: spendFor(x) };
+    const plan: CostPlan = { ...(altCost ? planFromCostDef(altCost, x) : during?.free ? emptyPlan() : { ...emptyPlan(), mana: substituteX(chars.manaCost, typeof x === 'number' ? x : 0) }), spend: onlyX !== undefined && typeof x === 'number' ? ({ ...spendFor(x), onlyX } as SpendContext) : spendFor(x) };
     return flashExtra > 0 ? addPlans(plan, planFromCostDef({ mana: [{ kind: 'generic', amount: flashExtra }] }, x)) : plan; // FAST5 T56
   };
   // M11-1, CR 903.8: the commander tax is a mandatory additional cost (CR 118.9d: paid however the spell is cast)
@@ -558,14 +641,21 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
   // std-exile-play-1-3 (CR 601.2f, 601.3): "Each spell cast this way costs {1} more to cast" on the permission for named objects the card is cast with (one without the
   // increase is used first: statics/play-permits.ts#namedPermitIncrease)
   const permitIncrease = permitted && !byTop && !fused && !during ? namedPermitIncrease(s, player, id) : null;
-  const mandatory = [...mandatoryCosts(options.additional), ...(tax ? [tax] : []), ...(gyUse?.addCost ? [gyUse.addCost] : []), ...(linkUse?.addCost ? [linkUse.addCost] : []), ...(flashAddCost ? [flashAddCost] : []), ...(permitIncrease ? [permitIncrease] : [])];
+  // edh-d-100 (CR 601.2f, 118.7; Urianger Augurelt): "Spells you cast this way cost {2} less to cast" on the permission for named objects the card is cast with: generic mana off the total
+  const permitReduce = permitted && !byTop && !fused && !during && o.zone !== 'hand' ? namedPermitReduce(s, player, id) : 0;
+  const mandatory = [...mandatoryCosts(options.additional), ...(tax ? [tax] : []), ...(gyUse?.addCost ? [gyUse.addCost] : []), ...(linkUse?.addCost ? [linkUse.addCost] : []), ...(flashAddCost ? [flashAddCost] : []), ...(topUse?.addCost ? [topUse.addCost] : []), ...(permitIncrease ? [permitIncrease] : [])];
   // CR 601.2f: what is paid is the total cost after cost increases and reductions (WP16), so the check is made on the modified cost.
   const payNow = (plan: CostPlan): Denial | null => {
-    const m = modifiedPlan(s, player, id, plan, chars);
-    if ('denial' in m) return m.denial;
-    return alt?.name === 'emerge' ? emergePayable(s, player, id, m.plan) : alt?.tapReduces ? tapReducePayable(s, player, id, m.plan) : payableWithOptions(s, player, id, m.plan);
+    const m0 = modifiedPlan(s, player, id, plan, chars, provider?.faceDown === true, alt?.name);
+    if ('denial' in m0) return m0.denial;
+    const m = permitReduce > 0 ? { plan: { ...m0.plan, mana: reduceGeneric(m0.plan.mana, permitReduce).mana } } : m0; // edh-d-100
+    return sacrificeReductionOf(alt) ? emergePayable(s, player, id, m.plan, sacrificeReductionOf(alt)!) : alt?.tapReduces ? tapReducePayable(s, player, id, m.plan) : payableWithOptions(s, player, id, m.plan);
   };
   const baseHasX = altCost ? costHasX(altCost) : !during?.free && countX(chars.manaCost) > 0; // CR 107.3a: X in an alternative cost is announced; without one X is 0 (CR 107.3b)
+  // edh-d-98 (CR 107.3, 107.3b, 601.2b; Mind Grind ruling 2013-01-24): a spell whose own "X can't be 0" (SpellAbilityDef.xMin) can't be cast with no X announced (without
+  // paying its mana cost, X is 0)
+  const ownXMin = (chars.abilities.find((a) => a.def.kind === 'spell')?.def as { xMin?: number } | undefined)?.xMin ?? 0;
+  if (!baseHasX && ownXMin > 0) return { denial: deny(`${chars.name} can't be cast without announcing its X (X can't be 0).`, 'CR 107.3', 'CR 107.3b', 'CR 601.2b') };
   // r3-cost (CR 107.3, 601.2b): "X can't be greater than ..." must be readable now
   if (xCap(s, player, id, options.additional) === undefined) return { denial: deny(`This engine build can't read the largest X ${chars.name} allows, so it is not offered.`, 'CR 107.3', 'CR 601.2b') };
 
@@ -579,6 +669,8 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
     const xs = hasX ? payableXs((n) => payNow(addPlans(base(n), planFromCostDefs(mandatory, n))) === null, scanAll) : [0];
     aenv.xMax = xs.length ? xs[xs.length - 1]! : 0;
     if (baseHasX) aenv.castingSpell = true; // pc-statics-1
+    // edh-d-98 (CR 107.3, 601.2b; Mind Grind): "X can't be 0.": some payable X at least that, or the spell is not castable now
+    if (baseHasX && ownXMin > 0 && !xs.some((n) => n >= ownXMin)) return { denial: deny(`You can't pay for ${chars.name} with any value of X it allows (X can't be 0).`, 'CR 107.3', 'CR 601.2b', 'CR 601.2h') };
   }
   const noTarget = deny(`${chars.name} needs a target but there is no legal one.`, 'CR 601.2c', 'CR 115.1');
   const unplayable = programsDenial(s, programs, player, id, noTarget, undefined, aenv);
@@ -595,8 +687,8 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
   if (blocked && !optionalCostMakesCastable(s, o, face, player, options.additional, required, {
     targets: (paid) => programsDenial(s, programs, player, id, noTarget, undefined, { ...aenv, costsPaid: { ...aenv.costsPaid, ...paid } }) === null,
     payable: (st, plan) => {
-      const m = modifiedPlan(st, player, id, plan, chars);
-      return !('denial' in m) && (alt?.name === 'emerge' ? emergePayable(st, player, id, m.plan) : alt?.tapReduces ? tapReducePayable(st, player, id, m.plan) : payableWithOptions(st, player, id, m.plan)) === null;
+      const m = modifiedPlan(st, player, id, plan, chars, provider?.faceDown === true, alt?.name);
+      return !('denial' in m) && (sacrificeReductionOf(alt) ? emergePayable(st, player, id, m.plan, sacrificeReductionOf(alt)!) : alt?.tapReduces ? tapReducePayable(st, player, id, m.plan) : payableWithOptions(st, player, id, m.plan)) === null;
     },
   })) return { denial: blocked };
   // M6-5, CR 601.2b, 601.2h: one cost of every mandatory choice group must be payable with the rest
@@ -610,20 +702,31 @@ function castCheckIn(s: GameState, player: PlayerId, id: ObjectId, requestedFace
   if (alt) info.alt = alt;
   if (provider) info.provider = provider;
   if (topUse?.key) info.topOnce = topUse.key;
+  if (topUse?.addCost) info.topAddCost = topUse.addCost; // edh-d-44
+  if (topUse?.gainsThisTurn) info.topGains = { keyword: topUse.gainsThisTurn, source: topUse.source ?? '' }; // edh-cast-12
   if (topUse?.entersWith) info.topEnters = { counters: topUse.entersWith, source: topUse.source ?? '' }; // std-rx27 (CR 614.1c)
   if (gyUse) info.gyPermit = gyUse;
   if (permitIncrease) info.permitIncrease = permitIncrease; // std-exile-play-1-3
-  const singleKey = permitted && !byTop && !fused && namedPermit(s, player, id, false) ? namedSingleKey(s, player, id, false) : null;
+  const permitKeyword = permitted && !byTop && !fused && !during ? namedPermitSpellKeyword(s, player, id) : null;
+  if (permitKeyword !== null) info.permitKeyword = permitKeyword; // edh-d-91
+  if (permitReduce > 0) info.permitReduce = permitReduce; // edh-d-100
+  const singleKey = permitted && !byTop && !fused && namedPermit(s, player, id, false) ? namedSingleKey(s, player, id, false, method) : null;
   if (singleKey !== null) info.singleKey = singleKey; // std-rx27
   if (linkUse && (linkUse.key !== null || linkUse.entersWith || linkUse.addCost)) info.linkedPermit = { ...linkUse, key: linkUse.free ? null : linkUse.key }; // std-rx27 (a free one's key: grantedAlt)
   if (flashAddCost) info.flashAddCost = flashAddCost;
-  if (anyManaType) info.anyManaType = anyManaType === 'color' ? 'color' : true;
+  if (flashIfTargets) info.flashIfTargets = flashIfTargets; // edht4
+  if (flashXLimit !== undefined) info.flashXLimit = flashXLimit; // edh-d-44
+  if (offTimingSacrifice) info.offTimingSacrifice = true; // edh-perms-4
+  if (anyManaType) info.anyManaType = anyManaType === 'color' || anyManaType === 'colorless' ? anyManaType : true; // edh-d-97 (review): the payment keeps the narrow rider
   // r5-repl (CR 614.1a, 400.7): "If that spell would be put into a graveyard, exile it instead" of the permission it is cast with (not a top-card one)
   const gyInstead = permitted && !byTop && !fused ? graveyardInsteadPermit(s, player, id) : undefined;
   if (gyInstead) info.permitGraveyard = gyInstead;
   // p2-graveyard-2 (CR 614.1a, 400.7): ... and of the graveyard permission it is cast with ("If a spell cast this way would be put into your graveyard, exile it instead");
   // the card is its owner's, so "your graveyard" is the graveyard it would go to (CR 400.3)
   else if (gyUse?.graveyardInstead && (gyUse.graveyardInstead.yours !== true || o.owner === player)) info.permitGraveyard = { to: gyUse.graveyardInstead.to, source: gyUse.source };
+  // edh-next-127 (CR 603.7a; The Ruinous Powers): "When you cast a spell this way, ..." of the named-object permission it is cast with (not a top-card one)
+  const onCast = permitted && !byTop && !fused ? onCastPermits(s, player, id) : [];
+  if (onCast.length > 0) info.permitOnCast = onCast;
   if (grantedUse) info.grantedAlt = grantedUse;
   return { info };
 }
@@ -644,7 +747,7 @@ function optionalCostMakesCastable(
     if (opt.choosePlayer === 'opponent' && !s.players.some((p) => p.id !== player && !p.hasLost)) continue;
     // std-costs-1 (CR 601.2b, 601.2f): a cost whose announced number a reduction reads ("for each permanent sacrificed this way") is tried with each number
     if (opt.announceCount === true) {
-      for (let n = 1; n <= countCap(s, player); n++) {
+      for (let n = 1; n <= countCap(s, player, opt.cost); n++) {
         const fixed = withAnnouncedCount(opt.cost, n);
         if (fixed === null) break;
         const paidN: CostsPaid = { additional: [opt.name], counts: { [opt.name]: n } };
@@ -678,10 +781,21 @@ export function legendarySpellDenial(s: GameState, player: PlayerId, chars: Char
   return deny(`${chars.name} is a legendary ${hasType(chars, 'Instant') ? 'instant' : 'sorcery'}: you can cast it only while you control a legendary creature or a legendary planeswalker.`, 'CR 205.4e', 'CR 601.3');
 }
 
-/** CR 702.119: the emerge cost can be paid when SOME permanent can be sacrificed for it and the reduced total is payable. */
-function emergePayable(s: GameState, player: PlayerId, id: ObjectId, plan: CostPlan): Denial | null {
-  if (emergePayableCandidates(s, player, id, plan).length > 0) return null;
-  return payableWithOptions(s, player, id, plan) ?? deny('You have no permanent to sacrifice for the emerge cost.', 'CR 702.119a');
+/**
+ * edh-combat-7 (CR 702.119a, 702.48a): the alternative costs that name a permanent to sacrifice as they are announced and reduce the total cost by it: emerge (its mana value, generic) and
+ * offering (its mana cost, CR 702.48c). Null for any other cost.
+ */
+type SacrificeReduction = { method: 'emerge' | 'offering'; reduce: typeof emergeReduction; rule: string };
+function sacrificeReductionOf(alt: { name: string } | undefined): SacrificeReduction | null {
+  if (alt?.name === 'emerge') return { method: 'emerge', reduce: emergeReduction, rule: 'CR 702.119a' };
+  if (alt?.name === 'offering') return { method: 'offering', reduce: offeringReduction, rule: 'CR 702.48a' };
+  return null;
+}
+
+/** CR 702.119, 702.48: the emerge or offering cost can be paid when SOME permanent can be sacrificed for it and the reduced total is payable. */
+function emergePayable(s: GameState, player: PlayerId, id: ObjectId, plan: CostPlan, how: SacrificeReduction): Denial | null {
+  if (emergePayableCandidates(s, player, id, plan, how.reduce).length > 0) return null;
+  return payableWithOptions(s, player, id, plan) ?? deny(`You have no permanent to sacrifice for the ${how.method} cost.`, how.rule);
 }
 
 /**
@@ -741,16 +855,27 @@ export function applyCostModifiers(g: Game, player: PlayerId, spell: GameObject,
  * can't be determined (a modifier's amount the engine can't evaluate: never a guess, design 1.1.4). Pure. The history count (`happenedCount`: "for each creature
  * that died this turn") is evaluated here because statics may not read rules/history.ts (design 5.4). Owner of the modifiers: WP16 (statics/costmods.ts).
  */
-export function modifiedPlan(s: GameState, player: PlayerId, spell: ObjectId, plan: CostPlan, chars?: Chars): { plan: CostPlan } | { denial: Denial } {
-  const hits = costModsFor(s, spell, player, chars);
-  if (hits.length === 0) return { plan };
+export function modifiedPlan(s: GameState, player: PlayerId, spell: ObjectId, plan: CostPlan, chars?: Chars, faceDown = false, via?: string): { plan: CostPlan } | { denial: Denial } {
+  const hits = costModsFor(s, spell, player, chars, faceDown, via);
+  if (hits.length === 0) return { plan: applyOnlyX(plan) };
+  // trek-15 (CR 506.3, 601.2f; Own the Day): "for each opponent you attacked this turn", the modifier's controller's attacks of the turn (a combat's own count has no cost)
   const history = (q: Quantity, hit: CostModHit): number | undefined =>
-    typeof q !== 'number' && q.q === 'happenedCount' ? happenedCountOf(s, q, { you: hit.controller, ...(hit.source !== null ? { sourceId: hit.source } : {}) }) : undefined;
+    typeof q === 'number' ? undefined
+    : q.q === 'happenedCount' ? happenedCountOf(s, q, { you: hit.controller, ...(hit.source !== null ? { sourceId: hit.source } : {}) })
+    : q.q === 'happenedDistinct' ? distinctHistory(s, q.event, q.scope, q.by, { you: hit.controller, ...(hit.source !== null ? { sourceId: hit.source } : {}) }, q.what) // edh-next-58 (CR 205.2a, 601.2f; Korvold, Gleeful Glutton): the card types among the permanents sacrificed this turn
+    : q.q === 'casterSpellsCastThisTurn' ? s.players.find((p) => p.id === player)?.turnStats.spellsCast ?? 0 // edh-next-12 (CR 601.2f, 601.2i; Damping Sphere): the spells the caster cast before this one
+    : q.q === 'casterControlledCount' ? findObjects(s, { ...q.filter, controller: 'you' }, filterCtxOutside(s, { controller: player, x: null })).length // edh-c-73 (CR 601.2f, 109.4; Hum of the Radix): the permanents the caster controls
+    : q.q === 'lifeGainedThisTurn' ? s.players.find((p) => p.id === hit.controller)?.turnStats.lifeGained ?? 0 // edh-next-9 (CR 119.3, 601.2f): the life the caster gained so far this turn
+    : q.q === 'opponentsAttacked' && q.scope === 'turn' ? opponentsAttackedCount(s, hit.controller, null)
+    // edh-next-9 (CR 601.2f, 102.3, 120.2a; Gnoll War Band ruling 2022-06-10: opponents who left the game are not counted): "for each opponent who was dealt damage this turn", the players of `of` still in the game with enough matching events in the history, each judged alone
+    : q.q === 'happenedPlayers' && q.of.ref === 'each' && (q.of.who === 'opponent' || q.of.who === 'player')
+      ? happenedPlayersOf(s, s.players.filter((p) => !p.hasLost && (q.of.ref === 'each' && q.of.who === 'player' || p.id !== hit.controller)).map((p) => p.id), q.event, q.scope, q.times, { you: hit.controller, ...(hit.source !== null ? { sourceId: hit.source } : {}) }).length
+    : undefined;
   const r = modifyMana(plan.mana, hits, history);
   if ('unknown' in r) return { denial: deny(`The engine can't work out the cost change "${r.unknown.text}" (${r.unknown.name}), so the total cost of this spell is unknown.`, 'CR 601.2f') };
   // r5-cost (CR 601.2f, 119.4): "cost an additional 3 life to cast": the total cost includes paying that life (`CostModDef.change.life`)
   const life = hits.flatMap((h) => (h.def.change.kind === 'increase' && h.def.change.life !== undefined && h.def.change.life > 0 ? [{ kind: 'payLife' as const, amount: h.def.change.life }] : []));
-  return { plan: { ...plan, mana: r.mana, ...(life.length > 0 ? { other: [...plan.other, ...life] } : {}) } };
+  return { plan: applyOnlyX({ ...plan, mana: r.mana, ...(life.length > 0 ? { other: [...plan.other, ...life] } : {}) }) }; // edh-next-85: "Spend only black mana on X" after every cost change (CR 601.2f)
 }
 
 /**
@@ -762,7 +887,7 @@ export function castRecordOf(spell: GameObject, turn: number): NonNullable<GameO
   if (!info || info.kind !== 'spell' || info.isCopy) return undefined;
   const paid = JSON.parse(JSON.stringify(info.costsPaid)) as typeof info.costsPaid;
   return { costsPaid: paid, ...(info.x !== undefined ? { x: info.x } : {}), from: info.castFrom ?? 'hand', ...(paid.alternative !== undefined ? { via: paid.alternative } : {}), turn, ...(info.caster !== undefined ? { by: info.caster } : {}),
-    ...(info.controlLost === true ? { controlLost: true as const } : {}) }; // std-rx22: CR 702.62a, the caster lost control of the spell
+    ...(info.controlLost === true ? { controlLost: true as const } : {}), ...(info.castChecks !== undefined ? { castChecks: { ...info.castChecks } } : {}) }; // std-rx22: CR 702.62a, the caster lost control of the spell; edh-next-37: the "as you cast" answers stay on the permanent
 }
 
 export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, during?: ResolutionCastOptions): void {
@@ -792,7 +917,9 @@ export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, du
   const fromCommandZone = info.object.zone === 'command' && isCommander(g.s, info.object);
 
   // CR 601.2a: the card becomes a spell on the stack, controlled by the caster.
-  const castFrom = castOriginOf(info.object); // trek-11 (CR 400.11): 'outside' for a card from outside the game
+  // edh-next-143 (CR 601.2a; Sen Triplets): a card in another player's hand is cast from no hand of the caster's ('otherHand')
+  const castFrom: CastOrigin = castOriginOf(info.object, player); // edh-next-143: 'otherHand' for a card in another player's hand; // trek-11 (CR 400.11): 'outside' for a card from outside the game
+  const castReduce = info.object.castReduce; // edh-next-132 (CR 601.2f, 707.12): the reduction a copy of a card was created with stays with the spell it becomes
   const stackId = moveObject(g, info.object.id, 'stack', { face: info.face, controller: player, cause: 'cast', ...(faceDown ? { faceDown: true } : {}) }); // M6-3: CR 708.4
   if (!stackId) throw new IllegalAction('The card could not be put on the stack.', ['CR 601.2a']);
   if (info.topOnce !== undefined) g.s.turnActivations[info.topOnce] = (g.s.turnActivations[info.topOnce] ?? 0) + 1; // FAST5X E14: "once each turn" (CR 601.3)
@@ -804,6 +931,7 @@ export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, du
   const altKey = info.grantedAlt?.key;
   if (altKey) g.s.turnActivations[altKey] = (g.s.turnActivations[altKey] ?? 0) + 1; // r3-cost: "once each turn, you may pay {0} rather than ..." (CR 118.9)
   const spell = g.obj(stackId);
+  if (castReduce !== undefined) spell.castReduce = castReduce; // edh-next-132
   spell.stack = { kind: 'spell', face: info.face, targets: [], costsPaid: info.alt ? { alternative: info.alt.name } : {}, castFrom, caster: player }; // FAST4 T27: the caster (CR 601.2a)
   if (info.fused) spell.stack.fused = true; // CR 702.102a
   // C10 (CR 614.1c): "If you cast a spell this way, that artifact enters with a finality counter on it": the spell remembers it (effects/rule-replacements/permit-enters.ts)
@@ -813,30 +941,42 @@ export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, du
     spell.stack.permitEnters = { counters: JSON.parse(JSON.stringify(info.gyPermit.entersWith)) as NonNullable<typeof info.gyPermit.entersWith>, source: info.gyPermit.source };
     if (info.gyPermit.entersSubtypes) spell.stack.permitEnters.subtypes = [...info.gyPermit.entersSubtypes]; // std-freecast-2 (CR 614.1c, 205.1b)
   }
+  // edh-next-68 (CR 614.1c; Edgar, Master Machinist): "If you cast a spell this way, that artifact enters tapped"
+  if (info.gyPermit?.entersTapped === true) spell.stack.permitEnters = { ...(spell.stack.permitEnters ?? { counters: [], source: info.gyPermit.source }), tapped: true };
+  // edh-zones-22 (CR 614.1c; Serra Paragon): "If you do, it gains ...": the permanent the spell becomes has these abilities (no counters)
+  if (info.gyPermit?.entersAbilities) {
+    spell.stack.permitEnters = { counters: [], source: info.gyPermit.source, abilities: JSON.parse(JSON.stringify(info.gyPermit.entersAbilities)) as NonNullable<typeof info.gyPermit.entersAbilities> };
+  }
   // std-rx27 (CR 614.1c): "If you cast a spell this way, that creature enters with a finality counter on it" of the linked permission it is cast with
   if (info.topEnters) spell.stack.permitEnters = { counters: JSON.parse(JSON.stringify(info.topEnters.counters)) as CounterSpec[], source: info.topEnters.source }; // std-rx27
+  if (info.topGains) giveSpellKeywordUntilEot(g, player, stackId, info.topGains.keyword, info.topGains.source); // edh-cast-12 (CR 611.2c): "it gains haste until end of turn"
+  if (info.permitKeyword) giveSpellKeywordUntilEot(g, player, stackId, info.permitKeyword, 'the permission it was cast with'); // edh-d-91 (CR 601.2a, 601.2f): "If you do, it has affinity for artifacts"
   if (info.linkedPermit?.entersWith) spell.stack.permitEnters = { counters: JSON.parse(JSON.stringify(info.linkedPermit.entersWith)) as NonNullable<typeof info.linkedPermit.entersWith>, source: info.linkedPermit.source };
   // FAST5X E2 (CR 702.185a, 400.7g): the static ability of the alternative cost that functions on the stack ("exile the permanent this spell becomes at the
   // beginning of the next end step"), kept with the spell so a granted warp still applies to it; core/resolve.ts creates the delayed triggered ability
   if (info.alt?.delay) spell.stack.altDelay = JSON.parse(JSON.stringify(info.alt.delay)) as NonNullable<typeof info.alt.delay>;
+  if (info.offTimingSacrifice) spell.stack.offTimingSacrifice = true; // edh-perms-4 (CR 601.3b, 603.7): core/resolve.ts#offTimingSacrifice
   if (info.alt?.exileOnLeave) spell.stack.exileOnLeave = true; // FAST5X E6 (CR 702.180a): harmonize's "exile this card ... any time it would leave the stack"
+  if (info.alt?.graveyardInstead) spell.stack.permitGraveyardInstead = { to: { zone: 'exile' }, source: info.alt.name }; // edh-next-68 (CR 614.1a): Glimpse the Cosmos, effects/rule-replacements/permit-graveyard.ts
   info.provider?.onStack(g, spell); // M6-0 (m6 design 2.6): the status a cast option gives the spell (face down, prototyped, back face up, mutating)
   lockNextSpellKeywords(g, player, stackId); // std-rx26: "the next spell you cast this turn has convoke" applies from now on, while its costs are determined (CR 601.2a, 601.2f)
+  lockAsCastGrants(g, stackId); // edh-next-133 (CR 611.3d, 400.7b, 601.2a): "... spells you cast gain evoke {4} as you cast them": the spell keeps the grant
   const paid = spell.stack.costsPaid;
   const aenv: AnnounceEnv = { s: g.s, player, sourceId: stackId, costsPaid: paid, castFrom };
 
   // the spell is on the stack now: its new object is what restricted mana is checked against; FAST5X E29: any type of mana (CR 609.4b)
-  const stackSpend = { kind: 'spell' as const, id: stackId, ...(info.anyManaType ? { anyType: info.anyManaType === 'color' ? ('color' as const) : (true as const) } : {}) };
+  const stackSpend = { kind: 'spell' as const, id: stackId, ...(info.alt ? { viaAlt: info.alt.name } : {}), ...((info.base(0).spend as { plain?: true } | undefined)?.plain === true ? { plain: true as const } : {}), ...(info.anyManaType ? { anyType: info.anyManaType === 'color' || info.anyManaType === 'colorless' ? info.anyManaType : (true as const) } : {}) };
   // FAST5X E23 (CR 202.3e, 106.6): planned for a value of X, the spell's mana value counts it ("spells with mana value 4 or greater")
-  const basePlan = (x: CostX): CostPlan => ({ ...info.base(x), spend: typeof x === 'number' ? { ...stackSpend, x } : stackSpend });
+  const basePlan = (x: CostX): CostPlan => ({ ...info.base(x), spend: typeof x === 'number' ? { ...stackSpend, x, ...((info.base(x).spend as { onlyX?: 'W' | 'U' | 'B' | 'R' | 'G' } | undefined)?.onlyX !== undefined ? { onlyX: (info.base(x).spend as { onlyX: 'W' | 'U' | 'B' | 'R' | 'G' }).onlyX } : {}) /* edh-next-85 */ } : stackSpend });
 
   // CR 601.2f: cost modifiers (hook), then the emerge reduction of the sacrificed creature's mana value (CR 702.119a) on the TOTAL cost. `pick` is set below.
   let pick: ObjectId | undefined;
   // FAST5X E6 (CR 702.180a-b): the creature chosen to be tapped for a harmonize cost; its power reduces the total cost (read as the total is determined, 601.2f)
   let tapped: ObjectId | undefined;
   const finish = (plan: CostPlan): CostPlan => {
-    const modified = applyCostModifiers(g, player, spell, plan);
-    const emerged = pick === undefined ? modified : emergeReduction(g.s, modified, pick) ?? modified;
+    const modified0 = applyCostModifiers(g, player, spell, plan);
+    const modified = info.permitReduce !== undefined ? { ...modified0, mana: reduceGeneric(modified0.mana, info.permitReduce).mana } : modified0; // edh-d-100 (CR 601.2f, 118.7)
+    const emerged = pick === undefined ? modified : (sacrificeReductionOf(info.alt) ?? { reduce: emergeReduction }).reduce(g.s, modified, pick) ?? modified;
     if (tapped === undefined) return emerged;
     const reduced = tapReduction(g.s, emerged, tapped);
     if (!reduced) throw new IllegalAction(`The power of ${g.nameOf(tapped)} can't be read, so the total cost of ${spellName} is unknown.`, ['CR 702.180a', 'CR 601.2f']);
@@ -850,18 +990,21 @@ export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, du
   const costs: CostDef[] = [];
   announceMandatoryCosts(info.additional, paid, costs); // moved unchanged to actions/cast-costs.ts (M6-0, m6 design 4.1)
   if (taxCost) costs.push(taxCost); // M11-1: CR 903.8, 118.8
+  if (info.topAddCost) costs.push(info.topAddCost); // edh-d-44 (CR 601.2f, 118.8): the top-card permission's additional cost
   if (info.gyPermit?.addCost) costs.push(info.gyPermit.addCost); // C10: the graveyard permission's additional cost (CR 601.2f, 118.8)
   if (info.linkedPermit?.addCost) costs.push(info.linkedPermit.addCost); // std-exile-play-2-1: the linked permission's (CR 601.2f, 118.8)
   if (info.permitIncrease) costs.push(info.permitIncrease); // std-exile-play-1-3: the permission's cost increase (CR 601.2f)
   if (info.flashAddCost) costs.push(info.flashAddCost); // std-rx10: the flash permission's additional cost (CR 601.3b, 118.8)
 
   // CR 601.2b: the way it is cast. An emerge cost names the permanent to sacrifice now (CR 702.119c); only ones that leave the total payable are offered.
-  if (info.alt?.name === 'emerge') {
+  const sacrificeHow = sacrificeReductionOf(info.alt);
+  if (sacrificeHow !== null) {
     // CR 601.2f, 702.119a: judged on the total cost after increases and reductions, as castCheck judges it (WP16 review fix)
-    const candidates = emergePayableCandidates(g.s, player, stackId, applyCostModifiers(g, player, spell, addPlans(basePlan('unannounced'), planFromCostDefs(costs, 'unannounced'))));
-    if (candidates.length === 0) throw new IllegalAction(`You have no permanent to sacrifice that leaves the emerge cost of ${spellName} payable.`, ['CR 702.119a', 'CR 601.2h']);
+    const candidates = emergePayableCandidates(g.s, player, stackId, applyCostModifiers(g, player, spell, addPlans(basePlan('unannounced'), planFromCostDefs(costs, 'unannounced'))), sacrificeHow.reduce);
+    if (candidates.length === 0) throw new IllegalAction(`You have no permanent to sacrifice that leaves the ${sacrificeHow.method} cost of ${spellName} payable.`, [sacrificeHow.rule, 'CR 601.2h']);
+    // edh-combat-7 (CR 702.48b): offering names the permanent as the choices for the spell are made (601.2b) and sacrifices it as the total cost is paid (601.2h), as emerge does (702.119c)
     pick = g.choose({
-      kind: 'chooseObjects', player, prompt: `Choose the permanent to sacrifice for the emerge cost of ${spellName}.`, options: candidates, min: 1, max: 1, cancellable: true, rules: ['CR 702.119a', 'CR 702.119c', 'CR 601.2b'],
+      kind: 'chooseObjects', player, prompt: `Choose the permanent to sacrifice for the ${sacrificeHow.method} cost of ${spellName}.`, options: candidates, min: 1, max: 1, cancellable: true, rules: [sacrificeHow.rule, sacrificeHow.method === 'emerge' ? 'CR 702.119c' : 'CR 702.48b', 'CR 601.2b'],
     }).ids[0]!;
   }
   // FAST5X E6 (CR 702.180b, 601.2b): a harmonize cost: choose up to one untapped creature you control to tap as the total cost is paid. Only creatures whose tap
@@ -882,11 +1025,22 @@ export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, du
   }
 
   announceOptionalCosts({ g, player, name, spellName, stackId, additional: info.additional, programs: info.programs, paid, aenv, costs, basePlan, payable }); // actions/cast-costs.ts (M6-0)
+  // edh-next-69 (CR 702.47a-b, 601.2b): a card with splice in the hand may be revealed and its splice cost paid; its spell abilities are added to this spell (after
+  // the modes below are chosen, the spell's own programs come first). Only a spell of the kind the splice names is offered one (actions/cast-splice.ts).
+  const spliced = announceSplice({ g, player, name, spellName, stackId, programs: info.programs, paid, aenv, costs, basePlan, payable });
+  if (spliced.texts.length > 0) spell.stack.splice = spliced.texts;
 
+  // edh-next-139 (CR 601.2b, 601.4; Doomsday Confluence): "Choose X.": the modes are chosen with the largest X the caster can pay for in mind, and X is then their number (below)
+  const modesAreX = info.programs.some((p) => p.modes?.countIsX === true);
+  if (modesAreX) {
+    // review fix (CR 107.3b): a cast that does not pay the mana cost with {X} (free, an alternative cost without X) has X = 0, so no mode
+    const xs = info.baseHasX ? payableXs((n) => payable(addPlans(basePlan(n), planFromCostDefs(costs, n))), false) : [0];
+    aenv.xMax = xs.length ? xs[xs.length - 1]! : 0;
+  }
   // CR 601.2b, 700.2: modes. The additional costs announced above may change how many (kicked, entwine, CR 601.4); the cost of the whole chosen SET is checked (CR 700.2h).
   const modes = chooseModes(g, player, info.programs, stackId, stackId, spellName, aenv, (modeCs) => payable(addPlans(basePlan('unannounced'), planFromCostDefs([...costs, ...modeCs], 'unannounced'))));
   if (modes) spell.stack.modes = modes;
-  const programs = effectivePrograms(info.programs, modes);
+  const programs = [...effectivePrograms(info.programs, modes), ...spliced.texts.flatMap((t) => t.programs)]; // edh-next-69 (CR 702.47b): the spliced text follows the spell's own
   let allCosts = [...costs, ...modeCosts(info.programs, modes)];
   const planAt = (x: number): CostPlan => addPlans(basePlan(x), planFromCostDefs(allCosts, x));
 
@@ -894,20 +1048,41 @@ export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, du
   // with an X in a cost part's filter ("sacrifice a creature with mana value X") only some values can be paid, and every value up to the cap is tried.
   let x = 0;
   const announcedX = info.baseHasX || allCosts.some(costHasX);
+  // edh-d-98 (CR 107.3, 601.2b; Mind Grind): the spell's own "X can't be 0" is a floor for the X announced (castCheckIn refuses a cast with no X announced)
+  const spellXMin = info.baseHasX ? (info.chars.abilities.find((a) => a.def.kind === 'spell')?.def as { xMin?: number } | undefined)?.xMin ?? 0 : 0;
   if (announcedX) {
     // FAST5X E23 (CR 106.6, 202.3e): restricted mana may pay only from some X on ("spells with mana value 4 or greater"): then every value is tried
     // r3-cost (CR 107.3, 601.2b): and no larger than an additional cost's "X can't be greater than ..." allows
     const cap = xCap(g.s, player, stackId, info.additional);
     if (cap === undefined) throw new IllegalAction(`The largest X ${spellName} allows can't be read.`, ['CR 107.3', 'CR 601.2b']);
-    const xs = payableXs((n) => payable(planAt(n)), costFilterHasX(info.alt?.cost) || allCosts.some(costFilterHasX) || hasRestrictedMana(g.s, player)).filter((n) => n <= cap);
+    // edh-perms-24 (CR 107.3, 601.2b; Thieving Skydiver): "X can't be 0" on an optional cost that was paid is a floor for X
+    // edh-d-98 (CR 107.3, 601.2b; Mind Grind): and "X can't be 0." of the spell itself is a floor for the X of its mana cost
+    const floor = Math.max(0, spellXMin, ...info.additional.filter((o) => o.xMin !== undefined && (paid.additional ?? []).includes(o.name ?? 'additional')).map((o) => o.xMin!));
+    const xs = payableXs((n) => payable(planAt(n)), costFilterHasX(info.alt?.cost) || allCosts.some(costFilterHasX) || hasRestrictedMana(g.s, player)).filter((n) => n <= cap && n >= floor);
     if (xs.length === 0) throw new IllegalAction(`You can't pay for ${spellName} with any value of X.`, ['CR 601.2h', 'CR 107.3a']);
-    x = chooseX(g, player, xs[xs.length - 1]!, spellName, xs);
+    // edh-cast-4 (CR 601.2b, 202.3e; Void Winnower): only the values of X that leave the spell castable are offered (a "can't cast" effect that reads its mana value)
+    // (and, for the permission that limits the mana value, a value of X that keeps the spell within it: CR 202.3e, "mana value 3 or less" is judged with the X chosen, Serra Paragon)
+    const permitOf = info.gyPermit?.of;
+    const fctx = permitOf === undefined ? undefined : filterCtxOutside(g.s, { controller: player, sourceId: stackId });
+    const okXs = xs.filter((n) => info.flashXLimit === undefined || n <= info.flashXLimit).filter((n) => !modesAreX || n === (modes ?? []).length).filter((n) => { spell.stack!.x = n; return hookpoints.canCast(gameOf(g.s), stackId, player, info.face, { xAnnounced: true }) === null && (permitOf === undefined || matchesFilter(g.s, g.s.objects[stackId]!, permitOf, fctx!)); });
+    delete spell.stack.x;
+    if (okXs.length === 0) assertAllowed(hookpoints.canCast(gameOf(g.s), stackId, player, info.face, { xAnnounced: true }) ?? deny(`No value of X leaves ${spellName} castable.`, 'CR 601.2b', 'CR 202.3e'));
+    x = chooseX(g, player, okXs[okXs.length - 1]!, spellName, okXs);
     spell.stack.x = x;
   }
+  // edh-cast-4 (CR 601.2b, 202.3e, 107.3b; Void Winnower ruling): a spell with {X} has the value chosen for X (0 when none is announced), so a "can't cast" effect that reads its
+  // mana value is judged again now that it is known
+  if (announcedX || countX(info.chars.manaCost) > 0) assertAllowed(hookpoints.canCast(gameOf(g.s), stackId, player, info.face, { xAnnounced: true }));
 
   // CR 601.2c-d: targets (none for target-less spells) and the division.
   aenv.x = x;
   const announced = announceTargets(g, player, programs, stackId, stackId, spellName, aenv);
+  // edht4 (CR 601.3b, 601.2c; Timely Ward): cast off timing only through "as though it had flash if it targets <filter>": the targets chosen must include such an object, or the spell can't be cast
+  if (info.flashIfTargets !== undefined) {
+    const fctx = filterCtxOutside(g.s, { controller: player, sourceId: stackId });
+    const hit = announced.targets.flat().some((t) => t.kind === 'object' && g.s.objects[t.id] !== undefined && info.flashIfTargets!.some((f) => matchesFilter(g.s, g.s.objects[t.id]!, f, fctx)));
+    if (!hit) throw new IllegalAction(`${spellName} can be cast now only if one of its targets is the kind of object its flash permission names; none is.`, ['CR 601.3b', 'CR 601.2c']);
+  }
   spell.stack.targets = announced.targets;
   if (Object.keys(announced.division).length > 0) spell.stack.division = announced.division;
   allCosts = withTargetTotals(allCosts, spellTargetTotal(g.s, spell.stack.targets)); // std-costs-1: CR 601.2f, the total cost reads the chosen targets
@@ -917,13 +1092,27 @@ export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, du
 
   // CR 601.2g-h: payment.
   const paidNow = payPlan(g, player, null, total, spellName, { announcedX });
+  if (total.convoked?.length) paid.convoked = [...total.convoked]; // edh-mana-keywords-8: "each creature that convoked this spell" (CR 702.51a)
   paid.manaSpent = paidNow.manaSpent;
+  // edh-cast-8 (CR 106.3, 205.2a, 601.2h; Inga and Esika): the card types of the source of each mana spent, as it was as the mana was paid (its last known information when it left the
+  // battlefield to pay, a sacrificed creature)
+  for (const u of paidNow.manaSpent) {
+    if (u.sourceId === undefined) continue;
+    // only a permanent on the battlefield is a "creature" (CR 109.2): mana of a card exiled or discarded to pay (Elvish Spirit Guide) is from no creature
+    const lki = g.s.lki[u.sourceId];
+    const src = g.s.objects[u.sourceId];
+    const types = lki !== undefined ? (lki.leftZone === 'battlefield' ? lki.chars?.types : undefined) : src !== undefined && src.zone === 'battlefield' ? charsOfObject(g.s, src).types : undefined;
+    if (types !== undefined && types.length > 0) u.sourceTypes = [...types];
+  }
   // Mana that makes the spell uncounterable (Cavern of Souls, CR 106.6) leaves a flag on the spell for hookpoints.canBeCountered.
   if (paidNow.manaSpent.some((u) => u.restriction?.spellRider === 'cantBeCountered')) (spell.stack.flags ??= []).push(FLAG_CANT_BE_COUNTERED);
   applySpentRiders(g, player, stackId, paidNow.manaSpent); // std-mana-1: "if that mana is spent on <spells>, it gains <keyword> until end of turn" (CR 106.6)
   if (paidNow.lifePaid) paid.lifePaid = paidNow.lifePaid;
+  if (paidNow.rolled !== undefined) paid.rolled = paidNow.rolled; // edh-d-49 (CR 706.2, 601.2h): the die a `rollDie` cost part rolled, read as the result by the spell's effect
+  if (paidNow.phyrexianLife) paid.phyrexianLife = paidNow.phyrexianLife; // edh-top-2: compleated (CR 702.150a)
   if (paidNow.costObjects.length) paid.costObjects = paidNow.costObjects;
   if (paidNow.sacrificed?.length) paid.sacrificed = paidNow.sacrificed; // FAST3 T18: "the sacrificed creature" (CR 608.2h)
+  if (paidNow.tapped?.length) paid.tapped = paidNow.tapped; // edh-next-104 (CR 601.2b, 608.2h): "the creatures tapped this way" of a spell's additional tap cost (ObjRef costTapped; Burn at the Stake)
   if (paidNow.returned?.length) paid.returned = paidNow.returned; // FAST5X E7: "the returned creature" (CR 608.2h, 702.188a, 702.190b)
   if (paidNow.discarded?.length) paid.discarded = paidNow.discarded; // CLOUD C8: "the discarded card" of an additional cost (CR 601.2b, 400.7j)
   if (paidNow.exiled) paid.exiled = paidNow.exiled; // CLOUD C8: "the exiled card" of an additional cost (CR 601.2b, 400.7j)
@@ -950,18 +1139,32 @@ export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, du
     const ts = g.player(player).turnStats;
     const counts = (ts.castFromCount ??= {});
     counts[castFrom ?? 'hand'] = (counts[castFrom ?? 'hand'] ?? 0) + 1;
-    spell.stack.castOrdinal = { turn: ts.spellsCast, fromZone: counts[castFrom ?? 'hand']! };
+    spell.stack.castOrdinal = { turn: ts.spellsCast, fromZone: counts[castFrom ?? 'hand']!, notHand: (castFrom ?? 'hand') === 'hand' ? 0 : Object.entries(counts).filter(([z]) => z !== 'hand').reduce((n, [, c]) => n + (c ?? 0), 0) };
+    // edh-mana-keywords-12 (CR 106.3, 601.2i; Rain of Riches): and among the spells that had mana from a source of each subtype spent on them (each subtype once per spell)
+    const fromSubtypes = [...new Set(paid.manaSpent.flatMap((u) => u.sourceSubtypes ?? []))];
+    if (fromSubtypes.length > 0) {
+      const byKind = (ts.castManaFromCount ??= {});
+      const manaFromOrdinal: Record<string, number> = {};
+      for (const st of fromSubtypes) manaFromOrdinal[st] = byKind[st] = (byKind[st] ?? 0) + 1;
+      spell.stack.castOrdinal.manaFrom = manaFromOrdinal;
+    }
   }
   // M11-1, CR 903.8, 702.124d: one more cast of THIS commander from the command zone, counted as it becomes cast whatever happens to the spell later
   const commander = fromCommandZone ? commanderOfCard(g.s, spell.cardId) : undefined;
   if (commander) commander.rec.casts++;
+  lockNextSpellKeywords(g, player, stackId); // edh-mana-keywords-12 (CR 601.2g, 601.2i): a keyword rider made while the spell was being paid for (Solar Array tapped for mana) is the next spell's too, before the cast triggers
   takeNextSpellRiders(g, player, stackId); // Standard round 10: "the next spell you cast this turn can't be countered" applies as the spell becomes cast (CR 601.2i, 101.2)
-  recordCastChecks(g, stackId, player, programs); // FAST5X E17: "if you controlled a Mount as you cast this spell" is decided now (CR 601.2i)
+  recordCastChecks(g, stackId, player, programs, info.chars.abilities.filter((a) => a.def.kind === 'triggered' || a.def.kind === 'static').map((a) => a.def)); // FAST5X E17: "if you controlled a Mount as you cast this spell" is decided now (CR 601.2i)
   // FAST5X E19 (CR 106.3, 601.2h): the subtypes of the source of each mana spent, when any had some ("if mana from a Treasure was spent to cast it")
-  const manaFrom = paid.manaSpent.some((u) => u.sourceSubtypes !== undefined) ? paid.manaSpent.map((u) => [...(u.sourceSubtypes ?? [])]) : undefined;
+  // edh-cast-8 (CR 106.3, 205.2a): ... and the card types of the source ("mana from creatures"), listed with the subtypes: a card type is never a subtype's name
+  const manaFrom = paid.manaSpent.some((u) => u.sourceSubtypes !== undefined || u.sourceTypes !== undefined) ? paid.manaSpent.map((u) => [...(u.sourceSubtypes ?? []), ...(u.sourceTypes ?? [])]) : undefined;
   // std-lci (CR 106.3): the sources of the mana spent ("whenever you cast a permanent spell using mana produced by ~", triggers/match.ts)
   const manaSources = [...new Set(paid.manaSpent.flatMap((u) => (u.sourceId !== undefined ? [u.sourceId] : [])))];
   g.emit({ type: 'spellCast', objectId: stackId, player, spellsBefore, manaSpent: paid.manaSpent.length, ...(manaFrom ? { manaFrom } : {}), ...(manaSources.length > 0 ? { manaSources } : {}) }); // FAST5X E9: increment (CR 702.191a) reads the mana spent
+  copyForEachTriggers(g, stackId, player, info.additional, paid); // edh-cast-15: "When you do, copy this spell for each creature sacrificed this way" (CR 603.12, 707.10)
+  permitCastTriggers(g, stackId, player, info.permitOnCast); // edh-next-127: "When you cast a spell this way, ..." (CR 603.7a)
+  // edh-d-100 (CR 603.2, 601.2i; Share the Spoils): "When they do, ...": the linked permission it was cast with triggers (PermissionDef.onUse)
+  if (info.linkedPermit?.onUse !== undefined) permitOnUseTrigger(g, info.linkedPermit.onUse, player, { ev: 'cast', roles: { spell: { objects: [{ id: stackId, zone: 'stack' }] }, player: { players: [player] } }, before: {} });
   manaSpentTriggers(g, stackId, player, paid.manaSpent); // std-copy-3: "When that mana is spent to cast a red instant or sorcery spell, ..." (CR 106.6, 603.2)
   emitBecameTarget(g, stackId, player, spell.stack.targets);
   emitCrime(g, stackId, player, spell.stack.targets); // FAST5X E20: CR 700.13
@@ -982,20 +1185,56 @@ export function castSpell(g: Game, action: Extract<Action, { type: 'cast' }>, du
  * unit spent on a spell that matches its filter as it becomes cast triggers once, put on the stack the next time a player would receive priority, its controller and
  * source those of the ability that added the mana, "that spell" the spell (the event of a `cast`). A unit spent otherwise triggers nothing.
  */
-function manaSpentTriggers(g: Game, stackId: ObjectId, player: PlayerId, spent: readonly ManaUnit[]): void {
+/**
+ * edh-cast-15 (CR 603.12, 707.10, 601.2b; Plumb the Forbidden): the optional additional cost "you may sacrifice one or more creatures" with the reflexive "When you do, copy this spell for
+ * each creature sacrificed this way" (`AdditionalCostDef.copyForEach`): when the cost was paid with a number of objects, a triggered ability goes on the stack (the next time a player
+ * would receive priority) that copies the spell once for each, the copies keeping every choice made for it (no new targets). Paying nothing triggers nothing.
+ */
+function copyForEachTriggers(g: Game, stackId: ObjectId, player: PlayerId, additional: readonly AdditionalOption[], paid: CostsPaid): void {
+  for (const opt of additional) {
+    if (opt.copyForEach !== true || opt.name === undefined || !(paid.additional ?? []).includes(opt.name)) continue;
+    const n = paid.counts?.[opt.name] ?? 0;
+    if (n < 1) continue;
+    putReflexiveTrigger(g, {
+      source: { id: stackId, zone: 'stack' }, controller: player,
+      text: `When you do, copy ${g.nameOf(stackId)} for each creature sacrificed this way.`, targets: [],
+      steps: [{ op: 'copy', what: { ref: 'self' }, result: 'spell', who: { ref: 'you' }, count: n }],
+      context: { ev: 'cast', roles: { spell: { objects: [{ id: stackId, zone: 'stack' }] }, player: { players: [player] } }, before: {} },
+    });
+    g.log(`${g.nameOf(stackId)} was cast with ${n} sacrificed: its copy trigger triggers.`, { rules: ['CR 603.12', 'CR 707.10'], level: 'info' });
+  }
+}
+
+/**
+ * edh-next-127 (CR 603.7a, 603.7c, 601.2i; The Ruinous Powers): the delayed triggered ability a permission carries, "When you cast a spell this way, its owner loses life equal to its mana value": once the
+ * spell is cast with that permission, it triggers, put on the stack the next time a player would receive priority (above the spell), controlled by the permission's controller; "it" is the spell.
+ */
+function permitCastTriggers(g: Game, stackId: ObjectId, player: PlayerId, triggers: CastInfo['permitOnCast']): void {
+  for (const t of triggers ?? []) {
+    putReflexiveTrigger(g, {
+      source: t.source ?? { id: stackId, zone: 'stack' }, controller: t.controller,
+      text: `When you cast a spell this way (${t.name}), its triggered ability resolves.`, targets: [], steps: structuredClone(t.steps),
+      context: { ev: 'cast', roles: { spell: { objects: [{ id: stackId, zone: 'stack' }] }, player: { players: [player] } }, before: {} },
+    });
+    g.log(`${g.nameOf(stackId)} was cast with ${t.name}'s permission: its "when you cast a spell this way" ability triggers.`, { rules: ['CR 603.7a', 'CR 601.2i'], level: 'info' });
+  }
+}
+
+export function manaSpentTriggers(g: Game, stackId: ObjectId, player: PlayerId, spent: readonly ManaUnit[], kind: 'spell' | 'ability' = 'spell'): void {
   const o = g.s.objects[stackId];
   if (!o) return;
   for (const u of spent) {
     const t = u.whenSpent;
     if (t === undefined) continue;
-    if (!matchesFilter(g.s, o, t.spells, filterCtxOutside(g.s, { controller: t.controller, sourceId: t.sourceId }))) continue;
+    // edh-cast-15 (CR 106.6, 602.2): spent to activate an ability: only a trigger that says "or activate an ability" (`orAbilities`) reads it; the spell filter is for spells
+    if (kind === 'ability' ? t.orAbilities !== true : !matchesFilter(g.s, o, t.spells, filterCtxOutside(g.s, { controller: t.controller, sourceId: t.sourceId }))) continue;
     const source = g.s.objects[t.sourceId];
     putReflexiveTrigger(g, {
       source: { id: t.sourceId, zone: source?.zone ?? g.s.lki[t.sourceId]?.leftZone ?? 'battlefield' }, controller: t.controller,
-      text: `When that mana is spent to cast ${g.nameOf(stackId)}, its triggered ability resolves.`, targets: [], steps: structuredClone(t.do),
-      context: { ev: 'cast', roles: { spell: { objects: [{ id: stackId, zone: 'stack' }] }, player: { players: [player] } }, before: {} },
+      text: kind === 'ability' ? `When that mana is spent to activate an ability, its triggered ability resolves.` : `When that mana is spent to cast ${g.nameOf(stackId)}, its triggered ability resolves.`, targets: [], steps: structuredClone(t.do),
+      context: { ev: kind === 'ability' ? 'activate' : 'cast', roles: { spell: { objects: [{ id: stackId, zone: 'stack' }] }, player: { players: [player] } }, before: {} },
     });
-    g.log(`The mana ${g.nameOf(t.sourceId)} added was spent to cast ${g.nameOf(stackId)}: its triggered ability triggers.`, { rules: ['CR 106.6', 'CR 603.2'], level: 'info' });
+    g.log(`The mana ${g.nameOf(t.sourceId)} added was spent to ${kind === 'ability' ? 'activate an ability' : `cast ${g.nameOf(stackId)}`}: its triggered ability triggers.`, { rules: ['CR 106.6', 'CR 603.2'], level: 'info' });
   }
 }
 
@@ -1013,12 +1252,16 @@ function castableFacesNow(g: Game, player: PlayerId, card: ObjectId, opts: Resol
 }
 
 // CR 712.8c: faceChars gives the back face of a transforming double-faced card the mana value of its front face (rules/base-chars.ts#costForManaValue).
-const withinManaValue = (def: CardDef, face: number, opts: ResolutionCastOptions): boolean => opts.maxManaValue === undefined || faceChars(def, face).manaValue <= opts.maxManaValue;
+const withinManaValue = (def: CardDef, face: number, opts: ResolutionCastOptions): boolean =>
+  (opts.maxManaValue === undefined || faceChars(def, face).manaValue <= opts.maxManaValue) && (opts.exactManaValue === undefined || faceChars(def, face).manaValue === opts.exactManaValue); // edh-cast-9: exactManaValue (CR 202.3)
 
 installResolutionCaster({
   check: (g, player, card, opts) => {
     if (castableFacesNow(g, player, card, opts).length > 0) return null;
     const def = g.s.defs[g.obj(card).defId];
+    if (def && opts.exactManaValue !== undefined && !castableFaces(def, opts.transformed === true).some((f) => withinManaValue(def, f, opts))) {
+      return deny(`The spell would not have a mana value of ${opts.exactManaValue}.`, 'CR 202.3', 'CR 601.2');
+    }
     if (def && opts.maxManaValue !== undefined && !castableFaces(def, opts.transformed === true).some((f) => withinManaValue(def, f, opts))) {
       return deny(`The spell would have a mana value greater than ${opts.maxManaValue}.`, 'CR 702.85a', 'CR 701.57a');
     }
@@ -1061,4 +1304,9 @@ function withTargetTotals(costs: CostDef[], total: number): CostDef[] {
 /** pc-exile-play-1 (CR 609.4b, 107.4c): mana of any type (a static ability's) wins over mana as though of any color (a static ability's or the permission's). */
 function staticAnyColorOrType(fromStatic: boolean | 'color', colorPermit: boolean): boolean | 'color' {
   return fromStatic === true ? true : colorPermit ? 'color' : fromStatic;
+}
+
+/** edh-perms-4: the card's own static ability "You may cast this spell as though it had flash. If you cast it any time a sorcery couldn't have been cast, ... sacrifices it" (Necromancy), working in its owner's hand. */
+function hasOffTimingPermit(def: AbilityDef): boolean {
+  return def.kind === 'static' && def.zone?.includes('hand') === true && def.effects.some((e) => e.s === 'permit' && e.action === 'haveFlash' && e.offTimingSacrifice === true && e.of?.self === true);
 }

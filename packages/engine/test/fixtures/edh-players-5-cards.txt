@@ -1,0 +1,13 @@
+# edh-players-5 (Commander lane edh-players; test/cloud/edh-players-5, golden edh-players-5-review.json)
+# opponent activates an ability of a creature or land (not a mana ability); half a library and half a life; players gain hexproof; "~ and Drakes each get +X/+X"; exile ~ and each; unless a player pays life; twice -X/-X; delayed combat damage to a player or planeswalker
+Runic Armasaur
+Harsh Mentor
+Peer into the Abyss
+Priest of Forgotten Gods
+Alandra, Sky Dreamer
+Everybody Lives!
+Lifeblood Hydra
+Hunter's Insight
+Nuclear Fallout
+Athreos, God of Passage
+Ajani, Strength of the Pride

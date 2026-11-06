@@ -65,14 +65,17 @@ describe('pc-exile-play-1 template file (design 6.3, 6.9; CONTRIBUTING "Adding a
     for (const g of review as Golden) expect(g.expect, g.card).toBe('full');
     // the narrow wordings are each printed on one or two tuning cards: stable on one hand-verified golden card plus these tests and the played scenarios,
     // a 6.9 deviation named in the round record. The four anyColor wordings with an object or a played group have no tuning card yet (Daxos of Meletis, Hurl
-    // Through Hell and Mezzio Mugger are held-out cards, never evidence): they stay experimental
+    // Through Hell and Mezzio Mugger are held-out cards, never evidence): they stay experimental. edh-zones-14 made eff.pcep1.play.obj.dur.anyColor stable on Cunning Rhetoric
+    // (EDHREC top 5,000, opened by the owner's Commander request 2026-10-27; golden in edh-zones-14-review.json), a 6.9 deviation named in that round's record; edh-top-6 made eff.pcep1.play.group.dur.anyColor stable on Breeches, Brazen Plunderer (same standing; golden in edh-top-6-review.json)
     expect(goldenUsing('eff.pcep1.cast.fromHand.free.mvOrLess.after')).toEqual(['Marvo, Deep Operative']);
     expect(goldenUsing('eff.pcep1.cast.fromHand.free.mvX.whereX')).toEqual(['Epistolary Librarian']);
     expect(goldenUsing('eff.pcep1.self.cast.graveyardOrExile')).toEqual(['Squee, the Immortal']);
     expect(goldenUsing('eff.pcep1.copy.spell.twice')).toEqual(['Bygone Marvels']);
     expect(goldenUsing('eff.pcep1.cast.spellsFromGroup.durFirst')).toEqual(['Apex of Power', 'Dream Pillager']);
     expect(goldenUsing('eff.pcep1.cast.spellsFromGroup.durFirst.anyColor')).toEqual(['Stolen Strategy']);
-    expect(TS.filter((t) => t.status === 'experimental').map((t) => t.id)).toEqual(['eff.pcep1.cast.obj.dur.anyColor', 'eff.pcep1.cast.obj.durFirst.anyColor', 'eff.pcep1.play.obj.dur.anyColor', 'eff.pcep1.play.group.dur.anyColor']);
+    // edh-c-108 made eff.pcep1.cast.obj.dur.anyColor stable on Psychic Intrusion (EDHREC top 30,000, opened by the owner's Commander request 2026-10-30; golden in edh-c-108-review.json; played in edh-c-108-scenarios.test.ts), a 6.9 deviation named in that round's record
+    expect(TS.filter((t) => t.status === 'experimental').map((t) => t.id)).toEqual([]);
+    // edh-top-7 made eff.pcep1.cast.obj.durFirst.anyColor stable on Grenzo, Havoc Raiser (EDHREC top 5,000, opened by the owner's Commander request 2026-10-27; golden in edh-top-7-review.json; played in edh-top-7-scenarios.test.ts), a 6.9 deviation named in that round's record
     expect(TS.filter((t) => t.status === 'stable').map((t) => t.id)).toEqual(Object.keys(TYPE).filter((id) => !TS.some((t) => t.id === id && t.status === 'experimental')));
   });
   it('guard G3: a critical word a pattern spells out is listed in `consumes`', () => {

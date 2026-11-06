@@ -18,6 +18,8 @@ export interface ResolutionCastOptions {
    * Absent: no limit.
    */
   maxManaValue?: number;
+  /** edh-cast-9 INTERFACE CHANGE (additive): only a face whose resulting spell has exactly this mana value may be cast ("if the two spells have the same mana value", CR 202.3, 601.2). */
+  exactManaValue?: number;
   /**
    * FXC INTERFACE CHANGE (additive): "cast it transformed" (CR 712.11a): only the back face of a transforming double-faced card is cast, with its back face up
    * (CR 712.8c). A card that is not a transforming double-faced card can't be cast this way.
@@ -29,6 +31,18 @@ export interface ResolutionCastOptions {
    * the cost has one, cost increases and reductions applied, additional costs added).
    */
   alternative?: { name: string; cost: CostDef };
+  /**
+   * edh-next-49 INTERFACE CHANGE (additive), CR 118.9, 202.3 (Bismuth Mindrender, Anrakyr the Traveller): "cast it by paying life equal to its mana value rather than paying its mana cost":
+   * the alternative cost named 'payLife' is the life payment of that spell's own mana value (statics/play-permits.ts#lifeCostOf), worked out as the spell is cast (an X in the mana cost is
+   * counted as for any alternative cost; a {Y} or {Z} refuses the cast). Not with `free` or `alternative`. Capability `op:cast.lifeManaValue`.
+   */
+  lifeManaValue?: true;
+  /**
+   * edh-d-100 INTERFACE CHANGE (additive), CR 118.9, 202.3, 107.14 (Amped Raptor): "cast that card by paying an amount of {E} equal to its mana value rather than paying its mana cost": the
+   * alternative cost named 'payEnergy' is that many energy counters, the spell's own mana value with X = 0 (as `lifeManaValue`). Not with `free`, `alternative` or `lifeManaValue`.
+   * Capability `op:cast.energyManaValue`.
+   */
+  energyManaValue?: true;
   /**
    * FAST5X E26 INTERFACE CHANGE (additive): the object is a copy of a card the resolving effect just created to be cast (CR 707.12: "cast a copy of an object";
    * paradigm, CR 702.192a). Such a copy (`kind: 'spellCopy'`, not on the stack) may be cast; without this flag only cards can be (CR 601.3).

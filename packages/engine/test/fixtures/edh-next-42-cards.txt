@@ -1,0 +1,6 @@
+# edh-next-42 (Commander EDHREC ranks 15,001-16,250, second pass): a prevention whose "then" makes the damage source's controller draw, the amount of unspent mana, "for each player being attacked", a group of the same name on a permanent source, devotion as an announced target count. After editing: npm run cards -- fixtures
+Swans of Bryn Argoll
+Glissa Sunseeker
+Amber Gristle O'Maul
+Deputy of Detention
+Mogis's Marauder

@@ -1,0 +1,427 @@
+[
+  {
+    "id": "rid.edhn50.copy.newTarget",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10c",
+      "CR 115.7"
+    ],
+    "pattern": "you may choose a new target for the copy",
+    "build": {
+      "$patchPrevious": {
+        "@alsoStep": -2,
+        "newTargets": {
+          "@new": "may"
+        },
+        "@into": true
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Copy target instant spell. You may choose a new target for the copy."
+      },
+      {
+        "text": "Copy target sorcery spell you control. You may choose a new target for the copy."
+      },
+      {
+        "text": "Whenever you cast an instant spell, you may copy it. You may choose a new target for the copy."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. You may choose a new target for the copy.",
+      "Copy target instant spell. You may choose a new target for the copies."
+    ]
+  },
+  {
+    "id": "eff.edhn50.token.numberEqual.manaSpent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a",
+      "CR 601.2h",
+      "CR 608.2h"
+    ],
+    "pattern": "create a number of {t:TokenDesc} equal to the amount of mana spent to cast it",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "spellManaSpent",
+        "of": {
+          "ref": "event",
+          "role": "spell"
+        }
+      },
+      "token": "$t"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When you cast this spell, create a number of 1/1 black Zombie creature tokens equal to the amount of mana spent to cast it."
+      },
+      {
+        "text": "When you cast this spell, create a number of 1/1 white Soldier creature tokens named Bright Soldier equal to the amount of mana spent to cast it."
+      }
+    ],
+    "counterExamples": [
+      "When you cast this spell, create a number of 1/1 black Zombie creature tokens equal to the amount of mana spent to cast that spell.",
+      "When you cast this spell, create a number of 1/1 black Zombie creature tokens.",
+      "When ~ enters, create a number of 1/1 white Soldier creature tokens equal to the amount of mana spent to cast it.",
+      "Whenever ~ attacks, create a number of 1/1 white Soldier creature tokens equal to the amount of mana spent to cast it."
+    ]
+  },
+  {
+    "id": "eff.edhn50.copy.perCounterKind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 122.1",
+      "CR 601.2i"
+    ],
+    "pattern": "copy it for each kind of counter among {f:Filter}",
+    "build": {
+      "op": "copy",
+      "what": {
+        "ref": "event",
+        "role": "spell"
+      },
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "distinct",
+        "what": "counterKinds",
+        "among": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When you cast this spell, copy it for each kind of counter among lands you control. You may choose new targets for the copies."
+      },
+      {
+        "text": "When you cast this spell, copy it for each kind of counter among creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "When you cast this spell, copy it for each counter among permanents you control.",
+      "When you cast this spell, copy it for each kind of counter on target creature."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edhn50.search.graveyardHandLibrary.named.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 201.2",
+      "CR 110.2",
+      "CR 608.2c"
+    ],
+    "pattern": "search your graveyard , hand , and library for a card named {n:Name} ( and | , ) put it onto the battlefield",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "graveyard",
+        "alsoZones": [
+          "hand",
+          "library"
+        ],
+        "filter": {
+          "name": "$n"
+        },
+        "min": 0,
+        "max": 1,
+        "as": "search",
+        "allZones": true
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:search.alsoZones",
+      "op:search.allZones"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, search your graveyard, hand, and library for a card named Ornithopter and put it onto the battlefield, then shuffle."
+      },
+      {
+        "text": "Search your graveyard, hand, and library for a card named Memnite and put it onto the battlefield. If you search your library this way, shuffle."
+      },
+      {
+        "text": "When ~ enters, search your graveyard, hand, and library for a card named Memnite, put it onto the battlefield, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your graveyard, hand, and library for a card named Ornithopter and put it into your hand. If you search your library this way, shuffle.",
+      "Search your graveyard and library for a card named Ornithopter and put it onto the battlefield. If you search your library this way, shuffle.",
+      "Search your graveyard, hand, and library for a card named Ornithopter and a card named Memnite and put them onto the battlefield. If you search your library this way, shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhn50.search.graveyardLibrary.named.battlefield.attached",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 201.2",
+      "CR 303.4f",
+      "CR 301.5e",
+      "CR 608.2c"
+    ],
+    "pattern": "search your graveyard and/or library for a card named {n:Name} and put it onto the battlefield attached to {t:Obj}",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "graveyard",
+        "alsoZones": [
+          "library"
+        ],
+        "filter": {
+          "name": "$n"
+        },
+        "min": 0,
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "attachedTo": "$t"
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:search.alsoZones"
+    ],
+    "examples": [
+      {
+        "text": "Search your graveyard and/or library for a card named Ornithopter and put it onto the battlefield attached to target creature. If you search your library this way, shuffle."
+      },
+      {
+        "text": "{T}: Search your graveyard and/or library for a card named Memnite and put it onto the battlefield attached to target artifact you control. If you search your library this way, shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your graveyard and/or library for a card named Ornithopter and put it onto the battlefield. If you search your library this way, shuffle.",
+      "Search your graveyard and/or library for a card named Ornithopter and put it into your hand attached to target creature. If you search your library this way, shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhn50.cast.self.fromGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2",
+      "CR 601.3",
+      "CR 113.6m",
+      "CR 603.4"
+    ],
+    "pattern": "you may cast ~ from your graveyard",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": {
+        "ref": "self"
+      },
+      "optional": true,
+      "from": "graveyard"
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, you may cast ~ from your graveyard."
+      },
+      {
+        "text": "At the beginning of your upkeep, if you control a Zombie, you may cast ~ from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, you may cast ~ from exile.",
+      "At the beginning of your end step, you may cast ~ from your hand.",
+      "At the beginning of your end step, you may cast ~ from your graveyard without paying its mana cost."
+    ],
+    "needs": [
+      "op:cast.from"
+    ]
+  },
+  {
+    "id": "eff.edhn50.becomes.subtype.basept.abilitiesList.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT} , {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}: If ~ is a Shaman, it becomes an Elf Avatar with base power and toughness 6/6, flying, and first strike."
+      },
+      {
+        "text": "{4}: ~ becomes a Kor Monk with base power and toughness 4/4, trample, and haste."
+      }
+    ],
+    "counterExamples": [
+      "{3}: ~ becomes an Elf Avatar with base power and toughness 6/6, flying, and first strike until end of turn.",
+      "{3}: ~ becomes an Elf Avatar with base power and toughness 6/6.",
+      "{3}: ~ becomes an Elf Avatar with base power and toughness 6/6, flying, and loses trample."
+    ]
+  },
+  {
+    "id": "sta.edhn50.self.castFromGraveyard.payMorePerCount",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 404.1",
+      "CR 113.6"
+    ],
+    "pattern": "you may cast ~ from your graveyard if you pay {1} more to cast it for each {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard",
+          "addGeneric": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if",
+      "more",
+      "each",
+      "each other"
+    ],
+    "needs": [
+      "feature:permit.cast.addGeneric"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard if you pay {1} more to cast it for each other Zombie card in your graveyard."
+      },
+      {
+        "text": "You may cast ~ from your graveyard if you pay {1} more to cast it for each other artifact card in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand if you pay {1} more to cast it for each other creature card in your graveyard.",
+      "You may cast ~ from your graveyard if you pay {2} more to cast it for each other creature card in your graveyard.",
+      "You may cast ~ from your graveyard if you pay {1} less to cast it for each other creature card in your graveyard."
+    ]
+  }
+]

@@ -36,8 +36,7 @@ describe('CR 701.53a, 107.3: "Incubate X, where X is ..." passes the render gate
       expect(f.gate.every((g) => g.ok), text).toBe(true);
     }
   });
-  it('fail closed: "Incubate X twice, where X is ..." and an X with no "where" are not automated', () => {
-    expect(fullyAutomated(sorcery('Incubate X twice, where X is the number of artifacts you control.'))).toBe(false);
+  it('an X with no "where" is not automated ("Incubate X twice, where X is ..." is read since edh-c-48, with X fixed once by a `let`: edh-c-48-scenarios.test.ts plays it with a number incubating changes)', () => {
     expect(fullyAutomated(sorcery('Incubate X.'))).toBe(false);
   });
   it('played: an Incubator token with as many +1/+1 counters as the creatures exiled this way (counted as the action begins, CR 608.2h)', () => {

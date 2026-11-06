@@ -1,0 +1,188 @@
+[
+  {
+    "id": "eff.edhv53.nextSpell.costsLess",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 611.2"
+    ],
+    "pattern": "the next {f:Filter} you cast this turn costs {m:ManaCost} less to cast",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "reduce",
+      "mana": "$m"
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "less"
+    ],
+    "examples": [
+      {
+        "text": "{T}: The next spell you cast this turn costs {1} less to cast."
+      },
+      {
+        "text": "Draw a card. The next creature spell you cast this turn costs {2} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "{T}: The next spell you cast costs {1} less to cast.",
+      "{T}: The next spell an opponent casts this turn costs {1} less to cast.",
+      "{T}: The next spell you cast this turn costs {1} more to cast.",
+      "{T}: The first spell you cast this turn costs {1} less to cast."
+    ]
+  },
+  {
+    "id": "eff.edhv53.pump.andOthers",
+    "weak": 1,
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2c"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} get[s] {pt:PT} and {g:Objs} get[s] {qt:PT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": "$g",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$qt.p",
+              "toughness": "$qt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control gets +2/+2 and other creatures you control get +1/+0."
+      },
+      {
+        "text": "Until end of turn, target Goblin you control gets +2/+2 and other Goblins you control get +1/+1."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature you control gets +2/+2 and creatures you control get +1/+0 and gain flying.",
+      "Until end of turn, target creature you control gets +2/+2 or other creatures you control get +1/+0.",
+      "Target creature you control gets +2/+2 and other creatures you control get +1/+0."
+    ]
+  },
+  {
+    "id": "eff.edhv53.damage.threeTargets",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 115.3",
+      "CR 115.4",
+      "CR 601.2c"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient} , {m:Qty} damage to {p2:Recipient} , and {k:Qty} damage to {p3:Recipient}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": "$p2",
+          "amount": "$m"
+        },
+        {
+          "to": "$p3",
+          "amount": "$k"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "~ deals 2 damage to any target, 3 damage to another target, and 4 damage to a third target."
+      },
+      {
+        "text": "~ deals 2 damage to target creature, 3 damage to target player, and 4 damage to target planeswalker."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 2 damage to any target, 3 damage to another target, and 4 damage to a fourth target.",
+      "~ deals 2 damage to any target and 3 damage to another target, and 4 damage to a third target.",
+      "~ deals 2 damage to any target, 3 damage to another target, and 4 damage to a third target unless its controller pays {1}."
+    ]
+  },
+  {
+    "id": "eff.edhv53.sacrifice.theirChoice.withKeyword",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 702.9a",
+      "CR 109.1"
+    ],
+    "pattern": "{p:Player} sacrifice[s] {n:Qty} {f:Filter} of their choice with {k:Keyword}",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": {
+        "$merge": [
+          "$f",
+          {
+            "keyword": "$k.keyword"
+          }
+        ]
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "with",
+      "of"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent sacrifices a creature of their choice with reach."
+      },
+      {
+        "text": "Target player sacrifices two artifacts of their choice with flying."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent sacrifices a creature of your choice with flying.",
+      "Each opponent sacrifices a creature with flying of their choice.",
+      "Each opponent sacrifices a creature of their choice with flying or reach."
+    ]
+  }
+]

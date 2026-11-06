@@ -1,0 +1,13 @@
+{
+  "id": "d1",
+  "player": "p1",
+  "prompt": "Alice: you won the coin flip. Choose who plays first.",
+  "rules": [
+    "CR 103.1"
+  ],
+  "kind": "playFirst",
+  "options": [
+    "p1",
+    "p2"
+  ]
+}

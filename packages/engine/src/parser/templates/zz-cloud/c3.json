@@ -112,7 +112,7 @@
     "id": "sta.c3.grant.aslong",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 604.1",
       "CR 611.3a",
@@ -163,7 +163,7 @@
     "id": "sta.c3.pumpgrant.aslong",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 604.1",
       "CR 611.3a",
@@ -553,7 +553,7 @@
     "id": "sta.c3.pumpgrant.goaded",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 604.1",
       "CR 611.3a",

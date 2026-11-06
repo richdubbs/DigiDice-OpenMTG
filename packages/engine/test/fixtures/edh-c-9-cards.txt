@@ -1,0 +1,12 @@
+# edh-c-9 (Commander EDHREC ranks 17,501-18,125, second pass): "that target is white and/or blue", "all creatures able to block it do so" after a pump, "if it's night", "a permanent you controlled left the battlefield this turn", "where X is your life total", targets that each get a pump and can't be blocked, a card put second from the top, base power and toughness with a granted ability, a card put on the bottom, a mana symbol count, a shared "during your turn" grant and cost reduction. After editing: npm run cards -- fixtures
+Lithomantic Barrage
+Gift of the Deity
+Wolf Strike
+Vrock
+Ajani, Valiant Protector
+Sea Hag // Aquatic Ingress
+Screaming Swarm
+Oko, the Trickster
+Errand-Rider of Gondor
+Springjack Shepherd
+Nahiri, Storm of Stone

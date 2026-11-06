@@ -50,7 +50,7 @@ describe('the hookpoints combine providers (design 5.3, rules/hookpoints.ts)', (
 
 describe('the engine registers the keyword provider and the statics provider', () => {
   it('the statics provider answers the hooks of design 9.4 (WP16; its behavior is pinned in test/m5/rulehooks/)', () => {
-    expect(Object.keys(staticsProvider).sort()).toEqual(['activatesAsThoughHaste' /* r4-fxz: CR 302.6 */, 'blockSetValid' /* MX5: CR 509.1b */, 'canActivate', 'canAttach', 'canAttack', 'canBeCountered', 'canBeTargeted', 'canBlock', 'canCast', 'canPlayLand', 'castFlashAddCosts' /* std-rx10 */, 'castFlashCosts' /* FAST5 T56 */, 'castsAsInstant', 'loyaltyAsInstant' /* r4-mech */, 'name', 'permits']);
+    expect(Object.keys(staticsProvider).sort()).toEqual(['activatesAsThoughHaste' /* r4-fxz: CR 302.6 */, 'attacksAsThoughHaste' /* edh-b-14: CR 302.6, 508.1a */, 'blockSetValid' /* MX5: CR 509.1b */, 'canActivate', 'canAttach', 'canAttack', 'canBeCountered', 'canBeTargeted', 'canBlock', 'canCast', 'canPlayLand', 'castFlashAddCosts' /* std-rx10 */, 'castFlashCosts' /* FAST5 T56 */, 'castFlashIfTargets' /* edht4 */, 'castFlashXLimit' /* edh-d-44 */, 'castsAsInstant', 'equipAsInstant' /* edh-mana-keywords-8 */, 'loyaltyAsInstant' /* r4-mech */, 'name', 'permits']);
     expect(staticsProvider.name).toBe('statics');
     expect(keywordProvider.name).toBe('keywords');
   });

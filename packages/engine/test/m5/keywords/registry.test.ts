@@ -28,9 +28,9 @@ describe('KeywordRegistry.get and names', () => {
     const names = keywordRegistry.names();
     expect(names).toEqual([...names].sort());
     expect(new Set(names).size).toBe(names.length);
-    expect(names).toHaveLength(203); // 194 rules (daybound and nightbound are two keywords; storied, FAST5X E18, is CR 702.195 since the 2026-09-25 edition) + multikicker + typecycling + megamorph (M6-3, CR 702.37b) + commander ninjutsu (CR 702.49d) and partner with (CR 702.124j), M11-4 + choose a Background and Doctor's companion (cmd1, CR 702.124k, 702.124m) + beam me up (trek-1, Star Trek reminder text)
+    expect(names).toHaveLength(204); // edh-d-90: + trample over planeswalkers (CR 702.19c); 194 rules (daybound and nightbound are two keywords; storied, FAST5X E18, is CR 702.195 since the 2026-09-25 edition) + multikicker + typecycling + megamorph (M6-3, CR 702.37b) + commander ninjutsu (CR 702.49d) and partner with (CR 702.124j), M11-4 + choose a Background and Doctor's companion (cmd1, CR 702.124k, 702.124m) + beam me up (trek-1, Star Trek reminder text)
     names.pop();
-    expect(keywordRegistry.names()).toHaveLength(203);
+    expect(keywordRegistry.names()).toHaveLength(204);
   });
 
   it('the loaded data is frozen: a data file cannot be edited at run time', () => {
@@ -59,7 +59,7 @@ describe('KeywordRegistry.capabilities (design 5.2)', () => {
     expect(caps).toContain('keyword:flashback'); // native: the engine acts on it
     expect(caps).toContain('keyword:morph'); // native since M6-3: the engine acts on it (casting face down, turning face up)
     expect(caps).toContain('keyword:suspend'); // std-rx22: implemented (core/special/suspend.ts, keywords/data/suspend.json); was the planned example here
-    expect(caps).not.toContain('keyword:banding'); // CMD3: was echo, implemented since (CR 702.30a)
+    expect(caps).toContain('keyword:banding'); // edh-c-31: implemented (CR 702.22)
   });
 
   it('an alias is not a capability of its own', () => {

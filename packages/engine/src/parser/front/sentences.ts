@@ -23,7 +23,7 @@ export function isContinuation(tokens: readonly Token[]): boolean {
   const first = tokens[0];
   if (!first || first.kind !== 'WORD') return false;
   if (CONTINUES.has(first.norm)) return true;
-  return first.norm === 'if' && tokens[1]?.norm === 'you' && (tokens[2]?.norm === 'do' || tokens[2]?.norm === "don't");
+  return first.norm === 'if' && tokens[1]?.norm === 'you' && (tokens[2]?.norm === 'do' || tokens[2]?.norm === "don't" || (tokens[2]?.norm === 'pay' && tokens[3]?.norm === ',')); // edh-d-34: "If you pay, ..." (Lightning Runner)
 }
 
 /**

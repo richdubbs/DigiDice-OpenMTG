@@ -63,6 +63,15 @@ export const PRINTED_CREATURE_TYPES: readonly string[] = printed.creatureTypes.f
 /** Every creature type this build knows: the rules' list, then the printed ones. The one list the layers, filters, evaluators and choices read. */
 export const CREATURE_TYPES: readonly string[] = [...CR_CREATURE_TYPES, ...PRINTED_CREATURE_TYPES];
 
+/** edh-d-94 (CR 205.3j, the 2026-09-25 text): the planeswalker types, offered by "choose a planeswalker type" (Deification; effects/bodies/m5.ts, effects/handlers/choose.ts). */
+export const PLANESWALKER_TYPES: readonly string[] = [
+  "Ajani", "Aminatou", "Angrath", "Arlinn", "Ashiok", "Bahamut", "Basri", "Bolas", "Calix", "Chandra", "Comet", "Dack", "Dakkon", "Daretti", "Davriel", "Dellian",
+  "Dihada", "Domri", "Dovin", "Ellywick", "Elminster", "Elspeth", "Estrid", "Freyalise", "Garruk", "Gideon", "Grist", "Guff", "Huatli", "Jace", "Jared", "Jaya", "Jeska",
+  "Kaito", "Karn", "Kasmina", "Kaya", "Kiora", "Koth", "Liliana", "Lolth", "Lukka", "Minsc", "Mordenkainen", "Nahiri", "Narset", "Niko", "Nissa", "Nixilis", "Oko",
+  "Quintorius", "Ral", "Rowan", "Saheeli", "Samut", "Sarkhan", "Serra", "Sivitri", "Sorin", "Szat", "Tamiyo", "Tasha", "Teferi", "Teyo", "Tezzeret", "Tibalt", "Tyvar",
+  "Ugin", "Urza", "Venser", "Vivien", "Vraska", "Vronos", "Will", "Windgrace", "Wrenn", "Xenagos", "Yanggu", "Yanling", "Zariel",
+];
+
 /** CR 205.3q: the one battle type. */
 export const BATTLE_TYPES: readonly string[] = ['Siege'];
 /** CR 205.3p: the one dungeon type. */

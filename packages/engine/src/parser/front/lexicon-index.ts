@@ -114,6 +114,9 @@ export interface KeywordHit {
   length: number;
 }
 
+/** edh-c-92 (CR 702.48a): the creature types printed before "offering". */
+const OFFERING_TYPES: ReadonlySet<string> = new Set(['goblin', 'fox', 'moonfolk', 'snake']);
+
 /**
  * The keyword ability whose name starts at `pos` of `lower` (the text, lower case), or undefined. Longest name wins. Families the rules describe in prose are
  * recognised as well: "<x>walk" and "[nonbasic|legendary|snow] landwalk" are landwalk (CR 702.14), "<x>cycling" and "basic landcycling" are cycling (CR 702.29),
@@ -134,6 +137,12 @@ export function keywordAt(ix: LexiconIndex, lower: string, pos: number): Keyword
     const rest = /^commander ninjutsu\b/.exec(lower.slice(pos));
     if (rest) return { name: ix.keywordNames.get('commander ninjutsu') ?? ix.keywordNames.get('ninjutsu') ?? 'Ninjutsu', length: rest[0].length };
   }
+  // edh-combat-7 (CR 702.48a; Blast-Furnace Hellkite): "artifact offering", the quality before the keyword's name; only this quality is read (kw.edhcb7.artifactOffering)
+  if (first === 'artifact' && ix.keywordNames.has('offering') && wordAt(lower, pos, 'artifact offering')) return { name: ix.keywordNames.get('offering')!, length: 'artifact offering'.length };
+  // edh-next-49 (CR 702.29e; Sojourner's Companion): "artifact landcycling", the types before the keyword's name (kw.edhn49.typecycling.artifactLand); no other word is read before "landcycling" but the walk modifiers
+  if (first === 'artifact' && wordAt(lower, pos, 'artifact landcycling')) return { name: ix.keywordNames.get('cycling') ?? 'Cycling', length: 'artifact landcycling'.length };
+  // edh-c-92 (CR 702.48a; the Patrons, Fox offering): the quality may be a creature type, the five printed ones (kw.edhv92.<type>Offering)
+  if (OFFERING_TYPES.has(first) && ix.keywordNames.has('offering') && wordAt(lower, pos, `${first} offering`)) return { name: ix.keywordNames.get('offering')!, length: `${first} offering`.length };
   const family = (word: string, suffix: string, canonical: string): KeywordHit | undefined =>
     word.length > suffix.length && word.endsWith(suffix) && word !== 'planeswalk' ? { name: ix.keywordNames.get(canonical.toLowerCase()) ?? canonical, length: word.length } : undefined;
   const fw = family(first, 'walk', 'Landwalk') ?? family(first, 'cycling', 'Cycling');

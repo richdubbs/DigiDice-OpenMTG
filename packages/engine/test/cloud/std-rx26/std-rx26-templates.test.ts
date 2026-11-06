@@ -34,6 +34,8 @@ const goldenUsing = (id: string): string[] => GOLDEN.filter((g) => new RegExp(`[
  */
 const NARROW: Readonly<Record<string, string>> = {
   'eff.stdrx26.nextSpell.has.affinity': 'Don & Raph, Hard Science',
+  'eff.stdrx26.nextSpell.has.convoke': 'Wand of the Worldsoul', // edh-next-39 (Commander effort): one card of the EDHREC top 6,250 prints it, promoted by the owner's standing rule 2026-10-27
+  'eff.stdrx26.nextSpell.has.improvise': 'Archway of Innovation', // edh-misc-1 (Commander effort): one card of the EDHREC top 5,000 prints it
   'sta.stdrx26.plotting.fromHand.costsLess': 'Doc Aurlock, Grizzled Genius',
   'trg.stdrx26.you.discover': "Curator of Sun's Creation",
   'eff.stdrx26.discover.again.sameValue': "Curator of Sun's Creation",
@@ -42,7 +44,7 @@ const NARROW: Readonly<Record<string, string>> = {
   'eff.stdrx26.draw.forEach.gainedControl': 'Coveted Falcon',
 };
 /** No usable evidence yet (the other printings are not Standard): capped at partial (design 6.9). */
-const EXPERIMENTAL: ReadonlySet<string> = new Set(['eff.stdrx26.nextSpell.has.convoke', 'eff.stdrx26.nextSpell.has.improvise']);
+const EXPERIMENTAL: ReadonlySet<string> = new Set<string>([]);
 
 /** The type line an example is an ability of: an activated ability on an artifact, a trigger or a static ability on a creature, anything else a sorcery. */
 const typeOf = (text: string): string => (/^\{/.test(text) ? 'Artifact' : /^(When|Whenever|Flying|Plotting)\b/.test(text) ? 'Creature — Human' : 'Sorcery');
@@ -157,7 +159,8 @@ describe('std-rx26 parser, lowering and renderer support', () => {
     expect(JSON.stringify(f.abilities)).toContain('"applies":{"plot":true,"caster":"you"}');
   });
   it('CR 701.57a: "discover again for the same value" outside a discover trigger has no amount to read: not understood', () => {
-    expect(understood(face('Whenever you scry, discover again for the same value.'))).toBe(false);
+    // edh-next-38: a scry now has an amount (the cards looked at), so the negative uses surveil, which has none
+    expect(understood(face('Whenever you surveil, discover again for the same value.'))).toBe(false);
   });
   it('CR 608.2d: "distribute ... among any number of target creatures" stays the target division of FAST4 T28 (announced on casting)', () => {
     const f = face('Distribute two +1/+1 counters among any number of target creatures you control.');

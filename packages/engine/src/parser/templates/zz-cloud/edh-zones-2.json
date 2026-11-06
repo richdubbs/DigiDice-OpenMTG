@@ -1,0 +1,310 @@
+[
+  {
+    "id": "eff.edhz2.dig.upTo.top.restBottom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 401.4",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "put up to {n:Qty} of {g:Seen} on top of your library and the rest on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "kept"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "kept"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "kept"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "and",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top four cards of your library. Put up to two of them on top of your library and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Reveal the top five cards of your library. Put up to one of them on top of your library and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top four cards of your library. Put up to two of them on top of your library and the rest into your graveyard.",
+      "Look at the top four cards of your library. Put up to two of them on top of your library and the rest on the bottom of your library in any order.",
+      "Look at the top four cards of your library. Put two of them on top of your library and the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhz2.shuffle.thenExileTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 701.24b",
+      "CR 406.1",
+      "CR 608.2c"
+    ],
+    "pattern": "shuffle your library , then exile the top card",
+    "build": [
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": 1
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Shuffle your library, then exile the top card. Until end of turn, you may play that card without paying its mana cost."
+      },
+      {
+        "text": "Shuffle your library, then exile the top card. You may play that card this turn."
+      }
+    ],
+    "counterExamples": [
+      "Shuffle your graveyard, then exile the top card.",
+      "Shuffle your library, then exile the top two cards.",
+      "Shuffle your library, then exile the bottom card."
+    ]
+  },
+  {
+    "id": "eff.edhz2.milled.put.anyCard.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j"
+    ],
+    "pattern": "put a card from among {g:Milled} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Mill four cards. Put a card from among the milled cards into your hand."
+      },
+      {
+        "text": "Mill three cards. Put a card from among them into your hand. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards. Put a land card from among the milled cards into your hand.",
+      "Mill four cards. Put a card from among the milled cards onto the battlefield.",
+      "Look at the top four cards of your library. Put a card from among them into your hand.",
+      "Mill four cards. Put two cards from among the milled cards into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhz2.dig.three.handBottomExile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 401.4",
+      "CR 406.1",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "put one of {g:Seen} into your hand , put one of them on the bottom of your library , and exile one of them",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "toHand"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "toHand"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "toBottom"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "toBottom"
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom"
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "toBottom"
+              }
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "toExile"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "toExile"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top three cards of your library. Put one of them into your hand, put one of them on the bottom of your library, and exile one of them."
+      },
+      {
+        "text": "Reveal the top three cards of your library. Put one of them into your hand, put one of them on the bottom of your library, and exile one of them."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top three cards of your library. Put one of them into your hand, put one of them on top of your library, and exile one of them.",
+      "Look at the top three cards of your library. Put one of them into your hand, put one of them on the bottom of your library, and put one of them into your graveyard.",
+      "Look at the top three cards of your library. Put one of them into your hand and exile the rest."
+    ]
+  }
+]

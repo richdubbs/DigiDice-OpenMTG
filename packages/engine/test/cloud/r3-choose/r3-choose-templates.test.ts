@@ -16,6 +16,7 @@ import { ENGINE_CAPABILITIES } from '../../../src/model/capabilities';
 import r3Choose from '../../../src/parser/templates/zz-cloud/r3-choose.json';
 import review from '../../m5/golden/cards/cloud-r3-choose-review.json';
 import r4FxbReview from '../../m5/golden/cards/cloud-r4-fxb-review.json'; // Standard round 4 r4-fxb: the golden cards of eff.r3choose.chooseN.ofThem
+import edhC50Review from '../../m5/golden/cards/edh-c-50-review.json'; // edh-c-50: the golden card of eff.r3choose.choose.targetPlayer (promoted to stable, design 6.9 deviation)
 import { automated, bare, card, fullyAutomated, jsonKey } from '../../m5/templates/support';
 import { localIndex } from '../../m5/parser/support';
 
@@ -54,7 +55,7 @@ describe('r3-choose template file (design 6.3, 6.9; CONTRIBUTING "Adding a templ
     }
   });
   it('design 6.9: a stable template has its evidence: at least one hand-verified golden card that uses it (the review file pins each card as full)', () => {
-    const golden = [...review, ...r4FxbReview] as { card: string; verified: string; expect?: string }[];
+    const golden = [...review, ...r4FxbReview, ...edhC50Review] as { card: string; verified: string; expect?: string }[];
     for (const t of R3.filter((x) => x.status === 'stable')) {
       const cards = golden.filter((g) => g.verified.includes(`(${t.id}`) || g.verified.includes(` ${t.id}`) || g.verified.includes(`${t.id},`)).map((g) => g.card);
       expect(cards.length, t.id).toBeGreaterThanOrEqual(1);

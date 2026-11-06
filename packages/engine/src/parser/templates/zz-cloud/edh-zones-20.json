@@ -1,0 +1,267 @@
+[
+  {
+    "id": "sta.edhz20.aslong.has.allActivatedOf",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} has all activated abilities of ( all | each ) {f:Filter}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "addActivatedOf": {
+                "ref": "each",
+                "filter": "$f"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Swamp, ~ has all activated abilities of all artifact cards in all graveyards."
+      },
+      {
+        "text": "As long as it's your turn, ~ has all activated abilities of each creature card in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Swamp, ~ has all triggered abilities of all artifact cards in all graveyards.",
+      "As long as you control a Swamp, ~ has all activated abilities of target artifact card in a graveyard."
+    ]
+  },
+  {
+    "id": "sta.edhz20.aslong.topCard.has.allActivatedOf",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 401.5"
+    ],
+    "pattern": "as long as the top card of your library is ( a | an ) {f:Filter} , {o:Obj} has all activated abilities of that card",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": 1
+        },
+        "filter": "$f"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "addActivatedOf": {
+                "ref": "topCards",
+                "player": {
+                  "ref": "you"
+                },
+                "count": 1
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "As long as the top card of your library is a Dragon card, ~ has all activated abilities of that card."
+      },
+      {
+        "text": "As long as the top card of your library is an artifact card, ~ has all activated abilities of that card."
+      }
+    ],
+    "counterExamples": [
+      "As long as the top card of your library is a Dragon card, ~ has all triggered abilities of that card.",
+      "As long as the top card of an opponent's library is a Dragon card, ~ has all activated abilities of that card."
+    ]
+  },
+  {
+    "id": "eff.edhz20.mill.enchantedPlayer.whereX.putIntoTheirGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 107.3",
+      "CR 608.2h",
+      "CR 400.3",
+      "CR 303.4"
+    ],
+    "pattern": "{p:Player} mill[s] x cards , where x is the number of cards put into their graveyard from anywhere this turn",
+    "build": {
+      "lower": "whereX",
+      "value": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "owner": "$p",
+            "isCard": true
+          },
+          "to": "graveyard"
+        },
+        "scope": "turn"
+      },
+      "steps": [
+        {
+          "op": "mill",
+          "who": "$p",
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, enchanted player mills X cards, where X is the number of cards put into their graveyard from anywhere this turn."
+      },
+      {
+        "text": "When ~ enters, target player mills X cards, where X is the number of cards put into their graveyard from anywhere this turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, enchanted player mills X cards, where X is the number of cards put into your graveyard from anywhere this turn.",
+      "At the beginning of your upkeep, enchanted player mills X cards, where X is the number of cards put into their graveyard from the battlefield this turn."
+    ]
+  },
+  {
+    "id": "trg.edhz20.self.dealsCombatDamage.toPlayerWho",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 510.2",
+      "CR 109.4"
+    ],
+    "pattern": "( when | whenever ) ~ deals combat damage to a player {c:Cond}",
+    "build": {
+      "on": [
+        {
+          "ev": "damage",
+          "source": {
+            "self": true
+          },
+          "combat": true,
+          "recipient": {
+            "player": "any"
+          }
+        }
+      ],
+      "while": "$c"
+    },
+    "consumes": [
+      "when",
+      "whenever"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player who controls more artifacts than you, draw a card."
+      },
+      {
+        "text": "When ~ deals combat damage to a player who controls more creatures than you, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player who controls fewer artifacts than you, draw a card.",
+      "Whenever ~ deals combat damage to a player who controls more artifacts than each other player, draw a card."
+    ]
+  },
+  {
+    "id": "rep.edhz20.youDiscard.byEffect.mayTopLibrary",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 614.1a",
+      "CR 616.1",
+      "CR 401.4",
+      "CR 400.3"
+    ],
+    "pattern": "if an effect causes you to discard a card , discard it , but you may put it on top of your library instead of into your graveyard",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "owner": "you"
+            },
+            "from": "hand",
+            "to": "graveyard",
+            "cause": "discard",
+            "byEffect": true
+          },
+          "optional": true,
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "library",
+              "position": "top"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "but",
+      "may",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "You have no maximum hand size.\nIf an effect causes you to discard a card, discard it, but you may put it on top of your library instead of into your graveyard."
+      },
+      {
+        "text": "If an effect causes you to discard a card, discard it, but you may put it on top of your library instead of into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "If an effect causes you to discard a card, discard it, but you may put it on the bottom of your library instead of into your graveyard.",
+      "If an effect causes you to discard a card, discard it, but you may exile it instead of putting it into your graveyard.",
+      "If an effect causes you to discard a card, put it on top of your library instead of into your graveyard."
+    ]
+  }
+]

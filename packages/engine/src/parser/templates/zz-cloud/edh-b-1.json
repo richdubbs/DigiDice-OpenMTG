@@ -1,0 +1,996 @@
+[
+  {
+    "id": "eff.edhb1.dig.mayReveal.listed.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 205.4a"
+    ],
+    "pattern": "you may reveal {f:ListedCard} from among {g:Seen} and put ( it | that card ) into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. You may reveal a Goblin, Wizard, or legendary artifact card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may reveal an Elf or legendary land card from among them and put that card into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. You may reveal a Goblin, Wizard, or legendary artifact card from among them and put it onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You may reveal two Goblin, Wizard, or legendary artifact cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You may reveal a Goblin, Wizard, or legendary artifact card from among them and exile it. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhb1.dig.mayReveal.threeAndOr.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "you may reveal ( a | an ) {a:Filter} card , ( a | an ) {b:Filter} card , and/or ( a | an ) {c:Filter} card from among {g:Seen} and put them into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$a"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$b"
+            ],
+            "is": "$g",
+            "zone": "library",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosenB"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$c"
+            ],
+            "is": "$g",
+            "zone": "library",
+            "not": {
+              "is": {
+                "ref": "union",
+                "of": [
+                  {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  {
+                    "ref": "bound",
+                    "name": "chosenB"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosenC"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "chosen"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenB"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenC"
+            }
+          ]
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "chosen"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenB"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenC"
+            }
+          ]
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may",
+      "and/or"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may reveal a Goblin card, an Elf card, and/or a Wizard card from among them and put them into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may reveal an Angel card, a Demon card, and/or a Dragon card from among them and put them into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal a Goblin card, an Elf card, or a Wizard card from among them and put them into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal a Goblin card, an Elf card, and/or a Wizard card from among them and put them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal a Goblin card and/or a Wizard card from among them and put them into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhb1.dig.put.hand.restBottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 401.4"
+    ],
+    "pattern": "put ( a | an ) {f:Filter} card from among {g:Seen} into your hand and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top six cards of your library. Put a Goblin, Wizard, or Vehicle card from among them into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top five cards of your library. Put an artifact or land card from among them into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top six cards of your library. Put a Goblin, Wizard, or Vehicle card from among them into your hand and the rest on the bottom of your library in any order.",
+      "Reveal the top six cards of your library. Put a Goblin, Wizard, or Vehicle card from among them into your hand and the rest into your graveyard.",
+      "Reveal the top six cards of your library. Put two Goblin cards from among them into your hand and the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhb1.milled.may.put.hand.adjective",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 700.6"
+    ],
+    "pattern": "you may put {f:AdjCard} from among {g:Milled} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Mill three cards. You may put a historic card from among them into your hand."
+      },
+      {
+        "text": "Mill four cards. You may put a legendary card from among the milled cards into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill three cards. You may put a historic card from among them onto the battlefield.",
+      "Mill three cards. You must put a historic card from among them into your hand.",
+      "Look at the top four cards of your library. You may put a historic card from among them into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhb1.becomes.colors.artifactCreature.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {c1:Color} and {c2:Color} {st:Subtypes} artifact creature {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c1",
+                  "$c2"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "{1}{R}{W}: ~ becomes a 3/3 red and white Cat artifact creature until end of turn."
+      },
+      {
+        "text": "{2}{G}{U}: ~ becomes a 4/2 green and blue Elemental artifact creature until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}{R}{W}: ~ becomes a 3/3 red and white Cat artifact creature.",
+      "{1}{R}{W}: ~ becomes a 3/3 red Cat artifact creature until end of turn.",
+      "{1}{R}{W}: ~ becomes a 3/3 red and white Cat creature until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhb1.becomes.colors.artifactCreature.cantBeBlocked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 509.1b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {c1:Color} and {c2:Color} {st:Subtypes} artifact creature {d:Dur} and can't be blocked this turn",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c1",
+                  "$c2"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "{1}{R}{W}: ~ becomes a 3/3 red and white Cat artifact creature until end of turn and can't be blocked this turn."
+      },
+      {
+        "text": "{2}{G}{U}: ~ becomes a 4/2 green and blue Elemental artifact creature until end of turn and can't be blocked this turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}{R}{W}: ~ becomes a 3/3 red and white Cat artifact creature until end of turn and can't be blocked.",
+      "{1}{R}{W}: ~ becomes a 3/3 red and white Cat artifact creature until end of turn and can't block this turn.",
+      "{1}{R}{W}: ~ becomes a 3/3 red and white Cat creature until end of turn and can't be blocked this turn."
+    ],
+    "consumes": [
+      "can't"
+    ]
+  },
+  {
+    "id": "sta.edhb1.have.basePT.are.subtypes.otherCreatureTypes",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 205.1b",
+      "CR 205.3d"
+    ],
+    "pattern": "{f:Filter} have base power and toughness {pt:BasePT} and are {g:Filter} in addition to their other creature types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$g.subtypes"
+          }
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "base",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control have base power and toughness 4/4 and are Giants in addition to their other creature types."
+      },
+      {
+        "text": "Other creatures you control have base power and toughness 1/3 and are Walls in addition to their other creature types."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control have base power and toughness 4/4 and are Giants in addition to their other abilities.",
+      "Creatures you control have base power and toughness 4/4 and are Giants.",
+      "Creatures you control get +4/+4 and are Giants in addition to their other creature types."
+    ]
+  },
+  {
+    "id": "sta.edhb1.have.basePT.have.are.subtypes.inaddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 205.1b",
+      "CR 205.3d"
+    ],
+    "pattern": "{f:Filter} have base power and toughness {pt:BasePT} , have {a:Abilities} , and are {g:Filter} in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$g.subtypes"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "base",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Tapped creatures you control have base power and toughness 4/4, have flying, and are Angels in addition to their other types."
+      },
+      {
+        "text": "Other creatures you control have base power and toughness 2/2, have trample, and are Wolves in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control have base power and toughness 4/4, have flying, and are Angels.",
+      "Creatures you control have base power and toughness 4/4, have flying, and are Angels in addition to their other types until end of turn.",
+      "Creatures you control have base power and toughness 4/4, have flying, and are artifacts in addition to their other types."
+    ]
+  },
+  {
+    "id": "sta.edhb1.self.isAlso.subtypes",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 604.1",
+      "CR 604.3",
+      "CR 613.1d"
+    ],
+    "pattern": "~ is also {st:SubtypeList}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "cda": true,
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "~ is also a Cleric, Rogue, and Wizard."
+      },
+      {
+        "text": "~ is also a Goblin and Elf."
+      }
+    ],
+    "counterExamples": [
+      "~ is a Goblin and Elf.",
+      "~ is also a Goblin and Elf until end of turn.",
+      "~ is also an artifact and creature."
+    ]
+  },
+  {
+    "id": "sta.edhb1.self.allColors.identity",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 604.3",
+      "CR 611.3a",
+      "CR 613.1e",
+      "CR 105.2b",
+      "CR 903.4a"
+    ],
+    "pattern": "~ is all colors . this ability doesn't affect its color identity",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "cda": true,
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "W",
+                  "U",
+                  "B",
+                  "R",
+                  "G"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "~ is all colors. This ability doesn't affect its color identity."
+      },
+      {
+        "text": "Flying\n~ is all colors. This ability doesn't affect its color identity."
+      }
+    ],
+    "counterExamples": [
+      "~ is all colors. This ability affects its color identity.",
+      "~ is colorless. This ability doesn't affect its color identity.",
+      "~ is all colors until end of turn. This ability doesn't affect its color identity."
+    ]
+  },
+  {
+    "id": "sta.edhb1.players.cantSearch.libraries",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 101.2",
+      "CR 604.1"
+    ],
+    "pattern": "( {p:Player} | players ) can't search libraries",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "$when": "p",
+        "then": "$p",
+        "else": {
+          "ref": "each",
+          "who": "player"
+        }
+      },
+      "mode": "cant",
+      "action": "search"
+    },
+    "consumes": [
+      "can't",
+      "libraries"
+    ],
+    "examples": [
+      {
+        "text": "Each player can't search libraries."
+      },
+      {
+        "text": "Each opponent can't search libraries."
+      }
+    ],
+    "counterExamples": [
+      "Players can't search graveyards.",
+      "Players can search libraries.",
+      "Players can't search libraries until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhb1.timeTravel.times",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.56a",
+      "CR 608.2c"
+    ],
+    "pattern": "time travel {n:Qty} times",
+    "build": {
+      "op": "repeat",
+      "times": "$n",
+      "do": [
+        {
+          "op": "action",
+          "action": "timeTravel",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "times"
+    ],
+    "examples": [
+      {
+        "text": "Time travel three times."
+      },
+      {
+        "text": "Time travel four times."
+      }
+    ],
+    "counterExamples": [
+      "Time travel twice.",
+      "Time travel three times, then draw a card and lose three life times.",
+      "You may time travel three times."
+    ]
+  },
+  {
+    "id": "eff.edhb1.loseAll.basePT.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Obj} loses all abilities and has base power and toughness {pt:BasePT} {d:Dur}",
+    "consumes": [
+      "all"
+    ],
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Target creature loses all abilities and has base power and toughness 1/1 until end of turn."
+      },
+      {
+        "text": "Target creature an opponent controls loses all abilities and has base power and toughness 0/2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature loses all abilities and has base power and toughness 1/1.",
+      "Target creature loses all abilities and has power and toughness 1/1 until end of turn.",
+      "Target creature loses all abilities and gains flying until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhb1.becomes.pt.subtype.artifactCreature.gains.noDuration",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "When ~ enters, target artifact you control becomes a 4/4 Golem artifact creature and gains trample and haste."
+      },
+      {
+        "text": "{2}, {T}: Target artifact becomes a 2/2 Thopter artifact creature and gains flying."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target artifact you control becomes a 4/4 Golem artifact creature and gains trample until end of turn.",
+      "When ~ enters, target artifact you control becomes a 4/4 Golem creature and gains trample.",
+      "When ~ enters, target artifact you control becomes a 4/4 Golem artifact creature and loses trample."
+    ]
+  },
+  {
+    "id": "eff.edhb1.dur.group.gain.and.get.foreach.counterOnSelf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 122.1"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} gain {a:Abilities} and get {pt:PT} for each {k:CounterKind} counter on ~",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "counters",
+                    "on": {
+                      "ref": "self"
+                    },
+                    "kind": "$k"
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "counters",
+                    "on": {
+                      "ref": "self"
+                    },
+                    "kind": "$k"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{1}: Until end of turn, other Constructs you control gain haste and get +1/+1 for each +1/+1 counter on ~."
+      },
+      {
+        "text": "{0}, {T}: Until end of turn, creatures you control gain vigilance and get +1/+0 for each charge counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "{1}: Until end of turn, other Constructs you control lose haste and get +1/+1 for each +1/+1 counter on ~.",
+      "{1}: Other Constructs you control gain haste and get +1/+1 for each +1/+1 counter on ~.",
+      "{1}: Until end of turn, other Constructs you control gain haste and get +1/+1 for each +1/+1 counter on target creature."
+    ]
+  }
+]

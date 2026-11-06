@@ -1,0 +1,385 @@
+[
+  {
+    "id": "sta.edhz7.graveyard.opponent.insteadExile.withCounter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 400.3",
+      "CR 122.1",
+      "CR 111.1"
+    ],
+    "pattern": "if a card would be put into an opponent 's graveyard from anywhere , instead exile it with a {k:CounterKind} counter on it",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": {
+          "isCard": true,
+          "owner": "opponent"
+        },
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "exile"
+        },
+        "then": {
+          "as": "exiledCard",
+          "do": [
+            {
+              "op": "putCounters",
+              "on": {
+                "ref": "bound",
+                "name": "exiledCard"
+              },
+              "kind": "$k",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a card would be put into an opponent's graveyard from anywhere, instead exile it with a gloom counter on it."
+      },
+      {
+        "text": "If a card would be put into an opponent's graveyard from anywhere, instead exile it with a husk counter on it."
+      }
+    ],
+    "counterExamples": [
+      "If a card would be put into your graveyard from anywhere, instead exile it with a gloom counter on it.",
+      "If a card would be put into an opponent's graveyard from anywhere, instead exile it with two gloom counters on it.",
+      "If a card would be put into an opponent's graveyard from anywhere, instead put it on the bottom of its owner's library with a gloom counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhz7.choose.exiledOpponentCard.withCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 122.1",
+      "CR 400.3"
+    ],
+    "pattern": "choose an exiled card an opponent owns with a {k:CounterKind} counter on it",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "isCard": true,
+          "zone": "exile",
+          "owner": "opponent",
+          "counters": {
+            "kind": "$k"
+          }
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Choose an exiled card an opponent owns with a gloom counter on it."
+      },
+      {
+        "text": "Choose an exiled card an opponent owns with a husk counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Choose an exiled card you own with a gloom counter on it.",
+      "Choose an exiled card an opponent owns.",
+      "Choose a card in an opponent's graveyard with a gloom counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhz7.permit.free.play.obj.durMid",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 611.2a",
+      "CR 400.7"
+    ],
+    "pattern": "you may play {o:Obj} {d:Dur} without paying its mana cost",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Exile the top card of your library. You may play that card this turn without paying its mana cost."
+      },
+      {
+        "text": "Exile the top card of target opponent's library. You may play it this turn without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of your library. You may play that card this turn.",
+      "Exile the top card of your library. You may play that card this turn without paying its mana cost and draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhz7.dig.put.oneCard.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "put a card from among {g:Seen} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "pickedCard"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "pickedCard"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. You may put an artifact card from among them onto the battlefield tapped. If you don't, put a card from among them into your hand. Put the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top three cards of your library. You may put a land card from among them onto the battlefield tapped. If you don't, put a card from among them into your hand. Put the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. You may put an artifact card from among them onto the battlefield tapped. If you don't, put a card from among them onto the battlefield. Put the rest into your graveyard.",
+      "Look at the top five cards of your library. You may put an artifact card from among them onto the battlefield tapped. If you don't, put a card from among them into your graveyard. Put the rest into your graveyard.",
+      "Look at the top five cards of your library. You may put an artifact card from among them onto the battlefield tapped. If you don't, put two cards from among them into your hand. Put the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhz7.shuffle.self.fromYourGraveyard.intoYourLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 400.3",
+      "CR 113.6m",
+      "CR 400.7"
+    ],
+    "pattern": "shuffle ~ into your library from your graveyard",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}, Discard this card: Draw a card. Shuffle this card into your library from your graveyard."
+      },
+      {
+        "text": "{2}{G}, Discard this card: You gain 2 life. Shuffle this card into your library from your graveyard, then draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{1}, Discard this card: Draw a card. Shuffle this card into your library from your hand.",
+      "{1}, Discard this card: Draw a card. Shuffle this card into target player's library from your graveyard.",
+      "{1}, Discard this card: Draw a card. Shuffle this card and your graveyard into your library from your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhz7.linked.putOne.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "put ( a | an ) {f:Filter} card exiled with ~ onto the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any",
+            "isCard": true,
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, put a creature card exiled with ~ onto the battlefield under your control."
+      },
+      {
+        "text": "When ~ enters, exile up to two target artifacts an opponent controls.\nWhen ~ dies, put an artifact card exiled with ~ onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, put a creature card exiled with ~ into your hand.",
+      "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, put two creature cards exiled with ~ onto the battlefield under your control.",
+      "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, put a creature card exiled with ~ onto the battlefield under an opponent's control."
+    ]
+  },
+  {
+    "id": "eff.edhz7.exile.playerChoosesN",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 109.4"
+    ],
+    "pattern": "{p:Player} exile[s] {n:Qty} {f:Filter} they control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "$p"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "player",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent exiles two artifacts they control."
+      },
+      {
+        "text": "Whenever ~ attacks, defending player exiles three creatures they control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent exiles two artifacts you control.",
+      "When ~ enters, target opponent sacrifices two artifacts they control.",
+      "When ~ enters, target opponent exiles an artifact they control."
+    ]
+  }
+]

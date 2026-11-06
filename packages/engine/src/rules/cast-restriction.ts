@@ -23,7 +23,7 @@ const BEFORE_ATTACKERS: Step[] = ['untap', 'upkeep', 'draw', 'main1', 'beginComb
 const BEFORE_BLOCKERS: Step[] = [...BEFORE_ATTACKERS, 'declareAttackers'];
 const BEFORE_DAMAGE: Step[] = [...BEFORE_BLOCKERS, 'declareBlockers'];
 const AFTER_BLOCKERS: Step[] = ['declareBlockers', 'combatDamage', 'endCombat'];
-const AFTER_UPKEEP: Step[] = ['draw', 'main1', 'beginCombat', 'declareAttackers', 'declareBlockers', 'combatDamage', 'endCombat', 'main2', 'end'];
+const AFTER_UPKEEP: Step[] = ['draw', 'main1', 'beginCombat', 'declareAttackers', 'declareBlockers', 'combatDamage', 'endCombat', 'main2', 'end', 'cleanup'];
 
 /** Phrase after "Cast this spell only " (lower case, no final period) -> restriction. */
 const PHRASES: Record<string, CastRestriction> = {

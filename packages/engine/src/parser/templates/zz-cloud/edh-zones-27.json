@@ -1,0 +1,585 @@
+[
+  {
+    "id": "eff.edhz27.putIntoGy.exile.thenReturnNextEnd",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 700.4",
+      "CR 603.7",
+      "CR 400.7",
+      "CR 611.2a"
+    ],
+    "pattern": "if ( a | an ) {f:Filter} would be put into a graveyard from the battlefield this turn , exile it instead . return it to the battlefield under its owner 's control at the beginning of the next end step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "from": "battlefield",
+            "to": "graveyard"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            },
+            "then": {
+              "as": "moved",
+              "do": [
+                {
+                  "op": "delay",
+                  "when": {
+                    "at": "step",
+                    "step": "end",
+                    "next": true
+                  },
+                  "do": [
+                    {
+                      "op": "move",
+                      "what": {
+                        "ref": "bound",
+                        "name": "moved"
+                      },
+                      "to": {
+                        "zone": "battlefield",
+                        "controller": "owner"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "next"
+    ],
+    "needs": [
+      "feature:replace.foreign"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. If a permanent you control would be put into a graveyard from the battlefield this turn, exile it instead. Return it to the battlefield under its owner's control at the beginning of the next end step."
+      },
+      {
+        "text": "Draw two cards. If a nonland permanent an opponent controls would be put into a graveyard from the battlefield this turn, exile it instead. Return it to the battlefield under its owner's control at the beginning of the next end step."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. If a permanent you control would be put into a graveyard from the battlefield this turn, exile it instead.",
+      "Draw a card. If a permanent you control would be put into a graveyard from the battlefield this turn, exile it instead. Return it to the battlefield under your control at the beginning of the next end step.",
+      "Draw a card. If a permanent you control would be put into a graveyard from the battlefield this turn, exile it instead. Return it to the battlefield under its owner's control at the beginning of your next end step.",
+      "Draw a card. If a permanent you control would be put into a graveyard from the battlefield this turn, put it into its owner's hand instead. Return it to the battlefield under its owner's control at the beginning of the next end step."
+    ]
+  },
+  {
+    "id": "eff.edhz27.exile.withOneCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 122.1",
+      "CR 400.7",
+      "CR 406.1"
+    ],
+    "pattern": "exile {o:Obj} with a {k:CounterKind} counter on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile",
+        "counters": [
+          {
+            "kind": "$k",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever another nontoken creature dies, exile it with a gloom counter on it."
+      },
+      {
+        "text": "Whenever a land you control is put into a graveyard from the battlefield, exile it with a gloom counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another nontoken creature dies, exile it with three gloom counters on it.",
+      "Whenever another nontoken creature dies, exile it with a gloom counter on that creature.",
+      "Whenever another nontoken creature dies, exile it."
+    ]
+  },
+  {
+    "id": "eff.edhz27.removeCounter.fromOneWithKind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "remove ( a | an ) {k:CounterKind} counter from ( a | an ) {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "$merge": [
+              "$f",
+              {
+                "counters": {
+                  "kind": "$k"
+                }
+              }
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "removeCounters",
+        "from": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "kind": "$k",
+        "count": 1,
+        "as": "removed"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Remove a gloom counter from a card an opponent owns in exile."
+      },
+      {
+        "text": "Remove a gloom counter from a creature card in a graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Remove two gloom counters from a card an opponent owns in exile.",
+      "Remove a gloom counter from target card an opponent owns in exile.",
+      "Remove a gloom counter from each card an opponent owns in exile."
+    ]
+  },
+  {
+    "id": "eff.edhz27.put.fromExiledTop.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 406.1"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card from among {g:ExiledTop} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top six cards of your library. You may put a creature card from among them onto the battlefield."
+      },
+      {
+        "text": "Exile the top four cards of your library. You may put a land card from among them onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top six cards of your library. You may put a creature card from among them onto the battlefield tapped.",
+      "Exile the top six cards of your library. You may put a creature card from among them into your hand.",
+      "Exile the top six cards of your library. You may put two creature cards from among them onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhz27.permit.cast.eachNonlandType.free.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 118.9",
+      "CR 205.2a",
+      "CR 400.7"
+    ],
+    "pattern": "{d:Dur} , for each nonland card type , you may cast a spell of that type from among {g:Them} without paying its mana cost",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$g"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "onlyTypes": [
+            "Artifact"
+          ],
+          "single": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$g"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "onlyTypes": [
+            "Battle"
+          ],
+          "single": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$g"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "onlyTypes": [
+            "Creature"
+          ],
+          "single": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$g"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "onlyTypes": [
+            "Enchantment"
+          ],
+          "single": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$g"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "onlyTypes": [
+            "Instant"
+          ],
+          "single": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$g"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "onlyTypes": [
+            "Kindred"
+          ],
+          "single": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$g"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "onlyTypes": [
+            "Planeswalker"
+          ],
+          "single": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$g"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "onlyTypes": [
+            "Sorcery"
+          ],
+          "single": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "each",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top six cards of your library. Until end of turn, for each nonland card type, you may cast a spell of that type from among them without paying its mana cost."
+      },
+      {
+        "text": "Exile the top four cards of your library. Until end of turn, for each nonland card type, you may cast a spell of that type from among the exiled cards without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top six cards of your library. Until end of turn, for each card type, you may cast a spell of that type from among them without paying its mana cost.",
+      "Exile the top six cards of your library. Until end of turn, for each nonland card type, you may cast a spell of that type from among them.",
+      "Exile the top six cards of your library. Until end of turn, for each nonland card type, you may cast up to two spells of that type from among them without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.edhz27.permit.cast.anyGraveyard.eot",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 611.2a",
+      "CR 404.1",
+      "CR 400.3",
+      "CR 514.2"
+    ],
+    "pattern": "until end of turn , you may cast {f:Filter} from any graveyard",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "anyGraveyard": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "may",
+      "any"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, you may cast creature spells from any graveyard."
+      },
+      {
+        "text": "Draw a card. Until end of turn, you may cast artifact spells from any graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, you may cast creature spells from your graveyard.",
+      "Until end of turn, you may cast creature spells from an opponent's graveyard.",
+      "Until end of turn, you may cast creature spells from any graveyard without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.edhz27.nextDraw.they.exileTop.mayPlay",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 615.7",
+      "CR 121.1",
+      "CR 611.2a",
+      "CR 406.1"
+    ],
+    "pattern": "the next time they would draw a card this turn , instead they exile the top card of their library . they may play it this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "draw",
+            "player": {
+              "ref": "event",
+              "role": "player"
+            }
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "topCards",
+                  "player": {
+                    "ref": "event",
+                    "role": "player"
+                  },
+                  "count": 1
+                },
+                "to": {
+                  "zone": "exile"
+                },
+                "as": "drawn"
+              },
+              {
+                "op": "effect",
+                "duration": {
+                  "d": "endOfTurn"
+                },
+                "effects": [
+                  {
+                    "s": "permit",
+                    "who": {
+                      "ref": "event",
+                      "role": "player"
+                    },
+                    "action": "play",
+                    "of": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "drawn"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "instead",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each player's upkeep, the next time they would draw a card this turn, instead they exile the top card of their library. They may play it this turn."
+      },
+      {
+        "text": "At the beginning of each opponent's end step, the next time they would draw a card this turn, instead they exile the top card of their library. They may play it this turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each opponent's upkeep, the next time they would draw a card this turn, instead they exile the top card of their library.",
+      "At the beginning of each opponent's upkeep, the next time they would draw a card this turn, instead they exile the top card of their library. They may play it until end of turn.",
+      "At the beginning of each opponent's upkeep, the next time they would draw a card this turn, instead they mill the top card of their library. They may play it this turn."
+    ]
+  }
+]

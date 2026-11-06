@@ -1,0 +1,239 @@
+[
+  {
+    "id": "sta.edhn117.costMod.firstCycle.free",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.29a",
+      "CR 602.2b",
+      "CR 601.2f",
+      "CR 118.9"
+    ],
+    "pattern": "you may pay ( {0} | nothing ) rather than pay the cycling cost of the first card you cycle each turn",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "kind": "activated",
+              "keyword": "cycling"
+            },
+            "caster": "you",
+            "firstEachTurn": true
+          },
+          "change": {
+            "kind": "set",
+            "mana": []
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than",
+      "first",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You may pay nothing rather than pay the cycling cost of the first card you cycle each turn."
+      },
+      {
+        "text": "Lizards you control get +1/+2.\nYou may pay nothing rather than pay the cycling cost of the first card you cycle each turn."
+      }
+    ],
+    "counterExamples": [
+      "You may pay {1} rather than pay the cycling cost of the first card you cycle each turn.",
+      "You may pay {0} rather than pay the cycling cost of each card you cycle.",
+      "You may pay {0} rather than pay the cycling cost of the first card you cycle during each of your turns.",
+      "You may pay {0} rather than pay the equip cost of the first card you cycle each turn."
+    ]
+  },
+  {
+    "id": "eff.edhn117.ownerPossessive.secondFromTopOrBottom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.7",
+      "CR 108.3",
+      "CR 608.2d",
+      "CR 400.3"
+    ],
+    "pattern": "{o:Obj} 's owner puts it into their library second from the top or on the bottom",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "ownerOf",
+          "object": "$o"
+        },
+        "what": "option",
+        "options": [
+          "second from the top",
+          "bottom"
+        ],
+        "as": "libraryPlace",
+        "link": "libraryPlace"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "libraryPlace",
+          "equals": "second from the top"
+        },
+        "then": [
+          {
+            "op": "move",
+            "what": "$o",
+            "to": {
+              "zone": "library",
+              "position": {
+                "nth": 2
+              }
+            }
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "libraryPlace",
+          "equals": "bottom"
+        },
+        "then": [
+          {
+            "op": "move",
+            "what": "$o",
+            "to": {
+              "zone": "library",
+              "position": "bottom"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target tapped creature's owner puts it into their library second from the top or on the bottom."
+      },
+      {
+        "text": "When ~ enters, target nonland permanent's owner puts it into their library second from the top or on the bottom."
+      }
+    ],
+    "counterExamples": [
+      "Target tapped creature's owner puts it into their library second from the top.",
+      "Target tapped creature's owner puts it into their library third from the top or on the bottom.",
+      "Target tapped creature's controller puts it into their library second from the top or on the bottom."
+    ]
+  },
+  {
+    "id": "eff.edhn117.putExiledToGraveyards",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 608.2c",
+      "CR 603.3d"
+    ],
+    "pattern": "put {n:Qty} {f:Filter} into their owners' graveyards",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "putToGraveyard"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "putToGraveyard"
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, you may put two cards your opponents own from exile into their owners' graveyards. If you do, you gain 3 life."
+      },
+      {
+        "text": "When ~ enters, you may put three cards your opponents own from exile into their owners' graveyards. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may put two cards you own from exile into their owners' graveyards. If you do, draw a card.",
+      "When ~ enters, you may put two cards your opponents own from exile onto the battlefield. If you do, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhn117.search.upTo.differentNames.eachMv.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 202.3",
+      "CR 201.2",
+      "CR 107.3"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards with different names that each have mana value {m:Qty} , reveal them",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": {
+        "anyOf": [
+          "$f"
+        ],
+        "manaValue": {
+          "op": "==",
+          "value": "$m"
+        }
+      },
+      "min": 0,
+      "max": "$n",
+      "differentNames": true,
+      "reveal": true,
+      "as": "search"
+    },
+    "consumes": [
+      "up to",
+      "each",
+      "different"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for up to three creature cards with different names that each have mana value 2, reveal them, put them into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for up to two artifact cards with different names that each have mana value 1, reveal them, put them into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to three creature cards with different names that each have mana value 2 or less, reveal them, put them into your hand, then shuffle.",
+      "Search your library for up to three creature cards that each have mana value 2, reveal them, put them into your hand, then shuffle.",
+      "Search your library for up to three creature cards with the same name that each have mana value 2, reveal them, put them into your hand, then shuffle."
+    ]
+  }
+]

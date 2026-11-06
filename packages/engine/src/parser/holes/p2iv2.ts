@@ -25,8 +25,11 @@ const isAnaphor = (v: unknown): v is Record<string, unknown> => v !== null && ty
 const it = (): never => anaphorObj({ sort: 'object', number: 'singular', text: 'it' }) as never;
 
 const W_IS_ENCHANTED = P('is enchanted');
+const W_IS_ENCHANTED_OR_EQUIPPED = P('is enchanted or equipped');
+const W_ISNT_ENCHANTED = [P("isn't enchanted"), P('is not enchanted')]; // edh-c-94
 const W_DIDNT_ATTACK_WITH_A_CREATURE = [P("you didn't attack with a creature this turn"), P('you did not attack with a creature this turn')];
 const W_DIDNT_CAST_A_SPELL = [P("didn't cast a spell this turn"), P('did not cast a spell this turn')];
+const W_DIDNT_CAST = [P("didn't cast"), P('did not cast')]; // edh-c-62
 const W_POWER_GREATER_THAN = P("'s power is greater than");
 const W_DIDNT_HAVE = [P("it didn't have"), P('it did not have')];
 const W_ALL = P('all');
@@ -44,6 +47,14 @@ function selfEnchanted(ctx: HoleCtx, pos: number, out: Alt[]): void {
   if (ctx.toks[pos]?.kind !== 'SELF') return;
   const e = phraseAt(ctx, pos + 1, W_IS_ENCHANTED);
   if (e >= 0) out.push({ end: e, value: { cond: 'matches', object: { ref: 'self' }, filter: { enchanted: true } } });
+  // edhv31 (CR 303.4, 301.5; Novice Knight): "this creature is enchanted or equipped": an Aura or an Equipment is attached to it
+  const oe = phraseAt(ctx, pos + 1, W_IS_ENCHANTED_OR_EQUIPPED);
+  if (oe >= 0) out.push({ end: oe, value: { cond: 'matches', object: { ref: 'self' }, filter: { anyOf: [{ enchanted: true }, { equipped: true }] } } });
+  // edh-c-94 (CR 303.4; Hakim, Loreweaver: "Activate only ... if Hakim isn't enchanted"): no Aura is attached to the object itself
+  for (const w of W_ISNT_ENCHANTED) {
+    const n = phraseAt(ctx, pos + 1, w);
+    if (n >= 0) out.push({ end: n, value: { cond: 'not', of: { cond: 'matches', object: { ref: 'self' }, filter: { enchanted: true } } } as Condition });
+  }
 }
 
 /** "you didn't attack with a creature this turn"; "that player didn't cast a spell this turn" (the player an earlier part of the ability named). */
@@ -57,6 +68,19 @@ function notThisTurn(ctx: HoleCtx, pos: number, out: Alt[]): void {
     for (const w of W_DIDNT_CAST_A_SPELL) {
       const e = phraseAt(ctx, p.end, w);
       if (e >= 0) out.push({ end: e, value: { cond: 'not', of: { cond: 'happened', event: { ev: 'cast', player: p.value as never }, scope: 'turn' } } as Condition, ...flagsOf(p.flags) });
+    }
+    // edh-c-62 (CR 601.2i, 603.4; Predatory Advantage): "that player didn't cast a creature spell this turn": no spell of that description cast by the player this turn
+    for (const w of W_DIDNT_CAST) {
+      const e = phraseAt(ctx, p.end, w);
+      const art = e >= 0 ? ctx.toks[e]?.norm : undefined;
+      if (art !== 'a' && art !== 'an') continue;
+      for (const n of npAlts(ctx, e + 1)) {
+        if (n.number !== 'singular' || n.head !== 'spell') continue;
+        const { stackKind: _k, ...f } = n.filter;
+        if (f.zone === 'stack') delete f.zone;
+        const end = phraseAt(ctx, n.end, W_THIS_TURN);
+        if (end >= 0 && Object.keys(f).length > 0) out.push({ end, value: { cond: 'not', of: { cond: 'happened', event: { ev: 'cast', player: p.value as never, spell: f }, scope: 'turn' } } as Condition, ...flagsOf([...(p.flags ?? []), ...n.flags]) });
+      }
     }
   }
 }

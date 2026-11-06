@@ -1,0 +1,58 @@
+[
+  {
+    "id": "rid.edhmk2.mana.spent.commander.entersWith.casts",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 614.1c",
+      "CR 122.1",
+      "CR 903.8"
+    ],
+    "pattern": "if you spend this mana to cast your commander , it enters with a number of additional {k:CounterKind} counters on it equal to the number of times it's been cast from the command zone this game",
+    "build": {
+      "$patchPrevious": {
+        "rider": {
+          "spells": {
+            "commander": true,
+            "owner": "you"
+          },
+          "entersWith": [
+            {
+              "kind": "$k",
+              "count": {
+                "q": "commanderCasts",
+                "self": true
+              }
+            }
+          ]
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "if",
+      "additional",
+      "number",
+      "commander"
+    ],
+    "needs": [
+      "feature:mana.spentRider.entersWith",
+      "feature:q.commanderCasts.self"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add one mana of any color in your commander's color identity. If you spend this mana to cast your commander, it enters with a number of additional +1/+1 counters on it equal to the number of times it's been cast from the command zone this game."
+      },
+      {
+        "text": "{2}, {T}: Add {G}. If you spend this mana to cast your commander, it enters with a number of additional shield counters on it equal to the number of times it's been cast from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {G}. If you spend this mana to cast your commander, it enters with an additional +1/+1 counter on it.",
+      "{T}: Add {G}. If you spend this mana to cast a creature spell, it enters with a number of additional +1/+1 counters on it equal to the number of times it's been cast from the command zone this game.",
+      "{T}: Add {G}. If you spend this mana to cast your commander, it enters with a number of +1/+1 counters on it equal to the number of times it's been cast from the command zone this game."
+    ]
+  }
+]

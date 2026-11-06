@@ -1,0 +1,308 @@
+[
+  {
+    "id": "eff.edhz22.sacrifice.oneOfThem",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 603.2c"
+    ],
+    "pattern": "sacrifice one of them",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "you"
+      },
+      "filter": {
+        "is": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "object",
+            "number": "plural",
+            "text": "them"
+          }
+        }
+      },
+      "count": 1,
+      "as": "sacrificedOne"
+    },
+    "subject": "none",
+    "consumes": [
+      "sacrifice"
+    ],
+    "examples": [
+      {
+        "text": "Whenever one or more creatures you control deal combat damage to a player, you may sacrifice one of them. If you do, draw a card."
+      },
+      {
+        "text": "Whenever one or more Goblins you control die, you may sacrifice one of them."
+      }
+    ],
+    "counterExamples": [
+      "Whenever one or more creatures you control deal combat damage to a player, you may sacrifice two of them.",
+      "Whenever one or more creatures you control deal combat damage to a player, you may sacrifice each of them.",
+      "Whenever one or more creatures you control deal combat damage to a player, you may exile one of them."
+    ]
+  },
+  {
+    "id": "sta.edhz22.once.playLandOrCastPermanent.entersWith",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.1",
+      "CR 305.2",
+      "CR 601.3",
+      "CR 404.1",
+      "CR 611.3a",
+      "CR 614.1c",
+      "CR 110.4"
+    ],
+    "pattern": "once during each of your turns , you may play a land from your graveyard or cast a permanent spell with mana value {n:Qty} or less from your graveyard . if you do , it gains {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "types": [
+              "Artifact",
+              "Battle",
+              "Creature",
+              "Enchantment",
+              "Land",
+              "Planeswalker"
+            ],
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            }
+          },
+          "from": "graveyard",
+          "oncePerTurn": true,
+          "entersAbilities": "$a"
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "each",
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may play a land from your graveyard or cast a permanent spell with mana value 2 or less from your graveyard. If you do, it gains \"When this permanent is put into a graveyard from the battlefield, exile it and you gain 3 life.\""
+      },
+      {
+        "text": "{5}, {T}: You gain 6 life.\nOnce during each of your turns, you may play a land from your graveyard or cast a permanent spell with mana value 4 or less from your graveyard. If you do, it gains \"When this permanent is put into a graveyard from the battlefield, exile it and you gain 1 life.\""
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may play a land from your graveyard or cast a permanent spell with mana value 3 or less from your graveyard.",
+      "Once during each of your turns, you may play a land from your graveyard or cast a creature spell with mana value 3 or less from your graveyard. If you do, it gains \"When this permanent is put into a graveyard from the battlefield, exile it and you gain 2 life.\"",
+      "Once during each of your turns, you may play a land from your graveyard or cast a permanent spell with mana value 3 or more from your graveyard. If you do, it gains \"When this permanent is put into a graveyard from the battlefield, exile it and you gain 2 life.\""
+    ]
+  },
+  {
+    "id": "eff.edhz22.mayPut.handCard.bf.attackingWhom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 508.4",
+      "CR 506.3",
+      "CR 702.116a"
+    ],
+    "pattern": "you may put ( a | an ) {c:HandCard} onto the battlefield under your control tapped and attacking {p:Player} or a planeswalker they control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": "$c",
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true,
+          "attacking": {
+            "defender": "$p",
+            "orPlaneswalkers": true
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, look at defending player's hand. You may put a creature card from it onto the battlefield under your control tapped and attacking that player or a planeswalker they control."
+      },
+      {
+        "text": "Whenever ~ attacks, look at defending player's hand. You may put an artifact card from it onto the battlefield under your control tapped and attacking that player or a planeswalker they control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, look at defending player's hand. You may put a creature card from it onto the battlefield under your control tapped and attacking that player.",
+      "Whenever ~ attacks, look at defending player's hand. You may put a creature card from it onto the battlefield under your control tapped and attacking that player or a planeswalker you control.",
+      "Whenever ~ attacks, look at defending player's hand. You may put two creature cards from it onto the battlefield under your control tapped and attacking that player or a planeswalker they control."
+    ]
+  },
+  {
+    "id": "eff.edhz22.putAll.revealedUntil.graveyard.restBottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 608.2c",
+      "CR 401.4",
+      "CR 404.1"
+    ],
+    "pattern": "put all {f:Filter} cards {g:RevealedThisWay} into your graveyard , then put {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "then",
+      "this way",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal X artifact cards. Put all artifact cards revealed this way into your graveyard, then put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Reveal cards from the top of your library until you reveal X land cards. Put all land cards revealed this way into your graveyard, then put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal X land cards. Put all land cards revealed this way into your hand, then put the rest on the bottom of your library in a random order.",
+      "Reveal cards from the top of your library until you reveal X land cards. Put all land cards revealed this way into your graveyard, then put the rest on the bottom of your library in any order.",
+      "Reveal cards from the top of your library until you reveal a land card. Put all land cards revealed this way into your graveyard, then put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhz22.exile.randomFromGraveyard.nonlandCard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 404.1",
+      "CR 400.7"
+    ],
+    "pattern": "exile {f:DiscardDesc} at random from your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, exile a nonland card at random from your graveyard. You may play that card this turn."
+      },
+      {
+        "text": "{2}, {T}: Exile a noncreature card at random from your graveyard. You may play that card this turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Exile a nonland card from your graveyard. You may play that card this turn.",
+      "{2}, {T}: Exile two nonland cards at random from your graveyard. You may play those cards this turn.",
+      "{2}, {T}: Exile a nonland card at random from target player's graveyard. You may play that card this turn."
+    ]
+  }
+]

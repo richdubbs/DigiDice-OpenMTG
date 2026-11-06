@@ -100,16 +100,18 @@ describe('CR 122.1a, 122.1c, 122.1d, 122.1h, 122.1i: a counter kind whose rules 
 });
 
 describe('design 6.4: the objects a condition names are candidates for a pronoun (an intervening "if" included, CR 603.4)', () => {
-  it('"When this Aura enters, if enchanted creature is green, tap it": two candidates (the Aura, the enchanted creature): manual, never the Aura', () => {
+  // edh-c-66 (CR 603.4, 303.4, 608.2c; Volition Reins): an intervening "if" about the enchanted permanent alone makes "it" that permanent (parser/lower/anaphora.ts#interveningAttached): still never the Aura
+  it('"When this Aura enters, if enchanted creature is green, tap it": the pronoun is the enchanted creature (the permanent the condition tests), never the Aura', () => {
     const f = parse('Enchantment — Aura', 'Enchant creature\nWhen this Aura enters, if enchanted creature is green, tap it.');
     expect(json(f.abilities)).not.toContain('{"op":"tap","what":{"ref":"self"}}');
-    expect(automated(f.abilities)).toBe(false);
-    expect(f.diagnostics.some((d) => d.code === 'unbound-reference' && /2 compatible/.test(d.message))).toBe(true);
+    expect(json(f.abilities)).toContain('{"op":"tap","what":{"ref":"attachedTo"}}');
   });
-  it('"When this Aura enters, if enchanted permanent is untapped, tap it": manual, never tapping the Aura', () => {
+  it('"When this Aura enters, if enchanted permanent is untapped, tap it": the enchanted permanent, never tapping the Aura; a condition about something else keeps the pronoun on the Aura', () => {
     const f = parse('Enchantment — Aura', 'Enchant permanent\nWhen this Aura enters, if enchanted permanent is untapped, tap it.');
     expect(json(f.abilities)).not.toContain('{"op":"tap","what":{"ref":"self"}}');
-    expect(automated(f.abilities)).toBe(false);
+    expect(json(f.abilities)).toContain('{"op":"tap","what":{"ref":"attachedTo"}}');
+    const g = parse('Enchantment — Aura', 'Enchant permanent\nWhen this Aura enters, if you control a Wizard, tap it.');
+    expect(json(g.abilities)).not.toContain('"attachedTo"');
   });
 });
 
@@ -168,10 +170,12 @@ describe('CR 400.7, 400.7e-f: "~" in a trigger whose event moved the source', ()
 });
 
 describe('CR 109.2, 115.3: "other" with no earlier target is "other than this object" only when this object could match', () => {
-  it('an enchantment\'s "up to one other target creature card from your graveyard": "other" means the creature that died; manual, no superset target', () => {
+  it('an enchantment\'s "up to one other target creature card from your graveyard": "other" means the creature that died (edh-d-59: not that creature, automated)', () => {
     const f = parse('Enchantment', 'Whenever a creature you control dies, return up to one other target creature card from your graveyard to your hand.');
     expect(json(f.abilities)).not.toContain('"other":true');
-    expect(runs(f)).toBe(false);
+    // edh-d-59 (Puca's Covenant): "other" is the creature that died, `not: {is: the event's subject}`, so the sentence is automated now (it was manual, never a superset)
+    expect(json(f.abilities)).toContain('"not":{"is":{"ref":"event","role":"subject"}}');
+    expect(runs(f)).toBe(true);
   });
   it('a sorcery\'s "each other Goblin you control" means other than the token just created: manual', () => {
     const f = parse('Sorcery', 'Create a 1/1 red Goblin creature token, then put a +1/+1 counter on each other Goblin you control.');

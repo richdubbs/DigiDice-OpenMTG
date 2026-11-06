@@ -1,0 +1,11 @@
+# edh-players-3 (Commander lane edh-players; test/cloud/edh-players-3, golden edh-players-3-review.json)
+# choose any number; lose life and draw; creatures and nonbasic lands enter tapped; creature lands with abilities and an X/X size; tokens tapped and attacking each opponent or a planeswalker; you can't lose / opponents can't win this turn and the life floor; double the power of each Dragon / its power
+Thalia, Heretic Cathar
+Adeline, Resplendent Cathar
+Angel's Grace
+Inkmoth Nexus
+Blinkmoth Nexus
+Lair of the Hydra
+Thrakkus the Butcher
+Two-Handed Axe // Sweeping Cleave
+Rankle, Master of Pranks

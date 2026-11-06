@@ -44,14 +44,18 @@ const activate = (s: GameState, id: string, answers: DecisionAnswer[] = []): Gam
   return drive(act(s, la!.action), answers);
 };
 
-describe('CR 605.1a, 605.3b, 121.1: a mana ability that also says "Draw a card."', () => {
+describe('CR 605.1a, 121.1: an ability that adds mana and also says "Draw a card." (since the 2026-09-25 rules no mana ability: edh-fix-5)', () => {
   const EGG = card('Test Dawn Egg', 'Artifact', '{2}, {T}, Sacrifice this artifact: Add {W}{U}. Draw a card.', { cost: '{1}' });
-  it('activating it adds the mana and draws the card at once, without the stack, after the artifact was sacrificed as a cost', () => {
+  it('activating it uses the stack: the mana and the card come when it resolves, after the artifact was sacrificed as a cost', () => {
     expect(full(EGG)).toBe(true);
     const s0 = scenario(['Plains'], { defs: [EGG], p1: { battlefield: ['Test Dawn Egg', ...lands('Plains', 2)] } });
     const egg = find(s0, 'Test Dawn Egg', 'battlefield', 'p1');
     const before = handSize(s0, 'p1');
-    const s = activate(s0, egg);
+    const s1 = activate(s0, egg);
+    expect(s1.zones.stack.length).toBe(1);
+    expect(handSize(s1, 'p1')).toBe(before);
+    expect(pool(s1, 'p1')).not.toContain('W');
+    const s = resolveAll(s1);
     expect(handSize(s, 'p1')).toBe(before + 1);
     expect(s.zones.stack).toEqual([]);
     expect(pool(s, 'p1')).toContain('W');
@@ -59,11 +63,11 @@ describe('CR 605.1a, 605.3b, 121.1: a mana ability that also says "Draw a card."
     expect(s.zones.graveyard.p1!.some((id) => s.defs[s.objects[id]!.defId]!.name === 'Test Dawn Egg')).toBe(true);
     expect(handSize(s, 'p2')).toBe(handSize(s0, 'p2')); // the controller draws, nobody else
   });
-  it('a draw for another player beside the mana is not read (fail closed)', () => {
+  it('a draw for another player or a counted draw beside the mana is an ordinary ability too', () => {
     const OTHER = card('Test Gift Egg', 'Artifact', '{T}, Sacrifice this artifact: Add {W}. Each opponent draws a card.');
-    expect(full(OTHER)).toBe(false);
+    expect(JSON.stringify(OTHER.faces[0]!.abilities)).not.toContain('"isMana":true');
     const MANY = card('Test Greedy Egg', 'Artifact', '{T}, Sacrifice this artifact: Add {W}. Draw X cards, where X is the number of artifacts you control.');
-    expect(full(MANY)).toBe(false);
+    expect(JSON.stringify(MANY.faces[0]!.abilities)).not.toContain('"isMana":true');
   });
 });
 

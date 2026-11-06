@@ -46,7 +46,8 @@ const WHOLE_CORPUS: Readonly<Record<string, { cards: readonly string[]; line: Re
 // r5-cost: Improvisation Capstone and Dance with Calamity, evidence of eff.r3cost.cast.anyNumber.free.fromAmong (promoted to stable with Etali, Primal Storm);
 // std-rx31: Improvisation Capstone is full (its exile-until-total-mana-value sentence, zz-cloud/std-rx31.json)
 // std-rx26: Doc Aurlock, Grizzled Genius is full now (its plot sentence, sta.stdrx26.plotting.fromHand.costsLess), so its entry expects full
-const PENDING: ReadonlySet<string> = new Set(['Dance with Calamity', 'Villainous Wealth', 'Aven Interrupter', 'Sage of the Beyond', "Fortune Teller's Talent", 'Luxurious Locomotive']);
+// edh-cast-4: Fortune Teller's Talent is full now (its level 2, sta.edhc4.aslong.top.play.cards), so its entry expects full
+const PENDING: ReadonlySet<string> = new Set(['Villainous Wealth', 'Aven Interrupter', 'Sage of the Beyond', 'Luxurious Locomotive']);
 
 /** A synthetic card in which an example is an ability of the right kind: a spell on a sorcery, a triggered, activated or static ability on a creature (an additional cost on an enchantment). */
 function exampleCard(t: Template, text: string): OracleCard {

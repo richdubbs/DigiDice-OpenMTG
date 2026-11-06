@@ -188,7 +188,7 @@ describe('std-rw7 renderer (CR 608.2g, 118.9; render/fold.ts#castFromOwnZone): o
   });
   it('from your graveyard, paid: "you may cast an instant or sorcery spell from your graveyard"; free from a graveyard and paid from a hand are not folded (not this round\'s wordings)', () => {
     expect(renderGate(def([choose('graveyard', { types: ['Instant', 'Sorcery'] }), castIt()]), ['You may cast an instant or sorcery spell from your graveyard.'], ctx).ok).toBe(true);
-    expect(renderGate(def([choose('graveyard', { types: ['Instant'] }), castIt({ free: true })]), ['You may cast an instant spell from your graveyard without paying its mana cost.'], ctx).ok).toBe(false);
+    expect(renderGate(def([choose('graveyard', { types: ['Instant'] }), castIt({ free: true })]), ['You may cast an instant spell from your graveyard without paying its mana cost.'], ctx).ok).toBe(true); // edh-cast-14: free from a graveyard is folded now (template eff.edhc14.cast.fromGraveyard.free, Sword of Once and Future)
     expect(renderGate(def([choose('hand', { types: ['Instant'] }), castIt()]), ['You may cast an instant spell from your hand.'], ctx).ok).toBe(false);
   });
   it('a choice by another player, of two cards, or a cast with an alternative cost is not this fold', () => {

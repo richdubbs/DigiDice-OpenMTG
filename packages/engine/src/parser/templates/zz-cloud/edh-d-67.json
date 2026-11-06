@@ -1,0 +1,713 @@
+[
+  {
+    "id": "eff.edhd67.prevent.nextSourceOfChoice.you.halfDown",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 609.7a",
+      "CR 615.1",
+      "CR 615.7",
+      "CR 615.8",
+      "CR 107.1a"
+    ],
+    "pattern": "the next time a source of your choice would deal damage to you {d:Dur} , prevent half that damage , rounded down",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack",
+              "command"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "damageSource": true,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "recipient": {
+                "player": "you"
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": {
+                "q": "math",
+                "op": "floorDiv",
+                "args": [
+                  {
+                    "q": "eventAmount"
+                  },
+                  2
+                ]
+              }
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "prevent",
+      "choice",
+      "half",
+      "rounded"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: The next time a source of your choice would deal damage to you this turn, prevent half that damage, rounded down."
+      },
+      {
+        "text": "{1}{W}: The next time a source of your choice would deal damage to you this turn, prevent half that damage, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "{2}: The next time a source of your choice would deal damage to you this turn, prevent half that damage, rounded up.",
+      "{2}: The next time a source of your choice would deal damage to you this turn, prevent half that damage.",
+      "{2}: The next time a source of an opponent's choice would deal damage to you this turn, prevent half that damage, rounded down.",
+      "{2}: The next time a source of your choice would deal damage to an opponent this turn, prevent half that damage, rounded down.",
+      "{2}: The next time a red source of your choice would deal damage to you this turn, prevent half that damage, rounded down."
+    ]
+  },
+  {
+    "id": "eff.edhd67.prevent.nextDescribedSourceOfChoice.any",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 609.7a",
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 615.9"
+    ],
+    "pattern": "the next time {f:Filter} of your choice would deal damage {d:Dur} , prevent that damage",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack",
+              "command"
+            ],
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "damageSource": true,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                },
+                "anyOf": [
+                  "$f"
+                ]
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            },
+            "shield": {
+              "uses": 1
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "prevent",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "{2}: The next time a green or white source of your choice would deal damage this turn, prevent that damage."
+      },
+      {
+        "text": "{W}, {T}: The next time a blue source of your choice would deal damage this turn, prevent that damage."
+      }
+    ],
+    "counterExamples": [
+      "{2}: The next time a green source of your choice would deal damage to you this turn, prevent that damage.",
+      "{2}: The next time a green source of an opponent's choice would deal damage this turn, prevent that damage.",
+      "{2}: The next time a green source of your choice would deal damage, prevent that damage.",
+      "{2}: The next time a green source of your choice would deal damage this turn, prevent half that damage."
+    ]
+  },
+  {
+    "id": "eff.edhd67.fog.combat.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.1",
+      "CR 608.2c",
+      "CR 601.2h"
+    ],
+    "pattern": "prevent all combat damage that would be dealt {d:Dur} if {c:Cond}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "guard": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "would",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt this turn if {W} was spent to cast this spell."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt this turn if {G} was spent to cast this spell."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt this turn unless {W} was spent to cast this spell.",
+      "Prevent all damage that would be dealt this turn if {W} was spent to cast this spell.",
+      "Prevent all combat damage that would be dealt to you this turn if {W} was spent to cast this spell.",
+      "Prevent all combat damage that would be dealt this turn if {W} was spent to cast this spell instead."
+    ]
+  },
+  {
+    "id": "eff.edhd67.loselife.foreach.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2h",
+      "CR 608.2c",
+      "CR 601.2h"
+    ],
+    "pattern": "{p:Player} lose[s] 1 life for each {f:Filter} if {c:Cond}",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      },
+      "guard": "$c"
+    },
+    "subject": "player",
+    "consumes": [
+      "each",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Each player loses 1 life for each attacking creature they control if {B} was spent to cast this spell."
+      },
+      {
+        "text": "Target opponent loses 1 life for each Zombie you control if {R} was spent to cast this spell."
+      }
+    ],
+    "counterExamples": [
+      "Each player loses 1 life for each attacking creature they control unless {B} was spent to cast this spell.",
+      "Each player loses 2 life for each attacking creature they control if {B} was spent to cast this spell.",
+      "Each player loses 1 life for each attacking creature they control if {B} was spent to cast this spell instead."
+    ]
+  },
+  {
+    "id": "eff.edhd67.must.lure.opponents",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 509.1c"
+    ],
+    "pattern": "all creatures your opponents control able to block {o:Obj} {d:Dur} do so",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "opponent"
+            }
+          },
+          "mode": "mustIfAble",
+          "action": "block",
+          "other": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "able",
+      "do so"
+    ],
+    "examples": [
+      {
+        "text": "All creatures your opponents control able to block target creature you control this turn do so."
+      },
+      {
+        "text": "Target creature gets +2/+2 until end of turn. All creatures your opponents control able to block that creature this turn do so."
+      }
+    ],
+    "counterExamples": [
+      "All creatures your opponents control able to block target creature this turn can do so.",
+      "All creatures you control able to block target creature this turn do so.",
+      "All creatures target opponent controls able to block target creature this turn do so.",
+      "All creatures your opponents control able to attack target creature this turn do so."
+    ]
+  },
+  {
+    "id": "sta.edhd67.damage.prevent.thenControllerAndRecipientDrawHalf",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 615.1",
+      "CR 615.5",
+      "CR 120.3",
+      "CR 121.1",
+      "CR 107.1a"
+    ],
+    "pattern": "if {e:DamageWould} , prevent that damage . ~ 's controller and that player each draw half that many cards , rounded down",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": "$e",
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "draw",
+                "who": {
+                  "ref": "controllerOf",
+                  "object": {
+                    "ref": "self"
+                  }
+                },
+                "count": {
+                  "q": "math",
+                  "op": "floorDiv",
+                  "args": [
+                    {
+                      "q": "preventedAmount"
+                    },
+                    2
+                  ]
+                }
+              },
+              {
+                "op": "draw",
+                "who": {
+                  "ref": "event",
+                  "role": "recipient"
+                },
+                "count": {
+                  "q": "math",
+                  "op": "floorDiv",
+                  "args": [
+                    {
+                      "q": "preventedAmount"
+                    },
+                    2
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "each",
+      "half",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "If ~ would deal combat damage to a player, prevent that damage. ~'s controller and that player each draw half that many cards, rounded down."
+      },
+      {
+        "text": "If ~ would deal damage to a player, prevent that damage. ~'s controller and that player each draw half that many cards, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "If ~ would deal combat damage to a player, prevent that damage. ~'s controller and that player each draw half that many cards, rounded up.",
+      "If ~ would deal combat damage to a player, prevent that damage. ~'s controller and that player each draw that many cards.",
+      "If ~ would deal combat damage to a player, prevent that damage. ~'s controller draws half that many cards, rounded down.",
+      "If ~ would deal combat damage to a creature, prevent that damage. ~'s controller and that player each draw half that many cards, rounded down."
+    ]
+  },
+  {
+    "id": "eff.edhd67.nextTime.objDealsCombat.double",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 615.8",
+      "CR 120.3",
+      "CR 510.2",
+      "CR 611.2a"
+    ],
+    "pattern": "the next time {o:Obj} would deal combat damage {d:Dur} , it deals double that damage instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            },
+            "combat": true
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "mul": 2
+            }
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "double",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "The next time target creature would deal combat damage this turn, it deals double that damage instead."
+      },
+      {
+        "text": "The next time target creature you control would deal combat damage this turn, it deals double that damage instead."
+      }
+    ],
+    "counterExamples": [
+      "The next time target creature would deal combat damage this turn, it deals triple that damage instead.",
+      "The next time target creature would deal damage this turn, it deals double that damage instead.",
+      "The next time target creature would deal combat damage, it deals double that damage instead.",
+      "If target creature would deal combat damage this turn, it deals double that damage instead."
+    ]
+  },
+  {
+    "id": "eff.edhd67.nextTime.objDealsCombat.prevent",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 615.8",
+      "CR 120.3",
+      "CR 510.2"
+    ],
+    "pattern": "the next time {o:Obj} would deal combat damage {d:Dur} , prevent that damage",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            },
+            "combat": true
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "The next time target creature would deal combat damage this turn, prevent that damage."
+      },
+      {
+        "text": "The next time target creature you control would deal combat damage this turn, prevent that damage."
+      }
+    ],
+    "counterExamples": [
+      "The next time target creature would deal damage this turn, prevent that damage.",
+      "The next time target creature would deal combat damage, prevent that damage.",
+      "The next time target creature would deal combat damage this turn, prevent half that damage.",
+      "The next time target creature would deal combat damage to you this turn, prevent that damage."
+    ]
+  },
+  {
+    "id": "eff.edhd67.damage.targetAndEachOtherSameController",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2b",
+      "CR 109.4",
+      "CR 115.1"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {t:Obj} and {m:Qty} damage to each other creature with the same controller",
+    "build": [
+      {
+        "op": "damage",
+        "source": "$src",
+        "to": "$t",
+        "amount": "$n"
+      },
+      {
+        "op": "damage",
+        "source": "$src",
+        "to": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": {
+              "ref": "controllerOf",
+              "object": "$t"
+            },
+            "not": {
+              "is": "$t"
+            }
+          }
+        },
+        "amount": "$m"
+      }
+    ],
+    "subject": "object",
+    "consumes": [
+      "each other",
+      "other",
+      "same",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ deals X damage to target creature and 1 damage to each other creature with the same controller."
+      },
+      {
+        "text": "~ deals 3 damage to target creature and 2 damage to each other creature with the same controller."
+      }
+    ],
+    "counterExamples": [
+      "~ deals X damage to target creature and 1 damage to each other creature with a different controller.",
+      "~ deals X damage to target creature and 1 damage to each creature with the same controller.",
+      "~ deals X damage to target creature and 1 damage to each other creature you control.",
+      "~ deals X damage to target creature and 1 damage to each other creature with the same controller instead."
+    ]
+  },
+  {
+    "id": "eff.edhd67.choose.sourceYouControl",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 609.7a",
+      "CR 608.2d"
+    ],
+    "pattern": "choose a source you control",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "zone": [
+            "battlefield",
+            "stack",
+            "command"
+          ],
+          "controller": "you"
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "damageSource": true,
+      "as": "chosenSource"
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "instead",
+      "double",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Choose a source you control and flip a coin. If you win the flip, the next time that source would deal damage this turn, it deals double that damage instead. If you lose the flip, the next time it would deal damage this turn, prevent that damage."
+      },
+      {
+        "text": "You gain 1 life. Choose a source you control and flip a coin. If you win the flip, the next time that source would deal damage this turn, it deals double that damage instead. If you lose the flip, the next time it would deal damage this turn, prevent that damage."
+      }
+    ],
+    "counterExamples": [
+      "Choose a source you control. Draw a card.",
+      "Draw a card. Choose a source an opponent controls and flip a coin. If you win the flip, the next time that source would deal damage this turn, it deals double that damage instead. If you lose the flip, the next time it would deal damage this turn, prevent that damage.",
+      "Draw a card. Choose a source you control and flip a coin. If you win the flip, draw a card.",
+      "Draw a card. Choose a source you control and flip a coin. If you win the flip, the next time that source would deal damage this turn, it deals triple that damage instead. If you lose the flip, the next time it would deal damage this turn, prevent that damage."
+    ]
+  },
+  {
+    "id": "eff.edhd67.nextTime.objDeals.double",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 615.8",
+      "CR 120.3",
+      "CR 611.2a"
+    ],
+    "pattern": "the next time {o:Obj} would deal damage {d:Dur} , it deals double that damage instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "mul": 2
+            }
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "double",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "The next time target creature would deal damage this turn, it deals double that damage instead."
+      },
+      {
+        "text": "The next time target creature you control would deal damage this turn, it deals double that damage instead."
+      }
+    ],
+    "counterExamples": [
+      "The next time target creature would deal damage this turn, it deals triple that damage instead.",
+      "The next time target creature would deal combat damage this turn, it deals double that damage instead.",
+      "The next time target creature would deal damage, it deals double that damage instead.",
+      "If target creature would deal damage this turn, it deals double that damage instead."
+    ]
+  }
+]

@@ -1,0 +1,638 @@
+[
+  {
+    "id": "eff.edhd94.exileAllCreatures.eachPlayerToken.countersTotalPowerTheyControlled",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 109.4",
+      "CR 111.2",
+      "CR 122.1",
+      "CR 208.1"
+    ],
+    "note": "edh-d-94 (Oversimplify; ruling 2021-04-16: the total power of the creatures as they last existed on the battlefield): every creature is exiled (the step binds them), then for each player in turn that player creates the token and puts on it as many counters as the total power of the exiled creatures that player controlled as they last existed (stat `by`, edh-players-21's reading). A narrow wording (one card): stable on one golden card plus template tests (design 6.9 deviation, owner's standing rule 2026-10-27).",
+    "pattern": "exile all creatures . each player creates a {t:TokenDesc} and puts a number of {k:CounterKind} counters on it equal to the total power of creatures they controlled that were exiled this way",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ]
+          }
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "exiledAll"
+      },
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "who": "player"
+        },
+        "as": "each",
+        "do": [
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "bound",
+              "name": "each"
+            },
+            "count": 1,
+            "token": "$t",
+            "as": "made"
+          },
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "bound",
+              "name": "made"
+            },
+            "kind": "$k",
+            "count": {
+              "q": "stat",
+              "stat": "power",
+              "of": {
+                "ref": "bound",
+                "name": "exiledAll"
+              },
+              "sum": true,
+              "by": {
+                "ref": "bound",
+                "name": "each"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Exile all creatures. Each player creates a 0/0 red Elemental creature token and puts a number of +1/+1 counters on it equal to the total power of creatures they controlled that were exiled this way."
+      },
+      {
+        "text": "Exile all creatures. Each player creates a 0/0 colorless Golem artifact creature token and puts a number of +1/+1 counters on it equal to the total power of creatures they controlled that were exiled this way."
+      }
+    ],
+    "counterExamples": [
+      "Exile all creatures. Each player creates a 0/0 red Elemental creature token and puts a number of +1/+1 counters on it equal to the total toughness of creatures they controlled that were exiled this way.",
+      "Exile all artifacts. Each player creates a 0/0 red Elemental creature token and puts a number of +1/+1 counters on it equal to the total power of creatures they controlled that were exiled this way.",
+      "Exile all creatures. Each opponent creates a 0/0 red Elemental creature token and puts a number of +1/+1 counters on it equal to the total power of creatures they controlled that were exiled this way."
+    ]
+  },
+  {
+    "id": "eff.edhd94.tapAll.mayPayAnyEnergy.chooseUpToTappedThisWay.stunEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.26a",
+      "CR 107.14",
+      "CR 118.12",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 122.1d"
+    ],
+    "note": "edh-d-94 (Suppression Ray; rulings 2024-06-07: \"creatures tapped this way\" are those that became tapped by this effect, not those already tapped; the {E} payment is made once, any amount): every creature the target player controls is tapped (`changedOnly`: the step names only the ones it tapped), you may pay any amount of {E}, and if you do you choose up to that many of the creatures tapped this way (as many as the energy paid) and put a stun counter on each. A narrow wording (one card): stable on one golden card plus template tests (design 6.9 deviation, owner's standing rule 2026-10-27).",
+    "pattern": "tap all creatures {o:Player} controls . you may pay any amount of {e} . if you do , choose up to that many creatures tapped this way . put a stun counter on each of them",
+    "build": [
+      {
+        "op": "tap",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "$o"
+          }
+        },
+        "as": "tappedThisWay",
+        "changedOnly": true
+      },
+      {
+        "op": "pay",
+        "who": {
+          "ref": "you"
+        },
+        "cost": {
+          "other": [
+            {
+              "kind": "payEnergy",
+              "amount": 1
+            }
+          ]
+        },
+        "anyAmount": true,
+        "as": "energyPaid",
+        "then": [
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "you"
+            },
+            "from": {
+              "ref": "bound",
+              "name": "tappedThisWay"
+            },
+            "min": 0,
+            "max": {
+              "q": "resultCount",
+              "step": "energyPaid"
+            },
+            "as": "stunChosen"
+          },
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "bound",
+              "name": "stunChosen"
+            },
+            "kind": "stun",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "may",
+      "any",
+      "if",
+      "up to",
+      "that many",
+      "this way",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Tap all creatures target opponent controls. You may pay any amount of {E}. If you do, choose up to that many creatures tapped this way. Put a stun counter on each of them."
+      },
+      {
+        "text": "Tap all creatures target player controls. You may pay any amount of {E}. If you do, choose up to that many creatures tapped this way. Put a stun counter on each of them. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Tap all creatures target player controls. You may pay any amount of {E}. If you do, choose up to that many creatures tapped this way. Put a +1/+1 counter on each of them.",
+      "Tap all creatures target player controls. You may pay any amount of {R}. If you do, choose up to that many creatures tapped this way. Put a stun counter on each of them.",
+      "Tap all creatures target player controls. You may pay any amount of {E}. If you do, choose up to that many tapped creatures. Put a stun counter on each of them."
+    ]
+  },
+  {
+    "id": "rep.edhd94.dies.exile.whenYouDo.mayPay",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 700.4",
+      "CR 603.12",
+      "CR 118.12",
+      "CR 608.2d"
+    ],
+    "note": "edh-d-94 (Valentin, Dean of the Vein; ruling 2021-04-16: when another effect is applied instead, the reflexive ability does not trigger): r3-repl's replacement rep.r3repl.dies.exile.whenYouDo whose reflexive ability is an optional payment with its \"If you do\" (\"When you do, you may pay {2}. If you do, create ...\"): the same body, the reflexive ability a `pay` with `then`. Narrow wording: stable on one golden card plus template tests (design 6.9 deviation, owner's standing rule 2026-10-27). Priority 2: rep.r3repl.dies.exile.whenYouDo also reads these sentences (its Effects hole takes \"you may pay {2}. If you do, ...\" with ch.maypay, priority 1) but leaves the \"if you do\" marker unresolved in a static ability, so that reading was always manual: this one, whose JSON states the payment and its `then`, is the reading taken.",
+    "pattern": "if {f:Filter} would die , exile it instead . when you do , you may pay {m:ManaCost} . if you do , {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "from": "battlefield",
+            "to": "graveyard"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            },
+            "then": {
+              "as": "exiled",
+              "do": [
+                {
+                  "op": "reflexive",
+                  "when": {
+                    "did": "exiled"
+                  },
+                  "targets": [],
+                  "do": [
+                    {
+                      "op": "pay",
+                      "who": {
+                        "ref": "you"
+                      },
+                      "cost": {
+                        "mana": "$m"
+                      },
+                      "then": "$e"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "when",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "If a creature an opponent controls would die, exile it instead. When you do, you may pay {1}. If you do, create a 1/1 white Spirit creature token."
+      },
+      {
+        "text": "If a nontoken creature you control would die, exile it instead. When you do, you may pay {2}{B}. If you do, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "If a creature an opponent controls would die, exile it instead. When you do, you may pay 2 life. If you do, create a 1/1 white Spirit creature token.",
+      "If a creature an opponent controls would die, put it into its owner's hand instead. When you do, you may pay {1}. If you do, you gain 2 life.",
+      "If a creature an opponent controls would die, exile it instead. When you do, pay {1}. If you do, create a 1/1 white Spirit creature token."
+    ],
+    "priority": 2
+  },
+  {
+    "id": "eff.edhd94.revealUntil.putHandRestBottom.whenRevealedThisWay.countersMv",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 603.12",
+      "CR 603.12a",
+      "CR 122.1",
+      "CR 202.3",
+      "CR 202.3e",
+      "CR 608.2h"
+    ],
+    "note": "edh-d-94 (Yuna's Whistle; rulings 2025-06-06: the target is chosen when the reflexive ability triggers, not as the spell is cast; X in the revealed card's mana cost is 0): the reveal until a card of the description, that card into your hand, the rest on the bottom in a random order (r3-dig's reading), and the reflexive ability that triggers only when such a card was revealed (it waits for the move of the found card into your hand, which happens exactly when one was found) and puts on its target as many counters as that card's mana value, fixed as the card is revealed (`let`, CR 608.2h: the card then goes into a hidden zone, where nothing can follow it, CR 400.7). A narrow wording (one card): stable on one golden card plus template tests (design 6.9 deviation, owner's standing rule 2026-10-27).",
+    "pattern": "reveal cards from the top of your library until you reveal a creature card . put that card into your hand and the rest on the bottom of your library in a random order . when you reveal a creature card this way , put x {k:CounterKind} counters on {o:Obj} , where x is the mana value of that card",
+    "build": [
+      {
+        "op": "revealUntil",
+        "who": {
+          "ref": "you"
+        },
+        "filter": {
+          "types": [
+            "Creature"
+          ]
+        },
+        "as": "hit",
+        "revealed": "revealed"
+      },
+      {
+        "op": "let",
+        "name": "foundManaValue",
+        "value": {
+          "q": "stat",
+          "stat": "manaValue",
+          "of": {
+            "ref": "bound",
+            "name": "hit"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "hit"
+        },
+        "to": {
+          "zone": "hand"
+        },
+        "as": "foundCard"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "hit"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      },
+      {
+        "op": "reflexive",
+        "when": {
+          "did": "foundCard"
+        },
+        "targets": [],
+        "do": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k",
+            "count": {
+              "q": "var",
+              "name": "foundManaValue"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "until",
+      "rest",
+      "random",
+      "when",
+      "this way",
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and the rest on the bottom of your library in a random order. When you reveal a creature card this way, put X +1/+1 counters on target creature an opponent controls, where X is the mana value of that card."
+      },
+      {
+        "text": "Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and the rest on the bottom of your library in a random order. When you reveal a creature card this way, put X -1/-1 counters on target creature, where X is the mana value of that card."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal a land card. Put that card into your hand and the rest on the bottom of your library in a random order. When you reveal a creature card this way, put X +1/+1 counters on target creature, where X is the mana value of that card.",
+      "Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and the rest on the bottom of your library in a random order. When you reveal a creature card this way, put X +1/+1 counters on target creature, where X is the power of that card.",
+      "Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and the rest into your graveyard. When you reveal a creature card this way, put X +1/+1 counters on target creature, where X is the mana value of that card."
+    ]
+  },
+  {
+    "id": "eff.edhd94.token.thenEntersWithCountersNumberOfOther",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 122.6",
+      "CR 614.1c",
+      "CR 608.2h"
+    ],
+    "note": "edh-d-94 (Printlifter Ooze): \"Create a 0/0 green Ooze creature token with trample. The token enters with X +1/+1 counters on it, where X is the number of other creatures you control.\": the token enters with the counters (CR 122.6, 614.1c), as many as the objects of the description as the token is created: \"other\" is other than the token, which is not on the battlefield yet when the number is counted (tokens-create.ts reads the counters before the creation event), so the count is of the whole description (the source and the creature turned face up included). A narrow wording (one card): stable on one golden card plus template tests (design 6.9 deviation, owner's standing rule 2026-10-27).",
+    "pattern": "create a {t:TokenDesc} . the token enters with x {k:CounterKind} counters on it , where x is the number of other {f:Filter}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": "$t",
+      "counters": [
+        {
+          "kind": "$k",
+          "count": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "other",
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, create a 0/0 black Zombie creature token. The token enters with X +1/+1 counters on it, where X is the number of other creatures you control."
+      },
+      {
+        "text": "Whenever you cast a noncreature spell, create a 0/0 colorless Construct artifact creature token. The token enters with X +1/+1 counters on it, where X is the number of other artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, create a 0/0 black Zombie creature token. The token enters with X +1/+1 counters on it, where X is the number of creatures you control.",
+      "When this creature enters, create two 0/0 black Zombie creature tokens. The token enters with X +1/+1 counters on it, where X is the number of other creatures you control.",
+      "When this creature enters, create a 0/0 black Zombie creature token. It gets +X/+X until end of turn, where X is the number of other creatures you control."
+    ]
+  },
+  {
+    "id": "rep.edhd94.enters.choose.planeswalkerType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 205.3j"
+    ],
+    "note": "edh-d-94 (Deification): \"As ~ enters, choose a planeswalker type.\": the choice of one of the planeswalker types of CR 205.3j as the permanent enters (as rep.enters.choose.creaturetype for a creature type), kept under the link `pwType` for the face's \"of the chosen type\" (parser/parse.ts#ENTERS_CHOICES). Stable on one golden card plus template tests (design 6.9 deviation, owner's standing rule 2026-10-27).",
+    "pattern": "as ~ enters , choose a planeswalker type",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "planeswalkerType",
+                "link": "pwType"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As this Vehicle enters, choose a planeswalker type."
+      },
+      {
+        "text": "As this planeswalker enters, choose a planeswalker type."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a planeswalker.",
+      "As ~ enters, choose two planeswalker types."
+    ]
+  },
+  {
+    "id": "sta.edhd94.asLongAs.damageLeavesOneLoyalty",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3c",
+      "CR 614.1a",
+      "CR 611.3a",
+      "CR 306.5c"
+    ],
+    "note": "edh-d-94 (Deification; rulings 2023-05-12: the damage is not prevented, it is still dealt and its other results happen; it applies to a planeswalker dealt combat damage in the same step its controller's last creature is destroyed): as long as the condition holds, damage dealt to a planeswalker the description matches that would remove all its loyalty counters removes all but one (rule modification `damageLeavesOneLoyalty`, read by rules/damage.ts as the damage is dealt). A narrow wording (one card): stable on one golden card plus template tests (design 6.9 deviation, owner's standing rule 2026-10-27).",
+    "pattern": "as long as {c:Cond} , if damage dealt to {f:Filter} would result in all loyalty counters on it being removed , instead all but one of those counters are removed",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "damageLeavesOneLoyalty",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "all",
+      "but"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control an artifact, if damage dealt to a planeswalker you control would result in all loyalty counters on it being removed, instead all but one of those counters are removed."
+      },
+      {
+        "text": "As long as you have 10 or more life, if damage dealt to a planeswalker you control would result in all loyalty counters on it being removed, instead all but one of those counters are removed."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a creature, if damage dealt to a planeswalker you control would result in all loyalty counters on it being removed, instead none of those counters are removed.",
+      "As long as you control a creature, if damage would be dealt to a planeswalker you control, prevent that damage.",
+      "If damage dealt to a planeswalker you control would result in all loyalty counters on it being removed, instead all but two of those counters are removed."
+    ]
+  },
+  {
+    "id": "eff.edhd94.chooseCounterKindOnYours.putOnEachOther",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "note": "edh-d-94 (Contractual Safeguard; ruling 2022-04-29: after the Addendum, the shield counter it put may be the kind chosen): you choose a creature you control that has a counter and a kind of counter on it (edh-perms-15's choice of a counter on a holder, op:chooseValue.counterKind), then put one counter of that kind on each OTHER creature you control (other than the creature the kind was chosen on). No creature you control with a counter: nothing is chosen and nothing is put. A narrow wording (one card): stable on one golden card plus template tests (design 6.9 deviation, owner's standing rule 2026-10-27).",
+    "pattern": "choose a kind of counter on a creature you control . put a counter of that kind on each other creature you control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you",
+            "counters": {
+              "kind": "any"
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "counterHolder"
+      },
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "counterKind",
+        "counterOn": {
+          "ref": "bound",
+          "name": "counterHolder"
+        },
+        "as": "counterKind",
+        "link": "counterKind"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "counterHolder"
+              }
+            }
+          }
+        },
+        "kind": "",
+        "count": 1,
+        "kindOfChoice": "counterKind"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each other",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Choose a kind of counter on a creature you control. Put a counter of that kind on each other creature you control. Draw a card."
+      },
+      {
+        "text": "You gain 2 life. Choose a kind of counter on a creature you control. Put a counter of that kind on each other creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Choose a kind of counter on a creature you control. Put two counters of that kind on each other creature you control.",
+      "Choose a kind of counter on a creature you control. Put a counter of that kind on each creature you control.",
+      "Choose a kind of counter on a creature an opponent controls. Put a counter of that kind on each other creature you control."
+    ]
+  }
+]

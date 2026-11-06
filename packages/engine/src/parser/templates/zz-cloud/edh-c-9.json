@@ -1,0 +1,346 @@
+[
+  {
+    "id": "sta.edhv9.aslong.pumpAndLure",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 509.1c"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} gets {pt:PT} and all creatures able to block {o2:Obj} do so",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            }
+          },
+          "mode": "mustIfAble",
+          "action": "block",
+          "other": {
+            "is": "$o2"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As long as enchanted creature is red, it gets +2/+0 and all creatures able to block it do so."
+      },
+      {
+        "text": "As long as ~ is untapped, it gets +1/+1 and all creatures able to block it do so."
+      }
+    ],
+    "counterExamples": [
+      "As long as enchanted creature is green, it gets +1/+1 and all creatures able to block it can do so.",
+      "As long as enchanted creature is green, it gets +1/+1 and all creatures able to block it do so until end of turn.",
+      "As long as enchanted creature is green, it gets +1/+1 and creatures able to block it do so."
+    ],
+    "consumes": [
+      "as long as",
+      "all",
+      "able",
+      "do so"
+    ]
+  },
+  {
+    "id": "eff.edhv9.pump.each.cantbeblocked",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 509.1b",
+      "CR 115.1"
+    ],
+    "pattern": "{o:Objs} each get {pt:PT} until end of turn and can't be blocked this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "can't",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Up to two target creatures each get +1/+0 until end of turn and can't be blocked this turn."
+      },
+      {
+        "text": "Two target creatures each get +2/+2 until end of turn and can't be blocked this turn."
+      }
+    ],
+    "counterExamples": [
+      "Up to two target creatures each get +1/+0 until end of turn and can't be blocked.",
+      "Up to two target creatures each get +1/+0 until end of turn and can't be blocked this turn by Walls.",
+      "Up to two target creatures each get +1/+0 until end of turn and can block this turn.",
+      "Up to two target creatures each get +1/+0 until your next turn and can't be blocked this turn."
+    ]
+  },
+  {
+    "id": "eff.edhv9.put.self.fromYourGraveyard.nthFromTop",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 401.7",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put ~ from your graveyard into your library second from the top",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "library",
+        "position": {
+          "nth": 2
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}{B}: Put ~ from your graveyard into your library second from the top."
+      },
+      {
+        "text": "{2}: Put ~ from your graveyard into your library second from the top. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{2}{B}: Put ~ from your graveyard into your library third from the top.",
+      "{2}{B}: Put ~ from your graveyard into your hand second from the top.",
+      "{2}{B}: Put ~ from your graveyard into an opponent's library second from the top."
+    ]
+  },
+  {
+    "id": "eff.edhv9.dur.group.has.basept.gains",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{d:Dur} , each {f:Filter} has base power and toughness {pt:BasePT} and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "each",
+      "gains"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, each creature you control has base power and toughness 10/10 and gains trample."
+      },
+      {
+        "text": "{2}{R}: Until end of turn, each Goblin creature you control has base power and toughness 3/3 and gains haste."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control has base power and toughness 10/10 and gains trample.",
+      "Until end of turn, each creature you control has base power 10 and gains trample.",
+      "Until end of turn, each creature you control has base power and toughness 10/10 and loses trample."
+    ]
+  },
+  {
+    "id": "eff.edhv9.put.handCard.bottom",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put ( a | one ) card from your hand on the bottom of your library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "bottom"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "bottom"
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put a card from your hand on the bottom of your library. Draw a card."
+      },
+      {
+        "text": "When ~ enters, if you control a Wizard, put a card from your hand on the bottom of your library."
+      }
+    ],
+    "counterExamples": [
+      "Put a card from your hand on top of your library.",
+      "Put a card from your graveyard on the bottom of your library.",
+      "Put two cards from your hand on the bottom of your library."
+    ]
+  },
+  {
+    "id": "sta.edhv9.duringYourTurn.grantAndKeywordCostLess",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 702.6a"
+    ],
+    "pattern": "during your turn , {f:Filter} have {a:Abilities} and {k:Keyword} abilities you activate cost {m:ManaCost} less to activate",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "keyword": "$k.keyword",
+              "kind": "activated"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "During your turn, creatures you control have trample and equip abilities you activate cost {1} less to activate."
+      },
+      {
+        "text": "During your turn, Soldiers you control have vigilance and equip abilities you activate cost {2} less to activate."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control have first strike and equip abilities you activate cost {1} less to activate.",
+      "During your turn, creatures you control have first strike and equip abilities you activate cost {1} more to activate.",
+      "During your turn, creatures you control have first strike and equip abilities your opponents activate cost {1} less to activate."
+    ],
+    "consumes": [
+      "during",
+      "and"
+    ]
+  }
+]

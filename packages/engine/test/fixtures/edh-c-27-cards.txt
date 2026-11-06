@@ -1,0 +1,12 @@
+# edh-c-27 (Commander EDHREC ranks 21,501-22,000): sacrifice any number then add that much, draw then discard that many, the exiled card's toughness, additional pump of a color list, "you had another/two or more creatures enter", for each color of mana spent, per-player token count, attach all Equipment, move all counters from all creatures, color and creature types of a group. After editing: npm run cards -- fixtures
+Mana Seism
+Laquatus's Creativity
+Morbid Bloom
+Glistening Deluge
+Saddled Rimestag
+Park Heights Pegasus
+Sweep the Skies
+Waiting in the Weeds
+Vulshok Battlemaster
+Spike Cannibal
+Dralnu's Crusade

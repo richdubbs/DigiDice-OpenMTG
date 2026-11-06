@@ -1,0 +1,372 @@
+[
+  {
+    "id": "eff.edhn52.return.exiledCards.underYourControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "return the exiled cards to the battlefield under your control",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "priority": 1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile all Goblins you control.\nWhen ~ leaves the battlefield, return the exiled cards to the battlefield under your control."
+      },
+      {
+        "text": "When ~ enters, exile up to two target artifacts.\nWhen ~ dies, return the exiled cards to the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile all Goblins you control.\nWhen ~ leaves the battlefield, return the exiled cards to the battlefield under an opponent's control.",
+      "When ~ enters, exile all Goblins you control.\nWhen ~ leaves the battlefield, return the exiled card to the battlefield under your control.",
+      "When ~ enters, exile all Goblins you control.\nWhen ~ leaves the battlefield, return the exiled cards to your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn52.eot.cast.fromLinked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 400.7"
+    ],
+    "pattern": "until end of turn , you may cast a creature spell from among cards exiled with ( it | ~ )",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "single": true,
+          "onlyTypes": [
+            "Creature"
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a Goblin you control dies, exile it.\n{T}: Until end of turn, you may cast a creature spell from among cards exiled with ~."
+      },
+      {
+        "text": "Whenever a Goblin you control dies, exile it.\n{1}, {T}: Until end of turn, you may cast a creature spell from among cards exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a Goblin you control dies, exile it.\n{T}: Until your next turn, you may cast a creature spell from among cards exiled with ~.",
+      "Whenever a Goblin you control dies, exile it.\n{T}: Until end of turn, you may cast two creature spells from among cards exiled with ~.",
+      "Whenever a Goblin you control dies, exile it.\n{T}: Until end of turn, you may cast an instant spell from among cards exiled with ~.",
+      "Whenever a Goblin you control dies, exile it.\n{T}: Until end of turn, you may cast a creature spell from among cards in exile."
+    ]
+  },
+  {
+    "id": "sta.edhn52.self.pump.foreach.cardExiledWith",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 607.2a"
+    ],
+    "pattern": "~ gets {pt:PT} for each card exiled with ( it | ~ )",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "is": {
+                      "ref": "linked",
+                      "link": "exiled"
+                    },
+                    "zone": "exile",
+                    "isCard": true
+                  }
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "is": {
+                      "ref": "linked",
+                      "link": "exiled"
+                    },
+                    "zone": "exile",
+                    "isCard": true
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target Zombie card from a graveyard.\n~ gets +3/+3 for each card exiled with it."
+      },
+      {
+        "text": "{1}: Exile target artifact card from a graveyard.\n~ gets +1/+0 for each card exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target Zombie card from a graveyard.\n~ gets +2/+2 for each card exiled with it until end of turn.",
+      "When ~ enters, exile target Zombie card from a graveyard.\n~ gets +2/+2 for each creature card exiled with it.",
+      "When ~ enters, exile target Zombie card from a graveyard.\n~ gets +2/+2 for each card in exile."
+    ]
+  },
+  {
+    "id": "eff.edhn52.exile.anyNumber.youControl.untilItLeaves",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 610.3",
+      "CR 610.3c"
+    ],
+    "pattern": "exile any number of {f:Filter} you control until it leaves the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "until": {
+          "d": "until",
+          "event": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "battlefield"
+          }
+        }
+      }
+    ],
+    "consumes": [
+      "any number",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, exile any number of other nonland permanents you control until it leaves the battlefield."
+      },
+      {
+        "text": "When this creature enters, exile any number of artifacts you control until it leaves the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, exile any number of target nonland permanents you control until it leaves the battlefield.",
+      "When this creature enters, exile any number of other nonland permanents you control until it dies.",
+      "When this creature enters, exile any number of other nonland permanents you control until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn52.eachOpponentMay.putCounters.onEachTheyControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 122.1",
+      "CR 701.34a"
+    ],
+    "pattern": "each opponent may put {n:Qty} {k:CounterKind} counter[s] on each {f:Filter} they control",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "do": [
+        {
+          "op": "putCounters",
+          "by": {
+            "ref": "iterating"
+          },
+          "on": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "controller": {
+                "ref": "iterating"
+              }
+            }
+          },
+          "kind": "$k",
+          "count": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent may put a +1/+1 counter on each creature they control. For each opponent who does, put a +1/+1 counter on each creature you control."
+      },
+      {
+        "text": "Draw a card. Each opponent may put two charge counters on each artifact they control."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent puts a +1/+1 counter on each creature they control.",
+      "Each player may put a +1/+1 counter on each creature they control.",
+      "Each opponent may put a +1/+1 counter on each creature you control."
+    ]
+  },
+  {
+    "id": "eff.edhn52.damage.targetAndOthersSameName",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 120.3",
+      "CR 120.2b",
+      "CR 201.2",
+      "CR 608.2c"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {t:Obj} and each other creature with the same name as {w:Obj}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$t",
+      "amount": "$n",
+      "also": [
+        {
+          "to": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "sharesWith": {
+                "with": "$w",
+                "quality": "name"
+              },
+              "not": {
+                "is": "$t"
+              }
+            }
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "each other",
+      "each",
+      "other",
+      "same",
+      "name"
+    ],
+    "examples": [
+      {
+        "text": "{3}{R}: ~ deals 3 damage to target creature and each other creature with the same name as that creature."
+      },
+      {
+        "text": "{2}{R}: ~ deals 2 damage to target creature and each other creature with the same name as that creature."
+      }
+    ],
+    "counterExamples": [
+      "{T}: ~ deals 1 damage to target creature and each creature with the same name as that creature.",
+      "{T}: ~ deals 1 damage to target creature and each other creature that shares a color with that creature.",
+      "{T}: ~ deals 1 damage to target creature and each other creature you control with the same name as that creature."
+    ],
+    "priority": 1
+  }
+]

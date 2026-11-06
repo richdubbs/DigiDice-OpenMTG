@@ -1,0 +1,687 @@
+[
+  {
+    "id": "eff.edhn1.player.mayCreate",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} may create {n:Qty} {t:TokenDesc}",
+    "build": [
+      {
+        "op": "may",
+        "who": "$p",
+        "do": [
+          {
+            "op": "createToken",
+            "who": "$p",
+            "count": "$n",
+            "token": "$t"
+          }
+        ]
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature an opponent controls dies, its controller may create a 2/2 black Zombie creature token."
+      },
+      {
+        "text": "Whenever an opponent casts a spell, that player may create a 1/1 white Spirit creature token with flying."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature an opponent controls dies, its controller creates a 2/2 black Zombie creature token.",
+      "Whenever a creature an opponent controls dies, its controller may create a tapped 2/2 black Zombie creature token.",
+      "Whenever a creature an opponent controls dies, its controller may create a 2/2 black Zombie creature token that's tapped and attacking."
+    ]
+  },
+  {
+    "id": "eff.edhn1.youMayHave.player.create.tappedAttacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 508.4",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {p:Player} create {n:Qty} {t:TokenDesc} that's tapped and attacking",
+    "build": [
+      {
+        "op": "may",
+        "who": {
+          "ref": "you"
+        },
+        "do": [
+          {
+            "op": "createToken",
+            "who": "$p",
+            "count": "$n",
+            "token": "$t",
+            "tapped": true,
+            "attacking": true
+          }
+        ]
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a Samurai attacks, you may have its controller create a 1/1 white Samurai creature token that's tapped and attacking."
+      },
+      {
+        "text": "Whenever a Rogue an opponent controls attacks, you may have its controller create a 2/1 black Rogue creature token that's tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a Samurai attacks, you may have its controller create a 1/1 white Samurai creature token.",
+      "Whenever a Samurai attacks, you may have its controller create a 1/1 white Samurai creature token that's tapped.",
+      "Whenever a Samurai attacks, its controller may create a 1/1 white Samurai creature token that's tapped and attacking."
+    ]
+  },
+  {
+    "id": "eff.edhn1.dig.put.battlefield.rest.graveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 404.1",
+      "CR 609.3"
+    ],
+    "pattern": "put ( a | an ) {f:Filter} card from among {g:Seen} onto the battlefield and {r:Rest} into your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. Put a land card from among them onto the battlefield and the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top four cards of your library. Put an artifact card from among them onto the battlefield and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. Put a land card from among them onto the battlefield tapped and the rest into your graveyard.",
+      "Look at the top five cards of your library. Put a land card from among them onto the battlefield and the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You may put a land card from among them onto the battlefield and the rest into your graveyard.",
+      "Look at the top five cards of your library. Put two land cards from among them onto the battlefield and the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "sta.edhn1.enchanted.loseall.becomes.keepColor",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 303.4",
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "enchanted creature loses all abilities and is ( a | an ) {st:Subtypes} creature with base power and toughness {pt:BasePT}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "set": [
+              "Creature"
+            ]
+          },
+          "subtypes": {
+            "set": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "removeAll": true
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature loses all abilities and is a Snail creature with base power and toughness 1/2."
+      },
+      {
+        "text": "Enchanted creature loses all abilities and is a Goat creature with base power and toughness 0/1."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature loses all abilities and is a Snail creature with base power and toughness 1/2 until end of turn.",
+      "Enchanted creature loses flying and is a Snail creature with base power and toughness 1/2.",
+      "Enchanted creature loses all abilities and is a Snail with base power and toughness 1/2."
+    ]
+  },
+  {
+    "id": "sta.edhn1.obj.legendary.pump.grant",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.4a",
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} is legendary , gets {pt:PT} , and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "add": [
+              "Legendary"
+            ]
+          }
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchanted creature is legendary, gets +2/+2, and has trample and haste."
+      },
+      {
+        "text": "Enchanted creature is legendary, gets +1/+0, and has first strike, vigilance, and deathtouch."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature is legendary and gets +2/+2.",
+      "Enchanted creature is legendary, gets +2/+2, and has trample and haste until end of turn.",
+      "Enchanted creature is nonlegendary, gets +2/+2, and has trample and haste."
+    ]
+  },
+  {
+    "id": "sta.edhn1.obj.has.and.gets.forEach",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} has {a:Abilities} and gets +1/+0 for each {f:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature has first strike and gets +1/+0 for each land you control."
+      },
+      {
+        "text": "Equipped creature has trample and gets +1/+0 for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has first strike and gets +0/+1 for each land you control.",
+      "Equipped creature has first strike and gets +1/+0 for each land you control until end of turn.",
+      "Equipped creature has first strike and gets +1/+0."
+    ]
+  },
+  {
+    "id": "eff.edhn1.player.drawAdditional.thenDiscard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 504.1",
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} draw[s] an additional card , then discard[s] a card",
+    "build": [
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": 1
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": 1
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "additional",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each opponent's draw step, that player draws an additional card, then discards a card."
+      },
+      {
+        "text": "At the beginning of each player's draw step, if ~ is untapped, that player draws an additional card, then discards a card."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each opponent's draw step, that player draws an additional card, then discards two cards.",
+      "At the beginning of each opponent's draw step, that player draws two additional cards, then discards a card.",
+      "At the beginning of each opponent's draw step, that player draws an additional card, then discards a card at random."
+    ]
+  },
+  {
+    "id": "eff.edhn1.player.discard.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 608.2h",
+      "CR 109.5"
+    ],
+    "pattern": "{p:Player} discard[s] a card for each {f:Filter}",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, target opponent discards a card for each Shrine you control."
+      },
+      {
+        "text": "When ~ enters, each opponent discards a card for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, target opponent discards a card for each Shrine you control at random.",
+      "At the beginning of your end step, target opponent discards two cards for each Shrine you control.",
+      "At the beginning of your end step, target opponent discards a card for each Shrine you control unless it is blue."
+    ]
+  },
+  {
+    "id": "rep.edhn1.enters.tapped.counters",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 110.5b"
+    ],
+    "pattern": "~ enters tapped and with {n:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true,
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ enters tapped and with two spore counters on it."
+      },
+      {
+        "text": "~ enters tapped and with four +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with two spore counters on it.",
+      "~ enters tapped and with two spore counters on target creature.",
+      "~ enters and with two spore counters on it."
+    ]
+  },
+  {
+    "id": "eff.edhn1.eachPlayer.may.put.fromHand.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "each player may put ( a | an ) {f:Filter} card from their hand onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "hand",
+            "owner": {
+              "ref": "iterating"
+            },
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Each player may put a creature card from their hand onto the battlefield."
+      },
+      {
+        "text": "Each player may put an artifact, enchantment, or land card from their hand onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Each player puts a creature card from their hand onto the battlefield.",
+      "Each player may put a creature card from their graveyard onto the battlefield.",
+      "Each opponent may put a creature card from their hand onto the battlefield.",
+      "Each player may put any number of creature cards from their hand onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhn1.thatPlayer.may.put.fromHand.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "{p:Player} may put ( a | an ) {f:Filter} card from their hand onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "hand",
+            "owner": "$p",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each player's end step, that player may put a creature card from their hand onto the battlefield."
+      },
+      {
+        "text": "At the beginning of each player's end step, that player may put an artifact, enchantment, or land card from their hand onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each player's end step, that player puts a creature card from their hand onto the battlefield.",
+      "At the beginning of each player's end step, that player may put a creature card from their graveyard onto the battlefield.",
+      "At the beginning of each player's end step, that player may put any number of creature cards from their hand onto the battlefield."
+    ]
+  },
+  {
+    "id": "cm.edhn1.spells.less.you.asLongAs",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "{f:Filter} you cast cost {m:ManaCost} less to cast as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "Artifact spells you cast cost {1} less to cast as long as you control a Forest."
+      },
+      {
+        "text": "Noncreature spells you cast cost {2} less to cast as long as you control three or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Artifact spells you cast cost {1} less to cast unless you control a Forest.",
+      "Artifact spells you cast cost {1} less to cast as long as.",
+      "Artifact spells your opponents cast cost {1} less to cast as long as you control a Forest."
+    ]
+  },
+  {
+    "id": "rst.edhn1.each.cantBeBlocked.asLongAsFirst",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Objs} can't be blocked",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Forest, Elves you control can't be blocked."
+      },
+      {
+        "text": "As long as you control three or more artifacts, creatures you control with power 1 or less can't be blocked."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Forest, Elves you control can be blocked.",
+      "Unless you control a Forest, Elves you control can't be blocked.",
+      "As long as you control a Forest, Elves you control can't be blocked this turn."
+    ]
+  }
+]

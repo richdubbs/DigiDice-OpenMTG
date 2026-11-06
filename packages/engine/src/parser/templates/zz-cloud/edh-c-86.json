@@ -1,0 +1,103 @@
+[
+  {
+    "id": "rid.edhv86.entersWith.ifSubtype",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 608.2c",
+      "CR 205.3m",
+      "CR 122.6"
+    ],
+    "pattern": "if {f:Filter} enters this way , it enters with {m:Qty} additional {k:CounterKind} counter[s] on it",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to.zone": "battlefield"
+        },
+        "to": {
+          "countersIf": {
+            "@new": [
+              {
+                "if": "$f",
+                "counters": [
+                  {
+                    "kind": "$k",
+                    "count": "$m"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "if",
+      "additional",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. If a Hero enters this way, it enters with three additional +1/+1 counters on it."
+      },
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. If a Zombie enters this way, it enters with two additional -1/-1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from your graveyard to its owner's hand. If a Hero enters this way, it enters with two additional +1/+1 counters on it.",
+      "Return target creature card from your graveyard to the battlefield. If a Hero enters this way, it enters with two +1/+1 counters on it.",
+      "Return target creature card from your graveyard to the battlefield. If a Hero enters this way, it enters with two additional +1/+1 counters on it instead."
+    ]
+  },
+  {
+    "id": "eff.edhv86.becomes.thatType.group",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.3m",
+      "CR 608.2d",
+      "CR 611.2c",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:Objs} become[s] that type {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "chosen": "chosenCreatureType",
+                "chosenSets": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Choose a creature type other than Wall. Each creature you control becomes that type until end of turn."
+      },
+      {
+        "text": "Choose a creature type other than Wall. Creatures your opponents control become that type until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Choose a creature type other than Wall. Each creature you control becomes that type.",
+      "Choose a creature type other than Wall. Each creature you control becomes that color until end of turn.",
+      "Choose a creature type other than Wall. Each creature you control becomes that type in addition to its other types until end of turn."
+    ]
+  }
+]

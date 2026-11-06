@@ -1,0 +1,226 @@
+[
+  {
+    "id": "sta.edhd70.group.pump.forEach.playerCounters",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 122.1"
+    ],
+    "pattern": "{f:Filter} get {pt:PT} for each {k:CounterKind} counter {p:Player} ( has | have )",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "counters",
+                "on": "$p",
+                "kind": "$k"
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "counters",
+                "on": "$p",
+                "kind": "$k"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Elves you control get +1/+1 for each experience counter you have."
+      },
+      {
+        "text": "Other Goblins you control get +1/+1 for each poison counter you have."
+      }
+    ],
+    "counterExamples": [
+      "Elves you control get +1/+1 until end of turn for each experience counter you have.",
+      "Elves you control get +1/+1 for each experience counter you have and have flying.",
+      "Elves you control get +1/+1 for each experience card you have."
+    ]
+  },
+  {
+    "id": "eff.edhd70.lead.pumpForEach.playerCounters.grant",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 608.2h",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 122.1"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gets {pt:PT} for each {k:CounterKind} counter {p:Player} ( has | have ) and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "counters",
+                    "on": "$p",
+                    "kind": "$k"
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "counters",
+                    "on": "$p",
+                    "kind": "$k"
+                  }
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature gets +1/+1 for each experience counter you have and gains menace."
+      },
+      {
+        "text": "Until end of turn, target creature gets +1/+1 for each poison counter you have and gains trample."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature gets +1/+1 for each experience counter you have or gains menace.",
+      "Until end of turn, target creature gets +1/+1 for each experience counter you have and loses flying."
+    ]
+  },
+  {
+    "id": "eff.edhd70.playerCounters.forEach.qty",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1f",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} get[s] {n:Qty} {k:CounterKind} counter[s] for each {m:Qty}",
+    "build": {
+      "op": "putCounters",
+      "on": "$p",
+      "kind": "$k",
+      "count": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$n",
+          "$m"
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You get an experience counter for each opponent who discarded a card this turn."
+      },
+      {
+        "text": "Each opponent gets a poison counter for each player who discarded a card this turn."
+      }
+    ],
+    "counterExamples": [
+      "You get an experience counter for each opponent who discarded a card this turn and each player who drew a card.",
+      "Target creature gets a +1/+1 counter for each opponent who discarded a card this turn."
+    ]
+  },
+  {
+    "id": "ch.edhd70.mayGetEnergy.2",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 107.14",
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "you may get {e}{e}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "putCounters",
+          "on": {
+            "ref": "you"
+          },
+          "kind": "energy",
+          "count": 2
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may get {E}{E}."
+      },
+      {
+        "text": "Whenever ~ attacks, you may get {E}{E}."
+      }
+    ],
+    "counterExamples": [
+      "You get {E}{E}.",
+      "Target player may get {E}{E}."
+    ]
+  }
+]

@@ -1,0 +1,101 @@
+[
+  {
+    "id": "eff.edhv97.forEach.thoseTargets.controllerCreates",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 701.8a",
+      "CR 111.2"
+    ],
+    "pattern": "for each of {o:Objs} , its controller creates ( a | an ) {t:TokenDesc}",
+    "build": {
+      "op": "forEach",
+      "over": "$o",
+      "as": "eachThose",
+      "do": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "bound",
+              "name": "eachThose"
+            }
+          },
+          "count": 1,
+          "token": "$t"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Destroy up to two target creatures. For each of those creatures, its controller creates a 2/2 green Wolf creature token."
+      },
+      {
+        "text": "Exile up to three target nonland permanents. For each of those permanents, its controller creates a 1/1 white Spirit creature token with flying."
+      }
+    ],
+    "counterExamples": [
+      "Destroy up to two target creatures. For each of those creatures, you create a 2/2 green Wolf creature token.",
+      "Destroy up to two target creatures. For each of those creatures, its owner creates a 2/2 green Wolf creature token.",
+      "Destroy up to two target creatures. For each of those creatures, its controller creates two 2/2 green Wolf creature tokens."
+    ]
+  },
+  {
+    "id": "eff.edhv97.put.revealedHit.shuffleRest",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 401.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put {o:Obj} onto the battlefield and shuffle all other cards revealed this way into your library",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "other",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal a land card. Put that card onto the battlefield and shuffle all other cards revealed this way into your library."
+      },
+      {
+        "text": "You may reveal cards from the top of your library until you reveal a creature card. If you do, put that card onto the battlefield and shuffle all other cards revealed this way into your library."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal a land card. Put that card into your hand and shuffle all other cards revealed this way into your library.",
+      "Reveal cards from the top of your library until you reveal a land card. Put that card onto the battlefield and shuffle all cards revealed this way into your library.",
+      "Reveal cards from the top of your library until you reveal a land card. Put that card onto the battlefield and shuffle all other cards revealed this way into your graveyard."
+    ]
+  }
+]

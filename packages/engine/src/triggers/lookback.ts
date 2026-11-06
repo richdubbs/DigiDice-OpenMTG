@@ -34,6 +34,10 @@ export const lookBackKinds: LookBackKinds = (p: EventPattern): LookBackKind[] =>
     case 'action':
       if (p.verb === 'sacrifice' || p.verb === 'exploit') out.push('sacrifice'); // std-rx17: exploiting is sacrificing (CR 702.110b, 603.10a)
       if (p.verb === 'counter') out.push('spellCountered');
+      // edh-d-74 (CR 702.24a, 603.2, 603.10a; Thought Lash): a cumulative upkeep that is not paid happens while the permanent is on the battlefield and the permanent is sacrificed right after, in the
+      // same resolution (the triggers are collected once it is done): "When a player doesn't pay ~'s cumulative upkeep" still triggers, judged on the permanent as it was
+      if (p.verb === 'payCumulativeUpkeep' || p.verb === 'failCumulativeUpkeep') out.push('leavesBattlefield');
+      if (p.verb === 'destroy' && p.by !== undefined) out.push('leavesBattlefield'); // edh-players-22 (CR 603.10a): the destroyed permanent as it was on the battlefield ("a noncreature permanent you control")
       break;
     case 'becomes':
       if (p.what === 'unattached') out.push('unattach');

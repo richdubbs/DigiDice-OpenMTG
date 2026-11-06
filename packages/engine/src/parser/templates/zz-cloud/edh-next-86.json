@@ -1,0 +1,99 @@
+[
+  {
+    "id": "sta.edhn86.attached.grant.andItGetsPumpWhereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 107.3",
+      "CR 301.5a"
+    ],
+    "pattern": "( enchanted | equipped ) creature has {a:Abilities} , and it gets +x/+x , where x is {q:Qty}",
+    "weak": 1,
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7c",
+              "power": "$q",
+              "toughness": "$q"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature has trample, lifelink, and protection from Elves, and it gets +X/+X, where X is the number of lands you control."
+      },
+      {
+        "text": "Enchanted creature has vigilance and reach, and it gets +X/+X, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has first strike, and it gets +2/+2, where X is the number of lands you control.",
+      "Equipped creature has first strike, and it gets +X/+0, where X is the number of lands you control.",
+      "Equipped creature has first strike, and it gets +X/+X until end of turn, where X is the number of lands you control.",
+      "Equipped creature has first strike, and it gets -X/-X, where X is the number of lands you control."
+    ]
+  },
+  {
+    "id": "trg.edhn86.chosenPlayer.casts.spell",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 607.2d"
+    ],
+    "pattern": "( when | whenever ) the chosen player casts a spell",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": {
+            "ref": "linked",
+            "link": "opponent"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "when",
+      "whenever",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As this permanent enters, choose a player.\nWhenever the chosen player casts a spell, that player loses 1 life."
+      },
+      {
+        "text": "As this permanent enters, choose an opponent.\nWhenever the chosen player casts a spell, you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "As this permanent enters, choose a player.\nWhenever the chosen player casts a creature spell, that player loses 1 life.",
+      "As this permanent enters, choose a player.\nWhenever the chosen player attacks, that player loses 1 life.",
+      "Whenever the chosen player casts a spell, that player loses 1 life.",
+      "As this permanent enters, choose a player.\nWhenever a player casts a spell, that player loses 1 life."
+    ]
+  }
+]

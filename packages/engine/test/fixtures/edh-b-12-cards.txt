@@ -1,0 +1,12 @@
+# edh-b-12 (Commander fifth pass, ranks 8,001-9,000). After editing: npm run cards -- fixtures
+Final-Word Phantom
+Ashes of the Abhorrent
+Overwhelming Splendor
+Mordenkainen
+Radha, Heart of Keld
+Tasigur, the Golden Fang
+Duneblast
+Vedalken Humiliator
+Werewolf Pack Leader
+Belbe, Corrupted Observer
+Smokestack

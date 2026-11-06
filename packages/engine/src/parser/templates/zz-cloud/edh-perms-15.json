@@ -1,0 +1,264 @@
+[
+  {
+    "id": "eff.edhpm15.choose.counterOn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 115.1"
+    ],
+    "pattern": "choose a counter on {o:Recipient}",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "counterKind",
+      "counterOn": "$o",
+      "as": "counterKind",
+      "link": "counterKind"
+    },
+    "subject": "none",
+    "consumes": [
+      "choose",
+      "counter",
+      "on"
+    ],
+    "examples": [
+      {
+        "text": "Choose a counter on target creature."
+      },
+      {
+        "text": "{T}: Choose a counter on target artifact or creature."
+      }
+    ],
+    "counterExamples": [
+      "Choose a counter.",
+      "Choose a creature on target player.",
+      "Choose two counters on target creature."
+    ]
+  },
+  {
+    "id": "eff.edhpm15.put.additionalOfThatKind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "put an additional counter of that kind on {o:Recipient}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "",
+      "count": 1,
+      "kindOfChoice": "counterKind"
+    },
+    "subject": "none",
+    "consumes": [
+      "put",
+      "additional",
+      "counter",
+      "of",
+      "that",
+      "kind",
+      "on"
+    ],
+    "examples": [
+      {
+        "text": "Choose a counter on target creature. Put an additional counter of that kind on that creature."
+      },
+      {
+        "text": "Choose a counter on target artifact. Put an additional counter of that kind on that artifact."
+      }
+    ],
+    "counterExamples": [
+      "Put an additional counter of that kind on that creature.",
+      "Choose a counter on target creature. Put two additional counters of that kind on that creature.",
+      "Choose a counter on target creature. Put an additional counter of that kind."
+    ]
+  },
+  {
+    "id": "eff.edhpm15.give.anotherOfThatKind",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "give {o:Recipient} another counter of that kind",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "",
+      "count": 1,
+      "kindOfChoice": "counterKind"
+    },
+    "subject": "none",
+    "consumes": [
+      "give",
+      "another",
+      "counter",
+      "of",
+      "that",
+      "kind"
+    ],
+    "examples": [
+      {
+        "text": "Choose a counter on target creature. Give that creature another counter of that kind."
+      },
+      {
+        "text": "Choose a counter on target permanent or player. Give that permanent or player another counter of that kind."
+      }
+    ],
+    "counterExamples": [
+      "Give that creature another counter of that kind.",
+      "Choose a counter on target creature. Give that creature two counters of that kind.",
+      "Choose a counter on target creature. Give that creature another counter."
+    ]
+  },
+  {
+    "id": "eff.edhpm15.counters.put.ifCond.andPutIfCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "^ put a +1/+1 counter on {o:Objs} if {c:Cond} and a loyalty counter on {p:Objs} if {d:Cond}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "+1/+1",
+        "count": 1,
+        "guard": "$c"
+      },
+      {
+        "op": "putCounters",
+        "on": "$p",
+        "kind": "loyalty",
+        "count": 1,
+        "guard": "$d"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "if",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Choose target creature. Put a +1/+1 counter on it if it's a creature and a loyalty counter on it if it's a planeswalker."
+      },
+      {
+        "text": "{T}: Choose target permanent. Put a +1/+1 counter on it if it's a land and a loyalty counter on it if it's an artifact."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Choose target creature. Put a +1/+1 counter on it if it's a creature and a loyalty counter on it.",
+      "{T}: Choose target creature. Put a +1/+1 counter on it and a loyalty counter on it if it's a planeswalker.",
+      "{T}: Choose target creature. Put a +1/+1 counter on it if it's a creature or a loyalty counter on it if it's a planeswalker."
+    ]
+  },
+  {
+    "id": "sta.edhpm15.crewPowerBonus",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.122a",
+      "CR 604.1"
+    ],
+    "pattern": "~ crews vehicles as though its power were {n:Qty} greater",
+    "build": {
+      "s": "rule",
+      "rule": "crewPowerBonus",
+      "value": "$n"
+    },
+    "consumes": [
+      "as though"
+    ],
+    "needs": [
+      "rulemod:crewPowerBonus"
+    ],
+    "examples": [
+      {
+        "text": "~ crews Vehicles as though its power were 4 greater."
+      },
+      {
+        "text": "~ crews Vehicles as though its power were 7 greater.\nDefender, flying, trample"
+      }
+    ],
+    "counterExamples": [
+      "~ saddles Mounts and crews Vehicles as though its power were 3 greater.",
+      "~ crews Vehicles as though its power were 3 less.",
+      "Creatures you control crew Vehicles as though their power were 3 greater."
+    ]
+  },
+  {
+    "id": "eff.edhpm15.sacrificed.drawStatDiscardStat",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 121.1",
+      "CR 701.9a"
+    ],
+    "pattern": "draw cards equal to the sacrificed creature 's {a:CharStat} , then discard cards equal to its {b:CharStat}",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "stat",
+          "stat": "$a",
+          "of": {
+            "ref": "costSacrificed"
+          }
+        }
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "stat",
+          "stat": "$b",
+          "of": {
+            "ref": "costSacrificed"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "its",
+      "then"
+    ],
+    "priority": 5,
+    "examples": [
+      {
+        "text": "{2}, {T}, Sacrifice another creature: Draw cards equal to the sacrificed creature's toughness, then discard cards equal to its power."
+      },
+      {
+        "text": "{1}, Sacrifice a Goblin: Draw cards equal to the sacrificed creature's power, then discard cards equal to its toughness."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}, Sacrifice another creature: Draw cards equal to the sacrificed creature's toughness, then discard cards equal to its mana value.",
+      "{2}, {T}, Sacrifice another creature: Draw cards equal to the sacrificed creature's toughness, then discard a card.",
+      "{2}, {T}, Sacrifice another creature: Draw cards equal to the sacrificed creature's toughness."
+    ]
+  }
+]

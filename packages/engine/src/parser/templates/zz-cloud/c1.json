@@ -47,7 +47,7 @@
     "id": "eff.c1.spells.cantbecountered.thisturn",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 101.2",
       "CR 701.6a",

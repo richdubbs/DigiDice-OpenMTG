@@ -1,0 +1,1015 @@
+[
+  {
+    "id": "eff.edhn135.exileTop.twoFaceDownPiles",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 700.3",
+      "CR 401.1",
+      "CR 608.2c"
+    ],
+    "pattern": "exile the top {n:Qty} cards of your library in a face-down pile , then exile the top {m:Qty} cards of your library in another face-down pile",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        },
+        "as": "firstPile"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$m"
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        },
+        "as": "secondPile"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "another",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of your library in a face-down pile, then exile the top two cards of your library in another face-down pile. Look at the cards in each pile, then turn a pile of your choice face up. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard."
+      },
+      {
+        "text": "Exile the top four cards of your library in a face-down pile, then exile the top four cards of your library in another face-down pile. Look at the cards in each pile, then turn a pile of your choice face up. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of your library in a face-down pile, then exile the top two cards of your library in another face-up pile. Look at the cards in each pile, then turn a pile of your choice face up. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard.",
+      "Exile the top two cards of target player's library in a face-down pile, then exile the top two cards of your library in another face-down pile. Look at the cards in each pile, then turn a pile of your choice face up. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard.",
+      "Exile the top two cards of your library in a face-down pile. Look at the cards in each pile, then turn a pile of your choice face up. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhn135.lookEachPile.turnOneFaceUp",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 700.3",
+      "CR 608.2d"
+    ],
+    "pattern": "look at the cards in each pile , then turn a pile of your choice face up",
+    "build": {
+      "op": "piles",
+      "cards": {
+        "ref": "bound",
+        "name": "firstPile"
+      },
+      "second": {
+        "ref": "bound",
+        "name": "secondPile"
+      },
+      "separator": {
+        "ref": "you"
+      },
+      "chosen": "chosenPile",
+      "other": "otherPile",
+      "turnUp": true
+    },
+    "subject": "none",
+    "needs": [
+      "feature:piles.given"
+    ],
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of your library in a face-down pile, then exile the top two cards of your library in another face-down pile. Look at the cards in each pile, then turn a pile of your choice face up. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard."
+      },
+      {
+        "text": "Exile the top four cards of your library in a face-down pile, then exile the top four cards of your library in another face-down pile. Look at the cards in each pile, then turn a pile of your choice face up. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of your library in a face-down pile, then exile the top two cards of your library in another face-down pile. Look at the cards in each pile, then turn a pile of an opponent's choice face up. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard.",
+      "Exile the top two cards of your library in a face-down pile, then exile the top two cards of your library in another face-down pile. Look at the cards in each pile, then turn each pile face up. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard.",
+      "Look at the cards in each pile, then turn a pile of your choice face up. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhn135.searchDifferentNames.exile.opponentShufflesOne.castOthersFree",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 105.2a",
+      "CR 201.2",
+      "CR 608.2d",
+      "CR 608.2g",
+      "CR 701.24a"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:CardsDesc} with different names and exile them . an opponent chooses one of those cards . shuffle that card into your library . you may cast the other cards without paying their mana costs",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "$n",
+        "differentNames": true,
+        "as": "found"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "found"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "exiledFound"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "anOpponent"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "exiledFound"
+            },
+            "zone": "exile"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "opponentChose"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "opponentChose"
+        },
+        "to": {
+          "zone": "library"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "exiledFound"
+            },
+            "zone": "exile",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "opponentChose"
+              }
+            }
+          }
+        },
+        "free": true,
+        "optional": true,
+        "select": {}
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "different",
+      "other",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to two monocolored cards with different names and exile them. An opponent chooses one of those cards. Shuffle that card into your library. You may cast the other cards without paying their mana costs. Exile ~."
+      },
+      {
+        "text": "Search your library for up to four creature cards with different names and exile them. An opponent chooses one of those cards. Shuffle that card into your library. You may cast the other cards without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two monocolored cards and exile them. An opponent chooses one of those cards. Shuffle that card into your library. You may cast the other cards without paying their mana costs.",
+      "Search your library for up to two monocolored cards with different names and exile them. You choose one of those cards. Shuffle that card into your library. You may cast the other cards without paying their mana costs.",
+      "Search your library for up to two monocolored cards with different names and exile them. An opponent chooses one of those cards. Shuffle that card into your library. You may cast the other cards."
+    ]
+  },
+  {
+    "id": "eff.edhn135.youChooseHowEachPlayerVotes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 608.2d",
+      "CR 613.7"
+    ],
+    "pattern": "you choose how each player votes this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "choosesVotes"
+        }
+      ]
+    },
+    "subject": "none",
+    "needs": [
+      "rulemod:choosesVotes"
+    ],
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You choose how each player votes this turn. Scry 2."
+      },
+      {
+        "text": "You choose how each player votes this turn. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "You choose how each opponent votes this turn. Draw a card.",
+      "You choose how each player votes. Draw a card.",
+      "Target opponent chooses how each player votes this turn. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhn135.reveal.anyNumber.fromYourHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 603.12",
+      "CR 608.2d"
+    ],
+    "pattern": "reveal any number of {f:CardsDesc} from your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "as": "revealed",
+        "anyNumber": true
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:reveal.anyNumber"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, reveal any number of Elf cards from your hand. When you do, ~ deals X plus 1 damage to any other target, where X is the number of cards revealed this way."
+      },
+      {
+        "text": "When ~ enters, reveal any number of artifact cards from your hand. When you do, you gain X plus 3 life, where X is the number of cards revealed this way."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, reveal up to two Elf cards from your hand. When you do, ~ deals X plus 1 damage to any other target, where X is the number of cards revealed this way.",
+      "When ~ enters, reveal any number of Elf cards from your graveyard. When you do, ~ deals X plus 1 damage to any other target, where X is the number of cards revealed this way.",
+      "When ~ enters, target opponent reveals any number of Elf cards from their hand. When you do, ~ deals X plus 1 damage to any other target, where X is the number of cards revealed this way."
+    ],
+    "consumes": [
+      "any number"
+    ]
+  },
+  {
+    "id": "eff.edhn135.startingNextOpponent.eachOpponentChoosesUnchosen.fromYourGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 404.1"
+    ],
+    "pattern": "starting with the next opponent in turn order , each opponent chooses ( a | an ) {f:Filter} card in your graveyard that hasn't been chosen",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "startingWith": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "unchosen": true,
+      "as": "chosenThisWay"
+    },
+    "subject": "none",
+    "needs": [
+      "op:chooseObjects.unchosen",
+      "op:chooseObjects.startingWith"
+    ],
+    "consumes": [
+      "each",
+      "next",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Mill four cards. Then starting with the next opponent in turn order, each opponent chooses a creature card in your graveyard that hasn't been chosen. Return each card chosen this way to the battlefield under your control."
+      },
+      {
+        "text": "Mill two cards. Then starting with the next opponent in turn order, each opponent chooses an artifact card in your graveyard that hasn't been chosen. Return each card chosen this way to the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards. Then starting with the next opponent in turn order, each opponent chooses a creature card in your graveyard. Return each card chosen this way to the battlefield under your control.",
+      "Mill four cards. Then starting with you, each player chooses a creature card in your graveyard that hasn't been chosen. Return each card chosen this way to the battlefield under your control.",
+      "Mill four cards. Then each opponent chooses a creature card in your graveyard that hasn't been chosen. Return each card chosen this way to the battlefield under your control."
+    ]
+  },
+  {
+    "id": "sta.edhn135.opponentFacesVillainousChoiceAgain",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.55a",
+      "CR 701.55c"
+    ],
+    "pattern": "if an opponent would face a villainous choice , ( they face | that player faces ) that choice an additional time",
+    "build": {
+      "s": "rule",
+      "rule": "villainousChoiceExtra",
+      "player": {
+        "ref": "each",
+        "who": "opponent"
+      }
+    },
+    "needs": [
+      "rulemod:villainousChoiceExtra"
+    ],
+    "consumes": [
+      "if",
+      "would",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If an opponent would face a villainous choice, that player faces that choice an additional time."
+      },
+      {
+        "text": "Deathtouch, ward {5}\nIf an opponent would face a villainous choice, that player faces that choice an additional time."
+      }
+    ],
+    "counterExamples": [
+      "If a player would face a villainous choice, that player faces that choice an additional time.",
+      "If an opponent would face a villainous choice, that player faces that choice two additional times.",
+      "If you would face a villainous choice, you face that choice an additional time."
+    ]
+  },
+  {
+    "id": "eff.edhn135.searchDifferentPowers.reveal.opponentChooses.shuffleChosen.restToHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 208.1",
+      "CR 701.20a",
+      "CR 608.2d",
+      "CR 701.24a"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:CardsDesc} with different powers and reveal them . an opponent chooses {m:Qty} of those cards . shuffle the chosen cards into your library and put the rest into your hand",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "$n",
+        "differentPowers": true,
+        "reveal": true,
+        "as": "found"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "anOpponent"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "found"
+            },
+            "zone": "library"
+          }
+        },
+        "min": "$m",
+        "max": "$m",
+        "as": "opponentChose"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "found"
+            },
+            "zone": "library",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "opponentChose"
+              }
+            }
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:search.differentPowers"
+    ],
+    "consumes": [
+      "up to",
+      "different",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to three creature cards with different powers and reveal them. An opponent chooses one of those cards. Shuffle the chosen cards into your library and put the rest into your hand."
+      },
+      {
+        "text": "Search your library for up to five Elf cards with different powers and reveal them. An opponent chooses two of those cards. Shuffle the chosen cards into your library and put the rest into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to three creature cards and reveal them. An opponent chooses one of those cards. Shuffle the chosen cards into your library and put the rest into your hand.",
+      "Search your library for up to three creature cards with different powers and reveal them. You choose one of those cards. Shuffle the chosen cards into your library and put the rest into your hand.",
+      "Search your library for up to three creature cards with different powers and reveal them. An opponent chooses one of those cards. Shuffle the chosen cards into your library and put the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhn135.playerChoosesFromHand.look.castOneFree",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.20e",
+      "CR 608.2g",
+      "CR 107.3"
+    ],
+    "pattern": "{p:Player} chooses {n:Qty} cards from their hand . look at those cards . you may cast a spell from among them without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosenFromHand"
+      },
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "bound",
+          "name": "chosenFromHand"
+        }
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "chosenFromHand"
+            },
+            "zone": "hand"
+          }
+        },
+        "free": true,
+        "optional": true,
+        "select": {
+          "max": 1
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent chooses two cards from their hand. Look at those cards. You may cast a spell from among them without paying its mana cost."
+      },
+      {
+        "text": "Target opponent chooses three cards from their hand. Look at those cards. You may cast a spell from among them without paying its mana cost. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent chooses two cards from their hand. Look at those cards. You may cast two spells from among them without paying their mana costs.",
+      "Target opponent chooses two cards from their hand. Look at those cards. Put them into their graveyard.",
+      "Target opponent chooses two cards from their graveyard. Look at those cards. You may cast a spell from among them without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhn135.lookTwoBack.chooseKind.opponentGuesses.revealIfRightRemoveElseDrawUnblockable",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.20a",
+      "CR 401.1",
+      "CR 506.4",
+      "CR 509.1b"
+    ],
+    "pattern": "look at the top two cards of your library , put them back in any order , then choose land or nonland . an opponent guesses whether the top card of your library is the chosen kind . reveal that card . if they guessed right , remove ( ~ | it ) from combat . otherwise , you draw a card and ~ can't be blocked this turn",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": 2
+        },
+        "as": "looked"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "looked"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen"
+        }
+      },
+      {
+        "op": "guess",
+        "chooser": {
+          "ref": "you"
+        },
+        "guesser": {
+          "ref": "anOpponent"
+        },
+        "card": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": 1
+        },
+        "kinds": [
+          {
+            "word": "land",
+            "filter": {
+              "types": [
+                "Land"
+              ]
+            }
+          },
+          {
+            "word": "nonland",
+            "filter": {
+              "notTypes": [
+                "Land"
+              ]
+            }
+          }
+        ],
+        "as": "guessedRight",
+        "reveal": true
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "did",
+          "step": "guessedRight"
+        },
+        "then": [
+          {
+            "op": "removeFromCombat",
+            "what": {
+              "ref": "self"
+            }
+          }
+        ],
+        "else": [
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1
+          },
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfTurn"
+            },
+            "effects": [
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "self"
+                },
+                "mode": "cant",
+                "action": "beBlocked"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:guess"
+    ],
+    "consumes": [
+      "if",
+      "then",
+      "chosen",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, look at the top two cards of your library, put them back in any order, then choose land or nonland. An opponent guesses whether the top card of your library is the chosen kind. Reveal that card. If they guessed right, remove it from combat. Otherwise, you draw a card and ~ can't be blocked this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, look at the top two cards of your library, put them back in any order, then choose land or nonland. An opponent guesses whether the top card of your library is the chosen kind. Reveal that card. If they guessed right, remove it from combat. Otherwise, you draw a card and ~ can't be blocked this turn.\nDeathtouch, ward {5}"
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, look at the top two cards of your library, put them back in any order, then choose land or nonland. An opponent guesses whether the top card of your library is the chosen kind. Reveal that card. If they guessed right, remove ~ from combat.",
+      "Whenever ~ attacks, look at the top two cards of your library, put them back in any order, then choose creature or noncreature. An opponent guesses whether the top card of your library is the chosen kind. Reveal that card. If they guessed right, remove ~ from combat. Otherwise, you draw a card and ~ can't be blocked this turn.",
+      "Whenever ~ attacks, look at the top two cards of your library, put them back in any order, then choose land or nonland. You guess whether the top card of your library is the chosen kind. Reveal that card. If they guessed right, remove ~ from combat. Otherwise, you draw a card and ~ can't be blocked this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn135.chooseInHand.playerGuessesManaValue.ifWrongCastFree",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 202.3",
+      "CR 608.2g",
+      "CR 107.3"
+    ],
+    "pattern": "choose a card in your hand . {p:Player} guesses whether the card 's mana value is greater than {n:Qty} . if the player guessed wrong , you may cast the card without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosenInHand"
+      },
+      {
+        "op": "guess",
+        "chooser": {
+          "ref": "you"
+        },
+        "guesser": "$p",
+        "card": {
+          "ref": "bound",
+          "name": "chosenInHand"
+        },
+        "kinds": [
+          {
+            "filter": {
+              "manaValue": {
+                "op": ">",
+                "value": "$n"
+              }
+            }
+          }
+        ],
+        "as": "guessedRight"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "did",
+          "step": "guessedRight",
+          "not": true
+        },
+        "then": [
+          {
+            "op": "cast",
+            "who": {
+              "ref": "you"
+            },
+            "what": {
+              "ref": "bound",
+              "name": "chosenInHand"
+            },
+            "free": true,
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:guess"
+    ],
+    "consumes": [
+      "if",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, choose a card in your hand. That player guesses whether the card's mana value is greater than 3. If the player guessed wrong, you may cast the card without paying its mana cost."
+      },
+      {
+        "text": "Deathtouch, ward {5}\nWhenever ~ deals combat damage to a player, choose a card in your hand. That player guesses whether the card's mana value is greater than 5. If the player guessed wrong, you may cast the card without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, choose a card in your hand. That player guesses whether the card's mana value is greater than 3. If the player guessed right, you may cast the card without paying its mana cost.",
+      "Whenever ~ deals combat damage to a player, choose a card in your hand. That player guesses whether the card's mana value is less than 3. If the player guessed wrong, you may cast the card without paying its mana cost.",
+      "Whenever ~ deals combat damage to a player, choose a card in your hand. That player guesses whether the card's mana value is greater than 3. If the player guessed wrong, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhn135.secretlyChoose.opponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 102.3"
+    ],
+    "pattern": "secretly choose an opponent",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "opponent",
+      "as": "chosenPlayer",
+      "link": "opponent",
+      "secret": true
+    },
+    "subject": "none",
+    "needs": [
+      "op:chooseValue.secret.player"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, secretly choose an opponent. You gain 1 life.\nReveal the player you chose: Exile target creature that's attacking you if it's controlled by the chosen player. Activate only as a sorcery."
+      },
+      {
+        "text": "When ~ enters, secretly choose an opponent. Scry 1.\nReveal the player you chose: Exile target creature that's attacking you if it's controlled by the chosen player."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, secretly choose a player.\nReveal the player you chose: Exile target creature that's attacking you if it's controlled by the chosen player.",
+      "When ~ enters, choose two opponents.\nReveal the player you chose: Exile target creature that's attacking you if it's controlled by the chosen player.",
+      "When ~ enters, secretly choose an opponent. You gain 1 life.\nReveal the creature type you chose: Exile target creature that's attacking you if it's controlled by the chosen player."
+    ]
+  },
+  {
+    "id": "eff.edhn135.exileTargetAttackingYou.ifChosenPlayerControls",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 506.4",
+      "CR 607.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "exile {o:Obj} if it's controlled by the chosen player",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "is": "$o",
+            "controller": {
+              "ref": "linked",
+              "link": "opponent"
+            }
+          }
+        }
+      },
+      "then": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, secretly choose an opponent. You gain 1 life.\nReveal the player you chose: Exile target creature that's attacking you if it's controlled by the chosen player. Activate only as a sorcery."
+      },
+      {
+        "text": "When ~ enters, secretly choose an opponent. Scry 1.\nReveal the player you chose: Exile target creature that's attacking you if it's controlled by the chosen player."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, secretly choose an opponent. You gain 1 life.\nReveal the player you chose: Exile target creature that's attacking you if it's controlled by an opponent.",
+      "When ~ enters, secretly choose an opponent. You gain 1 life.\nReveal the player you chose: Destroy target creature that's attacking you if it's controlled by the chosen player.",
+      "When ~ enters, secretly choose an opponent. You gain 1 life.\nReveal the player you chose: Exile target creature if it's controlled by the chosen player."
+    ]
+  },
+  {
+    "id": "eff.edhn135.exileAllNontoken.auctionTapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 101.4",
+      "CR 608.2c",
+      "CR 303.4f",
+      "CR 110.2"
+    ],
+    "pattern": "exile all nontoken permanents . starting with you , each player chooses one of the exiled cards and puts it onto the battlefield tapped under their control . repeat this process until all cards exiled this way have been chosen",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "token": false
+          }
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "auctioned"
+      },
+      {
+        "op": "auction",
+        "cards": {
+          "ref": "bound",
+          "name": "auctioned"
+        },
+        "startingWith": {
+          "ref": "you"
+        },
+        "tapped": true
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:auction"
+    ],
+    "consumes": [
+      "all",
+      "each",
+      "until",
+      "chosen",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Exile all nontoken permanents. Starting with you, each player chooses one of the exiled cards and puts it onto the battlefield tapped under their control. Repeat this process until all cards exiled this way have been chosen. You gain 1 life."
+      },
+      {
+        "text": "Exile all nontoken permanents. Starting with you, each player chooses one of the exiled cards and puts it onto the battlefield tapped under their control. Repeat this process until all cards exiled this way have been chosen. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Exile all nontoken permanents. Starting with you, each player chooses one of the exiled cards and puts it onto the battlefield tapped under their control.",
+      "Exile all nontoken permanents. Starting with you, each player chooses one of the exiled cards and puts it onto the battlefield under their control. Repeat this process until all cards exiled this way have been chosen.",
+      "Exile all creatures. Starting with you, each player chooses one of the exiled cards and puts it onto the battlefield tapped under their control. Repeat this process until all cards exiled this way have been chosen."
+    ]
+  }
+]

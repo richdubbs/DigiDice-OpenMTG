@@ -4,10 +4,10 @@
  * functions elsewhere must never be handed out as an automated battlefield trigger. Such an ability is a manual triggered ability ("Trigger now", design
  * 6.6) that functions in the zones named here. Pure; text-based where the effect is not understood (the effect sentence is often manual).
  */
-import type { TriggerDef, ZoneName } from '../../types/ability';
+import type { EventPattern, TriggerDef, ZoneName } from '../../types/ability';
 
 /** Verbs of `action` events that happen to a permanent on the battlefield (CR 701): a self trigger on them can trigger there (CR 113.6). */
-const BATTLEFIELD_VERBS: ReadonlySet<string> = new Set(['sacrifice', 'destroy', 'tap', 'untap', 'attach', 'transform', 'regenerate', 'exploit' /* std-rx17: the exploiting creature is on the battlefield (CR 702.110b) */]);
+const BATTLEFIELD_VERBS: ReadonlySet<string> = new Set(['sacrifice', 'destroy', 'tap', 'untap', 'attach', 'transform', 'regenerate', 'payCumulativeUpkeep', 'failCumulativeUpkeep' /* edh-d-74: the permanent pays (or does not pay) its own cumulative upkeep on the battlefield (CR 702.24a) */, 'evolve' /* edh-c-48: the evolving creature stays on the battlefield (CR 702.100a) */, 'enlist' /* edh-c-49: the enlisting creature is attacking, on the battlefield (CR 702.154a) */, 'exploit' /* std-rx17: the exploiting creature is on the battlefield (CR 702.110b) */]);
 /** Where a card is after a keyword action done to it outside the battlefield (CR 702.29c: "from whatever zone the card winds up in"). */
 const AFTER_VERB: Readonly<Record<string, ZoneName>> = { discard: 'graveyard', cycle: 'graveyard', mill: 'graveyard', counter: 'graveyard', exile: 'exile', reveal: 'hand' };
 const ZONE_WORDS: Readonly<Record<string, ZoneName>> = { graveyard: 'graveyard', hand: 'hand', library: 'library', exile: 'exile' };
@@ -20,7 +20,10 @@ const zones = (z: ZoneName | ZoneName[] | undefined): ZoneName[] => (z === undef
 // Standard round 3, r3-trig (CR 113.6m): the lookbehind had a raw backspace character where `\b` was meant, so "named ~" was never excluded; and not after "on"
 // ("the number of coin counters on ~ from your graveyard", Wishing Well): there "~" is what the counters are on, and "from your graveyard" ends the description
 // of the card the instruction names before it, which is not ~
-const MOVES_OR_READS = /(?<!\bnamed |\bon )~ (?:and target [a-z' -]+? card )?(?:from|is in) (?:your |its owner's |their |a |an opponent's |the )?(graveyard|hand|library|exile)\b/i;
+// edh-next-80 (CR 113.6m; Slimefoot and Squee): and "~ and up to one other target creature card from your graveyard"
+const MOVES_OR_READS = /(?<!\bnamed |\bon )~ (?:and (?:up to one )?(?:other )?target [a-z' -]+? card )?(?:from|is in) (?:your |its owner's |their |a |an opponent's |the )?(graveyard|hand|library|exile)\b/i;
+/** edh-combat-7 (CR 113.6m; Senu, Keen-Eyed Protector): an intervening "if ~ is exiled" reads ~ in exile, as "if ~ is in exile" does. */
+const IS_EXILED = /(?<!\bnamed |\bon )~ is (?:exiled|suspended)\b/i; // edhn95: "if this card is suspended" (CR 702.62b) is a card in exile too
 /** CR 113.6m exception: an earlier part of the effect puts ~ into that zone ("exile it. ... return ~ from exile"). */
 const PUTS_INTO: Readonly<Record<string, RegExp>> = {
   exile: /\bexiles? (?:it|~)\b/i,
@@ -42,8 +45,50 @@ export interface OffBattlefield {
    * in the graveyard it triggered from (CR 702.29c, 609.7a). std-sos's graveyard triggers that move ~ out of the graveyard (CR 113.6m) do not set it.
    */
   onlyAsSource?: boolean;
+  /**
+   * edh-d-98 (CR 702.29c, 113.6k, 400.7; Yidaro, Wandering Monster, ruling 2020-04-17): with `onlyAsSource`, a plain "When you cycle ~" (it functions in the graveyard only): the
+   * effect may also move ~ itself out of that graveyard, the card the ability triggered from; once it left (a new object, CR 400.7) the move does nothing.
+   */
+  selfMoves?: true;
   /** Standard round 3, r3-trig: the zones of the manual triggered ability when the automation does not go through (the zones it had before this slice: G10). */
   manualZone?: ZoneName[];
+  /** edh-perms-13 (CR 113.6k, 601.2i, 603.2; Cityscape Leveler): the cast trigger of the spell itself together with events of the permanent ("When you cast this spell and whenever ~ attacks"): it functions on the stack and on the battlefield. */
+  castSelfAndBattlefield?: true;
+  /**
+   * edh-next-5 (CR 113.6k, 702.29c, 601.2i; Drownyard Lurker, Warped Tusker): "When you cast or cycle ~": the cast of the spell itself, functioning on the stack, and the cycling of
+   * the card, functioning in the graveyard it is in then. Automated when the effect names the card at most as the source of damage (`onlyAsSource`) and, as a cast trigger's,
+   * only to copy or counter it.
+   */
+  castOrCycle?: true;
+  /** edh-c-16 (CR 113.6m, 603.4; Firemane Angel): "if ~ is in your graveyard or on the battlefield": the trigger functions in both zones (lower/ability.ts reads its intervening "if" as it does a graveyard trigger's). */
+  graveyardOrBattlefield?: true;
+}
+
+/**
+ * edh-perms-13 (CR 113.6k): the events of a trigger that is "When you cast this spell" plus events of the permanent itself that happen on the battlefield only
+ * ("whenever ~ attacks", "when ~ enters"): the ability is collected on the stack for the cast event and on the battlefield for the other events, each event
+ * seeing only the zone it can happen in. Null for any other trigger.
+ */
+export function castSelfAndBattlefieldEvents(trigger: TriggerDef): { cast: EventPattern; others: EventPattern[] } | null {
+  const cast = trigger.on.filter((p) => p.ev === 'cast' && p.spell?.self === true);
+  if (cast.length !== 1 || trigger.on.length < 2) return null;
+  const others = trigger.on.filter((p) => p !== cast[0]);
+  const battlefieldOnly = (p: EventPattern): boolean => (p.ev === 'attacks' && p.attacker?.self === true && Object.keys(p).every((k) => k === 'ev' || k === 'attacker'))
+    || (p.ev === 'zoneChange' && p.subject.self === true && p.to === 'battlefield' && p.from === undefined)
+    // edh-next-24 (CR 603.6c, 603.10a; Eldrazi Repurposer): "When you cast this spell and when this creature dies": its own death looks back from the battlefield
+    || (p.ev === 'zoneChange' && p.subject.self === true && p.from === 'battlefield' && p.to === 'graveyard' && Object.keys(p.subject).length === 1 && Object.keys(p).every((k) => k === 'ev' || k === 'subject' || k === 'from' || k === 'to'));
+  return others.every(battlefieldOnly) ? { cast: cast[0]!, others } : null;
+}
+
+/** edh-next-5 (CR 702.29c, 601.2i): exactly the two events of "When you cast or cycle ~": the cast of this spell by you and the cycling of this card by you. */
+function castOrCycleEvents(trigger: TriggerDef): boolean {
+  if (trigger.on.length !== 2 || trigger.batch === true || trigger.first !== undefined || trigger.while !== undefined) return false;
+  const cast = trigger.on.find((p) => p.ev === 'cast');
+  const cycle = trigger.on.find((p) => p.ev === 'action');
+  if (cast?.ev !== 'cast' || cycle?.ev !== 'action') return false;
+  const bare = (o: object, keys: readonly string[]): boolean => Object.keys(o).every((k) => keys.includes(k));
+  return cast.player === 'you' && cast.spell?.self === true && bare(cast, ['ev', 'player', 'spell']) && bare(cast.spell, ['self'])
+    && cycle.verb === 'cycle' && cycle.actor === 'you' && cycle.object?.self === true && bare(cycle, ['ev', 'verb', 'actor', 'object']) && bare(cycle.object, ['self']);
 }
 
 /**
@@ -59,6 +104,15 @@ export interface OffBattlefield {
 export function offBattlefield(trigger: TriggerDef, rest: string): OffBattlefield | null {
   const entersZones: ZoneName[] = [];
   let auraLeaves = false;
+  // edh-perms-13: "When you cast this spell and whenever ~ attacks" functions on the stack and on the battlefield (the first event below would say the stack alone)
+  // edh-next-5 (CR 113.6k, 702.29c; Drownyard Lurker): "When you cast or cycle ~" functions on the stack for the cast and in the graveyard for the cycling
+  // (CR 702.29c: the cycling triggers from whatever zone the card winds up in, exile under Rest in Peace, as the discard trigger below; a payment on resolution keeps it manual, as the cycle trigger's)
+  if (castOrCycleEvents(trigger) && !/\bpay\b/i.test(unquoted(rest))) return { zone: ['stack', 'graveyard', 'exile'], manualZone: ['stack', 'graveyard'], reason: 'a cast or cycle trigger of ~ functions on the stack and in the graveyard (CR 113.6k, 702.29c): not automated by this parser version', automate: true, onlyAsSource: true, castOrCycle: true };
+  if (castSelfAndBattlefieldEvents(trigger) !== null) return { zone: ['stack', 'battlefield'], reason: 'a cast trigger of ~ functions on the stack (CR 113.6k): not automated by this parser version', castSelfAndBattlefield: true };
+  // edh-d-100 (CR 702.29c, 113.6k, 603.2; Astral Drift): "Whenever you cycle ~ or cycle another card while ~ is on the battlefield": the cycling of ~ triggers from the graveyard the cycled
+  // card is in, the cycling of another card only while ~ is on the battlefield (the trigger's `while`: the event's card is ~, or ~ is on the battlefield): it functions in both zones. Automated
+  // under the cycle trigger's terms (the effect names ~ at most as a source, no payment on resolution)
+  if (cycleSelfOrOtherWhileOnBattlefield(trigger) && !/\bpay\b/i.test(unquoted(rest))) return { zone: ['battlefield', 'graveyard'], manualZone: ['battlefield'], reason: 'a cycle trigger of ~ and of other cards functions in the graveyard and on the battlefield (CR 113.6k, 702.29c): not automated by this parser version', automate: true, onlyAsSource: true };
   for (const p of trigger.on) {
     if (p.ev === 'zoneChange' && p.subject.self === true) {
       const from = zones(p.from);
@@ -68,8 +122,14 @@ export function offBattlefield(trigger: TriggerDef, rest: string): OffBattlefiel
         // p2-c-cast-zone-1 (CR 113.6k, 400.7, 603.6c): "When ~ is put into your graveyard from your library" (Narcomoeba) triggers from the graveyard it was put into:
         // triggers/normalize.ts names the card's new object in that public zone as the event's subject, and triggers/collect.ts collects the abilities that work there
         // from the cards in graveyards. Automated when the whole effect is understood (lower/ability.ts#triggered), the graveyard only, from a zone other than the battlefield
-        const intoGraveyard = to.length === 1 && to[0] === 'graveyard' && from.length > 0 && trigger.on.length === 1;
-        return { zone: to, reason: 'a trigger condition on ~ that cannot trigger from the battlefield functions where it can trigger (CR 113.6k): not automated by this parser version', ...(intoGraveyard ? { automate: true } : {}) };
+        // edh-zones-3 (CR 603.6c, 113.6k, 111.7): "When ~ is put into a graveyard from anywhere" names no origin: it is never a leaves-the-battlefield ability, even when ~ comes
+        // from the battlefield, so it never looks back; it functions in all the zones it can trigger from, and ~ has arrived in the graveyard (a token too: its triggers trigger
+        // before it ceases to exist). The same collection as the library case, and the same owner as controller (CR 603.3a)
+        const intoGraveyard = to.length === 1 && to[0] === 'graveyard' && trigger.on.length === 1;
+        // edh-c-20 (CR 113.6k, 400.7; Golgari Brownscale): "When this card is put into your hand from your graveyard" triggers from the hand it was put into, the same collection
+        // (triggers/collect.ts looks at the cards in hands): automated when the whole effect is understood and names the card at most as the source of an effect
+        const intoHandFromGraveyard = to.length === 1 && to[0] === 'hand' && from.length === 1 && from[0] === 'graveyard' && trigger.on.length === 1;
+        return { zone: to, reason: 'a trigger condition on ~ that cannot trigger from the battlefield functions where it can trigger (CR 113.6k): not automated by this parser version', ...(intoGraveyard || intoHandFromGraveyard ? { automate: true } : {}) };
       }
     }
     if (p.ev === 'zoneChange' && p.subject.attachedToSource === true && zones(p.from).includes('battlefield')) auraLeaves = true;
@@ -80,30 +140,38 @@ export function offBattlefield(trigger: TriggerDef, rest: string): OffBattlefiel
       // CLOUD std-dft: a pronoun or "~" is now judged on the lowered effect instead (lower/ability.ts#cycledCardOnlyAsSource): "It gains trample" names the
       // target, and "it deals 1 damage to each opponent" names the cycled card as the source of the damage (CR 702.29c, 609.7a, 113.7a); any other use of the card
       // (moving it, counting it) stays manual as before. A payment on resolution still keeps the trigger manual.
-      if (p.verb === 'cycle' && trigger.on.length === 1 && p.actor === 'you' && !/\bpay\b/i.test(unquoted(rest))) {
-        return { zone: ['graveyard'], reason: `"${p.verb}" done to ~ cannot trigger from the battlefield (CR 113.6k, 702.29c): not automated by this parser version`, automate: true, onlyAsSource: true };
+      // edh-next-139 (CR 107.3, 118.12, 702.29c; Decree of Justice): "When you cycle this card, you may pay {X}. If you do, create X ...": the trigger's controller chooses X as they pay
+      // (effects/handlers/pay.ts#choosesX, the X of this resolution: the card's own {X} of its mana cost was never announced, it was cycled, not cast); only that one payment of {X}
+      const payX = /^you may pay \{x\}\. if you do, /i.test(unquoted(rest).trim()) && (unquoted(rest).match(/\bpay\b/gi) ?? []).length === 1;
+      if (p.verb === 'cycle' && trigger.on.length === 1 && p.actor === 'you' && (!/\bpay\b/i.test(unquoted(rest)) || payX)) {
+        return { zone: ['graveyard'], reason: `"${p.verb}" done to ~ cannot trigger from the battlefield (CR 113.6k, 702.29c): not automated by this parser version`, automate: true, onlyAsSource: true, selfMoves: true };
       }
       // Standard round 3, r3-trig (CR 701.9a, 113.6k, 702.35a): "When you discard this card" triggers from the zone the discarded card went to: the graveyard, or
       // exile when madness (or another replacement) exiled it instead (CR 702.35a: it is still discarded). triggers/normalize.ts names the card in that public zone
       // as the discard action's subject, so the ability is collected from there. Automated under the same terms as the cycle trigger above (the effect names
       // the card at most as the source of damage, and asks no payment on resolution); a discard into a hidden zone (a library) names no object there: no trigger
-      if (p.verb === 'discard' && trigger.on.length === 1 && p.actor === 'you' && !/\bpay\b/i.test(unquoted(rest))) {
+      // edh-next-90 (CR 701.9a, 118.8; Edgar's Awakening): "When you discard this card, you may pay {B}. When you do, ...": a payment of a fixed mana cost is made by the trigger's controller as it resolves, as in any
+      // other triggered ability; only the payments that need a chooser ({X}, life, other costs) keep the trigger manual
+      if (p.verb === 'discard' && trigger.on.length === 1 && p.actor === 'you' && (!/\bpay\b/i.test(unquoted(rest)) || /\bpay (?:\{[WUBRGC0-9]\})+(?=[ .,]|$)/i.test(unquoted(rest)) && !/\bpay\b(?! (?:\{[WUBRGC0-9]\})+(?=[ .,]|$))/i.test(unquoted(rest)))) {
         return { zone: ['graveyard', 'exile'], manualZone: ['graveyard'], reason: `"${p.verb}" done to ~ cannot trigger from the battlefield (CR 113.6k, 702.29c): not automated by this parser version`, automate: true, onlyAsSource: true };
       }
       return { zone: z ? [z] : [], reason: `"${p.verb}" done to ~ cannot trigger from the battlefield (CR 113.6k, 702.29c): not automated by this parser version` };
     }
     if (p.ev === 'cast' && p.spell?.self === true) return { zone: ['stack'], reason: 'a cast trigger of ~ functions on the stack (CR 113.6k): not automated by this parser version' };
   }
-  const m = selfZoneMention(rest);
+  const m = selfZoneMention(rest, true);
   if (m === null || auraLeaves) return null;
   const zone = m.zone;
   if (entersZones.includes(zone) || m.putThereFirst) return null;
   const also = /\balso triggers if ~ is in\b/i.test(unquoted(rest));
+  // edh-c-16 (CR 113.6m, 603.4, 603.3a; Firemane Angel): "At the beginning of your upkeep, if ~ is in your graveyard or on the battlefield, ..." functions in both zones; the intervening
+  // "if" is true in either, so the trigger is collected from the battlefield and from the owner's graveyard (triggers/collect.ts)
+  if (zone === 'graveyard' && /\bif ~ is in your graveyard or on the battlefield\b/i.test(unquoted(rest))) return { zone: ['battlefield', 'graveyard'], reason: 'the ability checks ~ in the graveyard or on the battlefield (CR 113.6m): not automated by this parser version', automate: true, manualZone: ['graveyard'], graveyardOrBattlefield: true };
   // std-sos (CR 113.6m, 603.3a): a trigger that moves ~ out of its owner's graveyard ("Whenever ..., you may pay {W/B}. If you do, return ~ from your graveyard to your hand") is automated
   // with `zone: ['graveyard']` when its whole effect is understood (lower/ability.ts checks that); the engine collects it from the cards in graveyards (triggers/collect.ts).
   // Cloud std-woe made the same rule for "~ from your graveyard" moves (CR 400.7: a card that left the graveyard is a new object the effect does not find); merge line CD
   // keeps std-sos's, which also covers a trigger that checks ~ in the graveyard, and both slices' tests pass with it
-  return { zone: also ? ['battlefield', zone] : [zone], reason: `the ability moves or checks ~ in the ${zone}, so it functions ${also ? 'there too' : 'only there'} (CR 113.6m): not automated by this parser version`, ...(!also && zone === 'graveyard' ? { automate: true } : {}) };
+  return { zone: also ? ['battlefield', zone] : [zone], reason: `the ability moves or checks ~ in the ${zone}, so it functions ${also ? 'there too' : 'only there'} (CR 113.6m): not automated by this parser version`, ...(!also && (zone === 'graveyard' || (zone === 'exile' && IS_EXILED.test(unquoted(rest)))) ? { automate: true } : {}) /* edh-combat-7: an exiled card's trigger with the intervening "if ~ is exiled" */ };
 }
 
 /**
@@ -111,10 +179,13 @@ export function offBattlefield(trigger: TriggerDef, rest: string): OffBattlefiel
  * from your graveyard", "if ~ is in your hand"), and whether an earlier part of the same text puts ~ into that zone ("exile ~. ... return ~ from exile").
  * Shared by triggered abilities (above) and activated ones (lower/activation.ts#activationZone). `~` is the object itself.
  */
-export function selfZoneMention(text: string): { zone: ZoneName; putThereFirst: boolean } | null {
+export function selfZoneMention(text: string, exiledIf = false): { zone: ZoneName; putThereFirst: boolean } | null {
   const t = unquoted(text);
   const m = MOVES_OR_READS.exec(t);
-  if (m === null) return null;
+  if (m === null) {
+    const x = exiledIf ? IS_EXILED.exec(t) : null; // (a trigger's intervening "if ~ is exiled" only: an activated ability's wording is read elsewhere, activation.ts)
+    return x === null ? null : { zone: 'exile', putThereFirst: PUTS_INTO.exile!.test(t.slice(0, x.index)) };
+  }
   const zone = ZONE_WORDS[m[1]!.toLowerCase()]!;
   return { zone, putThereFirst: PUTS_INTO[zone]!.test(t.slice(0, m.index)) };
 }
@@ -126,6 +197,18 @@ export function selfZoneMention(text: string): { zone: ZoneName; putThereFirst: 
  */
 export function homeZone(trigger: TriggerDef): ZoneName[] | null {
   const [p] = trigger.on;
+  // edhn81 (CR 113.6k, 702.62a; Aeon Chronicler): "whenever a time counter is removed from ~ while it's exiled" works from exile (the event's subject is the card there)
+  if (trigger.on.length === 1 && p !== undefined && p.ev === 'counters' && p.change === 'removed' && !('player' in p.on) && p.on.self === true && p.on.zone === 'exile'
+    // edhd68 (Watcher of Hours): also "whenever YOU remove a time counter ..." (`by: 'you'`, the removal by its controller)
+    && p.atLeast === undefined && (p.by === undefined || (p.by === 'you' && p.kind === 'time')) && p.byEffect === undefined && p.byController === undefined && Object.keys(p.on).length === 2) return ['exile'];
   if (trigger.on.length !== 1 || p === undefined || p.ev !== 'becomes' || p.what !== 'plotted' || p.by !== undefined) return null;
   return p.object.self === true && Object.keys(p.object).length === 1 ? ['exile'] : null;
+}
+
+/** edh-d-100 (Astral Drift): exactly the trigger of trg.edhd100.you.cycleSelfOrAnotherWhileOnBattlefield: you cycle ~, or you cycle another card while ~ is on the battlefield. */
+function cycleSelfOrOtherWhileOnBattlefield(trigger: TriggerDef): boolean {
+  return JSON.stringify(trigger) === JSON.stringify({
+    on: [{ ev: 'action', verb: 'cycle', actor: 'you', object: { self: true } }, { ev: 'action', verb: 'cycle', actor: 'you', object: { other: true } }],
+    while: { cond: 'any', of: [{ cond: 'matches', object: { ref: 'event', role: 'subject' }, filter: { self: true } }, { cond: 'matches', object: { ref: 'self' }, filter: { zone: 'battlefield' } }] },
+  });
 }

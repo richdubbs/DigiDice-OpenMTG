@@ -1,0 +1,380 @@
+[
+  {
+    "id": "sta.edhv92.attached.has.cantBeBlockedExcept",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "( enchanted | equipped ) creature has {a:Abilities} and can't be blocked except by {f:Filter}",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": {
+          "ref": "attachedTo"
+        },
+        "mods": [
+          {
+            "layer": 6,
+            "add": "$a"
+          }
+        ]
+      },
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "attachedTo"
+        },
+        "mode": "cant",
+        "action": "beBlockedBy",
+        "other": {
+          "not": "$f"
+        }
+      }
+    ],
+    "consumes": [
+      "can't",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature has flying and can't be blocked except by Walls."
+      },
+      {
+        "text": "Equipped creature has lifelink and can't be blocked except by creatures with reach."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature has flying and can't be blocked except by Walls this turn.",
+      "Enchanted creature has flying and can't be blocked by Walls.",
+      "Enchanted creature has flying and can't be blocked."
+    ]
+  },
+  {
+    "id": "sta.edhv92.attached.basePower.hasQuoted",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4b",
+      "CR 613.1f",
+      "CR 208.1"
+    ],
+    "pattern": "( enchanted | equipped ) creature has base power {n:Qty} and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7b",
+          "power": "$n"
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Enchanted creature has base power 0 and has \"At the beginning of your upkeep, you lose 2 life unless you sacrifice this creature.\""
+      },
+      {
+        "text": "Equipped creature has base power 1 and has \"{T}: Add {G}.\""
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature has base power and toughness 0/1 and has \"{T}: Add {G}.\"",
+      "Enchanted creature has base toughness 0 and has \"{T}: Add {G}.\"",
+      "Enchanted creature gets base power 0 and has \"{T}: Add {G}.\""
+    ]
+  },
+  {
+    "id": "eff.edhv92.eachOpponent.may.returnGraveyard.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "( each opponent | each other player ) may return ( a | an ) {f:Filter} card from their graveyard to the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "perPlayer": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": {
+              "ref": "iterating"
+            },
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "each other",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent may return a creature card from their graveyard to the battlefield."
+      },
+      {
+        "text": "Each other player may return an artifact card from their graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent returns a creature card from their graveyard to the battlefield.",
+      "Each opponent may return a creature card from their graveyard to their hand.",
+      "Each opponent may return a creature card from your graveyard to the battlefield."
+    ]
+  },
+  {
+    "id": "sta.edhv92.you.protection.chosenCardName",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16a",
+      "CR 702.16b",
+      "CR 702.16e",
+      "CR 201.2",
+      "CR 607.2d",
+      "CR 604.1"
+    ],
+    "pattern": "you have protection from the chosen card name",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "receiveDamage",
+          "other": {
+            "chosen": {
+              "link": "cardName",
+              "quality": "cardName"
+            }
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "chosen": {
+              "link": "cardName",
+              "quality": "cardName"
+            }
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beEnchanted",
+          "other": {
+            "chosen": {
+              "link": "cardName",
+              "quality": "cardName"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose a nonland card name.\nYou have protection from the chosen card name."
+      },
+      {
+        "text": "As ~ enters, choose a nonland card name.\nYou have protection from the chosen card name.\n~ has flying."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a nonland card name.\nYou have protection from the chosen card type.",
+      "As ~ enters, choose a nonland card name.\nYou have protection from the chosen color.",
+      "As ~ enters, choose a nonland card name.\nCreatures you control have protection from the chosen card name."
+    ]
+  },
+  {
+    "id": "kw.edhv92.goblinOffering",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.48a",
+      "CR 702.48b",
+      "CR 702.48c",
+      "CR 118.9"
+    ],
+    "pattern": "goblin offering",
+    "build": {
+      "kind": "keyword",
+      "keyword": "offering",
+      "quality": "Goblin",
+      "costIsManaCost": true
+    },
+    "examples": [
+      {
+        "text": "Flying, goblin offering"
+      },
+      {
+        "text": "Haste, goblin offering"
+      }
+    ],
+    "counterExamples": [
+      "Goblin offerings",
+      "Goblin offering {1}",
+      "Creature offering"
+    ]
+  },
+  {
+    "id": "kw.edhv92.foxOffering",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.48a",
+      "CR 702.48b",
+      "CR 702.48c",
+      "CR 118.9"
+    ],
+    "pattern": "fox offering",
+    "build": {
+      "kind": "keyword",
+      "keyword": "offering",
+      "quality": "Fox",
+      "costIsManaCost": true
+    },
+    "examples": [
+      {
+        "text": "Flying, fox offering"
+      },
+      {
+        "text": "Haste, fox offering"
+      }
+    ],
+    "counterExamples": [
+      "Fox offerings",
+      "Fox offering {1}",
+      "Creature offering"
+    ]
+  },
+  {
+    "id": "kw.edhv92.moonfolkOffering",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.48a",
+      "CR 702.48b",
+      "CR 702.48c",
+      "CR 118.9"
+    ],
+    "pattern": "moonfolk offering",
+    "build": {
+      "kind": "keyword",
+      "keyword": "offering",
+      "quality": "Moonfolk",
+      "costIsManaCost": true
+    },
+    "examples": [
+      {
+        "text": "Flying, moonfolk offering"
+      },
+      {
+        "text": "Haste, moonfolk offering"
+      }
+    ],
+    "counterExamples": [
+      "Moonfolk offerings",
+      "Moonfolk offering {1}",
+      "Creature offering"
+    ]
+  },
+  {
+    "id": "kw.edhv92.snakeOffering",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.48a",
+      "CR 702.48b",
+      "CR 702.48c",
+      "CR 118.9"
+    ],
+    "pattern": "snake offering",
+    "build": {
+      "kind": "keyword",
+      "keyword": "offering",
+      "quality": "Snake",
+      "costIsManaCost": true
+    },
+    "examples": [
+      {
+        "text": "Flying, snake offering"
+      },
+      {
+        "text": "Haste, snake offering"
+      }
+    ],
+    "counterExamples": [
+      "Snake offerings",
+      "Snake offering {1}",
+      "Creature offering"
+    ]
+  }
+]

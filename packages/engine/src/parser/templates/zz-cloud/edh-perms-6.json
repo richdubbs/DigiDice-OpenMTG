@@ -1,0 +1,355 @@
+[
+  {
+    "id": "eff.edhpm6.maypay.if",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} may pay {c:Cost} if {g:Cond}",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": "$c",
+      "guard": "$g"
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature enters, you may pay {2}{U} if you control a Wizard. If you do, draw a card."
+      },
+      {
+        "text": "Whenever a land enters, you may pay {1}{R} if you control an artifact."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature enters, you may pay {2}{U} unless you control a Wizard.",
+      "Whenever a creature enters, you pay {2}{U} if you control a Wizard.",
+      "Whenever a creature enters, you may discard a card if you control a Wizard."
+    ]
+  },
+  {
+    "id": "eff.edhpm6.player.mayTap",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.26a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} may tap {o:Obj}",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "tap",
+          "what": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature an opponent controls enters, its controller may tap it."
+      },
+      {
+        "text": "Whenever an artifact an opponent controls enters, they may tap that permanent. If they don't, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature an opponent controls enters, its controller taps it.",
+      "Whenever a creature an opponent controls enters, its controller may untap it.",
+      "Whenever a creature an opponent controls enters, its controller may tap it unless they pay {1}."
+    ]
+  },
+  {
+    "id": "eff.edhpm6.dur.is.subtypes.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2b",
+      "CR 613.1d",
+      "CR 205.1b",
+      "CR 205.3"
+    ],
+    "pattern": "{d:Dur} , {o:ItIs} ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Put a flame counter on target creature. For as long as that creature has a flame counter on it, it's a Salamander in addition to its other types."
+      },
+      {
+        "text": "{1}: Put a mark counter on target creature. For as long as that creature has a mark counter on it, it's a Rogue in addition to its other types. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Put a flame counter on target creature. For as long as that creature has a flame counter on it, it's a Salamander.",
+      "{2}, {T}: Put a flame counter on target creature. It's a Salamander in addition to its other types.",
+      "{2}, {T}: Put a flame counter on target creature. For as long as that creature has a flame counter on it, it's a Salamander in addition to its other colors and types."
+    ]
+  },
+  {
+    "id": "sta.edhpm6.self.counter.isLand",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 205.1a",
+      "CR 205.3d"
+    ],
+    "pattern": "as long as ~ has ( a | an ) {k:CounterKind} counter on it , it's a land",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "counters": {
+            "kind": "$k"
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Land"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ has a dormant counter on it, it's a land."
+      },
+      {
+        "text": "As long as ~ has a doze counter on it, it's a land."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ has a dormant counter on it, it's a land in addition to its other types.",
+      "As long as ~ has a dormant counter on it, it's an artifact.",
+      "As long as ~ has two dormant counters on it, it's a land."
+    ]
+  },
+  {
+    "id": "sta.edhpm6.group.minus.perCounterOnThem",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 122.1",
+      "CR 208.1"
+    ],
+    "pattern": "{f:Filter} get -1/-1 for each {k:CounterKind} counter on them",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              -1,
+              {
+                "q": "counters",
+                "on": {
+                  "ref": "subject"
+                },
+                "kind": "$k"
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              -1,
+              {
+                "q": "counters",
+                "on": {
+                  "ref": "subject"
+                },
+                "kind": "$k"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Creatures your opponents control get -1/-1 for each mark counter on them."
+      },
+      {
+        "text": "Artifact creatures you don't control get -1/-1 for each rust counter on them."
+      }
+    ],
+    "counterExamples": [
+      "Creatures your opponents control get -1/-1 for each mark counter on you.",
+      "Creatures your opponents control get +1/+1 for each mark counter on them.",
+      "Creatures your opponents control get -1/-1 for each counter on them."
+    ]
+  },
+  {
+    "id": "sta.edhpm6.pump.foreach.otherSameName",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 201.2",
+      "CR 109.4"
+    ],
+    "pattern": "each {f:Filter} gets {pt:PT} for each other creature you control with the same name as ( that creature | it )",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you",
+                    "sharesWith": {
+                      "with": {
+                        "ref": "subject"
+                      },
+                      "quality": "name",
+                      "other": true
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you",
+                    "sharesWith": {
+                      "with": {
+                        "ref": "subject"
+                      },
+                      "quality": "name",
+                      "other": true
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each other",
+      "each",
+      "other",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "Each nontoken creature you control gets +1/+0 for each other creature you control with the same name as that creature."
+      },
+      {
+        "text": "Each Goblin you control gets +2/+2 for each other creature you control with the same name as it."
+      }
+    ],
+    "counterExamples": [
+      "Each nontoken creature you control gets +1/+0 for each creature you control with the same name as that creature.",
+      "Each nontoken creature you control gets +1/+0 for each other creature with the same name as that creature.",
+      "Each nontoken creature you control gets +1/+0 for each other creature you control with the same controller as that creature."
+    ],
+    "priority": 1
+  }
+]

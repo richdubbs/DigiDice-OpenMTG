@@ -1,0 +1,364 @@
+[
+  {
+    "id": "cm.edhn141.spells.more.opp.manaValue",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 202.3",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} your opponents cast with mana value {n:Qty} or greater cost {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "$merge": [
+                "$f",
+                {
+                  "manaValue": {
+                    "op": ">=",
+                    "value": "$n"
+                  }
+                }
+              ]
+            },
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Noncreature spells your opponents cast with mana value 5 or greater cost {1} more to cast."
+      },
+      {
+        "text": "Creature spells your opponents cast with mana value 3 or greater cost {2} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "Noncreature spells your opponents cast with mana value 5 or greater cost {1} less to cast.",
+      "Noncreature spells you cast with mana value 5 or greater cost {1} more to cast.",
+      "Noncreature spells your opponents cast with mana value 5 or less cost {1} more to cast.",
+      "Noncreature spells your opponents cast with power 5 or greater cost {1} more to cast."
+    ]
+  },
+  {
+    "id": "rep.edhn141.prevent.oppSource.youOr",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.7",
+      "CR 120.1",
+      "CR 109.4"
+    ],
+    "pattern": "if a source an opponent controls would deal damage to you or {f:Filter} , prevent {n:Qty} of that damage",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "controller": "opponent"
+        },
+        "recipient": {
+          "player": "you",
+          "object": "$f"
+        }
+      },
+      "body": {
+        "b": "prevent",
+        "amount": "$n"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If a source an opponent controls would deal damage to you or a Goblin you control, prevent 2 of that damage."
+      },
+      {
+        "text": "If a source an opponent controls would deal damage to you or a creature you control, prevent 3 of that damage."
+      }
+    ],
+    "counterExamples": [
+      "If a source you control would deal damage to you or a Goblin you control, prevent 2 of that damage.",
+      "If a source an opponent controls would deal damage to a Goblin you control, prevent 2 of that damage.",
+      "If a source an opponent controls would deal damage to you or a Goblin you control, prevent all of that damage.",
+      "If a source an opponent controls would deal combat damage to you or a Goblin you control, prevent 2 of that damage."
+    ]
+  },
+  {
+    "id": "sta.edhn141.manaBurn",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.4",
+      "CR 500.5",
+      "CR 119.3"
+    ],
+    "pattern": "a player losing unspent mana causes that player to lose that much life",
+    "build": {
+      "s": "rule",
+      "rule": "manaBurn",
+      "player": {
+        "ref": "each",
+        "who": "player"
+      }
+    },
+    "examples": [
+      {
+        "text": "A player losing unspent mana causes that player to lose that much life. You have no maximum hand size."
+      },
+      {
+        "text": "Creatures you control have haste. A player losing unspent mana causes that player to lose that much life."
+      }
+    ],
+    "counterExamples": [
+      "A player losing unspent mana causes that player to gain that much life.",
+      "A player losing unspent mana causes you to lose that much life.",
+      "A player losing unspent red mana causes that player to lose that much life."
+    ],
+    "consumes": [
+      "that much"
+    ]
+  },
+  {
+    "id": "eff.edhn141.gains.allActivatedOf.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 613.1f",
+      "CR 608.2h",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:Objs} gain[s] all activated abilities of {t:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "addActivatedOf": "$t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Each Wizard you control gains all activated abilities of target creature an opponent controls until end of turn."
+      },
+      {
+        "text": "When ~ enters, each Elf you control gains all activated abilities of target artifact until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Each Wizard you control gains all triggered abilities of target creature an opponent controls until end of turn.",
+      "Each Wizard you control gains all activated abilities of target creature an opponent controls.",
+      "Each Wizard you control loses all activated abilities of target creature an opponent controls until end of turn."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "rid.edhn141.spendColorAsAny.thoseAbilities",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 609.4b",
+      "CR 106.6",
+      "CR 602.2b"
+    ],
+    "pattern": "you may spend {c:Color} mana as though it were mana of any color to activate those abilities",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "effects.0.s": "continuous",
+          "effects.1": null,
+          "effects.0.mods.0.layer": 6,
+          "effects.0.mods.1": null
+        },
+        "effects": [
+          {
+            "mods": [
+              {
+                "spendColorAsAny": {
+                  "@new": "$c"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Each Wizard you control gains all activated abilities of target creature an opponent controls until end of turn. You may spend red mana as though it were mana of any color to activate those abilities."
+      },
+      {
+        "text": "When ~ enters, each Elf you control gains all activated abilities of target artifact until end of turn. You may spend green mana as though it were mana of any color to activate those abilities."
+      }
+    ],
+    "counterExamples": [
+      "Each Wizard you control gains all activated abilities of target creature an opponent controls until end of turn. You may spend red mana as though it were mana of any type to activate those abilities.",
+      "Each Wizard you control gains all activated abilities of target creature an opponent controls until end of turn. You may spend red mana as though it were mana of any color to cast those spells.",
+      "You may spend red mana as though it were mana of any color to activate those abilities."
+    ]
+  },
+  {
+    "id": "sta.edhn141.duringYourTurn.spells.fromHand.mvXOrLess.cascade",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 702.85a",
+      "CR 202.3",
+      "CR 500.1"
+    ],
+    "pattern": "during your turn , {f:Filter} you cast from your hand with mana value x or less have cascade , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                {
+                  "$merge": [
+                    "$f",
+                    {
+                      "manaValue": {
+                        "op": "<=",
+                        "value": "$q"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "castFrom": "hand",
+              "controller": "you",
+              "not": {
+                "stackKind": "copy",
+                "zone": "stack"
+              },
+              "zone": "stack"
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "cascade",
+                  "text": "cascade"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, spells you cast from your hand with mana value X or less have cascade, where X is the number of creatures you control."
+      },
+      {
+        "text": "During your turn, creature spells you cast from your hand with mana value X or less have cascade, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, spells you cast from your hand with mana value X or greater have cascade, where X is the number of creatures you control.",
+      "During your turn, spells you cast from your graveyard with mana value X or less have cascade, where X is the number of creatures you control.",
+      "During your turn, spells you cast from your hand with mana value X or less have convoke, where X is the number of creatures you control.",
+      "Spells you cast from your hand with mana value X or less have cascade, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "sta.edhn141.triggerMod.turnedFaceUp",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 702.37e",
+      "CR 708.8"
+    ],
+    "pattern": "if turning a face-down permanent face up causes a triggered ability of {f:Filter} to trigger , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "becomes",
+            "what": "turnedFaceUp",
+            "object": {}
+          },
+          "abilitiesOf": "$f",
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If turning a face-down permanent face up causes a triggered ability of a creature you control to trigger, that ability triggers an additional time."
+      },
+      {
+        "text": "If turning a face-down permanent face up causes a triggered ability of a Wizard you control to trigger, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "If turning a face-down permanent face down causes a triggered ability of a creature you control to trigger, that ability triggers an additional time.",
+      "If turning a face-down permanent face up causes a triggered ability of a creature you control to trigger, that ability triggers two additional times.",
+      "If a permanent entering the battlefield causes a triggered ability of a creature you control to trigger, that ability triggers an additional time."
+    ]
+  }
+]

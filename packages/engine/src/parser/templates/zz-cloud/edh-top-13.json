@@ -1,0 +1,146 @@
+[
+  {
+    "id": "eff.edht13.player.mayGet.counters",
+    "kind": "effect",
+    "since": 13,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "you may get {n:Qty} {k:CounterKind} counter[s]",
+    "build": [
+      {
+        "op": "may",
+        "who": {
+          "ref": "you"
+        },
+        "do": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "you"
+            },
+            "kind": "$k",
+            "count": "$n"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a land you control enters, you may get two rad counters."
+      },
+      {
+        "text": "Whenever a creature you control dies, you may get an experience counter."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a land you control enters, you get two rad counters.",
+      "Whenever a land you control enters, you may get two rad counters for each land you control.",
+      "Whenever a land you control enters, you may draw two cards."
+    ]
+  },
+  {
+    "id": "sta.edht13.duringYourTurn.toughnessDamage.each",
+    "kind": "static",
+    "since": 13,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 510.1a",
+      "CR 604.1",
+      "CR 613.11",
+      "CR 611.3a"
+    ],
+    "pattern": "during your turn , each {f:Filter} assigns combat damage equal to its toughness rather than its power",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "combatDamageUsesToughness",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "rather than",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, each artifact creature assigns combat damage equal to its toughness rather than its power."
+      },
+      {
+        "text": "During your turn, each Wall you control assigns combat damage equal to its toughness rather than its power."
+      }
+    ],
+    "counterExamples": [
+      "During your opponents' turns, each creature assigns combat damage equal to its toughness rather than its power.",
+      "During your turn, each creature assigns combat damage equal to its power rather than its toughness.",
+      "During your turn, each creature deals combat damage equal to its toughness rather than its power."
+    ]
+  },
+  {
+    "id": "sta.edht13.attackTax.perCounter",
+    "kind": "static",
+    "since": 13,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 508.1h",
+      "CR 508.1i",
+      "CR 508.1j",
+      "CR 604.1",
+      "CR 122.1"
+    ],
+    "pattern": "each {f:Filter} can't attack you or planeswalkers you control unless its controller pays {x} , where x is the number of counters on that creature",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "attackTax",
+          "of": "$f",
+          "defenders": "both",
+          "value": {
+            "q": "counters",
+            "on": {
+              "ref": "subject"
+            },
+            "kind": "any"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "unless",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each creature with a charge counter on it can't attack you or planeswalkers you control unless its controller pays {X}, where X is the number of counters on that creature."
+      },
+      {
+        "text": "Each creature with a +1/+1 counter on it can't attack you or planeswalkers you control unless its controller pays {X}, where X is the number of counters on that creature."
+      }
+    ],
+    "counterExamples": [
+      "Each creature with one or more counters on it can attack you or planeswalkers you control unless its controller pays {X}, where X is the number of counters on that creature.",
+      "Each creature with one or more counters on it can't attack you or planeswalkers you control unless its controller pays {X}, where X is the number of counters on you.",
+      "Each creature with one or more counters on it can't attack you unless its controller pays {X}, where X is the number of counters on that creature."
+    ]
+  }
+]

@@ -1,0 +1,314 @@
+[
+ {
+  "id": "sta.edhn44.obj.noAttackBlockCrew.andNoActivate.exceptMana",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 508.1c",
+   "CR 509.1b",
+   "CR 702.122a",
+   "CR 602.5",
+   "CR 605.1a",
+   "CR 303.4"
+  ],
+  "pattern": "{o:Obj} can't attack , block , or crew vehicles , and its activated abilities can't be activated unless they're mana abilities",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "restrict",
+     "subject": "$o",
+     "mode": "cant",
+     "action": "attack"
+    },
+    {
+     "s": "restrict",
+     "subject": "$o",
+     "mode": "cant",
+     "action": "block"
+    },
+    {
+     "s": "restrict",
+     "subject": "$o",
+     "mode": "cant",
+     "action": "crew"
+    },
+    {
+     "s": "restrict",
+     "subject": "$o",
+     "mode": "cant",
+     "action": "activate",
+     "exceptMana": true
+    }
+   ]
+  },
+  "consumes": [
+   "can't",
+   "unless"
+  ],
+  "examples": [
+   {
+    "text": "Enchanted creature can't attack, block, or crew Vehicles, and its activated abilities can't be activated unless they're mana abilities."
+   },
+   {
+    "text": "Enchanted artifact can't attack, block, or crew Vehicles, and its activated abilities can't be activated unless they're mana abilities."
+   }
+  ],
+  "counterExamples": [
+   "Enchanted creature can't attack, block, or crew Vehicles, and its activated abilities can't be activated unless they're loyalty abilities.",
+   "Enchanted creature can't attack or block, and its activated abilities can't be activated unless they're mana abilities, and it can't crew Vehicles.",
+   "Enchanted creature can't attack, block, or crew Vehicles, and its triggered abilities can't be activated unless they're mana abilities."
+  ]
+ },
+ {
+  "id": "trg.edhn44.cast.ifSecondOfKind",
+  "kind": "trigger",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 603.2",
+   "CR 603.4",
+   "CR 601.2i"
+  ],
+  "pattern": "whenever you cast a spell , if it's the second {f:CastSpell} you cast this turn",
+  "build": {
+   "on": [
+    {
+     "ev": "cast",
+     "player": "you",
+     "spell": "$f",
+     "nth": 2,
+     "nthMatching": true
+    }
+   ]
+  },
+  "consumes": [
+   "whenever",
+   "if"
+  ],
+  "examples": [
+   {
+    "text": "Whenever you cast a spell, if it's the second Elf spell you cast this turn, draw a card."
+   },
+   {
+    "text": "Whenever you cast a spell, if it's the second artifact spell you cast this turn, you gain 2 life."
+   }
+  ],
+  "counterExamples": [
+   "Whenever you cast a spell, if it's the third Elf spell you cast this turn, draw a card.",
+   "Whenever you cast a spell, if it's the second Elf spell an opponent casts this turn, draw a card.",
+   "Whenever you cast a spell, if it's the second Elf spell you cast this game, draw a card."
+  ]
+ },
+ {
+  "id": "eff.edhn44.sacrifice.half.youControl.roundedUp",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 701.21a",
+   "CR 107.1a",
+   "CR 608.2d"
+  ],
+  "pattern": "sacrifice half the {f:Filter} , rounded up",
+  "build": {
+   "op": "sacrificeChoice",
+   "who": {
+    "ref": "you"
+   },
+   "filter": "$f",
+   "count": {
+    "q": "math",
+    "op": "ceilDiv",
+    "args": [
+     {
+      "q": "count",
+      "of": {
+       "ref": "each",
+       "filter": "$f"
+      }
+     },
+     2
+    ]
+   }
+  },
+  "subject": "none",
+  "consumes": [
+   "half"
+  ],
+  "examples": [
+   {
+    "text": "Whenever ~ attacks, sacrifice half the non-Elf creatures you control, rounded up."
+   },
+   {
+    "text": "At the beginning of your upkeep, sacrifice half the artifacts you control, rounded up."
+   }
+  ],
+  "counterExamples": [
+   "Whenever ~ attacks, sacrifice half the non-Elf creatures you control, rounded down.",
+   "Whenever ~ attacks, sacrifice half the non-Elf creatures you control.",
+   "Whenever ~ attacks, sacrifice half the non-Elf creatures your opponents control, rounded up."
+  ]
+ },
+ {
+  "id": "eff.edhn44.mayHave.basePowerBecomes.dur",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 611.2a",
+   "CR 613.4b",
+   "CR 208.1",
+   "CR 608.2d"
+  ],
+  "pattern": "you may have {o:Obj} 's base power become {n:Qty} {d:Dur}",
+  "build": {
+   "op": "may",
+   "who": {
+    "ref": "you"
+   },
+   "do": [
+    {
+     "op": "effect",
+     "duration": "$d",
+     "effects": [
+      {
+       "s": "continuous",
+       "affects": "$o",
+       "mods": [
+        {
+         "layer": "7b",
+         "power": "$n"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "subject": "none",
+  "consumes": [
+   "may"
+  ],
+  "examples": [
+   {
+    "text": "{1}: You may have ~'s base power become 1 plus the number of creatures you control until end of turn."
+   },
+   {
+    "text": "{2}: You may have ~'s base power become 1 plus the greatest power among other creatures you control until end of turn."
+   }
+  ],
+  "counterExamples": [
+   "{2}: You may have ~'s base toughness become 1 plus the number of creatures you control until end of turn.",
+   "{2}: You may have ~'s base power and toughness become 1 plus the number of creatures you control until end of turn.",
+   "{2}: ~'s base power becomes 1 plus the number of creatures you control until end of turn."
+  ]
+ },
+ {
+  "id": "eff.edhn44.search.differentNames.putBattlefield",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 701.23a",
+   "CR 201.2",
+   "CR 107.1"
+  ],
+  "pattern": "search your library for up to {n:Qty} {f:Filter} cards with different names , put them onto the battlefield",
+  "build": [
+   {
+    "op": "search",
+    "who": {
+     "ref": "you"
+    },
+    "zone": "library",
+    "filter": "$f",
+    "min": 0,
+    "max": "$n",
+    "differentNames": true,
+    "as": "search"
+   },
+   {
+    "op": "move",
+    "what": {
+     "ref": "bound",
+     "name": "search"
+    },
+    "to": {
+     "zone": "battlefield",
+     "controller": {
+      "ref": "you"
+     }
+    }
+   }
+  ],
+  "subject": "none",
+  "consumes": [
+   "up to",
+   "different",
+   "them"
+  ],
+  "examples": [
+   {
+    "text": "Search your library for up to three Elf creature cards with different names, put them onto the battlefield, then shuffle."
+   },
+   {
+    "text": "Search your library for up to two artifact cards with different names, put them onto the battlefield, then shuffle."
+   }
+  ],
+  "counterExamples": [
+   "Search your library for up to three Elf creature cards with the same name, put them onto the battlefield, then shuffle.",
+   "Search your library for up to three Elf creature cards with different names, put them onto the battlefield tapped, then shuffle.",
+   "Search your library for three Elf creature cards with different names, put them onto the battlefield, then shuffle."
+  ]
+ },
+ {
+  "id": "cm.edhn44.alternative.free.flash.if",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 118.9",
+   "CR 601.2b",
+   "CR 601.2f",
+   "CR 107.3b",
+   "CR 601.3b",
+   "CR 702.8a"
+  ],
+  "pattern": "if {w:Cond} , you may cast ~ without paying its mana cost and as though it had flash",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "stack"
+   ],
+   "effects": [
+    {
+     "s": "alternativeCost",
+     "cost": {},
+     "name": "alternative",
+     "when": "$w",
+     "instantSpeed": true
+    }
+   ]
+  },
+  "consumes": [
+   "if",
+   "may",
+   "as though"
+  ],
+  "examples": [
+   {
+    "text": "If you control a Wizard, you may cast ~ without paying its mana cost and as though it had flash."
+   },
+   {
+    "text": "If an opponent controls an Elf and you control a Goblin, you may cast ~ without paying its mana cost and as though it had flash."
+   }
+  ],
+  "counterExamples": [
+   "If you control a Wizard, you may cast ~ without paying its mana cost.",
+   "If you control a Wizard, you may cast ~ from your graveyard without paying its mana cost and as though it had flash.",
+   "If you control a Wizard, you may cast ~ without paying its mana cost and as though it had haste."
+  ]
+ }
+]

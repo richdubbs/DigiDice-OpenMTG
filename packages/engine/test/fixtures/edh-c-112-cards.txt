@@ -1,0 +1,5 @@
+# edh-c-112 (Commander lane edh-c, EDHREC ranks 17,001 to 17,500, fifth pass): see packages/engine/src/parser/templates/zz-cloud/edh-c-112.json. After editing: npm run cards -- fixtures
+Gleam of Authority
+Chromium, the Mutable
+Trench Gorger
+Bloodbond March

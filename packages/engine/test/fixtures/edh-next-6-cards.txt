@@ -1,0 +1,9 @@
+# edh-next-6 (Commander lane edh-next, EDHREC ranks 5,001-6,500, second pass): prevent all combat damage to a group this turn, each player loses life/discards/sacrifices, return to their owners' hands all ..., each attacking creature doesn't untap, cast a spell during combat, counter unless discards their hand, double counters on chosen targets. After editing: npm run cards -- fixtures
+Pack Leader
+Loyal Unicorn
+Smallpox
+Engulf the Shore
+Tangle
+Zuko, Firebending Master
+Perplex
+Solidarity of Heroes

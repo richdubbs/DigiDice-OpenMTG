@@ -1,0 +1,228 @@
+[
+  {
+    "id": "rid.edhp15.castThisWay.spendAnyColor",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.4b",
+      "CR 107.4c",
+      "CR 601.2g",
+      "CR 611.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "if you cast a spell this way , you may spend mana as though it were mana of any color to cast it",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "effects.0.s": "permit",
+          "effects.1": null
+        },
+        "effects": [
+          {
+            "anyManaColor": {
+              "@new": true
+            }
+          }
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "if",
+      "may",
+      "as though",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top card of each opponent's library. You may play those cards for as long as they remain exiled. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it."
+      },
+      {
+        "text": "Exile the top card of target opponent's library. You may play it this turn. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target opponent's library. You may play it this turn. If you cast a spell this way, you may spend mana as though it were mana of any type to cast it.",
+      "Exile the top card of target opponent's library. You may play it this turn. If you cast a spell this way, you gain 2 life.",
+      "Exile the top card of target opponent's library. You draw a card. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it."
+    ]
+  },
+  {
+    "id": "eff.edhp15.selfAndObj.pumpgrant.mustAttack",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 608.2c"
+    ],
+    "pattern": "~ and {o:Obj} each get {pt:PT} and gain {a:Abilities} {d:Dur} and attack this turn if able",
+    "build": [
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": {
+              "ref": "union",
+              "of": [
+                {
+                  "ref": "self"
+                },
+                "$o"
+              ]
+            },
+            "mods": [
+              {
+                "layer": "7c",
+                "power": "$pt.p",
+                "toughness": "$pt.t"
+              },
+              {
+                "layer": 6,
+                "add": "$a"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "endOfTurn"
+        },
+        "effects": [
+          {
+            "s": "restrict",
+            "subject": {
+              "ref": "union",
+              "of": [
+                {
+                  "ref": "self"
+                },
+                "$o"
+              ]
+            },
+            "mode": "mustIfAble",
+            "action": "attack"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "if able",
+      "if",
+      "this turn",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "~ and target creature you control each get +1/+1 and gain trample until end of turn and attack this turn if able."
+      },
+      {
+        "text": "~ and target creature an opponent controls each get +2/+0 and gain haste until end of turn and attack this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "~ and target creature you control each get +1/+1 and gain trample until end of turn.",
+      "~ or target creature you control each get +1/+1 and gain trample until end of turn and attack this turn if able.",
+      "~ and target creature you control each get +1/+1 and gain trample until end of turn and attack each combat if able."
+    ]
+  },
+  {
+    "id": "eff.edhp15.grant.protectionFromColorsOf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16a",
+      "CR 105.1",
+      "CR 608.2h",
+      "CR 400.7",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "{g:Objs} gain protection from each of {o:Obj} 's colors {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$g",
+          "mods": [
+            {
+              "layer": 6,
+              "protectionFromColorsOf": "$o"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Exile target creature. Elves you control gain protection from each of that creature's colors until end of turn."
+      },
+      {
+        "text": "Destroy target artifact. Creatures you control gain protection from each of that artifact's colors until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature. Elves you control gain protection from each of that creature's colors.",
+      "Exile target creature. Elves you control gain protection from that creature's colors until end of turn.",
+      "Exile target creature. Elves you control gain hexproof from each of that creature's colors until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhp15.sacrifice.andLoseLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 608.2e"
+    ],
+    "pattern": "{p:Player} sacrifice[s] {n:Qty} {f:Filter} and lose[s] {m:Qty} life",
+    "build": [
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$f",
+        "count": "$n"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Each opponent sacrifices an artifact and loses 2 life."
+      },
+      {
+        "text": "Target player sacrifices two creatures and loses 4 life."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent sacrifices an artifact and gains 2 life.",
+      "Each opponent sacrifices an artifact or loses 2 life.",
+      "Each opponent sacrifices all artifacts and loses 2 life."
+    ]
+  }
+]

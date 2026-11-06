@@ -7,4 +7,4 @@ import type { EventFormsPart } from './forms';
 
 // Standard round 5, r5-trig (CR 702.122b, 702.171c): a creature tapped for a crew or saddle cost (`crewTapped`, actions/activate.ts) is `becomes` 'crewCostPaid' /
 // 'saddleCostPaid' of the Vehicle or Mount, with the creature as `by` ("Whenever ~ crews a Vehicle", "saddles a Mount")
-export const SADDLE_FORMS: EventFormsPart = { SUPPORTED: ['ev.becomes.saddled', 'ev.becomes.crewCostPaid', 'ev.becomes.saddleCostPaid', 'ev.becomes.teamworkCostPaid' /* std-rq: actions/cast.ts */, 'ev.becomes.untapStep' /* r5-trig: core/steps.ts marks the untap step's untaps */], EMITS: [] };
+export const SADDLE_FORMS: EventFormsPart = { SUPPORTED: ['ev.becomes.saddled', 'ev.becomes.crewed' /* edh-next-39: keywords/data/crew.json reports it as the crew ability resolves (CR 702.122e) */, 'ev.becomes.crewCostPaid', 'ev.becomes.saddleCostPaid', 'ev.becomes.teamworkCostPaid' /* std-rq: actions/cast.ts */, 'ev.becomes.untapStep' /* r5-trig: core/steps.ts marks the untap step's untaps */], EMITS: [] };

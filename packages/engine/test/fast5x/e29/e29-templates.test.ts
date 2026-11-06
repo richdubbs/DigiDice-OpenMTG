@@ -20,9 +20,10 @@ import r3FxReview from '../../m5/golden/cards/cloud-r3-fx-review.json';
 import r5FxbReview from '../../m5/golden/cards/cloud-r5-fxb-promoted.json';
 import stdRtReview from '../../m5/golden/cards/cloud-std-rt-review.json';
 import stdRx8Review from '../../m5/golden/cards/cloud-std-rx8-review.json';
+import edhD1Review from '../../m5/golden/cards/edh-d-1-review.json'; // edh-d-1: eff.e29.permit.play.group.dur.anyType promoted
 // r5-fxb: the promotions of design 10.4 are verified in the reviews of the slices that promoted them too (std-rt: eff.e29.permit.play.obj.dur.anyType;
 // std-rx8: eff.e29.permit.play.group.durFirst.anyType)
-const review = [...ownReview, ...r3FxReview, ...r5FxbReview, ...stdRtReview, ...stdRx8Review];
+const review = [...ownReview, ...r3FxReview, ...r5FxbReview, ...stdRtReview, ...stdRx8Review, ...edhD1Review];
 
 const E29 = e29 as Template[];
 const OPTS = defaultParseOptions();
@@ -91,7 +92,7 @@ describe('E29 template file (design 6.3, 6.9; CONTRIBUTING "Adding a template")'
     // std-rx8: permit.play.group.durFirst.anyType is stable (Rakdos, the Muscle reads automated since "exile cards equal to N from the top of target player's
     // library" parses; with Lidless Gaze, every automated card of the local index; design 6.9 deviation, recorded)
     expect(experimental).toEqual([
-      'eff.e29.permit.cast.group.dur', 'eff.e29.permit.cast.group.durFirst', 'eff.e29.permit.play.group.dur.anyType',
+      'eff.e29.permit.cast.group.dur', 'eff.e29.permit.cast.group.durFirst',
     ]);
   });
   it('guard G3: a critical word a pattern spells out is listed in `consumes`', () => {
@@ -124,6 +125,9 @@ const WHOLE: Record<string, string[]> = {
   // test/m5/golden/cards/cloud-std-rx8-review.json): Rakdos, the Muscle (Standard, held-out half: open, owner decision 2026-10-17) and Lidless Gaze (tuning half).
   // Mr. Monopoly, On the Go and Tinybones, Bauble Burglar print the sentence too and stay manual for other sentences
   'eff.e29.permit.play.group.durFirst.anyType': ['Rakdos, the Muscle', 'Lidless Gaze'],
+  // edh-d-1 (design 6.9 narrow wording, decided by the owner's standing rule 2026-10-27): promoted with its one automated card of the local index (Petty Larceny, verified in
+  // test/m5/golden/cards/edh-d-1-review.json)
+  'eff.e29.permit.play.group.dur.anyType': ['Petty Larceny'],
 };
 
 describe('E29 guard G9 (design 6.8): examples and counter-examples', () => {

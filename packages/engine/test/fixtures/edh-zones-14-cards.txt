@@ -1,0 +1,8 @@
+# edh-zones-14 (Commander effort, lane edh-zones; test/cloud/edh-zones-14, golden edh-zones-14-review.json): a replacement for a search (Aven Mindcensor), "you return ... to your hand" after another player's clause, "each of those players", exile any number of cards from your hand face down (Scroll Rack), an opponent attacks you and/or planeswalkers, cards exiled with ~ put into graveyards and that much damage, a search ban for the searcher's own sources
+Aven Mindcensor
+Witch of the Moors
+Court of Cunning
+Scroll Rack
+Cunning Rhetoric
+Valakut Exploration
+Ashiok, Dream Render

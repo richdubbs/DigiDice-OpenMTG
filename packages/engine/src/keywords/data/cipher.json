@@ -3,10 +3,69 @@
   "rule": "702.99",
   "params": [],
   "mechanisms": [
-    "expands",
-    "structural"
+    "expands"
   ],
   "reminder": "Then you may exile this spell card encoded on a creature you control. Whenever that creature deals combat damage to a player, its controller may cast a copy of the encoded card without paying its mana cost.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "For as long as this card is encoded on a creature, that creature has \"Whenever this creature deals combat damage to a player, you may copy the encoded card and you may cast the copy without paying its mana cost.\"",
+      "zone": [
+        "exile"
+      ],
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "linked",
+            "link": "encoded"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "triggered",
+                  "text": "Whenever this creature deals combat damage to a player, you may copy the encoded card and you may cast the copy without paying its mana cost.",
+                  "trigger": {
+                    "on": [
+                      {
+                        "ev": "damage",
+                        "source": {
+                          "self": true
+                        },
+                        "combat": true,
+                        "recipient": {
+                          "player": "any"
+                        }
+                      }
+                    ]
+                  },
+                  "effect": {
+                    "targets": [],
+                    "steps": [
+                      {
+                        "op": "cast",
+                        "who": {
+                          "ref": "you"
+                        },
+                        "what": {
+                          "ref": "grantor"
+                        },
+                        "free": true,
+                        "optional": true,
+                        "copyIn": "exile"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

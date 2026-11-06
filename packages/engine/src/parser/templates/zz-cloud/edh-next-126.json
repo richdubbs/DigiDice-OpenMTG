@@ -1,0 +1,307 @@
+[
+  {
+    "id": "eff.edhn126.vault.lookPayBottomRepeat",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 119.4",
+      "CR 401.4",
+      "CR 701.24a"
+    ],
+    "pattern": "look at the top {n:Qty} cards of your library . as many times as you choose , you may pay {l:Qty} life , put those cards on the bottom of your library in any order , then look at the top {m:Qty} cards of your library . then shuffle and put the last cards you looked at this way on top in any order",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        "as": "vaultSeen"
+      },
+      {
+        "op": "repeat",
+        "times": 1,
+        "optional": true,
+        "do": [
+          {
+            "op": "pay",
+            "who": {
+              "ref": "you"
+            },
+            "cost": {
+              "other": [
+                {
+                  "kind": "payLife",
+                  "amount": "$l"
+                }
+              ]
+            },
+            "mandatory": true,
+            "then": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "vaultSeen"
+                },
+                "to": {
+                  "zone": "library",
+                  "position": "bottom",
+                  "order": "chosen"
+                }
+              },
+              {
+                "op": "look",
+                "who": {
+                  "ref": "you"
+                },
+                "at": {
+                  "ref": "topCards",
+                  "player": {
+                    "ref": "you"
+                  },
+                  "count": "$m"
+                },
+                "as": "vaultSeen",
+                "rebind": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "vaultSeen"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen"
+        }
+      }
+    ],
+    "consumes": [
+      "may",
+      "as many times",
+      "many",
+      "times",
+      "then",
+      "last",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top four cards of your library. As many times as you choose, you may pay 1 life, put those cards on the bottom of your library in any order, then look at the top four cards of your library. Then shuffle and put the last cards you looked at this way on top in any order."
+      },
+      {
+        "text": "Look at the top three cards of your library. As many times as you choose, you may pay 2 life, put those cards on the bottom of your library in any order, then look at the top three cards of your library. Then shuffle and put the last cards you looked at this way on top in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top four cards of your library. As many times as you choose, you may pay 1 life, put those cards into your graveyard, then look at the top four cards of your library. Then shuffle and put the last cards you looked at this way on top in any order.",
+      "Look at the top four cards of your library. You may pay 1 life, put those cards on the bottom of your library in any order, then look at the top four cards of your library. Then shuffle and put the last cards you looked at this way on top in any order.",
+      "Look at the top four cards of your library. As many times as you choose, you may pay 1 life, put those cards on the bottom of your library in any order, then look at the top four cards of your library. Then put the last cards you looked at this way on top in any order."
+    ]
+  },
+  {
+    "id": "eff.edhn126.maySearch.putThatCardAttachedTo",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 303.4f",
+      "CR 303.4g",
+      "CR 608.2d"
+    ],
+    "pattern": "you may search your library for {f:SearchDesc} , put that card onto the battlefield attached to {g:Obj} , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            },
+            "attachedTo": "$g"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an enchantment you control enters, you may search your library for an Aura card with mana value 2 or less, put that card onto the battlefield attached to ~, then shuffle."
+      },
+      {
+        "text": "When ~ enters, you may search your library for an Aura card with a different name than each Aura you control, put that card onto the battlefield attached to ~, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may search your library for an Aura card, put that card onto the battlefield tapped attached to ~, then shuffle.",
+      "When ~ enters, you search your library for an Aura card, put that card onto the battlefield attached to ~, then shuffle.",
+      "When ~ enters, you may search your library for an Aura card, put that card into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhn126.players.eachManifestFromHand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "player",
+    "cr": [
+      "CR 701.40a",
+      "CR 701.40e",
+      "CR 115.1",
+      "CR 608.2c",
+      "CR 608.2f"
+    ],
+    "pattern": "{p:Player} each manifest {n:Qty} cards from their hands",
+    "build": {
+      "op": "forEach",
+      "over": "$p",
+      "as": "manifester",
+      "gather": "edhn126Manifested",
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "iterating"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "zone": "hand",
+              "owner": {
+                "ref": "iterating"
+              },
+              "isCard": true
+            }
+          },
+          "min": "$n",
+          "max": "$n",
+          "as": "edhn126Manifested"
+        },
+        {
+          "op": "action",
+          "action": "manifest",
+          "who": {
+            "ref": "iterating"
+          },
+          "subject": {
+            "ref": "bound",
+            "name": "edhn126Manifested"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, up to two target players each manifest three cards from their hands."
+      },
+      {
+        "text": "At the beginning of your upkeep, any number of target players each manifest two cards from their hands."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, up to two target players each manifest two cards from their libraries.",
+      "When ~ enters, up to two target players each exile two cards from their hands.",
+      "When ~ enters, up to two target players each manifest two cards from your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn126.draw.forEachManifestedThisWay",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.40a",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "for each card manifested this way , you draw a card",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "bound",
+          "name": "edhn126Manifested"
+        }
+      }
+    },
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, up to two target players each manifest three cards from their hands. For each card manifested this way, you draw a card."
+      },
+      {
+        "text": "At the beginning of your upkeep, any number of target players each manifest two cards from their hands. For each card manifested this way, you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, up to two target players each manifest two cards from their hands. For each card manifested this way, you gain 1 life.",
+      "For each card manifested this way, you draw a card.",
+      "When ~ enters, up to two target players each manifest two cards from their hands. For each card exiled this way, you draw a card."
+    ]
+  }
+]

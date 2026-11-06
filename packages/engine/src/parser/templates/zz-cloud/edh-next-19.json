@@ -1,0 +1,253 @@
+[
+  {
+    "id": "sta.edhn19.group.lose.keyword",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "{f:Filter} lose {k:Keyword}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "remove": [
+            "$k.keyword"
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Elves your opponents control lose trample."
+      },
+      {
+        "text": "Artifact creatures lose reach.\n{1}{R}, {T}: Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Elves your opponents control lose trample until end of turn.",
+      "Elves your opponents control lose trample and can't have or gain trample.",
+      "Elves your opponents control gain trample.",
+      "Elves your opponents control lose all abilities."
+    ]
+  },
+  {
+    "id": "rst.edhn19.you.cant.getKindCounters",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1f",
+      "CR 614.17",
+      "CR 101.2"
+    ],
+    "pattern": "you can't get {k:CounterKind} counters",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "you"
+      },
+      "mode": "cant",
+      "action": "haveCountersPut",
+      "counter": "$k"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "You can't get energy counters."
+      },
+      {
+        "text": "You can't get charge counters.\n{1}{R}, {T}: Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You can get energy counters.",
+      "You can't get counters.",
+      "You can't get energy counters this turn.",
+      "Each opponent can't get energy counters."
+    ]
+  },
+  {
+    "id": "eff.edhn19.dur.control.andHaste",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 702.10a"
+    ],
+    "pattern": "{d:Dur} , gain control of {o:Obj} and it gains haste",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "haste",
+                  "text": "haste"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Until end of turn, gain control of target creature and it gains haste."
+      },
+      {
+        "text": "Until end of turn, gain control of target artifact creature and it gains haste."
+      }
+    ],
+    "counterExamples": [
+      "Gain control of target creature and it gains haste.",
+      "Until end of turn, gain control of target creature and it gains flying.",
+      "Until end of turn, gain control of target creature and it gains haste until end of turn.",
+      "Until end of turn, gain control of target creature."
+    ]
+  },
+  {
+    "id": "eff.edhn19.dur.youControl.andHaste",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 702.10a"
+    ],
+    "pattern": "{d:Dur} , you gain control of {o:Obj} and it gains haste",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "haste",
+                  "text": "haste"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Until end of turn, you gain control of target creature and it gains haste."
+      },
+      {
+        "text": "Until end of turn, you gain control of target artifact creature and it gains haste."
+      }
+    ],
+    "counterExamples": [
+      "You gain control of target creature and it gains haste.",
+      "Until end of turn, you gain control of target creature and it gains flying.",
+      "Until end of turn, you gain control of target creature and it gains haste until end of turn.",
+      "Until end of turn, you gain control of target creature."
+    ]
+  },
+  {
+    "id": "eff.edhn19.untapAndGoad",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.26b",
+      "CR 701.15a",
+      "CR 701.15b",
+      "CR 608.2c"
+    ],
+    "pattern": "untap and goad {o:Obj}",
+    "build": [
+      {
+        "op": "untap",
+        "what": "$o"
+      },
+      {
+        "op": "action",
+        "action": "goad",
+        "who": {
+          "ref": "you"
+        },
+        "subject": "$o"
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:goad"
+    ],
+    "examples": [
+      {
+        "text": "Untap and goad target creature."
+      },
+      {
+        "text": "When ~ enters, untap and goad target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Untap target creature and goad it.",
+      "Goad and untap target creature.",
+      "Untap and goad all creatures you control."
+    ]
+  }
+]

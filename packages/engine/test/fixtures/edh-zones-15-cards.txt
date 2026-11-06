@@ -1,0 +1,6 @@
+# edh-zones-15 (Commander effort, lane edh-zones; test/cloud/edh-zones-15, golden edh-zones-15-review.json): exile if (a cost-revealed card's power, Titan's Presence), exile any number of permanents you control (until it leaves), the exiled cards that weren't cast put on the bottom (Chaos Wand, Gríma), draw replaced by a look at three (Underrealm Lich); Yorion is already in test-cards.txt
+Titan's Presence
+Abdel Adrian, Gorion's Ward
+Chaos Wand
+Gríma, Saruman's Footman
+Underrealm Lich

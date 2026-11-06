@@ -13,6 +13,7 @@ import { TEMPLATE_FILES, TEMPLATE_SET } from '../../../src/parser/template-set';
 import { ENGINE_CAPABILITIES } from '../../../src/model/capabilities';
 import round from '../../../src/parser/templates/zz-cloud/p2-typechange-4.json';
 import review from '../../m5/golden/cards/pc-tokens-3-review.json';
+import lattice from '../../m5/golden/cards/edh-mana-keywords-10-review.json';
 import { automated, card, fullyAutomated, jsonKey } from '../../m5/templates/support';
 import { localIndex } from '../../m5/parser/support';
 
@@ -49,9 +50,10 @@ describe('pc-tokens-3 template file (design 6.3, 6.9; CONTRIBUTING "Adding a tem
     }
   });
   it('design 6.9 DEVIATION (named in the round record): the templates were made stable by the stopped round p2-typechange-4; here each is stable on the hand-verified golden cards of this round', () => {
-    // sta.p2tc4.group.are.artifacts.inAddition stays experimental: no full golden card reads it (Mycosynth Lattice and Mycosynthwave stay partial / manual)
-    expect(MECH.filter((x) => x.status === 'stable').map((x) => x.id)).not.toContain('sta.p2tc4.group.are.artifacts.inAddition');
-    expect(MECH.filter((x) => x.status === 'stable').length).toBe(MECH_COUNT - 1);
+    // sta.p2tc4.group.are.artifacts.inAddition was experimental here; edh-mana-keywords-10 made it stable on Mycosynth Lattice (its golden entry, edh-mana-keywords-10-review.json; owner's standing rule 2026-10-27)
+    expect(MECH.filter((x) => x.status === 'stable').map((x) => x.id)).toContain('sta.p2tc4.group.are.artifacts.inAddition');
+    expect((lattice as { card: string; verified: string }[]).filter((g) => g.verified.includes('(sta.p2tc4.group.are.artifacts.inAddition')).map((g) => g.card)).toEqual(['Mycosynth Lattice']);
+    expect(MECH.filter((x) => x.status === 'stable').length).toBe(MECH_COUNT);
     expect(evidence('eff.p2tc4.group.pump.gainAllCreatureTypes').sort()).toEqual(['Shields of Velis Vel', 'Volatile Claws']);
     expect(evidence('eff.p2tc4.group.pump.loseAllCreatureTypes')).toEqual(['Ego Erasure']);
     expect(evidence('sta.p2tc4.attached.pump.everyCreatureType')).toEqual(['Amorphous Axe']);

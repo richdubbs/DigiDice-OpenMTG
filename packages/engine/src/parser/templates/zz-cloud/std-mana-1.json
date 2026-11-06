@@ -89,7 +89,7 @@
     "id": "rid.stdmana1.spent.cantBeCountered",
     "kind": "rider",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 106.6",
       "CR 601.2h",
@@ -426,7 +426,7 @@
     "id": "sta.stdmana1.tapForMana.twice",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 106.12",
       "CR 614.1a",

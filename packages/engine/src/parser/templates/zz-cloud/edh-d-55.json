@@ -1,0 +1,372 @@
+[
+  {
+    "id": "eff.edhd55.permit.cast.obj.durFirst.ifInstantSorcery",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 406.3"
+    ],
+    "pattern": "{d:Dur} , you may cast {o:Obj} if it's an instant or sorcery spell",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "onlyTypes": [
+            "Instant",
+            "Sorcery"
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Exile the top card of your library. Until end of turn, you may cast it if it's an instant or sorcery spell."
+      },
+      {
+        "text": "When ~ enters, exile the top card of your library face down. For as long as it remains exiled, you may cast that card if it's an instant or sorcery spell."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile the top card of your library. Until end of turn, you may cast it if it's an instant spell.",
+      "{T}: Exile the top card of your library. Until end of turn, you may cast it if it's an instant or sorcery card.",
+      "{T}: Exile the top card of your library. Until end of turn, you may cast it if it's a sorcery or land spell."
+    ]
+  },
+  {
+    "id": "eff.edhd55.is.subtypes.inAdditionCreatureTypes",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 205.1b",
+      "CR 205.3",
+      "CR 400.7"
+    ],
+    "pattern": "{o:ItIs} ( a | an ) {st:Subtypes} in addition to its other creature types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, return target creature card from your graveyard to the battlefield. It's a Vampire in addition to its other creature types."
+      },
+      {
+        "text": "Whenever a creature an opponent controls dies, return that card to the battlefield under your control. If it's a creature, it's a Skeleton in addition to its other creature types."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, return target creature card from your graveyard to the battlefield. It's a Vampire.",
+      "When ~ dies, return target creature card from your graveyard to the battlefield. It's a Vampire in addition to its other colors.",
+      "When ~ dies, return target creature card from your graveyard to the battlefield. Until end of turn, it's a Vampire in addition to its other creature types."
+    ]
+  },
+  {
+    "id": "eff.edhd55.dig.putAny.mvAtMostQty.battlefield.tapped",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 202.3",
+      "CR 110.5",
+      "CR 401.4"
+    ],
+    "pattern": "put any number of {f:Filter} cards with mana value less than or equal to {n:Qty} from among {g:Seen} onto the battlefield tapped",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            },
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, look at the top five cards of your library. You may put any number of creature cards with mana value less than or equal to the number of lands you control from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "When ~ enters, reveal the top four cards of your library. You may put any number of artifact cards with mana value less than or equal to ~'s power from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, reveal the top four cards of your library. You may put any number of artifact cards with mana value less than or equal to ~'s power from among them onto the battlefield.",
+      "When ~ enters, reveal the top four cards of your library. You may put any number of artifact cards with mana value greater than ~'s power from among them onto the battlefield tapped.",
+      "When ~ enters, reveal the top four cards of your library. You may put an artifact card with mana value less than or equal to ~'s power from among them onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "sta.edhd55.self.unblockable.defendingControlsAtLeast",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 506.2",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "~ can't be blocked as long as defending player controls {n:Count} or more {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "self"
+      },
+      "mode": "cant",
+      "action": "beBlocked",
+      "when": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "controller": {
+              "ref": "defending"
+            },
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "atLeast": "$n"
+      }
+    },
+    "consumes": [
+      "as long as",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't be blocked as long as defending player controls two or more enchantments."
+      },
+      {
+        "text": "~ can't be blocked as long as defending player controls four or more Swamps."
+      }
+    ],
+    "counterExamples": [
+      "~ can't be blocked as long as you control two or more enchantments.",
+      "~ can't block as long as defending player controls two or more enchantments.",
+      "~ can't be blocked as long as defending player controls a creature."
+    ]
+  },
+  {
+    "id": "eff.edhd55.dig.put.hand.cardThat",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.20",
+      "CR 608.2c",
+      "CR 205.3m",
+      "CR 401.4"
+    ],
+    "pattern": "you may put ( a | an ) {f:CardDesc} from among {g:Seen} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top five cards of your library. You may put a card that shares a creature type with ~ from among them into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may put a card that shares a card type with ~ from among them into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top five cards of your library. You may put a card that shares a creature type with ~ from among them onto the battlefield.",
+      "Reveal the top five cards of your library. You may put a card that shares a creature type with ~ from among them into your graveyard.",
+      "Reveal the top five cards of your library. You may put any number of cards that share a creature type with ~ from among them into your hand."
+    ]
+  },
+  {
+    "id": "dl.edhd55.declareAttackers.onYourNextTurn.tail",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7a",
+      "CR 508.1",
+      "CR 508.8",
+      "CR 500.1"
+    ],
+    "pattern": "{e:Effects} at the beginning of the declare attackers step on your next turn",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "declareAttackers",
+        "whose": "you",
+        "turn": "later"
+      },
+      "do": "$e"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile it. Return it to the battlefield under your control at the beginning of the declare attackers step on your next turn."
+      },
+      {
+        "text": "When ~ enters, draw a card. Draw two cards at the beginning of the declare attackers step on your next turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, draw a card. Draw two cards at the beginning of the declare attackers step on the next turn.",
+      "When ~ enters, draw a card. Draw two cards at the beginning of the declare attackers step on target opponent's next turn.",
+      "When ~ enters, draw a card. Draw two cards at the beginning of the end step on your next turn."
+    ],
+    "consumes": [
+      "next"
+    ]
+  },
+  {
+    "id": "eff.edhd55.return.bf.underYourControl.attacking",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.4",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 701.20"
+    ],
+    "pattern": "return {o:Objs} to the battlefield under your control tapped and attacking",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true,
+        "attacking": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return target Warrior card from your graveyard to the battlefield under your control tapped and attacking."
+      },
+      {
+        "text": "Whenever ~ attacks, return target Elf card from your graveyard to the battlefield under your control tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Return target Warrior card from your graveyard to the battlefield under your control tapped.",
+      "Return target Warrior card from your graveyard to the battlefield under its owner's control tapped and attacking.",
+      "Return target Warrior card from your graveyard to the battlefield attacking."
+    ]
+  }
+]

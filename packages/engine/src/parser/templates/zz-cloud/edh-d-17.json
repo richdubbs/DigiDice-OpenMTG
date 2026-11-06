@@ -1,0 +1,306 @@
+[
+  {
+    "id": "eff.edhd17.then.return.landOrKind.yourHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 404.1"
+    ],
+    "pattern": "then return ( a | an ) {f:Filter} card or {g:Filter} card from your graveyard to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f",
+              "$g"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Mill two cards, then return a Wizard card or artifact card from your graveyard to your hand."
+      },
+      {
+        "text": "Surveil 2, then return an enchantment card or Cleric card from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill two cards, then return a Wizard card and artifact card from your graveyard to your hand.",
+      "Mill two cards, then return a Wizard card or artifact card from your graveyard to the battlefield.",
+      "Mill two cards, then return a Wizard card or artifact card from your library to your hand."
+    ]
+  },
+  {
+    "id": "eff.edhd17.dig.putAll.revealed.chosen.hand.rest.bottomAny",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 607.2d",
+      "CR 401.4"
+    ],
+    "pattern": "put all {f:Filter} cards {c:Chosen} {g:RevealedThisWay} into your hand and the rest on the bottom of your library in any order",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "chosen": "$c",
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "As this creature enters, choose a creature type.\nWhen this creature enters, reveal the top three cards of your library. Put all land cards of the chosen type revealed this way into your hand and the rest on the bottom of your library in any order."
+      },
+      {
+        "text": "As this artifact enters, choose a creature type.\nWhen this artifact enters, reveal the top five cards of your library. Put all instant cards of the chosen type revealed this way into your hand and the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top three cards of your library. Put all land cards revealed this way into your hand and the rest on the bottom of your library in any order.",
+      "Reveal the top three cards of your library. Put all land cards of the chosen type revealed this way onto the battlefield and the rest on the bottom of your library in any order.",
+      "Reveal the top three cards of your library. Put all land cards of the chosen type revealed this way into your hand and the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhd17.prevent.all.toObj.dur.byChosenColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.6",
+      "CR 608.2d",
+      "CR 105.1",
+      "CR 611.2a"
+    ],
+    "pattern": "prevent all damage that would be dealt to {o:Obj} {d:Dur} by sources of the color of your choice",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "preventColor",
+        "link": "preventColor"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "chosen": {
+                  "link": "preventColor",
+                  "quality": "color"
+                }
+              },
+              "recipient": {
+                "object": {
+                  "is": "$o"
+                }
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "would",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{2}{R}: Prevent all damage that would be dealt to target creature this turn by sources of the color of your choice."
+      },
+      {
+        "text": "{2}: Prevent all damage that would be dealt to target creature you control until end of turn by sources of the color of your choice."
+      }
+    ],
+    "counterExamples": [
+      "{1}{W}: Prevent all damage that would be dealt to another target creature this turn by sources of the color you choose.",
+      "{1}{W}: Prevent all damage that would be dealt to another target creature this turn by sources you control.",
+      "{1}{W}: Prevent all damage that would be dealt to another target creature by sources of the color of your choice."
+    ]
+  },
+  {
+    "id": "eff.edhd17.prevent.all.toPlayerOrPlaneswalker.dur.byChosenColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.6",
+      "CR 608.2d",
+      "CR 105.1",
+      "CR 611.2a"
+    ],
+    "pattern": "prevent all damage that would be dealt to target player or planeswalker {d:Dur} by sources of the color of your choice",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "preventColor",
+        "link": "preventColor"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "chosen": {
+                  "link": "preventColor",
+                  "quality": "color"
+                }
+              },
+              "recipient": {
+                "object": {
+                  "is": {
+                    "ref": "target",
+                    "id": "",
+                    "$target": {
+                      "kind": "objectOrPlayer",
+                      "filter": {
+                        "types": [
+                          "Planeswalker"
+                        ]
+                      },
+                      "players": {
+                        "who": "any"
+                      },
+                      "min": 1,
+                      "max": 1,
+                      "text": "target player or planeswalker"
+                    }
+                  }
+                },
+                "player": {
+                  "ref": "target",
+                  "id": "",
+                  "$target": {
+                    "kind": "objectOrPlayer",
+                    "filter": {
+                      "types": [
+                        "Planeswalker"
+                      ]
+                    },
+                    "players": {
+                      "who": "any"
+                    },
+                    "min": 1,
+                    "max": 1,
+                    "text": "target player or planeswalker"
+                  }
+                }
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "would",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{4}{U}: Prevent all damage that would be dealt to target player or planeswalker this turn by sources of the color of your choice."
+      },
+      {
+        "text": "{3}: Prevent all damage that would be dealt to target player or planeswalker until end of turn by sources of the color of your choice."
+      }
+    ],
+    "counterExamples": [
+      "{5}{W}{W}: Prevent all damage that would be dealt to target player or planeswalker this turn by sources you control.",
+      "{5}{W}{W}: Prevent all damage that would be dealt to target player or planeswalker by sources of the color of your choice.",
+      "{5}{W}{W}: Prevent all damage that would be dealt to any target this turn by sources of the color of your choice."
+    ]
+  }
+]

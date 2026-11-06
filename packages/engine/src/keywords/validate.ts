@@ -92,7 +92,7 @@ export function keywordDataProblems(d: unknown): string[] {
     if (!Array.isArray(expand) || expand.length === 0 || !expand.every(isItem)) bad('expand must be a non-empty list of abilities with kind and text');
     else {
       for (const ph of placeholdersOf(expand)) {
-        if (!['cost', 'amount', 'quality', 'filter', 'costAdd', 'ifParam'].includes(ph)) bad(`expand uses the unknown placeholder "$${ph}"`);
+        if (!['cost', 'amount', 'quality', 'filter', 'costAdd', 'ifParam', 'below', 'xMin', 'copyExcept', 'copyLoyalty'].includes(ph)) bad(`expand uses the unknown placeholder "$${ph}"`);
         else if (PARAM_TYPES[ph] && !paramNames.has(ph)) bad(`expand uses $${ph} but the keyword has no ${ph} param`);
       }
     }
@@ -102,7 +102,7 @@ export function keywordDataProblems(d: unknown): string[] {
   }
   if (d['modifies'] !== undefined) {
     const kind = isObj(d['modifies']) ? d['modifies']['kind'] : undefined;
-    if (kind !== 'activated' && kind !== 'modal' && kind !== 'grant') bad('modifies must be {kind:"activated", ...}, {kind:"modal", chooseAll:{when}} or {kind:"grant", while}');
+    if (kind !== 'activated' && kind !== 'modal' && kind !== 'grant' && kind !== 'escalate') bad('modifies must be {kind:"activated", ...}, {kind:"modal", chooseAll:{when}}, {kind:"escalate"} or {kind:"grant", while}');
     if (kind === 'modal' && !(isObj(d['modifies']) && isObj(d['modifies']['chooseAll']) && isObj(d['modifies']['chooseAll']['when']))) bad('a modal modifier needs chooseAll.when');
     if (kind === 'grant' && !(isObj(d['modifies']) && isObj(d['modifies']['while']))) bad('a grant modifier needs while (FAST5X-4, CR 702.178a)');
     if ((kind === 'activated' || kind === 'grant') && expand !== undefined) bad('a wrapper keyword (modifies activated or grant) generates no ability of its own: no expand');

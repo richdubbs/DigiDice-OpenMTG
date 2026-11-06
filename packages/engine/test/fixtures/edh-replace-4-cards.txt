@@ -1,0 +1,9 @@
+# edh-replace-4 (Commander lane edh-replace; test/cloud/edh-replace-4, golden edh-replace-4-review.json)
+# excess damage to the creature's controller (trample), "that permanent card" anaphors, an emblem for each opponent, the most artifacts with one name, a player dealt damage this way can't gain life, a guarded destroy replaced by another, damage plus 1 from red or artifact sources
+Ram Through
+Court of Ardenvale
+Chandra, Awakened Inferno
+Mechanized Production
+Screaming Nemesis
+Fatal Push
+Mechanized Warfare

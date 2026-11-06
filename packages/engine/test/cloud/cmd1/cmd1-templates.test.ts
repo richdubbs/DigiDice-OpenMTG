@@ -38,7 +38,7 @@ describe('cmd1 template file (design 6.3, 6.9; CONTRIBUTING "Adding a template")
     expect(new Set(ids).size).toBe(ids.length);
     expect(validateTemplates([...TEMPLATE_SET])).toEqual([]);
   });
-  it('design 6.9: every template cites rules, has at least two examples and two counter-examples, starts experimental (one promoted since), and is of version 8; ids are *.cmd1.*', () => {
+  it('design 6.9: every template cites rules, has at least two examples and two counter-examples, starts experimental (four promoted since), and is of version 8; ids are *.cmd1.*', () => {
     expect(CMD1.length).toBe(9);
     for (const t of CMD1) {
       expect(t.id, t.id).toMatch(/^(eff|trg|sta|rep|kw)\.cmd1\./);
@@ -48,7 +48,11 @@ describe('cmd1 template file (design 6.3, 6.9; CONTRIBUTING "Adding a template")
       expect(t.counterExamples.length, t.id).toBeGreaterThanOrEqual(2);
       // std-rx33 promoted sta.cmd1.self.pump.whereX on three tuning-half golden cards (Criminal Past, Greven, Predator Captain, Carrion Grub:
       // test/m5/golden/cards/cloud-std-rx33-review.json, checked in test/cloud/std-rx33/std-rx33-templates.test.ts); the others have no evidence yet (design 6.9)
-      expect(t.status, t.id).toBe(t.id === 'sta.cmd1.self.pump.whereX' ? 'stable' : 'experimental');
+      // edh-c-1 promoted eff.cmd1.investigate.onceForEach on one hand-verified golden card (Sophina, Spearsage Deserter; 6.9 narrow wording, edh-c-1-review.json)
+      // edh-misc-3 promoted three more on one hand-verified golden card each (6.9 narrow wordings, named in its record; edh-misc-3-review.json, played in test/cloud/edh-misc-3)
+      // edh-b-11 promoted eff.cmd1.may.sacrifice.anotherOr on one hand-verified golden card in this file's reach (Gut, True Soul Zealot, edh-b-11-review.json; Old Man Willow also prints it; 6.9 deviation named in the record, played in test/cloud/cmd1 and edh-b-11)
+      // edh-d-1 promoted eff.cmd1.draw.another.ifCond on one hand-verified golden card (Imoen, Mystic Trickster, edh-d-1-review.json; 6.9 narrow wording, standing rule 2026-10-27)
+      expect(t.status, t.id).toBe(['eff.cmd1.may.sacrifice.anotherOr', 'sta.cmd1.self.pump.whereX', 'eff.cmd1.token.you.attacking.player', 'rep.cmd1.enters.additionalCounter.self', 'rep.cmd1.others.enter.additionalCounter.plural', 'eff.cmd1.investigate.onceForEach', 'eff.cmd1.draw.another.ifCond', 'eff.cmd1.becomes.colorSubtypeCreature.basePT.inAddition' /* edh-d-3: stable on Halsin, Emerald Archdruid (rank 13,428), the 6.9 narrow-wording deviation */].includes(t.id) ? 'stable' : 'experimental');
       expect(t.since, t.id).toBe(8);
     }
   });

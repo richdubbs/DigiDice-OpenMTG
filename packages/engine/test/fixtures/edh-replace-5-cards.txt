@@ -1,0 +1,4 @@
+# edh-replace-5 (Commander lane edh-replace; test/cloud/edh-replace-5, golden edh-replace-5-review.json)
+# (Leyline Tyrant is in fast5x-e19-cards.txt) pay any amount of {R} (pay.anyAmount), damage to your opponents as one batch + count of opponents dealt damage, energy replacement + energy paid or lost this turn
+Malcolm, Keen-Eyed Navigator
+Izzet Generatorium

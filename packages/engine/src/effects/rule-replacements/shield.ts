@@ -17,8 +17,9 @@
  *    per permanent is scheduled).
  * Sacrifice, "toughness 0" and the legend rule are not destruction and not damage: shield counters don't stop them (the ruling).
  */
+import { damageBatchId } from '../damage-batch';
 import { charsOfObject, hasKeyword } from '../../rules/characteristics';
-import { regenerationShieldIndex } from '../../rules/destroy';
+import { regenerationAvailable } from '../../rules/destroy';
 import { cantDo } from '../../rules/cant';
 import type { Game } from '../../core/game';
 import type { ObjectId } from '../../types/ids';
@@ -82,7 +83,7 @@ function applyShield(g: Game, e: Proposed, c: Candidate): Proposed | null {
   const id = c.source.id;
   if (e.ev === 'destroy') {
     // CR 616.1: a regeneration shield replaces the same destruction; its controller chooses which applies (the other one then has nothing to replace)
-    if (e.canRegenerate && !cantDo(g.s, 'beRegenerated', id) && regenerationShieldIndex(g.s, id) >= 0) {
+    if (e.canRegenerate && !cantDo(g.s, 'beRegenerated', id) && regenerationAvailable(g.s, id)) {
       const pick = g.choose({
         kind: 'chooseOption', player: c.controller, prompt: `${g.nameOf(id)} would be destroyed. Which effect applies first?`,
         options: [{ id: 'shield', label: 'Remove a shield counter' }, { id: 'regenerate', label: 'Use the regeneration shield' }], min: 1, max: 1, rules: ['CR 616.1', 'CR 122.1c', 'CR 701.19a'],
@@ -109,7 +110,7 @@ function applyShield(g: Game, e: Proposed, c: Candidate): Proposed | null {
     return e;
   }
   g.log(`${e.amount} damage ${g.nameOf(e.source.id)} would deal to ${g.nameOf(id)} is prevented (${c.sourceName}).`, { rules: ['CR 122.1c', 'CR 615.1'], level: 'action' });
-  g.emit({ type: 'damagePrevented', effect: c.id, batch: g.events.length, amount: e.amount, source: [e.source.id], target: [id] });
+  g.emit({ type: 'damagePrevented', effect: c.id, batch: damageBatchId(g), amount: e.amount, source: [e.source.id], target: [id] });
   return null; // CR 615.6, 614.7a: damage prevented entirely never happens
 }
 

@@ -1,0 +1,356 @@
+[
+  {
+    "id": "eff.edhd61.eachOpponent.sacrifice.unless.cost",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 701.21a",
+      "CR 608.2f",
+      "CR 101.4"
+    ],
+    "pattern": "each opponent sacrifices ( a | an ) {f:Filter} [of their choice] unless they {c:Cost}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "cost": "$c",
+          "else": [
+            {
+              "op": "sacrificeChoice",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "filter": "$f",
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent sacrifices a creature of their choice unless they discard a card."
+      },
+      {
+        "text": "At the beginning of your upkeep, each opponent sacrifices a land unless they discard a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent sacrifices a creature unless you discard a card.",
+      "When ~ enters, each opponent sacrifices two creatures unless they discard a card.",
+      "When ~ enters, each opponent sacrifices a creature if they discard a card."
+    ]
+  },
+  {
+    "id": "dl.edhd61.yourNextMain.thisTurn.tail",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 603.7b",
+      "CR 505.1"
+    ],
+    "pattern": "{e:Effects} at the beginning of your next main phase this turn",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "main1",
+        "whose": "you",
+        "next": true,
+        "anyMain": true
+      },
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true,
+      "do": "$e"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, add {G} at the beginning of your next main phase this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, add {U}{U} at the beginning of your next main phase this turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, add {R} at the beginning of your next main phase.",
+      "Whenever ~ attacks, add {R} at the beginning of the next main phase this turn.",
+      "Whenever ~ attacks, add {R} at the beginning of your next upkeep this turn."
+    ],
+    "consumes": [
+      "next"
+    ]
+  },
+  {
+    "id": "eff.edhd61.damage.eachOfUpToThree",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 115.1",
+      "CR 115.4",
+      "CR 601.2c",
+      "CR 608.2b"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to each of {a:Recipient} , {b:Recipient} , and/or {c:Recipient}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$a",
+      "amount": "$n",
+      "also": [
+        {
+          "to": "$b",
+          "amount": "$n"
+        },
+        {
+          "to": "$c",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, it deals 4 damage to each of up to one target creature, up to one target player, and/or up to one target planeswalker."
+      },
+      {
+        "text": "Whenever ~ attacks, it deals 3 damage to each of up to one target creature, up to one target player, and/or up to one target planeswalker."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, it deals 1 damage to each of up to one target creature, up to one target player, or up to one target planeswalker.",
+      "Whenever ~ attacks, it deals 1 damage to each of up to one target creature, up to one target player, and up to one target planeswalker.",
+      "Whenever ~ attacks, it deals 1 damage to up to one target creature, up to one target player, and/or up to one target planeswalker."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edhd61.transform.aFilter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.27a",
+      "CR 608.2d",
+      "CR 701.27c"
+    ],
+    "pattern": "transform ( a | an ) {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "toTransform"
+      },
+      {
+        "op": "changeFace",
+        "what": {
+          "ref": "bound",
+          "name": "toTransform"
+        },
+        "to": "transform"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "transform"
+    ],
+    "examples": [
+      {
+        "text": "Incubate 2, then transform an Incubator token you control."
+      },
+      {
+        "text": "At the beginning of your upkeep, transform a Werewolf you control."
+      }
+    ],
+    "counterExamples": [
+      "Incubate 2, then transform each Incubator token you control.",
+      "Incubate 2, then transform up to one Incubator token you control.",
+      "Incubate 2, then convert an Incubator token you control."
+    ]
+  },
+  {
+    "id": "eff.edhd61.gainLife.untapSelf.andTransformIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 701.26b",
+      "CR 701.27a",
+      "CR 712.2"
+    ],
+    "pattern": "you gain {n:Qty} life , untap ~ , and transform it",
+    "build": [
+      {
+        "op": "gainLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": "$n"
+      },
+      {
+        "op": "untap",
+        "what": {
+          "ref": "self"
+        }
+      },
+      {
+        "op": "changeFace",
+        "what": {
+          "ref": "self"
+        },
+        "to": "transform"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you gain 5 life, untap ~, and transform it."
+      },
+      {
+        "text": "{2}: You gain 3 life, untap ~, and transform it. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you gain 5 life, tap ~, and transform it.",
+      "Whenever ~ attacks, you gain 5 life, untap ~, and exile it.",
+      "Whenever ~ attacks, you gain 5 life and untap ~, and transform it."
+    ],
+    "priority": 2
+  },
+  {
+    "id": "eff.edhd61.player.chooses.nonlandInYourGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 701.9"
+    ],
+    "pattern": "{p:Player} chooses a nonland card in your graveyard",
+    "build": {
+      "op": "chooseObjects",
+      "who": "$p",
+      "from": {
+        "ref": "each",
+        "filter": {
+          "notTypes": [
+            "Land"
+          ],
+          "isCard": true,
+          "owner": "you",
+          "zone": "graveyard"
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "chooses"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, defending player chooses a nonland card in your graveyard. Return that card to your hand."
+      },
+      {
+        "text": "Whenever ~ attacks, target opponent chooses a nonland card in your graveyard. Return that card to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, defending player chooses a nonland card in their graveyard.",
+      "Whenever ~ attacks, defending player chooses a land card in your graveyard.",
+      "Whenever ~ attacks, defending player chooses a nonland card in your hand."
+    ]
+  },
+  {
+    "id": "eff.edhd61.eachOpponent.keepFourTypes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 110.4",
+      "CR 205.2a",
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 701.21a"
+    ],
+    "pattern": "each opponent chooses an artifact , a creature , an enchantment , and a planeswalker from among the nonland permanents they control , then sacrifices the rest",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "filter": {
+        "notTypes": [
+          "Land"
+        ]
+      },
+      "count": 1,
+      "mode": "keepEachType",
+      "keepTypes": [
+        "Artifact",
+        "Creature",
+        "Enchantment",
+        "Planeswalker"
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest."
+      },
+      {
+        "text": "Draw a card. Each opponent chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices them.",
+      "Each opponent chooses an artifact, a creature, an enchantment, and a planeswalker from among the permanents they control, then sacrifices the rest.",
+      "Each opponent chooses an artifact, a creature, an enchantment, and a land from among the nonland permanents they control, then sacrifices the rest."
+    ]
+  }
+]

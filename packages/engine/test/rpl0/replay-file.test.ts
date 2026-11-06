@@ -354,11 +354,14 @@ describe('RPL-0: the upgrade chain (replays design 5.1)', () => {
     2: (f: Record<string, unknown>) => ({ ...f, formatVersion: 3, seen: [...(f['seen'] as number[]), 2] }),
   };
 
-  it('formatVersion 1 is the first: there are no upgrade functions yet, and a version 1 file is read as it is', () => {
-    expect(REPLAY_FORMAT_VERSION).toBe(1);
-    expect(Object.keys(REPLAY_UPGRADES)).toEqual([]);
+  it('formatVersion 2 (shortcuts: an action type and an answer kind added): a version 1 file is read as a version 2 file, only its version changed', () => {
+    expect(REPLAY_FORMAT_VERSION).toBe(2);
+    expect(Object.keys(REPLAY_UPGRADES)).toEqual(['1']);
     const f = v1();
-    expect(upgradeReplay(f)).toEqual({ ok: true, value: f });
+    expect(upgradeReplay(f)).toEqual({ ok: true, value: { ...f, formatVersion: 2 } });
+    expect(f.formatVersion).toBe(1); // the file given is not changed
+    const f2 = { ...v1(), formatVersion: 2 };
+    expect(upgradeReplay(f2)).toEqual({ ok: true, value: f2 });
   });
 
   it('brings an older file to the current format, one step at a time and in order (upgrade1to2, then upgrade2to3)', () => {

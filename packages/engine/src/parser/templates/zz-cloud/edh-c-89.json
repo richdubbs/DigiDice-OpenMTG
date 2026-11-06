@@ -1,0 +1,156 @@
+[
+  {
+    "id": "sta.edhv89.each.untapstep.singular",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 502.3",
+      "CR 611.3a"
+    ],
+    "pattern": "each {f:Filter} doesn't untap during its controller 's untap step",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "cant",
+      "action": "untapDuringUntapStep"
+    },
+    "consumes": [
+      "each",
+      "not",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Each artifact doesn't untap during its controller's untap step."
+      },
+      {
+        "text": "Each creature with an activated ability that isn't a mana ability doesn't untap during its controller's untap step."
+      }
+    ],
+    "counterExamples": [
+      "Each artifact doesn't untap during its controller's next untap step.",
+      "Each artifact untaps during its controller's untap step.",
+      "Each artifact doesn't untap during your untap step."
+    ]
+  },
+  {
+    "id": "eff.edhv89.counter.unlessControllerExilesGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 701.6a",
+      "CR 404.1",
+      "CR 406.2"
+    ],
+    "pattern": "counter {o:Obj} unless its controller exiles all cards from their graveyard",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "zone": "graveyard",
+              "owner": {
+                "ref": "controllerOf",
+                "object": "$o"
+              }
+            }
+          },
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "counter",
+          "what": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Counter target creature spell unless its controller exiles all cards from their graveyard."
+      },
+      {
+        "text": "Counter target instant or sorcery spell unless its controller exiles all cards from their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell unless its controller exiles all cards from your graveyard.",
+      "Counter target spell unless its controller exiles a card from their graveyard.",
+      "Counter target spell unless its controller exiles all cards from their graveyard instead."
+    ]
+  },
+  {
+    "id": "eff.edhv89.pump.dur.first.whereX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 107.3"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gets {pt:PT} , where X is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature gets +X/+0, where X is the number of Elves you control."
+      },
+      {
+        "text": "Until end of turn, target creature gets -X/-X, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature gets +X/+0, where X is the number of Elves you control instead.",
+      "Target creature gets +X/+0, where X is the number of Elves you control.",
+      "Until your next turn, target creature gets +X/+0, where X is the number of Elves you control and draw a card."
+    ]
+  }
+]

@@ -22,15 +22,16 @@ const EACH_PLAYER = { ref: 'each', who: 'player' };
 function eachChoosesSacrificesRest(list: EffectStep[], i: number, st: RenderState): Folded | null {
   const a = list[i];
   const b = list[i + 1];
-  if (a?.op !== 'chooseObjects' || a.guard !== undefined || a.random === true || a.groupLimit !== undefined || a.as === undefined || typeof a.min !== 'number' || a.min !== a.max || a.min < 1) return null;
+  if (a?.op !== 'chooseObjects' || a.guard !== undefined || a.random === true || a.groupLimit !== undefined || a.as === undefined || typeof a.min !== 'number' || typeof a.max !== 'number' || (a.min !== a.max && a.min !== 0) || a.max < 1) return null; // edh-next-92 (Covetous Elegy): min 0 is "chooses up to N ..."
   if (!same(a.who, ITERATING) || !same(a.perPlayer, EACH_PLAYER) || a.from.ref !== 'each' || !('filter' in a.from)) return null;
   const f = a.from.filter;
   const kinds = f.anyOf;
   if (kinds?.length !== 1 || !same(f.controller, ITERATING) || Object.keys(f).length !== 2) return null;
   if (b?.op !== 'sacrificeChoice' || b.guard !== undefined || b.mode !== 'all' || b.as !== undefined || b.cantAs !== undefined || b.exploit !== undefined || !same(b.who, EACH_PLAYER)) return null;
   if (!same(b.filter, { anyOf: kinds, controller: ITERATING, not: { is: { ref: 'bound', name: a.as } } })) return null;
-  const n = a.min;
-  const things = n === 1 ? K.np(kinds[0]!, st, { det: 'a' }) : `${numWord(n)} ${K.np(kinds[0]!, st, { det: 'none', plural: true })}`;
+  const n = a.max;
+  const upTo = a.min === 0;
+  const things = upTo ? (n === 1 ? `up to one ${K.np(kinds[0]!, st, { det: 'none' })}` : `up to ${numWord(n)} ${K.np(kinds[0]!, st, { det: 'none', plural: true })}`) : n === 1 ? K.np(kinds[0]!, st, { det: 'a' }) : `${numWord(n)} ${K.np(kinds[0]!, st, { det: 'none', plural: true })}`;
   bind(st, a.as, { nouns: K.nounsOf(kinds[0]!), plural: n !== 1 });
   return { clauses: [plain(`each player chooses ${things} they control, then sacrifices the rest`, { standalone: true })], consumed: 2 };
 }

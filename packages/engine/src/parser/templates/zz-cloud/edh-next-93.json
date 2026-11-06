@@ -1,0 +1,80 @@
+[
+  {
+    "id": "sta.edhn93.radiationGainsLife",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 728.1",
+      "CR 119.3",
+      "CR 614.1a",
+      "CR 604.1"
+    ],
+    "pattern": "you gain life rather than lose life from radiation",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "radiationGainsLife"
+        }
+      ]
+    },
+    "consumes": [
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "You gain life rather than lose life from radiation."
+      },
+      {
+        "text": "Flying\nYou gain life rather than lose life from radiation."
+      }
+    ],
+    "counterExamples": [
+      "You gain life rather than lose life from poison.",
+      "You gain life rather than lose life.",
+      "Target player gains life rather than loses life from radiation."
+    ]
+  },
+  {
+    "id": "eff.edhn93.copyToken.forEachOpponent",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2f",
+      "CR 707.2",
+      "CR 111.1"
+    ],
+    "pattern": "for each opponent , you create a token that's a copy of {o:OppTarget}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, you create a token that's a copy of up to one target creature that player controls."
+      },
+      {
+        "text": "For each opponent, you create a token that's a copy of up to one target artifact that player controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you create a token that's a copy of up to one target creature that player controls.",
+      "When ~ enters, for each opponent, you create a token that's a copy of up to two target creatures that player controls.",
+      "When ~ enters, for each opponent, that player creates a token that's a copy of up to one target creature that player controls."
+    ]
+  }
+]

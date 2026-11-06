@@ -105,12 +105,12 @@ describe('lands with rules text the engine cannot automate yet', () => {
   it('playing a land with manual text works but logs a visible manual warning (never silently ignored)', () => {
     // W3b: the shock land of this test is automated now (below). CMD5: a painland's damage line is automated now too (cloud/cmd5/cmd5-mana.test.ts); a mana
     // ability with another instruction beside the mana stays manual text (CR 605: a mana ability with an extra effect; invented wording)
-    const grove = compileCard({ name: 'Test Gift Grove', layout: 'normal', mana_cost: '', type_line: 'Land', oracle_text: '{T}: Add {C}.\n{T}: Add {R} or {G}. Each opponent gains 1 life.', colors: [] } as OracleCard);
+    const grove = compileCard({ name: 'Test Gift Grove', layout: 'normal', mana_cost: '', type_line: 'Land', oracle_text: '{T}: Add {C}.\n{T}: Add {R} or {G}. Each opponent discards a card.', colors: [] } as OracleCard);
     let s = scenario([], { defs: [grove], p1: { hand: ['Test Gift Grove'] } });
     s = act(s, { type: 'playLand', player: 'p1', card: find(s, 'Test Gift Grove', 'hand') });
     const warn = s.log.filter((l) => l.level === 'manual');
     expect(warn).toHaveLength(1);
-    expect(warn[0]!.text).toMatch(/Test Gift Grove has rules text the engine cannot automate yet.*Each opponent gains 1 life/);
+    expect(warn[0]!.text).toMatch(/Test Gift Grove has rules text the engine cannot automate yet.*Each opponent discards a card/);
   });
 });
 

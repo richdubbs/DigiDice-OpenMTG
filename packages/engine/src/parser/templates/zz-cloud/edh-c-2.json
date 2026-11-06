@@ -1,0 +1,158 @@
+[
+  {
+    "id": "sta.edhv2.aslong.anthem.pumpgrant",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as {c:Cond} , {f:Filter} get {pt:PT} and have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "priority": -1,
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Demon, Goblins you control get +2/+0 and have menace."
+      },
+      {
+        "text": "As long as it's your turn, creatures you control get +1/+1 and have trample."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Demon, Goblins you control get +2/+0 and lose menace.",
+      "As long as you control a Demon, Goblins you control get +2/+0 and have menace until end of turn.",
+      "Unless you control a Demon, Goblins you control get +2/+0 and have menace."
+    ]
+  },
+  {
+    "id": "cm.edhv2.spells.less.you.asLongAsFirst",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , {f:Filter} you cast cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Forest, artifact spells you cast cost {1} less to cast."
+      },
+      {
+        "text": "As long as you control three or more artifacts, noncreature spells you cast cost {2} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Forest, artifact spells you cast cost {1} more to cast.",
+      "As long as you control a Forest, artifact spells your opponents cast cost {1} less to cast.",
+      "Unless you control a Forest, artifact spells you cast cost {1} less to cast."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.edhv2.all.areColor",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1e",
+      "CR 105.3",
+      "CR 105.2c"
+    ],
+    "pattern": "all {f:Filter} are {c:Color}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "All creatures are green."
+      },
+      {
+        "text": "All artifacts are blue."
+      }
+    ],
+    "counterExamples": [
+      "All creatures are green until end of turn.",
+      "All creatures become green.",
+      "All creatures are green and blue."
+    ]
+  }
+]

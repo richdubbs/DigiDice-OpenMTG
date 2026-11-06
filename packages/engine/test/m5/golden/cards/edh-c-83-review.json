@@ -1,0 +1,472 @@
+[
+{
+ "card": "Frontline Strategist",
+ "expect": "full",
+ "verified": "Morph {W} (kw.line); When this creature is turned face up, prevent all combat damage non-Soldier creatures would deal this turn (eff.edhv83.prevent.combat.groupWould.noThat: a damage replacement for combat damage from any creature that is not a Soldier, until end of turn, CR 615.1a, 611.2a; the type is checked as the damage would be dealt, ruling 2004-10-04). Rulings read 2026-10-31.",
+ "faces": [
+  {
+   "abilities": [
+    {
+     "kind": "keyword",
+     "keyword": "morph",
+     "cost": {
+      "mana": [
+       {
+        "kind": "colored",
+        "color": "W"
+       }
+      ]
+     },
+     "text": "Morph {W}"
+    },
+    {
+     "kind": "triggered",
+     "text": "When ~ is turned face up, prevent all combat damage non-Soldier creatures would deal this turn.",
+     "trigger": {
+      "on": [
+       {
+        "ev": "becomes",
+        "what": "turnedFaceUp",
+        "object": {
+         "self": true
+        }
+       }
+      ]
+     },
+     "effect": {
+      "targets": [],
+      "steps": [
+       {
+        "op": "effect",
+        "duration": {
+         "d": "endOfTurn"
+        },
+        "effects": [
+         {
+          "s": "replace",
+          "replaces": {
+           "ev": "damage",
+           "combat": true,
+           "source": {
+            "notSubtypes": [
+             "Soldier"
+            ],
+            "types": [
+             "Creature"
+            ]
+           }
+          },
+          "body": {
+           "b": "prevent",
+           "amount": "all"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ]
+},
+{
+ "card": "Plated Pegasus",
+ "expect": "full",
+ "verified": "Flash (kw.line); Flying (kw.line); If a spell would deal damage to a permanent or player, prevent 1 damage that spell would deal to that permanent or player (rep.edhv83.damage.preventN.thatSpellWouldDeal: a prevention of 1 of the damage of a source that is a spell on the stack, CR 615.1a, 615.7, 112.1; applied to each recipient, ruling 2006-09-25). Rulings read 2026-10-31.",
+ "faces": [
+  {
+   "abilities": [
+    {
+     "kind": "keyword",
+     "keyword": "flash",
+     "text": "Flash"
+    },
+    {
+     "kind": "keyword",
+     "keyword": "flying",
+     "text": "Flying"
+    },
+    {
+     "kind": "static",
+     "text": "If a spell would deal damage to a permanent or player, prevent 1 damage that spell would deal to that permanent or player.",
+     "effects": [
+      {
+       "s": "replace",
+       "replaces": {
+        "ev": "damage",
+        "source": {
+         "stackKind": "spell",
+         "zone": "stack"
+        }
+       },
+       "body": {
+        "b": "prevent",
+        "amount": 1
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+},
+{
+ "card": "Grime Gorger",
+ "expect": "full",
+ "verified": "Menace (kw.line); Whenever this creature attacks, exile up to one card of each card type from defending player's graveyard (trg.when, eff.edhv83.exile.upToOneEachCardType.fromGraveyard: you choose at most one card of each card type among the defending player's graveyard, then exile the chosen cards, CR 205.2a, 608.2d, 701.13a). Put a +1/+1 counter on this creature for each card exiled this way (eff.t28.counters.put.forEach, CR 608.2h: counted once, the cards that were exiled). Rulings read 2026-10-31 (the card types are artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, sorcery).",
+ "faces": [
+  {
+   "abilities": [
+    {
+     "kind": "keyword",
+     "keyword": "menace",
+     "text": "Menace"
+    },
+    {
+     "kind": "triggered",
+     "text": "Whenever ~ attacks, exile up to one card of each card type from defending player's graveyard. Put a +1/+1 counter on ~ for each card exiled this way.",
+     "trigger": {
+      "on": [
+       {
+        "ev": "attacks",
+        "attacker": {
+         "self": true
+        }
+       }
+      ]
+     },
+     "effect": {
+      "targets": [],
+      "steps": [
+       {
+        "op": "chooseObjects",
+        "who": {
+         "ref": "you"
+        },
+        "from": {
+         "ref": "each",
+         "filter": {
+          "zone": "graveyard",
+          "owner": {
+           "ref": "defending"
+          },
+          "isCard": true
+         }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen",
+        "eachCardType": true
+       },
+       {
+        "op": "move",
+        "what": {
+         "ref": "bound",
+         "name": "chosen"
+        },
+        "to": {
+         "zone": "exile"
+        },
+        "as": "them"
+       },
+       {
+        "op": "putCounters",
+        "on": {
+         "ref": "self"
+        },
+        "kind": "+1/+1",
+        "count": {
+         "q": "count",
+         "of": {
+          "ref": "each",
+          "filter": {
+           "zone": "exile",
+           "is": {
+            "ref": "bound",
+            "name": "them"
+           },
+           "isCard": true
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ]
+},
+{
+ "card": "Favor of the Mighty",
+ "expect": "full",
+ "verified": "Each creature with the greatest mana value has protection from each color (sta.each.grant over the Filter reading \"with the greatest <stat>\" with no \"among\": the creatures whose mana value is at least the greatest mana value among all creatures, so a tie gives all of them the protection; checked continuously, CR 208.1, 202.3, 604.1; X in a mana cost counts as 0 on the battlefield, CR 202.3). Rulings read 2026-10-31.",
+ "faces": [
+  {
+   "abilities": [
+    {
+     "kind": "static",
+     "text": "Each creature with the greatest mana value has protection from each color.",
+     "effects": [
+      {
+       "s": "continuous",
+       "affects": {
+        "ref": "each",
+        "filter": {
+         "types": [
+          "Creature"
+         ],
+         "manaValue": {
+          "op": ">=",
+          "value": {
+           "q": "stat",
+           "stat": "manaValue",
+           "of": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Creature"
+             ]
+            }
+           },
+           "agg": "max"
+          }
+         }
+        }
+       },
+       "mods": [
+        {
+         "layer": 6,
+         "add": [
+          {
+           "kind": "keyword",
+           "keyword": "protection",
+           "quality": "color:any",
+           "text": "protection from each color"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+},
+{
+ "card": "Mob Mentality",
+ "expect": "full",
+ "verified": "Enchant creature (kw.line); Enchanted creature has trample (sta.attached.grant); Whenever all non-Wall creatures you control attack, enchanted creature gets +X/+0 until end of turn, where X is the number of attacking creatures (trg.when with the event `attacks` + allAttack: one batch trigger per declaration in which every non-Wall creature you control is a declared attacker, CR 508.1, 603.2c; X is counted once as the ability resolves, CR 608.2h). Rulings read 2026-10-31 (none printed).",
+ "faces": [
+  {
+   "abilities": [
+    {
+     "kind": "keyword",
+     "keyword": "enchant",
+     "filter": {
+      "types": [
+       "Creature"
+      ]
+     },
+     "text": "Enchant creature"
+    },
+    {
+     "kind": "static",
+     "text": "Enchanted creature has trample.",
+     "effects": [
+      {
+       "s": "continuous",
+       "affects": {
+        "ref": "attachedTo"
+       },
+       "mods": [
+        {
+         "layer": 6,
+         "add": [
+          {
+           "kind": "keyword",
+           "keyword": "trample",
+           "text": "trample"
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "kind": "triggered",
+     "text": "Whenever all non-Wall creatures you control attack, enchanted creature gets +X/+0 until end of turn, where X is the number of attacking creatures.",
+     "trigger": {
+      "on": [
+       {
+        "ev": "attacks",
+        "attacker": {
+         "controller": "you"
+        },
+        "count": {
+         "op": ">=",
+         "value": 1
+        },
+        "allAttack": {
+         "notSubtypes": [
+          "Wall"
+         ],
+         "types": [
+          "Creature"
+         ],
+         "controller": "you"
+        }
+       }
+      ],
+      "batch": true
+     },
+     "effect": {
+      "targets": [],
+      "steps": [
+       {
+        "op": "effect",
+        "duration": {
+         "d": "endOfTurn"
+        },
+        "effects": [
+         {
+          "s": "continuous",
+          "affects": {
+           "ref": "attachedTo"
+          },
+          "mods": [
+           {
+            "layer": "7c",
+            "power": {
+             "q": "count",
+             "of": {
+              "ref": "each",
+              "filter": {
+               "attacking": true,
+               "types": [
+                "Creature"
+               ]
+              }
+             }
+            },
+            "toughness": 0
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    }
+   ]
+  }
+ ]
+},
+{
+ "card": "Loathsome Troll",
+ "expect": "full",
+ "verified": "{3}{G}: Roll a d20 (eff.p2cdr1.rollDie.d20). Activate only if this card is in your graveyard (the ability functions only in the graveyard and only while the card is in your graveyard, CR 113.6, 602.5b). 1-9 | Put this card on top of your library (eff.put.lib.top: the owner's library, CR 400.3; the card is in your graveyard, so it is yours). 10-19 | Return this card to your hand (eff.return.hand). 20 | Return this card to the battlefield tapped (eff.return.bf.tapped: under your control as the owner, CR 110.2a). The die table is CR 706.2, 706.3a. Rulings read 2026-10-31 (none printed).",
+ "faces": [
+  {
+   "abilities": [
+    {
+     "kind": "activated",
+     "text": "{3}{G}: Roll a d20. Activate only if ~ is in your graveyard.\n1-9 | Put ~ on top of your library.\n10-19 | Return ~ to your hand.\n20 | Return ~ to the battlefield tapped.",
+     "cost": {
+      "mana": [
+       {
+        "kind": "generic",
+        "amount": 3
+       },
+       {
+        "kind": "colored",
+        "color": "G"
+       }
+      ]
+     },
+     "effect": {
+      "targets": [],
+      "steps": [
+       {
+        "op": "rollDie",
+        "who": {
+         "ref": "you"
+        },
+        "sides": 20,
+        "table": [
+         {
+          "min": 1,
+          "max": 9,
+          "do": [
+           {
+            "op": "move",
+            "what": {
+             "ref": "self"
+            },
+            "to": {
+             "zone": "library",
+             "position": "top"
+            }
+           }
+          ]
+         },
+         {
+          "min": 10,
+          "max": 19,
+          "do": [
+           {
+            "op": "move",
+            "what": {
+             "ref": "self"
+            },
+            "to": {
+             "zone": "hand"
+            }
+           }
+          ]
+         },
+         {
+          "min": 20,
+          "max": 20,
+          "do": [
+           {
+            "op": "move",
+            "what": {
+             "ref": "self"
+            },
+            "to": {
+             "zone": "battlefield",
+             "controller": {
+              "ref": "you"
+             },
+             "tapped": true
+            }
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     "onlyIf": {
+      "cond": "matches",
+      "object": {
+       "ref": "self"
+      },
+      "filter": {
+       "zone": "graveyard",
+       "owner": "you"
+      }
+     },
+     "zone": [
+      "graveyard"
+     ]
+    }
+   ]
+  }
+ ]
+}
+]

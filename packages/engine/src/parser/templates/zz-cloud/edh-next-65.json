@@ -1,0 +1,666 @@
+[
+  {
+    "id": "sta.edhn65.spell.cast.has.replicate.manaCost",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 601.2b",
+      "CR 702.56a",
+      "CR 707.10",
+      "CR 118.9"
+    ],
+    "pattern": "each {f:Filter} you cast has replicate . the replicate cost is equal to ( its | that spell 's ) mana cost",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "controller": "you",
+              "not": {
+                "stackKind": "copy",
+                "zone": "stack"
+              },
+              "zone": "stack"
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "replicate",
+                  "text": "replicate",
+                  "costIsManaCost": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "Each instant and sorcery spell you cast has replicate. The replicate cost is equal to its mana cost."
+      },
+      {
+        "text": "Each Sliver spell you cast has replicate. The replicate cost is equal to its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Each instant and sorcery spell you cast has replicate {2}. The replicate cost is equal to its mana cost.",
+      "Each instant and sorcery spell you cast has replicate. The replicate cost is equal to its power.",
+      "Each instant and sorcery spell your opponents cast has replicate. The replicate cost is equal to its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhn65.next.cast.copy.xTimes",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.10",
+      "CR 107.3"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} this turn , copy ( that spell | it ) x times",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          },
+          "count": {
+            "q": "X"
+          }
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "When you next cast an instant or sorcery spell this turn, copy that spell X times."
+      },
+      {
+        "text": "When you next cast a creature spell this turn, copy it X times."
+      }
+    ],
+    "counterExamples": [
+      "When you next cast an instant or sorcery spell this turn, copy that spell Y times.",
+      "When you next cast an instant or sorcery spell, copy that spell X times."
+    ]
+  },
+  {
+    "id": "eff.edhn65.next.cast.copy.additional",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.10"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} this turn , copy ( that spell | it ) an additional time",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "When you next cast an instant or sorcery spell this turn, copy that spell an additional time."
+      },
+      {
+        "text": "If you attacked this turn, when you next cast a creature spell this turn, copy it an additional time."
+      }
+    ],
+    "counterExamples": [
+      "When you next cast an instant or sorcery spell this turn, copy that spell two additional times.",
+      "When you next cast an instant or sorcery spell, copy that spell an additional time."
+    ]
+  },
+  {
+    "id": "eff.edhn65.next.spell.copy.filter",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.10"
+    ],
+    "pattern": "copy the next {f:CastSpell} you cast this turn when you cast it",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Copy the next instant or sorcery spell with mana value 2 or less you cast this turn when you cast it."
+      },
+      {
+        "text": "Draw a card. Copy the next creature spell you cast this turn when you cast it."
+      }
+    ],
+    "counterExamples": [
+      "Copy the next instant or sorcery spell you cast when you cast it.",
+      "Copy the next instant or sorcery spell you cast this turn."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "rid.edhn65.instead.nextSpell.copy.twice",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 603.7",
+      "CR 707.10",
+      "CR 702.33a"
+    ],
+    "pattern": "if ~ was kicked , copy ( that spell | it ) twice instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": {
+          "cond": "wasCast",
+          "kicked": true
+        },
+        "then": [
+          {
+            "@previousWith": {
+              "do": [
+                {
+                  "op": "copy",
+                  "what": {
+                    "ref": "event",
+                    "role": "spell"
+                  },
+                  "result": "spell",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 2
+                }
+              ]
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "delay",
+    "consumes": [
+      "if",
+      "twice",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Copy the next instant or sorcery spell with mana value 2 or less you cast this turn when you cast it. If ~ was kicked, copy that spell twice instead."
+      },
+      {
+        "text": "Copy the next creature spell you cast this turn when you cast it. If ~ was kicked, copy that spell twice instead."
+      }
+    ],
+    "counterExamples": [
+      "Copy the next instant or sorcery spell you cast this turn when you cast it. If ~ was kicked, copy that spell three times instead.",
+      "Copy the next instant or sorcery spell you cast this turn when you cast it. If ~ was kicked, copy that spell twice.",
+      "Copy the next instant or sorcery spell you cast this turn when you cast it. If ~ was cast from a graveyard, copy that spell twice instead."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "trg.edhn65.you.activate.abilityOf.ifNotMana",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 602.2",
+      "CR 605.1a",
+      "CR 603.4"
+    ],
+    "pattern": "whenever you activate an ability of {f:Filter} , if it isn't a mana ability",
+    "build": {
+      "on": [
+        {
+          "ev": "activate",
+          "player": "you",
+          "source": "$f",
+          "manaAbility": false
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you activate an ability of an artifact, if it isn't a mana ability, draw two cards."
+      },
+      {
+        "text": "Whenever you activate an ability of a Goblin you control, if it isn't a mana ability, target player loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you activate an ability of an artifact, draw two cards.",
+      "Whenever an opponent activates an ability of an artifact, if it isn't a mana ability, draw two cards.",
+      "Whenever you activate an ability of an artifact, if it is a mana ability, draw two cards."
+    ]
+  },
+  {
+    "id": "rep.edhn65.enters.copy.except.tapCopied",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9b",
+      "CR 603.12",
+      "CR 502.3"
+    ],
+    "pattern": "you may have ~ enter as a copy of any {f:Filter} on the battlefield , except {x:CopyExcept} . when you do , tap the copied creature and it doesn't untap during its controller 's untap step for as long as you control ~",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": "$x",
+              "then": {
+                "as": "copied",
+                "do": [
+                  {
+                    "op": "reflexive",
+                    "when": {
+                      "did": "copied"
+                    },
+                    "targets": [],
+                    "do": [
+                      {
+                        "op": "tap",
+                        "what": {
+                          "ref": "bound",
+                          "name": "copied"
+                        }
+                      },
+                      {
+                        "op": "effect",
+                        "duration": {
+                          "d": "whileSource",
+                          "as": "controlled"
+                        },
+                        "effects": [
+                          {
+                            "s": "restrict",
+                            "subject": {
+                              "ref": "bound",
+                              "name": "copied"
+                            },
+                            "mode": "cant",
+                            "action": "untapDuringUntapStep"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except",
+      "when",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it's a Skeleton in addition to its other types and has vigilance. When you do, tap the copied creature and it doesn't untap during its controller's untap step for as long as you control ~."
+      },
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it's a Zombie in addition to its other types and has haste. When you do, tap the copied creature and it doesn't untap during its controller's untap step for as long as you control ~."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any creature on the battlefield, except it's a Wall in addition to its other types and has defender. When you do, tap the copied creature.",
+      "You may have ~ enter as a copy of any creature on the battlefield, except it's a Wall in addition to its other types and has defender."
+    ]
+  },
+  {
+    "id": "rep.edhn65.enters.copy.ifCond",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 702.0"
+    ],
+    "pattern": "if {c:Cond} , you may have ~ enter as a copy of any {f:Filter} on the battlefield",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "If you attacked this turn, you may have ~ enter as a copy of any creature on the battlefield."
+      },
+      {
+        "text": "If you gained life this turn, you may have ~ enter as a copy of any artifact on the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "If you attacked this turn, you may have ~ enter as a copy of any creature card in a graveyard.",
+      "If you attacked this turn, ~ enters as a copy of any creature on the battlefield.",
+      "You may have ~ enter as a copy of any creature on the battlefield if you attacked this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn65.copy.spell.exceptColor",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.9b",
+      "CR 707.10",
+      "CR 105.3",
+      "CR 613.1e"
+    ],
+    "pattern": "copy {o:Obj} , except that the copy is {c:Color}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 5,
+          "colors": {
+            "set": [
+              "$c"
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Copy target instant or sorcery spell, except that the copy is blue. You may choose new targets for the copy."
+      },
+      {
+        "text": "Copy target noncreature spell, except that the copy is red."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant or sorcery spell, except that the copy is red and blue.",
+      "Copy target instant or sorcery spell, except that the copy is a creature.",
+      "Copy target instant or sorcery spell, except the copy is blue."
+    ]
+  },
+  {
+    "id": "rep.edhn65.enters.copy.legendarySnow.counters",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9b",
+      "CR 707.9e",
+      "CR 707.9f",
+      "CR 205.4a",
+      "CR 702.73a"
+    ],
+    "pattern": "you may have ~ enter as a copy of a {f:Filter} , except it's legendary and snow in addition to its other types and , if it's a creature , it enters with {n:Count} additional {k:CounterKind} counters on it and has changeling",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": [
+                {
+                  "layer": 4,
+                  "supertypes": {
+                    "add": [
+                      "Legendary",
+                      "Snow"
+                    ]
+                  }
+                },
+                {
+                  "if": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "then": [
+                    {
+                      "layer": 6,
+                      "add": [
+                        {
+                          "kind": "keyword",
+                          "keyword": "changeling",
+                          "text": "changeling"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "additional": [
+                {
+                  "if": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "counters": [
+                    {
+                      "kind": "$k",
+                      "count": "$n"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except",
+      "if",
+      "additional",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of a permanent you control, except it's legendary and snow in addition to its other types and, if it's a creature, it enters with three additional +1/+1 counters on it and has changeling."
+      },
+      {
+        "text": "You may have ~ enter as a copy of a creature you control, except it's legendary and snow in addition to its other types and, if it's a creature, it enters with two additional +1/+1 counters on it and has changeling."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of a permanent you control, except it's legendary and snow in addition to its other types and, if it's a creature, it enters with two additional +1/+1 counters on it.",
+      "You may have ~ enter as a copy of a permanent you control, except it's legendary in addition to its other types and, if it's a creature, it enters with two additional +1/+1 counters on it and has changeling."
+    ]
+  }
+]

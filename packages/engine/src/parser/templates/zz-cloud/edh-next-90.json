@@ -1,0 +1,237 @@
+[
+  {
+    "id": "rid.edhn90.instead.mayPutThatCardBattlefield.if",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.23a"
+    ],
+    "pattern": "you may put that card onto the battlefield instead of putting it into your hand if {c:Cond}",
+    "build": {
+      "$patchPrevious": {
+        "@alsoStep": -2,
+        "@require": {
+          "to.zone": "hand"
+        },
+        "@before": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "guard": "$c",
+            "do": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "search"
+                },
+                "to": {
+                  "zone": "battlefield",
+                  "controller": {
+                    "ref": "you"
+                  }
+                }
+              }
+            ]
+          }
+        ],
+        "@guardPrevious": "unlessDid"
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "may",
+      "instead",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for a basic land card, reveal it, put it into your hand, then shuffle. You may put that card onto the battlefield instead of putting it into your hand if a creature died this turn."
+      },
+      {
+        "text": "Search your library for a Forest card, reveal it, put it into your hand, then shuffle. You may put that card onto the battlefield instead of putting it into your hand if you control a Goblin."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a basic land card, reveal it, put it into your hand, then shuffle. You may put that card onto the battlefield instead of putting it into your graveyard if a creature died this turn.",
+      "Draw a card. You may put that card onto the battlefield instead of putting it into your hand if a creature died this turn.",
+      "Search your library for a basic land card, reveal it, put it onto the battlefield, then shuffle. You may put that card onto the battlefield instead of putting it into your hand if a creature died this turn."
+    ]
+  },
+  {
+    "id": "sta.edhn90.self.splitSecond.if",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.61a",
+      "CR 702.33d",
+      "CR 113.6",
+      "CR 611.3a"
+    ],
+    "pattern": "if {c:Cond} , it has split second",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "split second",
+                  "text": "Split second"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "it"
+    ],
+    "examples": [
+      {
+        "text": "Kicker {4}{U}{U}{G}\nIf this spell was kicked, it has split second.\nYou gain 7 life and draw three cards."
+      },
+      {
+        "text": "Multikicker {5}{W}{W}\nIf this spell was kicked, it has split second.\nTarget player gains 9 life."
+      }
+    ],
+    "counterExamples": [
+      "Kicker {4}{U}{U}{G}\nIf this spell was kicked, it has flash.\nYou gain 7 life and draw three cards.",
+      "Kicker {4}{U}{U}{G}\nIf this spell was kicked, it gains split second until end of turn.\nYou gain 7 life and draw three cards.",
+      "~ has split second as long as you control a Forest.",
+      "Kicker {4}{U}{U}{G}\nIf this spell was kicked, it has split second and flash.\nYou gain 7 life and draw three cards."
+    ]
+  },
+  {
+    "id": "eff.edhn90.prevent.byChosenColorSources",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 105.1",
+      "CR 609.7a"
+    ],
+    "pattern": "prevent all damage that sources of the color of your choice would deal {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "preventColor",
+        "link": "preventColor"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "chosen": {
+                  "link": "preventColor",
+                  "quality": "color"
+                }
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "You gain 2 life. Prevent all damage that sources of the color of your choice would deal this turn."
+      },
+      {
+        "text": "Scry 2. Prevent all damage that sources of the color of your choice would deal this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that sources of the color of your choice would deal to you this turn.",
+      "Prevent all combat damage that sources of the color of your choice would deal this turn.",
+      "Prevent all damage that red sources would deal this turn.",
+      "Prevent the next 3 damage that sources of the color of your choice would deal this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn90.loyalty.twiceThisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.3",
+      "CR 602.5b",
+      "CR 606.1",
+      "CR 611.2a"
+    ],
+    "pattern": "you may activate the loyalty abilities of {f:Filter} twice {d:Dur} rather than only once",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "additionalActivation",
+          "keyword": "loyalty:twice",
+          "of": "$f"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "only",
+      "twice",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "You may activate the loyalty abilities of Jaces you control twice this turn rather than only once."
+      },
+      {
+        "text": "Draw a card. You may activate the loyalty abilities of legendary planeswalkers you control twice this turn rather than only once."
+      }
+    ],
+    "counterExamples": [
+      "You may activate the loyalty abilities of Jaces you control three times this turn rather than only once.",
+      "You may activate the loyalty abilities of Jaces you control twice this turn.",
+      "You may activate the loyalty abilities of Jaces you control twice each turn rather than only once.",
+      "You may activate the loyalty abilities of Jaces you control twice this turn rather than only once unless you pay {2}."
+    ]
+  }
+]

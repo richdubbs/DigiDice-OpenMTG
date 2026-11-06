@@ -408,7 +408,7 @@
       "Slivercycling",
       "Slivercycling {T}"
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 2
   }
 ]

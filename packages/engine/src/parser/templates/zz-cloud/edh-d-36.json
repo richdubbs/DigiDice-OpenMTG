@@ -1,0 +1,366 @@
+[
+  {
+    "id": "rid.edhd36.countered.topOrBottom",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.6a",
+      "CR 608.2c",
+      "CR 614.15",
+      "CR 401.4"
+    ],
+    "pattern": "if that spell is countered this way , put that card on your choice of the top or bottom of its owner 's library instead of into that player 's graveyard",
+    "build": {
+      "$patchPrevious": {
+        "to": {
+          "@new": {
+            "zone": "library",
+            "endChosenBy": {
+              "ref": "you"
+            }
+          }
+        }
+      }
+    },
+    "attachTo": "counter",
+    "consumes": [
+      "if",
+      "this way",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Counter target noncreature spell. If that spell is countered this way, put that card on your choice of the top or bottom of its owner's library instead of into that player's graveyard."
+      },
+      {
+        "text": "Counter target creature spell. If that spell is countered this way, put that card on your choice of the top or bottom of its owner's library instead of into that player's graveyard. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. If that spell is countered this way, put that card on your choice of the top or bottom of its owner's library instead of into that player's graveyard.",
+      "Counter target spell. If that spell is countered this way, put that card on the bottom of its owner's library instead of into that player's graveyard.",
+      "Counter target spell. If that spell is countered this way, put that card on its owner's choice of the top or bottom of its owner's library instead of into that player's graveyard."
+    ]
+  },
+  {
+    "id": "rid.edhd36.countered.ifKind.battlefieldYours",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.6a",
+      "CR 608.2c",
+      "CR 614.15",
+      "CR 110.2"
+    ],
+    "pattern": "if ( a | an ) {f:Filter} is countered this way , put that card onto the battlefield under your control instead of into its owner 's graveyard",
+    "build": {
+      "$patchPrevious": {
+        "to": {
+          "@new": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            }
+          }
+        },
+        "toIf": {
+          "@new": "$f"
+        }
+      }
+    },
+    "attachTo": "counter",
+    "consumes": [
+      "if",
+      "this way",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Counter target spell. If a creature spell is countered this way, put that card onto the battlefield under your control instead of into its owner's graveyard."
+      },
+      {
+        "text": "Counter target spell. If a land spell is countered this way, put that card onto the battlefield under your control instead of into its owner's graveyard. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. If an artifact or creature spell is countered this way, put that card onto the battlefield under your control instead of into its owner's graveyard.",
+      "Counter target spell. If an artifact or creature spell is countered this way, put that card onto the battlefield under its owner's control instead of into its owner's graveyard.",
+      "Counter target spell. If an artifact or creature spell is countered this way, put that card onto the battlefield instead of into its owner's graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhd36.cast.fromGraveyard.mvAtMostThatSpell.free",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 404.1"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from your graveyard with mana value less than or equal to that spell 's mana value without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true,
+            "manaValue": {
+              "op": "<=",
+              "value": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": {
+                  "ref": "event",
+                  "role": "spell"
+                }
+              }
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Counter target spell. You may cast an instant or sorcery spell from your graveyard with mana value less than or equal to that spell's mana value without paying its mana cost."
+      },
+      {
+        "text": "Counter target creature spell. You may cast an instant or sorcery spell from your graveyard with mana value less than or equal to that spell's mana value without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell. You may cast a creature spell from an opponent's graveyard with mana value less than or equal to that spell's mana value without paying its mana cost.",
+      "Counter target spell. You may cast a creature spell from your graveyard with mana value less than that spell's mana value without paying its mana cost.",
+      "Counter target spell. You may cast two creature spells from your graveyard with mana value less than or equal to that spell's mana value without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.edhd36.counter.unless.twiceX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 107.3",
+      "CR 701.6a"
+    ],
+    "pattern": "{e:Effects} unless {p:Player} pay[s] twice {x}",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "mana": [
+          {
+            "kind": "variable",
+            "name": "X"
+          },
+          {
+            "kind": "variable",
+            "name": "X"
+          }
+        ]
+      },
+      "else": "$e"
+    },
+    "consumes": [
+      "unless",
+      "twice"
+    ],
+    "examples": [
+      {
+        "text": "{X}, {T}: Counter target creature spell unless its controller pays twice {X}."
+      },
+      {
+        "text": "{X}, {T}: Destroy target artifact unless its controller pays twice {X}."
+      }
+    ],
+    "counterExamples": [
+      "{X}, {T}: Counter target creature spell unless its controller pays {X}.",
+      "{X}, {T}: Counter target spell unless its controller pays twice {Y}.",
+      "{X}, {T}: Counter target spell if its controller pays twice {X}."
+    ]
+  },
+  {
+    "id": "eff.edhd36.player.tapAll.theyControl.loseMana",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.26a",
+      "CR 106.4",
+      "CR 608.2c",
+      "CR 109.4"
+    ],
+    "pattern": "{p:Player} tap[s] all {f:Filter} they control and lose[s] all unspent mana",
+    "build": [
+      {
+        "op": "tap",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "$p"
+          }
+        }
+      },
+      {
+        "op": "emptyManaPool",
+        "who": "$p"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Counter target noncreature spell unless its controller pays {X}. If that player doesn't, they tap all lands with mana abilities they control and lose all unspent mana."
+      },
+      {
+        "text": "Target opponent taps all creatures they control and loses all unspent mana."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent taps all creatures you control and loses all unspent mana.",
+      "Target opponent taps all creatures they control and you lose all unspent mana.",
+      "Target opponent taps a creature they control and loses all unspent mana."
+    ]
+  },
+  {
+    "id": "eff.edhd36.look.putOneBack.restGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 404.1",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "look at the top {n:Qty} cards of {p:Player} 's library . put one back and the rest into that player 's graveyard",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": "$p",
+          "count": "$n"
+        },
+        "as": "looked"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "looked"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "kept"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "kept"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "looked"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "kept"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "rest",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top three cards of target player's library. Put one back and the rest into that player's graveyard."
+      },
+      {
+        "text": "Look at the top four cards of target opponent's library. Put one back and the rest into that player's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top three cards of target player's library. Put one back and the rest into your graveyard.",
+      "Look at the top three cards of target player's library. Put two back and the rest into that player's graveyard.",
+      "Look at the top three cards of your library. Put one back and the rest into that player's graveyard."
+    ]
+  }
+]

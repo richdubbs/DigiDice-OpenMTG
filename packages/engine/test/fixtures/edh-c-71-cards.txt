@@ -1,0 +1,13 @@
+# edh-c-71 (Commander lane edh-c, EDHREC ranks 28,501 to 29,000, second pass): see packages/engine/src/parser/templates/zz-cloud/edh-c-71.json. After editing: npm run cards -- fixtures
+Swimmer in Nightmares
+Goblin Brawler
+Godhunter Octopus
+Slayer's Cleaver
+Paired Tactician
+Thraben Exorcism
+Root Greevil
+Hand to Hand
+Radiant Kavu
+Impelled Giant
+Invasion of Kylem // Valor's Reach Tag Team
+Keldon Battlewagon

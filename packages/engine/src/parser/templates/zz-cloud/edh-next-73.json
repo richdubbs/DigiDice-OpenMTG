@@ -1,0 +1,117 @@
+[
+ {
+  "id": "eff.edhn73.play.oneOfLinked.free",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 607.2a",
+   "CR 608.2g",
+   "CR 601.3",
+   "CR 305.1",
+   "CR 118.9"
+  ],
+  "pattern": "you may play one of them without paying its mana cost",
+  "build": [
+   {
+    "op": "chooseObjects",
+    "who": {
+     "ref": "you"
+    },
+    "from": {
+     "ref": "each",
+     "filter": {
+      "is": {
+       "ref": "linked",
+       "link": "exiled"
+      },
+      "zone": "any"
+     }
+    },
+    "min": 0,
+    "max": 1,
+    "as": "play"
+   },
+   {
+    "op": "cast",
+    "who": {
+     "ref": "you"
+    },
+    "what": {
+     "ref": "bound",
+     "name": "play"
+    },
+    "free": true,
+    "play": true
+   }
+  ],
+  "subject": "none",
+  "consumes": [
+   "may",
+   "without"
+  ],
+  "examples": [
+   {
+    "text": "{2}, {T}: Exile the top card of your library.\nWhenever ~ deals combat damage to a player, if there are cards exiled with ~, you may play one of them without paying its mana cost."
+   },
+   {
+    "text": "{1}: Exile the top card of your library face down.\nWhenever ~ attacks, if there are cards exiled with it, you may play one of them without paying its mana cost."
+   }
+  ],
+  "counterExamples": [
+   "{2}, {T}: Exile the top card of your library.\nWhenever ~ attacks, you may play one of them.",
+   "{2}, {T}: Exile the top card of your library.\nWhenever ~ attacks, if there are cards exiled with it, you may play two of them without paying their mana costs.",
+   "{T}: Exile the top three cards of your library. You may play one of them without paying its mana cost."
+  ]
+ },
+ {
+  "id": "sta.edhn73.play.exile.ownedWithCounters",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 601.3",
+   "CR 305.1",
+   "CR 122.1",
+   "CR 400.7",
+   "CR 611.3a"
+  ],
+  "pattern": "you may play lands and cast spells from among cards you own in exile with {k:CounterKind} counters on them",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "permit",
+     "who": {
+      "ref": "you"
+     },
+     "action": "play",
+     "from": "exile",
+     "of": {
+      "owner": "you",
+      "counters": {
+       "kind": "$k"
+      },
+      "isCard": true
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "may"
+  ],
+  "examples": [
+   {
+    "text": "Whenever ~ attacks, exile the top card of your library with a hoard counter on it.\nYou may play lands and cast spells from among cards you own in exile with hoard counters on them."
+   },
+   {
+    "text": "You may play lands and cast spells from among cards you own in exile with croak counters on them."
+   }
+  ],
+  "counterExamples": [
+   "You may play lands and cast spells from among cards in exile with hoard counters on them.",
+   "You may play lands and cast spells from among cards you own in exile with hoard counters on them, and mana of any type can be spent to cast those spells.",
+   "You may play lands and cast spells from among cards you own in your graveyard with hoard counters on them."
+  ]
+ }
+]

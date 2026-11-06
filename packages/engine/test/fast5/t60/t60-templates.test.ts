@@ -36,7 +36,8 @@ const READERS: Readonly<Record<string, readonly string[]>> = {
   'sta.t60.attached.basePT.life': ['Aettir and Priwen'],
   'sta.t60.attached.chosenColor': ['Alloy Golem', 'Shimmerwilds Growth'],
   'sta.t60.are.types.addition': ['The Flesh Is Weak', 'Toph, the First Metalbender'],
-  'sta.t60.are.subtypes.addition.have': ['Ragost, Deft Gastronaut', 'Senator Peacock'],
+  // edh-next-139 (CR 702.6a, 613.1f): Gemcutter Buccaneer's list of a quoted ability glued by its comma to two equips ("equip Pirate {1}, and equip {3}") is read completely now
+  'sta.t60.are.subtypes.addition.have': ['Gemcutter Buccaneer', 'Ragost, Deft Gastronaut', 'Senator Peacock'],
   'sta.t60.have.basePT.eachEqual': ["Dollmaker's Shop // Porcelain Gallery"],
   'sta.t60.spells.cast.delve': ['Teval, Arbiter of Virtue'],
   'sta.t60.spells.cast.affinity': ['Mycosynth Golem', 'Pearl-Ear, Imperial Advisor', 'Sami, Wildcat Captain', 'Tezzeret, Master of the Bridge', 'Witherbloom, the Balancer'],

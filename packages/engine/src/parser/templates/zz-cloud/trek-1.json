@@ -139,7 +139,7 @@
       }
     ],
     "counterExamples": [
-      "When ~ dies, assimilate target creature.",
+      "When ~ dies, assimilate target artifact.",
       "When ~ dies, assimilate target creature card from a graveyard unless an opponent pays {2}.",
       "When ~ dies, return target creature card from a graveyard to the battlefield."
     ]

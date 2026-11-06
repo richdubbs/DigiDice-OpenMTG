@@ -1,0 +1,434 @@
+[
+  {
+    "id": "eff.edhv46.choose.anyTarget",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "choose any target",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "anyTarget",
+          "min": 1,
+          "max": 1,
+          "text": "any target"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose any target. Draw two cards, then discard a card. ~ deals damage equal to the discarded card's mana value to that permanent or player."
+      },
+      {
+        "text": "Choose any target. ~ deals 3 damage to that permanent or player."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature. ~ deals 3 damage to it.",
+      "Choose any target.",
+      "Choose any target, then choose another target for each time ~ was kicked. ~ deals 3 damage to each of them."
+    ]
+  },
+  {
+    "id": "eff.edhv46.mayPlay.free.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 611.2a",
+      "CR 400.7"
+    ],
+    "pattern": "you may play {o:Obj} without paying its mana cost {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Counter target spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard. You may play it without paying its mana cost for as long as it remains exiled."
+      },
+      {
+        "text": "Exile target instant card from your graveyard. You may play that card without paying its mana cost until the end of your next turn."
+      }
+    ],
+    "counterExamples": [
+      "Exile target instant card from your graveyard. You may play that card for as long as it remains exiled.",
+      "Exile target instant card from your graveyard. You may play that card without paying its mana cost.",
+      "Exile target instant card from your graveyard. You may cast that card without paying its mana cost for as long as it remains exiled and draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhv46.eachPlayer.sacrifice.unless.cost",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 701.21a",
+      "CR 608.2f",
+      "CR 101.4"
+    ],
+    "pattern": "each player sacrifices ( a | an ) {f:Filter} [of their choice] unless they {c:Cost}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "pay",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "cost": "$c",
+          "else": [
+            {
+              "op": "sacrificeChoice",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "filter": "$f",
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "At the beginning of each end step, each player sacrifices a land of their choice unless they discard a card."
+      },
+      {
+        "text": "At the beginning of your upkeep, each player sacrifices a creature unless they discard a card."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each end step, each player sacrifices a permanent of their choice unless you discard a card.",
+      "At the beginning of each end step, each opponent sacrifices a permanent of their choice unless they discard a card.",
+      "At the beginning of each end step, each player sacrifices two permanents unless they discard a card."
+    ]
+  },
+  {
+    "id": "rep.edhv46.anyPlayer.draw.skip",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.10",
+      "CR 121.3",
+      "CR 121.4"
+    ],
+    "pattern": "if a player would draw a card [ while {c:Cond} ] , that player skips that draw instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "draw",
+        "player": "any"
+      },
+      "condition": "$c",
+      "body": {
+        "b": "skip"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a player would draw a card while you control a Wizard, that player skips that draw instead."
+      },
+      {
+        "text": "{2}: Scry 1.\nIf a player would draw a card while you have seven or more cards in hand, that player skips that draw instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would draw a card, skip that draw instead.",
+      "If a player would draw a card, that player loses 2 life instead.",
+      "If a player would draw a card, that player skips that draw."
+    ]
+  },
+  {
+    "id": "eff.edhv46.prevent.byObj.gainLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.5",
+      "CR 611.2a",
+      "CR 119.3",
+      "CR 115.1"
+    ],
+    "pattern": "prevent all damage {o:Obj} would deal {d:Dur} . you gain life equal to the damage prevented this way",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "gainLife",
+                "who": {
+                  "ref": "you"
+                },
+                "amount": {
+                  "q": "preventedAmount"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage target creature would deal this turn. You gain life equal to the damage prevented this way."
+      },
+      {
+        "text": "Prevent all damage target artifact would deal this turn. You gain life equal to the damage prevented this way."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage target spell would deal this turn. You gain 1 life for each 1 damage prevented this way.",
+      "Prevent all damage target spell would deal this turn. Target player gains life equal to the damage prevented this way.",
+      "Prevent all combat damage target creature would deal this turn. You gain life equal to the damage prevented this way."
+    ],
+    "priority": 2
+  },
+  {
+    "id": "eff.edhv46.attackingAndBlocking.noUntap",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "each attacking creature and each blocking creature doesn't untap during its controller 's next untap step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "anyOf": [
+                {
+                  "attacking": true
+                },
+                {
+                  "blocking": true
+                }
+              ]
+            }
+          },
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "next",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Each attacking creature and each blocking creature doesn't untap during its controller's next untap step."
+      },
+      {
+        "text": "Tap all blocking creatures. Each attacking creature and each blocking creature doesn't untap during its controller's next untap step."
+      }
+    ],
+    "counterExamples": [
+      "Each attacking creature and each blocking creature doesn't untap during your next untap step.",
+      "Each attacking creature and each tapped creature doesn't untap during its controller's next untap step.",
+      "Each attacking creature and each blocking creature doesn't untap during its controller's untap step."
+    ]
+  },
+  {
+    "id": "eff.edhv46.damageEachOpponent.thoseDiscardRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "~ deals {n:Qty} damage to each opponent . those players each discard {m:Qty} card[s] at random",
+    "build": [
+      {
+        "op": "damage",
+        "source": {
+          "ref": "self"
+        },
+        "to": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "amount": "$n"
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "count": "$m",
+        "mode": "random"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "random",
+      "those players"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 3 damage to each opponent. Those players each discard three cards at random."
+      },
+      {
+        "text": "~ deals 3 damage to each opponent. Those players each discard a card at random."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 2 damage to each opponent. Those players each discard two cards.",
+      "~ deals 2 damage to target opponent. Those players each discard two cards at random.",
+      "~ deals 2 damage to each opponent. Those players each discard two cards at random. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhv46.player.mayExileFromOwnGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 608.2d",
+      "CR 404.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} may exile ( a | one ) card from their graveyard",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": "$p",
+          "from": {
+            "ref": "each",
+            "filter": {
+              "zone": "graveyard",
+              "owner": "$p"
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "mayExiled"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "mayExiled"
+          },
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, target opponent may exile a card from their graveyard. If that player doesn't, you gain 2 life."
+      },
+      {
+        "text": "At the beginning of your upkeep, target player may exile a card from their graveyard. If that player doesn't, you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, target opponent may exile two cards from their graveyard.",
+      "At the beginning of your upkeep, target opponent may exile a card from your graveyard.",
+      "At the beginning of your upkeep, target opponent may exile a creature card from their graveyard."
+    ]
+  }
+]

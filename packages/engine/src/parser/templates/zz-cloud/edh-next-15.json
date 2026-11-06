@@ -1,0 +1,338 @@
+[
+  {
+    "id": "sta.edhn15.crewUsesToughness",
+    "kind": "static",
+    "since": 15,
+    "status": "stable",
+    "cr": [
+      "CR 702.122a",
+      "CR 604.1"
+    ],
+    "pattern": "~ crews vehicles using its toughness rather than its power",
+    "build": {
+      "s": "rule",
+      "rule": "crewUsesToughness"
+    },
+    "consumes": [
+      "rather than"
+    ],
+    "needs": [
+      "rulemod:crewUsesToughness"
+    ],
+    "examples": [
+      {
+        "text": "~ crews vehicles using its toughness rather than its power."
+      },
+      {
+        "text": "Example Relic crews vehicles using its toughness rather than its power."
+      }
+    ],
+    "counterExamples": [
+      "Example Relic saddles Mounts and crews Vehicles using its toughness rather than its power.",
+      "Example Relic crews Vehicles using its power rather than its toughness.",
+      "Example Relic assigns combat damage using its toughness rather than its power."
+    ]
+  },
+  {
+    "id": "eff.edhn15.each.dealsItselfOwnPower",
+    "kind": "effect",
+    "since": 15,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 120.2b",
+      "CR 608.2h"
+    ],
+    "pattern": "each {f:Filter} deals damage to itself equal to its power",
+    "build": {
+      "op": "damage",
+      "source": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "to": {
+        "ref": "subject"
+      },
+      "amount": {
+        "q": "stat",
+        "stat": "power",
+        "of": {
+          "ref": "subject"
+        }
+      },
+      "perSource": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each artifact creature deals damage to itself equal to its power."
+      },
+      {
+        "text": "Each creature with flying deals damage to itself equal to its power."
+      }
+    ],
+    "counterExamples": [
+      "Each creature deals damage to its controller equal to its power.",
+      "Each creature deals damage to itself equal to its toughness.",
+      "Each creature deals damage to each creature equal to its power."
+    ]
+  },
+  {
+    "id": "eff.edhn15.eachOfThose.dealsOwnPower",
+    "kind": "effect",
+    "since": 15,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 120.2b",
+      "CR 608.2h"
+    ],
+    "pattern": "each of {src:Objs} deals damage equal to its power to {to:Recipient}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "perSource": true,
+      "to": "$to",
+      "amount": {
+        "q": "stat",
+        "stat": "power",
+        "of": {
+          "ref": "subject"
+        }
+      }
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, it deals 3 damage divided as you choose among any number of target creatures your opponents control. Each of those creatures deals damage equal to its power to ~."
+      },
+      {
+        "text": "Whenever ~ attacks, ~ deals 3 damage divided as you choose among up to two target creatures. Each of those creatures deals damage equal to its power to ~."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, it deals 3 damage divided as you choose among any number of target creatures your opponents control. Each of those creatures deals damage equal to its toughness to ~.",
+      "When this creature enters, it deals 3 damage divided as you choose among any number of target creatures your opponents control. Each of those creatures deals damage equal to their power to ~."
+    ]
+  },
+  {
+    "id": "eff.edhn15.ifPlayerDealtDamageThisWay.then",
+    "kind": "effect",
+    "since": 15,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 701.22a"
+    ],
+    "pattern": "if a player is dealt damage this way , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "countPlayers",
+          "of": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "set",
+              "number": "plural",
+              "participle": "dealt damage this way",
+              "text": "dealt damage this way"
+            }
+          }
+        },
+        "op": ">=",
+        "right": 1
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "weak": 1,
+    "consumes": [
+      "if",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, ~ deals 2 damage to any target. If a player is dealt damage this way, scry 1."
+      },
+      {
+        "text": "When ~ enters, ~ deals 3 damage to any target. If a player is dealt damage this way, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, ~ deals 2 damage to any target. If a player is dealt damage this turn, scry 1.",
+      "When ~ enters, ~ deals 2 damage to any target. If a creature is dealt damage this way, scry 1.",
+      "If a player is dealt damage this way, scry 1."
+    ]
+  },
+  {
+    "id": "rep.edhn15.enters.counters.numberEqual.onSelf",
+    "kind": "static",
+    "since": 15,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 107.3",
+      "CR 306.5b"
+    ],
+    "pattern": "~ enters with a number of {k:CounterKind} counters on ~ equal to {q:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$q"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ enters with a number of loyalty counters on ~ equal to the number of lands you control."
+      },
+      {
+        "text": "Example Relic enters with a number of loyalty counters on him equal to the number of lands you control."
+      },
+      {
+        "text": "Example Relic enters with a number of loyalty counters on her equal to the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Example Relic enters with a number of loyalty counters on target creature equal to the number of lands you control.",
+      "Example Relic enters with a number of loyalty counters on him.",
+      "Target creature enters with a number of loyalty counters on him equal to the number of lands you control."
+    ]
+  },
+  {
+    "id": "eff.edhn15.youAnd.each.createTapped",
+    "kind": "effect",
+    "since": 15,
+    "status": "stable",
+    "cr": [
+      "CR 111.2",
+      "CR 110.5b",
+      "CR 115.1"
+    ],
+    "pattern": "you and {p:Player} each create {n:Qty} tapped {t:TokenDesc}",
+    "build": [
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "token": "$t",
+        "tapped": true
+      },
+      {
+        "op": "createToken",
+        "who": "$p",
+        "count": "$n",
+        "token": "$t",
+        "tapped": true
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, you and target player each create a tapped Powerstone token."
+      },
+      {
+        "text": "{1}, {T}: You and target player each create a tapped Treasure token."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, you and target player each create a Powerstone token.",
+      "When this creature enters, you and target player each create a Powerstone token tapped.",
+      "When this creature enters, you and target player each sacrifice a tapped Powerstone token."
+    ]
+  },
+  {
+    "id": "eff.edhn15.counters.eachGroup.andEachOtherGroup",
+    "kind": "effect",
+    "since": 15,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 306.5",
+      "CR 608.2c"
+    ],
+    "pattern": "put {n1:Qty} {k1:CounterKind} counters on each {f1:Filter} and {n2:Qty} {k2:CounterKind} counters on each {f2:Filter}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "each",
+          "filter": "$f1"
+        },
+        "kind": "$k1",
+        "count": "$n1"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "each",
+          "filter": "$f2"
+        },
+        "kind": "$k2",
+        "count": "$n2"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Put five +1/+1 counters on each creature you control and five charge counters on each artifact you control."
+      },
+      {
+        "text": "−2: Put five +1/+1 counters on each creature you control and five loyalty counters on each other planeswalker you control."
+      },
+      {
+        "text": "−3: Put two +1/+1 counters on each creature you control and three loyalty counters on each other planeswalker you control."
+      }
+    ],
+    "counterExamples": [
+      "−2: Put five +1/+1 counters on each creature you control and five loyalty counters on target planeswalker you control.",
+      "−2: Put five +1/+1 counters on each creature you control.",
+      "−2: Put five +1/+1 counters on each creature you control or five loyalty counters on each other planeswalker you control."
+    ]
+  }
+]

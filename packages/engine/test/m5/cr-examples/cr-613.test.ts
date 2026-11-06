@@ -107,7 +107,7 @@ describe('CR 613.6: one effect applies in each of its layers to the same set of 
 });
 
 describe('CR 613.9: one continuous effect can override another', () => {
-  // Grounded's "Enchanted creature loses flying." has no template (the card is partial on the game path); the equivalent card carries hand-built layer-6 JSON of the same behavior (the one equivalent the render gate accepts).
+  // Grounded's "Enchanted creature loses flying." is read by sta.edhv56.attached.loses since edh-c-56 (the card is full on the game path); the equivalent card carries hand-built layer-6 JSON of the same behavior (the one equivalent the render gate accepts).
   const grounded = equivalent({ name: 'Grounded', type_line: 'Enchantment — Aura', mana_cost: '{1}{G}', colors: ['G'] }, [
     { kind: 'keyword', keyword: 'enchant', filter: { types: ['Creature'] }, text: 'Enchant creature' },
     { kind: 'static', text: 'Enchanted creature loses flying.', effects: [{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 6, remove: ['flying'] }] }] },
@@ -116,8 +116,11 @@ describe('CR 613.9: one continuous effect can override another', () => {
     p1: { hand: ['Flight', 'Grounded'], battlefield: ['Grizzly Bears', 'Island', 'Forest', 'Forest'] }, defs: [grounded],
   });
 
-  it('the game path leaves Grounded\'s sentence manual (never applied half)', () => {
-    expect(gamePath('Grounded').automation.unsupported).toEqual(['Enchanted creature loses flying.']);
+  it('the game path reads Grounded\'s sentence (edh-c-56): the card is full, with the same layer-6 removal of flying as the hand-built equivalent', () => {
+    const def = gamePath('Grounded');
+    expect(def.automation.level).toBe('full');
+    expect(def.automation.unsupported ?? []).toEqual([]);
+    expect(JSON.stringify(def)).toContain('"mods":[{"layer":6,"remove":["flying"]}]');
   });
 
   it('CR 613.9 example 1: "has flying" (Flight) then "loses flying" (Grounded): the later timestamp wins and the creature has no flying', () => {

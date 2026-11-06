@@ -160,7 +160,7 @@
     "id": "eff.p2rd4.prevent.nextTime.objWouldDeal",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 615.1a",
       "CR 615.7",

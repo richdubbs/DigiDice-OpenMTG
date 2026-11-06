@@ -97,7 +97,8 @@ describe('CR 706.1-706.3a: a die-roll result table', () => {
     expect(card('Test Gap', 'Instant', 'Roll a d20.\n1—9 | You gain 1 life.\n11—20 | You gain 3 life.').automation.level).toBe('manual');
     expect(card('Test Short', 'Instant', 'Roll a d20.\n1—9 | You gain 1 life.\n10—19 | You gain 3 life.').automation.level).toBe('manual');
     expect(card('Test Murk', 'Instant', 'Roll a d20.\n1—9 | You gain 1 life.\n10—20 | Blorfty the gleeb.').automation.level).toBe('manual');
-    expect(card('Test Plus', 'Instant', 'Roll a d20.\n1—14 | You gain 1 life.\n15+ | You gain 3 life.').automation.level).toBe('manual');
+    // (edh-next-55: a last row "15+" of a d20 starts inside the die and is the results 15-20, so it is understood now: model/lint-nodes.ts)
+    expect(card('Test Plus', 'Instant', 'Roll a d20.\n1—14 | You gain 1 life.\n21+ | You gain 3 life.').automation.level).toBe('manual');
   });
 });
 

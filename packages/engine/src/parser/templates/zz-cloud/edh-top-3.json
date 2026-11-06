@@ -1,0 +1,140 @@
+[
+  {
+    "id": "eff.edht3.return.bf.differentManaValues.xOrLess",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 202.3",
+      "CR 107.3a",
+      "CR 400.7",
+      "CR 608.2b"
+    ],
+    "pattern": "return from your graveyard to the battlefield any number of target creature cards that each have a different mana value x or less",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "object",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true,
+            "manaValue": {
+              "op": "<=",
+              "value": {
+                "q": "X"
+              }
+            }
+          },
+          "min": 0,
+          "max": "any",
+          "text": "any number of target creature cards that each have a different mana value x or less",
+          "differentManaValues": true
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "different",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Return from your graveyard to the battlefield any number of target creature cards that each have a different mana value X or less. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Return from your graveyard to the battlefield any number of target creature cards that each have mana value X or less.",
+      "Return from your graveyard to the battlefield any number of target artifact cards that each have a different mana value X or less.",
+      "Return from your graveyard to your hand any number of target creature cards that each have a different mana value X or less."
+    ]
+  },
+  {
+    "id": "rid.edht3.ifX.orMore.dividedTwiceInstead",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 601.2d",
+      "CR 107.3",
+      "CR 120.2b"
+    ],
+    "pattern": "if x is {n:Qty} or more , {src:Obj} deal[s] twice x damage divided as you choose among them instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "@require": {
+          "divided": "announced",
+          "amount.q": "X"
+        },
+        "op": "if",
+        "cond": {
+          "cond": "compare",
+          "left": {
+            "q": "X"
+          },
+          "op": ">=",
+          "right": "$n"
+        },
+        "then": [
+          {
+            "op": "damage",
+            "source": "$src",
+            "to": "@previous.to",
+            "amount": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                2,
+                {
+                  "q": "X"
+                }
+              ]
+            },
+            "divided": "announced"
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "if",
+      "twice",
+      "instead",
+      "divided"
+    ],
+    "examples": [
+      {
+        "text": "~ deals X damage divided as you choose among up to two target creatures and/or planeswalkers. If X is 6 or more, ~ deals twice X damage divided as you choose among them instead."
+      },
+      {
+        "text": "~ deals X damage divided as you choose among any number of target creatures. If X is 4 or more, ~ deals twice X damage divided as you choose among them instead."
+      }
+    ],
+    "counterExamples": [
+      "~ deals X damage divided as you choose among up to two target creatures and/or planeswalkers. If X is 6 or less, ~ deals twice X damage divided as you choose among them instead.",
+      "~ deals X damage divided as you choose among up to two target creatures and/or planeswalkers. If X is 6 or more, ~ deals three times X damage divided as you choose among them instead.",
+      "~ deals X damage divided as you choose among up to two target creatures and/or planeswalkers. If X is 6 or more, ~ deals twice X damage divided as you choose among them.",
+      "~ deals X damage to target creature. If X is 6 or more, ~ deals twice X damage divided as you choose among them instead."
+    ]
+  }
+]

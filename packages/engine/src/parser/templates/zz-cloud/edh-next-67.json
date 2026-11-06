@@ -1,0 +1,591 @@
+[
+  {
+    "id": "cm.edhn67.first.xSpell.less.forEachCounterOnSelf",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 107.3",
+      "CR 122.1",
+      "CR 611.3a"
+    ],
+    "pattern": "the first spell you cast with {x} in its mana cost each turn costs {m:ManaCost} less to cast for each {k:CounterKind} counter on ~",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "manaCostHasX": true
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                {
+                  "q": "math",
+                  "op": "max",
+                  "args": [
+                    0,
+                    {
+                      "q": "math",
+                      "op": "-",
+                      "args": [
+                        1,
+                        {
+                          "q": "happenedCount",
+                          "event": {
+                            "ev": "cast",
+                            "player": "you",
+                            "spell": {
+                              "manaCostHasX": true
+                            }
+                          },
+                          "scope": "turn"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "q": "counters",
+                  "on": {
+                    "ref": "self"
+                  },
+                  "kind": "$k"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "The first spell you cast with {X} in its mana cost each turn costs {2} less to cast for each +1/+1 counter on ~."
+      },
+      {
+        "text": "The first spell you cast with {X} in its mana cost each turn costs {1} less to cast for each charge counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "The first spell you cast with {X} in its mana cost each turn costs {1} more to cast for each +1/+1 counter on ~.",
+      "The second spell you cast with {X} in its mana cost each turn costs {1} less to cast for each +1/+1 counter on ~.",
+      "The first spell your opponents cast with {X} in its mana cost each turn costs {1} less to cast for each +1/+1 counter on ~."
+    ]
+  },
+  {
+    "id": "cm.edhn67.spells.chosenName.enchantedPlayer.more",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 303.4",
+      "CR 201.3",
+      "CR 607.2d"
+    ],
+    "pattern": "spells with the chosen name enchanted player casts cost {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "chosen": {
+                "link": "cardName",
+                "quality": "cardName"
+              }
+            },
+            "caster": {
+              "ref": "enchantedPlayer"
+            }
+          },
+          "change": {
+            "kind": "increase",
+            "generic": "$m.0.amount"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, choose any card name.\nSpells with the chosen name enchanted player casts cost {3} more to cast."
+      },
+      {
+        "text": "As ~ enters, choose any nonland card name.\nSpells with the chosen name enchanted player casts cost {1} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose any card name.\nSpells with the chosen name enchanted player casts cost {3} less to cast.",
+      "As ~ enters, choose any card name.\nSpells with the chosen name you cast cost {3} more to cast.",
+      "As ~ enters, choose any card name.\nSpells with the chosen name enchanted player casts cost {3} more to cast this turn."
+    ],
+    "consumes": [
+      "chosen"
+    ]
+  },
+  {
+    "id": "cm.edhn67.spells.less.forEachSameNameInGraveyard",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 201.2",
+      "CR 404.1"
+    ],
+    "pattern": "spells you cast cost {m:ManaCost} less to cast for each card with the same name as that spell in your graveyard",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": {
+                      "zone": "graveyard",
+                      "owner": "you",
+                      "isCard": true,
+                      "sharesWith": {
+                        "with": {
+                          "ref": "subject"
+                        },
+                        "quality": "name"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "Spells you cast cost {2} less to cast for each card with the same name as that spell in your graveyard."
+      },
+      {
+        "text": "Spells you cast cost {3} less to cast for each card with the same name as that spell in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Spells you cast cost {1} more to cast for each card with the same name as that spell in your graveyard.",
+      "Spells your opponents cast cost {1} less to cast for each card with the same name as that spell in your graveyard."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "rep.edhn67.enters.choose.cardtype.otherThanCreatureLand",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2a",
+      "CR 205.2a"
+    ],
+    "pattern": "as ~ enters , choose a card type other than creature or land",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "cardType",
+                "link": "cardType",
+                "exclude": [
+                  "Creature",
+                  "Land"
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, choose a card type other than creature or land."
+      },
+      {
+        "text": "As this artifact enters, choose a card type other than creature or land."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a card type other than creature.",
+      "As ~ enters, choose a card type other than creature.",
+      "As ~ enters, choose two card types other than creature or land."
+    ],
+    "consumes": [
+      "other"
+    ]
+  },
+  {
+    "id": "eff.edhn67.permit.alt.energy",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 107.14",
+      "CR 604.1"
+    ],
+    "pattern": "you may pay {n:Qty} {e} rather than pay the mana cost for {f:Filter} you cast",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "costChange": {
+            "kind": "set",
+            "cost": {
+              "other": [
+                {
+                  "kind": "payEnergy",
+                  "amount": "$n"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "You may pay six {E} rather than pay the mana cost for artifact spells you cast."
+      },
+      {
+        "text": "You may pay three {E} rather than pay the mana cost for creature spells you cast."
+      }
+    ],
+    "counterExamples": [
+      "You may pay eight {E} rather than pay the mana cost for spells your opponents cast.",
+      "You may pay eight {E} in addition to paying the mana cost for spells you cast.",
+      "Pay eight {E} rather than pay the mana cost for spells you cast."
+    ]
+  },
+  {
+    "id": "eff.edhn67.permit.alt.manaValue",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 202.3",
+      "CR 604.1"
+    ],
+    "pattern": "you may pay {x} rather than pay the mana cost for {f:Filter} you cast , where x is that spell 's mana value",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "costChange": {
+            "kind": "set",
+            "manaValue": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "You may pay {X} rather than pay the mana cost for Elf spells you cast, where X is that spell's mana value."
+      },
+      {
+        "text": "You may pay {X} rather than pay the mana cost for creature spells you cast, where X is that spell's mana value."
+      }
+    ],
+    "counterExamples": [
+      "You may pay {X} rather than pay the mana cost for spells your opponents cast, where X is that spell's mana value.",
+      "You may pay {X} rather than pay the mana cost for Samurai spells you cast, where X is that spell's power.",
+      "You may pay {X} rather than pay the mana cost for Samurai spells you cast, where X is that spell's mana value, this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn67.permit.alt.life.oncePerYourTurn.fromHand",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2a",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 202.3",
+      "CR 119.4",
+      "CR 500.1"
+    ],
+    "pattern": "once during each of your turns , you may cast ( a | an ) {f:Filter} from your hand by paying life equal to its mana value rather than paying its mana cost",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "anyOf": [
+              "$f"
+            ],
+            "castFrom": "hand"
+          },
+          "costChange": {
+            "kind": "set",
+            "life": "manaValue"
+          },
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "each",
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast an artifact spell from your hand by paying life equal to its mana value rather than paying its mana cost."
+      },
+      {
+        "text": "Once during each of your turns, you may cast a creature spell from your hand by paying life equal to its mana value rather than paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Once during each turn, you may cast a spell from your hand by paying life equal to its mana value rather than paying its mana cost.",
+      "Once during each of your turns, you may cast a spell from your graveyard by paying life equal to its mana value rather than paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhn67.nextSpell.life",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 202.3",
+      "CR 611.2"
+    ],
+    "pattern": "rather than pay the mana cost of the next {f:Filter} you cast this turn , you may pay life equal to that spell 's mana value",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "life"
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "{2}{R}, {T}: Rather than pay the mana cost of the next spell you cast this turn, you may pay life equal to that spell's mana value."
+      },
+      {
+        "text": "{2}, {T}: Rather than pay the mana cost of the next creature spell you cast this turn, you may pay life equal to that spell's mana value."
+      }
+    ],
+    "counterExamples": [
+      "{1}{B}, {T}: Rather than pay the mana cost of the next spell an opponent casts this turn, you may pay life equal to that spell's mana value.",
+      "{1}{B}, {T}: Rather than pay the mana cost of the next spell you cast, you may pay life equal to that spell's mana value."
+    ]
+  },
+  {
+    "id": "cm.edhn67.firstAbility.targetsYourCreature.duringYourTurn.less",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 115.1",
+      "CR 118.7a",
+      "CR 500.1"
+    ],
+    "pattern": "the first activated ability you activate during your turn that targets a creature you control costs {m:ManaCost} less to activate",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "kind": "activated"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                {
+                  "q": "math",
+                  "op": "min",
+                  "args": [
+                    1,
+                    {
+                      "q": "spellTargetCount",
+                      "filter": {
+                        "types": [
+                          "Creature"
+                        ],
+                        "controller": "you"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "q": "math",
+                  "op": "max",
+                  "args": [
+                    0,
+                    {
+                      "q": "math",
+                      "op": "-",
+                      "args": [
+                        1,
+                        {
+                          "q": "happenedCount",
+                          "event": {
+                            "ev": "activate",
+                            "player": "you",
+                            "targetsYourCreature": true
+                          },
+                          "scope": "turn"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "during"
+    ],
+    "needs": [
+      "feature:costMod.times"
+    ],
+    "examples": [
+      {
+        "text": "The first activated ability you activate during your turn that targets a creature you control costs {3} less to activate."
+      },
+      {
+        "text": "The first activated ability you activate during your turn that targets a creature you control costs {1} less to activate."
+      }
+    ],
+    "counterExamples": [
+      "The first activated ability you activate during your turn that targets a creature you control costs {2} more to activate.",
+      "The first activated ability you activate during your turn that targets a creature costs {2} less to activate.",
+      "The first activated ability you activate that targets a creature you control costs {2} less to activate."
+    ]
+  }
+]

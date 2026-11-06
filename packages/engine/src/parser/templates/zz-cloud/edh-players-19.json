@@ -1,0 +1,130 @@
+[
+  {
+    "id": "eff.edhp19.emblem.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 114.1",
+      "CR 114.2",
+      "CR 114.4"
+    ],
+    "pattern": "{p:Player} get[s] an emblem with {a:Abilities}",
+    "build": {
+      "op": "createEmblem",
+      "who": "$p",
+      "abilities": "$a"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent gets an emblem with \"Whenever a player casts a spell, you lose 3 life.\""
+      },
+      {
+        "text": "Target player gets an emblem with \"Creatures you control get -1/-1.\""
+      }
+    ],
+    "counterExamples": [
+      "Target opponent gets two emblems with \"Creatures you control get -1/-1.\"",
+      "Target opponent gets an emblem."
+    ]
+  },
+  {
+    "id": "eff.edhp19.untilNextTurn.eitherOfThose.combatDamage",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 510.2",
+      "CR 603.2c",
+      "CR 611.2a"
+    ],
+    "pattern": "until your next turn , whenever either of {o:Objs} deals combat damage , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "damage",
+          "source": {
+            "is": "$o"
+          },
+          "combat": true
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "untilNextTurn",
+        "whose": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "whenever",
+      "until",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Choose two target creatures. Until your next turn, whenever either of those creatures deals combat damage, you gain 2 life."
+      },
+      {
+        "text": "Choose up to two target artifact creatures. Until your next turn, whenever either of those creatures deals combat damage, create a Treasure token."
+      }
+    ],
+    "counterExamples": [
+      "Choose two target creatures. Until your next turn, whenever either of those creatures deals damage, you gain 2 life.",
+      "Choose two target creatures. Until end of turn, whenever either of those creatures deals combat damage, you gain 2 life.",
+      "Choose two target creatures. Until your next turn, whenever either of those creatures deals combat damage, you gain 2 life"
+    ]
+  },
+  {
+    "id": "eff.edhp19.counters.putAll.theyControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} put[s] {n:Qty} {k:CounterKind} counter[s] on each {f:Filter} they control",
+    "build": {
+      "op": "putCounters",
+      "by": "$p",
+      "on": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "$p"
+        }
+      },
+      "kind": "$k",
+      "count": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Target player puts a +1/+1 counter on each creature they control."
+      },
+      {
+        "text": "Target opponent puts two -1/-1 counters on each artifact they control."
+      }
+    ],
+    "counterExamples": [
+      "Target player puts a +1/+1 counter on each creature you control.",
+      "Target player puts a +1/+1 counter on a creature they control.",
+      "Target player puts a +1/+1 counter on each creature."
+    ]
+  }
+]

@@ -1,0 +1,14 @@
+# edh-c-28 (Commander effort, coordinator C, EDHREC ranks 22,001 to 22,500). After editing: npm run cards -- fixtures
+Brainwash
+Cowed by Wisdom
+Lifespark Spellbomb
+Elvish Branchbender
+Lush Growth
+Kumena's Speaker
+Roost of Drakes
+Eon Hub
+Vampire Lacerator
+Crumbling Sanctuary
+Overload
+Sheoldred's Restoration
+Neurok Transmuter

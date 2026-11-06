@@ -61,10 +61,13 @@ describe('design 10.3, D14: native recognizer output passes the exact render gat
     expect(def.automation.level).toBe('full');
   });
 
-  it('D14: a keyword line the renderer cannot print yet ("protection from black, from red, and from green") is not automated by the native recognizers', () => {
-    const { def, report } = compile(creature('Protection from black, from red, and from green'));
-    expect(report.faces[0]!.nativeLines).toEqual([]);
-    expect(def.automation.level).not.toBe('full');
+  it('edh-c-82 (CR 702.16g): "protection from black, from red, and from green" is a run of three the renderer prints; a list that lacks a "from" stays manual', () => {
+    const three = compile(creature('Protection from black, from red, and from green'));
+    expect(three.report.faces[0]!.nativeLines).toEqual([0]);
+    expect(three.def.automation.level).toBe('full');
+    const bad = compile(creature('Protection from black, red, and green'));
+    expect(bad.report.faces[0]!.nativeLines).toEqual([]);
+    expect(bad.def.automation.level).not.toBe('full');
   });
 
   it('design 10.5: native output carries its own provenance (prov.by "native"), never a template id no template file has', () => {
@@ -243,21 +246,28 @@ describe('design 10.3, 12.5: pack and LLM data must claim every line exactly onc
 });
 
 describe('CR 303.4a, 702.5a, 115.1: an enchant ability that names a zone other than the battlefield', () => {
-  it('CR 702.5a: "Enchant creature card in a graveyard" is not automated (the engine attaches Auras only to permanents)', () => {
-    const { def } = compile(card('Enchant creature card in a graveyard', { type_line: 'Enchantment — Aura' }));
+  it('CR 702.5a: "Enchant creature card in exile" is not automated (the engine attaches Auras to permanents, and, edh-perms-4, to a card in a graveyard)', () => {
+    const { def } = compile(card('Enchant creature card in exile', { type_line: 'Enchantment — Aura' }));
     expect(abilities(def)[0]).toMatchObject({ kind: 'manual' });
     expect(def.automation.requiresEngine).toContain('feature:enchant.zone');
   });
 
-  it('CR 303.4a: an Aura whose enchant keyword names the graveyard never targets a creature on the battlefield', () => {
+  it('edh-perms-4, CR 702.5a: "Enchant creature card in a graveyard" is automated (feature:enchant.zone); "Enchant creature card in your graveyard" or of two card types is not', () => {
+    expect(abilities(compile(card('Enchant creature card in a graveyard', { type_line: 'Enchantment — Aura' })).def)[0]).toMatchObject({ kind: 'keyword', keyword: 'enchant' });
+    expect(abilities(compile(card('Enchant creature card in your graveyard', { type_line: 'Enchantment — Aura' })).def)[0]).toMatchObject({ kind: 'manual' });
+    expect(abilities(compile(card('Enchant creature or artifact card in a graveyard', { type_line: 'Enchantment — Aura' })).def)[0]).toMatchObject({ kind: 'manual' });
+  });
+
+  it('CR 303.4a: an Aura whose enchant keyword names the graveyard never targets a creature on the battlefield: its target is a creature card in a graveyard', () => {
     const def = compileCard(card('Enchant creature card in a graveyard', { name: 'Test Animate', type_line: 'Enchantment — Aura', mana_cost: '{1}{B}' }), () => ({
       abilities: [{ kind: 'keyword', keyword: 'enchant', text: 'Enchant creature card in a graveyard', filter: { types: ['Creature'], zone: 'graveyard', isCard: true } }], unsupported: [],
     }));
     let s = scenario(['Grizzly Bears', 'Hill Giant', 'Swamp'], { defs: [def], p1: { hand: ['Test Animate'], battlefield: ['Swamp', 'Swamp', 'Grizzly Bears'], graveyard: ['Hill Giant'] } });
     const aura = s.objects[find(s, 'Test Animate', 'hand')]!;
-    expect(auraTargetProgram(charsOfObject(s, aura))).toBeNull(); // the restriction is not understood: no target from the battlefield (milestone 4 behavior)
+    expect(auraTargetProgram(charsOfObject(s, aura))?.targets[0]?.filter).toMatchObject({ types: ['Creature'], zone: 'graveyard', isCard: true }); // edh-perms-4: a target in a graveyard
     s = act(s, { type: 'cast', player: 'p1', card: aura.id });
     expect(JSON.stringify(s.pending)).not.toContain(find(s, 'Grizzly Bears', 'battlefield'));
+    expect(JSON.stringify(s.pending)).toContain(find(s, 'Hill Giant', 'graveyard'));
   });
 });
 

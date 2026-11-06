@@ -1,7 +1,7 @@
 /**
  * RPL-0 (replays design 5.1): the upgrade chain. A replay or bug report of an older `formatVersion` is brought to the current one step by step, by the
  * function for each version (`upgrade1to2` is the entry for 1, and so on). A newer one is refused: "This replay was made by a newer OpenMTG. Update to watch
- * it." Version 1 is the first, so the tables are empty; a change of the format adds its function here and bumps the version in format.ts.
+ * it." A change of the format adds its function here and bumps the version in format.ts (replays: 1 -> 2 for shortcuts; bug reports: none yet).
  *
  * An upgrade function takes the parsed JSON of one version and returns the JSON of the next one. It may throw on something it cannot read; the chain
  * turns that into a refusal (`malformed`), so reading a file still never throws.
@@ -15,8 +15,13 @@ export type Upgrader = (file: JsonRecord) => JsonRecord;
 /** Upgrade functions by the version they read (the entry for 1 is `upgrade1to2`). */
 export type UpgradeTable = Readonly<Record<number, Upgrader>>;
 
-/** The replay format's upgrade functions. None yet: formatVersion 1 is the first. */
-export const REPLAY_UPGRADES: UpgradeTable = Object.freeze({});
+/**
+ * The replay format's upgrade functions. 1 -> 2 (shortcuts, docs/design/shortcuts.md 6): an action type and an answer kind were added, so a version 1 file is
+ * a version 2 file as it is: only the version changes.
+ */
+export const REPLAY_UPGRADES: UpgradeTable = Object.freeze({
+  1: (file: JsonRecord): JsonRecord => ({ ...file, formatVersion: 2 }),
+});
 /** The bug report format's upgrade functions. None yet. */
 export const BUG_REPORT_UPGRADES: UpgradeTable = Object.freeze({});
 

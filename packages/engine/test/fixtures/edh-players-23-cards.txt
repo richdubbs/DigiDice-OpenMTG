@@ -1,0 +1,11 @@
+# edh-players-23 (Commander lane edh-players; test/cloud/edh-players-23, golden edh-players-23-review.json)
+# a mana ability that makes players lose life, "each player has N or less life", the controller may sacrifice else damage, "unless they pay", Incubate N times, one or more sacrifices, enter tapped this turn
+Cryptolith Fragment // Aurora of Emrakul
+Star Athlete
+Balor
+Elesh Norn // The Argent Etchings
+Swashbuckler Extraordinaire
+Nahiri's Lithoforming
+Due Respect
+Death Charmer
+Flameblade Angel

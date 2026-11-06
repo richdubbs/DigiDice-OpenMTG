@@ -7,5 +7,81 @@
   ],
   "reminder": "When you cast this spell, you may copy it. If you do, choose an opponent to also copy it. Players may choose new targets for their copies.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When you cast this spell, you may copy it and you may choose new targets for the copy. If you copy the spell, choose an opponent. That player copies the spell and may choose new targets for that copy.",
+      "zone": [
+        "stack"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "cast",
+            "player": "you",
+            "spell": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "copy",
+                "what": {
+                  "ref": "event",
+                  "role": "spell"
+                },
+                "result": "spell",
+                "who": {
+                  "ref": "you"
+                },
+                "newTargets": "may"
+              }
+            ],
+            "as": "did"
+          },
+          {
+            "op": "if",
+            "cond": {
+              "cond": "did",
+              "step": "did"
+            },
+            "then": [
+              {
+                "op": "chooseValue",
+                "who": {
+                  "ref": "you"
+                },
+                "what": "opponent",
+                "as": "chosenPlayer"
+              },
+              {
+                "op": "copy",
+                "what": {
+                  "ref": "event",
+                  "role": "spell"
+                },
+                "result": "spell",
+                "who": {
+                  "ref": "bound",
+                  "name": "chosenPlayer"
+                },
+                "newTargets": "may"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }

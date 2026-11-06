@@ -1,0 +1,216 @@
+[
+  {
+    "id": "sta.edhv20.group.pump.cantBeBlockedExcept",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 509.1b",
+      "CR 303.4b"
+    ],
+    "pattern": "{o:Objs} get {pt:PT} and can't be blocked except by {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": {
+            "not": "$f"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control that are enchanted get +2/+2 and can't be blocked except by creatures with defender."
+      },
+      {
+        "text": "Goblins you control get +1/+0 and can't be blocked except by creatures with flying."
+      }
+    ],
+    "counterExamples": [
+      "Goblins you control get +1/+0 and can block creatures with flying.",
+      "Goblins you control get +1/+0 until end of turn and can't be blocked except by creatures with flying.",
+      "Goblins you control get +1/+0 and can't block except by creatures with flying."
+    ]
+  },
+  {
+    "id": "eff.edhv20.pump.twoGroups",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Objs} get {pt:PT} and {o2:Objs} get {pt2:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": "$o2",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt2.p",
+              "toughness": "$pt2.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Attacking red creatures get +2/+0 and attacking white creatures get +0/+2 until end of turn."
+      },
+      {
+        "text": "Creatures you control get +1/+0 and creatures your opponents control get -1/-0 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Attacking red creatures get +2/+0 and attacking white creatures get +0/+2.",
+      "Attacking red creatures get +2/+0 and gain haste until end of turn.",
+      "Attacking red creatures get +2/+0 until end of turn and attacking white creatures get +0/+2 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv20.player.sacrificesIt.unlessPays.mv",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 107.3a",
+      "CR 303.4",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} sacrifice[s] it unless they pay {x} , where x is its mana value",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "mana": [
+          {
+            "kind": "generic",
+            "amount": 1
+          }
+        ]
+      },
+      "times": {
+        "q": "stat",
+        "stat": "manaValue",
+        "of": {
+          "ref": "attachedTo"
+        }
+      },
+      "else": [
+        {
+          "op": "sacrificeChoice",
+          "who": "$p",
+          "filter": {
+            "is": {
+              "ref": "attachedTo"
+            }
+          },
+          "count": 1
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "unless"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "At the beginning of the upkeep of enchanted creature's controller, that player sacrifices it unless they pay {X}, where X is its mana value."
+      },
+      {
+        "text": "At the beginning of the upkeep of enchanted artifact's controller, that player sacrifices it unless they pay {X}, where X is its mana value."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of the upkeep of enchanted creature's controller, that player sacrifices it unless they pay {X}.",
+      "At the beginning of the upkeep of enchanted creature's controller, that player sacrifices it if they pay {X}, where X is its mana value.",
+      "At the beginning of the upkeep of enchanted creature's controller, that player sacrifices it unless they pay {X}, where X is its power."
+    ]
+  },
+  {
+    "id": "eff.edhv20.player.discard.perKick",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.33d",
+      "CR 702.33e",
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard[s] a card for each time ( it | ~ ) was kicked",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": {
+        "q": "kickCount"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each",
+      "each time",
+      "kicked"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target player discards a card for each time it was kicked."
+      },
+      {
+        "text": "When ~ enters, each opponent discards a card for each time ~ was kicked."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target player discards a card for each creature you control.",
+      "When ~ enters, target player discards a card if it was kicked.",
+      "When ~ enters, target player discards a card at random for each time it was kicked."
+    ]
+  }
+]

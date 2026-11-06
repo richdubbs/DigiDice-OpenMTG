@@ -1,0 +1,848 @@
+[
+  {
+    "id": "eff.edhn127.youAnd.drawThenDiscardRandom",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "player",
+    "priority": 1,
+    "cr": [
+      "CR 121.1",
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 101.4",
+      "CR 608.2c"
+    ],
+    "pattern": "you and {p:Player} each draw {n:Qty} card[s] , then discard {m:Qty} card[s] at random",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$m",
+        "mode": "random"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$m",
+        "mode": "random"
+      }
+    ],
+    "consumes": [
+      "each",
+      "then",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you and target opponent each draw a card, then discard a card at random."
+      },
+      {
+        "text": "{3}, {T}: You and target player each draw two cards, then discard a card at random."
+      }
+    ],
+    "counterExamples": [
+      "You and target opponent each draw a card, then discard a card.",
+      "You and target opponent each draw a card.",
+      "You and target opponent each discard a card at random."
+    ]
+  },
+  {
+    "id": "eff.edhn127.rollPlanarDie",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 901.3",
+      "CR 901.9d",
+      "CR 706.7"
+    ],
+    "pattern": "roll the planar die",
+    "build": {
+      "op": "action",
+      "action": "rollPlanarDie",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "needs": [
+      "action:rollPlanarDie"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Roll the planar die. Activate only as a sorcery."
+      },
+      {
+        "text": "{2}, {T}: Roll the planar die."
+      }
+    ],
+    "counterExamples": [
+      "Roll the planar die twice.",
+      "Roll a d6.",
+      "Roll the planar die and draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhn127.spell.exileAsItResolves.anyGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 614.1a",
+      "CR 608.2n",
+      "CR 607.2a",
+      "CR 400.7"
+    ],
+    "pattern": "exile {o:Obj} instead of putting it into a graveyard as it resolves",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "is": "$o"
+            },
+            "from": "stack",
+            "to": "graveyard",
+            "cause": "resolve"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "exile"
+            }
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Whenever a player casts a sorcery spell from their hand, exile it instead of putting it into a graveyard as it resolves."
+      },
+      {
+        "text": "Whenever an opponent casts an instant spell, exile that spell instead of putting it into a graveyard as it resolves."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player casts an instant spell, exile it instead of putting it into your graveyard.",
+      "Whenever a player casts an instant spell, exile it as it resolves.",
+      "Exile target creature instead of putting it into a graveyard."
+    ],
+    "consumes": [
+      "instead"
+    ]
+  },
+  {
+    "id": "eff.edhn127.chooseOneOfThemAtRandom",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2a",
+      "CR 400.1"
+    ],
+    "pattern": "choose one of {o:Objs} at random",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": "$o",
+      "min": 1,
+      "max": 1,
+      "random": true,
+      "as": "chosen"
+    },
+    "examples": [
+      {
+        "text": "Whenever a player casts a sorcery spell, exile it instead of putting it into a graveyard as it resolves.\nAt the beginning of your upkeep, if there are three or more cards exiled with ~, choose one of them at random. You may cast it without paying its mana cost."
+      },
+      {
+        "text": "When ~ enters, exile the top three cards of your library.\nAt the beginning of your end step, if there are two or more cards exiled with ~, choose one of them at random. You may cast it without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Choose one of them.",
+      "Choose two of them at random.",
+      "Choose one of them at random and exile the rest."
+    ],
+    "consumes": [
+      "random"
+    ]
+  },
+  {
+    "id": "eff.edhn127.exilesTopRandomGraveyardRandomHand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "player",
+    "cr": [
+      "CR 406.1",
+      "CR 401.1",
+      "CR 404.1",
+      "CR 402.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} exiles the top card of their library , a card at random from their graveyard , and a card at random from their hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "$p",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "fromYard"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "fromHand"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "topCards",
+              "player": "$p",
+              "count": 1
+            },
+            {
+              "ref": "bound",
+              "name": "fromYard"
+            },
+            {
+              "ref": "bound",
+              "name": "fromHand"
+            }
+          ]
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "exiledThisWay"
+      }
+    ],
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "{4}, {T}: Target opponent exiles the top card of their library, a card at random from their graveyard, and a card at random from their hand. You may cast a spell from among cards exiled this way without paying its mana cost."
+      },
+      {
+        "text": "{4}, {T}: Target player exiles the top card of their library, a card at random from their graveyard, and a card at random from their hand."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles the top card of their library, a card from their graveyard, and a card from their hand.",
+      "Target opponent exiles the top card of their library and a card at random from their hand.",
+      "Target opponent exiles the top two cards of their library, a card at random from their graveyard, and a card at random from their hand."
+    ]
+  },
+  {
+    "id": "eff.edhn127.castASpellFromAmong.free",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "weak": 1,
+    "cr": [
+      "CR 608.2g",
+      "CR 118.9",
+      "CR 305.9",
+      "CR 601.2"
+    ],
+    "pattern": "you may cast a spell from among {g:Them} without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "exile"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, target opponent exiles the top card of their library, a card at random from their graveyard, and a card at random from their hand. You may cast a spell from among cards exiled this way without paying its mana cost."
+      },
+      {
+        "text": "{3}, {T}: Each opponent exiles the top card of their library. You may cast a spell from among cards exiled this way without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "You may cast a spell from among them.",
+      "You may cast two spells from among them without paying their mana costs.",
+      "You may play a card from among them without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhn127.rollTwoD20.ignoreLower",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 706.1",
+      "CR 706.6",
+      "CR 706.3a"
+    ],
+    "pattern": "roll two d20 and ignore the lower roll",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 20,
+      "count": 2,
+      "keepHighest": true
+    },
+    "consumes": [
+      "ignore",
+      "lower"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Roll two d20 and ignore the lower roll.\n1-10 | Draw a card.\n11-20 | Draw two cards."
+      },
+      {
+        "text": "When ~ enters, roll two d20 and ignore the lower roll.\n1-14 | You gain 2 life.\n15-20 | You gain 5 life."
+      }
+    ],
+    "counterExamples": [
+      "Roll two d20 and ignore the higher roll.\n1-10 | Draw a card.\n11-20 | Draw two cards.",
+      "Roll three d20 and ignore the lower roll.\n1-10 | Draw a card.\n11-20 | Draw two cards.",
+      "Roll two d20.\n1-10 | Draw a card.\n11-20 | Draw two cards."
+    ]
+  },
+  {
+    "id": "eff.edhn127.chooseAnyNumberOf",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "weak": 1,
+    "cr": [
+      "CR 608.2d",
+      "CR 700.2"
+    ],
+    "pattern": "choose any number of {f:Filter}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ]
+        }
+      },
+      "min": 0,
+      "max": "any",
+      "as": "chosen"
+    },
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Choose any number of creatures. They block this turn if able."
+      },
+      {
+        "text": "Choose any number of creatures you control. They block this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "Choose any number of target creatures.",
+      "Choose up to two creatures.",
+      "Choose any number of creatures with different powers."
+    ]
+  },
+  {
+    "id": "eff.edhn127.return.upTo.choose.bf.yours",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "weak": 1,
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "return up to {n:Qty} {f:Filter} to the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Each player sacrifices a nontoken creature of their choice. Return up to two creature cards put into graveyards this way to the battlefield under your control."
+      },
+      {
+        "text": "Destroy all creatures. Return up to three creature cards put into a graveyard this way to the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all creatures. Return two creature cards put into a graveyard this way to the battlefield under your control.",
+      "Destroy all creatures. Return up to two creature cards put into a graveyard this way to their owners' hands.",
+      "Return up to two target creature cards from your graveyard to the battlefield under your control."
+    ]
+  },
+  {
+    "id": "eff.edhn127.mayChooseA",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "subject": "none",
+    "weak": 1,
+    "cr": [
+      "CR 608.2d",
+      "CR 700.2"
+    ],
+    "pattern": "you may choose ( a | an ) {f:Filter}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ]
+        }
+      },
+      "min": 0,
+      "max": 1,
+      "as": "chosen"
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may choose a creature. This spell deals 3 damage to each creature not chosen this way."
+      },
+      {
+        "text": "You may choose an artifact. Destroy each artifact not chosen this way."
+      }
+    ],
+    "counterExamples": [
+      "Choose a creature. This spell deals 3 damage to each creature not chosen this way.",
+      "You may choose two creatures. Destroy each creature not chosen this way.",
+      "You may choose target creature. Destroy each creature not chosen this way."
+    ]
+  },
+  {
+    "id": "eff.edhn127.play.obj.durFirst.anyColor",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 601.2",
+      "CR 305.1",
+      "CR 611.2a",
+      "CR 609.4b"
+    ],
+    "pattern": "{d:Dur} , you may play {o:Obj} and you may spend mana as though it were mana of any color to cast ( it | that spell )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaColor": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, exile the top card of target opponent's library. Until end of turn, you may play that card and you may spend mana as though it were mana of any color to cast it."
+      },
+      {
+        "text": "When ~ enters, exile the top card of target player's library. Until end of turn, you may play that card and you may spend mana as though it were mana of any color to cast that spell."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, exile the top card of target opponent's library. Until end of turn, you may play that card.",
+      "At the beginning of your upkeep, exile the top card of target opponent's library. Until end of turn, you may cast that card and you may spend mana as though it were mana of any type to cast it.",
+      "At the beginning of your upkeep, exile the top card of target opponent's library. Until end of turn, you may play that card and you may spend mana as though it were mana of any color to activate it."
+    ]
+  },
+  {
+    "id": "rid.edhn127.castThisWay.ownerLosesLifeMv",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 603.7a",
+      "CR 603.7c",
+      "CR 601.2i",
+      "CR 202.3",
+      "CR 108.3"
+    ],
+    "pattern": "when you cast a spell this way , its owner loses life equal to its mana value",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "effects.0.s": "permit",
+          "effects.1": null,
+          "effects.0.onCast": null
+        },
+        "effects": [
+          {
+            "onCast": {
+              "@new": [
+                {
+                  "op": "loseLife",
+                  "who": {
+                    "ref": "ownerOf",
+                    "object": {
+                      "ref": "event",
+                      "role": "spell"
+                    }
+                  },
+                  "amount": {
+                    "q": "stat",
+                    "stat": "manaValue",
+                    "of": {
+                      "ref": "event",
+                      "role": "spell"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "when",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, exile the top card of target opponent's library. Until end of turn, you may play that card and you may spend mana as though it were mana of any color to cast it. When you cast a spell this way, its owner loses life equal to its mana value."
+      },
+      {
+        "text": "When ~ enters, exile the top card of target opponent's library. You may cast that card this turn. When you cast a spell this way, its owner loses life equal to its mana value."
+      }
+    ],
+    "counterExamples": [
+      "When you cast a spell this way, its owner loses 2 life.",
+      "When you cast a spell this way, its owner gains life equal to its mana value.",
+      "When you cast a spell this way, you lose life equal to its mana value."
+    ]
+  },
+  {
+    "id": "eff.edhn127.damageEqual.unlessTheySacrifice",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 118.12",
+      "CR 701.21a",
+      "CR 120.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage equal to {n:Qty} to {p:Player} unless they sacrifice ( a | an ) {f:Filter} of their choice",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": "$f",
+            "count": 1
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$p",
+          "amount": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ is dealt damage, choose an opponent at random. ~ deals damage equal to its power to that player unless they sacrifice a nontoken creature of their choice."
+      },
+      {
+        "text": "At the beginning of your upkeep, ~ deals damage equal to its toughness to target opponent unless they sacrifice an artifact of their choice."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ is dealt damage, choose an opponent at random. ~ deals damage equal to its power to that player.",
+      "At the beginning of your upkeep, ~ deals damage equal to its toughness to target opponent unless you sacrifice an artifact.",
+      "At the beginning of your upkeep, ~ deals damage equal to its toughness to target opponent unless they discard a card."
+    ]
+  },
+  {
+    "id": "eff.edhn127.forEachGraveyardWith.exileTargetInstantSorcery",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 404.1",
+      "CR 406.1"
+    ],
+    "pattern": "for each graveyard with an instant or sorcery card in it , exile target instant or sorcery card from that graveyard",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "object",
+          "filter": {
+            "types": [
+              "Instant",
+              "Sorcery"
+            ],
+            "zone": "graveyard",
+            "isCard": true
+          },
+          "min": 1,
+          "max": 1,
+          "perPlayer": true,
+          "eachWithOne": true,
+          "text": "target instant or sorcery card from that graveyard"
+        }
+      },
+      "to": {
+        "zone": "exile"
+      },
+      "as": "exiled"
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, for each graveyard with an instant or sorcery card in it, exile target instant or sorcery card from that graveyard. If two or more cards are exiled this way, choose one of them at random and copy it. You may cast the copy without paying its mana cost."
+      },
+      {
+        "text": "{2}, {T}: For each graveyard with an instant or sorcery card in it, exile target instant or sorcery card from that graveyard."
+      }
+    ],
+    "counterExamples": [
+      "For each graveyard with a creature card in it, exile target creature card from that graveyard.",
+      "For each graveyard, exile target instant or sorcery card from that graveyard.",
+      "For each graveyard with an instant or sorcery card in it, exile up to one target instant or sorcery card from that graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhn127.ifTwoOrMoreExiled.chooseRandomCopy",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 707.12",
+      "CR 400.7"
+    ],
+    "pattern": "if two or more cards are exiled this way , choose one of them at random and copy it",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "count",
+          "of": {
+            "ref": "bound",
+            "name": "exiled"
+          }
+        },
+        "op": ">=",
+        "right": 2
+      },
+      "then": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "is": {
+                "ref": "bound",
+                "name": "exiled"
+              },
+              "zone": "exile"
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "random": true,
+          "as": "chosenCopy"
+        },
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "chosenCopy"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "random",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, for each graveyard with an instant or sorcery card in it, exile target instant or sorcery card from that graveyard. If two or more cards are exiled this way, choose one of them at random and copy it. You may cast the copy without paying its mana cost."
+      },
+      {
+        "text": "{4}, {T}: For each graveyard with an instant or sorcery card in it, exile target instant or sorcery card from that graveyard. If two or more cards are exiled this way, choose one of them at random and copy it. You may cast the copy without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "If two or more cards are exiled this way, choose one of them and copy it.",
+      "If three or more cards are exiled this way, choose one of them at random and copy it.",
+      "If two or more cards are exiled this way, choose two of them at random and copy them."
+    ]
+  }
+]

@@ -19,6 +19,7 @@ import { charsOfObject, readingStable, type Chars } from '../rules/characteristi
 import { currentCombatNumber, makeHistoryEntry, objectFacts, type Facts } from '../rules/history';
 import { deepFreeze } from '../util/clone';
 import { isCommander } from '../statics/commander';
+import { manaValue } from '../types/mana';
 
 type Role = 'subject' | 'source' | 'object' | 'attacker' | 'blocker' | 'spell' | 'newObject';
 
@@ -72,19 +73,33 @@ export function historyEntry(s: GameState, e: SemEvent, combat: number, turn: nu
       put('to', e.data['to'] as string | undefined);
       // FAST5X E25 (CR 708.3, 603.4): face down as it entered, whatever happened to it later in the batch ("entered the battlefield face down this turn")
       if (e.data['to'] === 'battlefield') put('faceDown', e.data['faceDown'] === true);
+      // edh-top-13 (CR 701.17a, 400.7; Tato Farmer): a card put into a graveyard by a mill (the cause the mill handler names), not by another effect (rules/history.ts#putThereThisTurn)
+      if (e.data['to'] === 'graveyard') put('milled', e.data['cause'] === 'mill');
+      // edh-perms-9 (CR 608.2): the source whose resolving ability put it onto the battlefield (rules/history.ts#putOntoBattlefieldBy)
+      if (e.data['to'] === 'battlefield') put('viaSource', e.data['viaSource'] as string | undefined);
       // FAST4 T23 (CR 108.4a, 110.2): a card in a graveyard has no controller, so for an object that went from a graveyard ONTO the battlefield (whose other
       // facts are the card's, CR 603.10a) the controller fact is the one it entered under: "entered the battlefield under your control this turn" (CR 603.4)
       const live = subject !== undefined ? s.objects[subject] : undefined;
       if (e.data['to'] === 'battlefield' && e.data['from'] === 'graveyard' && live !== undefined && live.zone === 'battlefield') put('controller', live.controller);
+      // edh-next-109 (CR 110.2, 603.4; Shaile, Dean of Radiance): the player it entered the battlefield under (rules/history.ts#enteredUnderControlOfThisTurn)
+      if (e.data['to'] === 'battlefield' && live !== undefined && live.zone === 'battlefield') put('enteredController', live.controller);
       break;
     }
     case 'cast':
       primary('spell');
+      // edh-cast-12 (CR 202.3, 202.3e, 601.2i; rules/history.ts#sumHistory): the mana value of the spell as it became cast, its announced X counted (on the stack X is the chosen value)
+      {
+        const r = roleObject(s, e, 'spell');
+        if (r !== undefined) put('castManaValue', r.o.zone === 'stack' && r.o.stack?.x !== undefined ? manaValue(r.chars.manaCost, r.o.stack.x) : r.chars.manaValue);
+        // edh-next-48 (CR 107.3, 202.1; Nev): the printed mana cost of the spell as it was cast has {X} ("your first spell with {X} in its mana cost each turn", nthMatching)
+        if (r !== undefined) put('manaCostHasX', (r.chars.manaCost ?? []).some((m) => m.kind === 'variable' && m.name === 'X'));
+      }
       put('from', e.data['from'] as string | undefined);
       put('copy', bool(e.data['copy']));
       put('nth', typeof e.data['nth'] === 'number' ? e.data['nth'] : undefined); // FAST1 T4
       put('via', typeof e.data['via'] === 'string' ? e.data['via'] : undefined); // FAST5X E2: the alternative cost paid (CR 702.185c)
       put('modal', bool(e.data['modal'])); // Standard round 3, r3-trig (CR 700.2)
+      put('kicked', bool(e.data['kicked'])); // edh-c-59 (CR 702.33d): the spell was cast with a kicker cost paid (triggers/normalize.ts)
       break;
     case 'activate':
       if (bool(e.data['mana'])) return null;
@@ -93,6 +108,7 @@ export function historyEntry(s: GameState, e: SemEvent, combat: number, turn: nu
       // Standard round 3, r3-trig (CR 606.3, 702.177a): the kind of ability activated, for "if you've activated a loyalty ability this turn" (rules/history.ts)
       put('loyalty', bool(e.data['loyalty']));
       put('exhaust', bool(e.data['exhaust']));
+      put('targetsOwnCreature', bool(e.data['targetsOwnCreature'])); // edh-next-67 (CR 115.1, 602.2b): the ability targeted a creature its controller controls
       break;
     case 'attacks': {
       primary('attacker');
@@ -131,6 +147,7 @@ export function historyEntry(s: GameState, e: SemEvent, combat: number, turn: nu
       if (!toPlayer) primary('object');
       addFacts('source', 'source.');
       put('amount', typeof e.data['amount'] === 'number' ? e.data['amount'] : undefined);
+      put('excess', typeof e.data['excess'] === 'number' ? e.data['excess'] : undefined); // edh-d-38 (CR 120.10): the part of the damage that was excess damage
       put('combat', bool(e.data['combat']));
       put('toPlayer', toPlayer);
       if (toPlayer) {
@@ -144,6 +161,7 @@ export function historyEntry(s: GameState, e: SemEvent, combat: number, turn: nu
     case 'step':
       put('step', e.data['step'] as string | undefined);
       put('mainPhase', typeof e.data['mainPhase'] === 'number' ? e.data['mainPhase'] : undefined); // FAST5X E17 (CR 505.1b)
+      put('combatPhase', typeof e.data['combatPhase'] === 'number' ? e.data['combatPhase'] : undefined); // edh-d-34 (CR 500.8)
       break;
     case 'beginTurn':
       put('extra', bool(e.data['extra']));
@@ -183,12 +201,18 @@ export function historyEntry(s: GameState, e: SemEvent, combat: number, turn: nu
       put('revealed', e.data['revealed'] as string | undefined); // std-lci: an explore's revealed card (CR 701.44a)
       if (typeof e.data['won'] === 'boolean') put('won', e.data['won'] as boolean); // p2-player-rules-3: a clash's result (CR 701.30c)
       put('from', e.data['from'] as string | undefined); // Standard round 4, r4-trig (CR 305.1): the zone a land was played from
+      // edh-c-85 (CR 701.8a, 109.5): the controller of the spell or ability whose instruction destroyed the permanent (no entry fact for a destruction by a state-based action)
+      if (e.data['verb'] === 'destroy' && typeof e.data['by'] === 'string') put('by', e.data['by'] as string);
+      // edh-next-58 (CR 701.23a; Archive Trap): the zone a search searched and its owner, for "an opponent searched their library"
+      if (e.data['verb'] === 'search') { put('zone', e.data['zone'] as string | undefined); put('zoneOwner', e.data['zoneOwner'] as string | undefined); }
       break;
     case 'createToken':
       primary('newObject');
       break;
     case 'dieRoll':
       put('result', typeof e.data['result'] === 'number' ? e.data['result'] : undefined);
+      put('natural', typeof e.data['natural'] === 'number' ? e.data['natural'] : undefined); // edh-next-55 (CR 706.2): a die's highest natural result
+      put('sides', typeof e.data['sides'] === 'number' ? e.data['sides'] : undefined);
       break;
     case 'coinFlip': // cloud r3-mech (CR 705.2)
       put('won', typeof e.data['won'] === 'boolean' ? e.data['won'] : undefined);

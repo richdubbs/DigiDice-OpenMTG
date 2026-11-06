@@ -46,7 +46,7 @@
     "subject": "object",
     "examples": [{ "text": "Until end of turn, creatures you control have trample.", "expect": { "targets": [], "steps": [{ "op": "effect", "effects": [{ "s": "continuous", "affects": { "ref": "each", "filter": { "types": ["Creature"], "controller": "you" } }, "mods": [{ "layer": 6, "add": [{ "kind": "keyword", "keyword": "trample" }] }] }], "duration": { "d": "endOfTurn" } }] } }, { "text": "Until your next turn, target creature has hexproof." }],
     "counterExamples": ["Until end of turn, creatures you control have base power 3.", "Until end of turn, creatures you control don't have trample."],
-    "status": "experimental",
+    "status": "stable",
     "since": 1
   }
 ]

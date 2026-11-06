@@ -1,0 +1,338 @@
+[
+  {
+    "id": "rep.edhv45.damage.plus.sourceUnion",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 609.7"
+    ],
+    "pattern": "if {f:Filter} or {g:Filter} would deal damage to a permanent or player , it deals that much damage plus {n:Qty} to that permanent or player instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "anyOf": [
+            "$f",
+            "$g"
+          ]
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a green instant or sorcery spell you control or a green planeswalker you control would deal damage to a permanent or player, it deals that much damage plus 3 to that permanent or player instead."
+      },
+      {
+        "text": "If a Goblin you control or a green creature you control would deal damage to a permanent or player, it deals that much damage plus 1 to that permanent or player instead."
+      }
+    ],
+    "counterExamples": [
+      "If a red planeswalker you control would deal damage to a permanent or player, it deals that much damage plus 2 to that permanent or player instead.",
+      "If a red planeswalker you control or a blue artifact you control would deal damage to a permanent or player, it deals that much damage minus 2 to that permanent or player instead.",
+      "If a red planeswalker you control or a blue artifact you control would deal damage to a creature, it deals that much damage plus 2 to that permanent or player instead."
+    ]
+  },
+  {
+    "id": "cm.edhv45.self.less.twoIfs",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5"
+    ],
+    "pattern": "~ costs {a:ManaCost} less to cast if {c:Cond} and {b:ManaCost} less to cast if {d:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$a",
+            "floor": "zero",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "count",
+                  "of": "$c.of"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$b",
+            "floor": "zero",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "count",
+                  "of": "$d.of"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {1} less to cast if you control a Wizard and {1} less to cast if you control an Aura."
+      },
+      {
+        "text": "~ costs {2} less to cast if you control a Goblin and {1} less to cast if you control a land."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {1} less to cast if you control an artifact and {1} more to cast if you control an enchantment.",
+      "~ costs {1} less to cast if you control an artifact and {1} less to cast if you control an enchantment or a land and {1} less to cast if you control a Goblin."
+    ]
+  },
+  {
+    "id": "eff.edhv45.sacrifice.forEachLifeLost",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 119.3",
+      "CR 608.2h"
+    ],
+    "pattern": "sacrifice {f:Filter} for each 1 life you lost",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "count": {
+        "q": "eventAmount"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you lose life, sacrifice a permanent for each 1 life you lost."
+      },
+      {
+        "text": "Whenever you lose life, sacrifice a creature for each 1 life you lost."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you lose life, sacrifice a permanent for each 2 life you lost.",
+      "Whenever you gain life, sacrifice a permanent for each 1 life you lost.",
+      "Whenever you lose life, each opponent sacrifices a permanent for each 1 life you lost."
+    ]
+  },
+  {
+    "id": "kw.edhv45.hexproof.fromTypes",
+    "kind": "ability",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.11b",
+      "CR 702.11d",
+      "CR 205.2a"
+    ],
+    "pattern": "{h:HexFromTypes}",
+    "build": "$h",
+    "examples": [
+      {
+        "text": "Hexproof from lands, planeswalkers, and battles"
+      },
+      {
+        "text": "Hexproof from lands and planeswalkers"
+      }
+    ],
+    "counterExamples": [
+      "Hexproof from artifacts, creatures, and Goblins",
+      "Hexproof from artifacts",
+      "Hexproof from artifacts, creatures, and"
+    ]
+  },
+  {
+    "id": "rep.edhv45.destroyed.regenerate.self",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 701.19b",
+      "CR 701.19c"
+    ],
+    "pattern": "if ~ would be destroyed , regenerate it",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "destroy",
+        "object": {
+          "self": true
+        }
+      },
+      "body": {
+        "b": "regeneration"
+      }
+    },
+    "consumes": [
+      "if",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "If ~ would be destroyed, regenerate it. ~ can't attack."
+      },
+      {
+        "text": "~ can't block. If ~ would be destroyed, regenerate it."
+      }
+    ],
+    "counterExamples": [
+      "If ~ would be destroyed, regenerate it instead.",
+      "If ~ would be destroyed, regenerate target creature.",
+      "If ~ would be sacrificed, regenerate it."
+    ]
+  },
+  {
+    "id": "sta.edhv45.must.lure.either",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1c",
+      "CR 509.1b"
+    ],
+    "pattern": "all creatures able to block {a:Obj} or {b:Obj} do so",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ]
+        }
+      },
+      "mode": "mustIfAble",
+      "action": "block",
+      "other": {
+        "anyOf": [
+          {
+            "is": "$a"
+          },
+          {
+            "is": "$b"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "all",
+      "able",
+      "do so"
+    ],
+    "examples": [
+      {
+        "text": "All creatures able to block ~ or enchanted artifact do so."
+      },
+      {
+        "text": "All creatures able to block ~ or equipped creature do so."
+      }
+    ],
+    "counterExamples": [
+      "All creatures able to block ~ or enchanted creature can do so.",
+      "All creatures able to attack ~ or enchanted creature do so.",
+      "All creatures able to block ~ and enchanted creature do so."
+    ]
+  },
+  {
+    "id": "rep.edhv45.graveyard.exile.colored.anything",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 400.3",
+      "CR 701.13"
+    ],
+    "pattern": "if {f:Filter} , spell , or card not on the battlefield would be put into a graveyard , exile it instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": "$f",
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "exile"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "If a green or blue permanent, spell, or card not on the battlefield would be put into a graveyard, exile it instead."
+      },
+      {
+        "text": "If a white or blue permanent, spell, or card not on the battlefield would be put into a graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "If a black or red permanent, spell, or card not on the battlefield would be put into a graveyard, exile it instead of putting it anywhere else.",
+      "If a black or red permanent or card not on the battlefield would be put into a graveyard, exile it instead.",
+      "If a black or red permanent, spell, or card not on the battlefield would be put into a graveyard, put it on the bottom of its owner's library instead."
+    ]
+  }
+]

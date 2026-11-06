@@ -192,7 +192,7 @@
       { "text": "Draw two cards, then move all charge counters from ~ onto target artifact." }
     ],
     "counterExamples": ["Move all +1/+1 counters from ~ onto each creature you control.", "Move all but one +1/+1 counter from ~ onto target creature."],
-    "status": "experimental",
+    "status": "stable",
     "since": 1
   }
 ]

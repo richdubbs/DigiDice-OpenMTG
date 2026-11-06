@@ -1,0 +1,445 @@
+[
+  {
+    "id": "eff.edhp3.forEachOpponent.token.attacking.thatPlayerOrPlaneswalker",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 608.2f",
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a",
+      "CR 508.4",
+      "CR 702.116a"
+    ],
+    "pattern": "for each opponent , create {n:Qty} {t:TokenDesc} ( that's | that are ) tapped and attacking that player or a planeswalker they control",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n",
+          "token": "$t",
+          "tapped": true,
+          "attacking": {
+            "defender": {
+              "ref": "bound",
+              "name": "each"
+            },
+            "orPlaneswalkers": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "needs": [
+      "feature:createToken.attackingWhom"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, for each opponent, create a 1/1 white Soldier creature token that's tapped and attacking that player or a planeswalker they control."
+      },
+      {
+        "text": "When ~ enters, for each opponent, create two 2/2 black Zombie creature tokens that are tapped and attacking that player or a planeswalker they control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, for each opponent, create a 1/1 white Soldier creature token that's tapped and attacking that player.",
+      "Whenever ~ attacks, for each opponent, create a 1/1 white Soldier creature token that's tapped and attacking that player or a planeswalker you control.",
+      "Whenever ~ attacks, for each player, create a 1/1 white Soldier creature token that's tapped and attacking that player or a planeswalker they control."
+    ]
+  },
+  {
+    "id": "eff.edhp3.becomes.xx.color.subtype.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 107.3",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) x/x {c:Color} {st:Subtypes} creature",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": {
+                "q": "X"
+              },
+              "toughness": {
+                "q": "X"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{X}{G}: Until end of turn, ~ becomes an X/X green Hydra creature. It's still a land."
+      },
+      {
+        "text": "{X}{R}: Until end of turn, target land you control becomes an X/X red Elemental creature. It's still a land."
+      }
+    ],
+    "counterExamples": [
+      "{X}{G}: ~ becomes an X/X green Hydra creature. It's still a land.",
+      "{X}{G}: Until end of turn, ~ becomes an X/X green Hydra artifact creature.",
+      "{X}{G}: Until end of turn, ~ becomes an X/X green and blue Hydra creature. It's still a land."
+    ]
+  },
+  {
+    "id": "eff.edhp3.cantLoseGame.oppsCantWin.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 104.3",
+      "CR 104.2",
+      "CR 101.2",
+      "CR 611.2a"
+    ],
+    "pattern": "you can't lose the game this turn and your opponents can't win the game this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "lose"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "mode": "cant",
+          "action": "win"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "You can't lose the game this turn and your opponents can't win the game this turn."
+      },
+      {
+        "text": "Flash\nYou can't lose the game this turn and your opponents can't win the game this turn."
+      }
+    ],
+    "counterExamples": [
+      "You can't lose the game and your opponents can't win the game this turn.",
+      "You can't lose the game this turn.",
+      "You can't lose the game this turn and your opponents can't win the game."
+    ]
+  },
+  {
+    "id": "eff.edhp3.lifeFloor.damageReducesTo1",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3a",
+      "CR 614.1a",
+      "CR 119.1",
+      "CR 104.3b",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , damage that would reduce your life total to less than 1 reduces it to 1 instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "life",
+            "change": "loss",
+            "player": "you",
+            "fromDamage": true
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "set": {
+                "q": "math",
+                "op": "min",
+                "args": [
+                  {
+                    "q": "eventAmount"
+                  },
+                  {
+                    "q": "math",
+                    "op": "-",
+                    "args": [
+                      {
+                        "q": "life",
+                        "of": {
+                          "ref": "you"
+                        }
+                      },
+                      1
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "condition": {
+            "cond": "compare",
+            "left": {
+              "q": "life",
+              "of": {
+                "ref": "you"
+              }
+            },
+            "op": ">=",
+            "right": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "would",
+      "reduce",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, damage that would reduce your life total to less than 1 reduces it to 1 instead."
+      },
+      {
+        "text": "Scry 5.\nUntil end of turn, damage that would reduce your life total to less than 1 reduces it to 1 instead."
+      }
+    ],
+    "counterExamples": [
+      "Damage that would reduce your life total to less than 1 reduces it to 1 instead until end of turn.",
+      "Until end of turn, damage that would reduce your life total to less than 1 reduces it to 2 instead.",
+      "Until end of turn, damage that would reduce target player's life total to less than 1 reduces it to 1 instead."
+    ]
+  },
+  {
+    "id": "eff.edhp3.double.powerOf.objs",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.10a",
+      "CR 701.10b",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "double the power of each {f:Filter} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "stat",
+                "stat": "power",
+                "of": {
+                  "ref": "subject"
+                }
+              },
+              "toughness": 0
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "double",
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, double the power of each Dragon you control until end of turn."
+      },
+      {
+        "text": "{2}{G}: Double the power of each Wolf you control until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, double the power of each Dragon you control.",
+      "Whenever ~ attacks, double the toughness of each Dragon you control until end of turn.",
+      "Whenever ~ attacks, double the power and toughness of each Dragon you control until end of turn.",
+      "Whenever ~ attacks, double the power of target Dragon you control until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhp3.double.itsPower",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.10a",
+      "CR 701.10b",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "double its power {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "singular",
+              "text": "it"
+            }
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "stat",
+                "stat": "power",
+                "of": {
+                  "ref": "bound",
+                  "name": "",
+                  "$anaphor": {
+                    "sort": "object",
+                    "number": "singular",
+                    "text": "it"
+                  }
+                }
+              },
+              "toughness": 0
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another creature you control attacks, double its power until end of turn."
+      },
+      {
+        "text": "When ~ enters, target creature you control gets +1/+1 until end of turn. Double its power until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever equipped creature attacks, double its power.",
+      "Whenever equipped creature attacks, double its toughness until end of turn.",
+      "Whenever equipped creature attacks, double its power and toughness until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhp3.loselife.draw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life and draw[s] {m:Qty} card[s]",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$n"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Each player loses 2 life and draws a card."
+      },
+      {
+        "text": "Target player loses 3 life and draws two cards."
+      }
+    ],
+    "counterExamples": [
+      "Each player draws a card and loses 2 life.",
+      "Each player loses 2 life, then draws a card.",
+      "Each player loses 2 life and discards a card."
+    ]
+  }
+]

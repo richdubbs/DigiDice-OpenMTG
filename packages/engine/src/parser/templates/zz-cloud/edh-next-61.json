@@ -1,0 +1,558 @@
+[
+  {
+    "id": "sta.edhn61.lifeFloor.if.damageReducesTo1",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3a",
+      "CR 614.1a",
+      "CR 119.1",
+      "CR 104.3b",
+      "CR 604.1"
+    ],
+    "pattern": "if {c:Cond} , damage that would reduce your life total to less than 1 reduces it to 1 instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "life",
+        "change": "loss",
+        "player": "you",
+        "fromDamage": true
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "set": {
+            "q": "math",
+            "op": "min",
+            "args": [
+              {
+                "q": "eventAmount"
+              },
+              {
+                "q": "math",
+                "op": "-",
+                "args": [
+                  {
+                    "q": "life",
+                    "of": {
+                      "ref": "you"
+                    }
+                  },
+                  1
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "condition": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "compare",
+            "left": {
+              "q": "life",
+              "of": {
+                "ref": "you"
+              }
+            },
+            "op": ">=",
+            "right": 1
+          },
+          "$c"
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "reduce",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you control a Wizard, damage that would reduce your life total to less than 1 reduces it to 1 instead."
+      },
+      {
+        "text": "If you control a creature with flying, damage that would reduce your life total to less than 1 reduces it to 1 instead."
+      }
+    ],
+    "counterExamples": [
+      "If you control a Wizard, damage that would reduce your life total to less than 1 reduces it to 1.",
+      "If you control a Wizard, damage that would reduce your life total to less than 2 reduces it to 2 instead.",
+      "If you control a Wizard, damage that would reduce your life total to less than 1 reduces it to 1 instead until end of turn."
+    ]
+  },
+  {
+    "id": "rid.edhn61.instead.search.upToBasicsToBattlefield",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 701.23a"
+    ],
+    "pattern": "if {c:Cond} , instead search your library for up to {n:Qty} {f:Filter} cards , put them onto the battlefield , then shuffle",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "search",
+            "who": {
+              "ref": "you"
+            },
+            "zone": "library",
+            "filter": "$f",
+            "max": "$n",
+            "as": "search"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              }
+            }
+          },
+          {
+            "op": "shuffle",
+            "who": {
+              "ref": "you"
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "shuffle",
+    "consumes": [
+      "if",
+      "instead",
+      "up to",
+      "them",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for a basic land card, put that card onto the battlefield, then shuffle. If ~ was kicked, instead search your library for up to three basic land cards, put them onto the battlefield, then shuffle."
+      },
+      {
+        "text": "Search your library for a basic land card, put that card onto the battlefield, then shuffle. If you control an Elf, instead search your library for up to four basic land cards, put them onto the battlefield, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a basic land card, put that card onto the battlefield, then shuffle. If ~ was kicked, search your library for up to two basic land cards, put them onto the battlefield, then shuffle.",
+      "Draw a card. If ~ was kicked, instead search your library for up to two basic land cards, put them onto the battlefield, then shuffle."
+    ]
+  },
+  {
+    "id": "rid.edhn61.instead.only.pump.each",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 613.4c"
+    ],
+    "pattern": "if {c:Cond} , instead only {o:Objs} get {pt:PT} {d:Dur}",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": "$pt.p",
+                    "toughness": "$pt.t"
+                  }
+                ]
+              }
+            ]
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "if",
+      "instead",
+      "only"
+    ],
+    "examples": [
+      {
+        "text": "Creatures get -2/-2 until end of turn. If ~ was kicked, instead only creatures your opponents control get -2/-2 until end of turn."
+      },
+      {
+        "text": "Creatures get -1/-1 until end of turn. If you control an Elf, instead only creatures with flying get -1/-1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Creatures get -2/-2 until end of turn. If ~ was kicked, creatures your opponents control get -2/-2 until end of turn.",
+      "Draw a card. If ~ was kicked, instead only creatures your opponents control get -2/-2 until end of turn."
+    ]
+  },
+  {
+    "id": "rep.edhn61.explore.again",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 614.6",
+      "CR 701.44a"
+    ],
+    "pattern": "if ( a | an ) {f:Filter} would explore , instead it explores , then it explores again",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "explore",
+        "object": "$f"
+      },
+      "body": {
+        "b": "insteadThen",
+        "do": [
+          {
+            "op": "action",
+            "action": "explore",
+            "subject": {
+              "ref": "event",
+              "role": "subject"
+            },
+            "who": {
+              "ref": "controllerOf",
+              "object": {
+                "ref": "event",
+                "role": "subject"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "then",
+      "again"
+    ],
+    "examples": [
+      {
+        "text": "If a Scout you control would explore, instead it explores, then it explores again."
+      },
+      {
+        "text": "If an Elf you control would explore, instead it explores, then it explores again."
+      }
+    ],
+    "counterExamples": [
+      "If a Scout you control would explore, instead it explores, then it explores twice.",
+      "If a Scout you control would connive, instead it connives, then it connives again.",
+      "If a Scout you control would explore, it explores, then it explores again."
+    ]
+  },
+  {
+    "id": "eff.edhn61.tokens.opponent.createdUnderYou.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 614.1a",
+      "CR 111.2",
+      "CR 611.2a"
+    ],
+    "pattern": "each token that would be created under an opponent 's control this turn is created under your control instead",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "createToken",
+            "player": "opponent"
+          },
+          "body": {
+            "b": "modify",
+            "to": {
+              "ref": "you"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "would",
+      "instead",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Each token that would be created under an opponent's control this turn is created under your control instead."
+      },
+      {
+        "text": "Scry 2. Each token that would be created under an opponent's control this turn is created under your control instead."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Each token that would be created under an opponent's control is created under your control instead.",
+      "Draw a card. Each token that would be created under your control this turn is created under an opponent's control instead.",
+      "Draw a card. Each creature that would be created under an opponent's control this turn is created under your control instead."
+    ]
+  },
+  {
+    "id": "eff.edhn61.creatures.opponent.enterUnderYou.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.12",
+      "CR 110.2",
+      "CR 611.2a"
+    ],
+    "pattern": "if a creature would enter the battlefield under an opponent 's control this turn , it enters under your control instead",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "opponent"
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. If a creature would enter the battlefield under an opponent's control this turn, it enters under your control instead."
+      },
+      {
+        "text": "Scry 2. If a creature would enter the battlefield under an opponent's control this turn, it enters under your control instead."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. If a creature would enter the battlefield under an opponent's control, it enters under your control instead.",
+      "Draw a card. If a creature would enter the battlefield under your control this turn, it enters under an opponent's control instead.",
+      "Draw a card. If an artifact would enter the battlefield under an opponent's control this turn, it enters under your control instead."
+    ]
+  },
+  {
+    "id": "rep.edhn61.dies.insteadExileAndCountersEqualPower",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 700.4",
+      "CR 122.1",
+      "CR 113.7a"
+    ],
+    "pattern": "if {f:Filter} would die , instead exile it and put a number of {k:CounterKind} counters equal to that creature 's power on ~",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": "$f",
+        "from": "battlefield",
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "event",
+              "role": "subject"
+            },
+            "to": {
+              "zone": "exile"
+            }
+          },
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "$k",
+            "count": {
+              "q": "stat",
+              "stat": "power",
+              "of": {
+                "ref": "event",
+                "role": "subject"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "a number of"
+    ],
+    "examples": [
+      {
+        "text": "If a nontoken creature an opponent controls would die, instead exile it and put a number of +1/+1 counters equal to that creature's power on ~."
+      },
+      {
+        "text": "If an Elf you control would die, instead exile it and put a number of +1/+1 counters equal to that creature's power on ~."
+      }
+    ],
+    "counterExamples": [
+      "If a creature an opponent controls would die, exile it and put a number of +1/+1 counters equal to that creature's power on ~.",
+      "If a creature an opponent controls would die, instead exile it and put a number of +1/+1 counters equal to that creature's toughness on ~.",
+      "If a creature an opponent controls would die, instead exile it and put a number of +1/+1 counters equal to that creature's power on target creature."
+    ]
+  },
+  {
+    "id": "rep.edhn61.loseGame.insteadShuffleAllIntoLibrary",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 104.3",
+      "CR 701.24a",
+      "CR 119.5"
+    ],
+    "pattern": "if you would lose the game , instead shuffle your hand , your graveyard , and all permanents you own into your library , then draw {n:Qty} cards and your life total becomes {m:Qty}",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "loseGame",
+        "player": "you"
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "each",
+              "filter": {
+                "zone": [
+                  "hand",
+                  "graveyard",
+                  "battlefield"
+                ],
+                "owner": "you"
+              }
+            },
+            "to": {
+              "zone": "library",
+              "owner": {
+                "ref": "you"
+              }
+            }
+          },
+          {
+            "op": "shuffle",
+            "who": {
+              "ref": "you"
+            }
+          },
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": "$n"
+          },
+          {
+            "op": "setLife",
+            "who": {
+              "ref": "you"
+            },
+            "value": "$m"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "all",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "If you would lose the game, instead shuffle your hand, your graveyard, and all permanents you own into your library, then draw five cards and your life total becomes 10."
+      },
+      {
+        "text": "If you would lose the game, instead shuffle your hand, your graveyard, and all permanents you own into your library, then draw three cards and your life total becomes 15."
+      }
+    ],
+    "counterExamples": [
+      "If you would lose the game, shuffle your hand, your graveyard, and all permanents you own into your library, then draw seven cards and your life total becomes 20.",
+      "If an opponent would lose the game, instead shuffle your hand, your graveyard, and all permanents you own into your library, then draw seven cards and your life total becomes 20.",
+      "If you would lose the game, instead shuffle your hand and your graveyard into your library, then draw seven cards and your life total becomes 20."
+    ]
+  }
+]

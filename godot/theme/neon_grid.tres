@@ -1,0 +1,178 @@
+[gd_resource type="Theme" load_steps=11 format=3]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+content_margin_left = 10.0
+content_margin_top = 8.0
+content_margin_right = 10.0
+content_margin_bottom = 8.0
+bg_color = Color(0.0196078, 0.0431373, 0.0941176, 0.86)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.121569, 0.721569, 1, 0.45)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0.121569, 0.721569, 1, 0.15)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.0352941, 0.0705882, 0.152941, 0.92)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 3
+border_color = Color(0.121569, 0.721569, 1, 0.7)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0.121569, 0.721569, 1, 0.2)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hover"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.0588235, 0.137255, 0.25098, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 3
+border_color = Color(0.121569, 0.721569, 1, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0.121569, 0.721569, 1, 0.4)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pressed"]
+content_margin_left = 14.0
+content_margin_top = 7.0
+content_margin_right = 14.0
+content_margin_bottom = 5.0
+bg_color = Color(0.0980392, 0.0352941, 0.180392, 0.95)
+border_width_left = 1
+border_width_top = 2
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.960784, 0, 0.960784, 0.9)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0.960784, 0, 0.960784, 0.3)
+shadow_size = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_disabled"]
+content_margin_left = 14.0
+content_margin_top = 6.0
+content_margin_right = 14.0
+content_margin_bottom = 6.0
+bg_color = Color(0.0352941, 0.0470588, 0.0784314, 0.7)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.34, 0.42, 0.5)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_focus"]
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.960784, 0, 0.960784, 0.85)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+expand_margin_left = 2.0
+expand_margin_top = 2.0
+expand_margin_right = 2.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_field"]
+content_margin_left = 8.0
+content_margin_top = 4.0
+content_margin_right = 8.0
+content_margin_bottom = 4.0
+bg_color = Color(0.0117647, 0.0235294, 0.0588235, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.121569, 0.721569, 1, 0.5)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_bg"]
+bg_color = Color(0.0117647, 0.0235294, 0.0588235, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.121569, 0.721569, 1, 0.5)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bar_fill"]
+bg_color = Color(0.121569, 0.721569, 1, 0.9)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+shadow_color = Color(0.121569, 0.721569, 1, 0.4)
+shadow_size = 4
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_none"]
+
+[resource]
+default_font_size = 16
+Button/colors/font_color = Color(0.909804, 0.909804, 0.941176, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(1, 0.85, 1, 1)
+Button/colors/font_disabled_color = Color(0.5, 0.53, 0.6, 1)
+Button/colors/font_focus_color = Color(1, 1, 1, 1)
+Button/styles/normal = SubResource("StyleBoxFlat_button")
+Button/styles/hover = SubResource("StyleBoxFlat_hover")
+Button/styles/pressed = SubResource("StyleBoxFlat_pressed")
+Button/styles/disabled = SubResource("StyleBoxFlat_disabled")
+Button/styles/focus = SubResource("StyleBoxFlat_focus")
+Label/colors/font_color = Color(0.909804, 0.909804, 0.941176, 1)
+RichTextLabel/colors/default_color = Color(0.909804, 0.909804, 0.941176, 1)
+RichTextLabel/styles/normal = SubResource("StyleBoxEmpty_none")
+LineEdit/styles/normal = SubResource("StyleBoxFlat_field")
+LineEdit/styles/focus = SubResource("StyleBoxFlat_focus")
+Panel/styles/panel = SubResource("StyleBoxFlat_panel")
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_panel")
+PopupMenu/styles/panel = SubResource("StyleBoxFlat_panel")
+PopupPanel/styles/panel = SubResource("StyleBoxFlat_panel")
+TooltipPanel/styles/panel = SubResource("StyleBoxFlat_panel")
+ItemList/styles/panel = SubResource("StyleBoxFlat_field")
+ProgressBar/styles/background = SubResource("StyleBoxFlat_bar_bg")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_bar_fill")
+metadata/neon = Color(0.121569, 0.721569, 1, 1)
+metadata/neon2 = Color(0.960784, 0, 0.960784, 1)
+metadata/presets = {
+"DigiDice": [Color(0.121569, 0.721569, 1, 1), Color(0.960784, 0, 0.960784, 1)],
+"Ember": [Color(1, 0.478431, 0.121569, 1), Color(1, 0.168627, 0.290196, 1)],
+"Synthwave": [Color(1, 0.309804, 0.847059, 1), Color(1, 0.690196, 0, 1)],
+"Toxic": [Color(0.223529, 1, 0.478431, 1), Color(0, 0.882353, 1, 1)]
+}

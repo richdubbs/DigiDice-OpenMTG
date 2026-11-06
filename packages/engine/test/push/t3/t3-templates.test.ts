@@ -53,7 +53,11 @@ describe('T3 template file (design 6.3, 6.9; CONTRIBUTING "Adding a template")',
     // T3 review: these were promoted without that evidence and are experimental again; rst.each.blockonly (2 matches) starts experimental
     // FAST5 PROMO1 promoted eff.discard.hand, eff.piles.handgrave, rid.mana.instantsorcery, eff.return.bf.owner.tapped and eff.return.bf.attacking with three
     // hand-verified golden cards each (test/m5/golden/cards/fast5-promo1-review.json, checked in test/fast5/promo1); the rest have fewer than three cards
-    const HELD = ['eff.put.bf.owner', 'eff.put.lib.bottom.anyorder', 'eff.damage.foreach', 'eff.damage.evenly.down', 'eff.shuffle.player',
+    // eff.put.bf.owner: edh-misc-4 (Commander effort) made it stable on Kenrith and Bilbo (6.9 narrow wording, edh-misc-1-review.json; owner's standing rule 2026-10-27)
+    // edh-misc-5 made eff.put.lib.bottom.anyorder (Bow of Nylea, Petals of Insight) and eff.damage.evenly.down (Fireball, Dwarven Catapult) stable (6.9 narrow wordings)
+    // eff.shuffle.player: edh-c-110 made it stable on Soldier of Fortune and Boggart Forager (6.9 narrow wording, t3-review.json, edh-c-110-review.json)
+    // edh-d-11 made eff.damage.foreach stable on Lotleth Giant (Soulhunter Rakshasa, outside the top 20,000, is full too but not evidence) (6.9 narrow wording, edh-d-11-review.json; owner's standing rule 2026-10-27)
+    const HELD = [
       'rid.mana.artifact', 'rid.mana.chosentype'];
     // rst.each.blockonly started experimental (2 matches, never promoted before); p2-promote-2 made it stable on Dense Canopy (6.9 narrow wording, t3-review.json)
     for (const id of HELD) expect(TEMPLATE_SET.find((x) => x.id === id)?.status, id).toBe('experimental');

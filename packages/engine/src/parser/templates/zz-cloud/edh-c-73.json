@@ -1,0 +1,367 @@
+[
+  {
+    "id": "eff.edhv73.discard.equalToDamage",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard[s] cards equal to the damage",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": {
+        "q": "eventAmount"
+      }
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player discards cards equal to the damage."
+      },
+      {
+        "text": "Whenever ~ deals damage to an opponent, that player discards cards equal to the damage."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, that player discards cards equal to the damage dealt this turn.",
+      "Whenever ~ deals combat damage to a player, that player discards cards equal to the damage at random."
+    ]
+  },
+  {
+    "id": "eff.edhv73.draw.difference.ifFewerDiscarded",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "if {c:FewerDiscarded} , {p:Player} draw[s] cards equal to the difference",
+    "build": {
+      "op": "draw",
+      "who": "$p",
+      "count": {
+        "q": "math",
+        "op": "-",
+        "args": [
+          "$c.right",
+          "$c.left"
+        ]
+      },
+      "guard": "$c"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player discards three cards. If fewer than three cards were discarded this way, you draw cards equal to the difference."
+      },
+      {
+        "text": "Target opponent discards four cards. If fewer than four cards were discarded this way, you draw cards equal to the difference."
+      }
+    ],
+    "counterExamples": [
+      "Target player discards three cards. If fewer than three cards were discarded this way, you draw a card.",
+      "Target player discards three cards. If fewer than three cards were discarded this turn, you draw cards equal to the difference."
+    ],
+    "consumes": [
+      "if"
+    ]
+  },
+  {
+    "id": "eff.edhv73.dig.put.hand.rest.graveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 404.1",
+      "CR 609.3"
+    ],
+    "pattern": "put ( a | an ) {f:Filter} card from among {g:Seen} into your hand and {r:Rest} into your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Reveal the top five cards of your library. Put a land card from among them into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top three cards of your library. Put an artifact card from among them into your hand and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top five cards of your library. Put a land card from among them into your hand and the rest on the bottom of your library in a random order.",
+      "Reveal the top five cards of your library. You may put a land card from among them into your hand and the rest into your graveyard.",
+      "Reveal the top five cards of your library. Put two land cards from among them into your hand and the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "cm.edhv73.spells.more.forEach.itsController",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 109.4",
+      "CR 604.1"
+    ],
+    "pattern": "each {f:Filter} spell costs {m:ManaCost} more to cast for each {g:Filter} its controller controls",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "any"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m",
+            "times": {
+              "q": "casterControlledCount",
+              "filter": "$g"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each creature spell costs {2} more to cast for each creature its controller controls."
+      },
+      {
+        "text": "Each enchantment spell costs {1} more to cast for each enchantment its controller controls."
+      }
+    ],
+    "counterExamples": [
+      "Each creature spell costs {2} less to cast for each creature its controller controls.",
+      "Each creature spell costs {2} more to cast for each creature you control.",
+      "Each creature spell costs {2} more to cast."
+    ]
+  },
+  {
+    "id": "sta.edhv73.enchanted.isEnchantmentOnly",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 303.4"
+    ],
+    "pattern": "enchanted permanent is an enchantment and loses all other card types",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Enchantment"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchanted permanent is an enchantment and loses all other card types."
+      },
+      {
+        "text": "Enchanted permanent is an enchantment and loses all other card types. (It keeps its abilities.)"
+      }
+    ],
+    "counterExamples": [
+      "Enchanted permanent is an enchantment in addition to its other types.",
+      "Enchanted creature is an enchantment and loses all other card types."
+    ],
+    "consumes": [
+      "all",
+      "other"
+    ]
+  },
+  {
+    "id": "eff.edhv73.token.nextUpkeep.whereXThen",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 503.1",
+      "CR 111.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "create x 1/1 {s:Subtypes} creature tokens that are red , green , and white at the beginning of your next upkeep , where x is {q:Qty} at that time",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "upkeep",
+        "whose": "you",
+        "next": true
+      },
+      "do": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$q",
+          "token": {
+            "colors": [
+              "W",
+              "R",
+              "G"
+            ],
+            "types": [
+              "Creature"
+            ],
+            "subtypes": "$s",
+            "power": 1,
+            "toughness": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature enters, create X 1/1 Goblin creature tokens that are red, green, and white at the beginning of your next upkeep, where X is the number of creatures you control at that time."
+      },
+      {
+        "text": "When this creature enters, create X 1/1 Elf creature tokens that are red, green, and white at the beginning of your next upkeep, where X is the number of lands you control at that time."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, create X 1/1 Goblin creature tokens that are red, green, and white at the beginning of your next upkeep, where X is the number of creatures you control.",
+      "When this creature enters, create X 1/1 Goblin creature tokens that are red and green at the beginning of your next upkeep, where X is the number of creatures you control at that time.",
+      "When this creature enters, create X 1/1 Goblin creature tokens that are red, green, and white, where X is the number of creatures you control at that time."
+    ],
+    "consumes": [
+      "next"
+    ]
+  },
+  {
+    "id": "eff.edhv73.damage.targetAndOthersSharingColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 120.2b",
+      "CR 105.2",
+      "CR 608.2c",
+      "CR 702.1"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {t:Obj} and each other creature that shares a color with {w:ItNotSource}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$t",
+      "amount": "$n",
+      "also": [
+        {
+          "to": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "sharesWith": {
+                "with": "$w",
+                "quality": "color"
+              },
+              "not": {
+                "is": "$t"
+              }
+            }
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each other",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{T}: ~ deals 1 damage to target creature and each other creature that shares a color with it."
+      },
+      {
+        "text": "{2}{R}: ~ deals 2 damage to target creature and each other creature that shares a color with it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: ~ deals 1 damage to target creature and each creature that shares a color with it.",
+      "{T}: ~ deals 1 damage to target creature and each other creature that shares a creature type with it.",
+      "{T}: ~ deals 1 damage to target creature and each other creature you control that shares a color with it."
+    ],
+    "priority": 1
+  }
+]

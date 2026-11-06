@@ -1,0 +1,595 @@
+[
+  {
+    "id": "eff.edhd85.dur.gains.ifCond.andIfCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 611.2c"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gains {a:Abilities} if {c:Cond} and {b:Abilities} if {e:Cond}",
+    "build": [
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 6,
+                "add": "$a"
+              }
+            ]
+          }
+        ],
+        "guard": "$c"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 6,
+                "add": "$b"
+              }
+            ]
+          }
+        ],
+        "guard": "$e"
+      }
+    ],
+    "subject": "object",
+    "consumes": [
+      "if",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature gains flying if you control a Bird and vigilance if you control a Knight."
+      },
+      {
+        "text": "Return target creature card from your graveyard to the battlefield. Until your next turn, it gains haste if you control a Goblin and menace if you control an Orc."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature gains flying if you control a Bird or vigilance if you control a Knight.",
+      "Until end of turn, target creature gains flying unless you control a Bird and vigilance unless you control a Knight.",
+      "Until end of turn, target creature loses flying if you control a Bird and vigilance if you control a Knight."
+    ]
+  },
+  {
+    "id": "rep.edhd85.dies.insteadExile.putCounterOnIt",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 122.1",
+      "CR 700.4",
+      "CR 400.7"
+    ],
+    "pattern": "if {f:Filter} would die , instead exile it and put ( a | an ) {k:CounterKind} counter on it",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": "$f",
+        "from": "battlefield",
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "exile"
+        },
+        "then": {
+          "as": "exiledCard",
+          "do": [
+            {
+              "op": "putCounters",
+              "on": {
+                "ref": "bound",
+                "name": "exiledCard"
+              },
+              "kind": "$k",
+              "count": 1
+            }
+          ]
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "If a creature an opponent controls would die, instead exile it and put a time counter on it."
+      },
+      {
+        "text": "If a nontoken creature you control would die, instead exile it and put a stun counter on it."
+      }
+    ],
+    "counterExamples": [
+      "If a creature an opponent controls would die, instead exile it and put two time counters on it.",
+      "If a creature an opponent controls would die, exile it and put a time counter on it.",
+      "If a creature an opponent controls would die, instead exile it and put a time counter on ~."
+    ],
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ]
+  },
+  {
+    "id": "eff.edhd85.dur.lead.grant.andItCantBeBlocked",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gains {a:Abilities} and it can't be blocked this turn",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Until end of turn, target creature gains \"Whenever this creature attacks, you gain 1 life\" and it can't be blocked this turn."
+      },
+      {
+        "text": "{1}{U}, {T}: Until end of turn, target creature you control gains flying and it can't be blocked this turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Until end of turn, target creature gains flying and it can't block this turn.",
+      "{2}: Until end of turn, target creature gains flying and it can't be blocked.",
+      "{2}: Until end of turn, target creature loses flying and it can't be blocked this turn."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhd85.eachPlayer.draws.damageToSelfBySourcesTheyControlled",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 121.1",
+      "CR 603.10a",
+      "CR 608.2h"
+    ],
+    "pattern": "each player draws cards equal to the amount of damage dealt to ~ this turn by sources they controlled",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "count": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "damage",
+          "source": {
+            "controller": {
+              "ref": "iterating"
+            }
+          },
+          "recipient": {
+            "object": {
+              "is": {
+                "ref": "self"
+              }
+            }
+          }
+        },
+        "scope": "turn",
+        "sum": "amount"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ dies, each player draws cards equal to the amount of damage dealt to ~ this turn by sources they controlled."
+      },
+      {
+        "text": "At the beginning of your end step, each player draws cards equal to the amount of damage dealt to ~ this turn by sources they controlled."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, each player draws cards equal to the amount of damage dealt to ~ this turn by sources you controlled.",
+      "When ~ dies, each player draws cards equal to the amount of damage dealt to ~ this turn.",
+      "When ~ dies, each opponent draws cards equal to the amount of damage dealt to ~ this turn by sources they controlled."
+    ],
+    "consumes": [
+      "each",
+      "they"
+    ]
+  },
+  {
+    "id": "eff.edhd85.return.bf.underTheirControl.withCounter",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 122.6",
+      "CR 400.7",
+      "CR 404.1",
+      "CR 614.1c"
+    ],
+    "pattern": "return {o:Obj} to the battlefield under their control with ( a | an ) {k:CounterKind} counter on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner",
+        "counters": [
+          {
+            "kind": "$k",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "their"
+    ],
+    "examples": [
+      {
+        "text": "Return target creature card from an opponent's graveyard to the battlefield under their control with a stun counter on it."
+      },
+      {
+        "text": "Return target artifact card from an opponent's graveyard to the battlefield under their control with a time counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from an opponent's graveyard to the battlefield under your control with a stun counter on it.",
+      "Return target creature card from an opponent's graveyard to the battlefield under their control with two stun counters on it.",
+      "Return target creature card from an opponent's graveyard to the battlefield under their control."
+    ]
+  },
+  {
+    "id": "eff.edhd85.dur.isGoaded.cantAttackYouOrYours.cantBlockYours",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.15a",
+      "CR 701.15b",
+      "CR 506.2",
+      "CR 508.1c",
+      "CR 509.1b",
+      "CR 611.2a",
+      "CR 611.2b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} is goaded , can't attack you or a permanent you control , and can't block creatures you control",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack",
+          "goad": true
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "attack",
+          "other": {
+            "controller": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "block",
+          "other": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Until your next turn, target creature an opponent controls is goaded, can't attack you or a permanent you control, and can't block creatures you control."
+      },
+      {
+        "text": "Gain control of target creature until end of turn. Until your next turn, that creature is goaded, can't attack you or a permanent you control, and can't block creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, target creature is goaded, can't attack you or a permanent you control, and can block creatures you control.",
+      "Until your next turn, target creature is goaded and can't attack you or a permanent you control.",
+      "Until your next turn, target creature isn't goaded, can't attack you or a permanent you control, and can't block creatures you control."
+    ]
+  },
+  {
+    "id": "eff.edhd85.they.get.additional",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:They} get an additional {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Creatures you control get +1/+0 until end of turn. If you control a Wizard, untap those creatures and they get an additional +1/+1 until end of turn."
+      },
+      {
+        "text": "Attacking creatures you control get +1/+0 until end of turn. Untap those creatures and they get an additional +0/+3 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+0 until end of turn. Untap those creatures and they get an additional counter until end of turn.",
+      "Creatures you control get +1/+0 until end of turn. Untap those creatures and they lose an additional +1/+1 until end of turn."
+    ],
+    "consumes": [
+      "additional"
+    ]
+  },
+  {
+    "id": "sta.edhd85.self.attacksMostLifeOpponent.unlessYouControlNamed",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 119.1",
+      "CR 102.3",
+      "CR 201.2",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "~ attacks an opponent with the most life among your opponents each combat if able unless you control a creature named {n:Name}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "mustIfAble",
+          "action": "attack",
+          "otherPlayer": {
+            "ref": "mostLife",
+            "who": "opponent"
+          }
+        }
+      ],
+      "condition": {
+        "cond": "not",
+        "of": {
+          "cond": "exists",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you",
+              "name": "$n"
+            }
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "unless",
+      "if",
+      "if able",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ attacks an opponent with the most life among your opponents each combat if able unless you control a creature named Llanowar Elves."
+      },
+      {
+        "text": "~ attacks an opponent with the most life among your opponents each combat if able unless you control a creature named Grizzly Bears."
+      }
+    ],
+    "counterExamples": [
+      "~ attacks an opponent with the most life among your opponents each combat if able.",
+      "~ attacks an opponent with the least life among your opponents each combat if able unless you control a creature named Llanowar Elves.",
+      "~ attacks an opponent with the most life among your opponents each combat if able unless you control an artifact named Sol Ring."
+    ]
+  },
+  {
+    "id": "eff.edhd85.mayExileAnyNumber.fourCardTypes.ifDo.putFromAmongWithCounter",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.2a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 122.6",
+      "CR 614.1c"
+    ],
+    "pattern": "you may exile any number of cards from your graveyard with four or more card types among them . if you do , put ( a | an ) {f:Filter} card from among them onto the battlefield with ( a | an ) {k:CounterKind} counter on it",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "isCard": true,
+            "zone": "graveyard",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "exileSet",
+        "cardTypesAtLeast": 4
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exileSet"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "exiledCards"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "did",
+          "step": "exiledCards"
+        },
+        "then": [
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "you"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "anyOf": [
+                  "$f"
+                ],
+                "is": {
+                  "ref": "bound",
+                  "name": "exiledCards"
+                },
+                "zone": "exile"
+              }
+            },
+            "min": 1,
+            "max": 1,
+            "as": "chosenCard"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "chosenCard"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              },
+              "counters": [
+                {
+                  "kind": "$k",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "any number",
+      "if",
+      "them",
+      "it"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may exile any number of cards from your graveyard with four or more card types among them. If you do, put a creature card from among them onto the battlefield with a +1/+1 counter on it."
+      },
+      {
+        "text": "Whenever ~ attacks, you may exile any number of cards from your graveyard with four or more card types among them. If you do, put an artifact card from among them onto the battlefield with a shield counter on it."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you may exile any number of cards from your graveyard with three or more card types among them. If you do, put a creature card from among them onto the battlefield with a +1/+1 counter on it.",
+      "At the beginning of your upkeep, you may exile any number of cards from your graveyard with four or more card types among them. If you do, put a creature card from among them into your hand.",
+      "At the beginning of your upkeep, you may exile any number of cards from your graveyard with four or more card types among them. If you do, put a creature card from among them onto the battlefield with two +1/+1 counters on it."
+    ]
+  }
+]

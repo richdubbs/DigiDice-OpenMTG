@@ -12,5 +12,47 @@
   ],
   "reminder": "Whenever this creature attacks and isn't blocked, it gets +{n}/+0 until end of turn.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks and isn't blocked, it gets +{n}/+0 until end of turn.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacksUnblocked",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "effect",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": "$amount",
+                    "toughness": 0
+                  }
+                ]
+              }
+            ],
+            "duration": {
+              "d": "endOfTurn"
+            }
+          }
+        ]
+      }
+    }
+  ]
 }

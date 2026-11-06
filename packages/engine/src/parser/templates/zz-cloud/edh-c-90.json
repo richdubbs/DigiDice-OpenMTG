@@ -1,0 +1,374 @@
+[
+  {
+    "id": "eff.edhv90.becomes.pt.subtype.artifactCreature.thatsStillLand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature that's still a land",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "{6}: ~ becomes a 3/3 Elemental artifact creature that's still a land."
+      },
+      {
+        "text": "{4}: ~ becomes a 2/2 Golem artifact creature that's still a land."
+      }
+    ],
+    "counterExamples": [
+      "{6}: ~ becomes a 3/3 Elemental artifact creature that's a land.",
+      "{6}: ~ becomes a 3/3 Elemental artifact creature.",
+      "{6}: ~ becomes a 3/3 Elemental artifact creature that's still a land until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv90.becomes.pt.color.subtype.creature.thatsStillPlaneswalker",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 302.6",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} creature that's still a planeswalker",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "still",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "+2: Until end of turn, ~ becomes a 5/5 white Soldier creature that's still a planeswalker."
+      },
+      {
+        "text": "+1: Until end of turn, ~ becomes a 4/4 red Dragon creature that's still a planeswalker."
+      }
+    ],
+    "counterExamples": [
+      "+2: ~ becomes a 5/5 white Soldier creature that's still a planeswalker.",
+      "+2: Until end of turn, ~ becomes a 5/5 white Soldier creature that's a planeswalker.",
+      "+2: Until end of turn, ~ becomes a 5/5 white Soldier creature that's still a land."
+    ]
+  },
+  {
+    "id": "eff.edhv90.becomes.pt.subtype.artifactCreature.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, target noncreature artifact you control becomes a 6/6 Golem Rogue artifact creature in addition to its other types."
+      },
+      {
+        "text": "{2}: Target artifact you control becomes a 4/4 Golem artifact creature in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Target artifact you control becomes a 4/4 Golem artifact creature.",
+      "{2}: Target artifact you control becomes a 4/4 Golem artifact creature in addition to its other types until end of turn.",
+      "{2}: Target artifact you control becomes a 4/4 Golem creature in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.edhv90.may.have.become.artifactCreature.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 301.7b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {o:Obj} become ( a | an ) artifact creature {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 4,
+                  "types": {
+                    "add": [
+                      "Artifact",
+                      "Creature"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, you may have ~ become an artifact creature until end of turn."
+      },
+      {
+        "text": "At the beginning of combat on your turn, you may have target Vehicle you control become an artifact creature until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a noncreature spell, you may have ~ become an artifact creature.",
+      "Whenever you cast a noncreature spell, you may have ~ become a creature until end of turn.",
+      "Whenever you cast a noncreature spell, have ~ become an artifact creature until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv90.you.exile.objs",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.2",
+      "CR 701.13a",
+      "CR 608.2c"
+    ],
+    "pattern": "you exile {o:Objs}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Each player shuffles their hand and graveyard into their library. You exile the top ten cards of your library."
+      },
+      {
+        "text": "Target player mills two cards. You exile target creature card from a graveyard."
+      }
+    ],
+    "counterExamples": [
+      "You exile the top ten cards of your library face down.",
+      "You exile the top ten cards of your library until end of turn.",
+      "Each opponent exiles the top ten cards of your library."
+    ]
+  },
+  {
+    "id": "eff.edhv90.eachPlayer.draws.upTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 608.2d",
+      "CR 101.4"
+    ],
+    "pattern": "each player draws up to {n:Qty} card[s]",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "count": "$n",
+      "upTo": true
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Each player shuffles their hand and graveyard into their library. Then each player draws up to seven cards."
+      },
+      {
+        "text": "Each player draws up to three cards."
+      }
+    ],
+    "counterExamples": [
+      "Target player draws up to three cards.",
+      "Each opponent draws up to three cards.",
+      "Each player draws up to three cards or fewer."
+    ],
+    "consumes": [
+      "each",
+      "up to"
+    ]
+  },
+  {
+    "id": "eff.edhv90.obj.attacksPlayer.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 508.1d",
+      "CR 508.1b",
+      "CR 611.2a",
+      "CR 702.141a"
+    ],
+    "pattern": "{o:Obj} attacks {p:Player} this turn if able",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack",
+          "otherPlayer": "$p"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "{1}{U}, {T}: Target creature attacks target opponent this turn if able."
+      },
+      {
+        "text": "Target creature an opponent controls attacks target player this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "{U}, {T}: Target creature attacks target opponent each combat if able.",
+      "{U}, {T}: Target creature attacks target opponent this turn.",
+      "{U}, {T}: Target creature blocks target opponent this turn if able."
+    ],
+    "consumes": [
+      "if",
+      "if able"
+    ]
+  }
+]

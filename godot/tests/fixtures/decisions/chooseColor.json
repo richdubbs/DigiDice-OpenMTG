@@ -1,0 +1,13 @@
+{
+  "id": "d7",
+  "player": "p1",
+  "prompt": "Choose a color of mana to add.",
+  "rules": [
+    "CR 106.1"
+  ],
+  "kind": "chooseColor",
+  "options": [
+    "R",
+    "G"
+  ]
+}

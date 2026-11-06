@@ -1,0 +1,7 @@
+# edh-zones-7 (Commander effort, lane edh-zones; test/cloud/edh-zones-7, golden edh-zones-7-review.json): exile with a counter instead of a graveyard and play it free, a card from among them in the hand when the land is not put, shuffle this card in from the graveyard, you have N or more cards in your graveyard, put a linked exiled card onto the battlefield, the defending player exiles two permanents
+Dauthi Voidwalker
+Planar Genesis
+Kogla and Yidaro
+Search for Azcanta // Azcanta, the Sunken Ruin
+Nautiloid Ship
+Bane of Bala Ged

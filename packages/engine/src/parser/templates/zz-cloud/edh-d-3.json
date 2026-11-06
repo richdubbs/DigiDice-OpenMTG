@@ -1,0 +1,173 @@
+[
+  {
+    "id": "rst.edhd3.cast.self.afterOpponentUpkeep",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 500.1",
+      "CR 503.1"
+    ],
+    "pattern": "cast ~ only during an opponent 's turn after their upkeep step",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "opponent",
+            "step": [
+              "draw",
+              "main1",
+              "beginCombat",
+              "declareAttackers",
+              "declareBlockers",
+              "combatDamage",
+              "endCombat",
+              "main2",
+              "end",
+              "cleanup"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Cast Example Subject only during an opponent's turn after their upkeep step."
+      },
+      {
+        "text": "Cast Example Subject only during an opponent's turn after their upkeep step.\nExample Subject can't block."
+      }
+    ],
+    "counterExamples": [
+      "Cast Example Subject only during your turn after your upkeep step.",
+      "Cast Example Subject only during an opponent's turn before their upkeep step.",
+      "Cast Example Subject only during an opponent's turn."
+    ]
+  },
+  {
+    "id": "eff.edhd3.unless.pays.plusEachPartyMember",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 608.2h",
+      "CR 700.8"
+    ],
+    "pattern": "{e:Effects} unless {p:Player} pay[s] {m:ManaCost} plus an additional {1} for each creature in your party",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "mana": [
+          {
+            "kind": "generic",
+            "amount": 1
+          }
+        ]
+      },
+      "times": {
+        "q": "math",
+        "op": "+",
+        "args": [
+          "$m.0.amount",
+          {
+            "q": "partySize",
+            "of": {
+              "ref": "you"
+            }
+          }
+        ]
+      },
+      "else": "$e"
+    },
+    "consumes": [
+      "unless",
+      "each",
+      "plus",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Counter target spell unless its controller pays {1} plus an additional {1} for each creature in your party."
+      },
+      {
+        "text": "Counter target creature spell unless its controller pays {2} plus an additional {1} for each creature in your party."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell unless its controller pays {2} plus an additional {2} for each creature in your party.",
+      "Counter target spell unless its controller pays {U} plus an additional {1} for each creature in your party.",
+      "Counter target spell unless its controller pays {2} plus an additional {1} for each creature in their party.",
+      "Counter target spell if its controller pays {2} plus an additional {1} for each creature in your party."
+    ]
+  },
+  {
+    "id": "sta.edhd3.players.cantPayLifeForCosts.nonMana",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.3",
+      "CR 119.4",
+      "CR 605.1a",
+      "CR 101.2",
+      "CR 604.1"
+    ],
+    "pattern": "( players | each player ) can't pay life to cast spells or to activate abilities that aren't mana abilities",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "payLife",
+          "forCosts": true,
+          "exceptMana": true
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "can't",
+      "abilities"
+    ],
+    "examples": [
+      {
+        "text": "Each player can't pay life to cast spells or to activate abilities that aren't mana abilities."
+      },
+      {
+        "text": "Each player can't pay life to cast spells or to activate abilities that aren't mana abilities.\nExample Subject can't block."
+      }
+    ],
+    "counterExamples": [
+      "Players can't pay life to cast spells or to activate abilities.",
+      "Players can't pay life to cast spells or to activate mana abilities.",
+      "Players can't sacrifice creatures to cast spells or to activate abilities that aren't mana abilities.",
+      "Opponents can't pay life to cast spells or to activate abilities that aren't mana abilities.",
+      "Each player can't pay life to cast spells or to activate abilities."
+    ]
+  }
+]

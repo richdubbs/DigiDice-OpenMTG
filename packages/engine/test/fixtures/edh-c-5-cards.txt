@@ -1,0 +1,15 @@
+# edh-c-5 (Commander EDHREC ranks 17,501-18,125): the starting life total, "You discard your hand", all colors, -X/-0 for the cards in your hand, a cost increase on opponents' turns, an attack restriction while monarch, a corrupted pump, a minimum of blockers for a group, "unless its controller has ~ deal N damage to them", a sacrifice per card, an Aura that damages its owner, "a Human or an Angel", "power and/or toughness". After editing: npm run cards -- fixtures
+Oketra's Last Mercy
+Apocalypse
+Transguild Courier
+Meishin, the Mind Cage
+Hurkyl's Final Meditation
+Queen Mother Ramonda
+Sonorous Howlbonder
+Bladed Bracers
+Zealot's Conviction
+Dwarven Driller
+Molten Influence
+Freelance Muscle
+Thoughts of Ruin
+Enslave

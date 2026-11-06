@@ -1,0 +1,5 @@
+# edh-c-89 (Commander EDHREC ranks 19,501-20,000, later pass): a singular "each X doesn't untap" static with a land filter (activated ability that isn't a mana ability), "this ability has been activated four or more times this turn", "counter unless its controller exiles all cards from their graveyard", a leading-duration "gets +X/+0, where X is the number of times this ability has resolved this turn". After editing: npm run cards -- fixtures
+Tsabo's Web
+Dragon Whelp
+Grip of Amnesia
+Bronze Cudgels

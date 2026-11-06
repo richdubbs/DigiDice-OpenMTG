@@ -1,0 +1,614 @@
+[
+ {
+  "card": "Jean-Luc, Mon Capitaine",
+  "expect": "full",
+  "verified": "trek-14 review, by hand against the Oracle text and the rules cited (CR 614.1c, 614.12, 122.6, 205.3m checked against the 2026-09-25 text; the Federation label has no rules text) (rep.trek14.enter.additionalCounter.forEachTypeAlready, kw.line): Flying; Faeries its controller controls enter with an additional +1/+1 counter for each creature type among the non-Borg creatures its controller controls as the Faerie enters (the Faerie, not yet on the battlefield, is not among them); held-out, opened by the owner (Star Trek request 2026-10-29)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "text": "Flying"
+     },
+     {
+      "kind": "static",
+      "text": "Faeries you control enter with an additional +1/+1 counter on them for each creature type among non-Borg creatures you already control.",
+      "effects": [
+       {
+        "s": "replace",
+        "replaces": {
+         "ev": "zoneChange",
+         "subject": {
+          "subtypes": [
+           "Faerie"
+          ],
+          "controller": "you"
+         },
+         "to": "battlefield"
+        },
+        "body": {
+         "b": "enters",
+         "counters": [
+          {
+           "kind": "+1/+1",
+           "count": {
+            "q": "distinct",
+            "what": "creatureTypes",
+            "among": {
+             "ref": "each",
+             "filter": {
+              "anyOf": [
+               {
+                "notSubtypes": [
+                 "Borg"
+                ],
+                "types": [
+                 "Creature"
+                ]
+               }
+              ],
+              "controller": "you"
+             }
+            }
+           }
+          }
+         ]
+        }
+       }
+      ],
+      "label": "Federation"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sarek, Federation Ambassador",
+  "expect": "full",
+  "verified": "trek-14 review, by hand against the Oracle text and the rules cited (CR 121.1, 107.1a, 205.3m, 608.2c checked against the 2026-09-25 text) (eff.trek14.draw.forEveryNTypesAmong, trg.at, cond.if): at the beginning of combat on its controller's turn they draw one card for each full five creature types among their non-Borg creatures (read as the draw happens); if they drew three or more cards by that draw, two +1/+1 counters on each creature they control; in the tuning half",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "At the beginning of combat on your turn, draw a card for every five creature types among non-Borg creatures you control. If you draw three or more cards this way, put two +1/+1 counters on each creature you control.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "beginCombat",
+         "whose": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "math",
+          "op": "floorDiv",
+          "args": [
+           {
+            "q": "distinct",
+            "what": "creatureTypes",
+            "among": {
+             "ref": "each",
+             "filter": {
+              "notSubtypes": [
+               "Borg"
+              ],
+              "types": [
+               "Creature"
+              ],
+              "controller": "you"
+             }
+            }
+           },
+           5
+          ]
+         },
+         "as": "drew"
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "compare",
+          "left": {
+           "q": "resultCount",
+           "step": "drew"
+          },
+          "op": ">=",
+          "right": 3
+         },
+         "then": [
+          {
+           "op": "putCounters",
+           "on": {
+            "ref": "each",
+            "filter": {
+             "types": [
+              "Creature"
+             ],
+             "controller": "you"
+            }
+           },
+           "kind": "+1/+1",
+           "count": 2
+          }
+         ]
+        }
+       ]
+      },
+      "label": "Federation"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Infinite Diversity",
+  "expect": "full",
+  "verified": "trek-14 review, by hand against the Oracle text and the rules cited (CR 707.12, 707.10c, 608.2g, 107.3 checked against the 2026-09-25 text) (rid.trek14.mayCastCopies.free, eff.t45.copy.xTimes, eff.exile): exile the target instant or sorcery card from its controller's graveyard, create X copies of it in exile (X read as the copies are made), cast each or not without paying its mana cost, then exile the spell itself; in the tuning half",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "text": "Exile target instant or sorcery card from your graveyard. Copy that card X times, where X is the number of creature types among non-Borg creatures you control. You may cast the copies without paying their mana costs. Exile ~.",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target instant or sorcery card from your graveyard",
+         "filter": {
+          "types": [
+           "Instant",
+           "Sorcery"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "moved"
+        },
+        {
+         "op": "cast",
+         "what": {
+          "ref": "bound",
+          "name": "moved"
+         },
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "distinct",
+          "what": "creatureTypes",
+          "among": {
+           "ref": "each",
+           "filter": {
+            "notSubtypes": [
+             "Borg"
+            ],
+            "types": [
+             "Creature"
+            ],
+            "controller": "you"
+           }
+          }
+         },
+         "copyIn": "exile",
+         "optional": true,
+         "free": true
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "self"
+         },
+         "to": {
+          "zone": "exile"
+         }
+        }
+       ]
+      },
+      "label": "Federation"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "La Forge, Thoughtful as Ever",
+  "expect": "full",
+  "verified": "trek-14 review, by hand against the Oracle text and the rules cited (CR 122.6, 400.7, 608.2c checked against the 2026-09-25 text) (eff.createToken.forEach): one 1/1 blue Faerie token with flying for each permanent its controller controls that they have put a counter of any kind on this turn (counters put by another player, or a permanent that left, do not count); held-out, opened by the owner (Star Trek request 2026-10-29)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "text": "{T}: For each permanent you control that you've put a counter on this turn, create a 1/1 blue Faerie creature token with flying.",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "createToken",
+         "who": {
+          "ref": "you"
+         },
+         "count": {
+          "q": "count",
+          "of": {
+           "ref": "each",
+           "filter": {
+            "controller": "you",
+            "countersPutThisTurn": {
+             "kind": "any",
+             "by": "you"
+            }
+           }
+          }
+         },
+         "token": {
+          "colors": [
+           "U"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Faerie"
+          ],
+          "power": 1,
+          "toughness": 1,
+          "keywords": [
+           "flying"
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Dathon, His Heart Open",
+  "expect": "full",
+  "verified": "trek-14 review, by hand against the Oracle text and the rules cited (CR 122.1, 608.2d, 602.5d checked against the 2026-09-25 text) (eff.trek14.put.anotherOfThatKind, eff.edhpm15.choose.counterOn, trg.when, cond.if, eff.damage): {2}, sorcery speed: choose a kind of counter on the target enchantment, put one more counter of that kind on it (nothing when it has none); in the tuning half",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever you cast an enchantment spell, draw a card. If it's a Saga spell, ~ deals 2 damage to each opponent.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "types": [
+           "Enchantment"
+          ]
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "if",
+         "cond": {
+          "cond": "matches",
+          "object": {
+           "ref": "event",
+           "role": "spell"
+          },
+          "filter": {
+           "subtypes": [
+            "Saga"
+           ],
+           "stackKind": "spell",
+           "zone": "stack"
+          }
+         },
+         "then": [
+          {
+           "op": "damage",
+           "source": {
+            "ref": "self"
+           },
+           "to": {
+            "ref": "each",
+            "who": "opponent"
+           },
+           "amount": 2
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "{2}: Choose a counter on target enchantment you control. Put another counter of that kind on it. Activate only as a sorcery.",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "text": "target enchantment you control",
+         "filter": {
+          "types": [
+           "Enchantment"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "chooseValue",
+         "who": {
+          "ref": "you"
+         },
+         "what": "counterKind",
+         "counterOn": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "as": "counterKind",
+         "link": "counterKind"
+        },
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "kind": "",
+         "count": 1,
+         "kindOfChoice": "counterKind"
+        }
+       ]
+      },
+      "sorcerySpeed": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Jett Reno, Problem Solver",
+  "expect": "full",
+  "verified": "trek-14 review, by hand against the Oracle text and the rules cited (CR 122.1, 701.25, 603.2 checked against the 2026-09-25 text; facing a dilemma has only its reminder text) (eff.trek14.put.plusOneSlashOne, trg.when, eff.surveil): whenever it becomes tapped surveil 1, or draw a card instead when its power is 4 or greater; whenever its controller faces a dilemma, a +1/+1 counter on it (the Oracle text of the preview prints \"+1/1\", read as the +1/+1 counter it can only mean); in the tuning half",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever ~ becomes tapped, surveil 1. If ~'s power is 4 or greater, instead draw a card.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "becomes",
+         "what": "tapped",
+         "object": {
+          "self": true
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "if",
+         "cond": {
+          "cond": "compare",
+          "left": {
+           "q": "stat",
+           "stat": "power",
+           "of": {
+            "ref": "self"
+           }
+          },
+          "op": ">=",
+          "right": 4
+         },
+         "then": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1
+          }
+         ],
+         "else": [
+          {
+           "op": "surveil",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "text": "Whenever you face a dilemma, put a +1/1 counter on ~.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "action",
+         "verb": "faceDilemma",
+         "actor": "you"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Ensign Harry Kim, Operations",
+  "expect": "full",
+  "verified": "trek-14 review, by hand against the Oracle text and the rules cited (CR 201.5c, 603.4, 208.1, 122.1 checked against the 2026-09-25 text) (trg.when, cond.if, eff.putCounters): whenever another creature its controller controls enters, if its power is greater than Ensign Kim's (checked when it enters and when the ability resolves), a +1/+1 counter on Ensign Kim; {2}, remove two +1/+1 counters from among creatures they control: draw a card; held-out, opened by the owner (Star Trek request 2026-10-29)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "text": "Whenever another creature you control enters, if it has greater power than ~, put a +1/+1 counter on ~.",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you",
+          "other": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "matches",
+       "object": {
+        "ref": "event",
+        "role": "subject"
+       },
+       "filter": {
+        "power": {
+         "op": ">",
+         "value": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+           "ref": "self"
+          }
+         }
+        }
+       }
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "text": "{2}, Remove two +1/+1 counters from among creatures you control: Draw a card.",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ],
+       "other": [
+        {
+         "kind": "removeCounters",
+         "counter": "+1/+1",
+         "count": 2,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         },
+         "among": true
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

@@ -36,6 +36,7 @@ marked "Resolve by hand" and applied by the players (see "In a game" below).
 
 | Path | What |
 |---|---|
+| `godot` | The OpenMTG app players install (Godot 4): the screen of the game. It starts the local server (`packages/server`) and talks to it. |
 | `packages/engine` | Headless, deterministic rules engine (TypeScript). State + action in, new state + events out. |
 | `packages/cards` | Card-data tool: Scryfall bulk-data cache, name lookup, decklist resolution (Node). |
 | `packages/client` | Browser UI (React + Vite): board, hand, stack, log, prompts. |

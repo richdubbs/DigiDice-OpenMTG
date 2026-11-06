@@ -1,0 +1,6 @@
+# edh-c-88 (Commander EDHREC ranks 20,501-21,000, third pass): "loses N life, discards a card, then sacrifices a permanent of their choice", "you may have ~ become a P/T <color> <subtype> artifact creature with K until end of turn", "becomes a <subtype> with base power and toughness" (no ability), "becomes the basic land type of your choice in addition to its other types", "target spell or permanent that's red or green". After editing: npm run cards -- fixtures
+Undercity Plague
+Angel's Tomb
+Skinshifter
+Navigator's Compass
+Aether Gust

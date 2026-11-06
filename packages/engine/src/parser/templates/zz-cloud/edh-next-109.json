@@ -1,0 +1,118 @@
+[
+  {
+    "id": "eff.edhn109.counters.eachEnteredUnderYourControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 608.2c"
+    ],
+    "pattern": "put a +1/+1 counter on each {f:Filter} that entered the battlefield under your control this turn",
+    "build": {
+      "op": "putCounters",
+      "on": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "enteredThisTurn": true,
+          "enteredUnderYourControl": true
+        }
+      },
+      "kind": "+1/+1",
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, put a +1/+1 counter on each Elf that entered the battlefield under your control this turn."
+      },
+      {
+        "text": "When ~ enters, put a +1/+1 counter on each artifact creature that entered the battlefield under your control this turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, put a +1/+1 counter on each Elf that entered the battlefield this turn.",
+      "Whenever ~ attacks, put a +1/+1 counter on each Elf that entered the battlefield under an opponent's control this turn.",
+      "Whenever ~ attacks, put two +1/+1 counters on each Elf that entered the battlefield under your control this turn."
+    ]
+  },
+  {
+    "id": "trg.edhn109.you.payLife",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.4",
+      "CR 118.3",
+      "CR 603.2"
+    ],
+    "pattern": "whenever you pay life",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "payLife",
+          "actor": "you"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you pay life, ~ deals that much damage to each opponent."
+      },
+      {
+        "text": "Whenever you pay life, you gain that much life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent pays life, ~ deals that much damage to each opponent.",
+      "Whenever you lose life, ~ deals that much damage to each opponent.",
+      "Whenever you pay mana, ~ deals that much damage to each opponent."
+    ]
+  },
+  {
+    "id": "eff.edhn109.obj.becomesForetold",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.143d",
+      "CR 406.3",
+      "CR 400.7"
+    ],
+    "pattern": "{o:Obj} becomes foretold",
+    "build": {
+      "op": "designateObject",
+      "what": "$o",
+      "designation": "foretold"
+    },
+    "subject": "object",
+    "needs": [
+      "op:designateObject.foretold"
+    ],
+    "examples": [
+      {
+        "text": "Exile target creature spell face down. It becomes foretold."
+      },
+      {
+        "text": "When ~ enters, exile target instant spell face down. It becomes foretold."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature spell face down. It becomes foretold until end of turn.",
+      "Exile target creature spell face down. It becomes plotted and foretold.",
+      "Exile target creature spell face down. It becomes foretelling."
+    ]
+  }
+]

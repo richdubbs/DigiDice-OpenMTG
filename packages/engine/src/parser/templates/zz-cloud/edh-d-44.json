@@ -1,0 +1,683 @@
+[
+  {
+    "id": "sta.edhd44.hexproofWaiver.group",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.11b",
+      "CR 115.1",
+      "CR 604.1",
+      "CR 609.4"
+    ],
+    "pattern": "{f:Filter} can be the targets of spells and abilities you control as though they didn't have hexproof",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "targetableThroughHexproof",
+          "of": "$f",
+          "player": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "weak": 1,
+    "consumes": [
+      "not",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Artifacts your opponents control can be the targets of spells and abilities you control as though they didn't have hexproof."
+      },
+      {
+        "text": "Planeswalkers your opponents control with hexproof can be the targets of spells and abilities you control as though they didn't have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "Creatures your opponents control with hexproof can be the targets of spells and abilities your opponents control as though they didn't have hexproof.",
+      "Creatures your opponents control with hexproof can be the targets of spells and abilities you control as though they didn't have shroud.",
+      "Creatures your opponents control with hexproof can be the targets of spells and abilities you control."
+    ]
+  },
+  {
+    "id": "eff.edhd44.group.gain.cantBeBlocked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Objs} gain {a:Abilities} {d:Dur} and can't be blocked this turn",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "{2}{G}: Elves you control gain deathtouch until end of turn and can't be blocked this turn."
+      },
+      {
+        "text": "{T}: Goblins you control gain haste until end of turn and can't be blocked this turn."
+      }
+    ],
+    "counterExamples": [
+      "{3}, Sacrifice ~: Creatures you control gain hexproof until end of turn and can't block this turn.",
+      "{3}, Sacrifice ~: Creatures you control gain hexproof until end of turn and can't be blocked.",
+      "{3}, Sacrifice ~: Creatures you control lose hexproof until end of turn and can't be blocked this turn."
+    ]
+  },
+  {
+    "id": "sta.edhd44.cast.self.flash.ifXAtMost",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 601.2b",
+      "CR 107.3a",
+      "CR 702.8a",
+      "CR 604.1"
+    ],
+    "pattern": "you may cast ~ as though it had flash if x is {n:Qty} or less",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": {
+            "self": true
+          },
+          "ifXAtMost": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may cast this spell as though it had flash if X is 2 or less."
+      },
+      {
+        "text": "You may cast ~ as though it had flash if X is 5 or less."
+      }
+    ],
+    "counterExamples": [
+      "You may cast this spell as though it had flash if X is 3 or more.",
+      "You may cast this spell as though it had flash if X is 3.",
+      "You may cast this spell as though it had flash if it targets a legendary creature.",
+      "You may cast this spell as though it had haste if X is 3 or less."
+    ]
+  },
+  {
+    "id": "sta.edhd44.cast.self.flash.byTapping",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 601.2b",
+      "CR 601.2h",
+      "CR 118.8",
+      "CR 702.8a",
+      "CR 604.1"
+    ],
+    "pattern": "you may cast ~ as though it had flash by tapping {n:Qty} untapped {f:Filter} in addition to paying its other costs",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": {
+            "self": true
+          },
+          "addCost": {
+            "other": [
+              {
+                "kind": "tapUntapped",
+                "filter": "$f",
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "You may cast this spell as though it had flash by tapping two untapped creatures you control with flying in addition to paying its other costs."
+      },
+      {
+        "text": "You may cast ~ as though it had flash by tapping two untapped Elves you control in addition to paying its other costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast this spell as though it had flash by tapping three untapped creatures you control with flying.",
+      "You may cast this spell as though it had flash by sacrificing three creatures you control in addition to paying its other costs.",
+      "You may cast this spell as though it had haste by tapping three untapped creatures you control in addition to paying its other costs.",
+      "You may cast this spell as though it had flash by tapping three creatures you control in addition to paying its other costs."
+    ]
+  },
+  {
+    "id": "sta.edhd44.cast.firstOfKind.flash",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 601.2i",
+      "CR 702.8a",
+      "CR 604.1"
+    ],
+    "pattern": "you may cast the first {f:Filter} you cast each turn as though it had flash",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": "$f",
+          "firstOfKind": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though",
+      "first",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You may cast the first artifact spell you cast each turn as though it had flash."
+      },
+      {
+        "text": "You may cast the first Elf spell you cast each turn as though it had flash."
+      }
+    ],
+    "counterExamples": [
+      "You may cast the first artifact spell you cast each turn as though it had haste.",
+      "You may cast the second artifact spell you cast each turn as though it had flash.",
+      "You may cast Elf spells as though they had flash.",
+      "You may cast the first artifact spell each opponent casts each turn as though it had flash."
+    ]
+  },
+  {
+    "id": "trg.edhd44.event.duringCombat",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 506.1",
+      "CR 603.4"
+    ],
+    "pattern": "( when | whenever ) {e:Event} during combat",
+    "build": {
+      "on": "$e",
+      "while": {
+        "cond": "turnOf",
+        "whose": "any",
+        "step": [
+          "beginCombat",
+          "declareAttackers",
+          "declareBlockers",
+          "combatDamage",
+          "endCombat"
+        ]
+      }
+    },
+    "weak": 1,
+    "consumes": [
+      "when",
+      "whenever",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another creature you control enters during combat, draw a card."
+      },
+      {
+        "text": "When a nontoken Elf you control enters during combat, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a nontoken creature you control enters during your end step, draw a card.",
+      "Whenever a nontoken creature you control enters, draw a card.",
+      "Whenever a nontoken creature you control enters before combat, draw a card."
+    ]
+  },
+  {
+    "id": "sta.edhd44.top.cast.flash",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 601.3",
+      "CR 702.8a",
+      "CR 401.5",
+      "CR 604.1"
+    ],
+    "pattern": "you may cast {f:Filter} from the top of your library . if you cast a spell this way , you may cast it as though it had flash",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "fromTop": true,
+          "flashThisWay": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if",
+      "this way",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "You may cast artifact spells from the top of your library. If you cast a spell this way, you may cast it as though it had flash."
+      },
+      {
+        "text": "You may cast Elf spells from the top of your library. If you cast a spell this way, you may cast it as though it had flash."
+      }
+    ],
+    "counterExamples": [
+      "You may cast artifact spells from the top of your library. If you cast a spell this way, you may cast it as though it had haste.",
+      "You may cast Elf spells from the top of your library.",
+      "You may cast artifact spells from your graveyard. If you cast a spell this way, you may cast it as though it had flash."
+    ]
+  },
+  {
+    "id": "eff.edhd44.dur.flash.andEntersWithCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 702.8a",
+      "CR 614.1c",
+      "CR 122.6",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , you may cast {f:Filter} as though they had flash , and each {g:Filter} enters with an additional {k:CounterKind} counter on it",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": "$f"
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$g",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "as though",
+      "each",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "{2}{G}: Until end of turn, you may cast Elf spells as though they had flash, and each Elf you control enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "{3}: Until your next turn, you may cast creature spells as though they had flash, and each creature you control enters with an additional +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "{3}: Until your next turn, you may cast creature spells as though they had haste, and each creature you control enters with an additional +1/+1 counter on it.",
+      "{3}: Until your next turn, you may cast creature spells as though they had flash.",
+      "{3}: Until your next turn, you may cast creature spells as though they had flash, and each creature you control enters tapped."
+    ]
+  },
+  {
+    "id": "sta.edhd44.permit.alt.energy.flash",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.3b",
+      "CR 107.14",
+      "CR 702.8a",
+      "CR 604.1"
+    ],
+    "pattern": "you may cast {f:Filter} by paying {e} rather than paying their mana costs . if you cast a spell this way , you may cast it as though it had flash",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "costChange": {
+            "kind": "set",
+            "cost": {
+              "other": [
+                {
+                  "kind": "payEnergy",
+                  "amount": 1
+                }
+              ]
+            }
+          },
+          "flashThisWay": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than",
+      "if",
+      "this way",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "You may cast artifact spells by paying {E} rather than paying their mana costs. If you cast a spell this way, you may cast it as though it had flash."
+      },
+      {
+        "text": "You may cast Elf spells with mana value 2 or less by paying {E} rather than paying their mana costs. If you cast a spell this way, you may cast it as though it had flash."
+      }
+    ],
+    "counterExamples": [
+      "You may cast artifact spells by paying {E} rather than paying their mana costs.",
+      "You may cast artifact spells by paying {E} rather than paying their mana costs. If you cast a spell this way, you may cast it as though it had haste.",
+      "You may cast artifact spells from your graveyard by paying {E} rather than paying their mana costs. If you cast a spell this way, you may cast it as though it had flash."
+    ]
+  },
+  {
+    "id": "sta.edhd44.anyPlayer.cast.free.andFlash",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.3b",
+      "CR 702.8a",
+      "CR 102.1",
+      "CR 604.1"
+    ],
+    "pattern": "any player may cast {f:Filter} without paying their mana costs and as though they had flash",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "each",
+            "who": "player"
+          },
+          "action": "cast",
+          "of": "$f",
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "flashThisWay": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though",
+      "any"
+    ],
+    "examples": [
+      {
+        "text": "Any player may cast artifact spells with mana value 2 or less without paying their mana costs and as though they had flash."
+      },
+      {
+        "text": "Any player may cast Elf spells without paying their mana costs and as though they had flash."
+      }
+    ],
+    "counterExamples": [
+      "Any player may cast artifact spells without paying their mana costs.",
+      "You may cast artifact spells without paying their mana costs and as though they had flash.",
+      "Any player may cast artifact spells without paying their mana costs and as though they had haste."
+    ]
+  },
+  {
+    "id": "sta.edhd44.top.cast.sac",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 401.5",
+      "CR 604.1"
+    ],
+    "pattern": "you may cast {f:Filter} from the top of your library by sacrificing {g:Filter} in addition to paying their other costs",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "fromTop": true,
+          "addCost": {
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": "$g",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "additional",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "You may cast creature spells from the top of your library by sacrificing a creature in addition to paying their other costs."
+      },
+      {
+        "text": "You may cast artifact spells from the top of your library by sacrificing an artifact in addition to paying their other costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast creature spells from the top of your library by sacrificing a creature.",
+      "You may cast creature spells from your graveyard by sacrificing a creature in addition to paying their other costs.",
+      "You may cast creature spells from the top of your library by discarding a creature in addition to paying their other costs."
+    ]
+  },
+  {
+    "id": "sta.edhd44.top.cast.removeCounter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 122.1",
+      "CR 401.5",
+      "CR 604.1"
+    ],
+    "pattern": "you may cast {f:Filter} from the top of your library by removing a counter from {g:Filter} in addition to paying their other costs",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "fromTop": true,
+          "addCost": {
+            "other": [
+              {
+                "kind": "removeCounters",
+                "counter": "any",
+                "count": 1,
+                "filter": "$g"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "additional",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "You may cast creature spells from the top of your library by removing a counter from a permanent you control in addition to paying their other costs."
+      },
+      {
+        "text": "You may cast artifact spells from the top of your library by removing a counter from an artifact you control in addition to paying their other costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast creature spells from the top of your library by removing a counter from a permanent you control.",
+      "You may cast creature spells from your hand by removing a counter from a permanent you control in addition to paying their other costs.",
+      "You may cast creature spells from the top of your library by putting a counter on a permanent you control in addition to paying their other costs."
+    ]
+  },
+  {
+    "id": "sta.edhd44.damageAsWither",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.80a",
+      "CR 120.3d",
+      "CR 122.6",
+      "CR 604.1"
+    ],
+    "pattern": "all damage is dealt as though its source had wither",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "damageAsWither"
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "all damage is dealt as though its source had wither."
+      },
+      {
+        "text": "ALL damage is dealt as though its source had wither."
+      }
+    ],
+    "counterExamples": [
+      "all damage is dealt as though its source had infect.",
+      "all damage is dealt to you as though its source had wither.",
+      "damage is dealt as though its source had wither."
+    ]
+  }
+]

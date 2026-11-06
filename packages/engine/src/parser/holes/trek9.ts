@@ -25,6 +25,7 @@ export function allExiledShareCond(ctx: HoleCtx, pos: number): Alt[] {
 }
 
 const W_A_AN = [P('a'), P('an')];
+const W_ANOTHER = [P('another')];
 const W_ATTACHED_TO_IT_THEM = [P('attached to it'), P('attached to them')];
 
 /**
@@ -35,13 +36,18 @@ const W_ATTACHED_TO_IT_THEM = [P('attached to it'), P('attached to them')];
  */
 export function attachedWithAt(ctx: HoleCtx, pos: number): { end: number; frag: ObjectFilter }[] {
   const out: { end: number; frag: ObjectFilter }[] = [];
-  const art = anyPhraseAt(ctx, pos, W_A_AN);
+  // edh-perms-16 (CR 301.5, 303.4): "another Aura attached to it" is an attachment other than the source of the description
+  const another = anyPhraseAt(ctx, pos, W_ANOTHER);
+  const art = another >= 0 ? another : anyPhraseAt(ctx, pos, W_A_AN);
   if (art < 0) return out;
-  const t = ctx.toks[art];
+  // edh-next-23 (CR 205.4a; Kassandra, Eagle Bearer): "a legendary Equipment attached to it": the attachment is also legendary
+  const legend = another >= 0 ? -1 : phraseAt(ctx, art, P('legendary'));
+  const noun = legend >= 0 ? legend : art;
+  const t = ctx.toks[noun];
   const entry = t !== undefined && t.kind === 'WORD' ? ctx.vocab.subtypes.get(t.norm) : undefined;
   if (entry === undefined || entry.plural || (entry.cls !== 'artifact' && entry.cls !== 'enchantment')) return out;
-  const e = anyPhraseAt(ctx, art + 1, W_ATTACHED_TO_IT_THEM);
-  if (e >= 0) out.push({ end: e, frag: { attachedWith: entry.name } });
+  const e = anyPhraseAt(ctx, noun + 1, W_ATTACHED_TO_IT_THEM);
+  if (e >= 0) out.push({ end: e, frag: { attachedWith: entry.name, ...(another >= 0 ? { attachedWithOther: true as const } : {}), ...(legend >= 0 ? { attachedWithLegendary: true as const } : {}) } });
   return out;
 }
 
@@ -49,6 +55,7 @@ const W_PUT = P('put');
 const W_FROM_YOUR_GRAVEYARD = P('from your graveyard');
 const W_ON_BOTTOM = P('on the bottom of your library');
 const W_ON_TOP = P('on top of your library');
+const W_ON_BOTTOM_OWNERS = P("on the bottom of its owner 's library"); // edh-d-34 (Timestream Navigator)
 
 /**
  * `putSelfIntoLibrary` (CR 118.3, 602.2b, 401.4, 113.6j): the cost "Put this card from your graveyard on the bottom of your library" (Daniels, Temporal Agent): the source
@@ -59,6 +66,9 @@ export function putSelfIntoLibrary(ctx: HoleCtx, pos: number): { end: number; pa
   const out: { end: number; part: CostPart }[] = [];
   const e = phraseAt(ctx, pos, W_PUT);
   if (e < 0 || ctx.toks[e]?.kind !== 'SELF') return out;
+  // edh-d-34 (CR 118.3, 401.4; Timestream Navigator): "Put this creature on the bottom of its owner's library": the source itself, from the battlefield (the ability of a permanent)
+  const owners = phraseAt(ctx, e + 1, W_ON_BOTTOM_OWNERS);
+  if (owners >= 0) out.push({ end: owners, part: { kind: 'putIntoLibrary', zone: 'battlefield', self: true, position: 'bottom' } });
   const z = phraseAt(ctx, e + 1, W_FROM_YOUR_GRAVEYARD);
   if (z < 0) return out;
   const bottom = phraseAt(ctx, z, W_ON_BOTTOM);

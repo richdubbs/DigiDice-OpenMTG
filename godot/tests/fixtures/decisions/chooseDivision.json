@@ -1,0 +1,22 @@
+{
+  "id": "d16",
+  "player": "p1",
+  "prompt": "Divide 3 damage among Hill Giant, Bob for Forked Bolt; each gets at least 1.",
+  "rules": [
+    "CR 601.2d"
+  ],
+  "kind": "chooseDivision",
+  "what": "damage",
+  "total": 3,
+  "targets": [
+    {
+      "id": "o20",
+      "label": "Hill Giant"
+    },
+    {
+      "id": "p2",
+      "label": "Bob"
+    }
+  ],
+  "cancellable": true
+}

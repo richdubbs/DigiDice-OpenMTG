@@ -1,0 +1,218 @@
+[
+  {
+    "id": "eff.edhb13.draw.equal.thenDiscardEachDrawn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 701.9a",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "draw cards equal to {n:Qty} , then discard a card for each card drawn this way",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "as": "drawn"
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "resultCount",
+          "step": "drawn"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "this way",
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Draw cards equal to the number of creatures you control, then discard a card for each card drawn this way."
+      },
+      {
+        "text": "When ~ enters, draw cards equal to the number of lands you control, then discard a card for each card drawn this way."
+      }
+    ],
+    "counterExamples": [
+      "Draw cards equal to the number of cards in your hand, then discard a card.",
+      "Draw cards equal to the number of cards in your hand, then discard a card for each card in your graveyard.",
+      "Draw two cards, then discard a card for each card drawn this way."
+    ]
+  },
+  {
+    "id": "eff.edhb13.draw.thenAdditionalPerCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "draw a card , then draw an additional card for each {k:CounterKind} counter on {o:Obj}",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": 1
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "counters",
+          "on": "$o",
+          "kind": "$k"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "additional",
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, draw a card, then draw an additional card for each quest counter on ~."
+      },
+      {
+        "text": "Whenever ~ attacks, draw a card, then draw an additional card for each +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, draw a card, then draw two additional cards for each quest counter on ~.",
+      "When ~ dies, draw two cards, then draw an additional card for each quest counter on ~.",
+      "When ~ dies, draw a card, then draw an additional card for each creature on ~."
+    ]
+  },
+  {
+    "id": "eff.edhb13.eachPlayer.discardsHand.thenCreatesThatMany",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 111.2",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 101.4"
+    ],
+    "pattern": "each player discards all the cards in their hand , then creates that many {t:TokenDesc}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "discard",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "count": "hand",
+          "as": "discarded"
+        },
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "count": {
+            "q": "resultCount",
+            "step": "discarded"
+          },
+          "token": "$t"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "each",
+      "then",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "Each player discards all the cards in their hand, then creates that many 1/1 white Spirit creature tokens with flying."
+      },
+      {
+        "text": "When ~ enters, each player discards all the cards in their hand, then creates that many 3/3 green Beast creature tokens."
+      }
+    ],
+    "counterExamples": [
+      "Each player discards all the cards in their hand, then creates two 2/2 black Zombie creature tokens.",
+      "Each player discards all the cards in their hand, then draws that many cards.",
+      "Each opponent discards all the cards in their hand, then creates that many 2/2 black Zombie creature tokens."
+    ]
+  },
+  {
+    "id": "eff.edhb13.life.lose.nPerCounterOn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "then {p:Player} lose[s] {n:Qty} life for each {k:CounterKind} counter on {o:Obj}",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$n",
+          {
+            "q": "counters",
+            "on": "$o",
+            "kind": "$k"
+          }
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, draw a card. Then you lose 3 life for each soul counter on ~."
+      },
+      {
+        "text": "When ~ dies, you gain 1 life. Then each opponent loses 2 life for each burden counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, draw a card. Then you lose 3 life for each soul counter on target creature.",
+      "When ~ enters, draw a card. Then you gain 3 life for each soul counter on ~.",
+      "When ~ enters, draw a card. Then you lose 3 life for each soul counter on ~ unless it is blue."
+    ],
+    "weak": 1
+  }
+]

@@ -1,0 +1,567 @@
+{
+ "ui.hover": {
+  "purpose": "The pointer is on something you can press: the faintest acknowledgement, never tiring even when sweeping across many buttons.",
+  "when": "Pointer enters a button, a card you can act on, or a choice (rate-limited).",
+  "category": "interface"
+ },
+ "ui.click": {
+  "purpose": "A button was pressed: crisp, short, tactile feedback for any ordinary button.",
+  "when": "Any button press without a more specific sound.",
+  "category": "interface"
+ },
+ "ui.confirm": {
+  "purpose": "A primary action is accepted (OK, Done, Start, Keep, submit): positive, decisive, a step above a click.",
+  "when": "The main button of a dialog or prompt is pressed.",
+  "category": "interface"
+ },
+ "ui.cancel": {
+  "purpose": "Backing out (Cancel, Back, Close, Clear, Escape): neutral, lower and softer than confirm, clearly \"undo / go back\".",
+  "when": "A cancel, back, close or clear control, or Escape.",
+  "category": "interface"
+ },
+ "ui.toggleOn": {
+  "purpose": "A switch or checkbox turned on: \"engaged\", rising.",
+  "when": "A checkbox or toggle becomes checked.",
+  "category": "interface"
+ },
+ "ui.toggleOff": {
+  "purpose": "A switch or checkbox turned off: \"disengaged\", falling; the mirror of toggle on.",
+  "when": "A checkbox or toggle becomes unchecked.",
+  "category": "interface"
+ },
+ "ui.select": {
+  "purpose": "An option is picked (radio, select, a chip, a card in a choice): light, precise, distinct from a click.",
+  "when": "A radio, select, chip or choosable card is chosen.",
+  "category": "interface"
+ },
+ "ui.tick": {
+  "purpose": "A value steps (slider, number +/-, moving an item up or down): a tiny detent, like a digital dial.",
+  "when": "Each step of a slider or a number control, each reorder.",
+  "category": "interface"
+ },
+ "ui.type": {
+  "purpose": "A key typed in a text field: a faint terminal keystroke, never annoying at typing speed.",
+  "when": "Each character typed into a text field (rate-limited).",
+  "category": "interface"
+ },
+ "ui.navigate": {
+  "purpose": "Moving to another screen: a panel of the grid sliding into place.",
+  "when": "The screen changes (top navigation, Back to a previous screen, Home).",
+  "category": "interface"
+ },
+ "ui.open": {
+  "purpose": "A panel, menu or dialog opens: it deploys, rising.",
+  "when": "A dialog, menu, card zone viewer or panel appears.",
+  "category": "interface"
+ },
+ "ui.close": {
+  "purpose": "A panel, menu or dialog closes: it folds away, falling; the mirror of open.",
+  "when": "A dialog, menu or panel is dismissed.",
+  "category": "interface"
+ },
+ "ui.error": {
+  "purpose": "Refused or failed: an unmistakable \"denied\" that is firm but not harsh or alarming.",
+  "when": "An action is not allowed, or an error message appears.",
+  "category": "interface"
+ },
+ "ui.notify": {
+  "purpose": "A notice appeared: a gentle \"incoming message\" that draws the eye without urgency.",
+  "when": "A status message or notice shows up.",
+  "category": "interface"
+ },
+ "ui.success": {
+  "purpose": "Something finished well (saved, imported, uploaded, copied, updated): a satisfying, bright completion.",
+  "when": "A long or important action completes successfully.",
+  "category": "interface"
+ },
+ "ui.delete": {
+  "purpose": "Something is erased for good (a deck, stored images): data wiped, final, a little sobering.",
+  "when": "A delete is confirmed.",
+  "category": "interface"
+ },
+ "deck.add": {
+  "purpose": "A card goes into the deck: it slots in, rising, satisfying when repeated quickly.",
+  "when": "Add to deck / + on a card in the deckbuilder.",
+  "category": "interface"
+ },
+ "deck.remove": {
+  "purpose": "A card comes out of the deck: it slides out, falling; the mirror of add.",
+  "when": "Remove / - on a card in the deckbuilder.",
+  "category": "interface"
+ },
+ "deck.legal": {
+  "purpose": "The deck check passed: \"verified\", a clean approval chime.",
+  "when": "The deck validation reports the deck legal in its format.",
+  "category": "interface"
+ },
+ "deck.illegal": {
+  "purpose": "The deck check found problems: \"needs attention\", softer than an error.",
+  "when": "The deck validation reports problems.",
+  "category": "interface"
+ },
+ "game.start": {
+  "purpose": "A game begins: the grid powers up, energy rising into a strong arrival; sets the tone of the whole game.",
+  "when": "The game starts (the table appears and the opening hands are dealt).",
+  "category": "game"
+ },
+ "game.mulligan": {
+  "purpose": "A player mulligans: the hand is recalled and scrambled, a \"rewind and retry\".",
+  "when": "A player takes a mulligan.",
+  "category": "game"
+ },
+ "game.keep": {
+  "purpose": "A player keeps their hand: locked in, ready.",
+  "when": "A player keeps their opening hand.",
+  "category": "game"
+ },
+ "game.shuffle": {
+  "purpose": "A library is shuffled: a rapid digital riffle that settles.",
+  "when": "A library is shuffled (game start, mulligan, after a search).",
+  "category": "game"
+ },
+ "turn.mine": {
+  "purpose": "Your turn begins: the most important recurring cue; warm, bright and instantly recognisable, but welcoming rather than startling (it plays every turn).",
+  "when": "The \"Your turn\" banner sweeps across the table.",
+  "category": "game"
+ },
+ "turn.theirs": {
+  "purpose": "The opponent's turn begins: clearly not yours (darker, lower, calmer), still a clean turn marker.",
+  "when": "The opponent's turn banner sweeps across the table.",
+  "category": "game"
+ },
+ "turn.step": {
+  "purpose": "The game moved to the next step of the turn: a quiet tick of the turn clock.",
+  "when": "A new step or phase begins where a player gets a decision.",
+  "category": "game"
+ },
+ "priority.mine": {
+  "purpose": "The game is waiting for you: a clear, friendly \"your move\" prompt, noticeable without startling, fine to hear many times a game.",
+  "when": "A decision of yours appears in the prompt bar (priority, targets, blockers, ...).",
+  "category": "game"
+ },
+ "priority.pass": {
+  "purpose": "You passed: a soft \"acknowledged, moving on\".",
+  "when": "You pass priority (Pass, OK on an empty stack, Space).",
+  "category": "game"
+ },
+ "game.handoff": {
+  "purpose": "Hot-seat: hand the device to the other player; the screen locks behind a cover.",
+  "when": "The pass-the-device cover appears.",
+  "category": "game"
+ },
+ "game.finalBlow": {
+  "purpose": "A player is defeated: the final, heaviest blow of the game, a system crash of their disc.",
+  "when": "The losing player's disc takes the last hit and the table jolts hard.",
+  "category": "game"
+ },
+ "game.victory": {
+  "purpose": "You won: triumphant, rewarding, the payoff of the whole game.",
+  "when": "The result screen shows your victory.",
+  "category": "game"
+ },
+ "game.defeat": {
+  "purpose": "You lost: a dignified power-down, sombre but not punishing.",
+  "when": "The result screen shows your defeat.",
+  "category": "game"
+ },
+ "game.drawn": {
+  "purpose": "The game ended with no winner for you (a draw, or a game you watched): neutral, unresolved, final.",
+  "when": "The result screen shows a draw or a result that is not yours.",
+  "category": "game"
+ },
+ "game.coin": {
+  "purpose": "A coin is flipped: spinning, then landing on its result.",
+  "when": "A coin flip happens.",
+  "category": "game"
+ },
+ "game.dice": {
+  "purpose": "A die is rolled: tumbling values that settle on a result.",
+  "when": "A die roll happens.",
+  "category": "game"
+ },
+ "world.day": {
+  "purpose": "It becomes day: light rising over the grid, open and bright.",
+  "when": "Night becomes day (or day is first set).",
+  "category": "game"
+ },
+ "world.night": {
+  "purpose": "It becomes night: light sinking, the grid darkening.",
+  "when": "Day becomes night.",
+  "category": "game"
+ },
+ "world.crown": {
+  "purpose": "Someone becomes the monarch or takes the initiative: a regal, important designation.",
+  "when": "The monarch or the initiative changes hands.",
+  "category": "game"
+ },
+ "net.connected": {
+  "purpose": "Online: the link is up (a clean digital handshake).",
+  "when": "The client connects to the online server or the other player.",
+  "category": "game"
+ },
+ "net.joined": {
+  "purpose": "Online: the opponent joined and the game is on: an arrival, more exciting than connected.",
+  "when": "The online game begins (both players are in).",
+  "category": "game"
+ },
+ "net.lost": {
+  "purpose": "Online: the connection dropped or the opponent left: signal lost, a worried glitch.",
+  "when": "The link drops, the opponent leaves or the server closes.",
+  "category": "game"
+ },
+ "net.restored": {
+  "purpose": "Online: the connection is back or the opponent returned: relief, signal restored.",
+  "when": "The link reconnects or the opponent comes back.",
+  "category": "game"
+ },
+ "net.chat": {
+  "purpose": "Online: a chat message from the opponent: a light \"message in\".",
+  "when": "A chat message from the opponent arrives.",
+  "category": "game"
+ },
+ "net.waiting": {
+  "purpose": "Online: still waiting for an opponent: a calm radar ping that can repeat every few seconds.",
+  "when": "Every few seconds while a hosted game waits for its opponent.",
+  "category": "game"
+ },
+ "ambient.grid": {
+  "purpose": "The table ambience: a low, slowly breathing grid hum that makes the table a place, never in the way of the effects.",
+  "when": "Loops quietly under the game screen.",
+  "category": "ambience"
+ },
+ "cast.fire": {
+  "purpose": "A spell is cast and goes on the stack; this one is red spells and fire-named ones (Fireball, Flame Slash). Must read as \"a spell is launched\" and carry its element's flavour in the grid style.",
+  "when": "The card lifts out of the hand and flies to the stack (about 0.45 s), with a flare when it arrives.",
+  "category": "game"
+ },
+ "impact.fire": {
+  "purpose": "A spell's effect strikes its target (red spells and fire-named ones (Fireball, Flame Slash)). Must feel like a hit of that element, rendered digitally; louder for more damage (the game scales its volume).",
+  "when": "The projectile reaches the card or the player disc: burst of light, the target recoils, the damage number floats up.",
+  "category": "game"
+ },
+ "cast.lightning": {
+  "purpose": "A spell is cast and goes on the stack; this one is lightning-named spells (Lightning Bolt, Shock) and blue-red ones. Must read as \"a spell is launched\" and carry its element's flavour in the grid style.",
+  "when": "The card lifts out of the hand and flies to the stack (about 0.45 s), with a flare when it arrives.",
+  "category": "game"
+ },
+ "impact.lightning": {
+  "purpose": "A spell's effect strikes its target (lightning-named spells (Lightning Bolt, Shock) and blue-red ones). Must feel like a hit of that element, rendered digitally; louder for more damage (the game scales its volume).",
+  "when": "The projectile reaches the card or the player disc: burst of light, the target recoils, the damage number floats up.",
+  "category": "game"
+ },
+ "cast.arcane": {
+  "purpose": "A spell is cast and goes on the stack; this one is blue spells: arcane light. Must read as \"a spell is launched\" and carry its element's flavour in the grid style.",
+  "when": "The card lifts out of the hand and flies to the stack (about 0.45 s), with a flare when it arrives.",
+  "category": "game"
+ },
+ "impact.arcane": {
+  "purpose": "A spell's effect strikes its target (blue spells: arcane light). Must feel like a hit of that element, rendered digitally; louder for more damage (the game scales its volume).",
+  "when": "The projectile reaches the card or the player disc: burst of light, the target recoils, the damage number floats up.",
+  "category": "game"
+ },
+ "cast.shadow": {
+  "purpose": "A spell is cast and goes on the stack; this one is black spells: shadow. Must read as \"a spell is launched\" and carry its element's flavour in the grid style.",
+  "when": "The card lifts out of the hand and flies to the stack (about 0.45 s), with a flare when it arrives.",
+  "category": "game"
+ },
+ "impact.shadow": {
+  "purpose": "A spell's effect strikes its target (black spells: shadow). Must feel like a hit of that element, rendered digitally; louder for more damage (the game scales its volume).",
+  "when": "The projectile reaches the card or the player disc: burst of light, the target recoils, the damage number floats up.",
+  "category": "game"
+ },
+ "cast.nature": {
+  "purpose": "A spell is cast and goes on the stack; this one is green spells: nature. Must read as \"a spell is launched\" and carry its element's flavour in the grid style.",
+  "when": "The card lifts out of the hand and flies to the stack (about 0.45 s), with a flare when it arrives.",
+  "category": "game"
+ },
+ "impact.nature": {
+  "purpose": "A spell's effect strikes its target (green spells: nature). Must feel like a hit of that element, rendered digitally; louder for more damage (the game scales its volume).",
+  "when": "The projectile reaches the card or the player disc: burst of light, the target recoils, the damage number floats up.",
+  "category": "game"
+ },
+ "cast.radiant": {
+  "purpose": "A spell is cast and goes on the stack; this one is white spells: radiance. Must read as \"a spell is launched\" and carry its element's flavour in the grid style.",
+  "when": "The card lifts out of the hand and flies to the stack (about 0.45 s), with a flare when it arrives.",
+  "category": "game"
+ },
+ "impact.radiant": {
+  "purpose": "A spell's effect strikes its target (white spells: radiance). Must feel like a hit of that element, rendered digitally; louder for more damage (the game scales its volume).",
+  "when": "The projectile reaches the card or the player disc: burst of light, the target recoils, the damage number floats up.",
+  "category": "game"
+ },
+ "cast.force": {
+  "purpose": "A spell is cast and goes on the stack; this one is colourless and artifact spells: raw force. Must read as \"a spell is launched\" and carry its element's flavour in the grid style.",
+  "when": "The card lifts out of the hand and flies to the stack (about 0.45 s), with a flare when it arrives.",
+  "category": "game"
+ },
+ "impact.force": {
+  "purpose": "A spell's effect strikes its target (colourless and artifact spells: raw force). Must feel like a hit of that element, rendered digitally; louder for more damage (the game scales its volume).",
+  "when": "The projectile reaches the card or the player disc: burst of light, the target recoils, the damage number floats up.",
+  "category": "game"
+ },
+ "mana.W": {
+  "purpose": "Mana is made (white): a small, pleasant confirmation that energy was drawn from a land or source, recognisably white next to the other five.",
+  "when": "An orb of mana flies from the tapped source to the spell it pays for (several at once are staggered).",
+  "category": "game"
+ },
+ "mana.U": {
+  "purpose": "Mana is made (blue): a small, pleasant confirmation that energy was drawn from a land or source, recognisably blue next to the other five.",
+  "when": "An orb of mana flies from the tapped source to the spell it pays for (several at once are staggered).",
+  "category": "game"
+ },
+ "mana.B": {
+  "purpose": "Mana is made (black): a small, pleasant confirmation that energy was drawn from a land or source, recognisably black next to the other five.",
+  "when": "An orb of mana flies from the tapped source to the spell it pays for (several at once are staggered).",
+  "category": "game"
+ },
+ "mana.R": {
+  "purpose": "Mana is made (red): a small, pleasant confirmation that energy was drawn from a land or source, recognisably red next to the other five.",
+  "when": "An orb of mana flies from the tapped source to the spell it pays for (several at once are staggered).",
+  "category": "game"
+ },
+ "mana.G": {
+  "purpose": "Mana is made (green): a small, pleasant confirmation that energy was drawn from a land or source, recognisably green next to the other five.",
+  "when": "An orb of mana flies from the tapped source to the spell it pays for (several at once are staggered).",
+  "category": "game"
+ },
+ "mana.C": {
+  "purpose": "Mana is made (colourless): a small, pleasant confirmation that energy was drawn from a land or source, recognisably colourless next to the other five.",
+  "when": "An orb of mana flies from the tapped source to the spell it pays for (several at once are staggered).",
+  "category": "game"
+ },
+ "spell.resolve": {
+  "purpose": "A spell or ability starts to resolve: \"executing\", it flares and releases its effect.",
+  "when": "The spell rises off the stack, grows and glows before its effect leaves it.",
+  "category": "game"
+ },
+ "spell.bolt": {
+  "purpose": "A spell's effect is in flight toward its target: a fast travelling whoosh that leads into the impact.",
+  "when": "The projectile leaves the spell (it lands about 0.35 s later).",
+  "category": "game"
+ },
+ "spell.touch": {
+  "purpose": "A spell reaches what it targets without damage (pump, tap, destroy target, ...): the effect is applied, \"data written\".",
+  "when": "The effect lands on its target: light behind the card and a glow pulse.",
+  "category": "game"
+ },
+ "spell.countered": {
+  "purpose": "A spell or ability is countered: negated, it breaks apart on the stack. A decisive \"denied\".",
+  "when": "The countered spell jolts on the stack and shatters.",
+  "category": "game"
+ },
+ "spell.copied": {
+  "purpose": "A spell is copied: duplicated, an echo of the original.",
+  "when": "A copy of a spell appears on the stack.",
+  "category": "game"
+ },
+ "ability.activated": {
+  "purpose": "An activated ability is used: a permanent powers a function, a quick charge.",
+  "when": "Its source flares and pulses blue.",
+  "category": "game"
+ },
+ "ability.triggered": {
+  "purpose": "A triggered ability fires on its own: an alert \"something happened because of this card\", golden.",
+  "when": "Its source flares and pulses gold.",
+  "category": "game"
+ },
+ "combat.attack": {
+  "purpose": "Attackers are declared: aggressive, charging forward; light cycles revving into the attack.",
+  "when": "The attackers move forward and pulse red-orange.",
+  "category": "game"
+ },
+ "combat.block": {
+  "purpose": "Blockers are declared: defensive, a digital barrier slamming into place.",
+  "when": "The blockers step in front of the attackers and pulse blue.",
+  "category": "game"
+ },
+ "combat.arm": {
+  "purpose": "You chose a creature to attack with (or took it back): weapon armed, a quick aggressive select.",
+  "when": "Clicking a creature while declaring attackers.",
+  "category": "game"
+ },
+ "combat.assign": {
+  "purpose": "You chose a blocker or the attacker it blocks: a defensive assignment click, distinct from arm.",
+  "when": "Clicking a blocker or an attacker while declaring blockers.",
+  "category": "game"
+ },
+ "combat.swing": {
+  "purpose": "A creature rises and lunges at its target: the wind-up whoosh before the hit.",
+  "when": "The creature lifts off the table and swings (contact comes about 0.28 s in).",
+  "category": "game"
+ },
+ "hit.light": {
+  "purpose": "A blow lands for 1-2 damage: a crisp, light digital hit.",
+  "when": "Contact of a creature (or a damage source) with its target.",
+  "category": "game"
+ },
+ "hit.medium": {
+  "purpose": "A blow lands for 3-5 damage: a solid, punchy hit.",
+  "when": "Contact, with a small screen shake.",
+  "category": "game"
+ },
+ "hit.heavy": {
+  "purpose": "A blow lands for 6+ damage: a massive, crunching impact.",
+  "when": "Contact, with a strong screen shake and a flash.",
+  "category": "game"
+ },
+ "hit.player": {
+  "purpose": "Damage hits a player: the player's own system takes the blow, heavier and more alarming than a hit on a card.",
+  "when": "The blow lands on the player's disc and the life total drops.",
+  "category": "game"
+ },
+ "life.gain": {
+  "purpose": "A player gains life: restorative, rising, a healing shimmer.",
+  "when": "Healing light on the player disc, a green +N floats up.",
+  "category": "game"
+ },
+ "life.loss": {
+  "purpose": "A player loses life without damage (paying life, drain): energy drained away, falling.",
+  "when": "A dark burst on the player disc, a red -N floats up.",
+  "category": "game"
+ },
+ "counter.up": {
+  "purpose": "Helpful counters are added (+1/+1, loyalty, charge): an upgrade, a level up.",
+  "when": "Green motes rise around the card and \"+1 +1/+1\" floats up.",
+  "category": "game"
+ },
+ "counter.down": {
+  "purpose": "Harmful counters are added or counters removed: a downgrade.",
+  "when": "Red motes around the card, \"-1\" floats up.",
+  "category": "game"
+ },
+ "stat.up": {
+  "purpose": "A creature gets bigger (pump, anthem): powered up, a quick boost.",
+  "when": "The card pulses green and \"+2/+2\" floats up.",
+  "category": "game"
+ },
+ "stat.down": {
+  "purpose": "A creature gets smaller: weakened, a power sag.",
+  "when": "The card pulses red and \"-2/-2\" floats up.",
+  "category": "game"
+ },
+ "damage.prevented": {
+  "purpose": "Damage is prevented: a shield deflects the blow, a bright ricochet.",
+  "when": "A prevention effect stops damage.",
+  "category": "game"
+ },
+ "card.draw": {
+  "purpose": "A card is drawn: a quick data pull from the library into the hand; several in a row read as a quick cascade.",
+  "when": "The card flies from the library into the hand (several are 90 ms apart).",
+  "category": "game"
+ },
+ "card.land": {
+  "purpose": "A land is played: solid, grounded, it locks into the grid and powers up.",
+  "when": "The land lands on the table.",
+  "category": "game"
+ },
+ "card.enter": {
+  "purpose": "A permanent spell resolves and lands on the battlefield: materialized, arrived, with weight.",
+  "when": "The card flies from the stack and lands on the table with dust.",
+  "category": "game"
+ },
+ "card.enterHeavy": {
+  "purpose": "A big creature (power 4 or more) lands: a heavy, ground-shaking arrival.",
+  "when": "The card lands and the table shakes.",
+  "category": "game"
+ },
+ "card.token": {
+  "purpose": "A token is created: it materializes from nothing, a program compiling into the grid; lighter than a card entering.",
+  "when": "The token scales up out of a burst of light.",
+  "category": "game"
+ },
+ "card.destroy": {
+  "purpose": "A permanent is destroyed or dies: it shatters and derezzes into voxels. Dramatic, final, the Tron signature.",
+  "when": "The card is struck, cracks and bursts into flying shards.",
+  "category": "game"
+ },
+ "card.sacrifice": {
+  "purpose": "A permanent is sacrificed: given up, it sinks and is consumed in a dark swirl (not broken like destroy).",
+  "when": "The card sinks into the table in purple smoke.",
+  "category": "game"
+ },
+ "card.exile": {
+  "purpose": "A card is exiled: banished, drawn into a single point of light and gone.",
+  "when": "The card flares white and shrinks into a point.",
+  "category": "game"
+ },
+ "card.bounce": {
+  "purpose": "A permanent returns to its owner's hand: recalled, a reverse whoosh back.",
+  "when": "The card flies back to the hand.",
+  "category": "game"
+ },
+ "card.toGraveyard": {
+  "purpose": "A card goes to a graveyard (a finished spell, a discard, a mill): filed away, a soft downward swish.",
+  "when": "The card flies into the graveyard pile.",
+  "category": "game"
+ },
+ "card.toLibrary": {
+  "purpose": "A card goes into a library: tucked away into the deck.",
+  "when": "The card flies into the library pile.",
+  "category": "game"
+ },
+ "card.tap": {
+  "purpose": "A permanent is tapped: a small, crisp mechanical-digital \"clack\" as it turns sideways.",
+  "when": "The card turns sideways.",
+  "category": "game"
+ },
+ "card.untap": {
+  "purpose": "Your permanents untap: a quick reset sweep, everything ready again (once for the whole board).",
+  "when": "The untap step: the tapped cards turn upright.",
+  "category": "game"
+ },
+ "card.flip": {
+  "purpose": "A card transforms, flips or turns face up or down: a phase shift into another form.",
+  "when": "A flash of light and a pop as the new face shows.",
+  "category": "game"
+ },
+ "card.attach": {
+  "purpose": "An Aura or Equipment is attached: docked and locked on, magnetic.",
+  "when": "The attachment moves under the permanent it now enchants or equips.",
+  "category": "game"
+ },
+ "card.control": {
+  "purpose": "A permanent changes control: hacked and reassigned to the other side.",
+  "when": "The card moves to the other player's side.",
+  "category": "game"
+ },
+ "card.phase": {
+  "purpose": "A permanent phases out: it flickers out of existence for a while.",
+  "when": "The permanent fades out of play.",
+  "category": "game"
+ },
+ "card.reveal": {
+  "purpose": "Cards are revealed or looked at (scry, surveil, reveal): a scan exposing data.",
+  "when": "A reveal notice shows the cards.",
+  "category": "game"
+ },
+ "card.search": {
+  "purpose": "A library is searched: scanning through data for a match.",
+  "when": "A player searches a library.",
+  "category": "game"
+ },
+ "card.zoom": {
+  "purpose": "A card is enlarged for a closer look: a soft optical zoom-in, unobtrusive.",
+  "when": "The card zoom opens (hover or press on a card).",
+  "category": "game"
+ },
+ "card.pickup": {
+  "purpose": "You pick up a card from your hand: lifted, ready to be played.",
+  "when": "A drag of a hand card starts.",
+  "category": "game"
+ },
+ "card.drop": {
+  "purpose": "You let go of a card over the table to play it: released, committed.",
+  "when": "A dragged card is dropped past the play line.",
+  "category": "game"
+ },
+ "card.target": {
+  "purpose": "You chose a target: target locked, precise and confident.",
+  "when": "A card or player is chosen as a target.",
+  "category": "game"
+ },
+ "card.targeted": {
+  "purpose": "The opponent targets something of yours: a warning lock-on alert, attention without panic.",
+  "when": "The opponent's spell or ability targets your card or you (a targeting arrow appears).",
+  "category": "game"
+ }
+}

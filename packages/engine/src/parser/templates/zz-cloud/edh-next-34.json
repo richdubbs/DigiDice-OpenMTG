@@ -1,0 +1,505 @@
+[
+  {
+    "id": "rep.edhn34.draw.returnGraveyardCardOrLose",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 121.1",
+      "CR 608.2d",
+      "CR 104.3e"
+    ],
+    "pattern": "if you would draw ( a | one ) card , return a card from your graveyard to your hand instead . if you can't , you lose the game",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "draw",
+            "player": "you"
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "chooseObjects",
+                "who": {
+                  "ref": "you"
+                },
+                "from": {
+                  "ref": "each",
+                  "filter": {
+                    "zone": "graveyard",
+                    "owner": "you",
+                    "isCard": true
+                  }
+                },
+                "min": 1,
+                "max": 1,
+                "as": "returned"
+              },
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "returned"
+                },
+                "to": {
+                  "zone": "hand"
+                },
+                "as": "did"
+              },
+              {
+                "op": "if",
+                "cond": {
+                  "cond": "did",
+                  "step": "did",
+                  "not": true
+                },
+                "then": [
+                  {
+                    "op": "loseGame",
+                    "who": {
+                      "ref": "you"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "If you would draw one card, return a card from your graveyard to your hand instead. If you can't, you lose the game."
+      },
+      {
+        "text": "{5}, {T}: Each player gains 3 life.\nIf you would draw one card, return a card from your graveyard to your hand instead. If you can't, you lose the game."
+      }
+    ],
+    "counterExamples": [
+      "If you would draw one card, return a card from your graveyard to your hand. If you can't, you lose the game.",
+      "If an opponent would draw one card, return a card from your graveyard to your hand instead. If you can't, you lose the game.",
+      "If you would draw one card, return a creature card from your graveyard to your hand instead. If you can't, you lose the game.",
+      "If you would draw one card, return a card from your graveyard to your hand instead. If you can't, you win the game."
+    ]
+  },
+  {
+    "id": "sta.edhn34.graveyard.yours.card.exileThatCard",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 111.1",
+      "CR 400.3"
+    ],
+    "pattern": "if ( a | one ) card would be put into your graveyard from anywhere , exile that card instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": {
+          "isCard": true,
+          "owner": "you"
+        },
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "exile"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one card would be put into your graveyard from anywhere, exile that card instead.\n{4}, {T}: Each player gains 2 life."
+      },
+      {
+        "text": "{3}, {T}: Each player mills three cards.\nIf one card would be put into your graveyard from anywhere, exile that card instead."
+      }
+    ],
+    "counterExamples": [
+      "If one card would be put into your graveyard from your library, exile that card instead.",
+      "If one card would be put into an opponent's graveyard from anywhere, exile that card instead.",
+      "If one card would be put into your graveyard from anywhere, shuffle that card into your library instead."
+    ]
+  },
+  {
+    "id": "sta.edhn34.graveyard.enchantedPlayer.revealBottom",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 400.3",
+      "CR 701.20a",
+      "CR 303.4"
+    ],
+    "pattern": "if ( a | one ) card would be put into enchanted player 's graveyard from anywhere , instead that card is revealed and put on the bottom of that player 's library",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "isCard": true,
+              "owner": {
+                "ref": "enchantedPlayer"
+              }
+            },
+            "to": "graveyard"
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "reveal",
+                "who": {
+                  "ref": "you"
+                },
+                "what": {
+                  "ref": "event",
+                  "role": "subject"
+                }
+              },
+              {
+                "op": "move",
+                "what": {
+                  "ref": "event",
+                  "role": "subject"
+                },
+                "to": {
+                  "zone": "library",
+                  "position": "bottom"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "enchanted",
+      "that"
+    ],
+    "examples": [
+      {
+        "text": "If one card would be put into enchanted player's graveyard from anywhere, instead that card is revealed and put on the bottom of that player's library."
+      },
+      {
+        "text": "Whenever enchanted player draws a card, you gain 1 life.\nIf one card would be put into enchanted player's graveyard from anywhere, instead that card is revealed and put on the bottom of that player's library."
+      }
+    ],
+    "counterExamples": [
+      "If one card would be put into enchanted player's graveyard from anywhere, instead that card is put on the bottom of that player's library.",
+      "If one card would be put into your graveyard from anywhere, instead that card is revealed and put on the bottom of your library.",
+      "If one card would be put into enchanted player's graveyard from anywhere, instead that card is revealed and put on top of that player's library."
+    ]
+  },
+  {
+    "id": "eff.edhn34.player.investigate.forEach",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.16a",
+      "CR 608.2c",
+      "CR 109.4"
+    ],
+    "pattern": "{p:Player} investigate[s] for each {f:Filter}",
+    "build": {
+      "op": "action",
+      "action": "investigate",
+      "who": "$p",
+      "n": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "for",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target creature. Its controller investigates for each creature destroyed this way."
+      },
+      {
+        "text": "Destroy all artifacts. You investigate for each artifact destroyed this way."
+      },
+      {
+        "text": "Exile target creature. Each opponent investigates for each nontoken creature exiled this way."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target creature. Its controller investigates once for each creature destroyed this way.",
+      "Destroy target creature. Its controller investigates for each creature.",
+      "Destroy target creature. Its controller investigates twice for each creature destroyed this way."
+    ]
+  },
+  {
+    "id": "eff.edhn34.linked.mayPutOwned.hand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 400.3",
+      "CR 608.2c",
+      "CR 108.3"
+    ],
+    "pattern": "you may put ( a | one ) card you own exiled with ~ into your hand",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "is": {
+                "ref": "linked",
+                "link": "exiled"
+              },
+              "zone": "any",
+              "isCard": true,
+              "owner": "you"
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "returned"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "returned"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "you",
+      "own"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile the top four cards of your library.\nAt the beginning of your upkeep, you may put one card you own exiled with ~ into your hand."
+      },
+      {
+        "text": "When ~ enters, exile the top three cards of your library.\nWhenever ~ attacks, you may put one card you own exiled with ~ into your hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top four cards of your library.\nAt the beginning of your upkeep, you may put one card exiled with ~ into your hand.",
+      "When ~ enters, exile the top four cards of your library.\nAt the beginning of your upkeep, put one card you own exiled with ~ into your hand.",
+      "When ~ enters, exile the top four cards of your library.\nAt the beginning of your upkeep, you may put each card you own exiled with ~ into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn34.pump.foreach.power.cantBeBlocked",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 509.1b",
+      "CR 613.4c",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Obj} gets +1/+0 {d:Dur} for each {f:Filter} and can't be blocked this turn",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +1/+0 until end of turn for each creature you control and can't be blocked this turn."
+      },
+      {
+        "text": "{2}{R}: ~ gets +1/+0 until end of turn for each artifact you control and can't be blocked this turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +1/+0 until end of turn for each creature you control and can't block this turn.",
+      "Target creature gets +1/+0 until end of turn for each creature you control and can't be blocked.",
+      "Target creature gets +0/+1 until end of turn for each creature you control and can't be blocked this turn."
+    ]
+  },
+  {
+    "id": "sta.edhn34.aura.attackBlockTax.mana",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1h",
+      "CR 509.1d",
+      "CR 303.4",
+      "CR 604.1"
+    ],
+    "pattern": "( enchanted | equipped ) creature can't attack or block unless its controller pays {m:ManaCost}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "attackTax",
+          "of": {
+            "attachedToSource": true
+          },
+          "defenders": "any",
+          "cost": {
+            "mana": "$m"
+          }
+        },
+        {
+          "s": "rule",
+          "rule": "blockTax",
+          "of": {
+            "attachedToSource": true
+          },
+          "cost": {
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature can't attack or block unless its controller pays {4}."
+      },
+      {
+        "text": "Equipped creature can't attack or block unless its controller pays {1}{W}."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't attack or block unless its controller pays {4} life.",
+      "Enchanted creature can't attack unless its controller pays {4}.",
+      "Enchanted creature can't attack or block unless you pay {4}."
+    ]
+  },
+  {
+    "id": "sta.edhn34.aura.activatedAbilities.costMore",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 602.1",
+      "CR 601.2f",
+      "CR 303.4",
+      "CR 604.1"
+    ],
+    "pattern": "activated abilities of ( enchanted | equipped ) creature cost {m:ManaCost} more to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": {
+                "attachedToSource": true
+              }
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "activate"
+    ],
+    "examples": [
+      {
+        "text": "Activated abilities of enchanted creature cost {2} more to activate."
+      },
+      {
+        "text": "Activated abilities of equipped creature cost {1}{B} more to activate."
+      }
+    ],
+    "counterExamples": [
+      "Activated abilities of enchanted creature cost {2} less to activate.",
+      "Activated abilities of enchanted land cost {2} more to activate.",
+      "Activated abilities of enchanted creature cost {2} life more to activate."
+    ]
+  }
+]

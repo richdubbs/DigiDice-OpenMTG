@@ -89,6 +89,7 @@ describe('design 5.2, 15.1 item 5: capabilities are as fine as what the announce
   const missing = (c: Condition, w: keyof typeof where): string[] => forms(c, w).filter((f) => f.startsWith('feature:announce.') && !ENGINE_CAPABILITIES.has(f));
 
   const readable: [string, Condition, keyof typeof where][] = [
+    ['designation (edh-mana-keywords-6, CR 702.131c, 725.1: the monarch or the city\'s blessing as it is now)', { cond: 'designation', who: { ref: 'you' }, what: 'monarch' }, 'activate'],
     ['wasCast kicked', { cond: 'wasCast', kicked: true }, 'mode'],
     ['not/all/any', { cond: 'all', of: [{ cond: 'not', of: { cond: 'wasCast', via: 'evoke' } }, { cond: 'any', of: [{ cond: 'turnOf', whose: 'you' }] }] }, 'spec'],
     ['count of each', { cond: 'compare', left: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'] } } }, op: '>=', right: 2 }, 'activate'],
@@ -105,7 +106,6 @@ describe('design 5.2, 15.1 item 5: capabilities are as fine as what the announce
   const unreadable: [string, Condition, keyof typeof where][] = [
     ['happened (last turn: only this turn\'s history is read, cloud std-tdm)', { cond: 'happened', event: { ev: 'draw' }, scope: 'lastTurn' }, 'spec'],
     ['did', { cond: 'did', step: 'a' }, 'spec'],
-    ['designation', { cond: 'designation', who: { ref: 'you' }, what: 'monarch' }, 'activate'],
     ['chosen', { cond: 'chosen', link: 'l', equals: 'x' }, 'mode'],
     ['life of each opponent', { cond: 'compare', left: { q: 'life', of: { ref: 'each', who: 'opponent' } }, op: '>', right: 5 }, 'activate'],
     ['turnOf bound', { cond: 'turnOf', whose: { ref: 'bound', name: 'p' } }, 'spec'],

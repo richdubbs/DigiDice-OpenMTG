@@ -153,8 +153,11 @@ describe('std-r9b parser, lowering and renderer support', () => {
     // two instructions that may have exiled cards from a hand: the count names neither (design 6.4)
     expect(fullyAutomated(spell('Exile target creature card in a graveyard. Exile a card from your hand. You draw a card for each card exiled from their hand this way.'))).toBe(false);
   });
-  it('CR 701.23b: "all cards with the same name" (every card of that name in the public graveyard must be found) is not read as "any number of cards"', () => {
-    expect(fullyAutomated(spell(`Exile target creature. ${SEARCH.replace('any number of cards', 'all cards')} Then that player shuffles.`))).toBe(false);
+  it('CR 701.23b: "all cards with the same name" (every card of that name in the public graveyard must be found) is not read as "any number of cards": since edh-c-32 it is its own search (`publicRequired`)', () => {
+    const all = spell(`Exile target creature. ${SEARCH.replace('any number of cards', 'all cards')} Then that player shuffles.`);
+    expect(fullyAutomated(all)).toBe(true);
+    expect(JSON.stringify(all.abilities)).toContain('"publicRequired":true');
+    expect(JSON.stringify(spell(`Exile target creature. ${SEARCH} Then that player shuffles.`).abilities)).not.toContain('publicRequired');
   });
   it('CR 301.7, 205.3g: "Vehicle creatures you control" is a noun phrase the renderer says (a crewed Vehicle is an artifact creature); "Vehicle lands" stays refused', () => {
     const relic = (text: string) => parseCard(card('Example Relic', 'Artifact', text), OPTS).faces[0]!;

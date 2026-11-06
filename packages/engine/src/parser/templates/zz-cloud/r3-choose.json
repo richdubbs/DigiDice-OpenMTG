@@ -454,7 +454,7 @@
     "id": "eff.r3choose.choose.targetPlayer",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 115.1",
       "CR 601.2c",

@@ -49,7 +49,7 @@ describe('PromptBar', () => {
   it('has one prompt component for every decision kind of the engine', () => {
     expect(Object.keys(PROMPTS).sort()).toEqual([
       'assignDamage', 'chooseColor', 'chooseDivision', 'chooseName', 'chooseNumber', 'chooseObjects', 'chooseOption', 'chooseReplacement', 'chooseTargets', 'commanderZone',
-      'declareAttackers', 'declareBlockers', 'manualResolve', 'mulligan', 'order', 'payCost', 'playFirst', 'priority', 'yesNo',
+      'declareAttackers', 'declareBlockers', 'manualResolve', 'mulligan', 'order', 'payCost', 'playFirst', 'priority', 'shortcut', 'yesNo',
     ]);
   });
 });

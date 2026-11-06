@@ -1,0 +1,218 @@
+[
+  {
+    "id": "rid.edhv61.excessToController.always",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.4a",
+      "CR 120.10",
+      "CR 608.2c",
+      "CR 614.1a"
+    ],
+    "pattern": "excess damage is dealt to that creature 's controller instead",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to.ref": "target"
+        },
+        "excessToController": true
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "excess",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 6 damage to target creature. Excess damage is dealt to that creature's controller instead."
+      },
+      {
+        "text": "~ deals 3 damage to target creature. Excess damage is dealt to that creature's controller instead."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 5 damage to target creature. Excess damage is dealt to you instead.",
+      "~ deals 5 damage to target creature. Excess damage is dealt to that creature's owner instead.",
+      "~ deals 5 damage to target creature. Excess damage is dealt to that creature's controller."
+    ]
+  },
+  {
+    "id": "eff.edhv61.put.selfAndTarget.top.shuffle",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 400.3",
+      "CR 401.4",
+      "CR 115.1"
+    ],
+    "pattern": "put ~ and {o:Obj} on top of their owners' libraries , then those players shuffle their libraries",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "self"
+            },
+            "$o"
+          ]
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": {
+            "ref": "self"
+          }
+        },
+        "guard": {
+          "cond": "matches",
+          "object": {
+            "ref": "self"
+          },
+          "filter": {
+            "zone": "library"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": "$o"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "{1}{U}, {T}: Put ~ and target creature on top of their owners' libraries, then those players shuffle their libraries."
+      },
+      {
+        "text": "{1}{U}: Put ~ and target artifact on top of their owners' libraries, then those players shuffle their libraries."
+      }
+    ],
+    "counterExamples": [
+      "{2}{U}, {T}: Put ~ and target creature on top of their owners' libraries.",
+      "{2}{U}, {T}: Put ~ and target creature on the bottom of their owners' libraries, then those players shuffle their libraries.",
+      "{2}{U}, {T}: Put target creature and target artifact on top of their owners' libraries, then those players shuffle their libraries."
+    ]
+  },
+  {
+    "id": "eff.edhv61.search.libraryAndGraveyard.desc.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23d",
+      "CR 701.20a"
+    ],
+    "pattern": "search your library and graveyard for {f:DiscardDesc} , reveal it",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "alsoZones": [
+        "graveyard"
+      ],
+      "filter": "$f",
+      "max": 1,
+      "as": "searchBoth",
+      "reveal": true,
+      "allZones": true
+    },
+    "subject": "none",
+    "needs": [
+      "op:search.alsoZones",
+      "op:search.allZones"
+    ],
+    "examples": [
+      {
+        "text": "Search your library and graveyard for a card named Gleam Adept, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ enters, search your library and graveyard for a Dragon card, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library and graveyard for a Dragon card, reveal them, put it into your hand, then shuffle.",
+      "Search your library and graveyard for two Dragon cards, reveal it, put it into your hand, then shuffle.",
+      "Search target player's library and graveyard for a Dragon card, reveal it, put it into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "sta.edhv61.obj.pump.foreach.aslong",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 604.2"
+    ],
+    "pattern": "{o:Obj} gets +1/+1 for each {f:Filter} as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              },
+              "toughness": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "~ gets +1/+1 for each black permanent your opponents control as long as there are seven or more cards in your graveyard."
+      },
+      {
+        "text": "~ gets +1/+1 for each Golem you control as long as you control a creature."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +1/+1 for each black permanent your opponents control as long as.",
+      "~ gets +2/+2 for each black permanent your opponents control as long as there are seven or more cards in your graveyard.",
+      "~ gets +1/+1 for each black permanent your opponents control unless there are seven or more cards in your graveyard."
+    ]
+  }
+]

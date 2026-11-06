@@ -66,6 +66,11 @@ function shieldCovers(s: GameState, rec: ContinuousEffectRec, def: ReplacementDe
   return matchesFilter(s, o, f, filterCtxOutside(s, { controller: rec.controller, ...(rec.source ? { sourceId: rec.source.id } : {}) }));
 }
 
+/** edh-c-45 (CR 616.1, 701.19a-b): does a regeneration shield OR a static regeneration cover the permanent? The replacement effects that ask which applies first (shield counters, umbra armor) offer it. */
+export function regenerationAvailable(s: GameState, id: ObjectId): boolean {
+  return regenerationShieldIndex(s, id) >= 0 || staticRegenerationCovers(s, id);
+}
+
 /** Index in `continuousEffects` of the first (oldest) regeneration shield that covers the permanent, or -1 (CR 701.19a; using any one of several has the same result). */
 export function regenerationShieldIndex(s: GameState, id: ObjectId): number {
   return s.continuousEffects.findIndex((e) => {
@@ -73,6 +78,24 @@ export function regenerationShieldIndex(s: GameState, id: ObjectId): number {
     const def = e.effect;
     return def.body.b === 'regeneration' && def.shield !== undefined && def.condition === undefined && shieldAlive(s, e) && shieldCovers(s, e, def, id);
   });
+}
+
+/**
+ * edh-c-45 (CR 614.1a, 701.19b, 701.19c; Mossbridge Troll): a permanent's own static "If ~ would be destroyed, regenerate it" is no shield: it is there whenever the permanent is
+ * destroyed, as often as that happens (the Mossbridge Troll rulings), until it can't be regenerated. effects/funnels.ts installs the finder of the static replacement effects of
+ * the battlefield whose body is `regeneration`, with no `shield`, about `{ev:'action', verb:'destroy'}`; this file judges whom each covers, like a shield.
+ */
+export interface StaticRegeneration { source: ObjectId; controller: PlayerId; filter: ObjectFilter }
+export type StaticRegenerationFinder = (s: GameState) => readonly StaticRegeneration[];
+let staticRegenerations: StaticRegenerationFinder | null = null;
+export function installStaticRegenerations(f: StaticRegenerationFinder | null): void {
+  staticRegenerations = f;
+}
+/** Does a static regeneration effect cover the permanent (every field evaluated, or it does not, design 3.3)? */
+export function staticRegenerationCovers(s: GameState, id: ObjectId): boolean {
+  const o = s.objects[id];
+  if (!o || staticRegenerations === null) return false;
+  return staticRegenerations(s).some((r) => matchesFilter(s, o, r.filter, filterCtxOutside(s, { controller: r.controller, sourceId: r.source })));
 }
 
 /** Use up one use of a shield (CR 614.8, 615.8: "the next time"); a shield whose uses are spent is gone. */
@@ -111,6 +134,8 @@ export interface DestroyOptions {
   proposed?: boolean;
   /** FAST5X E28 INTERFACE CHANGE (additive): a state-based action destroys it (CR 704.5g-h), not an effect (CR 122.1c: shield counters don't apply). */
   stateBased?: boolean;
+  /** edh-players-22 (CR 109.5, 701.8a): the controller of the spell or ability whose instruction destroys it, reported with the `destroy` action ("whenever a spell or ability an opponent controls destroys ..."). */
+  by?: PlayerId;
 }
 
 /** What happened to a permanent that was to be destroyed. */
@@ -166,7 +191,12 @@ export function destroy(g: Game, id: ObjectId, opts: DestroyOptions = {}): Destr
     return 'indestructible';
   }
   // WP31: "can't be regenerated" (CR 701.19c) is read here, so every destruction honors it (an effect's `destroy` proposal as well as the funnel's).
-  const i = opts.cantRegenerate || cantDo(g.s, 'beRegenerated', id) ? -1 : regenerationShieldIndex(g.s, id);
+  const cantRegen = opts.cantRegenerate === true || cantDo(g.s, 'beRegenerated', id);
+  const i = cantRegen ? -1 : regenerationShieldIndex(g.s, id);
+  if (!cantRegen && staticRegenerationCovers(g.s, id)) { // a static one is used before a shield (the shield is kept)
+    regenerate(g, id, opts.reason, opts.rules, controllerOf(g.s, id)); // edh-c-45 (CR 614.1a, 701.19b): no shield to use up
+    return 'regenerated';
+  }
   if (i >= 0) {
     spendShield(g, i); // the shield is used up
     // CR 701.19a: "its controller taps it": the regenerated permanent's own controller taps it, not the shield's controller, so a shield on an
@@ -174,7 +204,14 @@ export function destroy(g: Game, id: ObjectId, opts: DestroyOptions = {}): Destr
     regenerate(g, id, opts.reason, opts.rules, controllerOf(g.s, id));
     return 'regenerated';
   }
-  moveObject(g, id, 'graveyard', { cause: 'destroy' }); // CR 701.8a
+  // edh-players-22 (CR 109.5): the move is proposed and performed inside this call, so the zoneChanged event it emits (core/zones.ts) reads who destroyed it from the game
+  const outer = g.destroyedBy;
+  g.destroyedBy = opts.by ?? null;
+  try {
+    moveObject(g, id, 'graveyard', { cause: 'destroy' }); // CR 701.8a
+  } finally {
+    g.destroyedBy = outer;
+  }
   // WP11 review: the move goes through the proposal pipeline, which may drop it (a "can't" effect, CR 614.17, 614.6). A permanent still on the battlefield
   // was not destroyed; one that went elsewhere instead (exile, CR 614.1a) was.
   if (g.s.objects[id]?.zone === 'battlefield') return 'none';

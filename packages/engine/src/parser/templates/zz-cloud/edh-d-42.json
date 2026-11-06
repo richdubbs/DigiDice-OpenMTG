@@ -1,0 +1,137 @@
+[
+  {
+    "id": "eff.edhd42.token.spellgorgerWeird",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.3",
+      "CR 111.4",
+      "CR 701.7a"
+    ],
+    "pattern": "create a spellgorger weird token",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": {
+        "name": "Spellgorger Weird",
+        "colors": [
+          "R"
+        ],
+        "types": [
+          "Creature"
+        ],
+        "subtypes": [
+          "Weird"
+        ],
+        "power": 2,
+        "toughness": 2,
+        "manaCost": [
+          {
+            "kind": "generic",
+            "amount": 2
+          },
+          {
+            "kind": "colored",
+            "color": "R"
+          }
+        ],
+        "abilities": [
+          {
+            "kind": "triggered",
+            "text": "Whenever you cast a noncreature spell, put a +1/+1 counter on ~.",
+            "trigger": {
+              "on": [
+                {
+                  "ev": "cast",
+                  "player": "you",
+                  "spell": {
+                    "notTypes": [
+                      "Creature"
+                    ]
+                  }
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "putCounters",
+                  "on": {
+                    "ref": "self"
+                  },
+                  "kind": "+1/+1",
+                  "count": 1
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, create a Spellgorger Weird token."
+      },
+      {
+        "text": "At the beginning of your upkeep, create a Spellgorger Weird token."
+      }
+    ],
+    "counterExamples": [
+      "Create two Spellgorger Weird tokens.",
+      "Create a tapped Spellgorger Weird token.",
+      "Create a Spellgorger Weird token for each opponent."
+    ]
+  },
+  {
+    "id": "eff.edhd42.token.forEach.manaFrom.tapped",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 701.7a",
+      "CR 106.3",
+      "CR 601.2h",
+      "CR 110.5b"
+    ],
+    "pattern": "for each mana from ( a | an ) {f:Filter} spent to cast {o:Obj} , create ( a | an ) tapped {t:TokenDesc}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "spellManaSpent",
+        "of": "$o",
+        "from": "$f"
+      },
+      "token": "$t",
+      "tapped": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "tapped"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each mana from a Desert spent to cast it, create a tapped Treasure token."
+      },
+      {
+        "text": "When ~ enters, for each mana from a Forest spent to cast it, create a tapped 1/1 green Elf creature token."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, for each mana from a Desert spent to cast it, create a Treasure token.",
+      "When ~ enters, for each mana spent to cast it, create a tapped Treasure token.",
+      "When ~ enters, for each mana from a Desert you control, create a tapped Treasure token."
+    ]
+  }
+]

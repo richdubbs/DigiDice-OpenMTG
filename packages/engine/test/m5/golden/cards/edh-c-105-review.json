@@ -1,0 +1,211 @@
+[
+ {
+  "card": "Mind Swords",
+  "expect": "full",
+  "verified": "edh-c-105 review (Commander effort, EDHREC rank 24533; tuning half), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-31) and the Comprehensive Rules (media.wizards.com text 2026-09-25): The alternative cost (Swamp, sacrifice a creature) was already full; \"Each player exiles two cards from their hand\" chooses two cards of their own hand for each player (perPlayer iterating, CR 101.4 APNAP order, 608.2d) and exiles all of them (CR 406.1; ruling: simultaneously; eff.edhv105.eachPlayer.exiles.nCardsFromHand).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effects": [
+       {
+        "cost": {
+         "other": [
+          {
+           "count": 1,
+           "filter": {
+            "types": [
+             "Creature"
+            ]
+           },
+           "kind": "sacrifice"
+          }
+         ]
+        },
+        "name": "alternative",
+        "s": "alternativeCost",
+        "when": {
+         "cond": "exists",
+         "of": {
+          "filter": {
+           "controller": "you",
+           "subtypes": [
+            "Swamp"
+           ]
+          },
+          "ref": "each"
+         }
+        }
+       }
+      ],
+      "kind": "static",
+      "zone": [
+       "stack"
+      ]
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "from": {
+          "filter": {
+           "isCard": true,
+           "owner": {
+            "ref": "iterating"
+           },
+           "zone": "hand"
+          },
+          "ref": "each"
+         },
+         "max": 2,
+         "min": 2,
+         "op": "chooseObjects",
+         "perPlayer": {
+          "ref": "each",
+          "who": "player"
+         },
+         "who": {
+          "ref": "iterating"
+         }
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "name": "b0",
+          "ref": "bound"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "spell"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Obscura Ascendancy",
+  "expect": "full",
+  "verified": "edh-c-105 review (Commander effort, EDHREC rank 24869; tuning half), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-31) and the Comprehensive Rules (media.wizards.com text 2026-09-25): intervening-if on the cast spell's mana value equal to 1 plus the soul counters on ~ (CR 603.4, 202.3; render/cond.ts wording \"is equal to\" added), then a soul counter on ~ and a 2/2 white Spirit token with flying (CR 122.1, 111.1); the static +3/+3 for Spirits at five soul counters was already full (CR 613.4c).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 1,
+         "kind": "soul",
+         "on": {
+          "ref": "self"
+         },
+         "op": "putCounters"
+        },
+        {
+         "count": 1,
+         "op": "createToken",
+         "token": {
+          "colors": [
+           "W"
+          ],
+          "keywords": [
+           "flying"
+          ],
+          "power": 2,
+          "subtypes": [
+           "Spirit"
+          ],
+          "toughness": 2,
+          "types": [
+           "Creature"
+          ]
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "of": {
+         "ref": "event",
+         "role": "spell"
+        },
+        "q": "stat",
+        "stat": "manaValue"
+       },
+       "op": "==",
+       "right": {
+        "args": [
+         1,
+         {
+          "kind": "soul",
+          "on": {
+           "ref": "self"
+          },
+          "q": "counters"
+         }
+        ],
+        "op": "+",
+        "q": "math"
+       }
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you"
+        }
+       ]
+      }
+     },
+     {
+      "condition": {
+       "cond": "compare",
+       "left": {
+        "kind": "soul",
+        "on": {
+         "ref": "self"
+        },
+        "q": "counters"
+       },
+       "op": ">=",
+       "right": 5
+      },
+      "effects": [
+       {
+        "affects": {
+         "filter": {
+          "controller": "you",
+          "subtypes": [
+           "Spirit"
+          ]
+         },
+         "ref": "each"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 3,
+          "toughness": 3
+         }
+        ],
+        "s": "continuous"
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ }
+]

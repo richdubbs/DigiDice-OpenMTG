@@ -1,0 +1,6 @@
+# edh-c-44 (Commander EDHREC ranks 17,501-18,000, fourth pass): a group that gains a keyword and gets +X/+0 where X is a quantity, "for each <card> exiled this way, ~ deals 1 damage to each opponent", "for each card exiled this way, create a token that's a copy of that card, except it's a 4/4 black Zombie", "the total mana value of the discarded cards", "a land with an activated ability that isn't a mana ability". After editing: npm run cards -- fixtures
+The Archimandrite
+Culmination of Studies
+Hour of Eternity
+Nahiri's Wrath
+Ravager Wurm

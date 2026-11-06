@@ -1,0 +1,367 @@
+[
+  {
+    "id": "sta.edhc6.cardsOwn.notBattlefield.haveFlash",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 702.8a",
+      "CR 604.1",
+      "CR 109.5"
+    ],
+    "pattern": "{f:Filter} you own that aren't on the battlefield have flash",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "each",
+            "who": "player"
+          },
+          "action": "haveFlash",
+          "of": {
+            "types": "$f.types",
+            "owner": "you",
+            "stackKind": "spell",
+            "zone": "stack"
+          }
+        }
+      ]
+    },
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Artifact cards you own that aren't on the battlefield have flash."
+      },
+      {
+        "text": "Enchantment cards you own that aren't on the battlefield have flash."
+      }
+    ],
+    "counterExamples": [
+      "Creature cards you control that aren't on the battlefield have flash.",
+      "Creature cards you own that aren't on the battlefield have haste.",
+      "Creature cards you own have flash.",
+      "Creature cards you own that aren't in your graveyard have flash."
+    ]
+  },
+  {
+    "id": "eff.edhc6.dur.costMore.opp.after",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 611.2a",
+      "CR 611.2b"
+    ],
+    "pattern": "{f:Filter} your opponents cast cost {m:ManaCost} more to cast {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Artifact spells your opponents cast cost {2} more to cast until your next turn."
+      },
+      {
+        "text": "Creature spells your opponents cast cost {1} more to cast until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Artifact spells your opponents cast cost {2} less to cast until your next turn.",
+      "Artifact spells you cast cost {2} more to cast until your next turn.",
+      "Artifact spells your opponents cast cost {2} more to cast.",
+      "Artifact spells your opponents cast cost {2} more to cast until your next turn and draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhc6.counters.choice2.eachNamed",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1b",
+      "CR 608.2d"
+    ],
+    "pattern": "put ( a | an ) {k1:ListedCounterKind} counter or ( a | an ) {k2:ListedCounterKind} counter on {o:Obj}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "counterChoice",
+        "link": "counterChoice",
+        "options": [
+          "$k1",
+          "$k2"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k1"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k1",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k2"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k2",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Put a +1/+1 counter or a loyalty counter on target creature you control."
+      },
+      {
+        "text": "Put a flying counter or a trample counter on target creature."
+      }
+    ],
+    "counterExamples": [
+      "Put a +1/+1 counter and a loyalty counter on target creature you control.",
+      "Put a +1/+1 counter or a loyalty counter on each creature you control.",
+      "Put a +1/+1 counter or two loyalty counters on target creature you control.",
+      "Put a +1/+1 counter or a glorbix counter on target creature you control."
+    ]
+  },
+  {
+    "id": "cm.edhc6.spells.less.mv.cantBeCountered",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 202.3",
+      "CR 101.2",
+      "CR 701.6a",
+      "CR 604.1",
+      "CR 707.10"
+    ],
+    "pattern": "{f:Filter} you cast with mana value {n:Qty} or greater cost {m:ManaCost} less to cast and can't be countered",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "types": "$f.types",
+              "subtypes": "$f.subtypes",
+              "supertypes": "$f.supertypes",
+              "colors": "$f.colors",
+              "colorless": "$f.colorless",
+              "stackKind": "spell",
+              "zone": "stack",
+              "manaValue": {
+                "op": ">=",
+                "value": "$n"
+              }
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                {
+                  "types": "$f.types",
+                  "subtypes": "$f.subtypes",
+                  "supertypes": "$f.supertypes",
+                  "colors": "$f.colors",
+                  "colorless": "$f.colorless",
+                  "stackKind": "spell",
+                  "zone": "stack",
+                  "manaValue": {
+                    "op": ">=",
+                    "value": "$n"
+                  }
+                }
+              ],
+              "controller": "you",
+              "not": {
+                "stackKind": "copy",
+                "zone": "stack"
+              },
+              "zone": "stack"
+            }
+          },
+          "mode": "cant",
+          "action": "beCountered"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Spells you cast with mana value 6 or greater cost {2} less to cast and can't be countered."
+      },
+      {
+        "text": "Creature spells you cast with mana value 5 or greater cost {1} less to cast and can't be countered."
+      }
+    ],
+    "counterExamples": [
+      "Spells you cast with mana value 6 or greater cost {2} more to cast and can't be countered.",
+      "Spells you cast with mana value 6 or less cost {2} less to cast and can't be countered.",
+      "Spells you cast with mana value 6 or greater cost {2} less to cast and can't be copied.",
+      "Spells your opponents cast with mana value 6 or greater cost {2} less to cast and can't be countered."
+    ]
+  },
+  {
+    "id": "cm.edhc6.abilities.notMana.less.floorOne",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7",
+      "CR 605.1a"
+    ],
+    "pattern": "abilities you activate that aren't mana abilities cost {m:ManaCost} less to activate . this effect can't reduce the mana in that cost to less than one mana",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "exceptMana": true
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "one"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Abilities you activate that aren't mana abilities cost {1} less to activate. This effect can't reduce the mana in that cost to less than one mana."
+      },
+      {
+        "text": "Abilities you activate that aren't mana abilities cost {3} less to activate. This effect can't reduce the mana in that cost to less than one mana."
+      }
+    ],
+    "counterExamples": [
+      "Abilities you activate that aren't mana abilities cost {1} less to activate.",
+      "Abilities you activate that aren't mana abilities cost {1} more to activate. This effect can't reduce the mana in that cost to less than one mana.",
+      "Abilities you activate cost {1} less to activate. This effect can't reduce the mana in that cost to less than one mana.",
+      "Abilities your opponents activate that aren't mana abilities cost {1} less to activate. This effect can't reduce the mana in that cost to less than one mana."
+    ]
+  },
+  {
+    "id": "trg.edhc6.youControl.counters.spell",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 701.6a",
+      "CR 113.1"
+    ],
+    "pattern": "whenever a spell or ability you control counters a spell",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "counter",
+          "actor": "you",
+          "object": {
+            "stackKind": "spell"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a spell or ability you control counters a spell, draw a card."
+      },
+      {
+        "text": "Whenever a spell or ability you control counters a spell, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a spell or ability you control counters an ability, draw a card.",
+      "Whenever a spell or ability an opponent controls counters a spell, draw a card.",
+      "Whenever a spell you control counters a spell, draw a card.",
+      "Whenever a spell or ability you control counters a spell, you gain 2 life unless it has flash."
+    ]
+  }
+]

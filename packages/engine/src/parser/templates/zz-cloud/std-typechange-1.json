@@ -247,7 +247,7 @@
     "counterExamples": [
       "Creatures you control are the chosen type in addition to their other types. The same is true for creature spells you control.",
       "Creatures you control are the chosen type in addition to their other types. The same is true for creature cards you own that are on the battlefield.",
-      "Creatures you control are the chosen creature type. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
+      "Creatures you control are the chosen creature type until end of turn. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
     ]
   }
 ]

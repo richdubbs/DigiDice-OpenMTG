@@ -1,0 +1,186 @@
+[
+  {
+    "id": "trg.edhd11.players.sacrifice.wholeBatch",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2c",
+      "CR 701.21a"
+    ],
+    "pattern": "whenever one or more players sacrifice one or more {f:Filter}",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "sacrifice",
+          "actor": "any",
+          "object": "$f"
+        }
+      ],
+      "batch": true,
+      "wholeBatch": true
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "needs": [
+      "feature:trigger.batch",
+      "feature:trigger.batch.whole"
+    ],
+    "examples": [
+      {
+        "text": "Whenever one or more players sacrifice one or more creatures, investigate."
+      },
+      {
+        "text": "Whenever one or more players sacrifice one or more artifacts, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player sacrifices one or more creatures, you gain 2 life.",
+      "Whenever one or more players sacrifice a creature, you gain 2 life.",
+      "Whenever one or more opponents sacrifice one or more creatures, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.edhd11.put.eachPermanentCardExiledWith.underOwnersControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 110.2a",
+      "CR 400.3",
+      "CR 400.7"
+    ],
+    "pattern": "put each permanent card exiled with ( it | ~ ) onto the battlefield under the control of that card 's owner",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "exile",
+          "isCard": true,
+          "types": [
+            "Artifact",
+            "Battle",
+            "Creature",
+            "Enchantment",
+            "Land",
+            "Planeswalker"
+          ]
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner"
+      }
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile target artifact card from a graveyard.\nWhen this creature leaves the battlefield, put each permanent card exiled with it onto the battlefield under the control of that card's owner."
+      },
+      {
+        "text": "{2}: Exile target creature card from a graveyard.\nWhen ~ leaves the battlefield, put each permanent card exiled with ~ onto the battlefield under the control of that card's owner."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Exile target creature card from a graveyard.\nWhen ~ leaves the battlefield, put each permanent card exiled with ~ onto the battlefield under your control.",
+      "{2}: Exile target creature card from a graveyard.\nWhen ~ leaves the battlefield, put each creature card exiled with ~ onto the battlefield under the control of that card's owner.",
+      "{2}: Exile target creature card from a graveyard.\nWhen ~ leaves the battlefield, put a permanent card exiled with ~ onto the battlefield under the control of that card's owner."
+    ]
+  },
+  {
+    "id": "eff.edhd11.selfDamage.numberCountersOnIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 120.3",
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "~ deals damage equal to the number of counters on it to {to:Recipient}",
+    "build": {
+      "op": "damage",
+      "source": {
+        "ref": "self"
+      },
+      "to": "$to",
+      "amount": {
+        "q": "counters",
+        "on": {
+          "ref": "self"
+        },
+        "kind": "any"
+      }
+    },
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, this creature deals damage equal to the number of counters on it to each opponent."
+      },
+      {
+        "text": "At the beginning of your end step, this creature deals damage equal to the number of counters on it to any target."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, target creature deals damage equal to the number of counters on it to each opponent.",
+      "At the beginning of your upkeep, this creature deals damage equal to the number of counters on that spell to each opponent."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhd11.player.mayPut.onto.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "player",
+    "cr": [
+      "CR 110.2",
+      "CR 400.7",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} may put {o:Objs} onto the battlefield",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "battlefield",
+            "controller": "$p"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Target player reveals the top card of their library. If it's a land card, that player may put it onto the battlefield."
+      },
+      {
+        "text": "Target player reveals the top card of their library. If it's a creature card, that player may put it onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Target player reveals the top card of their library. If it's a land card, that player may put it onto the battlefield tapped.",
+      "Target player reveals the top card of their library. If it's a land card, that player may put it into their hand.",
+      "Target player reveals the top card of their library. If it's a land card, that player may put it onto the battlefield under your control."
+    ],
+    "consumes": [
+      "may"
+    ]
+  }
+]

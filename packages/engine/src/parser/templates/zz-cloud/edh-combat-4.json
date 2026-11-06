@@ -1,0 +1,210 @@
+[
+  {
+    "id": "eff.edhcb4.token.tappedAttacking.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 508.4",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "create {n:Qty} tapped and attacking {t:TokenDesc} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n",
+          "token": "$t",
+          "tapped": true,
+          "attacking": true
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever you attack, create a tapped and attacking X/X red Elemental creature token, where X is the number of lands you control."
+      },
+      {
+        "text": "Whenever ~ attacks, create a tapped and attacking X/X black Zombie creature token with menace, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack, create a tapped and blocking X/X red Elemental creature token, where X is the number of lands you control.",
+      "Whenever you attack, create a tapped X/X red Elemental creature token, where X is the number of lands you control.",
+      "Whenever you attack, create an attacking X/X red Elemental creature token, where X is the number of lands you control."
+    ]
+  },
+  {
+    "id": "eff.edhcb4.token.blocking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 506.3e",
+      "CR 509.3a"
+    ],
+    "pattern": "create {n:Qty} {t:TokenDesc} ( that's | that are ) blocking {o:Obj}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t",
+      "blocking": "$o"
+    },
+    "needs": [
+      "feature:createToken.blocking"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ blocks a creature, create a 2/2 black Zombie creature token that's blocking that creature."
+      },
+      {
+        "text": "Whenever ~ blocks a creature, create two 1/1 white Soldier creature tokens with flying that are blocking that creature."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ blocks a creature, create a 2/2 black Zombie creature token that's attacking that creature.",
+      "Whenever ~ blocks a creature, create a 2/2 black Zombie creature token that's tapped and blocking that creature.",
+      "Whenever ~ blocks a creature, create a 2/2 black Zombie creature token that's blocking."
+    ]
+  },
+  {
+    "id": "rid.edhcb4.mana.keep.endofcombat",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.4",
+      "CR 500.5",
+      "CR 511.3",
+      "CR 608.2c"
+    ],
+    "pattern": "until end of combat , you don't lose this mana as steps end",
+    "build": {
+      "$patchPrevious": {
+        "keep": {
+          "@new": "endOfCombat"
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "until"
+    ],
+    "needs": [
+      "op:addMana.keepEndOfCombat"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, add {R}{R}. Until end of combat, you don't lose this mana as steps end."
+      },
+      {
+        "text": "When ~ enters, add three mana of any one color. Until end of combat, you don't lose this mana as steps end."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, add {R}{R}. Until end of turn, you don't lose this mana as steps end.",
+      "Whenever ~ attacks, add {R}{R}. Until end of combat, you don't lose unspent mana as steps end.",
+      "Whenever ~ attacks, add {R}{R}. Until end of combat, you don't lose this mana as steps and phases end."
+    ]
+  },
+  {
+    "id": "sta.edhcb4.aslong.pump.power.whereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 107.3"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} gets +x/+0 , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$q",
+              "toughness": 0
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Forest, ~ gets +X/+0, where X is the number of lands you control."
+      },
+      {
+        "text": "As long as it's your turn, ~ gets +X/+0, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Forest, ~ gets +X/+0 until end of turn, where X is the number of lands you control.",
+      "As long as you control a Forest, ~ gets +0/+X, where X is the number of lands you control.",
+      "As long as you control a Forest, ~ gets +X/+0, where Y is the number of lands you control.",
+      "If you control a Forest, ~ gets +X/+0, where X is the number of lands you control."
+    ]
+  },
+  {
+    "id": "eff.edhcb4.token.player.tapped.attackingPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 508.4",
+      "CR 110.5b"
+    ],
+    "pattern": "{p:Player} create[s] {n:Qty} tapped {t:TokenDesc} ( that's | that are ) attacking {d:Player}",
+    "build": {
+      "op": "createToken",
+      "who": "$p",
+      "count": "$n",
+      "token": "$t",
+      "tapped": true,
+      "attacking": {
+        "defender": "$d"
+      }
+    },
+    "needs": [
+      "feature:createToken.attackingWhom"
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Whenever a player attacks one of your opponents, that attacking player creates a tapped 2/2 black Zombie creature token with menace that's attacking that opponent."
+      },
+      {
+        "text": "When ~ enters, target opponent creates two tapped 1/1 white Soldier creature tokens that are attacking you."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player attacks one of your opponents, that attacking player creates a 2/2 black Zombie creature token that's attacking that opponent.",
+      "Whenever a player attacks one of your opponents, that attacking player creates a tapped 2/2 black Zombie creature token that's blocking that opponent.",
+      "Whenever a player attacks one of your opponents, that attacking player creates a tapped 2/2 black Zombie creature token that's attacking."
+    ]
+  }
+]

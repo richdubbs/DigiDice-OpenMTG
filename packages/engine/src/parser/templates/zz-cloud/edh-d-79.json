@@ -1,0 +1,79 @@
+[
+  {
+    "id": "eff.edhd79.forEach.copyToken.exceptBasePTTwoColorsSubtype",
+    "kind": "effect",
+    "since": 79,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 608.2f",
+      "CR 111.1",
+      "CR 205.1b"
+    ],
+    "pattern": "for each {f:Filter} , create a token that's a copy of ( it | that card ) , except it's a {pt:BasePT} {c:Color} and {d:Color} {st:Subtypes}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          },
+          "except": [
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c",
+                  "$d"
+                ]
+              }
+            },
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "except",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "For each artifact card in your graveyard, create a token that's a copy of it, except it's a 2/2 white and blue Spirit."
+      },
+      {
+        "text": "For each land card in your graveyard, create a token that's a copy of that card, except it's a 1/1 red and green Elemental."
+      }
+    ],
+    "counterExamples": [
+      "For each artifact card in your graveyard, create a token that's a copy of it, except it's a 2/2 white Spirit.",
+      "For each artifact card in your graveyard, create a token that's a copy of it, except it's a 2/2 white or blue Spirit.",
+      "For each artifact card in your graveyard, create a token that's a copy of it, except it's a 2/2 white and blue Spirit in addition to its other types.",
+      "For each artifact card in your graveyard, create a token that's a copy of it, except it's a white and blue Spirit."
+    ]
+  }
+]

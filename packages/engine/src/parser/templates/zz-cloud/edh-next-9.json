@@ -1,0 +1,285 @@
+[
+  {
+    "id": "eff.edhn9.damage.divided.whereX.asCast",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2d",
+      "CR 602.2b",
+      "CR 107.3",
+      "CR 208.1"
+    ],
+    "pattern": "{src:Obj} deal[s] x damage divided as you choose among {to:Recipient} , where x is {q:Qty} as you ( cast ~ | activate this ability )",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$to",
+          "amount": {
+            "q": "X"
+          },
+          "divided": "announced"
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "~ deals X damage divided as you choose among up to two target creatures, where X is the greatest toughness among creatures you control as you cast ~."
+      },
+      {
+        "text": "~ deals X damage divided as you choose among any number of target creatures your opponents control, where X is the greatest power among creatures you control as you cast ~."
+      },
+      {
+        "text": "{T}: ~ deals X damage divided as you choose among up to three target creatures, where X is the greatest power among creatures you control as you activate this ability."
+      }
+    ],
+    "counterExamples": [
+      "~ deals X damage divided as you choose among any number of target creatures, where X is the greatest power among creatures you control as you cast.",
+      "~ deals X damage divided as you choose among any number of target creatures, where X is the greatest power among creatures you control as you resolve ~."
+    ]
+  },
+  {
+    "id": "eff.edhn9.damage.dividedEqual",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2d",
+      "CR 603.3d",
+      "CR 120.3",
+      "CR 107.3"
+    ],
+    "pattern": "{src:Obj} deal[s] damage equal to {q:Qty} divided as you choose among {to:Recipient}",
+    "build": [
+      {
+        "op": "damage",
+        "source": "$src",
+        "to": "$to",
+        "amount": "$q",
+        "divided": "announced"
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "When ~ dies, it deals damage equal to its power divided as you choose among any number of targets."
+      },
+      {
+        "text": "Whenever ~ attacks, it deals damage equal to the number of creatures you control divided as you choose among any number of target creatures."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, it deals damage equal to its power divided evenly, rounded down, among any number of targets.",
+      "When ~ dies, it deals damage equal to its power to any number of targets."
+    ]
+  },
+  {
+    "id": "cm.edhn9.self.less.G.forEach",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5"
+    ],
+    "pattern": "~ costs {G} less to cast for each {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": [
+              {
+                "kind": "colored",
+                "color": "G"
+              }
+            ],
+            "times": {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": "$f"
+              }
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "priority": 1,
+    "needs": [
+      "feature:costMod.times"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {G} less to cast for each green Elf you control."
+      },
+      {
+        "text": "~ costs {G} less to cast for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {G} more to cast for each green Elf you control.",
+      "~ costs {G} less to cast if you control a green Elf.",
+      "~ costs {G} less to cast for each green Elf you control.\nThis ability costs {G} less to activate for each artifact."
+    ]
+  },
+  {
+    "id": "eff.edhn9.choose.creatureType.otherThan",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 205.3m",
+      "CR 607.2d"
+    ],
+    "pattern": "choose a creature type other than wall",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "creatureType",
+      "as": "chosenCreatureType",
+      "link": "chosenCreatureType",
+      "exclude": [
+        "Wall"
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose a creature type other than Wall. Draw a card for each creature you control of that type."
+      },
+      {
+        "text": "Choose a creature type other than Wall. Create a Clue token for each creature you control of that type."
+      }
+    ],
+    "counterExamples": [
+      "Choose a creature type other than Wall or Human. Draw a card for each creature you control of that type.",
+      "Choose a card type other than Wall.",
+      "Target opponent chooses a creature type other than Wall."
+    ],
+    "consumes": [
+      "other"
+    ]
+  },
+  {
+    "id": "eff.edhn9.becomes.thatType",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.3m",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:Obj} becomes that type {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "chosen": "chosenCreatureType",
+                "chosenSets": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Choose a creature type other than Wall. Target creature becomes that type until end of turn."
+      },
+      {
+        "text": "Choose a creature type other than Wall. Target creature you control becomes that type until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Choose a creature type other than Wall. Target creature becomes that type.",
+      "Choose a creature type other than Wall. Target creature becomes that color until end of turn.",
+      "Choose a creature type other than Wall. Target creature becomes that type in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn9.becomes.color.andGets",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1e",
+      "CR 613.4c",
+      "CR 105.3"
+    ],
+    "pattern": "{o:Obj} becomes {c:Color} and gets {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature becomes green and gets +2/+2 until end of turn."
+      },
+      {
+        "text": "Target artifact creature becomes blue and gets +2/+2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature becomes green and gets +2/+2.",
+      "Target creature becomes red and green and gets +2/+2 until end of turn.",
+      "Target creature becomes red and gains haste until end of turn."
+    ]
+  }
+]

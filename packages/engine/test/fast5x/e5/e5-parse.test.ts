@@ -70,13 +70,15 @@ describe('CR 602.5b, 400.7: "Activate only if this land entered this turn or if 
   });
 });
 
-describe('CR 107.3a, 608.2h: a mana ability whose effect reads what its cost paid stays manual (no stack object keeps the paid cost)', () => {
+describe('CR 107.3a, 608.2h: a mana ability whose effect reads what its cost paid (the sacrificed permanent is handed to the resolver; edh-next-47)', () => {
   for (const text of [
     "{T}, Sacrifice an artifact: Add an amount of {B} equal to the sacrificed artifact's mana value.",
   ]) {
     it(text, () => {
       const c = card('Test Reader', 'Artifact Creature — Golem', text);
-      expect(c.automation.level).not.toBe('full');
+      // edh-next-47 (CR 605.3b, 608.2h): the production that reads the sacrificed permanent's mana value is now played (rules/mana.ts readsCostSacrificed: the payment hands the
+      // sacrificed permanent to the resolver, as Food Chain's exiled creature); X, the discarded and the tapped stay manual (COST_READS)
+      expect(c.automation.level).toBe('full');
     });
   }
   // p2-mana-1 (CR 107.3a, 601.2b, 602.2b): an X that is only the number of counters ONE part removes from ~ is announced as the mana ability is activated and kept for

@@ -1,0 +1,1 @@
+{"name":"a list cut short","before":{"l":[1,2,3,4]},"ops":[{"op":"splice","path":["l"],"at":2,"del":2,"add":[]}],"after":{"l":[1,2]}}

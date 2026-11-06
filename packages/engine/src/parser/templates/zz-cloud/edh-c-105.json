@@ -1,0 +1,67 @@
+[
+  {
+    "id": "eff.edhv105.eachPlayer.exiles.nCardsFromHand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 101.4",
+      "CR 406.1",
+      "CR 608.2d",
+      "CR 400.3"
+    ],
+    "pattern": "each player exiles {n:Qty} cards from their hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": {
+              "ref": "iterating"
+            },
+            "isCard": true
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player exiles three cards from their hand."
+      },
+      {
+        "text": "Each player exiles two cards from their hand. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent exiles three cards from their hand.",
+      "Each player exiles three cards from their graveyard.",
+      "Each player exiles three cards from their hand at random."
+    ]
+  }
+]

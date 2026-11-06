@@ -270,8 +270,10 @@ describe('CR 114.1-114.4: "You get an emblem with \\"...\\""', () => {
 
   it('CR 114.4, 602.2: an emblem with an activated ability is not automated (emblems are not listed for activation): the ability stays manual', () => {
     const PLAN = card('Test Tap Plan', 'Sorcery', 'You get an emblem with "Tap an untapped artifact you control: This emblem deals 1 damage to any target."');
-    expect(PLAN.automation.level).not.toBe('full');
-    expect(JSON.stringify(PLAN.faces[0]!.abilities)).toContain('"abilities":[{"kind":"manual"');
+    // edh-next-100 (CR 114.4, 113.6p, 602.2): core/legal.ts now lists the activated abilities of the player's emblems (feature:emblem.activated), so this emblem is automated; it is played in
+    // test/cloud/edh-next-100/edh-next-100-scenarios.test.ts (Ob Nixilis of the Black Oath's sacrifice cost, X from the sacrificed creature)
+    expect(PLAN.automation.level).toBe('full');
+    expect(JSON.stringify(PLAN.faces[0]!.abilities)).toContain('"abilities":[{"kind":"activated"');
   });
 
   it('CR 702.40a, 613.1f: instants and sorceries you cast have storm, granted from the command zone', () => {

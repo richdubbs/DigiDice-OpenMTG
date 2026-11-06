@@ -14,7 +14,7 @@ import { RENDERERS } from '../../../src/render/step';
 import type { AbilityDef, EffectStep } from '../../../src/types/ability';
 import { example } from './support';
 
-const OPS = ['effect', 'delay', 'reflexive', 'extraTurn', 'extraPhase', 'endTurn', 'winGame', 'loseGame', 'createEmblem', 'rollDie', 'flipCoin', 'designate', 'action', 'controlPlayer' /* std-control-3 (CR 723.1) */];
+const OPS = ['effect', 'delay', 'reflexive', 'extraTurn', 'extraPhase', 'endTurn', 'winGame', 'loseGame', 'createEmblem', 'rollDie', 'flipCoin', 'designate', 'action', 'controlPlayer' /* std-control-3 (CR 723.1) */, 'restartGame' /* edh-next-137 (CR 727) */];
 
 describe('design 5.2: WP15 capabilities', () => {
   it('the fourteen ops have handlers and renderers, so ENGINE_CAPABILITIES has op:<op> for each', () => {

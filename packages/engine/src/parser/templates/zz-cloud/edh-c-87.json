@@ -1,0 +1,273 @@
+[
+  {
+    "id": "sta.edhv87.aslong.all.anthem",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "as long as {c:Cond} , all {f:Filter} get {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as it's your turn, all Goblins get +1/+1."
+      },
+      {
+        "text": "As long as you control an Island, all creatures attacking you get -1/-0."
+      }
+    ],
+    "counterExamples": [
+      "As long as it's your turn, all Goblins get +1/+1 until end of turn.",
+      "Until end of turn, all Goblins get +1/+1.",
+      "As long as it's your turn, all Goblins get +1/+1 unless you control an Island."
+    ]
+  },
+  {
+    "id": "eff.edhv87.damage.equalDamageAlreadyDealt",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage to {o:Obj} equal to the damage already dealt to it this turn",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$o",
+      "amount": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "damage",
+          "recipient": {
+            "object": {
+              "is": "$o"
+            }
+          }
+        },
+        "scope": "turn",
+        "sum": "amount"
+      }
+    },
+    "subject": "object",
+    "consumes": [
+      "already",
+      "equal",
+      "it"
+    ],
+    "examples": [
+      {
+        "text": "{T}: ~ deals damage to target creature an opponent controls equal to the damage already dealt to it this turn."
+      },
+      {
+        "text": "When ~ enters, ~ deals damage to target creature equal to the damage already dealt to it this turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: ~ deals damage to target creature equal to the damage already dealt to ~ this turn.",
+      "{T}: ~ deals damage to target creature equal to the damage dealt to it this turn.",
+      "{T}: ~ deals damage to target creature equal to the damage already dealt to it."
+    ]
+  },
+  {
+    "id": "eff.edhv87.may.haveBecomeCreature.withAbilities.inAddition",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {o:Obj} become ( a | an ) {pt:BasePT} {st:Subtypes} creature with {a:Abilities} in addition to its other types {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 4,
+                  "types": {
+                    "add": [
+                      "Creature"
+                    ]
+                  },
+                  "subtypes": {
+                    "add": "$st"
+                  }
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                },
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, you may have ~ become a 3/3 Sphinx creature with flying in addition to its other types until end of turn."
+      },
+      {
+        "text": "{2}: You may have target artifact you control become a 4/4 Golem creature with trample in addition to its other types until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, you may have ~ become a 3/3 Sphinx creature with flying until end of turn.",
+      "Whenever you cast a spell, you may have ~ become a 3/3 Sphinx creature with flying in addition to its other colors until end of turn.",
+      "Whenever you cast a spell, ~ becomes a 3/3 Sphinx creature with flying in addition to its other types until end of turn and you gain 1 life."
+    ]
+  },
+  {
+    "id": "eff.edhv87.gainControl.if",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2b",
+      "CR 611.2a",
+      "CR 613.1b"
+    ],
+    "pattern": "gain control of {o:Obj} if {c:Cond}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ],
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Gain control of target creature if its power is 2 or less."
+      },
+      {
+        "text": "Gain control of target artifact if you control a Wizard."
+      }
+    ],
+    "counterExamples": [
+      "Gain control of target creature unless its power is 2 or less.",
+      "Gain control of target creature if its power is 2 or less until end of turn.",
+      "Gain control of target creature if its power is 2 or less instead."
+    ]
+  },
+  {
+    "id": "eff.edhv87.youGainControl.of",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 608.2c"
+    ],
+    "pattern": "you gain control of {o:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "you"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you gain control of target creature until end of turn."
+      },
+      {
+        "text": "You gain control of target artifact until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you gain control of target creature.",
+      "When ~ enters, you gain control of target creature unless its controller pays {3}.",
+      "When ~ enters, target opponent gains control of target creature until end of turn."
+    ]
+  }
+]

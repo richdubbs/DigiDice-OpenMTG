@@ -54,8 +54,8 @@ describe('design 7.1.6: no implemented keyword is silently ignored', () => {
 
   it('there are flag and hook keywords to check (the combat, targeting, timing and cast keywords of milestones 3 and 4)', () => {
     expect(acting.map((d) => d.name).sort()).toEqual([
-      'aftermath', 'convoke', 'deathtouch', 'defender', 'delve' /* std-tdm */, 'double strike', 'enchant', 'fear', 'first strike', 'flash', 'flying', 'fuse', 'haste', 'hexproof', 'horsemanship',
-      'improvise' /* FAST5X E26 */, 'indestructible', 'infect', 'intimidate', 'landwalk', 'lifelink', 'menace', 'protection', 'reach', 'shadow', 'shroud', 'skulk', 'split second', 'toxic', 'trample',
+      'aftermath', 'banding', 'convoke', 'deathtouch', 'defender', 'delve' /* std-tdm */, 'double strike', 'enchant', 'fear', 'first strike', 'flash', 'flying', 'fuse', 'haste', 'hexproof', 'horsemanship',
+      'improvise' /* FAST5X E26 */, 'indestructible', 'infect', 'intimidate', 'landwalk', 'lifelink', 'menace', 'protection', 'reach', 'shadow', 'shroud', 'skulk', 'splice' /* edh-next-69 */, 'split second', 'toxic', 'trample', 'trample over planeswalkers' /* edh-d-90 */,
       'vigilance', 'wither',
     ]);
   });
@@ -89,11 +89,11 @@ describe('design 7.1.6: no implemented keyword is silently ignored', () => {
     });
 
     it('a reader that exists but never reads the keyword', () => {
-      expect(traceabilityProblems({ ...base, name: 'banding', readers: ['core/combat-damage.ts#combatDamageStep'] }, hooked).join('\n')).toContain("none names 'banding'");
+      expect(traceabilityProblems({ ...base, name: 'frenzy', readers: ['core/combat-damage.ts#combatDamageStep'] }, hooked).join('\n')).toContain("none names 'frenzy'");
     });
 
     it('a keyword that only the data claims to have a hook for is not reached through the provider', () => {
-      expect(traceabilityProblems({ ...base, name: 'banding', mechanisms: ['hook'], readers: ['rules/combat-rules.ts#blockDenial'] }, new Set()).join('\n')).toContain("none names 'banding'");
+      expect(traceabilityProblems({ ...base, name: 'frenzy', mechanisms: ['hook'], readers: ['rules/combat-rules.ts#blockDenial'] }, new Set()).join('\n')).toContain("none names 'frenzy'");
     });
 
     it('the definition of the hookpoint is not a reader: a hook keyword whose only reader is rules/hookpoints.ts (nothing calls it) fails', () => {

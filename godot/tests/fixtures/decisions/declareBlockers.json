@@ -1,0 +1,28 @@
+{
+  "id": "d12",
+  "player": "p1",
+  "prompt": "Declare blockers: choose which creatures block and which attacker each blocks.",
+  "rules": [
+    "CR 509.1"
+  ],
+  "kind": "declareBlockers",
+  "candidates": [
+    {
+      "id": "o10",
+      "attackers": [
+        "o20",
+        "o21"
+      ],
+      "maxBlocks": 1
+    },
+    {
+      "id": "o11",
+      "attackers": [
+        "o20",
+        "o21"
+      ],
+      "maxBlocks": 1
+    }
+  ],
+  "needsMultiple": []
+}

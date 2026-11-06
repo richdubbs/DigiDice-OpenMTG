@@ -93,5 +93,5 @@ describe('CR 109.3 and design 3.3: a field of the model that changes no word in 
       .map(([label, n]) => `${label} (${n} of ${n} tries)`)
       .filter((l) => !SILENT.some(([re]) => re.test(l)));
     expect(findings, `${findings.length} field(s) never change the words:\n${findings.join('\n')}`).toEqual([]);
-  }, 60_000); // WP31, WP21: about 3.5-4.5 s alone (on main too), over the 5 s default when the whole suite runs in parallel on a loaded machine
+  }, 180_000); // WP31, WP21: about 3.5-4.5 s alone (on main too), over the 5 s default when the whole suite runs in parallel on a loaded machine; edh-fix-6: about 73 s on a loaded machine as the template set grows
 });

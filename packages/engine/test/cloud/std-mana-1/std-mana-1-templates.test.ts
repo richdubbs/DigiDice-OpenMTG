@@ -32,7 +32,9 @@ const NARROW: Readonly<Record<string, string>> = {
   'eff.stdmana1.mana.producedType.permanent': 'Kinnan, Bonder Prodigy',
   'eff.stdmana1.losesLandTypesAbilities.has.leadDur': 'Ultima, Origin of Oblivion',
   'sta.stdmana1.tapForMana.threeTimes': 'Virtue of Strength // Garenbrig Growth',
+  'sta.stdmana1.tapForMana.twice': 'Mana Reflection', // edh-misc-2 (the one card that prints it; Nyxbloom Ancient prints the three-times sibling)
   'eff.stdmana1.mana.chosen.player.forEach': 'Radiant Lotus',
+  'rid.stdmana1.spent.cantBeCountered': 'Boseiju, Who Shelters All', // edh-misc-3 (the card of the EDHREC top 5,000 that prints it; held-out, opened by the owner's Commander request 2026-10-27); played in test/cloud/edh-misc-3
   'rid.stdmana1.spent.any.gains.eot': 'Generator Servant', // p2-promote-1 (golden also Arena of Glory; the two cards that print it)
 };
 const OPTS = defaultParseOptions({ templates: [...TEMPLATE_SET], capabilities: ENGINE_CAPABILITIES }); // what a decklist card gets (design 5.2; `needs`)

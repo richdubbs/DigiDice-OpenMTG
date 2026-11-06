@@ -1,0 +1,93 @@
+[
+  {
+    "id": "eff.edhn104.damage.timesTappedThisWay",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 107.1",
+      "CR 601.2b",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage to {to:Recipient} equal to {n:Qty} times the number of creatures tapped this way",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$n",
+          {
+            "q": "count",
+            "of": {
+              "ref": "costTapped"
+            }
+          }
+        ]
+      }
+    },
+    "subject": "object",
+    "consumes": [
+      "tapped",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, tap any number of untapped creatures you control.\n~ deals damage to any target equal to three times the number of creatures tapped this way."
+      },
+      {
+        "text": "As an additional cost to cast ~, tap any number of untapped creatures you control.\n~ deals damage to target creature equal to four times the number of creatures tapped this way."
+      }
+    ],
+    "counterExamples": [
+      "~ deals damage to any target equal to three times the number of creatures tapped this way.",
+      "Tap any number of untapped creatures you control. ~ deals damage to any target equal to three times the number of creatures tapped this way."
+    ]
+  },
+  {
+    "id": "rep.edhn104.damage.self.doubleAll",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3"
+    ],
+    "pattern": "double all damage ~ would deal",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "self": true
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "mul": 2
+        }
+      }
+    },
+    "consumes": [
+      "double",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Double all damage ~ would deal."
+      },
+      {
+        "text": "Trample\nDouble all damage ~ would deal.\n{2}: You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Double all damage ~ would deal this turn.",
+      "Double all damage that would be dealt to ~."
+    ]
+  }
+]

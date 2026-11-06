@@ -21,7 +21,7 @@ const WOLFCALLER = compiled('Test Wolfcaller', 'Enchantment', 'Whenever you comp
 const ARCHLICH = compiled('Test Archlich', 'Creature — Zombie Wizard', "When ~ enters, if you haven't completed Tomb of Annihilation, return ~ to its owner's hand and venture into the dungeon.", '{0}', ['5', '5']);
 const KEEPER = compiled('Test Keeper', 'Creature — Human', 'At the beginning of your end step, if you have the initiative, you gain 2 life.', '{0}', ['1', '1']);
 const DEFS = [DELVER, SCOUT, PATHFINDER, RAIDER, CHAMPION, WOLFCALLER, ARCHLICH, KEEPER];
-const SEEKER = compiled('Test Ruin Seeker', 'Creature — Human', 'Room abilities of dungeons you own trigger an additional time.', '{0}', ['2', '2']);
+const SEEKER = compiled('Test Ruin Seeker', 'Creature — Human', 'Room abilities of dungeons you own trigger two additional times.', '{0}', ['2', '2']); // edh-next-75: the wording with "an additional time" is automated now (rule roomAbilitiesExtra); this one is not, so it still stops the venture
 
 /**
  * Answer every decision until a player has priority: a `chooseOption` takes the next entry of `picks` (an option id or the start of its label); other
@@ -129,7 +129,7 @@ describe('CR 309.4c, 603.3d: a room ability with a target is put on the stack wi
 });
 
 describe('design 10: text the engine does not run that changes venturing makes the venture manual (fail closed)', () => {
-  it('"Room abilities of dungeons you own trigger an additional time." on the battlefield: the venture is resolved by hand', () => {
+  it('"Room abilities of dungeons you own trigger two additional times." (not run by the engine) on the battlefield: the venture is resolved by hand', () => {
     expect(SEEKER.automation.level).toBe('manual');
     const s0 = scenario([], { defs: [...DEFS, SEEKER], p1: { battlefield: ['Test Delver', 'Test Ruin Seeker'] } });
     const s = passBoth(act(s0, { type: 'activate', player: 'p1', source: find(s0, 'Test Delver', 'battlefield'), ability: 'p:0:0' }));

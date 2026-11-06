@@ -1,0 +1,256 @@
+[
+  {
+    "id": "eff.edhd5.you.gain.protectionChosenColor",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.16b",
+      "CR 702.16e",
+      "CR 702.16j",
+      "CR 608.2d",
+      "CR 611.2a",
+      "CR 105.1"
+    ],
+    "pattern": "you gain protection from the color of your choice {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "protectionColor",
+        "link": "protectionColor"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "chosen": {
+                  "link": "protectionColor",
+                  "quality": "color"
+                }
+              },
+              "recipient": {
+                "player": "you"
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            }
+          },
+          {
+            "s": "restrict",
+            "subject": {
+              "ref": "you"
+            },
+            "mode": "cant",
+            "action": "beTargeted",
+            "other": {
+              "chosen": {
+                "link": "protectionColor",
+                "quality": "color"
+              }
+            }
+          },
+          {
+            "s": "restrict",
+            "subject": {
+              "ref": "you"
+            },
+            "mode": "cant",
+            "action": "beEnchanted",
+            "other": {
+              "chosen": {
+                "link": "protectionColor",
+                "quality": "color"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature attacks, you gain protection from the color of your choice until end of turn."
+      },
+      {
+        "text": "Draw a card. You gain protection from the color of your choice until your next turn."
+      }
+    ],
+    "counterExamples": [
+      "You gain protection from the color of your choice.",
+      "You gain protection from everything until end of turn.",
+      "Target player gains protection from the color of your choice until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhd5.youAndObjs.have.protectionFrom",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.16b",
+      "CR 702.16e",
+      "CR 702.16j",
+      "CR 613.1f"
+    ],
+    "pattern": "you and {o:Objs} have {p:ProtFrom}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$p.filter",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": "$p.filter"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beEnchanted",
+          "other": "$p.filter"
+        },
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$p.abilities"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [],
+    "examples": [
+      {
+        "text": "You and permanents you control have protection from Goblins."
+      },
+      {
+        "text": "You and creatures you control have protection from artifacts."
+      }
+    ],
+    "counterExamples": [
+      "You have protection from Goblins.",
+      "You and permanents you control have protection from Goblins and from Elves.",
+      "Creatures you control have protection from Goblins."
+    ]
+  },
+  {
+    "id": "sta.edhd5.players.keepMana",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.4",
+      "CR 500.5"
+    ],
+    "pattern": "players don't lose unspent mana as steps and phases end",
+    "build": {
+      "s": "rule",
+      "rule": "manaDoesNotEmpty",
+      "player": {
+        "ref": "each",
+        "who": "player"
+      }
+    },
+    "examples": [
+      {
+        "text": "Players don't lose unspent mana as steps and phases end. You have no maximum hand size."
+      },
+      {
+        "text": "Creatures you control have haste. Players don't lose unspent mana as steps and phases end."
+      }
+    ],
+    "counterExamples": [
+      "Players don't lose unspent mana.",
+      "Each opponent doesn't lose unspent mana as steps and phases end.",
+      "Players don't lose unspent red mana as steps and phases end."
+    ],
+    "consumes": []
+  },
+  {
+    "id": "eff.edhd5.lead.player.cantCast.andCantActivate",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 602.5",
+      "CR 605.1a",
+      "CR 101.2"
+    ],
+    "pattern": "{d:Dur} , {p:Player} can't cast {f:Filter} , and that player can't activate abilities that aren't mana abilities",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "cast",
+          "other": "$f"
+        },
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "activate",
+          "exceptMana": true
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target player can't cast instant or sorcery spells, and that player can't activate abilities that aren't mana abilities. Scry 2."
+      },
+      {
+        "text": "Until your next turn, target player can't cast noncreature spells, and that player can't activate abilities that aren't mana abilities."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target player can't cast instant or sorcery spells, and can't activate abilities that aren't mana abilities.",
+      "Until end of turn, target player can't cast instant or sorcery spells.",
+      "Until end of turn, target player can't cast instant or sorcery spells, and that player can't activate abilities."
+    ]
+  }
+]

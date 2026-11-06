@@ -131,7 +131,7 @@ function faceFrom(spec: TokenSpec, base?: PredefinedFace): FaceDef {
   const text = [base?.text ?? '', ...keywordAbilities.map((a) => a.text), ...(spec.abilities ?? []).map((a) => a.text)].filter((t) => t.length > 0).join('\n');
   const face: FaceDef = {
     name,
-    manaCost: null, // CR 111.3: a token has no mana cost unless the effect gives it one
+    manaCost: spec.manaCost ?? null, // CR 111.3: a token has no mana cost unless the effect gives it one (edh-next-64: TokenDef.manaCost)
     typeLine: typeLineOf(supertypes, types, subtypes),
     supertypes: supertypes as Supertype[],
     types: types as CardType[],
@@ -216,7 +216,8 @@ export function tokenDefFromCopied(f: CopiedFace): CardDef {
  * subtypes added or removed (layer 4), colors set (layer 5) and a fixed power and toughness (layer 7b); the abilities are the spell's own, so its modes and targets
  * stay what they were. Anything else, a split or flip card, or a face that isn't there: `{ reason }`.
  */
-export function exceptedSpellDef(def: CardDef, faceIndex: number, except: readonly Modification[]): CardDef | { reason: string } {
+/** edh-next-137 (CR 707.9b, 306.5b; Ob Nixilis, the Adversary): `loyalty`, the copy's starting loyalty (its printed loyalty, a copiable value); only for a planeswalker spell. */
+export function exceptedSpellDef(def: CardDef, faceIndex: number, except: readonly Modification[], loyalty?: number): CardDef | { reason: string } {
   if (def.layout === 'split' || def.layout === 'flip' || def.layout === 'meld') return { reason: 'a copy with exceptions of a split, flip or meld card is not automated yet (CR 707.9b, 709)' };
   const face = def.faces[faceIndex];
   if (face === undefined) return { reason: 'the face of the copied spell is unknown' };
@@ -250,7 +251,8 @@ export function exceptedSpellDef(def: CardDef, faceIndex: number, except: readon
     } else return no;
   }
   const typeLine = `${[...supertypes, ...types].join(' ')}${subtypes.length > 0 ? ` — ${subtypes.join(' ')}` : ''}`;
-  const changed: FaceDef = { ...face, typeLine, supertypes: supertypes as Supertype[], types: types as CardType[], subtypes, colors, ...pt };
+  if (loyalty !== undefined && !types.includes('Planeswalker')) return no; // edh-next-137: a starting loyalty only for a planeswalker (CR 306.5b)
+  const changed: FaceDef = { ...face, typeLine, supertypes: supertypes as Supertype[], types: types as CardType[], subtypes, colors, ...pt, ...(loyalty !== undefined ? { loyalty: String(loyalty) } : {}) };
   const { id: _id, ...rest } = def;
   return withId({ ...rest, faces: def.faces.map((f, i) => (i === faceIndex ? changed : f)) }, 'copy');
 }

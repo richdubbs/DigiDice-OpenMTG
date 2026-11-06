@@ -1,0 +1,22 @@
+[
+  {
+    "id": "eff.edhd80.cant.beSacrificed.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": ["CR 611.2a", "CR 701.21a", "CR 101.2"],
+    "pattern": "{o:Obj} can't be sacrificed {d:Dur}",
+    "build": { "op": "effect", "duration": "$d", "effects": [{ "s": "restrict", "subject": "$o", "mode": "cant", "action": "beSacrificed" }] },
+    "subject": "object",
+    "consumes": ["can't"],
+    "examples": [
+      { "text": "Target creature can't be sacrificed this turn." },
+      { "text": "Target artifact an opponent controls can't be sacrificed this turn." }
+    ],
+    "counterExamples": [
+      "Target creature can be sacrificed this turn.",
+      "Target creature can't be sacrificed.",
+      "Target creature can't be exiled this turn."
+    ]
+  }
+]

@@ -39,6 +39,10 @@ function find(w: readonly string[], seq: readonly string[], from = 0): number {
  */
 export function isSpellStaticForm(toks: readonly Token[], ix: LexiconIndex): boolean {
   const w = firstSentence(toks);
+  // edh-next-48 (CR 702.34a, 601.2f, 604.5; Visions of Dominance): "Flashback {8}{G}{G}. This spell costs {X} less to cast this way, where X is ...": the flashback line with its own cost change (one static
+  // reading, parser/templates/zz-cloud/edh-next-48.json kw.edhn48.flashback.lessWhereX); the line leads with the keyword and states the change on the spell itself in its second sentence
+  const line = toks.map((t) => t.norm);
+  if (line[0] === 'flashback' && find(line, ['.', '~', 'costs']) > 0 && find(line, ['to', 'cast', 'this', 'way']) > 0) return true;
   // CR 118.9: "[You may] ... rather than pay ~'s mana cost" (alternative cost, with or without a condition before it).
   if (find(w, ['rather', 'than', 'pay', '~']) >= 0) return true;
   // CR 601.2f: "~ costs {2} less to cast", "~ costs {1} more to cast if ...", after a condition or "During your turn,".
@@ -48,18 +52,27 @@ export function isSpellStaticForm(toks: readonly Token[], ix: LexiconIndex): boo
   }
   // CR 101.2: "~ can't be countered", also after "If X is 5 or more,".
   if (find(w, ['~', "can't", 'be', 'countered']) >= 0 || (w[0] === '~' && w[1] === "can't")) return true;
+  // edh-zones-16 (CR 107.3, 601.2b; Open the Way): "X can't be greater than the number of players in the game.", the largest X the spell may announce.
+  if (w[0]?.toLowerCase() === 'x' && w[1] === "can't" && w[2] === 'be' && w[3] === 'greater' && w[4] === 'than') return true;
   // CR 601.2b: "As an additional cost to cast ~, ...".
   if (find(w, ['as', 'an', 'additional', 'cost', 'to', 'cast', '~']) >= 0 || w.slice(0, 5).join(' ') === 'as an additional cost to') return true;
   // CR 601.2: "You may cast ~ [without paying its mana cost / as though it had flash / from your graveyard]", "Cast ~ only during combat."
   if (find(w, ['you', 'may', 'cast', '~']) >= 0 || (w[0] === 'cast' && w[1] === '~')) return true;
+  // edh-next-143 (CR 118.9, 601.2b; Once Upon a Time): "If ~ is the first spell you've cast this game, you may cast it without paying its mana cost." (the whole first sentence only)
+  if (w.join(' ') === "if ~ is the first spell you've cast this game , you may cast it without paying its mana cost") return true;
   // CR 604.1: "~ has flash as long as ...".
   const has = find(w, ['~', 'has']);
   if (has >= 0 && find(w, ['as', 'long', 'as'], has) >= 0) return true;
+  // edh-next-90 (CR 702.61a, 702.33d, 113.6; Molten Disaster): "If ~ was kicked, it has split second.": a static of the spell itself that works on the stack (parser/templates/zz-cloud/edh-next-90.json)
+  if (w[0] === 'if' && find(w, [',', 'it', 'has', 'split', 'second']) > 0 && find(w, ['~', 'was']) >= 0) return true;
   // CR 604.3: characteristic-defining statics: "~ is colorless", "~ is all colors", "~ is red and blue".
   for (let i = find(w, ['~', 'is']); i >= 0; i = find(w, ['~', 'is'], i + 1)) {
     const next = w[i + 2];
     if (next === 'colorless' || (next === 'all' && w[i + 3] === 'colors') || (next !== undefined && ix.colors.has(next))) return true;
   }
+  // edh-zones-6 (CR 614.1a, 614.6, 113.6b): "If ~ would be put into a graveyard from anywhere, reveal ~ and shuffle it into its owner's library instead." (Nexus of Fate): a
+  // replacement effect of the spell itself that works wherever it is, the stack included; the whole first sentence leads with it
+  if (w.slice(0, 10).join(' ') === 'if ~ would be put into a graveyard from anywhere') return true;
   // CMDF (CR 113.6n, 903.3a): "~ can be your commander", a deck-construction ability (Ashaya's Enduring Bond, a legendary sorcery): the whole line only.
   if (w.length === 5 && w.join(' ') === '~ can be your commander') return true;
   // r5-mech (CR 100.2a, 113.6n): "A deck can have any number of cards named Slime Against Humanity.", a deck-construction ability of an instant or sorcery

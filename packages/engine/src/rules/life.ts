@@ -42,15 +42,15 @@ export function loseLife(g: Game, player: PlayerId, amount: number, cause: strin
  * The most life the player can pay right now (CR 119.4): their life total, or none at all if they can't lose life (CR 119.8).
  * Paying 0 life is always possible (CR 119.4b). Cost checks and the mana solver (Phyrexian mana) use this, never `life` directly.
  */
-export function lifeBudget(s: GameState, player: PlayerId): number {
-  if (playerRestricted(s, player, 'cantLoseLife') || cantDo(s, 'payLife', player)) return 0; // CR 119.8; WP31: "can't pay life" (CR 614.17b)
+export function lifeBudget(s: GameState, player: PlayerId, castOrActivate: boolean | 'mana' = false): number {
+  if (playerRestricted(s, player, 'cantLoseLife') || cantDo(s, 'payLife', player, undefined, undefined, castOrActivate)) return 0; // CR 119.8; WP31: "can't pay life" (CR 614.17b)
   return s.players.find((p) => p.id === player)?.life ?? 0;
 }
 
 /** Can the player pay this much life (CR 119.4, 119.8)? Paying 0 life is always possible (CR 119.4b). */
-export function canPayLife(g: Game, player: PlayerId, amount: number): boolean {
+export function canPayLife(g: Game, player: PlayerId, amount: number, castOrActivate: boolean | 'mana' = false): boolean {
   if (amount <= 0) return true;
-  return g.player(player).life >= amount && !playerRestricted(g.s, player, 'cantLoseLife') && cantDo(g.s, 'payLife', player) === null;
+  return g.player(player).life >= amount && !playerRestricted(g.s, player, 'cantLoseLife') && cantDo(g.s, 'payLife', player, undefined, undefined, castOrActivate) === null;
 }
 
 /**
@@ -68,23 +68,29 @@ export function installPayLifeFunnel(f: PayLifeFunnel | null): void {
  * Pay life as a cost or as part of an effect (CR 119.4). Returns false, changing nothing, if the player can't pay. A replacement of the payment does not change
  * whether the player can pay (CR 119.4, 119.8): a payment that is replaced still counts as paid.
  */
-export function payLife(g: Game, player: PlayerId, amount: number, cause = 'paid', rules: string[] = ['CR 119.4']): boolean {
-  if (!canPayLife(g, player, amount)) return false;
+export function payLife(g: Game, player: PlayerId, amount: number, cause = 'paid', rules: string[] = ['CR 119.4'], castOrActivate: boolean | 'mana' = false): boolean {
+  if (!canPayLife(g, player, amount, castOrActivate)) return false;
   if (amount <= 0) return true;
   if (payLifeFunnel) payLifeFunnel(g, player, amount, cause, rules);
-  else changeLife(g, player, -amount, cause, rules);
+  else {
+    changeLife(g, player, -amount, cause, rules);
+    g.emit({ type: 'lifePaid', player, amount }); // edh-next-109 (CR 119.4): "whenever you pay life"
+  }
   return true;
 }
 
-/** A player gets poison counters (CR 122.1f); ten or more makes them lose at the next state-based action check (CR 704.5c). */
-export function givePoison(g: Game, player: PlayerId, amount: number, cause: string): void {
+/**
+ * A player gets poison counters (CR 122.1f); ten or more makes them lose at the next state-based action check (CR 704.5c). edh-players-11 (CR 122.6): `by` is the player who
+ * puts them (the controller of the effect, or of the toxic or infect source: ruling of All Will Be One 2023-02-04), so "whenever you put one or more counters on a ... player" sees them.
+ */
+export function givePoison(g: Game, player: PlayerId, amount: number, cause: string, by?: PlayerId): void {
   if (amount <= 0) return;
   const p = g.player(player);
-  if (cantDo(g.s, 'haveCountersPut', player)) { // WP31: "players can't get counters" (CR 122.1f, 614.17)
+  if (cantDo(g.s, 'haveCountersPut', player, undefined, 'poison')) { // edh-next-19: the kind, for "you can't get poison counters" (Melira) // WP31: "players can't get counters" (CR 122.1f, 614.17)
     g.log(`${p.name} can't get poison counters (${cause}).`, { rules: ['CR 122.1f', 'CR 614.17'], level: 'info' });
     return;
   }
   p.poison += amount;
-  g.emit({ type: 'countersChanged', target: player, counter: 'poison', delta: amount });
+  g.emit({ type: 'countersChanged', target: player, counter: 'poison', delta: amount, ...(by !== undefined ? { by } : {}) });
   g.log(`${p.name} gets ${amount} poison counter${amount === 1 ? '' : 's'} (${cause}). Poison: ${p.poison}.`, { rules: ['CR 122.1f'], level: 'info' });
 }

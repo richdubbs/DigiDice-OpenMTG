@@ -20,10 +20,17 @@ export function dur(d: Duration, st: RenderState, _o: { context?: 'mods' | 'rule
         case 'controlled': return `for as long as you control ${self}`;
         case 'attached': return `for as long as ${self} ${alt('remains attached to it', 'is attached to it', 'stays attached to it')}`;
         case 'tapped': return `for as long as ${self} ${alt('remains tapped', 'is tapped', 'stays tapped')}`;
+        case 'controlledTapped': return `for as long as you control ${self} and ${self} remains tapped`; // edh-next-50 (CR 611.2b; Helm of Possession)
       }
       break;
     }
-    case 'until': return `until ${K.events([d.event], st, 'present')}`;
+    case 'until': {
+      // edh-next-52 (CR 610.3, 608.2c; Lumbering Battlement): the object's own leaving, said by the object's own ability, is also "until it leaves the battlefield" (family until-it-leaves)
+      const ev = K.events([d.event], st, 'present');
+      const own = d.event.ev === 'zoneChange' && d.event.subject?.self === true && d.event.from === 'battlefield' && d.event.to === undefined
+        && st.trigger !== null && st.trigger.length > 0 && st.trigger.every((e) => e.ev === 'zoneChange' && e.subject.self === true); // "it" is the source only when the trigger is about the source itself (review edh-next-52)
+      return own ? alt(`until ${ev}`, 'until it leaves the battlefield') : `until ${ev}`;
+    }
     case 'untilExiledWith': return `until you exile another card with ${K.obj({ ref: 'self' }, st, 'object').text}`; // r5-dig (CR 611.2a, 607.2a)
     case 'untilNextTurn': return `until ${turnOf(d.whose, st, true)}`;
     case 'untilNextStep': {

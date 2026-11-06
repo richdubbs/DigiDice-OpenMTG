@@ -4,14 +4,14 @@
  *
  *   CR 614.1a, 614.5, 111.10       "If you would create one or more Treasure tokens, instead create those tokens plus an additional Treasure token."
  *   CR 614.1a, 614.5, 111.1        "If one or more tokens would be created under your control, those tokens plus that many 1/1 green Squirrel creature tokens are created instead."
- *   CR 614.1a, 616.1g              "If one or more tokens would be created, twice that many of those tokens are created instead." (any player)
+ *   CR 614.1a, 616.1               "If one or more tokens would be created, twice that many of those tokens are created instead." (any player)
  *   CR 614.1a, 614.6               "If one or more creature tokens would be created under your control, that many 4/4 white Angel creature tokens ... are created instead."
  *   CR 111.1, 608.2h               "You create a number of Treasure tokens equal to ..." / "Each opponent creates a number of ..."
  *   CR 106.12, 603.2, 605.1b       "Whenever you tap ~ for mana, ..." / "Whenever you tap a permanent for {C}, add an additional {C}." (a triggered mana ability)
  *   CR 603.8                       "When ~ has no ice counters on it, sacrifice it. If you do, create ..." (a state trigger of the object itself)
  *   CR 614.1c, 614.12, 707.5       "You may have ~ enter tapped as a copy of any land on the battlefield."
  *   CR 613.1d, 613.1f, 509.1b      "Equipped creature has ward {2}, is an Assassin in addition to its other types, and can't be blocked."
- *   CR 109.2                       "... target creature you control other than ~" (the source is never a legal target)
+ *   CR 115.1, 601.2c             "... target creature you control other than ~" (the source is never a legal target)
  *   CR 107.3, 608.2h, 613.4b       "Target land you control becomes an X/X Elemental creature with trample and haste until end of turn, where X is ..." (X read once)
  */
 import { describe, expect, it } from 'vitest';
@@ -142,7 +142,7 @@ describe('CR 616.1, 614.5: two "plus" effects on one event (Xorn, then Chatterfa
   });
 });
 
-describe('CR 614.1a, 616.1g: "If one or more tokens would be created, twice that many of those tokens are created instead." (any player)', () => {
+describe('CR 614.1a, 616.1: "If one or more tokens would be created, twice that many of those tokens are created instead." (any player)', () => {
   const VIGOR = card('Test Wild Growth', 'Enchantment', 'If one or more tokens would be created, twice that many of those tokens are created instead.', { cost: '{2}{G}', colors: ['G'] });
   const PAIR = card('Test Gold Pair', 'Sorcery', 'Create two Treasure tokens.', { cost: '{1}' });
   const GIFT = card('Test Gold Gift', 'Sorcery', 'Target opponent creates a Treasure token.', { cost: '{1}' });
@@ -211,14 +211,121 @@ describe('CR 614.6, 508.4, 111.1: tokens made instead keep the instruction\'s "t
   });
 });
 
-describe('CR 614.1c, 603.2e: only the tokens made instead enter tapped, not the ones a plus effect adds', () => {
+// edh-fix-1: CORRECTED ON PURPOSE. This describe pinned the WRONG behaviour (the Squirrel a plus effect adds entered untapped); the Chatterfang ruling (2021-06-18) and the
+// Worldwalker Helm ruling (2024-04-12) say "anything else specified in the effect creating the token (such as tapped, attacking, 'That token gains haste' ...) applies to both
+// the original tokens and the Squirrels / the Map". Tokens enter tapped because the creating instruction says so (CR 110.5b), through the entering facts of the creation.
+describe('CR 110.5b, 614.1a, 614.5: every token the creating instruction makes enters tapped, the ones made instead and the ones a plus effect adds (Chatterfang ruling 2021-06-18)', () => {
   const FANG = card('Test Nut Chief', 'Legendary Creature — Squirrel', 'If one or more tokens would be created under your control, those tokens plus that many 1/1 green Squirrel creature tokens are created instead.', { pt: ['3', '3'] });
+  const XORN = card('Test Ore Spirit', 'Creature — Elemental', 'If you would create one or more Treasure tokens, instead create those tokens plus an additional Treasure token.', { pt: ['3', '2'] });
   const TAPPED = card('Test Cold Gold', 'Sorcery', 'Create a tapped Treasure token.', { cost: '{1}' });
-  it('Chatterfang with a tapped Treasure: the Treasure is tapped, the added Squirrel is not', () => {
-    const s0 = scenario([], { p1: { battlefield: ['Test Nut Chief'], hand: ['Test Cold Gold'] }, defs: [FANG, TAPPED] });
+  const PLAIN = card('Test Warm Gold', 'Sorcery', 'Create a Treasure token.', { cost: '{1}' });
+  const tapped = (s: GameState, name: string): boolean[] => objs(s, name, 'p1').map((id) => s.objects[id]!.tapped);
+  const defs = [FANG, XORN, TAPPED, PLAIN];
+  it('Chatterfang with a tapped Treasure: the Treasure and the added Squirrel both enter tapped (the Squirrel is not tapped by a later write)', () => {
+    const s0 = scenario([], { p1: { battlefield: ['Test Nut Chief'], hand: ['Test Cold Gold'] }, defs });
     const s = castAndResolve(s0, 'Test Cold Gold');
-    expect(objs(s, 'Treasure', 'p1').map((id) => s.objects[id]!.tapped)).toEqual([true]);
-    expect(objs(s, 'Squirrel', 'p1').map((id) => s.objects[id]!.tapped)).toEqual([false]);
+    expect(tapped(s, 'Treasure')).toEqual([true]);
+    expect(tapped(s, 'Squirrel')).toEqual([true]);
+  });
+  it('the negative cases: an untapped instruction leaves everything untapped; without Chatterfang a tapped Treasure is one tapped Treasure and no Squirrel', () => {
+    const s0 = scenario([], { p1: { battlefield: ['Test Nut Chief'], hand: ['Test Warm Gold'] }, defs });
+    const s = castAndResolve(s0, 'Test Warm Gold');
+    expect([tapped(s, 'Treasure'), tapped(s, 'Squirrel')]).toEqual([[false], [false]]);
+    const n0 = scenario([], { p1: { hand: ['Test Cold Gold'] }, defs });
+    const n = castAndResolve(n0, 'Test Cold Gold');
+    expect([tapped(n, 'Treasure'), count(n, 'Squirrel', 'p1')]).toEqual([[true], 0]);
+  });
+  it('Xorn with tapped Treasures: the added Treasure enters tapped too (Goldvein Hydra, Magda); with untapped Treasures nothing is tapped', () => {
+    const s0 = scenario([], { p1: { battlefield: ['Test Ore Spirit'], hand: ['Test Cold Gold'] }, defs });
+    expect(tapped(castAndResolve(s0, 'Test Cold Gold'), 'Treasure')).toEqual([true, true]);
+    const u0 = scenario([], { p1: { battlefield: ['Test Ore Spirit'], hand: ['Test Warm Gold'] }, defs });
+    expect(tapped(castAndResolve(u0, 'Test Warm Gold'), 'Treasure')).toEqual([false, false]);
+  });
+});
+
+describe('CR 614.6, 122.6: the counters a creation enters its tokens with go on the tokens a plus effect adds (Incubate and Chatterfang)', () => {
+  const FANG = card('Test Nut Chief', 'Legendary Creature — Squirrel', 'If one or more tokens would be created under your control, those tokens plus that many 1/1 green Squirrel creature tokens are created instead.', { pt: ['3', '3'] });
+  const INC = card('Test Incubate', 'Sorcery', 'Incubate 2. (Create an Incubator token with two +1/+1 counters on it and "{2}: Transform this token." It transforms into a 0/0 Phyrexian artifact creature.)', { cost: '{1}' });
+  const GOLD = card('Test Warm Gold', 'Sorcery', 'Create a Treasure token.', { cost: '{1}' });
+  const defs = [FANG, INC, GOLD];
+  const plus1 = (s: GameState, name: string): number[] => objs(s, name, 'p1').map((id) => s.objects[id]!.counters['+1/+1'] ?? 0);
+  it('the Incubator and the Squirrel each enter with two +1/+1 counters; a Treasure instruction puts no counters on its Squirrel; without Chatterfang the Incubator has two', () => {
+    expect(automated(INC)).toBe(true);
+    const s0 = scenario([], { p1: { battlefield: ['Test Nut Chief'], hand: ['Test Incubate'] }, defs });
+    const s = castAndResolve(s0, 'Test Incubate');
+    expect([plus1(s, 'Incubator'), plus1(s, 'Squirrel')]).toEqual([[2], [2]]);
+    const g0 = scenario([], { p1: { battlefield: ['Test Nut Chief'], hand: ['Test Warm Gold'] }, defs });
+    expect(plus1(castAndResolve(g0, 'Test Warm Gold'), 'Squirrel')).toEqual([0]);
+    const n0 = scenario([], { p1: { hand: ['Test Incubate'] }, defs });
+    const n = castAndResolve(n0, 'Test Incubate');
+    expect([plus1(n, 'Incubator'), count(n, 'Squirrel', 'p1')]).toEqual([[2], 0]);
+  });
+});
+
+describe('CR 614.6, 111.1, 707.2: the Angels made instead of a token COPY are the instruction\'s tokens: "it gains haste", "exile/sacrifice it at the beginning of the next end step" (Divine Visitation with Kiki-Jiki)', () => {
+  const VISIT = card('Test Choir Hall', 'Enchantment', 'If one or more creature tokens would be created under your control, that many 4/4 white Angel creature tokens with flying and vigilance are created instead.', { cost: '{3}{W}', colors: ['W'] });
+  const BEAR = card('Test Plain Bear', 'Creature — Bear', '', { pt: ['2', '2'] });
+  const TWIN = card('Test Twin Spell', 'Sorcery', "Create a token that's a copy of target creature you control. It gains haste until end of turn. Exile it at the beginning of the next end step.", { cost: '{1}' });
+  const KIKI = card('Test Kiki Spell', 'Sorcery', "Create a token that's a copy of target creature you control, except it has haste. Sacrifice it at the beginning of the next end step.", { cost: '{1}' });
+  const PLAINCOPY = card('Test Mirror Spell', 'Sorcery', "Create a token that's a copy of target creature you control.", { cost: '{1}' });
+  const defs = [VISIT, BEAR, TWIN, KIKI, PLAINCOPY];
+  const haste = (s: GameState, id: ObjectId): boolean => chars(s, id).keywords.some((k) => k.keyword === 'haste');
+  /** [Angels made, their haste, Angels left after the end step, Bear copies made]. */
+  const run = (spell: string, withVisit: boolean) => {
+    const s0 = scenario([], { p1: { battlefield: ['Test Plain Bear', ...(withVisit ? ['Test Choir Hall'] : [])], hand: [spell] }, defs });
+    const bear = find(s0, 'Test Plain Bear', 'battlefield', 'p1');
+    let s = castAndResolve(s0, spell, { targets: [[{ kind: 'object', id: bear }]] });
+    const angels = objs(s, 'Angel', 'p1');
+    const copies = objs(s, 'Test Plain Bear', 'p1').filter((x) => x !== bear);
+    const made = [angels.length, angels.map((a) => haste(s, a)), copies.length] as const;
+    const hasteOfCopies = copies.map((c) => haste(s, c));
+    s = advanceTo(s, 2, 'upkeep');
+    return { made, hasteOfCopies, left: [objs(s, 'Angel', 'p1').length, objs(s, 'Test Plain Bear', 'p1').filter((x) => x !== bear).length] };
+  };
+  it('"It gains haste ... Exile it at the beginning of the next end step": the Angel has haste and is exiled at the end step (the Bear copy is not made)', () => {
+    const r = run('Test Twin Spell', true);
+    expect(r.made).toEqual([1, [true], 0]);
+    expect(r.left).toEqual([0, 0]);
+  });
+  it('Kiki-Jiki form ("except it has haste. Sacrifice it ..."): the Angel is sacrificed at the end step', () => {
+    const r = run('Test Kiki Spell', true);
+    expect(r.made[0]).toBe(1);
+    expect(r.left).toEqual([0, 0]);
+  });
+  it('the negative cases: a plain token copy with Divine Visitation makes one Angel that stays; without it the same instruction makes a Bear copy with haste that is exiled', () => {
+    const plain = run('Test Mirror Spell', true);
+    expect([plain.made[0], plain.made[2], plain.left]).toEqual([1, 0, [1, 0]]);
+    const none = run('Test Twin Spell', false);
+    expect([none.made[0], none.made[2], none.hasteOfCopies, none.left]).toEqual([0, 1, [true], [0, 0]]);
+  });
+});
+
+describe('CR 614.6, 110.5b, 122.6: copies made instead of a token creation (Moonlit Meditation) enter tapped and with the instruction\'s counters', () => {
+  const GIANT = card('Test Giant', 'Creature — Giant', '', { pt: ['4', '4'] });
+  const MOON = card('Test Moon', 'Enchantment — Aura', 'Enchant artifact or creature you control\nThe first time you would create one or more tokens each turn, you may instead create that many tokens that are copies of enchanted permanent.', { cost: '{1}' });
+  const COLD = card('Test Cold Gold', 'Sorcery', 'Create a tapped Treasure token.', { cost: '{1}' });
+  const WARM = card('Test Warm Gold', 'Sorcery', 'Create a Treasure token.', { cost: '{1}' });
+  const INC = card('Test Incubate', 'Sorcery', 'Incubate 2. (Create an Incubator token with two +1/+1 counters on it and "{2}: Transform this token." It transforms into a 0/0 Phyrexian artifact creature.)', { cost: '{1}' });
+  const defs = [GIANT, MOON, COLD, WARM, INC];
+  const play = (spell: string): GameState => {
+    let s0 = scenario([], { p1: { battlefield: ['Test Giant'], hand: ['Test Moon', spell] }, defs });
+    const giant = find(s0, 'Test Giant', 'battlefield', 'p1');
+    s0.players[0]!.manaPool.push({ type: 'C' } as never);
+    s0 = resolveAll(act(s0, { type: 'cast', player: 'p1', card: find(s0, 'Test Moon', 'hand', 'p1') }), { targets: [[{ kind: 'object', id: giant }]] });
+    return castAndResolve(s0, spell, { yes: true });
+  };
+  const copies = (s: GameState): ObjectId[] => s.zones.battlefield.filter((id) => s.objects[id]!.kind === 'token' && s.objects[id]!.controller === 'p1' && chars(s, id).name.startsWith('Test Giant'));
+  it('a tapped Treasure becomes a tapped Giant copy; an untapped one an untapped copy', () => {
+    const t = play('Test Cold Gold');
+    expect(copies(t).map((id) => t.objects[id]!.tapped)).toEqual([true]);
+    const u = play('Test Warm Gold');
+    expect(copies(u).map((id) => u.objects[id]!.tapped)).toEqual([false]);
+  });
+  it('Incubate 2 becomes a Giant copy with two +1/+1 counters; a Treasure instruction gives its copy none', () => {
+    const i = play('Test Incubate');
+    expect(copies(i).map((id) => i.objects[id]!.counters['+1/+1'] ?? 0)).toEqual([2]);
+    const u = play('Test Warm Gold');
+    expect(copies(u).map((id) => u.objects[id]!.counters['+1/+1'] ?? 0)).toEqual([0]);
   });
 });
 
@@ -422,7 +529,7 @@ describe('CR 613.1d, 613.1f, 509.1b: "Equipped creature has ward {2}, is an Assa
   });
 });
 
-describe('CR 109.2: "put a +1/+1 counter on target creature you control other than ~"', () => {
+describe('CR 115.1, 601.2c: "put a +1/+1 counter on target creature you control other than ~"', () => {
   const HOST = card('Test Garden Host', 'Creature — Halfling', 'Whenever you create a token, put a +1/+1 counter on target creature you control other than this creature.', { pt: ['2', '2'], cost: '{1}{G}', colors: ['G'] });
   const BEAR = card('Test Plain Bear', 'Creature — Bear', '', { pt: ['2', '2'], cost: '{1}{G}', colors: ['G'] });
   const GOLD = card('Test Gold Rush', 'Sorcery', 'Create a Treasure token.', { cost: '{1}' });

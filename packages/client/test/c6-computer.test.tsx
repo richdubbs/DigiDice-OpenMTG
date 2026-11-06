@@ -253,6 +253,9 @@ describe('runComputer (C6)', () => {
     expect(fallbacks(t as Decision)[0]).toEqual({ type: 'answer', player: 'p2', decisionId: 'd2', answer: { kind: 'chooseTargets', targets: [] } });
     const m = { id: 'd3', player: 'p2', prompt: 'Resolve by hand.', kind: 'manualResolve' as const, sourceName: 'X', text: 'Do a thing.' };
     expect(fallbacks(m as Decision)).toEqual([{ type: 'answer', player: 'p2', decisionId: 'd3', answer: { kind: 'manualResolve', ops: [] } }]);
+    // shortcuts (engine docs/design/shortcuts.md 3, CR 727.2b): another player's proposed shortcut is let run
+    const sc = { id: 'd4', player: 'p2', prompt: 'Let it run?', kind: 'shortcut' as const, proposer: 'p1', times: 10, steps: ['Pass priority'] };
+    expect(fallbacks(sc as Decision)).toEqual([{ type: 'answer', player: 'p2', decisionId: 'd4', answer: { kind: 'shortcut' } }]);
   });
 });
 

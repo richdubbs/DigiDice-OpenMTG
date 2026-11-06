@@ -1,0 +1,7 @@
+# edh-c-114 (Commander EDHREC ranks 19,001-19,500, third pass): Brightflame (a damage and its sharing-color group), M'Baku (monarch conditions), Frenzy Sliver (frenzy), Kayla's Music Box, Djinn of Wishes (play free), Inscribed Tablet. After editing: npm run cards -- fixtures
+Brightflame
+M'Baku, Jabari Chieftain
+Frenzy Sliver
+Kayla's Music Box
+Djinn of Wishes
+Inscribed Tablet

@@ -1,0 +1,340 @@
+[
+ {
+  "id": "sta.edhc5.lifeFor.eachSymbol",
+  "kind": "static",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 118.1",
+   "CR 119.4",
+   "CR 107.4f",
+   "CR 601.2h"
+  ],
+  "pattern": "for each {m:ManaCost} in a cost , you may pay 2 life rather than pay that mana",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "battlefield"
+   ],
+   "effects": [
+    {
+     "s": "permit",
+     "who": {
+      "ref": "you"
+     },
+     "action": "spendMana",
+     "lifeFor": {
+      "color": "$m.0.color"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "each",
+   "may",
+   "rather than"
+  ],
+  "examples": [
+   {
+    "text": "For each {R} in a cost, you may pay 2 life rather than pay that mana."
+   },
+   {
+    "text": "For each {G} in a cost, you may pay 2 life rather than pay that mana."
+   }
+  ],
+  "counterExamples": [
+   "For each {2} in a cost, you may pay 2 life rather than pay that mana.",
+   "For each {R} in a cost, you may pay 3 life rather than pay that mana.",
+   "For each {R} in a cost, you may pay 2 life rather than pay that mana. Do this only once each turn.",
+   "For each {R} in a cost an opponent pays, you may pay 2 life rather than pay that mana."
+  ]
+ },
+ {
+  "id": "sta.edhc5.lifeFor.additionalCost.reduce",
+  "kind": "static",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 118.8",
+   "CR 601.2b",
+   "CR 601.2f",
+   "CR 118.7",
+   "CR 119.4"
+  ],
+  "pattern": "as an additional cost to cast {f:Filter} , you may pay 2 life . those spells cost {m:ManaCost} less to cast if you paid life this way . this effect reduces only the amount of ( white | blue | black | red | green ) mana you pay",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "battlefield"
+   ],
+   "effects": [
+    {
+     "s": "permit",
+     "who": {
+      "ref": "you"
+     },
+     "action": "spendMana",
+     "lifeFor": {
+      "color": "$m.0.color",
+      "once": true
+     },
+     "of": "$f"
+    }
+   ]
+  },
+  "consumes": [
+   "additional",
+   "may",
+   "if",
+   "this way",
+   "only"
+  ],
+  "examples": [
+   {
+    "text": "As an additional cost to cast red creature spells, you may pay 2 life. Those spells cost {R} less to cast if you paid life this way. This effect reduces only the amount of red mana you pay."
+   },
+   {
+    "text": "As an additional cost to cast Elf spells, you may pay 2 life. Those spells cost {G} less to cast if you paid life this way. This effect reduces only the amount of green mana you pay."
+   }
+  ],
+  "counterExamples": [
+   "As an additional cost to cast red creature spells, you may pay 3 life. Those spells cost {R} less to cast if you paid life this way. This effect reduces only the amount of red mana you pay.",
+   "As an additional cost to cast red creature spells, you may pay 2 life. Those spells cost {1} less to cast if you paid life this way. This effect reduces only the amount of red mana you pay.",
+   "As an additional cost to cast red creature spells, you may pay 2 life. Those spells cost {R} less to cast if you paid life this way."
+  ]
+ },
+ {
+  "id": "cm.edhc5.additional.exileFromHandAny.lessForEach",
+  "kind": "static",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 118.8",
+   "CR 601.2b",
+   "CR 601.2f",
+   "CR 118.7",
+   "CR 406.1"
+  ],
+  "pattern": "as an additional cost to cast ~ , you may exile any number of {f:Filter} from your hand . ~ costs {m:ManaCost} less to cast for each card exiled this way",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "stack"
+   ],
+   "effects": [
+    {
+     "s": "additionalCost",
+     "cost": {
+      "other": [
+       {
+        "kind": "exileFrom",
+        "zone": "hand",
+        "filter": "$f",
+        "count": "any"
+       }
+      ]
+     },
+     "optional": true,
+     "name": "exiled",
+     "announceCount": true
+    },
+    {
+     "s": "costMod",
+     "applies": {
+      "self": true,
+      "caster": "you"
+     },
+     "change": {
+      "kind": "reduce",
+      "generic": {
+       "q": "math",
+       "op": "*",
+       "args": [
+        "$m.0.amount",
+        {
+         "q": "costCount",
+         "name": "exiled"
+        }
+       ]
+      },
+      "floor": "zero"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "additional",
+   "may",
+   "any number",
+   "each",
+   "this way"
+  ],
+  "examples": [
+   {
+    "text": "As an additional cost to cast this spell, you may exile any number of red cards from your hand. This spell costs {1} less to cast for each card exiled this way."
+   },
+   {
+    "text": "As an additional cost to cast this spell, you may exile any number of Elf cards from your hand. This spell costs {2} less to cast for each card exiled this way."
+   }
+  ],
+  "counterExamples": [
+   "As an additional cost to cast this spell, you may exile any number of red cards from your hand. This spell costs {1} more to cast for each card exiled this way.",
+   "As an additional cost to cast this spell, exile any number of red cards from your hand. This spell costs {1} less to cast for each card exiled this way.",
+   "As an additional cost to cast this spell, you may exile any number of red cards from your graveyard. This spell costs {1} less to cast for each card exiled this way."
+  ]
+ },
+ {
+  "id": "eff.edhc5.gainHalfX.drawHalfX.roundDown",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 107.3",
+   "CR 119.1",
+   "CR 121.1",
+   "CR 107.1a"
+  ],
+  "pattern": "{p:Player} gain[s] half x life and draw[s] half x cards . round down each time",
+  "build": [
+   {
+    "op": "gainLife",
+    "who": "$p",
+    "amount": {
+     "q": "math",
+     "op": "floorDiv",
+     "args": [
+      {
+       "q": "X"
+      },
+      2
+     ]
+    }
+   },
+   {
+    "op": "draw",
+    "who": "$p",
+    "count": {
+     "q": "math",
+     "op": "floorDiv",
+     "args": [
+      {
+       "q": "X"
+      },
+      2
+     ]
+    }
+   }
+  ],
+  "consumes": [
+   "half",
+   "round down",
+   "each",
+   "each time"
+  ],
+  "examples": [
+   {
+    "text": "You gain half X life and draw half X cards. Round down each time."
+   },
+   {
+    "text": "Target player gains half X life and draws half X cards. Round down each time."
+   }
+  ],
+  "counterExamples": [
+   "You gain half X life and draw half X cards. Round up each time.",
+   "You gain half X life and draw X cards. Round down each time.",
+   "You gain half X life and draw half X cards."
+  ]
+ },
+ {
+  "id": "eff.edhc5.player.exileTop.halfLibraryRoundedUp",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 107.1a",
+   "CR 701.13a",
+   "CR 401.1",
+   "CR 406.1"
+  ],
+  "pattern": "{p:Player} exile[s] the top half of their library , rounded up",
+  "build": {
+   "op": "move",
+   "what": {
+    "ref": "topCards",
+    "player": "$p",
+    "count": {
+     "q": "math",
+     "op": "ceilDiv",
+     "args": [
+      {
+       "q": "zoneSize",
+       "zone": "library",
+       "of": "$p"
+      },
+      2
+     ]
+    }
+   },
+   "to": {
+    "zone": "exile"
+   }
+  },
+  "consumes": [
+   "half",
+   "rounded up"
+  ],
+  "examples": [
+   {
+    "text": "Target player exiles the top half of their library, rounded up."
+   },
+   {
+    "text": "Target opponent exiles the top half of their library, rounded up."
+   }
+  ],
+  "counterExamples": [
+   "Target player exiles the top half of their library, rounded down.",
+   "Target player exiles the top half of their graveyard, rounded up.",
+   "Target player exiles half of their library, rounded up."
+  ]
+ },
+ {
+  "id": "kw.edhc5.annihilator.whereX.counters",
+  "kind": "static",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 702.86a",
+   "CR 107.3",
+   "CR 608.2h"
+  ],
+  "pattern": "~ has annihilator x , where x is the number of {k:CounterKind} counters on it",
+  "build": {
+   "kind": "keyword",
+   "keyword": "annihilator",
+   "amount": {
+    "q": "counters",
+    "on": {
+     "ref": "self"
+    },
+    "kind": "$k"
+   }
+  },
+  "consumes": [
+   "has"
+  ],
+  "examples": [
+   {
+    "text": "~ has annihilator X, where X is the number of charge counters on it."
+   },
+   {
+    "text": "~ has annihilator X, where X is the number of +1/+1 counters on it."
+   }
+  ],
+  "counterExamples": [
+   "~ has annihilator 2, where X is the number of charge counters on it.",
+   "~ has annihilator X, where X is the number of charge counters on target creature.",
+   "~ has annihilator X.",
+   "Creatures you control have annihilator X, where X is the number of charge counters on it."
+  ]
+ }
+]

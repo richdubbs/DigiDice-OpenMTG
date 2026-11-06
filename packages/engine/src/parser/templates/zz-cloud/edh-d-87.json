@@ -1,0 +1,410 @@
+[
+  {
+    "id": "eff.edhd87.player.exilesFromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.1",
+      "CR 406.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} exile[s] {n:Qty} card[s] from the top of their library",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "topCards",
+        "player": "$p",
+        "count": "$n"
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player exiles that many cards from the top of their library."
+      },
+      {
+        "text": "Target player exiles two cards from the top of their library."
+      }
+    ],
+    "counterExamples": [
+      "Target player exiles two cards from the bottom of their library.",
+      "Target player mills two cards from the top of their library.",
+      "Target player exiles two cards from the top of your library."
+    ]
+  },
+  {
+    "id": "eff.edhd87.permit.playLands.fromAmong.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.1",
+      "CR 305.2",
+      "CR 601.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "you may play lands from among {o:Group} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "onlyTypes": [
+            "Land"
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Exile the top three cards of target player's library. You may play lands from among those cards for as long as they remain exiled."
+      },
+      {
+        "text": "Exile the top two cards of your library. You may play lands from among them this turn."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top three cards of target player's library. You may play those cards for as long as they remain exiled.",
+      "Exile the top three cards of target player's library. You may cast spells from among those cards for as long as they remain exiled.",
+      "Exile the top two cards of your library. You may play lands from among them."
+    ],
+    "consumes": [
+      "may"
+    ]
+  },
+  {
+    "id": "eff.edhd87.gainLifeEqual.loseLifeEqual",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2h"
+    ],
+    "pattern": "you gain life equal to {a:Qty} , lose life equal to {b:Qty}",
+    "build": [
+      {
+        "op": "gainLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": "$a"
+      },
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": "$b"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top card of your library. If it's a creature card, you gain life equal to its toughness, lose life equal to its power, then put it into your hand."
+      },
+      {
+        "text": "Reveal the top card of your library. If it's an artifact card, you gain life equal to that card's mana value, lose life equal to the number of cards in your hand, then put it into your hand."
+      }
+    ],
+    "counterExamples": [
+      "You and target opponent each draw a card and lose life equal to the number of cards in your hand.",
+      "Reveal the top card of your library. If it's a creature card, target player gains life equal to its toughness, loses life equal to its power, then put it into your hand.",
+      "Reveal the top card of your library. If it's a creature card, you lose life equal to its toughness, gain life equal to its power, then put it into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhd87.lookAndPlay.one.remainsExiled.anyColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 609.4b",
+      "CR 611.2a",
+      "CR 406.3"
+    ],
+    "pattern": "you may look at and play {o:Obj} for as long as it remains exiled , and you may spend mana as though it were mana of any color to cast ( it | that spell )",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": "$o"
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "remainsExiled"
+        },
+        "effects": [
+          {
+            "s": "permit",
+            "who": {
+              "ref": "you"
+            },
+            "action": "play",
+            "of": {
+              "is": "$o"
+            },
+            "anyManaColor": true
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top card of target opponent's library face down. You may look at and play that card for as long as it remains exiled, and you may spend mana as though it were mana of any color to cast that spell."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top card of defending player's library face down. You may look at and play that card for as long as it remains exiled, and you may spend mana as though it were mana of any color to cast it."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target opponent's library face down. You may look at and play that card for as long as it remains exiled.",
+      "Exile the top card of target opponent's library face down. You may look at and play that card for as long as it remains exiled, and mana of any type can be spent to cast that spell.",
+      "Exile the top card of target opponent's library face down. You may look at and play that card this turn, and you may spend mana as though it were mana of any color to cast that spell."
+    ],
+    "subject": "none"
+  },
+  {
+    "id": "eff.edhd87.choose.another.attacking.lesserPower",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 208.1",
+      "CR 506.4",
+      "CR 109.4"
+    ],
+    "pattern": "choose another attacking creature with lesser power",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "attacking": true,
+            "power": {
+              "op": "<",
+              "value": {
+                "q": "stat",
+                "stat": "power",
+                "of": {
+                  "ref": "bound",
+                  "name": "",
+                  "$anaphor": {
+                    "sort": "object",
+                    "number": "singular",
+                    "head": "creature",
+                    "text": "that creature"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack, target attacking creature gets +1/+0 until end of turn. Then choose another attacking creature with lesser power. That creature gains trample until end of turn."
+      },
+      {
+        "text": "Whenever you attack, untap target attacking creature. Then choose another attacking creature with lesser power. That creature gains lifelink until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack, target attacking creature gets +1/+0 until end of turn. Then choose another attacking creature with greater power. That creature gains trample until end of turn.",
+      "Whenever you attack, target attacking creature gets +1/+0 until end of turn. Then choose another blocking creature with lesser power. That creature gains trample until end of turn.",
+      "Whenever you attack, target attacking creature gets +1/+0 until end of turn. Then choose another attacking creature with lesser toughness. That creature gains trample until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhd87.player.mills.perDamageToThem",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 120.1",
+      "CR 603.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} mill[s] a card for each 1 damage dealt to them",
+    "build": {
+      "op": "mill",
+      "who": "$p",
+      "count": {
+        "q": "eventAmount"
+      }
+    },
+    "examples": [
+      {
+        "text": "Whenever one or more Pirates you control deal combat damage to a player, that player mills a card for each 1 damage dealt to them."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player mills a card for each 1 damage dealt to them. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, that player mills a card for each 2 damage dealt to them.",
+      "Whenever ~ deals combat damage to a player, that player mills a card for each 1 damage prevented this way.",
+      "Whenever ~ deals combat damage to a player, that player discards a card for each 1 damage dealt to them."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edhd87.player.chooses.cardName",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 201.4",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} choose[s] a card name",
+    "build": {
+      "op": "chooseValue",
+      "who": "$p",
+      "what": "cardName",
+      "as": "chosenCardName",
+      "link": "chosenCardName"
+    },
+    "examples": [
+      {
+        "text": "Target opponent chooses a card name. Draw a card."
+      },
+      {
+        "text": "Each opponent chooses a card name. You gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent chooses a creature type.",
+      "Target opponent chooses a card name at random.",
+      "Target opponent chooses two card names."
+    ]
+  },
+  {
+    "id": "eff.edhd87.ifSearched.creatureNotNamed.mayPutBattlefieldUnderYou",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 201.2",
+      "CR 608.2c",
+      "CR 110.2a"
+    ],
+    "pattern": "if you searched for a creature card that doesn't have that name , you may put it onto the battlefield under your control",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "matches",
+        "object": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "object",
+            "number": "singular",
+            "head": "card",
+            "participle": "found",
+            "text": "the card you searched for"
+          }
+        },
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "isCard": true,
+          "not": {
+            "chosen": {
+              "link": "chosenCardName",
+              "quality": "cardName"
+            }
+          }
+        }
+      },
+      "then": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "you"
+          },
+          "do": [
+            {
+              "op": "move",
+              "what": {
+                "ref": "bound",
+                "name": "",
+                "$anaphor": {
+                  "sort": "object",
+                  "number": "singular",
+                  "head": "card",
+                  "participle": "found",
+                  "text": "the card you searched for"
+                }
+              },
+              "to": {
+                "zone": "battlefield",
+                "controller": {
+                  "ref": "you"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, search defending player's library for a card, then that player chooses a card name. If you searched for a creature card that doesn't have that name, you may put it onto the battlefield under your control. Then that player shuffles."
+      },
+      {
+        "text": "Search target opponent's library for a card, then that player chooses a card name. If you searched for a creature card that doesn't have that name, you may put it onto the battlefield under your control. Then that player shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Search target opponent's library for a card, then that player chooses a card name. If you searched for a creature card that has that name, you may put it onto the battlefield under your control. Then that player shuffles.",
+      "Search target opponent's library for a card, then that player chooses a card name. If you searched for an artifact card that doesn't have that name, you may put it onto the battlefield under your control. Then that player shuffles.",
+      "Search target opponent's library for a card, then that player chooses a card name. If you searched for a creature card that doesn't have that name, you may put it into your hand. Then that player shuffles."
+    ]
+  }
+]

@@ -1,0 +1,227 @@
+[
+  {
+    "id": "sta.edhcb2.all.are.pluralSubtype.addition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 205.1b"
+    ],
+    "pattern": "all {f:Filter} are {st:PluralSubtype} in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "All lands are Forests in addition to their other types."
+      },
+      {
+        "text": "All artifact creatures are Golems in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "All lands are Forests.",
+      "All lands are Forests in addition to their other types until end of turn.",
+      "All lands are Forest in addition to their other types.",
+      "All lands are green Forests in addition to their other types."
+    ]
+  },
+  {
+    "id": "eff.edhcb2.ifx.ormore.also",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 107.3",
+      "CR 608.2c"
+    ],
+    "pattern": "if x is {n:Qty} or ( more | greater ) , also {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "X"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "Create X 1/1 white Spirit creature tokens. If X is 5 or more, also create X 3/3 white Angel creature tokens."
+      },
+      {
+        "text": "Target player mills X cards. If X is 6 or greater, also gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Create X 1/1 white Spirit creature tokens. If X is 5 or less, also create X 3/3 white Angel creature tokens.",
+      "Create X 1/1 white Spirit creature tokens. If Y is 5 or more, also create X 3/3 white Angel creature tokens.",
+      "Create X 1/1 white Spirit creature tokens. If X is 5 or more, also create X 3/3 white Angel creature tokens instead."
+    ]
+  },
+  {
+    "id": "sta.edhcb2.eachCreature.has.perColor",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 105.2"
+    ],
+    "pattern": "each creature you control has {w:Abilities} if it's white , {u:Abilities} if it's blue , {b:Abilities} if it's black , {r:Abilities} if it's red , and {g:Abilities} if it's green",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you",
+            "colors": [
+              "W"
+            ]
+          }
+        },
+        "mods": [
+          {
+            "layer": 6,
+            "add": "$w"
+          }
+        ]
+      },
+      {
+        "s": "continuous",
+        "affects": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you",
+            "colors": [
+              "U"
+            ]
+          }
+        },
+        "mods": [
+          {
+            "layer": 6,
+            "add": "$u"
+          }
+        ]
+      },
+      {
+        "s": "continuous",
+        "affects": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you",
+            "colors": [
+              "B"
+            ]
+          }
+        },
+        "mods": [
+          {
+            "layer": 6,
+            "add": "$b"
+          }
+        ]
+      },
+      {
+        "s": "continuous",
+        "affects": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you",
+            "colors": [
+              "R"
+            ]
+          }
+        },
+        "mods": [
+          {
+            "layer": 6,
+            "add": "$r"
+          }
+        ]
+      },
+      {
+        "s": "continuous",
+        "affects": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you",
+            "colors": [
+              "G"
+            ]
+          }
+        },
+        "mods": [
+          {
+            "layer": 6,
+            "add": "$g"
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "each",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control has flying if it's white, reach if it's blue, menace if it's black, haste if it's red, and trample if it's green."
+      },
+      {
+        "text": "Each creature you control has vigilance if it's white, deathtouch if it's blue, lifelink if it's black, first strike if it's red, and hexproof if it's green."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control has flying if it's white, reach if it's blue, menace if it's black, haste if it's red, and trample if it's blue.",
+      "Each creature you control has flying if it's white, reach if it's blue, menace if it's black, and haste if it's red.",
+      "Each creature you control has flying if it's white, reach if it's blue, menace if it's black, haste if it's red, and trample if it's green until end of turn."
+    ]
+  }
+]

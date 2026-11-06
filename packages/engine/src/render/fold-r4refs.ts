@@ -3,15 +3,16 @@
  * `foldR4RefsEarly` before the general choose-then-move fold and `foldR4Refs` after the folds of the earlier slices). A fold applies only when
  * every part is exactly what the idiom says (same player, bound names, nothing else in between).
  */
-import type { EffectStep, ObjectFilter, ObjRef, PlayerRef } from '../types/ability';
+import type { AbilityDef, EffectStep, ObjectFilter, ObjRef, PlayerRef } from '../types/ability';
 import { acting, plain } from './clause';
 import type { Folded } from './fold';
 import { K } from './kernel';
+import { abilityList } from './mods';
 import { isPlayerRef } from './refs';
 import { cloneState, playerKey, type RenderState } from './state';
 import { countersText } from './steps-life';
 import { bind } from './steps-util';
-import { alt, ALT_CLOSE, ALT_OPEN, ALT_SEP, numWord, withArticle } from './text';
+import { alt, ALT_CLOSE, ALT_OPEN, ALT_SEP, COLOR_WORD, firstAlt, numWord, pluralize, withArticle } from './text';
 
 /** The zone words the noun phrase of a card in an unnamed player's graveyard ends with ("from a graveyard", the marked "from" / "in" group too). */
 const GRAVEYARD_WORDS = new RegExp(`\\s+(?:${ALT_OPEN}from${ALT_SEP}in${ALT_CLOSE}|from|in) (?:a|1) graveyard$`);
@@ -144,6 +145,10 @@ function ifCountersRemoveThose(list: EffectStep[], i: number, st: RenderState): 
   if (r.op !== 'removeCounters' || r.count !== 'all' || r.kind !== left.kind || !same(r.from, left.on) || r.guard !== undefined || r.upTo === true) return null;
   const cond = K.cond(c, st);
   const rest = K.steps(a.then.slice(1), st);
+  // edh-c-13 (CR 122.1, 701.27a, 712.9; Heirloom Mirror, Ludevic's Test Subject; family remove-counters-them-transform): before "transform it" the counters removed are also "them" / "all of them"
+  if (a.then[1]!.op === 'changeFace' && same(a.then[1]!.what, left.on)) {
+    return { clauses: [plain(`if ${cond}, ${alt('remove those counters', 'remove all of them', 'remove them')} and ${rest}`, { standalone: true, leadThen: true })], consumed: 1 };
+  }
   return { clauses: [plain(`if ${cond}, remove those counters and ${rest}`, { standalone: true, leadThen: true })], consumed: 1 };
 }
 
@@ -274,15 +279,35 @@ function eachOfThemIs(list: EffectStep[], i: number, st: RenderState): Folded | 
   const a = list[i];
   if (a?.op !== 'effect' || a.guard !== undefined || a.duration.d !== 'permanent' || a.effects.length !== 1) return null;
   const e = a.effects[0]!;
-  if (e.s !== 'continuous' || e.affects.ref !== 'bound' || e.mods.length !== 2) return null;
-  const [m4, m7] = e.mods as unknown as [Record<string, unknown>, Record<string, unknown>];
+  // edh-d-21 (lane type-change; CR 205.1b, 613.1d, 613.1f, 613.4b; Storm of Souls): with abilities given too, "Each of them is a 1/1 Spirit with flying in addition to its other types"
+  // (a third change, of layer 6, that only adds abilities)
+  if (e.s !== 'continuous' || e.affects.ref !== 'bound' || (e.mods.length !== 2 && e.mods.length !== 3)) return null;
+  const mods = e.mods as unknown as Record<string, unknown>[];
+  const m4 = mods.find((m) => m['layer'] === 4);
+  const m7 = mods.find((m) => m['layer'] === '7b');
+  const m6 = mods.find((m) => m['layer'] === 6);
+  const m5 = mods.find((m) => m['layer'] === 5);
+  // edh-d-21 (CR 105.3, 205.1b, 613.1e; Ever After): a color ADDED beside the subtypes, no size: "Each of those creatures is a black Zombie in addition to its other colors and types"
+  const colors = m5 === undefined ? undefined : (m5['colors'] as { add?: string[] } | undefined)?.add;
+  if (m5 !== undefined && (m7 !== undefined || m6 !== undefined || mods.length !== 2 || Object.keys(m5).length !== 2 || colors === undefined || colors.length !== 1 || Object.keys(m5['colors'] as object).length !== 1)) return null;
+  if (m4 === undefined || (m5 === undefined && (m7 === undefined || (mods.length === 3) !== (m6 !== undefined)))) return null;
   const subs = (m4['subtypes'] as { add?: string[] } | undefined)?.add;
-  if (m4['layer'] !== 4 || Object.keys(m4).length !== 2 || subs === undefined || subs.length === 0 || Object.keys(m4['subtypes'] as object).length !== 1) return null;
-  if (m7['layer'] !== '7b' || typeof m7['power'] !== 'number' || typeof m7['toughness'] !== 'number' || Object.keys(m7).length !== 3) return null;
+  if (Object.keys(m4).length !== 2 || subs === undefined || subs.length === 0 || Object.keys(m4['subtypes'] as object).length !== 1) return null;
+  if (m5 === undefined && (typeof m7!['power'] !== 'number' || typeof m7!['toughness'] !== 'number' || Object.keys(m7!).length !== 3)) return null;
+  const granted = m6 === undefined ? undefined : (m6['add'] as AbilityDef[] | undefined);
+  if (m6 !== undefined && (Object.keys(m6).length !== 2 || granted === undefined || granted.length === 0 || granted.some((g) => g.kind !== 'keyword'))) return null;
   const them = K.obj(e.affects, st, 'object');
   if (!them.plural) return null;
-  const desc = `${m7['power']}/${m7['toughness']} ${subs.join(' ')}`;
-  return { clauses: [plain(`each of ${them.text} is ${withArticle(desc)} in addition to its other types`)], consumed: 1 };
+  if (m5 !== undefined) {
+    const each = `each of ${them.text} is ${withArticle(`${COLOR_WORD[colors![0]!] ?? colors![0]!} ${subs.join(' ')}`)} in addition to its other colors and types`;
+    // edh-next-85 (family they-are-color-subtypes; CR 205.1b, 105.3, 613.1d-e; Grimoire of the Dead): the group is "they" and the plural type, "They're black Zombies in addition to their other colors
+    // and types" (a lone subtype only: the plural of a list of types would need their own order)
+    if (firstAlt(them.text) === 'them' && subs.length === 1) return { clauses: [plain(alt(each, `they are ${COLOR_WORD[colors![0]!] ?? colors![0]!} ${pluralize(subs[0]!)} in addition to their other colors and types`))], consumed: 1 };
+    return { clauses: [plain(each)], consumed: 1 };
+  }
+  const desc = `${m7!['power']}/${m7!['toughness']} ${subs.join(' ')}`;
+  const withAbilities = granted === undefined ? '' : ` with ${abilityList(granted, cloneState(st), 'creature')}`;
+  return { clauses: [plain(`each of ${them.text} is ${withArticle(desc)}${withAbilities} in addition to its other types`)], consumed: 1 };
 }
 
 /**
@@ -297,7 +322,9 @@ function searchPlayersZonesForChosenName(list: EffectStep[], i: number, st: Rend
   if (Object.keys(a.filter).length !== 1) return null;
   // std-r9b (CR 701.23a, 201.2, 608.2h): "... for any number of cards with the same name as that creature and exile them": the name of one object named before
   const named = a.filter.sharesWith?.quality === 'name' && a.filter.sharesWith.with.ref !== 'each' ? a.filter.sharesWith.with : undefined;
-  if (named ? a.max !== 'any' : typeof a.max !== 'number' || a.filter.chosen?.quality !== 'cardName') return null;
+  // edh-c-38 (Memoricide): "any number of cards with that name" for the chosen name too
+  if (named ? a.max !== 'any' : (typeof a.max !== 'number' && a.max !== 'any') || a.filter.chosen?.quality !== 'cardName') return null;
+  if (a.publicRequired === true && !named) return null; // edh-c-32 (CR 701.23b): "for all cards with the same name as <that creature>" is the whole of its wording
   if (b.what.ref !== 'bound' || b.what.name !== a.as || !same(b.to, { zone: 'exile' }) || b.until !== undefined) return null;
   if (list.slice(i + 2).some((x) => JSON.stringify(x).includes(`"${a.as}"`))) return null;
   // std-r9b (CR 701.24a, 121.1, 608.2h): "That player shuffles, then draws a card for each card exiled from their hand this way": the only reader of what the exile
@@ -309,7 +336,7 @@ function searchPlayersZonesForChosenName(list: EffectStep[], i: number, st: Rend
   const whose = K.player(a.owner, st, 'possessive').text;
   // std-costs-1 (CR 201.2, 608.2c; family search-same-name-that-name): the name of one object named before is also "that name" (Deadly Cover-Up)
   const names = named ? [`the same name as ${K.obj(named, st, 'object').text}`, ...(named.ref === 'bound' ? ['that name'] : [])] : ['that name', 'the chosen name'];
-  const cards = `${named ? 'any number of' : `up to ${numWord(a.max as number)}`} cards with ${alt(...names)}`;
+  const cards = `${named || a.max === 'any' ? (a.publicRequired === true ? 'all' : 'any number of') : `up to ${numWord(a.max as number)}`} cards with ${alt(...names)}`;
   const clauses = [plain(`search ${whose} graveyard, ${alt('hand, and library', 'hand and library')} for ${cards} and exile them`)];
   const shuffles = sh?.op === 'shuffle' && same(sh.who, a.owner) && sh.guard === undefined && sh.as === undefined && sh.ifSearched === undefined;
   if (drawsPerHandCard && !shuffles) return null;

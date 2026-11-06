@@ -1,0 +1,355 @@
+[
+  {
+    "id": "eff.edhn75.eachMay.wheel.commanderMv",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 903.3",
+      "CR 903.3d",
+      "CR 608.2d",
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 202.3"
+    ],
+    "pattern": "each player may discard their hand and draw cards equal to the greatest mana value of a commander they own on the battlefield or in the command zone",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "do": [
+        {
+          "op": "discard",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": "hand"
+        },
+        {
+          "op": "draw",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": {
+            "q": "stat",
+            "stat": "manaValue",
+            "agg": "max",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "commander": true,
+                "owner": {
+                  "ref": "iterating"
+                },
+                "zone": [
+                  "battlefield",
+                  "command"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Each player may discard their hand and draw cards equal to the greatest mana value of a commander they own on the battlefield or in the command zone. You gain 2 life."
+      },
+      {
+        "text": "Each player may discard their hand and draw cards equal to the greatest mana value of a commander they own on the battlefield or in the command zone. Scry 1."
+      }
+    ],
+    "counterExamples": [
+      "Each player may discard their hand and draw cards equal to the greatest mana value of a commander you own on the battlefield or in the command zone.",
+      "Each opponent may discard their hand and draw cards equal to the greatest mana value of a commander they own on the battlefield or in the command zone.",
+      "Each player may discard their hand and draw cards equal to the greatest mana value of a commander they own on the battlefield."
+    ]
+  },
+  {
+    "id": "sta.edhn75.commander.costLess.forEachCast",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 903.3",
+      "CR 903.8",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.1"
+    ],
+    "pattern": "your commander costs {m:ManaCost} less to cast for each time it's been cast from the command zone this game",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "commander": true,
+              "owner": "you",
+              "stackKind": "spell",
+              "zone": "stack"
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "commanderCasts",
+                  "costSpell": true
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each time",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Your commander costs {2} less to cast for each time it's been cast from the command zone this game."
+      },
+      {
+        "text": "Your commander costs {3} less to cast for each time it's been cast from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "Your commander costs {1} more to cast for each time it's been cast from the command zone this game.",
+      "Your commander costs {1} less to cast for each time it's been cast this game.",
+      "Creatures you control cost {1} less to cast for each time it's been cast from the command zone this game."
+    ]
+  },
+  {
+    "id": "eff.edhn75.ifCond.alsoGetsAndGains",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 725.1"
+    ],
+    "pattern": "if {c:Cond} , {o:Obj} also get[s] {pt:PT} and gain[s] {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "effect",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ],
+          "duration": "$d"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "Untap target creature. If you control a Wizard, that creature also gets +2/+0 and gains first strike until end of turn."
+      },
+      {
+        "text": "Untap target creature. If you've completed a dungeon, that creature also gets +4/+0 and gains trample and menace until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Untap target creature. If you control a Wizard, that creature also gets +2/+0 and gains first strike.",
+      "Untap target creature. If you control a Wizard, that creature also gets +2/+0 until end of turn.",
+      "Untap target creature. If you control a Wizard, that creature also gains first strike until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn75.return.upTo.bf.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 603.4",
+      "CR 400.7"
+    ],
+    "pattern": "return up to {n:Qty} {f:Filter} to the battlefield if {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "min": 0,
+          "max": "$n",
+          "as": "returnUpTo"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "returnUpTo"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, return up to two creature cards with mana value 4 or less from your graveyard to the battlefield if you've completed a dungeon."
+      },
+      {
+        "text": "Whenever ~ attacks, return up to two creature cards from your graveyard to the battlefield if you control a Forest."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, return up to one creature card from your graveyard to the battlefield unless you control a Forest.",
+      "Whenever ~ attacks, return up to one creature card from your graveyard to the battlefield.",
+      "Whenever ~ attacks, return up to one creature card from your graveyard to your hand if you control a Forest."
+    ]
+  },
+  {
+    "id": "eff.edhn75.pump.dur.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 725.1"
+    ],
+    "pattern": "{o:Objs} get[s] {pt:PT} {d:Dur} if {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "effect",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ],
+          "duration": "$d"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Wizard creatures you control get +2/+2 until end of turn if you're the monarch. Otherwise, you become the monarch."
+      },
+      {
+        "text": "Creatures you control get +2/+0 until end of turn if you control a Forest. Otherwise, you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get +2/+0 until end of turn unless you control a Forest. Otherwise, you draw a card.",
+      "Creatures you control get +2/+0 if you control a Forest. Otherwise, you draw a card.",
+      "Creatures you control gain flying until end of turn if you control a Forest. Otherwise, you draw a card."
+    ]
+  },
+  {
+    "id": "sta.edhn75.roomAbilities.extraTrigger",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 309.4c",
+      "CR 701.49",
+      "CR 603.2d",
+      "CR 108.3"
+    ],
+    "pattern": "room abilities of dungeons you own trigger an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "roomAbilitiesExtra"
+        }
+      ]
+    },
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Legendary creatures you control have \"Room abilities of dungeons you own trigger an additional time.\""
+      },
+      {
+        "text": "Wizard creatures you own have \"Room abilities of dungeons you own trigger an additional time.\""
+      }
+    ],
+    "counterExamples": [
+      "Legendary creatures you control have \"Room abilities of dungeons your opponents own trigger an additional time.\"",
+      "Legendary creatures you control have \"Room abilities of dungeons you own trigger two additional times.\"",
+      "Legendary creatures you control have \"Room abilities of dungeons you own trigger.\""
+    ]
+  }
+]

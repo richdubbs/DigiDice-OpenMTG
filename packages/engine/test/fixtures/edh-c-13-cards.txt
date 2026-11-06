@@ -1,0 +1,11 @@
+# edh-c-13 (Commander lane edh-c, EDHREC ranks 18,751 to 19,375): each player may scry, each other (token count, pump), counters on one or more Humans, play a card, remove them and transform, exchange power, return linked exiled to the battlefield, look at X back in any order. After editing: npm run cards -- fixtures
+Eager Construct
+Great Desert Prospector
+Kodama of the South Tree
+Cloaked Cadet
+Null Profusion
+Heirloom Mirror // Inherited Fiend
+Ludevic's Test Subject // Ludevic's Abomination
+Serene Master
+Safe Haven
+Information Dealer

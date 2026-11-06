@@ -1,0 +1,1 @@
+{"name":"refused_20","before":{"a":{"b":[1,2]},"s":"x"},"ops":[{"op":"set","path":[1.5],"value":1}],"error":"A patch path segment is neither a key nor an index."}

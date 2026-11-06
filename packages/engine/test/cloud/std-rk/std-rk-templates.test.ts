@@ -86,7 +86,7 @@ const READINGS: Reading[] = [
     counterExamples: [
       { text: 'When this creature dies, draw a card for each opponent who controls more creatures than you.', like: 0 },
       { text: 'When this creature dies, draw a card for each opponent who controls fewer creatures than that player.', like: 0 },
-      { text: 'When this creature dies, draw a card for each player who controls fewer creatures than you.', like: 0 },
+      { text: 'When this creature dies, draw a card for each player who controls fewer creatures than that player.', like: 0 },
       { text: 'At the beginning of your end step, create X 1/1 white Spirit creature tokens, where X is the number of opponents who control more lands than you control.', like: 1 },
       { text: 'At the beginning of your end step, create X 1/1 white Spirit creature tokens, where X is the number of opponents who control more lands you control than you.', like: 1 },
     ],
@@ -199,7 +199,7 @@ describe('std-rk renderer (render/qty.ts, CR 102.3, 608.2h): a count of opponent
     for (const near of [
       'When Test Card enters, draw a card for each opponent who controls more creatures than you.',
       'When Test Card enters, draw a card for each opponent who controls fewer lands than you.',
-      'When Test Card enters, draw a card for each player who controls fewer creatures than you.',
+      'When Test Card enters, draw a card for each player who controls fewer creatures than that player.',
       'When Test Card enters, draw a card for each opponent.',
     ]) expect(renderGate(etbDraw(fewer), [near], RCTX).ok, near).toBe(false);
   });

@@ -1,0 +1,259 @@
+[
+  {
+    "id": "eff.edhv88.player.lose.discard.sacrificeTheirChoice",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 701.9a",
+      "CR 701.21a",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life , discard[s] {m:Qty} card[s] , then sacrifice[s] {k:Qty} {f:Filter} of their choice",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$n"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$m"
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$f",
+        "count": "$k"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent loses 2 life, discards a card, then sacrifices a creature of their choice."
+      },
+      {
+        "text": "Each opponent loses 1 life, discards two cards, then sacrifices a land of their choice."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent loses 2 life, discards a card, then sacrifices a creature of your choice.",
+      "Target opponent loses 2 life, then discards a card, then sacrifices a creature of their choice.",
+      "Target opponent loses 2 life, discards a card at random, then sacrifices a creature of their choice.",
+      "Target opponent discards a card, loses 2 life, then sacrifices a creature of their choice."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.edhv88.may.have.becomes.color.subtype.artifact.with.dur",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 205.1a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {o:Obj} become ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} artifact creature with {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 4,
+                  "types": {
+                    "add": [
+                      "Artifact",
+                      "Creature"
+                    ]
+                  },
+                  "subtypes": {
+                    "set": "$st"
+                  }
+                },
+                {
+                  "layer": 5,
+                  "colors": {
+                    "set": [
+                      "$c"
+                    ]
+                  }
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                },
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ become a 2/2 red Golem artifact creature with trample until end of turn."
+      },
+      {
+        "text": "You may have target artifact you control become a 4/4 blue Drake artifact creature with flying and vigilance until your next turn."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ become a 2/2 red Golem artifact creature with trample.",
+      "You may have ~ become a 2/2 Golem artifact creature with trample until end of turn.",
+      "You may have ~ become a 2/2 red Golem creature with trample until end of turn.",
+      "You may have ~ becomes a 2/2 red Golem artifact creature with trample until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv88.becomes.subtype.basept.lead",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 205.1a",
+      "CR 205.1b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target creature you control becomes a Hydra Cat with base power and toughness 3/5."
+      },
+      {
+        "text": "Until end of turn, ~ becomes a Spirit with base power and toughness 0/8."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control becomes a Hydra Cat with base power and toughness 3/5.",
+      "Until end of turn, target creature you control becomes a Hydra Cat with base power and toughness +3/+5.",
+      "Until end of turn, target creature you control becomes a Hydra Cat with base power and toughness 3/5 and gains reach."
+    ]
+  },
+  {
+    "id": "eff.edhv88.becomes.basiclandtype.choice.addition",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 305.7",
+      "CR 205.3i",
+      "CR 608.2d",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.1d"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes the basic land type of your choice in addition to its other types",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "landType",
+        "options": [
+          "Plains",
+          "Island",
+          "Swamp",
+          "Mountain",
+          "Forest"
+        ],
+        "as": "chosenBasicLandType",
+        "link": "chosenBasicLandType"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 4,
+                "subtypes": {
+                  "chosen": "chosenBasicLandType"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target land you control becomes the basic land type of your choice in addition to its other types."
+      },
+      {
+        "text": "Until your next turn, target land becomes the basic land type of your choice in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Target land you control becomes the basic land type of your choice in addition to its other types.",
+      "Until end of turn, target land you control becomes the basic land type of your choice.",
+      "Until end of turn, target land you control becomes the land type of your choice in addition to its other types.",
+      "Until end of turn, target land you control becomes the basic land type of your choice in addition to its other colors."
+    ],
+    "consumes": [
+      "in addition",
+      "other"
+    ]
+  }
+]

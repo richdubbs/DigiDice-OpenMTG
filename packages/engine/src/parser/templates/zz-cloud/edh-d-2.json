@@ -1,0 +1,498 @@
+[
+  {
+    "id": "eff.edhd2.search.playerLibrary.upTo.cardsDesc.theirGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 404.1",
+      "CR 608.2c"
+    ],
+    "pattern": "search {p:Player} 's library for up to {n:Qty} {f:CardsDesc} and put them into ( their | that player 's ) graveyard",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "owner": "$p",
+        "filter": "$f",
+        "min": 0,
+        "max": "$n",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search target opponent's library for up to three creature cards and put them into their graveyard. Then that player shuffles."
+      },
+      {
+        "text": "Search target player's library for up to three cards with flashback and put them into that player's graveyard. Then that player shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Search target opponent's library for up to three creature cards and put them into your graveyard. Then that player shuffles.",
+      "Search target opponent's library for up to three creature cards and put them onto the battlefield. Then that player shuffles.",
+      "Search target opponent's library for three creature cards and put them into their graveyard. Then that player shuffles.",
+      "Search target opponent's graveyard for up to three creature cards and put them into their graveyard. Then that player shuffles."
+    ],
+    "consumes": [
+      "and",
+      "up to"
+    ]
+  },
+  {
+    "id": "cm.edhd2.additional.sacrificeAnyCreatures.lessForEach",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 701.21a"
+    ],
+    "pattern": "as an additional cost to cast ~ , you may sacrifice any number of creatures . ~ costs {m:ManaCost} less to cast for each creature sacrificed this way",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ]
+                },
+                "count": "any"
+              }
+            ]
+          },
+          "optional": true,
+          "name": "sacrificed",
+          "announceCount": true
+        },
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "costCount",
+                  "name": "sacrificed"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "may",
+      "any number",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast this spell, you may sacrifice any number of creatures. This spell costs {1} less to cast for each creature sacrificed this way."
+      },
+      {
+        "text": "As an additional cost to cast this spell, you may sacrifice any number of creatures. This spell costs {3} less to cast for each creature sacrificed this way."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast this spell, you may sacrifice any number of creatures. This spell costs {2} more to cast for each creature sacrificed this way.",
+      "As an additional cost to cast this spell, sacrifice any number of creatures. This spell costs {2} less to cast for each creature sacrificed this way.",
+      "As an additional cost to cast this spell, you may sacrifice any number of artifacts. This spell costs {2} less to cast for each creature sacrificed this way.",
+      "As an additional cost to cast this spell, you may sacrifice any number of creatures. This spell costs {2} less to cast for each artifact sacrificed this way."
+    ]
+  },
+  {
+    "id": "cm.edhd2.additional.exileAnyFromGraveyard.lessForEach",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 406.1",
+      "CR 404.1"
+    ],
+    "pattern": "as an additional cost to cast ~ , you may exile any number of {f:Filter} from your graveyard . ~ costs {m:ManaCost} less to cast for each card exiled this way",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "exileFrom",
+                "zone": "graveyard",
+                "filter": "$f",
+                "count": "any"
+              }
+            ]
+          },
+          "optional": true,
+          "name": "exiled",
+          "announceCount": true
+        },
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "costCount",
+                  "name": "exiled"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "may",
+      "any number",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast this spell, you may exile any number of creature cards from your graveyard. This spell costs {1} less to cast for each card exiled this way."
+      },
+      {
+        "text": "As an additional cost to cast this spell, you may exile any number of instant cards from your graveyard. This spell costs {3} less to cast for each card exiled this way."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast this spell, you may exile any number of creature cards from your graveyard. This spell costs {2} more to cast for each card exiled this way.",
+      "As an additional cost to cast this spell, exile any number of creature cards from your graveyard. This spell costs {2} less to cast for each card exiled this way.",
+      "As an additional cost to cast this spell, you may exile any number of creature cards from your hand. This spell costs {2} less to cast for each card exiled this way."
+    ]
+  },
+  {
+    "id": "eff.edhd2.setLife.halfStartingLife.roundedDown",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.5",
+      "CR 103.4",
+      "CR 107.1a"
+    ],
+    "pattern": "{p:Player} 's life total becomes half their starting life total , rounded down",
+    "build": {
+      "op": "setLife",
+      "who": "$p",
+      "value": {
+        "q": "math",
+        "op": "floorDiv",
+        "args": [
+          {
+            "q": "startingLife"
+          },
+          2
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target player's life total becomes half their starting life total, rounded down."
+      },
+      {
+        "text": "Target opponent's life total becomes half their starting life total, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "Target player's life total becomes half their starting life total, rounded up.",
+      "Target player's life total becomes half their starting life total.",
+      "Target player's life total becomes their starting life total, rounded down.",
+      "Target player's life total becomes half their life total, rounded down."
+    ],
+    "consumes": [
+      "half",
+      "rounded down"
+    ]
+  },
+  {
+    "id": "eff.edhd2.milled.mayPut.battlefield",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card from among {g:Milled} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Mill four cards. You may put a permanent card from among them onto the battlefield."
+      },
+      {
+        "text": "Mill three cards. You may put a creature card from among the milled cards onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards. Put a permanent card from among them onto the battlefield.",
+      "Mill four cards. You may put a permanent card from among them onto the battlefield tapped.",
+      "Mill four cards. You may put a permanent card from among them into your hand.",
+      "Look at the top four cards of your library. You may put a permanent card from among them onto the battlefield.",
+      "Mill four cards. You may put two permanent cards from among them onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhd2.reveal.hand.putAll.fromIt.battlefield",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20a",
+      "CR 402.3",
+      "CR 400.3",
+      "CR 608.2c",
+      "CR 110.2"
+    ],
+    "pattern": "reveal your hand and put all {f:Filter} cards from it onto the battlefield",
+    "build": [
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": {
+              "ref": "you"
+            }
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "hand",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "consumes": [
+      "reveal",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, you may reveal your hand and put all land cards from it onto the battlefield."
+      },
+      {
+        "text": "Reveal your hand and put all creature cards from it onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Reveal your hand and put a land card from it onto the battlefield.",
+      "Reveal your hand and put all land cards from it into your graveyard.",
+      "Reveal your library and put all land cards from it onto the battlefield.",
+      "Reveal your hand and put all land cards from it onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.edhd2.linked.chooseRandom.exiledWith",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 700.1"
+    ],
+    "pattern": "choose a card at random exiled with ~",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "min": 1,
+      "max": 1,
+      "random": true,
+      "as": "chosen"
+    },
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target land an opponent controls.\nAt the beginning of your upkeep, choose a card at random exiled with ~ and put that card into its owner's hand."
+      },
+      {
+        "text": "When ~ enters, search your library for up to four land cards that have different names, exile them, then shuffle.\nWhenever ~ attacks, choose a card at random exiled with ~ and put that card into its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target land an opponent controls.\nAt the beginning of your upkeep, choose a card exiled with ~ and put that card into its owner's hand.",
+      "When ~ enters, exile target land an opponent controls.\nAt the beginning of your upkeep, choose a card at random exiled with ~ and put that card into your hand.",
+      "At the beginning of your upkeep, choose a card at random exiled with ~ and put that card into its owner's hand.",
+      "When ~ enters, exile target land an opponent controls.\nAt the beginning of your upkeep, choose two cards at random exiled with ~ and put those cards into their owner's hand."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhd2.return.self.gy.bf.tapped.counters",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 113.6m",
+      "CR 400.7",
+      "CR 614.1c",
+      "CR 122.6"
+    ],
+    "pattern": "return ~ from your graveyard to the battlefield tapped with {n:Qty} +1/+1 counters on it",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true,
+        "counters": [
+          {
+            "kind": "+1/+1",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "consumes": [],
+    "examples": [
+      {
+        "text": "{5}: Return ~ from your graveyard to the battlefield tapped with three +1/+1 counters on it."
+      },
+      {
+        "text": "{1}{G}: Return ~ from your graveyard to the battlefield tapped with two +1/+1 counters on it. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{5}: Return ~ from your graveyard to the battlefield untapped with three +1/+1 counters on it.",
+      "{5}: Return ~ from your graveyard to your hand tapped with three +1/+1 counters on it.",
+      "{5}: Return ~ from your graveyard to the battlefield tapped with three +1/+1 counters on target creature.",
+      "{5}: Return ~ from your graveyard to the battlefield tapped with three +1/+1 counter on it.",
+      "{5}: Return ~ from your graveyard to the battlefield tapped with three -1/-1 counters on it."
+    ]
+  }
+]

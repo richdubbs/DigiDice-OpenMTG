@@ -44,9 +44,13 @@ function plainKeyword(a: unknown): a is { keyword: string } {
  * leaves a name given by "named" or by the token's description alone: it is not the card's name). The run of tokens that spells the name (a possessive 's
  * joins its word) becomes one SELF token that keeps the name as its text, so the display text of the quoted ability says the name.
  */
-export function nameAsSelf(sub: readonly Tok[], name: string): Tok[] {
+export function nameAsSelf(sub: readonly Tok[], name: string, kind: 'SELF' | 'GRANTOR' = 'SELF'): Tok[] {
   const out: Tok[] = [];
   for (let i = 0; i < sub.length; i++) {
+    // edh-next-139 (CR 201.5a, 113.10; Toggo, Goblin Weaponsmith's Rock): inside a quote of the token's quoted ability ("Equipped creature has '{1}, {T}, Sacrifice Rock: ...'")
+    // the name is the token that GRANTS that inner ability (the grantor, `{ref:'grantor'}`), as the outer card's name is in parser/front/selfref.ts
+    const q = sub[i]!;
+    if (q.kind === 'QUOTE' && q.sub !== undefined) { out.push({ ...q, sub: nameAsSelf(q.sub, name, 'GRANTOR') }); continue; }
     let text = '';
     let j = i;
     for (; j < sub.length && text.length < name.length; j++) {
@@ -54,7 +58,7 @@ export function nameAsSelf(sub: readonly Tok[], name: string): Tok[] {
       text += text === '' || (t.kind === 'WORD' && t.text === "'s" && sub[j - 1]!.end === t.start) ? t.text : ` ${t.text}`;
     }
     if (text === name && j > i) {
-      out.push({ kind: 'SELF', text: name, norm: '~', start: sub[i]!.start, end: sub[j - 1]!.end });
+      out.push({ kind, text: name, norm: kind === 'SELF' ? '~' : '¤', start: sub[i]!.start, end: sub[j - 1]!.end });
       i = j - 1;
     } else out.push(sub[i]!);
   }
@@ -137,6 +141,13 @@ function describeToken(ctx: HoleCtx, pos: number, preset?: string): Alt[] {
       walk(p + 1, next, depth + 1);
       const and = phraseAt(ctx, p + 1, P('and'));
       if (and >= 0) walk(and, next, depth + 1);
+      // edh-c-2 (CR 105.1, 111.4; Godsire): three or more colors, "a red, green, and white Beast creature token"
+      const comma = phraseAt(ctx, p + 1, COMMA);
+      if (comma >= 0) {
+        walk(comma, next, depth + 1);
+        const andAfter = phraseAt(ctx, comma, P('and'));
+        if (andAfter >= 0) walk(andAfter, next, depth + 1);
+      }
     }
     if (t.norm === 'colorless' && st.colors.length === 0) walk(p + 1, { ...st, colorless: true }, depth + 1);
     const su = ctx.vocab.supertypes.get(t.norm);
@@ -155,6 +166,29 @@ function describeToken(ctx: HoleCtx, pos: number, preset?: string): Alt[] {
     if (tk.predefined !== undefined || tk.colors !== undefined) continue;
     const e = anyPhraseAt(ctx, a.end, W_ALL_COLORS);
     if (e >= 0) out.push({ ...a, end: e, value: { ...tk, colors: ['W', 'U', 'B', 'R', 'G'] } });
+  }
+  // edh-c-2 (CR 105.1, 111.4; Godsire): the colors after the noun, "an 8/8 Beast creature token that's red, green, and white" (two or more colors; the same token as
+  // the colors before the noun)
+  for (const a of [...out]) {
+    const tk = a.value as TokenDef;
+    if (tk.predefined !== undefined || tk.colors !== undefined) continue;
+    for (const lead of [P("that 's"), P("that's"), P('that is')]) {
+      let at = phraseAt(ctx, a.end, lead);
+      const colors: Color[] = [];
+      for (let guard = 0; at >= 0 && guard < 5; guard++) {
+        const c = ctx.toks[at]?.kind === 'WORD' ? ctx.vocab.colors.get(ctx.toks[at]!.norm) : undefined;
+        if (c === undefined || colors.includes(c)) { at = -1; break; }
+        colors.push(c);
+        const end = at + 1;
+        const comma = phraseAt(ctx, end, COMMA);
+        const and = phraseAt(ctx, comma >= 0 ? comma : end, P('and'));
+        if (and >= 0) { at = and; continue; }
+        if (comma >= 0) { at = comma; continue; }
+        at = -1;
+        if (colors.length >= 2) out.push({ ...a, end, value: { ...tk, colors } });
+        break;
+      }
+    }
   }
   return dedupe(out);
 }
@@ -186,6 +220,23 @@ export const namedToken: HoleFn = (ctx, pos) => {
  * All-Questioning): the name, a comma, "the" and a run of capitalized words. Read only here, where ", a|an <token>" must follow, never for "named ...".
  */
 function epithet(ctx: HoleCtx, end: number, name: string): { end: number; value: string }[] {
+  // edh-c-15 (CR 111.4, 201.2; Tuktuk the Explorer): an epithet with no comma before it, "Tuktuk the Returned, a legendary 5/5 colorless Goblin Golem artifact creature token": the "the"
+  // and a run of capitalized words, then the comma and article of the named token
+  if (ctx.toks[end]?.text === 'the' && ctx.toks[end]?.kind === 'WORD' && ctx.toks[end + 1]?.kind === 'WORD' && /^[A-Z]/.test(ctx.toks[end + 1]!.text)) {
+    let q = end + 1;
+    let ws = '';
+    while (ctx.toks[q]?.kind === 'WORD' && /^[A-Z]/.test(ctx.toks[q]!.text)) ws = `${ws} ${ctx.toks[q++]!.text}`;
+    return [{ end: q, value: `${name} the${ws}` }];
+  }
+  // edh-next-96 (CR 111.4, 201.2; Tolsimir, Friend to Wolves): an epithet that starts with a capitalized word and has a lower-case "to" / "of" / "the" / "for" inside,
+  // "Voja, Friend to Elves, a legendary 3/3 green and white Wolf creature token": a run of capitalized words and those connectors that ends before ", a|an"
+  if (ctx.toks[end]?.norm === ',' && ctx.toks[end + 1]?.kind === 'WORD' && /^[A-Z]/.test(ctx.toks[end + 1]!.text)) {
+    let q = end + 1;
+    let ws = '';
+    const connector = (i: number): boolean => ['to', 'of', 'the', 'for'].includes(ctx.toks[i]?.text ?? '') && ctx.toks[i]?.kind === 'WORD' && /^[A-Z]/.test(ctx.toks[i + 1]?.text ?? '');
+    while ((ctx.toks[q]?.kind === 'WORD' && /^[A-Z]/.test(ctx.toks[q]!.text)) || connector(q)) ws = `${ws} ${ctx.toks[q++]!.text}`;
+    if (ws !== '' && ctx.toks[q]?.norm === ',') return [{ end: q, value: `${name},${ws}` }];
+  }
   if (ctx.toks[end]?.norm !== ',' || ctx.toks[end + 1]?.text !== 'the') return [];
   let p = end + 2;
   let words = '';

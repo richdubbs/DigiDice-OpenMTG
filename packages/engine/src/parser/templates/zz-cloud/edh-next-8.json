@@ -1,0 +1,304 @@
+[
+  {
+    "id": "cm.edhn8.self.less.forEachQty.capped",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 604.5",
+      "CR 118.7",
+      "CR 113.6"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast for each {n:Qty} . this effect can't reduce the amount of mana ~ costs by more than {c:ManaCost}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                {
+                  "q": "math",
+                  "op": "*",
+                  "args": [
+                    "$m.0.amount",
+                    "$n"
+                  ]
+                },
+                "$c.0.amount"
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {2} less to cast for each creature that died this turn. This effect can't reduce the amount of mana ~ costs by more than {6}."
+      },
+      {
+        "text": "~ costs {1} less to cast for each creature type among creatures you control. This effect can't reduce the amount of mana ~ costs by more than {4}."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {2} less to cast for each creature that died this turn. This effect can't reduce the amount of mana ~ costs by more than {6} life.",
+      "~ costs {2} more to cast for each creature that died this turn. This effect can't reduce the amount of mana ~ costs by more than {6}.",
+      "~ costs {2} less to cast for each creature that died this turn. This effect can't reduce the amount of mana this spell costs by more than {6} life."
+    ]
+  },
+  {
+    "id": "eff.edhn8.player.searches.upTo.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 110.2a",
+      "CR 608.2c",
+      "CR 102.3",
+      "CR 101.4"
+    ],
+    "pattern": "each player searches their library for up to {n:Qty} {f:Filter} cards , puts them onto the battlefield , then shuffles",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "$n",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "up to",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player searches their library for up to two basic land cards, puts them onto the battlefield, then shuffles."
+      },
+      {
+        "text": "Each player searches their library for up to three Forest cards, puts them onto the battlefield, then shuffles. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each player searches their library for up to two basic land cards, puts them onto the battlefield tapped, then shuffles.",
+      "Each player searches their library for up to two basic land cards, puts them into their hand, then shuffles.",
+      "Each opponent searches their library for up to two basic land cards, puts them onto the battlefield, then shuffles.",
+      "Each player searches their library for two basic land cards, puts them onto the battlefield, then shuffles."
+    ]
+  },
+  {
+    "id": "eff.edhn8.player.untaps.all.theyControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.26a",
+      "CR 701.26b",
+      "CR 608.2c",
+      "CR 109.4"
+    ],
+    "pattern": "{p:Player} untap[s] all {f:Filter} they control",
+    "build": {
+      "op": "untap",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "$p"
+        }
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Target player untaps all Forests they control."
+      },
+      {
+        "text": "Target opponent untaps all creatures they control. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target player untaps all basic lands you control.",
+      "Target player untaps all basic lands.",
+      "Target player untaps two basic lands they control.",
+      "Target player taps all basic lands they control."
+    ]
+  },
+  {
+    "id": "eff.edhn8.return.all.playerOwns.theirHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.5",
+      "CR 400.3",
+      "CR 108.3",
+      "CR 608.2c"
+    ],
+    "pattern": "return all {f:Filter} {p:Player} owns to their hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "owner": "$p"
+        }
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Return all enchantments target player owns to their hand."
+      },
+      {
+        "text": "Return all artifacts target opponent owns to their hand. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Return all artifacts target player owns to the battlefield.",
+      "Return all artifacts you own to their hand.",
+      "Return all artifacts target player owns to your hand.",
+      "Return target artifact target player owns to their hand."
+    ]
+  },
+  {
+    "id": "eff.edhn8.must.each.attacks",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 508.1d"
+    ],
+    "pattern": "each {f:Filter} attacks {d:Dur} if able",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "mustIfAble",
+          "action": "attack"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "if",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Each creature attacks this turn if able."
+      },
+      {
+        "text": "Each artifact creature your opponents control attacks this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "Each creature attacks this turn.",
+      "Each creature can't attack this turn.",
+      "Each creature blocks this turn if able."
+    ]
+  },
+  {
+    "id": "sta.edhn8.self.extrablock.number",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 604.1"
+    ],
+    "pattern": "~ can block an additional {n:Qty} creatures each combat",
+    "build": {
+      "s": "rule",
+      "rule": "extraBlockers",
+      "value": "$n",
+      "of": {
+        "self": true
+      }
+    },
+    "consumes": [
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ can block an additional five creatures each combat."
+      },
+      {
+        "text": "This creature can block an additional two creatures each combat."
+      }
+    ],
+    "counterExamples": [
+      "~ can block an additional seven creatures this turn.",
+      "~ can block an additional creature this turn.",
+      "~ can block seven creatures each combat."
+    ]
+  }
+]

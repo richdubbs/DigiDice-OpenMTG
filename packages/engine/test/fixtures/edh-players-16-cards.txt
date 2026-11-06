@@ -1,0 +1,5 @@
+# edh-players-16 (Commander lane edh-players; test/cloud/edh-players-16, golden edh-players-16-review.json)
+# the last known controller of a destroyed set; the damage dealt to a player this turn; pay any amount of life
+Deadly Tempest
+Knollspine Dragon
+Necrodominance

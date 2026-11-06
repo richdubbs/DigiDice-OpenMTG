@@ -1,0 +1,9 @@
+# edh-perms-10 (Commander lane edh-perms; test/cloud/edh-perms-10, golden edh-perms-10-review.json)
+# becomes unattached from a permanent, returned permanents entering with additional counters if they match, becomes a creature with abilities (Class), the token copy entering tapped and attacking, artifacts becoming 3/3 artifact creatures
+Depthshaker Titan
+Druid Class
+Grafted Exoskeleton
+Semester's End
+Teferi's Time Twist
+Thousand-Faced Shadow
+Turntimber Symbiosis // Turntimber, Serpentine Wood

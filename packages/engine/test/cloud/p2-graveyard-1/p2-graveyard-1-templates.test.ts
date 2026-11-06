@@ -204,7 +204,8 @@ describe('p2-graveyard-1 renderer (render/steps-zones.ts; CR 400.3): "your hand"
   it('"Return to your hand all creature cards in an opponent\'s graveyard" (cards you do not own) is not automated', () => {
     expect(fullyAutomated(parseCard(card('Example Recall', 'Sorcery', "Return to your hand all creature cards in an opponent's graveyard."), OPTS).faces[0]!)).toBe(false);
   });
-  it('"Return to the battlefield tapped all ..." (a destination with a status) is not automated by the destination-first reading', () => {
-    expect(fullyAutomated(parseCard(card('Example Recall', 'Sorcery', 'Return to the battlefield tapped all creature cards in your graveyard.'), OPTS).faces[0]!)).toBe(false);
+  // edh-next-68 (owner's standing rule 2026-10-27): "Return to the battlefield tapped all ..." is now a real reading (Gerrard's Hourglass Pendant, eff.edhn68.return.bf.tapped.first); this negative is outdated
+  it('"Return to the battlefield tapped all ..." (a destination with a status) is automated by edh-next-68\'s destination-first reading', () => {
+    expect(fullyAutomated(parseCard(card('Example Recall', 'Sorcery', 'Return to the battlefield tapped all creature cards in your graveyard.'), OPTS).faces[0]!)).toBe(true);
   });
 });

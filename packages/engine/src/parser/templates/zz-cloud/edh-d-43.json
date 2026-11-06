@@ -1,0 +1,374 @@
+[
+  {
+    "id": "eff.edhd43.player.mayDiscardUpTo",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.9a",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} may discard up to {n:Qty} card[s]",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "toDiscard"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "bound",
+            "name": "toDiscard"
+          }
+        },
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "toDiscard"
+          }
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "may",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Target player may discard up to three cards. Then that player draws a card for each card discarded this way."
+      },
+      {
+        "text": "Target opponent may discard up to two cards. You gain 1 life for each card discarded this way."
+      }
+    ],
+    "counterExamples": [
+      "Target player may discard up to three cards at random.",
+      "Target player discards up to three cards.",
+      "Target player may draw up to three cards.",
+      "Each opponent may discard up to two cards. You gain 1 life for each card discarded this way."
+    ],
+    "priority": -2
+  },
+  {
+    "id": "eff.edhd43.player.returnTypedCard.graveyardToHand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 404.1",
+      "CR 400.3",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} return[s] ( a | an ) {f:Filter} card from their graveyard to their hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "$p",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "hand",
+          "owner": "$p"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player returns a creature card from their graveyard to their hand."
+      },
+      {
+        "text": "Target opponent returns an artifact card from their graveyard to their hand."
+      }
+    ],
+    "counterExamples": [
+      "Target player returns a creature card from your graveyard to their hand.",
+      "Target player returns two creature cards from their graveyard to their hand.",
+      "Target player returns a creature card at random from their graveyard to their hand."
+    ]
+  },
+  {
+    "id": "sta.edhd43.obj.cantBeTargeted.nongreen.byOpponents",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 115.1",
+      "CR 113.7a",
+      "CR 101.2",
+      "CR 105.2"
+    ],
+    "pattern": "{o:Obj} can't be the target of nongreen spells your opponents control or abilities from nongreen sources your opponents control",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beTargeted",
+      "other": {
+        "notColors": [
+          "G"
+        ],
+        "controller": "opponent"
+      }
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature can't be the target of nongreen spells your opponents control or abilities from nongreen sources your opponents control."
+      },
+      {
+        "text": "Equipped creature can't be the target of nongreen spells your opponents control or abilities from nongreen sources your opponents control."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't be the target of nongreen spells or abilities from nongreen sources your opponents control.",
+      "Enchanted creature can't be the target of nongreen spells your opponents control or abilities from green sources your opponents control.",
+      "Enchanted creature can't be the target of nongreen spells you control or abilities from nongreen sources you control."
+    ]
+  },
+  {
+    "id": "rid.edhd43.countered.permanentAbility.cantActivate",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.6a",
+      "CR 113.7a",
+      "CR 602.5",
+      "CR 608.2c"
+    ],
+    "pattern": "if a permanent 's ability is countered this way , activated abilities of that permanent can't be activated this turn",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to": null
+        },
+        "sourceThen": {
+          "@new": {
+            "filter": {},
+            "do": "cantActivate"
+          }
+        }
+      }
+    },
+    "attachTo": "counter",
+    "consumes": [
+      "if",
+      "this way",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Counter target activated or triggered ability. If a permanent's ability is countered this way, activated abilities of that permanent can't be activated this turn."
+      },
+      {
+        "text": "Counter target activated ability. If a permanent's ability is countered this way, activated abilities of that permanent can't be activated this turn."
+      }
+    ],
+    "counterExamples": [
+      "Counter target activated ability. If a permanent's ability is countered this way, triggered abilities of that permanent can't be activated this turn.",
+      "Counter target activated ability. If a creature's ability is countered this way, activated abilities of that permanent can't be activated this turn.",
+      "Draw a card. If a permanent's ability is countered this way, activated abilities of that permanent can't be activated this turn."
+    ]
+  },
+  {
+    "id": "rid.edhd43.countered.exileInstead.thenCastFree",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.6a",
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 118.9",
+      "CR 601.2b"
+    ],
+    "pattern": "if that spell is countered this way , exile it instead of putting it into its owner 's graveyard , then you may cast {o:Obj} without paying its mana cost",
+    "build": {
+      "$patchPrevious": {
+        "to": {
+          "@new": {
+            "zone": "exile"
+          }
+        },
+        "@after": [
+          {
+            "op": "cast",
+            "who": {
+              "ref": "you"
+            },
+            "what": "$o",
+            "free": true,
+            "optional": true
+          }
+        ]
+      }
+    },
+    "attachTo": "counter",
+    "consumes": [
+      "if",
+      "this way",
+      "instead",
+      "may",
+      "without",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, counter target spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard, then you may cast it without paying its mana cost."
+      },
+      {
+        "text": "Counter target creature spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard, then you may cast it without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell. If that spell is countered this way, exile it instead of putting it into its owner's graveyard, then you may cast it.",
+      "Counter target spell. If that spell is countered this way, exile it, then you may cast it without paying its mana cost.",
+      "Draw a card. If that spell is countered this way, exile it instead of putting it into its owner's graveyard, then you may cast it without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhd43.player.mayChooseAnyNumber.payEach",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 118.12",
+      "CR 107.1"
+    ],
+    "pattern": "{p:Player} may choose any number of {f:Filter} and pay {m:ManaCost} for each creature chosen this way",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "pay",
+        "who": "$p",
+        "cost": {
+          "mana": "$m"
+        },
+        "times": {
+          "q": "count",
+          "of": {
+            "ref": "bound",
+            "name": "chosen"
+          }
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "may",
+      "any number",
+      "each",
+      "chosen",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each player's upkeep, that player may choose any number of tapped creatures they control and pay {2} for each creature chosen this way. If the player does, untap those creatures."
+      },
+      {
+        "text": "At the beginning of each opponent's upkeep, that player may choose any number of tapped nonblue creatures they control and pay {1} for each creature chosen this way. If the player does, untap those creatures."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you may choose any number of tapped creatures you control and pay {1}. If you do, untap those creatures.",
+      "At the beginning of your upkeep, you may choose up to two tapped creatures you control and pay {1} for each creature chosen this way. If you do, untap those creatures.",
+      "At the beginning of your upkeep, you may choose any number of tapped creatures you control and pay {1} for each land chosen this way. If you do, untap those creatures."
+    ]
+  },
+  {
+    "id": "rid.edhd43.countered.permanentAbility.destroy",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.6a",
+      "CR 113.7a",
+      "CR 701.8a",
+      "CR 608.2c"
+    ],
+    "pattern": "if a permanent 's ability is countered this way , destroy that permanent",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to": null
+        },
+        "sourceThen": {
+          "@new": {
+            "filter": {},
+            "do": "destroy"
+          }
+        }
+      }
+    },
+    "attachTo": "counter",
+    "consumes": [
+      "if",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, counter target activated or triggered ability. If a permanent's ability is countered this way, destroy that permanent."
+      },
+      {
+        "text": "Counter target activated ability. If a permanent's ability is countered this way, destroy that permanent."
+      }
+    ],
+    "counterExamples": [
+      "Counter target activated ability. If a permanent's ability is countered this way, exile that permanent.",
+      "Counter target activated ability. If a creature's ability is countered this way, destroy that permanent.",
+      "Draw a card. If a permanent's ability is countered this way, destroy that permanent."
+    ]
+  }
+]

@@ -150,11 +150,16 @@ describe('design 6.4, CR 109.2 (r4-refs): "other" and a group the sentence names
     const f = parseCard(pump('Towns'), defaultParseOptions()).faces[0]!;
     expect(automated(f.abilities), JSON.stringify(f.diagnostics)).toBe(true);
   });
-  it('a counted group that could share objects with it stays a candidate: manual (two candidates)', () => {
-    const f = parseCard(pump('creatures'), defaultParseOptions()).faces[0]!;
+  it('a counted group that could share objects with it, and is not the same description, stays a candidate: manual (two candidates)', () => {
+    const f = parseCard(pump('artifact creatures'), defaultParseOptions()).faces[0]!;
     expect(automated(f.abilities)).toBe(false);
+  });
+  // edh-next-84 (Ashcoat of the Shadow Swarm; CR 109.2, 608.2h): the counted group IS the "other" group's own description ("Other Rats you control get +X/+X ... where X is the number of Rats
+  // you control"): the Rats are only counted, so "other" is other than ~ and there is one candidate (parser/lower/anaphora.ts#sameGroupApartFromOther). These two were manual before.
+  it('edh-next-84: a counted group of the same description as the "other" group is no candidate: "other" is other than ~', () => {
+    expect(automated(parseCard(pump('creatures'), defaultParseOptions()).faces[0]!.abilities)).toBe(true);
     const rats = card('Test Rat', 'Creature — Rat', 'Whenever ~ attacks, other Rats you control get +X/+X until end of turn, where X is the number of Rats you control.');
-    expect(automated(parseCard(rats, defaultParseOptions()).faces[0]!.abilities)).toBe(false);
+    expect(automated(parseCard(rats, defaultParseOptions()).faces[0]!.abilities)).toBe(true);
   });
 });
 

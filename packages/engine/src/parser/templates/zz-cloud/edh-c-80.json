@@ -1,0 +1,422 @@
+[
+  {
+    "id": "eff.edhv80.dealtThisWay.cantBlock.eot",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 611.2a",
+      "CR 608.2c",
+      "CR 120.3"
+    ],
+    "pattern": "a creature dealt damage this way can't block this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "is": {
+                "ref": "bound",
+                "name": "",
+                "$anaphor": {
+                  "sort": "set",
+                  "number": "singular",
+                  "participle": "dealt damage this way",
+                  "text": "dealt damage this way"
+                }
+              }
+            }
+          },
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "{1}{R}: ~ deals 2 damage to any target. A creature dealt damage this way can't block this turn."
+      },
+      {
+        "text": "{T}: ~ deals 1 damage to target creature. A creature dealt damage this way can't block this turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}{R}: ~ deals 1 damage to any target. A creature dealt damage this way can't block.",
+      "{2}{R}: ~ deals 1 damage to any target. A creature dealt damage this way can't attack this turn.",
+      "{2}{R}: ~ deals 1 damage to any target. A creature dealt damage this way can block this turn."
+    ]
+  },
+  {
+    "id": "eff.edhv80.return.half.up",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 608.2d",
+      "CR 107.1a",
+      "CR 400.3",
+      "CR 701.17"
+    ],
+    "pattern": "return half the {f:Filter} to their owner 's hand , rounded up",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+            {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": "$f"
+              }
+            },
+            2
+          ]
+        },
+        "max": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+            {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": "$f"
+              }
+            },
+            2
+          ]
+        },
+        "as": "half"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "half"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "Choose target player. Return half the lands they control to their owner's hand, rounded up."
+      },
+      {
+        "text": "Choose target player. Return half the artifacts they control to their owner's hand, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "Choose target player. Return half the lands they control to their owner's hand, rounded down.",
+      "Choose target player. Return half the lands they control to their owner's hand.",
+      "Choose target player. Return half the lands you control to their owner's hand, rounded up."
+    ]
+  },
+  {
+    "id": "eff.edhv80.prevent.combat.exceptEnchanted",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.1a",
+      "CR 120.1",
+      "CR 510.2",
+      "CR 303.4b"
+    ],
+    "pattern": "prevent all combat damage that would be dealt {d:Dur} except combat damage that would be dealt by enchanted creatures and enchantment creatures",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": {
+              "not": {
+                "anyOf": [
+                  {
+                    "types": [
+                      "Creature"
+                    ],
+                    "enchanted": true
+                  },
+                  {
+                    "allTypes": [
+                      "Creature",
+                      "Enchantment"
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt this turn except combat damage that would be dealt by enchanted creatures and enchantment creatures. Scry 1."
+      },
+      {
+        "text": "Draw a card. Prevent all combat damage that would be dealt this turn except combat damage that would be dealt by enchanted creatures and enchantment creatures."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt this turn except combat damage that would be dealt by enchanted creatures.",
+      "Prevent all combat damage that would be dealt this turn except combat damage that would be dealt by enchantment creatures and enchanted creatures you control.",
+      "Prevent all damage that would be dealt this turn except combat damage that would be dealt by enchanted creatures and enchantment creatures."
+    ]
+  },
+  {
+    "id": "eff.edhv80.prevent.combat.xTargetCreaturesWouldDeal",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 107.3a",
+      "CR 615.1",
+      "CR 611.2a"
+    ],
+    "pattern": "prevent all combat damage x target creatures would deal this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": {
+              "is": {
+                "ref": "target",
+                "id": "",
+                "$target": {
+                  "kind": "object",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "min": {
+                    "q": "X"
+                  },
+                  "max": {
+                    "q": "X"
+                  },
+                  "text": "x target creatures"
+                }
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage X target creatures would deal this turn. Scry 1."
+      },
+      {
+        "text": "Draw a card. Prevent all combat damage X target creatures would deal this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage target creatures would deal this turn.",
+      "Prevent all damage X target creatures would deal this turn.",
+      "Prevent all combat damage X target creatures would deal this turn and next turn."
+    ]
+  },
+  {
+    "id": "eff.edhv80.prevent.toAnyTarget.bySourceOfYourChoice",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 615.1",
+      "CR 609.7a",
+      "CR 611.2a"
+    ],
+    "pattern": "prevent all damage that would be dealt to {r:Recipient} this turn by a source of your choice",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "endOfTurn"
+        },
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                }
+              },
+              "recipient": {
+                "player": "$r",
+                "object": {
+                  "is": "$r"
+                }
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to any target this turn by a source of your choice."
+      },
+      {
+        "text": "{1}, {T}: Prevent all damage that would be dealt to any target this turn by a source of your choice."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt to any target this turn by a source of an opponent's choice.",
+      "Prevent all combat damage that would be dealt to any target this turn by a source of your choice.",
+      "Prevent all damage that would be dealt to target creature this turn by a source of your choice and next turn."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv80.eachPlayer.returnsTheirOwnExiledWith.battlefield",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 400.3",
+      "CR 110.2a",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "each player return[s] to the battlefield all cards they own exiled with ( ~ | it )",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "any",
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Exile target land.\nWhen ~ dies, each player returns to the battlefield all cards they own exiled with it."
+      },
+      {
+        "text": "{3}: Exile target land.\nWhen this creature leaves the battlefield, each player returns to the battlefield all cards they own exiled with it."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Exile target land.\nWhen ~ dies, each player returns to the battlefield all cards you own exiled with it.",
+      "{2}, {T}: Exile target land.\nWhen ~ dies, each opponent returns to the battlefield all cards they own exiled with it.",
+      "{2}, {T}: Exile target land.\nWhen ~ dies, each player returns to their hand all cards they own exiled with it."
+    ]
+  }
+]

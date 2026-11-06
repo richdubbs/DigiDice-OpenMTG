@@ -1,0 +1,10 @@
+# edh-c-18 (Commander EDHREC ranks 17,501-18,125, third pass): a player discards, mills and loses life, creatures and lands one player controls don't untap during their next untap step, a player untaps a land they control, "you skip your draw step this turn", "it becomes the creature type of your choice", draw a card for each of that spell's colors, damage unless the player has exactly two hand sizes, bolster X where X is a count, "blocked or was blocked this turn". After editing: npm run cards -- fixtures
+Demogorgon's Clutches
+Exhaustion
+Rising Waters
+Dragonscale General
+Elfhame Sanctuary
+Proteus Machine
+Moonveil Regent
+Skullcage
+Heat Stroke

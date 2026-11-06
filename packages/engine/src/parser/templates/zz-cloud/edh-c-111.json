@@ -1,0 +1,39 @@
+[
+  {
+    "id": "eff.edhv111.dealToughnessToOther",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.2b",
+      "CR 608.2b",
+      "CR 608.2c"
+    ],
+    "pattern": "each of {o:Them} deals damage equal to its toughness to the other",
+    "build": {
+      "lower": "fightEachOther",
+      "what": "$o",
+      "by": "toughness"
+    },
+    "consumes": [
+      "each",
+      "other",
+      "toughness"
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Choose target creature you control and target creature you don't control. Then each of those creatures deals damage equal to its toughness to the other."
+      },
+      {
+        "text": "Choose target creature you control and target creature you don't control. Each of those creatures deals damage equal to its toughness to the other."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature you control and target creature an opponent controls. Each of those creatures deals damage equal to its power to the other.",
+      "Choose target creature you control and target creature an opponent controls. Each of those creatures deals damage equal to its toughness to each other creature.",
+      "Destroy two target creatures. Each of those creatures deals damage equal to its toughness to the other.",
+      "Choose two target creatures. Each of those creatures deals damage equal to its toughness to the other."
+    ]
+  }
+]

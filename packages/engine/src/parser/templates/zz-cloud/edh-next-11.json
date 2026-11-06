@@ -1,0 +1,136 @@
+[
+  {
+    "id": "eff.edhn11.obj.extrablock.any",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 509.1b",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} can block any number of creatures {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "extraBlockers",
+          "value": "none",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "{2}{W}: Target creature you control can block any number of creatures this turn."
+      },
+      {
+        "text": "When ~ enters, target Elf can block any number of creatures this turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature can block any number of creatures.",
+      "Target creature can block an additional creature this turn.",
+      "Target creature can't block any number of creatures this turn."
+    ]
+  },
+  {
+    "id": "sta.edhn11.enchanted.isSnow",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.4a",
+      "CR 205.4g",
+      "CR 613.1d",
+      "CR 303.4"
+    ],
+    "pattern": "enchanted ( land | permanent ) is snow",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "add": [
+              "Snow"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "snow"
+    ],
+    "examples": [
+      {
+        "text": "Enchant Elf\nEnchanted permanent is snow."
+      },
+      {
+        "text": "Enchant Elf\nEnchanted permanent is snow.\nEnchanted permanent has flying."
+      }
+    ],
+    "counterExamples": [
+      "Enchant Elf\nEnchanted permanent is a legendary Dragon.",
+      "Enchant Elf\nEnchanted permanent is a snow Dragon.",
+      "Enchant Elf\nEnchanted creature is snow."
+    ]
+  },
+  {
+    "id": "sta.edhn11.self.spendAnyColor.ownActivationCosts",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 609.4b",
+      "CR 602.2b",
+      "CR 106.1"
+    ],
+    "pattern": "you may spend mana as though it were mana of any color to pay the activation costs of ~ 's abilities",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "spendMana",
+          "asThough": "any color",
+          "of": {
+            "self": true
+          },
+          "abilities": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Trample, vigilance\nYou may spend mana as though it were mana of any color to pay the activation costs of ~'s abilities."
+      },
+      {
+        "text": "{T}: Add {R}{G}{W}.\nYou may spend mana as though it were mana of any color to pay the activation costs of ~'s abilities."
+      }
+    ],
+    "counterExamples": [
+      "You may spend mana as though it were mana of any color to pay the activation costs of ~'s abilities this turn.",
+      "You may spend mana as though it were mana of any type to pay the activation costs of ~'s abilities.",
+      "You may spend mana as though it were mana of any color to pay the activation costs of abilities you activate."
+    ]
+  }
+]

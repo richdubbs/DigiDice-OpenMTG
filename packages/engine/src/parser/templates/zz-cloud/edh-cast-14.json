@@ -1,0 +1,354 @@
+[
+  {
+    "id": "eff.edhc14.copy.nTimes",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 707.10",
+      "CR 707.12",
+      "CR 107.1"
+    ],
+    "pattern": "copy {o:Obj} {n:Qty} times",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Copy target instant spell you control three times."
+      },
+      {
+        "text": "Exile target instant card from your graveyard. Copy that card four times. You may cast the copies without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell you control three.",
+      "Copy target instant spell you control twice.",
+      "Copy target instant spell you control three times in a row."
+    ]
+  },
+  {
+    "id": "rid.edhc14.if.playThisWay.free",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 608.2c",
+      "CR 614.15",
+      "CR 400.7"
+    ],
+    "pattern": "if {c:Cond} , you may play cards this way without paying their mana costs",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "@previousWith": {
+              "effects": [
+                "@previous.effects.0",
+                {
+                  "s": "permit",
+                  "who": "@previous.effects.0.who",
+                  "action": "play",
+                  "of": "@previous.effects.0.of",
+                  "costChange": {
+                    "kind": "set",
+                    "cost": {}
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ],
+        "@require": {
+          "effects.0.s": "permit",
+          "effects.0.action": "play",
+          "effects.1": null
+        }
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "if",
+      "may",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of your library. Until the end of your next turn, you may play those cards. If ~ was cast from a graveyard, you may play cards this way without paying their mana costs."
+      },
+      {
+        "text": "Exile the top four cards of your library. Until end of turn, you may play those cards. If ~ was cast from a graveyard, you may play cards this way without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of your library. Until the end of your next turn, you may play those cards. If ~ was cast from a graveyard, you may play cards this way.",
+      "Exile the top two cards of your library. Until the end of your next turn, you may play those cards. If ~ was cast from a graveyard, you may cast cards this way without paying their mana costs.",
+      "Exile the top two cards of your library. Target creature gets +1/+1 until end of turn. If ~ was cast from a graveyard, you may play cards this way without paying their mana costs."
+    ]
+  },
+  {
+    "id": "cm.edhc14.alternative.if.ratherFirst",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 118.12"
+    ],
+    "pattern": "if {w:Cond} , rather than pay ~ 's mana cost , you may {c:Cost}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": "$c",
+          "name": "alternative",
+          "when": "$w"
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "If you control an Island, rather than pay ~'s mana cost, you may sacrifice a creature."
+      },
+      {
+        "text": "If it's not your turn, rather than pay ~'s mana cost, you may pay 3 life."
+      }
+    ],
+    "counterExamples": [
+      "If you control an Island, rather than pay ~'s mana cost, sacrifice a creature.",
+      "If you control an Island, rather than pay that spell's mana cost, you may sacrifice a creature.",
+      "Unless you control an Island, rather than pay ~'s mana cost, you may sacrifice a creature.",
+      "If you control an Island, you may sacrifice a creature."
+    ]
+  },
+  {
+    "id": "eff.edhc14.copy.forEach.couldTarget",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 115.1",
+      "CR 601.2c"
+    ],
+    "pattern": "copy {o:Obj} for each {f:Filter} that ( the spell | spell ) could target",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "retargetEach": {
+        "ref": "each",
+        "filter": "$f"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each other",
+      "other",
+      "could"
+    ],
+    "examples": [
+      {
+        "text": "Copy target instant spell for each artifact you control that the spell could target. Each copy targets a different one of those artifacts."
+      },
+      {
+        "text": "Copy target sorcery spell for each Goblin you control that the spell could target. Each copy targets a different one of those Goblins."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell for each artifact you control that the spell could target.",
+      "Copy target instant spell for each artifact you control that you could target. Each copy targets a different one of those artifacts."
+    ]
+  },
+  {
+    "id": "rid.edhc14.eachCopyTargetsDifferent",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.10c",
+      "CR 115.1",
+      "CR 601.2c"
+    ],
+    "pattern": "each copy targets a different one of those {f:Filter}",
+    "build": {
+      "$patchPrevious": {
+        "different": true,
+        "@require": {
+          "retargetEach.ref": "each",
+          "different": null
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "each",
+      "different"
+    ],
+    "examples": [
+      {
+        "text": "Copy target instant spell for each artifact you control that the spell could target. Each copy targets a different one of those artifacts."
+      },
+      {
+        "text": "Copy target sorcery spell for each Goblin you control that the spell could target. Each copy targets a different one of those Goblins."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell for each artifact you control that the spell could target. Each copy targets one of those artifacts.",
+      "Copy target instant spell. Each copy targets a different one of those artifacts."
+    ]
+  },
+  {
+    "id": "eff.edhc14.cast.anyNumber.free.fromYourHand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 305.9",
+      "CR 608.2d"
+    ],
+    "pattern": "you may cast any number of spells from your hand without paying their mana costs",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": "hand",
+          "owner": "you",
+          "notTypes": [
+            "Land"
+          ]
+        }
+      },
+      "free": true,
+      "optional": true,
+      "select": {}
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "any number",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Draw two cards. You may cast any number of spells from your hand without paying their mana costs."
+      },
+      {
+        "text": "Return all creatures to their owners' hands. You may cast any number of spells from your hand without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards. You may cast a spell from your hand without paying its mana cost.",
+      "Draw two cards. You may cast any number of spells from your hand.",
+      "Draw two cards. You may cast any number of spells from your graveyard without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.edhc14.cast.fromGraveyard.free",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 305.9",
+      "CR 404.1"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from your graveyard without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may cast an instant spell with mana value 3 or less from your graveyard without paying its mana cost."
+      },
+      {
+        "text": "When ~ enters, you may cast a sorcery spell from your graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may cast an instant spell from your graveyard.",
+      "Whenever ~ attacks, you may cast an instant spell from an opponent's graveyard without paying its mana cost.",
+      "Whenever ~ attacks, you may cast two instant spells from your graveyard without paying their mana costs."
+    ]
+  }
+]

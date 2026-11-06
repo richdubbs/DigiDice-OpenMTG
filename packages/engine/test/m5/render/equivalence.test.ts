@@ -13,7 +13,7 @@ import type { OracleCard } from '../../../src/types/card';
 import { defaultParseOptions, parseCard } from '../../../src/parser/parse';
 import { TEMPLATE_SET } from '../../../src/parser/template-set';
 import { ENGINE_CAPABILITIES } from '../../../src/model/capabilities';
-import { accepts, bound, draw, effectStep, objTarget, playerTarget, rejects, self, spell, statics, t, trig, you } from './build';
+import { accepts, bound, draw, effectStep, mana, objTarget, playerTarget, rejects, self, spell, statics, t, trig, you } from './build';
 import rx31Golden from '../golden/cards/cloud-std-rx31-review.json';
 
 const creature = { selfNames: ['Test Card'], selfTypes: ['Creature'] };
@@ -40,7 +40,7 @@ const T52_TYPES = { q: 'distinct', what: 'cardTypes', among: { ref: 'each', filt
 
 interface Example {
   def: AbilityDef;
-  ctx?: { selfNames: string[]; selfTypes?: string[] };
+  ctx?: { selfNames: string[]; selfTypes?: string[]; costSacrificeNouns?: string[] };
   /** Wordings that are the same thing in the model. */
   readings: string[];
   /** Wordings that are not. */
@@ -349,10 +349,54 @@ const EXAMPLES: Record<string, Example> = {
     readings: ["~ can't be blocked except by Walls."],
     near: ["~ can't be blocked by Walls.", "~ can't be blocked except by Golems."],
   },
+  // edh-cast-12 (Banefire)
+  'stack-condition-first': {
+    def: { ...statics([{ s: 'restrict', subject: { ref: 'self' }, mode: 'cant', action: 'beCountered' }, { s: 'restrict', subject: { ref: 'each', filter: {} }, mode: 'cant', action: 'preventDamage', other: { self: true } }, { s: 'restrict', subject: { ref: 'each', who: 'player' }, mode: 'cant', action: 'preventDamage', other: { self: true } }] as StaticEffect[]), zone: ['stack'], condition: { cond: 'wasCast', xAtLeast: 5 } } as AbilityDef,
+    readings: ["If X is 5 or more, ~ can't be countered and the damage can't be prevented.", "As long as X is 5 or more, ~ can't be countered and the damage can't be prevented."],
+    near: ["If X is 4 or more, ~ can't be countered and the damage can't be prevented.", "If X is 5 or more, ~ can't be countered and the damage can't be reduced."],
+  },
+  // edh-c-47
+  'counters-removed-no-kind': {
+    def: { kind: 'activated', cost: { other: [{ kind: 'removeCounters', counter: '+1/+1', count: { q: 'X' }, self: true, all: true }] }, effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, text: 'target creature', filter: { types: ['Creature'] } }], steps: [{ op: 'damage', source: { ref: 'self' }, to: { ref: 'target', id: 't0' }, amount: { q: 'X' } } as EffectStep] } } as AbilityDef,
+    readings: ['Remove all +1/+1 counters from ~: ~ deals X damage to target creature, where X is the number of counters removed this way.', 'Remove all +1/+1 counters from ~: ~ deals X damage to target creature, where X is the number of +1/+1 counters removed this way.'],
+    near: ['Remove all +1/+1 counters from ~: ~ deals X damage to target creature, where X is the number of -1/-1 counters removed this way.', 'Remove all +1/+1 counters from ~: ~ deals X damage to target creature, where X is the number of counters on ~.'],
+  },
+  'character-assign-unblocked': {
+    def: statics([{ s: 'permit', who: { ref: 'you' }, action: 'assignAsUnblocked' }]),
+    readings: ['You may have ~ assign its combat damage as though it weren\'t blocked.', 'You may have ~ assign his combat damage as though he weren\'t blocked.', 'You may have ~ assign her combat damage as though she weren\'t blocked.'],
+    near: ['You may have ~ assign his combat damage as though it weren\'t blocked.', 'You may have ~ assign its combat damage as though it had trample.'],
+  },
+  // edh-c-16
+  'cost-during-your-step': {
+    def: { ...statics([{ s: 'costMod', applies: { self: true, caster: 'you' }, change: { kind: 'reduce', generic: 2, floor: 'zero' } }]), zone: ['stack'], condition: { cond: 'turnOf', whose: 'you', step: 'end' } } as AbilityDef,
+    readings: ['~ costs {2} less to cast during your end step.', '~ costs {2} less to cast if it\'s your end step.'],
+    near: ['~ costs {2} less to cast during your upkeep.', '~ costs {2} less to cast during each opponent\'s end step.'],
+  },
   'cost-condition': {
     def: { ...statics([{ s: 'costMod', applies: { self: true, caster: 'you' }, change: { kind: 'reduce', generic: 2, floor: 'zero' } }]), zone: ['stack'], condition: { cond: 'exists', of: { ref: 'each', filter: { subtypes: ['Wizard'], controller: 'you' } } } } as AbilityDef,
     readings: ['~ costs {2} less to cast if you control a Wizard.', 'As long as you control a Wizard, ~ costs {2} less to cast.'],
     near: ['~ costs {2} less to cast if you control a Golem.', '~ costs {2} less to cast unless you control a Wizard.'],
+  },
+  // edh-c-49
+  'cost-also-it': {
+    def: { ...statics([{ s: 'costMod', applies: { self: true, caster: 'you' }, change: { kind: 'reduce', generic: 1, floor: 'zero' } }]), zone: ['stack'], condition: { cond: 'exists', of: { ref: 'each', filter: { subtypes: ['Wizard'], controller: 'you' } } } } as AbilityDef,
+    readings: ['~ costs {1} less to cast if you control a Wizard.', 'It also costs {1} less to cast if you control a Wizard.'],
+    near: ['It also costs {1} more to cast if you control a Wizard.', 'It also costs {1} less to cast if you control a Golem.'],
+  },
+  'for-each-fewer-than': {
+    def: trig([{ ev: 'life', change: 'gain', player: 'opponent' } as EventPattern], [{ op: 'loseLife', who: { ref: 'event', role: 'player' }, amount: { q: 'math', op: 'max', args: [0, { q: 'math', op: '-', args: [3, { q: 'count', of: { ref: 'each', filter: { zone: 'hand', owner: { ref: 'event', role: 'player' }, isCard: true } } }] }] } } as EffectStep]),
+    readings: ['Whenever an opponent gains life, that player loses 1 life for each card fewer than three in their hand.'],
+    near: ['Whenever an opponent gains life, that player loses 1 life for each card fewer than four in their hand.', 'Whenever an opponent gains life, that player loses 2 life for each card fewer than three in their hand.'],
+  },
+  'twice-per-life-gained': {
+    def: trig([{ ev: 'life', change: 'gain', player: 'opponent' } as EventPattern], [{ op: 'loseLife', who: { ref: 'event', role: 'player' }, amount: { q: 'math', op: '*', args: [2, { q: 'eventAmount' }] } } as EffectStep]),
+    readings: ['Whenever an opponent gains life, that player loses 2 life for each 1 life they gained.'],
+    near: ['Whenever an opponent gains life, that player loses 3 life for each 1 life they gained.', 'Whenever an opponent gains life, that player loses 2 life for each 2 life they gained.'],
+  },
+  'damage-both-equal': {
+    def: spell([{ op: 'damage', source: { ref: 'self' }, to: { ref: 'each', who: 'opponent' }, amount: { q: 'zoneSize', of: { ref: 'you' }, zone: 'hand' }, also: [{ to: { ref: 'each', filter: { types: ['Creature'], controller: 'opponent' } }, amount: { q: 'zoneSize', of: { ref: 'you' }, zone: 'hand' } }] } as EffectStep]),
+    readings: ['Test Card deals damage to each opponent and each creature your opponents control equal to the number of cards in your hand.'],
+    near: ['Test Card deals damage to each opponent or each creature your opponents control equal to the number of cards in your hand.', 'Test Card deals damage to each opponent and each creature you control equal to the number of cards in your hand.'],
   },
   // FAST1 T6
   'sacrifice-choice': {
@@ -449,6 +493,13 @@ const EXAMPLES: Record<string, Example> = {
     ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
     readings: ['Whenever you gain life, put that many +1/+1 counters on Test Card.', 'Whenever you gain life, put a number of +1/+1 counters equal to that much on Test Card.'],
     near: ['Whenever you gain life, put that many -1/-1 counters on Test Card.', 'Whenever you gain life, put two +1/+1 counters on Test Card.'],
+  },
+  // edh-next-104
+  'twice-that-much': {
+    def: trig([{ ev: 'life', change: 'gain', player: 'you' } as EventPattern], [{ op: 'addMana', who: { ref: 'you' }, dynamic: { kind: 'ofType', type: 'G', count: { q: 'math', op: '*', args: [2, { q: 'eventAmount' }] } } } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['Whenever you gain life, add twice that much {G}.', 'Whenever you gain life, add an amount of {G} equal to twice that much.'],
+    near: ['Whenever you gain life, add that much {G}.', 'Whenever you gain life, add three times that much {G}.'],
   },
   'additional-card': {
     def: trig([{ ev: 'step', step: 'draw' } as EventPattern], [draw(1, { ref: 'event', role: 'player' })]),
@@ -653,6 +704,44 @@ const EXAMPLES: Record<string, Example> = {
     readings: ['Creatures without flying your opponents control get -1/-0.', 'Creatures your opponents control without flying get -1/-0.'],
     near: ['Creatures without flying you control get -1/-0.', 'Creatures with flying your opponents control get -1/-0.'],
   },
+  // edh-c-6 (CR 208.1, 603.4): "if that creature is 1/1" (Sigil Captain)
+  'exact-power-toughness-is': {
+    def: trig([{ ev: 'zoneChange', subject: { types: ['Creature'], controller: 'you' }, to: 'battlefield' }], [draw()], { interveningIf: { cond: 'matches', object: { ref: 'event', role: 'subject' }, filter: { power: { op: '==', value: 1 }, toughness: { op: '==', value: 1 } } } }),
+    ctx: creature,
+    readings: ['Whenever a creature you control enters, if that creature is 1/1, draw a card.', 'Whenever a creature you control enters, if it has power 1 and has toughness 1, draw a card.'],
+    near: ['Whenever a creature you control enters, if that creature is 1/2, draw a card.', 'Whenever a creature you control enters, if that creature is a 1/1 Goblin, draw a card.'],
+  },
+  // edh-c-6 (CR 115.3): "a third target creature" (Incremental Growth)
+  'third-target': {
+    def: spell([
+      { op: 'putCounters', on: t('a'), kind: '+1/+1', count: 1 },
+      { op: 'putCounters', on: t('b'), kind: '+1/+1', count: 1 },
+      { op: 'putCounters', on: t('c'), kind: '+1/+1', count: 1 },
+    ], [objTarget('a'), { ...objTarget('b'), distinctFrom: ['a'] }, { ...objTarget('c'), distinctFrom: ['a', 'b'] }]),
+    readings: ['Put a +1/+1 counter on target creature, a +1/+1 counter on another target creature, and a +1/+1 counter on a third target creature.', 'Put a +1/+1 counter on target creature, a +1/+1 counter on another target creature, and a +1/+1 counter on another target creature.'],
+    near: ['Put a +1/+1 counter on target creature, a +1/+1 counter on another target creature, and a +1/+1 counter on a fourth target creature.'],
+  },
+  // edh-c-6: "creatures without flying you don't control" (Street Spasm)
+  'without-keyword-negated-controller-order': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], notKeyword: 'flying', not: { controller: 'you' } } }, mods: [{ layer: '7c', power: -1, toughness: 0 }] }]),
+    ctx: creature,
+    readings: ["Creatures without flying you don't control get -1/-0.", "Creatures you don't control without flying get -1/-0."],
+    near: ["Creatures without flying you control get -1/-0.", "Creatures with flying you don't control get -1/-0."],
+  },
+  // edh-c-7: "Creatures of the chosen color without flying can't attack you." (Teferi's Moat)
+  'chosen-color-without-keyword-order': {
+    def: statics([{ s: 'restrict', subject: { ref: 'each', filter: { types: ['Creature'], chosen: { link: 'color', quality: 'color' }, notKeyword: 'flying' } }, mode: 'cant', action: 'attackPlayer', otherPlayer: { ref: 'you' } }]),
+    ctx: creature,
+    readings: ["Creatures of the chosen color without flying can't attack you.", "Creatures without flying of the chosen color can't attack you."],
+    near: ["Creatures of the chosen color with flying can't attack you.", "Creatures of the chosen type without flying can't attack you.", "Creatures of the chosen color without flying can't attack your opponents."],
+  },
+  // edh-c-7: "~ gets +1/+1 for each other creature on the battlefield with flying." (Radiant, Archangel)
+  'for-each-on-the-battlefield-keyword': {
+    def: statics([{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: '7c', power: { q: 'count', of: { ref: 'each', filter: { other: true, types: ['Creature'], keyword: 'flying' } } }, toughness: { q: 'count', of: { ref: 'each', filter: { other: true, types: ['Creature'], keyword: 'flying' } } } }] }]),
+    ctx: creature,
+    readings: ['~ gets +1/+1 for each other creature on the battlefield with flying.', '~ gets +1/+1 for each other creature with flying.', '~ gets +1/+1 for each other creature with flying on the battlefield.'],
+    near: ['~ gets +1/+1 for each other creature on the battlefield with trample.', '~ gets +1/+1 for each creature on the battlefield with flying.', '~ gets +1/+1 for each other creature you control with flying.'],
+  },
   // std-rx18: "Enchanted creature loses all abilities and can't attack or block" (Observed Stasis)
   'loses-all-then-cants': {
     def: statics([
@@ -746,7 +835,7 @@ const EXAMPLES: Record<string, Example> = {
   },
   'counters-for-each': {
     def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: '7c', power: T12_CHARGE, toughness: T12_CHARGE }] }]),
-    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact', 'Equipment'] },
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
     readings: ['Equipped creature gets +1/+1 for each charge counter on ~.', 'Equipped creature gets +X/+X, where X is the number of charge counters on ~.'],
     near: ['Equipped creature gets +1/+1 for each time counter on ~.', 'Equipped creature gets +2/+2 for each charge counter on ~.'],
   },
@@ -868,6 +957,17 @@ const EXAMPLES: Record<string, Example> = {
     def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'permit', who: you, action: 'haveFlash', of: { types: ['Creature'], stackKind: 'spell', zone: 'stack' } }] }]),
     readings: ['You may cast creature spells this turn as though they had flash.', 'You may cast creature spells as though they had flash this turn.'],
     near: ['You may cast creature spells this turn as though they had haste.', 'You may cast artifact spells this turn as though they had flash.'],
+  },
+  // edh-cast-4 (CR 601.3b, 702.8a): the permission of each player is also "any player may ..."
+  'any-player-may-cast-flash': {
+    def: statics([{ s: 'permit', who: { ref: 'each', who: 'player' }, action: 'haveFlash', of: { types: ['Creature'], stackKind: 'spell', zone: 'stack' } }]),
+    readings: ['Each player may cast creature spells as though they had flash.', 'Any player may cast creature spells as though they had flash.'],
+    near: ['Any player may cast creature spells as though they had haste.', 'Any opponent may cast creature spells as though they had flash.', 'You may cast creature spells as though they had flash.'],
+  },
+  'colored-reduction-reminder': {
+    def: statics([{ s: 'costMod', applies: { spells: { types: ['Creature'], stackKind: 'spell', zone: 'stack' }, caster: 'you' }, change: { kind: 'reduce', mana: [{ kind: 'colored', color: 'G' }], floor: 'zero', coloredOnly: true } }]),
+    readings: ['Creature spells you cast cost {G} less to cast. This effect reduces only the amount of green mana you pay.', 'Creature spells you cast cost {G} less to cast. This effect reduces only the amount of colored mana you pay.'],
+    near: ['Creature spells you cast cost {G} less to cast.', 'Creature spells you cast cost {G} less to cast. This effect reduces only the amount of red mana you pay.', 'Creature spells you cast cost {G} less to cast. This effect reduces only the amount of generic mana you pay.'],
   },
   'any-player-life': {
     def: statics([{
@@ -1002,6 +1102,16 @@ const EXAMPLES: Record<string, Example> = {
     ]),
     readings: ['Search your library for up to two basic land cards and/or Gate cards, put them onto the battlefield tapped, then shuffle.', 'Search your library for up to two basic land cards or Gate cards, put them onto the battlefield tapped, then shuffle.'],
     near: ['Search your library for basic land cards and/or Gate cards, put them onto the battlefield tapped, then shuffle.', 'Search your library for up to two basic land cards and Gate cards, put them onto the battlefield tapped, then shuffle.'],
+  },
+  // edh-next-93
+  'cards-shared-head': {
+    def: spell([
+      { op: 'search', who: you, zone: 'library', filter: { anyOf: [{ types: ['Land'] }, { supertypes: ['Legendary'], types: ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'] }] }, min: 0, max: 2, as: 'found' } as EffectStep,
+      { op: 'move', what: { ref: 'bound', name: 'found' }, to: { zone: 'battlefield', controller: you, tapped: true } } as EffectStep,
+      { op: 'shuffle', who: you } as EffectStep,
+    ]),
+    readings: ['Search your library for up to two land and/or legendary permanent cards, put them onto the battlefield tapped, then shuffle.', 'Search your library for up to two land or legendary permanent cards, put them onto the battlefield tapped, then shuffle.', 'Search your library for up to two land cards or legendary permanent cards, put them onto the battlefield tapped, then shuffle.'],
+    near: ['Search your library for up to two land and legendary permanent cards, put them onto the battlefield tapped, then shuffle.', 'Search your library for up to two land and/or legendary cards, put them onto the battlefield tapped, then shuffle.'],
   },
   // FAST4 T22
   // CLOUD std-fra: the number of cards in a zone as the computed number of counters
@@ -1246,7 +1356,7 @@ const EXAMPLES: Record<string, Example> = {
   // FAST4 T29
   'supertype-adjective': {
     def: { ...statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'hexproof', text: 'Hexproof' }] }] }]), condition: { cond: 'matches', object: { ref: 'attachedTo' }, filter: { supertypes: ['Legendary'] } } } as AbilityDef,
-    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact', 'Equipment'] },
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
     readings: ['As long as equipped creature is legendary, it has hexproof.', 'As long as equipped creature is a legendary permanent, it has hexproof.'],
     near: ['As long as equipped creature is snow, it has hexproof.', 'As long as equipped creature is legendary, it has shroud.'],
   },
@@ -1269,13 +1379,13 @@ const EXAMPLES: Record<string, Example> = {
   },
   'type-add-last': {
     def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 4, subtypes: { add: ['Samurai'] } }, { layer: 6, add: [{ kind: 'keyword', keyword: 'trample', text: 'Trample' }] }, { layer: '7c', power: 2, toughness: 2 }] } as StaticEffect]),
-    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact', 'Equipment'] },
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
     readings: ['Equipped creature gets +2/+2, has trample, and is a Samurai in addition to its other types.', 'Equipped creature is a Samurai in addition to its other types, gets +2/+2, and has trample.'],
     near: ['Equipped creature gets +2/+2, has trample, and is a Samurai.', 'Equipped creature gets +2/+2, has trample, and is a Ninja in addition to its other types.'],
   },
   'quoted-grant-then-change': {
     def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 4, subtypes: { add: ['Rogue'] } }, { layer: 6, add: [{ kind: 'static', text: '', effects: [{ s: 'rule', rule: 'handSizeNoLimit', player: you }] }] }, { layer: '7c', power: 1, toughness: 1 }] } as StaticEffect]),
-    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact', 'Equipment'] },
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
     readings: [
       'Equipped creature gets +1/+1, has "You have no maximum hand size," and is a Rogue in addition to its other types.',
       'Equipped creature gets +1/+1, has "You have no maximum hand size", and is a Rogue in addition to its other types.',
@@ -1304,7 +1414,7 @@ const EXAMPLES: Record<string, Example> = {
   },
   'shared-subject-grant': {
     def: statics([{ s: 'restrict', subject: { ref: 'attachedTo' }, mode: 'cant', action: 'beBlocked' }, { s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'shroud', text: 'Shroud' }] }] }]),
-    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact', 'Equipment'] },
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
     readings: ["Equipped creature can't be blocked and has shroud.", "Equipped creature can't be blocked. It has shroud."],
     near: ["Equipped creature can't block and has shroud.", "Equipped creature can't be blocked and has hexproof."],
   },
@@ -1414,6 +1524,12 @@ const EXAMPLES: Record<string, Example> = {
     ctx: creature,
     readings: ['Creatures you control with +1/+1 counters on them have trample.', 'Creatures you control with a +1/+1 counter on them have trample.'],
     near: ['Creatures you control with -1/-1 counters on them have trample.', 'Creatures you control with two +1/+1 counters on them have trample.'],
+  },
+  'counters-on-it': {
+    def: { ...statics([{ s: 'costMod', applies: { self: true, caster: 'you' }, change: { kind: 'reduce', generic: { q: 'math', op: '*', args: [1, { q: 'count', of: { ref: 'each', filter: { controller: 'you', counters: { kind: 'oil' } } } }] }, floor: 'zero' } }]), zone: ['stack'] } as AbilityDef,
+    ctx: creature,
+    readings: ['Test Card costs {1} less to cast for each permanent you control with oil counters on it.', 'Test Card costs {1} less to cast for each permanent you control with an oil counter on it.'],
+    near: ['Test Card costs {1} less to cast for each permanent you control with oil counters on them.', 'Test Card costs {1} less to cast for each permanent you control with two oil counters on it.'],
   },
   'pump-then-damage': {
     def: trig([{ ev: 'attacks', attacker: { self: true } } as EventPattern], [
@@ -1539,6 +1655,11 @@ const EXAMPLES: Record<string, Example> = {
     readings: ['Target player discards X cards, where X is the number of creatures you control.', 'Target player discards cards equal to the number of creatures you control.'],
     near: ['Target player discards X cards, where X is the number of lands you control.', 'Target player draws X cards, where X is the number of creatures you control.'],
   },
+  'unless-for-each-player': { // edh-next-83 (Lim-Dul's Hex)
+    def: spell([{ op: 'forEach', over: { ref: 'each', who: 'player' }, as: 'each', do: [{ op: 'pay', who: { ref: 'bound', name: 'each' }, cost: { other: [{ kind: 'oneOf', options: [{ mana: [{ kind: 'colored', color: 'B' }] }, { mana: [{ kind: 'generic', amount: 3 }] }] }] }, else: [{ op: 'damage', source: self, to: { ref: 'bound', name: 'each' }, amount: 1 }] }] } as EffectStep]),
+    readings: ['Test Card deals 1 damage to each player unless they pay {B} or {3}.', 'For each player, Test Card deals 1 damage to that player unless they pay {B} or {3}.'],
+    near: ['Test Card deals 1 damage to each opponent unless they pay {B} or {3}.', 'For each player, Test Card deals 1 damage to that player unless they pay {B} and {3}.'],
+  },
   'unless-they-their-choice': {
     def: spell([{ op: 'pay', who: t('p'), cost: { other: [{ kind: 'sacrifice', filter: { types: ['Creature'] }, count: 1 }] }, else: [{ op: 'damage', source: self, to: t('p'), amount: 2 }] } as EffectStep], [playerTarget('p')]),
     readings: ['Test Card deals 2 damage to target player unless they sacrifice a creature of their choice.', 'Test Card deals 2 damage to target player unless they sacrifice a creature.', 'Test Card deals 2 damage to target player unless that player sacrifices a creature.'],
@@ -1566,8 +1687,8 @@ const EXAMPLES: Record<string, Example> = {
   },
   'twice-x': {
     def: spell([{ op: 'gainLife', who: t('p'), amount: { q: 'math', op: '*', args: [2, { q: 'X' }] } } as EffectStep], [playerTarget('p')]),
-    readings: ['Target player gains twice X life.', 'Target player gains life equal to twice X.'],
-    near: ['Target player gains X life.', 'Target player loses twice X life.'],
+    readings: ['Target player gains twice X life.', 'Target player gains life equal to twice X.', 'Target player gains two times X life.'],
+    near: ['Target player gains X life.', 'Target player loses twice X life.', 'Target player gains three times X life.'],
   },
   // M11-4 (CR 903.3e): a commander you own is "your commander"
   'your-commander': {
@@ -2419,6 +2540,22 @@ const EXAMPLES: Record<string, Example> = {
     readings: ['When ~ enters, each opponent exiles a card from their hand and may play that card for as long as it remains exiled.', 'When ~ enters, each opponent exiles a card from their hand and may play it for as long as it remains exiled.'],
     near: ['When ~ enters, each opponent exiles a card from their hand and may cast that card for as long as it remains exiled.', 'When ~ enters, each opponent exiles a card from their hand and may play that card this turn.'],
   },
+  // edh-next-52 (CR 610.3; Lumbering Battlement)
+  'until-it-leaves': {
+    def: trig([enters], [
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Creature'] }], controller: 'you' } }, min: 0, max: 'any', as: 'c' } as EffectStep,
+      { op: 'move', what: bound('c'), to: { zone: 'exile' }, until: { d: 'until', event: { ev: 'zoneChange', subject: { self: true }, from: 'battlefield' } } } as EffectStep,
+    ]),
+    ctx: creature,
+    readings: ['When this creature enters, exile any number of creatures you control until this creature leaves the battlefield.', 'When this creature enters, exile any number of creatures you control until it leaves the battlefield.'],
+    near: ['When this creature enters, exile any number of creatures you control until it dies.', 'Whenever a creature you control enters, exile any number of creatures you control until it leaves the battlefield.', 'When this creature enters, exile any number of creatures you control until end of turn.'],
+  },
+  // edh-next-59 (CR 202.3, 601.3e; Arcade Gannon)
+  'cast-gy-mana-value-after-zone': {
+    def: { ...statics([{ s: 'permit', who: { ref: 'you' }, action: 'cast', of: { types: ['Artifact'], stackKind: 'spell', zone: 'stack', manaValue: { op: '<=', value: 3 } }, from: 'graveyard', oncePerTurn: true }]), condition: { cond: 'turnOf', whose: 'you' } } as AbilityDef,
+    readings: ['Once during each of your turns, you may cast an artifact spell with mana value 3 or less from your graveyard.', 'Once during each of your turns, you may cast an artifact spell from your graveyard with mana value 3 or less.'],
+    near: ['Once during each of your turns, you may cast an artifact spell from your graveyard with mana value 4 or less.', 'Once during each of your turns, you may cast an artifact spell from your hand with mana value 3 or less.'],
+  },
 };
 
 /** FAST5X E23: "{T}: Add {C}." with a spending restriction (CR 106.6). */
@@ -2628,6 +2765,7 @@ Object.assign(EXAMPLES, {
       'Put a flying, lifelink, or +1/+1 counter on Test Card.',
       'Put your choice of a flying, lifelink, or +1/+1 counter on Test Card.',
       'Put your choice of a flying counter, a lifelink counter, or a +1/+1 counter on Test Card.',
+      'Put a flying counter, a lifelink counter, or a +1/+1 counter on Test Card.',
     ],
     near: ['Put a flying, lifelink, and +1/+1 counter on Test Card.', 'Put a flying or lifelink counter on Test Card.', 'Put a flying, lifelink, or +1/+1 counter on each creature you control.'],
   },
@@ -2700,7 +2838,7 @@ Object.assign(EXAMPLES, {
       { op: 'move', what: { ref: 'bound', name: 'search' }, to: { zone: 'exile' } } as EffectStep,
       { op: 'shuffle', who: you } as EffectStep,
     ]),
-    readings: ['Search your library for up to five land cards that have different names, exile them, then shuffle.', 'Search your library for up to five land cards with different names, exile them, then shuffle.'],
+    readings: ['Search your library for up to five land cards that have different names, exile them, then shuffle.', 'Search your library for up to five land cards with different names, exile them, then shuffle.', 'Search your library for up to five land cards that each have different names, exile them, then shuffle.'],
     near: ['Search your library for up to five land cards, exile them, then shuffle.', 'Search your library for up to five land cards that have different names, put them into your hand, then shuffle.'],
   },
   'token-half-rounded': {
@@ -2708,6 +2846,7 @@ Object.assign(EXAMPLES, {
     readings: ['Create half X Food tokens, rounded up.'],
     near: ['Create half X Food tokens, rounded down.', 'Create half X Food tokens.', 'Create X Food tokens.'],
   },
+
 } satisfies Record<string, Example>);
 
 // r3-static: "The tokens have ..." after the creation, two rule changes of you in one sentence
@@ -2776,7 +2915,7 @@ Object.assign(EXAMPLES, {
   },
   'static-all-creature-types': {
     def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 4, subtypes: { all: true } }, { layer: '7c', power: 1, toughness: 1 }] } as unknown as StaticEffect]),
-    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact', 'Equipment'] },
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
     readings: ['Equipped creature gets +1/+1 and is all creature types.', 'Equipped creature gets +1/+1 and has all creature types.'],
     near: ['Equipped creature gets +1/+1 and is all land types.', 'Equipped creature gets +1/+2 and is all creature types.'],
   },
@@ -2842,9 +2981,10 @@ Object.assign(EXAMPLES, {
   'opponents-are-attacked': {
     def: trig([{ ev: 'attacks', attacker: { types: ['Creature'] }, defender: 'opponent' }], [draw()], { batch: true, wholeBatch: true }),
     ctx: creature,
-    readings: ['Whenever one or more of your opponents are attacked, draw a card.'],
+    // edh-combat-2: and the same event from the attacker's side (Jolene, the Plunder Queen)
+    readings: ['Whenever one or more of your opponents are attacked, draw a card.', 'Whenever a player attacks one or more of your opponents, draw a card.'],
     // Standard merge wave 3: "one or more creatures attack an opponent" triggers once for each opponent attacked (std-tla), so it is a near miss now (CR 603.2c)
-    near: ['Whenever one or more creatures attack an opponent, draw a card.', 'Whenever one or more of your opponents attack, draw a card.', 'Whenever you are attacked, draw a card.', 'Whenever one or more creatures attack you, draw a card.'],
+    near: ['Whenever one or more creatures attack an opponent, draw a card.', 'Whenever one or more of your opponents attack, draw a card.', 'Whenever you are attacked, draw a card.', 'Whenever one or more creatures attack you, draw a card.', 'Whenever a player attacks an opponent, draw a card.', 'Whenever a player attacks one or more of their opponents, draw a card.', 'Whenever a player attacks you, draw a card.'],
   },
   'linked-exiled-it': {
     def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 2 }], other: [{ kind: 'sacrifice', filter: { self: true }, count: 1, self: true }] }, effect: { targets: [], steps: [
@@ -3209,6 +3349,24 @@ Object.assign(EXAMPLES, {
     readings: ["~'s base power is equal to the number of artifacts you control.", '~ has base power equal to the number of artifacts you control.'],
     near: ["~'s base toughness is equal to the number of artifacts you control.", "~'s power is equal to the number of artifacts you control.", "~'s base power is equal to the number of creatures you control."],
   },
+  // edh-c-78 (CR 205.1a, 611.2b, 613.4b): Sauron, Dino Devotee
+  'becomes-is-while-object': {
+    def: spell([{ op: 'putCounters', on: t('c'), kind: 'charge', count: 1 } as EffectStep, effectStep([{ s: 'continuous', affects: t('c'), mods: [{ layer: 4, subtypes: { set: ['Dinosaur'] } }, { layer: 5, colors: { set: ['G'] } }, { layer: '7b', power: 5, toughness: 5 }] } as StaticEffect], { d: 'whileObject', object: t('c'), as: 'counter', counter: 'charge' } as never)], [objTarget('c')]),
+    readings: ['Put a charge counter on target creature. It becomes a green Dinosaur with base power and toughness 5/5 for as long as it has a charge counter on it.', "Put a charge counter on target creature. It's a green Dinosaur with base power and toughness 5/5 for as long as it has a charge counter on it."],
+    near: ['Put a charge counter on target creature. It becomes a green Dinosaur with base power and toughness 5/5 until end of turn.', "Put a charge counter on target creature. It's a green Dinosaur with base power and toughness 5/6 for as long as it has a charge counter on it.", "Put a charge counter on target creature. It's a red Dinosaur with base power and toughness 5/5 for as long as it has a charge counter on it."],
+  },
+  // edh-c-78 (CR 614.1c, 614.12): Ashling's Prerogative
+  'each-enters-tapped': {
+    def: statics([{ s: 'replace', replaces: { ev: 'zoneChange', subject: { types: ['Creature'] }, to: 'battlefield' }, body: { b: 'enters', tapped: true } } as unknown as StaticEffect]),
+    readings: ['Creatures enter tapped.', 'Each creature enters tapped.'],
+    near: ['Each creature enters untapped.', 'Each land enters tapped.', 'Each creature enters tapped and attacking.'],
+  },
+  // edh-c-78 (CR 614.9, 616.1): Blood of the Martyr
+  'redirect-may-damage-creatures': {
+    def: spell([effectStep([{ s: 'replace', optional: true, replaces: { ev: 'damage', recipient: { object: { types: ['Creature'] } } }, body: { b: 'redirect', to: you } } as unknown as StaticEffect], { d: 'endOfTurn' })]),
+    readings: ['Until end of turn, if damage would be dealt to any creature, you may have that damage dealt to you instead.', 'If damage would be dealt to any creature this turn, you may have that damage dealt to you instead.'],
+    near: ['Until end of turn, if damage would be dealt to any land, you may have that damage dealt to you instead.', 'Until end of turn, if damage would be dealt to any creature, that damage is dealt to you instead.'],
+  },
   // CR 613.4b, 611.2a: PuPu UFO
   'base-power-becomes': {
     def: spell([effectStep([{ s: 'continuous', affects: t('c'), mods: [{ layer: '7b', power: 4 }] } as StaticEffect], { d: 'endOfTurn' })], [objTarget('c')]),
@@ -3218,6 +3376,7 @@ Object.assign(EXAMPLES, {
 } satisfies Record<string, Example>);
 
 // std-tdm (cloud batch 2, zz-cloud/std-tdm.json): the readings of its ten reviewed families
+const GREATEST_POWER: Quantity = { q: 'stat', stat: 'power', agg: 'max', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } } };
 const TDM_LANDS: Quantity = { q: 'count', of: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } };
 const TDM_SEARCH: EffectStep = { op: 'search', who: you, zone: 'library', filter: { supertypes: ['Basic'], types: ['Land'] }, max: 1, reveal: true, as: 'search' } as EffectStep;
 const TDM_DRAGON = { cond: 'exists', of: { ref: 'each', filter: { subtypes: ['Dragon'], controller: 'you' } } };
@@ -3268,6 +3427,106 @@ Object.assign(EXAMPLES, {
     def: { kind: 'activated', text: '', cost: { tap: true }, effect: { targets: [], steps: [draw()] }, onlyIf: { cond: 'all', of: [{ cond: 'turnOf', whose: 'you' }, { cond: 'exists', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } } }] } } as unknown as AbilityDef,
     readings: ['{T}: Draw a card. Activate only during your turn and only if you control a creature.', '{T}: Draw a card. Activate only if you control a creature and only during your turn.'],
     near: ['{T}: Draw a card. Activate only during your turn.', '{T}: Draw a card. Activate only during your turn and only if you control an artifact.'],
+  },
+  // edh-next-9 (render/steps-life.ts): the greatest power read as the division is announced
+  'cost-less-per-life-gained': {
+    def: { kind: 'static', text: '', zone: ['stack'], effects: [{ s: 'costMod', applies: { self: true, caster: 'you' }, change: { kind: 'reduce', generic: { q: 'math', op: '*', args: [1, { q: 'lifeGainedThisTurn' }] }, floor: 'zero' } }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['Test Card costs {1} less to cast for each 1 life you gained this turn.', 'Test Card costs {X} less to cast, where X is 1 times the amount of life you gained this turn.'],
+    near: ['Test Card costs {1} less to cast for each 1 life you lost this turn.'],
+  },
+  'divided-as-you-cast': {
+    def: { kind: 'spell', text: '', effect: { steps: [{ op: 'damage', source: self, to: t('t0'), amount: GREATEST_POWER, divided: 'announced' } as EffectStep], targets: [
+      { id: 't0', kind: 'object', min: 0, max: 'any', text: '', filter: { types: ['Creature'] }, divide: { what: 'damage', total: GREATEST_POWER } } as TargetSpec,
+    ] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: [
+      'Test Card deals X damage divided as you choose among any number of target creatures, where X is the greatest power among creatures you control.',
+      'Test Card deals X damage divided as you choose among any number of target creatures, where X is the greatest power among creatures you control as you cast this spell.',
+    ],
+    near: ['Test Card deals X damage divided as you choose among any number of target creatures, where X is the greatest power among creatures you control as you resolve this spell.'],
+  },
+  // edh-c-68 (render/steps-life.ts): a count divided as the spell is cast
+  'divided-count-as-you-cast': {
+    def: { kind: 'spell', text: '', effect: { steps: [{ op: 'damage', source: self, to: t('t0'), amount: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'] } } }, divided: 'announced' } as EffectStep], targets: [
+      { id: 't0', kind: 'object', min: 0, max: 'any', text: '', filter: { types: ['Creature'] }, divide: { what: 'damage', total: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'] } } } } } as TargetSpec,
+    ] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: [
+      'Test Card deals X damage divided as you choose among any number of target creatures, where X is the number of creatures on the battlefield.',
+      'Test Card deals X damage divided as you choose among any number of target creatures, where X is the number of creatures on the battlefield as you cast this spell.',
+    ],
+    near: ['Test Card deals X damage divided as you choose among any number of target creatures, where X is the number of creatures on the battlefield as you resolve this spell.'],
+  },
+  // edh-c-68 (render/steps-util.ts): a computed amount plus a number, one amount of life
+  'gain-x-plus-where': {
+    def: spell([{ op: 'gainLife', who: you, amount: { q: 'math', op: '+', args: [{ q: 'count', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } } }, 1] } } as EffectStep]),
+    readings: ['You gain life equal to the number of creatures you control plus 1.', 'You gain X plus 1 life, where X is the number of creatures you control.'],
+    near: ['You gain X plus 2 life, where X is the number of creatures you control.', 'You gain X minus 1 life, where X is the number of creatures you control.'],
+  },
+  // edh-c-68 (render/cond.ts): your team is you
+  'team-controls': {
+    def: trig([{ ev: 'attacks', attacker: { self: true } }], [gain(1)], { interveningIf: { cond: 'exists', of: { ref: 'each', filter: { subtypes: ['Warrior'], controller: 'you', other: true } } } }),
+    ctx: creature,
+    readings: ['Whenever Test Card attacks, if you control another Warrior, you gain 1 life.', 'Whenever Test Card attacks, if your team controls another Warrior, you gain 1 life.'],
+    near: ["Whenever Test Card attacks, if your opponent's team controls another Warrior, you gain 1 life.", 'Whenever Test Card attacks, if your team controls a Warrior, you gain 1 life.'],
+  },
+  // edh-c-68 (render/steps-util.ts): the control, then what it is attached to
+  'attached-after-control': {
+    def: trig([enters], [{ op: 'move', what: t('t0'), to: { zone: 'battlefield', controller: you, attachedTo: self } } as EffectStep], {}, [objTarget('t0', { subtypes: ['Aura'], isCard: true, zone: 'graveyard' })]),
+    ctx: creature,
+    readings: [
+      'When Test Card enters, put target Aura card from a graveyard onto the battlefield under your control attached to Test Card.',
+      'When Test Card enters, put target Aura card from a graveyard onto the battlefield attached to Test Card under your control.',
+    ],
+    near: ['When Test Card enters, put target Aura card from a graveyard onto the battlefield under an opponent\'s control attached to Test Card.'],
+  },
+  // edh-c-68 (render/evt.ts): a list of descriptions with one article
+  'subject-list-one-article': {
+    def: trig([
+      { ev: 'becomes', what: 'tapped', object: { subtypes: ['Swamp'] } }, { ev: 'becomes', what: 'tapped', object: { subtypes: ['Mountain'] } },
+      { ev: 'becomes', what: 'tapped', object: { colors: ['B'] } }, { ev: 'becomes', what: 'tapped', object: { colors: ['R'] } },
+    ] as EventPattern[], [gain(1)]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: [
+      'Whenever a Swamp, Mountain, black permanent, or red permanent becomes tapped, you gain 1 life.',
+      'Whenever a Swamp, a Mountain, a black permanent, or a red permanent becomes tapped, you gain 1 life.',
+    ],
+    near: ['Whenever a Swamp, Mountain, black permanent, or green permanent becomes tapped, you gain 1 life.', 'Whenever a Swamp, Mountain, black permanent, red permanent becomes tapped, you gain 1 life.'],
+  },
+  // edh-c-68 (render/steps-cards.ts): draw as many as were discarded
+  'draw-as-many-discarded': {
+    def: spell([{ op: 'discard', who: you, count: 2, as: 'd' } as EffectStep, { op: 'draw', who: you, count: { q: 'resultCount', step: 'd' } } as EffectStep]),
+    readings: ['Discard two cards, then draw that many cards.', 'Discard two cards, then draw as many cards as you discarded this way.'],
+    near: ['Discard two cards, then draw as many cards as you discarded this turn.', 'Discard two cards, then draw as many cards as they discarded this way.'],
+  },
+  // edh-c-68 (render/evt.ts): a source that is not a creature
+  'noncreature-source-deals': {
+    def: trig([{ ev: 'damage', source: { notTypes: ['Creature'], controller: 'you' } } as EventPattern], [{ op: 'gainLife', who: you, amount: { q: 'eventAmount' } } as EffectStep]),
+    ctx: creature,
+    readings: ['Whenever a noncreature source you control deals damage, you gain that much life.'],
+    near: ['Whenever a creature source you control deals damage, you gain that much life.', 'Whenever a noncreature source an opponent controls deals damage, you gain that much life.'],
+  },
+  // edh-next-9 (render/np.ts): a spell described by one keyword
+  'that-has-keyword': {
+    def: trig([{ ev: 'cast', player: 'you', spell: { keyword: 'flash' } }], [draw()]),
+    ctx: creature,
+    readings: ['Whenever you cast a spell with flash, draw a card.', 'Whenever you cast a spell that has flash, draw a card.'],
+    near: ['Whenever you cast a spell with flying, draw a card.'],
+  },
+  // edh-next-11 (render/stat.ts): the extra land play of every player
+  'on-during-each-turn': {
+    def: statics([{ s: 'permit', who: { ref: 'each', who: 'player' }, action: 'playLand' }]),
+    ctx: creature,
+    readings: ['Each player may play an additional land on each of their turns.', 'Each player may play an additional land during each of their turns.'],
+    near: ['Each player may play an additional land this turn.', 'You may play an additional land during each of your turns.'],
+  },
+  // edh-next-11 (render/stat.ts, render/abil.ts): spending mana of any color on the activation costs of the object's own abilities
+  'spend-any-color-activation-costs': {
+    def: statics([{ s: 'permit', who: you, action: 'spendMana', asThough: 'any color', of: { self: true }, abilities: true }]),
+    ctx: creature,
+    readings: ['You may spend mana as though it were mana of any color to activate abilities of it.', "You may spend mana as though it were mana of any color to pay the activation costs of this creature's abilities."],
+    near: ['You may spend mana as though it were mana of any type to pay the activation costs of this creature\'s abilities.', 'You may spend mana as though it were mana of any color to pay the activation costs of abilities you activate.'],
   },
   'divided-where-x': {
     def: trig([enters], [{ op: 'damage', source: self, to: t('t0'), amount: TDM_LANDS, divided: 'announced' } as EffectStep], {}, [
@@ -3479,8 +3738,8 @@ Object.assign(EXAMPLES, {
       { op: 'move', what: t('t0'), to: { zone: 'library', owner: { ref: 'ownerOf', object: t('t0') } } },
       { op: 'shuffle', who: { ref: 'ownerOf', object: t('t0') } },
     ] as EffectStep[], [objTarget('t0')]),
-    readings: ["Target creature's owner shuffles it into their library.", 'The owner of target creature shuffles it into their library.'],
-    near: ['The owner of target creature shuffles it into your library.', 'The controller of target creature shuffles it into their library.', 'The owner of target creature puts it into their library.'],
+    readings: ["Target creature's owner shuffles it into their library.", 'The owner of target creature shuffles it into their library.', "Shuffle target creature into its owner's library."],
+    near: ["Shuffle target creature into your library.", "Shuffle target creature into its owner's graveyard.", 'The owner of target creature shuffles it into your library.', 'The controller of target creature shuffles it into their library.', 'The owner of target creature puts it into their library.'],
   },
   'self-or-another-entered': {
     def: { kind: 'activated', text: '', cost: { tap: true }, effect: { targets: [], steps: [draw()] }, onlyIf: { cond: 'happened', event: { ev: 'zoneChange', subject: { types: ['Artifact'], controller: 'you' }, to: 'battlefield' }, scope: 'turn' } } as AbilityDef,
@@ -3687,6 +3946,18 @@ Object.assign(EXAMPLES, {
     ],
     near: ['Mill three cards. If a creature card was milled this way, draw a card.', 'Mill three cards. If a land card was discarded this way, draw a card.', 'Mill three cards. If two land cards were milled this way, draw a card.'],
   },
+  'mill-return-milled-this-way': {
+    def: spell([
+      STD_TLA_MILL,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Creature'] }], is: bound('m'), zone: 'any' } }, min: 1, max: 1, as: 'c' } as EffectStep,
+      { op: 'move', what: bound('c'), to: { zone: 'hand' } } as EffectStep,
+    ]),
+    readings: [
+      'Mill three cards, then return a creature card milled this way to your hand.',
+      'Mill three cards, then put a creature card from among them into your hand.',
+    ],
+    near: ['Mill three cards, then return a land card milled this way to your hand.', 'Mill three cards, then return a creature card milled this way to the battlefield.', 'Mill three cards, then you may return a creature card milled this way to your hand.'],
+  },
   'mill-pick-milled-this-way': {
     def: spell([
       STD_TLA_MILL,
@@ -3770,6 +4041,48 @@ const SPM_OPPONENT = { id: 'p', kind: 'player', min: 1, max: 1, text: 'target op
 const SPM_PREVENT = (then?: EffectStep[]): StaticEffect => ({ s: 'replace', replaces: { ev: 'damage', recipient: { object: { self: true } } }, body: { b: 'prevent', amount: 'all', ...(then ? { then } : {}) } } as StaticEffect);
 const SPM_POWER: Quantity = { q: 'stat', stat: 'power', of: self };
 const SPM_LOST: Quantity = { q: 'lifeLost', step: 'lost', who: you } as Quantity;
+// edh-next-10 (CR 615.5, 122.1, 613.1f, 613.4b)
+Object.assign(EXAMPLES, {
+  'prevent-counter-on-self-per-prevented': {
+    def: statics([{ s: 'replace', replaces: { ev: 'damage', recipient: { object: { self: true } } }, body: { b: 'prevent', amount: 'all', then: [{ op: 'putCounters', on: { ref: 'self' }, kind: '-1/-1', count: { q: 'preventedAmount' } }] } } as StaticEffect]),
+    ctx: creature,
+    readings: ['If damage would be dealt to Test Card, prevent that damage. Put a -1/-1 counter on Test Card for each 1 damage prevented this way.', 'If damage would be dealt to Test Card, prevent that damage and put that many -1/-1 counters on Test Card.'],
+    near: ['If damage would be dealt to Test Card, prevent that damage. Put a -1/-1 counter on Test Card for each 2 damage prevented this way.', 'If damage would be dealt to Test Card, prevent that damage. Put a -1/-1 counter on target creature for each 1 damage prevented this way.'],
+  },
+  'basept-has-lose-other-order': {
+    def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 6, removeAll: true, add: [{ kind: 'keyword', keyword: 'defender', text: 'defender' }] }, { layer: '7b', power: 0, toughness: 2 }] } as StaticEffect]),
+    ctx: creature,
+    readings: ['Enchanted creature has base power and toughness 0/2, has defender, and loses all other abilities.', 'Enchanted creature loses all abilities, has base power and toughness 0/2, and has defender.'],
+    near: ['Enchanted creature has base power and toughness 0/2, has defender, and loses all abilities.', 'Enchanted creature has base power and toughness 0/3, has defender, and loses all other abilities.'],
+  },
+});
+Object.assign(EXAMPLES, {
+  // edh-next-24 (CR 105.1): the colors of one object, counted as "the number of colors that spell is"
+  'colors-object-is': {
+    def: trig([{ ev: 'cast', player: 'you' }], [{ op: 'damage', source: { ref: 'self' }, to: { ref: 'each', who: 'opponent' }, amount: { q: 'distinct', what: 'colors', among: { ref: 'event', role: 'spell' } } } as never]),
+    ctx: creature,
+    readings: ['Whenever you cast a spell, Test Card deals damage to each opponent equal to the number of colors that spell is.', 'Whenever you cast a spell, Test Card deals X damage to each opponent, where X is the number of colors that spell is.'],
+    near: ['Whenever you cast a spell, Test Card deals damage to each opponent equal to the number of colors that card is.', 'Whenever you cast a spell, Test Card deals damage to each opponent equal to the number of colors among creatures you control.'],
+  },
+});
+Object.assign(EXAMPLES, {
+  // edh-next-24 (CR 604.1, 613.1f, 613.4c): a grant and a pump with a where-X clause in one static, said in either order
+  'has-and-gets-where': {
+    def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'first strike', text: 'first strike' }] }, { layer: '7c', power: { q: 'count', of: { ref: 'each', filter: { types: ['Artifact'], controller: 'you' } } }, toughness: 0 }] } as StaticEffect]),
+    ctx: creature,
+    readings: ['Enchanted creature has first strike and gets +X/+0, where X is the number of artifacts you control.', 'Enchanted creature gets +X/+0 and has first strike, where X is the number of artifacts you control.', 'Enchanted creature gets +1/+0 for each artifact you control and has first strike.', 'Enchanted creature has first strike and gets +1/+0 for each artifact you control.'],
+    near: ['Enchanted creature has first strike and gets +X/+0, where X is the number of artifacts your opponents control.', 'Enchanted creature has flying and gets +X/+0, where X is the number of artifacts you control.'],
+  },
+});
+Object.assign(EXAMPLES, {
+  // edh-c-29 (CR 604.1, 613.1f): a grant and the loss of a keyword in one static, said in either order
+  'has-and-loses-keyword': {
+    def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 6, remove: ['flying'], add: [{ kind: 'keyword', keyword: 'defender', text: 'defender' }] }] } as StaticEffect]),
+    ctx: creature,
+    readings: ['Enchanted creature has defender and loses flying.', 'Enchanted creature loses flying and has defender.'],
+    near: ['Enchanted creature has defender and loses reach.', 'Enchanted creature has flying and loses defender.'],
+  },
+});
 Object.assign(EXAMPLES, {
   'was-cast-pronoun': {
     def: trig([enters], [draw()], { interveningIf: { cond: 'wasCast' } }),
@@ -3876,6 +4189,7 @@ Object.assign(EXAMPLES, {
     readings: [
       "Whenever this creature attacks, create a tapped and attacking token that's a copy of target creature you control.",
       "Whenever this creature attacks, create a token that's a copy of target creature you control, tapped and attacking.",
+      "Whenever this creature attacks, create a token that's a copy of target creature you control and that's tapped and attacking.",
     ],
     near: [
       "Whenever this creature attacks, create a tapped token that's a copy of target creature you control.",
@@ -4173,8 +4487,17 @@ Object.assign(EXAMPLES, {
 Object.assign(EXAMPLES, {
   'investigate-times-for-each': {
     def: spell([{ op: 'action', action: 'investigate', who: you, n: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } } } } as unknown as EffectStep]),
-    readings: ['Investigate X times, where X is the number of creatures you control.', 'Investigate once for each creature you control.'],
-    near: ['Investigate once for each creature an opponent controls.', 'Investigate twice for each creature you control.', 'Investigate X times, where X is the number of lands you control.'],
+    readings: ['Investigate X times, where X is the number of creatures you control.', 'Investigate once for each creature you control.', 'Investigate for each creature you control.'],
+    near: ['Investigate once for each creature an opponent controls.', 'Investigate twice for each creature you control.', 'Investigate for each creature an opponent controls.', 'Investigate X times, where X is the number of lands you control.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-d-56 (lane d-leftovers-4)
+Object.assign(EXAMPLES, {
+  'investigate-for-each-lead': {
+    def: spell([{ op: 'action', action: 'investigate', who: you, n: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } } } } as unknown as EffectStep]),
+    readings: ['For each creature you control, you investigate.', 'Investigate once for each creature you control.'],
+    near: ['For each creature an opponent controls, you investigate.', 'For each creature you control, each opponent investigates.', 'For each creature you control, you investigate twice.'],
   },
 } satisfies Record<string, Example>);
 
@@ -4343,8 +4666,8 @@ Object.assign(EXAMPLES, {
   },
   'copy-if-you-do-new-targets': {
     def: spell([{ op: 'copy', what: t('s'), result: 'spell', who: you, newTargets: 'may' } as EffectStep], [objTarget('s', { types: ['Instant'] }, { kind: 'spell' })]),
-    readings: ['Copy target instant spell. You may choose new targets for the copy.', 'Copy target instant spell. If you do, you may choose new targets for the copy.'],
-    near: ['Copy target sorcery spell. If you do, you may choose new targets for the copy.', 'Copy target instant spell. If you do, you may choose new targets for the copies.'],
+    readings: ['Copy target instant spell. You may choose new targets for the copy.', 'Copy target instant spell. If you do, you may choose new targets for the copy.', 'Copy target instant spell, and you may choose new targets for the copy.'], // edh-cast-7: the comma form (Krark, the Thumbless)
+    near: ['Copy target sorcery spell. If you do, you may choose new targets for the copy.', 'Copy target instant spell. If you do, you may choose new targets for the copies.', 'Copy target instant spell, and you may choose new targets for the copies.'],
   },
 } satisfies Record<string, Example>);
 // Standard round 3, r3-trig
@@ -4453,6 +4776,11 @@ Object.assign(EXAMPLES, {
     readings: ["Put a card exiled with Test Card into its owner's hand.", "Return a card exiled with Test Card to its owner's hand.", "Put a card exiled with it into its owner's hand."],
     near: ["Put a card exiled with Test Card into your hand.", "Put each card exiled with Test Card into its owner's hand."],
   },
+  'linked-return-one-battlefield-bare': {
+    def: spell([{ op: 'chooseObjects', who: you, from: { ref: 'each', filter: { is: { ref: 'linked', link: 'exiled' }, zone: 'any', isCard: true } }, min: 1, max: 1, as: 'back' } as EffectStep, { op: 'move', what: bound('back'), to: { zone: 'battlefield', controller: you } } as EffectStep]),
+    readings: ['Return a card exiled with Test Card to the battlefield.', 'Return a card exiled with it to the battlefield.'],
+    near: ['Return a card exiled with Test Card to the battlefield under its owner\'s control.', 'Return each card exiled with Test Card to the battlefield.'],
+  },
   'chosen-permanent-counters': {
     def: spell([{ op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ subtypes: ['Forest'] }], controller: 'you' } }, min: 1, max: 1, as: 'on' } as EffectStep, { op: 'putCounters', on: bound('on'), kind: '+1/+1', count: 2 } as EffectStep]),
     readings: ['Put two +1/+1 counters on a Forest you control.', 'Choose a Forest you control. Put two +1/+1 counters on it.'],
@@ -4550,7 +4878,7 @@ Object.assign(EXAMPLES, {
   },
   "r4dig-exile-of-them-face-down": {
     def: {"kind":"spell","text":"","effect":{"targets":[{"id":"t0","kind":"player","min":1,"max":1,"text":"","players":{"who":"opponent"}}],"steps":[{"op":"look","who":{"ref":"you"},"at":{"ref":"topCards","player":{"ref":"target","id":"t0"},"count":4},"as":"them"},{"op":"chooseObjects","who":{"ref":"you"},"from":{"ref":"each","filter":{"is":{"ref":"bound","name":"them"},"zone":"library"}},"min":2,"max":2,"as":"chosen"},{"op":"move","what":{"ref":"bound","name":"chosen"},"to":{"zone":"exile","faceDown":true}},{"op":"move","what":{"ref":"each","filter":{"is":{"ref":"bound","name":"them"},"not":{"is":{"ref":"bound","name":"chosen"}},"zone":"library"}},"to":{"zone":"library","position":"bottom","order":"random"}}]}} as unknown as AbilityDef,
-    readings: ["Look at the top four cards of target opponent's library, exile two of them face down, then put the rest on the bottom of their library in a random order.", "Look at the top four cards of target opponent's library. Exile two of them face down and put the rest on the bottom of their library in a random order."],
+    readings: ["Look at the top four cards of target opponent's library, exile two of them face down, then put the rest on the bottom of their library in a random order.", "Look at the top four cards of target opponent's library. Exile two of them face down and put the rest on the bottom of their library in a random order.", "Look at the top four cards of target opponent's library, exile two of them face down, then put the rest on the bottom of that library in a random order.", "Look at the top four cards of target opponent's library. Exile two face down and put the rest on the bottom of their library in a random order."],
     near: ["Look at the top four cards of target opponent's library, exile three of them face down, then put the rest on the bottom of their library in a random order.", "Look at the top four cards of target opponent's library, exile two of them face down, then put the rest on top of their library in a random order."],
   },
   "r4dig-any-of-revealed-and-rest": {
@@ -4676,7 +5004,7 @@ Object.assign(EXAMPLES, {
     def: statics([{ s: 'replace', replaces: { ev: 'createToken', player: 'you' }, optional: true,
       condition: { cond: 'all', of: [{ cond: 'matches', object: { ref: 'attachedTo' }, filter: { types: ['Creature'] } }, { cond: 'not', of: { cond: 'happened', event: { ev: 'createToken', player: 'you' }, scope: 'turn' } }] },
       body: { b: 'instead', do: [{ op: 'copy', what: { ref: 'attachedTo' }, result: 'token', who: you, count: { q: 'eventAmount' } } as EffectStep] } } as StaticEffect]),
-    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact', 'Equipment'] },
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
     readings: [
       'As long as Test Card is attached to a creature, the first time you would create one or more tokens each turn, you may instead create that many tokens that are copies of equipped creature.',
       'While Test Card is attached to a creature, the first time you would create one or more tokens each turn, you may instead create that many tokens that are copies of equipped creature.',
@@ -4741,10 +5069,18 @@ Object.assign(EXAMPLES, {
     readings: ['Target creature deals damage equal to its power to itself.', 'Target creature deals damage to itself equal to its power.'],
     near: ['Target creature deals damage equal to its toughness to itself.', 'Target creature deals damage equal to its power to you.'],
   },
+  'damage-to-self-pronoun': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, effect: { targets: [], steps: [
+      { op: 'damage', source: self, to: self, amount: T12_SWAMPS } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: creature,
+    readings: ['{T}: Test Card deals damage to itself equal to the number of Swamps your opponents control.', '{T}: Test Card deals damage to himself equal to the number of Swamps your opponents control.', '{T}: Test Card deals damage to herself equal to the number of Swamps your opponents control.'],
+    near: ['{T}: Test Card deals damage to himself equal to the number of Swamps you control.', '{T}: Test Card deals damage to themselves equal to the number of Swamps your opponents control.'],
+  },
   'additional-counter': {
     def: r4Spell([{ op: 'putCounters', kind: '+1/+1', count: 1, on: t('c') }], [objTarget('c')]),
-    readings: ['Put a +1/+1 counter on target creature.', 'Put an additional +1/+1 counter on target creature.'],
-    near: ['Put two additional +1/+1 counters on target creature.', 'Put an additional -1/-1 counter on target creature.'],
+    readings: ['Put a +1/+1 counter on target creature.', 'Put an additional +1/+1 counter on target creature.', 'Put another +1/+1 counter on target creature.'],
+    near: ['Put two additional +1/+1 counters on target creature.', 'Put an additional -1/-1 counter on target creature.', 'Put two other +1/+1 counters on target creature.'],
   },
   'counters-x-or-times-each': {
     def: { kind: 'activated', text: '', cost: { tap: true }, effect: { targets: [], steps: [
@@ -4841,8 +5177,8 @@ Object.assign(EXAMPLES, {
   'exactly-number': {
     def: trig([{ ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }], [draw()], { interveningIf: { cond: 'compare', left: { q: 'stat', of: { ref: 'self' }, stat: 'power' }, op: '==', right: 4 } }),
     ctx: creature,
-    readings: ['When this creature enters, if its power is 4, draw a card.', 'When this creature enters, if its power is exactly 4, draw a card.'],
-    near: ['When this creature enters, if its power is exactly 5, draw a card.', 'When this creature enters, if its power is at least 4, draw a card.'],
+    readings: ['When this creature enters, if its power is 4, draw a card.', 'When this creature enters, if its power is exactly 4, draw a card.', 'When this creature enters, if its power is equal to 4, draw a card.'],
+    near: ['When this creature enters, if its power is exactly 5, draw a card.', 'When this creature enters, if its power is at least 4, draw a card.', 'When this creature enters, if its power is equal to 5, draw a card.'],
   },
   'group-each-of': {
     def: spell([
@@ -5003,6 +5339,32 @@ Object.assign(EXAMPLES, {
     ctx: creature,
     readings: ["When this creature dies, return the exiled cards to their owners' hands.", "When this creature dies, put each card exiled with it into its owner's hand.", "When this creature dies, put all cards exiled with this creature into their owners' hands."],
     near: ["When this creature dies, return the exiled cards to the battlefield under their owners' control.", "When this creature dies, put the exiled cards into their owners' graveyards."],
+  },
+  'exiled-controller-draws': {
+    def: spell([
+      { op: 'move', what: { ref: 'each', filter: { colors: ['W'], types: ['Creature'] } }, to: { zone: 'exile' }, as: 'exile' } as EffectStep,
+      { op: 'draw', who: { ref: 'each', who: 'player' }, count: { q: 'resultCount', step: 'exile', which: { types: ['Creature'], controller: { ref: 'iterating' } } } } as EffectStep,
+    ]),
+    readings: ['Exile all white creatures. Each player draws a card for each creature they controlled that was exiled this way.', 'Exile all white creatures. For each creature exiled this way, its controller draws a card.'],
+    near: ['Exile all white creatures. For each creature exiled this way, you draw a card.', 'Exile all white creatures. For each creature exiled this way, its owner draws a card.'],
+  },
+  'count-then-life-becomes': {
+    def: trig([dies], [{ op: 'setLife', who: { ref: 'you' }, value: { q: 'count', of: { ref: 'each', filter: { controller: 'you' } } } } as EffectStep]),
+    ctx: creature,
+    readings: ['When this creature dies, your life total becomes the number of permanents you control.', 'When this creature dies, count the number of permanents you control. Your life total becomes that number.'],
+    near: ['When this creature dies, count the number of creatures you control. Your life total becomes that number.', 'When this creature dies, you gain life equal to the number of permanents you control.'],
+  },
+  'linked-put-all-owner-hand': {
+    def: trig([dies], [{ op: 'move', what: { ref: 'linked', link: 'exiled' }, to: { zone: 'hand' } } as EffectStep]),
+    ctx: creature,
+    readings: ["When this creature dies, put all cards exiled with this creature into their owner's hand.", 'When this creature dies, each player returns to their hand all cards they own exiled with this creature.'],
+    near: ["When this creature dies, put all cards exiled with this creature into your hand.", "When this creature dies, put all cards exiled with this creature into their owner's graveyard."],
+  },
+  'linked-return-exiled-graveyard': {
+    def: trig([dies], [{ op: 'move', what: { ref: 'linked', link: 'exiled' }, to: { zone: 'graveyard' } } as EffectStep]),
+    ctx: creature,
+    readings: ["When this creature dies, return the exiled cards to their owner's graveyard.", "When this creature dies, return the exiled card to its owner's graveyard."],
+    near: ["When this creature dies, return the exiled cards to their owner's hand.", "When this creature dies, return the exiled cards to your graveyard."],
   },
   'all-the-cards-from-hand': {
     def: spell([{ op: 'move', what: { ref: 'each', filter: { zone: 'hand', owner: 'you', isCard: true } }, to: { zone: 'exile' } } as EffectStep]),
@@ -5189,6 +5551,19 @@ Object.assign(EXAMPLES, {
     near: ["Choose target creature you control and target creature you don't control. If the creature you control entered this turn, put a +1/+1 counter on the creature you don't control. Then those creatures fight each other.", "Choose target creature you control and target creature you don't control. If the creature you don't control entered this turn, put a +1/+1 counter on it. Then those creatures fight each other."],
   },
 });
+// edh-c-23
+Object.assign(EXAMPLES, {
+  'attached-instead-static': {
+    def: { kind: 'static', text: '', condition: { cond: 'matches', object: { ref: 'attachedTo' }, filter: { subtypes: ['Warrior'] } }, effects: [{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: '7c', power: 2, toughness: 1 }] }], otherwise: [{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: '7c', power: 1, toughness: 1 }] }] } as unknown as AbilityDef,
+    readings: ["Equipped creature gets +1/+1. If it's a Warrior, it gets +2/+1 instead.", 'As long as equipped creature is a Warrior, it gets +2/+1. Otherwise, it gets +1/+1.'],
+    near: ["Equipped creature gets +1/+1. If it's a Warrior, it gets +3/+1 instead.", "Equipped creature gets +1/+1. If it's a Cleric, it gets +2/+1 instead."],
+  },
+  'top-of-their-library': {
+    def: spell([{ op: 'move', what: t('c'), to: { zone: 'library', position: 'top', order: 'chosen' } } as EffectStep], [{ id: 'c', kind: 'object', min: 0, max: 3, sameOwner: true, filter: { zone: 'graveyard', owner: 'opponent', isCard: true } } as unknown as TargetSpec]),
+    readings: ["Put up to three target cards from an opponent's graveyard on top of their owners' libraries in any order.", "Put up to three target cards from an opponent's graveyard on top of their library in any order."],
+    near: ["Put up to three target cards from an opponent's graveyard on top of their library.", "Put up to three target cards from an opponent's graveyard on the bottom of their library in any order."],
+  },
+});
 // card wave 2, std-rx12: render/cond.ts#cardWithStats (card-with-stat)
 const RX12_SEEN = { op: 'reveal', who: you, what: { ref: 'topCards', player: you, count: 1 }, as: 'r' } as unknown as EffectStep;
 const rx12Peek = (filter: Record<string, unknown>): AbilityDef => spell([RX12_SEEN, { op: 'if', cond: { cond: 'matches', object: bound('r'), filter }, then: [{ op: 'move', what: bound('r'), to: { zone: 'hand' } }] } as unknown as EffectStep]);
@@ -5218,7 +5593,7 @@ Object.assign(EXAMPLES, {
   },
   'self-owner-shuffles-self': {
     def: spell([draw(), { op: 'move', what: self, to: { zone: 'library', owner: { ref: 'ownerOf', object: self } } } as EffectStep, { op: 'shuffle', who: { ref: 'ownerOf', object: self } } as EffectStep]),
-    readings: ["Draw a card. Shuffle ~ into its owner's library.", "Draw a card. ~'s owner shuffles ~ into their library."],
+    readings: ["Draw a card. Shuffle ~ into its owner's library.", "Draw a card. ~'s owner shuffles ~ into their library.", "Draw a card. ~'s owner shuffles it into their library.", 'Draw a card. Its owner shuffles it into their library.'],
     near: ["Draw a card. ~'s owner shuffles ~ into your library.", "Draw a card. ~'s controller shuffles ~ into their library.", "Draw a card. You shuffle ~ into their library."],
   },
 });
@@ -5396,6 +5771,242 @@ Object.assign(EXAMPLES, {
   },
 } satisfies Record<string, Example>);
 
+// edh-zones-2 (Commander effort, lane edh-zones; CR 107.3, 608.2h, 701.23a, 701.24a, 701.17a; cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'x-said-again-compare': {
+    def: spell([
+      { op: 'look', who: you, at: { ref: 'topCards', player: you, count: { q: 'devotion', to: ['U'], of: you } }, as: 'seen' } as unknown as EffectStep,
+      { op: 'if', cond: { cond: 'compare', left: { q: 'devotion', to: ['U'], of: you }, op: '>=', right: { q: 'zoneSize', zone: 'library', of: you } }, then: [{ op: 'winGame', who: you }] } as unknown as EffectStep,
+    ]),
+    readings: [
+      'Look at the top X cards of your library, where X is your devotion to blue. If X is greater than or equal to the number of cards in your library, you win the game.',
+      'Look at the top X cards of your library, where X is your devotion to blue. If your devotion to blue is greater than or equal to the number of cards in your library, you win the game.',
+    ],
+    near: [
+      'Look at the top X cards of your library, where X is your devotion to blue. If X is greater than the number of cards in your library, you win the game.',
+      'Look at the top X cards of your library, where X is your devotion to blue. If X is greater than or equal to the number of cards in your hand, you win the game.',
+    ],
+  },
+  'search-mana-value-where-x': {
+    def: spell([{ op: 'search', who: you, zone: 'library', filter: { types: ['Creature'], manaValue: { op: '<=', value: { q: 'count', of: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } } } }, max: 1, as: 'found' } as unknown as EffectStep]),
+    readings: [
+      'Search your library for a creature card with mana value X or less, where X is the number of lands you control.',
+      'Search your library for a creature card with mana value less than or equal to the number of lands you control.',
+    ],
+    near: [
+      'Search your library for a creature card with mana value X or more, where X is the number of lands you control.',
+      'Search your library for a creature card with mana value X or less, where X is the number of creatures you control.',
+    ],
+  },
+  'shuffle-then-exile-top': {
+    def: spell([{ op: 'shuffle', who: you } as EffectStep, { op: 'move', what: { ref: 'topCards', player: you, count: 1 }, to: { zone: 'exile' } } as EffectStep]),
+    readings: ['Shuffle your library, then exile the top card.', 'Shuffle your library. Then exile the top card of your library.'],
+    near: ['Shuffle your library, then exile the top two cards.', 'Shuffle your library, then exile the bottom card.'],
+  },
+  'milled-those-cards': {
+    def: spell([
+      { op: 'mill', who: you, count: 3, as: 'milled' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { is: bound('milled'), zone: 'any' } }, min: 1, max: 1, as: 'chosen' } as unknown as EffectStep,
+      { op: 'move', what: bound('chosen'), to: { zone: 'hand' } } as EffectStep,
+    ]),
+    readings: [
+      'Mill three cards. Put a card from among those cards into your hand.',
+      'Mill three cards. Put a card from among them into your hand.',
+      'Mill three cards. Put a card from among the milled cards into your hand.',
+    ],
+    near: [
+      'Mill three cards. Put two cards from among those cards into your hand.',
+      'Mill three cards. Put a card from among those cards onto the battlefield.',
+    ],
+  },
+} satisfies Record<string, Example>);
+// edh-replace-1 (render/evt.ts, render/steps-life.ts, render/fold-stdlibrary2.ts): another creature than the equipped one; N times X damage
+Object.assign(EXAMPLES, {
+  'another-creature-than-equipped': {
+    def: { kind: 'static', text: '', effects: [{ s: 'replace', replaces: { ev: 'damage', source: { types: ['Creature'], not: { attachedToSource: true } }, recipient: { object: { attachedToSource: true } }, combat: true }, body: { b: 'modify', amount: { mul: 2 } } }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['If another creature would deal combat damage to equipped creature, it deals double that damage to equipped creature instead.'],
+    near: ['If a creature would deal combat damage to equipped creature, it deals double that damage to equipped creature instead.', 'If another creature would deal damage to equipped creature, it deals double that damage to equipped creature instead.'],
+  },
+  'times-x-damage': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'anyTarget', min: 0, max: { q: 'X' }, text: 'each of up to X targets' }], steps: [{ op: 'damage', source: { ref: 'self' }, to: { ref: 'target', id: 't0' }, amount: { q: 'math', op: '*', args: [5, { q: 'X' }] } }] } } as unknown as AbilityDef,
+    ctx: instant,
+    readings: ['Test Card deals 5 times X damage to each of up to X targets.', 'Test Card deals damage equal to 5 times X to each of up to X targets.'],
+    near: ['Test Card deals 4 times X damage to each of up to X targets.', 'Test Card deals 5 times X damage to up to X other targets.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-zones-3 (Commander effort, lane edh-zones; CR 205.4a, 700.6, 603.2, 400.7, 701.24a)
+Object.assign(EXAMPLES, {
+  'not-legendary-after': {
+    def: spell([{ op: 'move', what: { ref: 'each', filter: { notTypes: ['Land'], notSupertypes: ['Legendary'] } }, to: { zone: 'exile' } } as EffectStep]),
+    readings: ['Exile all nonland, nonlegendary permanents.', "Exile all nonland permanents that aren't legendary.", 'Exile all nonland permanents that are not legendary.'],
+    near: ['Exile all nonland permanents that are legendary.', "Exile all nonland permanents that aren't artifacts.", "Exile all permanents that aren't legendary."],
+  },
+  'not-historic-after': {
+    def: spell([{ op: 'move', what: { ref: 'each', filter: { notTypes: ['Land', 'Artifact'], notSupertypes: ['Legendary'], notSubtypes: ['Saga'] } }, to: { zone: 'hand' } } as EffectStep]),
+    readings: ["Return each nonland permanent that's not historic to its owner's hand.", "Return all nonland permanents that aren't historic to their owners' hands."],
+    near: ["Return each nonland permanent that's not legendary to its owner's hand.", "Return each permanent that's not historic to its owner's hand."],
+  },
+  'events-comma-or': {
+    def: trig([{ ev: 'zoneChange', subject: { types: ['Creature'], other: true }, from: 'battlefield', to: 'graveyard' }, { ev: 'zoneChange', subject: { types: ['Creature'], isCard: true, owner: 'you' }, from: 'graveyard' }], [{ op: 'damage', source: { ref: 'self' }, to: { ref: 'each', who: 'opponent' }, amount: 1 } as EffectStep]),
+    ctx: creature,
+    readings: [
+      'Whenever another creature dies, or a creature card leaves your graveyard, Test Card deals 1 damage to each opponent.',
+      'Whenever another creature dies or a creature card leaves your graveyard, Test Card deals 1 damage to each opponent.',
+    ],
+    near: ['Whenever another creature dies, and a creature card leaves your graveyard, Test Card deals 1 damage to each opponent.', 'Whenever another creature dies, or a creature card leaves a graveyard, Test Card deals 1 damage to each opponent.'],
+  },
+  'that-card-from-your-graveyard': {
+    def: spell([{ op: 'move', what: t('t0'), to: { zone: 'battlefield', controller: you } } as EffectStep], [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { types: ['Creature'], zone: 'graveyard', owner: 'you', isCard: true } } as TargetSpec]),
+    readings: ['Return target creature card from your graveyard to the battlefield.'],
+    near: ['Return target creature card from a graveyard to the battlefield.', 'Return target creature card from your graveyard to the battlefield tapped.'],
+  },
+  'shuffle-self-and-graveyard': {
+    def: spell([
+      { op: 'move', what: { ref: 'union', of: [{ ref: 'self' }, { ref: 'each', filter: { zone: 'graveyard', owner: 'you' } }] }, to: { zone: 'library' } } as EffectStep,
+      { op: 'shuffle', who: { ref: 'ownerOf', object: { ref: 'self' } } } as EffectStep,
+      { op: 'shuffle', who: you } as EffectStep,
+    ]),
+    readings: ["Shuffle Test Card and your graveyard into their owner's library.", "Shuffle Test Card and your graveyard into their owners' libraries."],
+    near: ["Shuffle Test Card and your hand into their owner's library.", "Shuffle Test Card and your graveyard into your library."],
+  },
+  // edh-fix-3 (steps-flow.ts#forEach: the group of players said the long way as well as the short one)
+  'for-each-group-that-player': {
+    def: spell([{ op: 'forEach', over: { ref: 'each', who: 'opponent' }, as: 'each', do: [{ op: 'draw', who: { ref: 'bound', name: 'each' }, count: 1 }] } as EffectStep]),
+    readings: ['For each opponent, that player draws a card.', 'Each opponent draws a card.'],
+    near: ['For each opponent, that player draws two cards.', 'For each player, that player draws a card.'],
+  },
+  // edh-mana-keywords-9 (render/abil.ts#triggered, Carpet of Flowers): the one optional action that adds mana, taken once each turn
+  'mana-once-intervening': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'step', step: 'main1', whose: 'you' }] }, effect: { targets: [], steps: [{ op: 'may', who: you, as: 'b0', do: [{ op: 'addMana', who: you, units: [['G']] } as EffectStep] } as EffectStep] }, limit: { per: 'turn', max: 1, action: true } } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['At the beginning of your precombat main phase, you may add {G}. Do this only once each turn.', "At the beginning of your precombat main phase, if you haven't added mana with this ability this turn, you may add {G}."],
+    near: ["At the beginning of your precombat main phase, if you've added mana with this ability this turn, you may add {G}.", "At the beginning of your precombat main phase, if you haven't added mana with this ability this turn, you may add {R}.", "At the beginning of your precombat main phase, if you haven't added mana with this ability this turn, add {G}."],
+  },
+  // edh-c-48 (render/refs.ts, family that-attacking-creature; render/evt.ts, family player-dealt-damage-by-source)
+  'that-attacking-creature': {
+    def: trig([{ ev: 'becomesBlocked', attacker: { types: ['Creature'], attacking: { defender: 'opponent' } }, by: { types: ['Creature'] }, byAtLeast: 2 } as EventPattern], [
+      { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'event', role: 'attacker' }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'deathtouch' }] }] }] } as EffectStep,
+    ]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever a creature attacking one of your opponents becomes blocked by two or more creatures, that attacking creature gains deathtouch until end of turn.', 'Whenever a creature attacking one of your opponents becomes blocked by two or more creatures, it gains deathtouch until end of turn.'],
+    near: ['Whenever a creature attacking one of your opponents becomes blocked by two or more creatures, that blocking creature gains deathtouch until end of turn.', 'Whenever a creature attacking one of your opponents becomes blocked by two or more creatures, that attacking creature gains deathtouch.'],
+  },
+  'player-dealt-damage-by-source': {
+    def: trig([{ ev: 'damage', source: { types: ['Planeswalker'], colors: ['R'], controller: 'you' }, recipient: { player: 'opponent' } } as EventPattern], [{ op: 'draw', who: you, count: 1 } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever an opponent is dealt damage by a red planeswalker you control, you draw a card.', 'Whenever a red planeswalker you control deals damage to an opponent, you draw a card.'],
+    near: ['Whenever an opponent is dealt damage by a blue planeswalker you control, you draw a card.', 'Whenever you are dealt damage by a red planeswalker you control, you draw a card.'],
+  },
+  // trek-17 (render/refs.ts#player, case randomOpponent): the opponent a step picked at random is "that player" / "that opponent" afterwards (one pick for the whole resolution)
+  'random-opponent-again': {
+    def: spell([{ op: 'damage', source: self, to: { ref: 'randomOpponent' }, amount: 2 } as EffectStep, { op: 'loseLife', who: { ref: 'randomOpponent' }, amount: 1 } as EffectStep]),
+    readings: ['Test Card deals 2 damage to a random opponent. That player loses 1 life.', 'Test Card deals 2 damage to a random opponent. That opponent loses 1 life.'],
+    near: ['Test Card deals 2 damage to a random opponent. A random opponent loses 1 life.', 'Test Card deals 2 damage to a random opponent. Each opponent loses 1 life.'],
+  },
+  // edh-b-11 (render/steps-flow.ts): the second sentence of a guarded instruction
+  'if-it-doesnt-after-guard': {
+    def: trig([{ ev: 'damage', source: { types: ['Creature'], controller: 'you' }, combat: true, recipient: { player: 'any' } }], [
+      { op: 'if', cond: { cond: 'matches', object: { ref: 'event', role: 'source' }, filter: { counters: { kind: '+1/+1' } } }, then: [draw()], else: [{ op: 'putCounters', on: { ref: 'event', role: 'source' }, kind: '+1/+1', count: 1 }] },
+    ]),
+    ctx: creature,
+    readings: [
+      "Whenever a creature you control deals combat damage to a player, draw a card if that creature has a +1/+1 counter on it. If it doesn't, put a +1/+1 counter on it.",
+      'Whenever a creature you control deals combat damage to a player, draw a card if that creature has a +1/+1 counter on it. Otherwise, put a +1/+1 counter on it.',
+    ],
+    near: [
+      "Whenever a creature you control deals combat damage to a player, draw a card if that creature has a +1/+1 counter on it. If it does, put a +1/+1 counter on it.",
+      "Whenever a creature you control deals combat damage to a player, draw a card if that creature has a +1/+1 counter on it. If it doesn't, put two +1/+1 counters on it.",
+    ],
+  },
+  // edh-c-83
+  'prevent-n-spell-damage': {
+    def: statics([{ s: 'replace', replaces: { ev: 'damage', source: { stackKind: 'spell', zone: 'stack' } }, body: { b: 'prevent', amount: 1 } } as unknown as StaticEffect]),
+    readings: ['If a spell would deal damage to a permanent or player, prevent 1 of that damage.', 'If a spell would deal damage to a permanent or player, prevent 1 damage that spell would deal to that permanent or player.'],
+    near: ['If a spell would deal damage to a permanent or player, prevent 1 damage that spell would deal to you.', 'If a spell would deal damage to a permanent or player, prevent 2 damage that spell would deal to that permanent or player.', 'If a source would deal damage to a permanent or player, prevent 1 damage that spell would deal to that permanent or player.'],
+  },
+  'bare-greatest-stat': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], manaValue: { op: '>=', value: { q: 'stat', stat: 'manaValue', agg: 'max', of: { ref: 'each', filter: { types: ['Creature'] } } } } } }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'flying', text: 'flying' }] }] } as unknown as StaticEffect]),
+    readings: ['Each creature with the greatest mana value among creatures has flying.', 'Each creature with the greatest mana value has flying.'],
+    near: ['Each creature with the greatest power has flying.', 'Each creature with the greatest mana value among artifacts has flying.', 'Each creature with the least mana value has flying.'],
+  },
+  'roll-table-restriction-first': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 3 }, { kind: 'colored', color: 'G' }] }, zone: ['graveyard'], onlyIf: { cond: 'matches', object: self, filter: { zone: 'graveyard', owner: 'you' } },
+      effect: { targets: [], steps: [{ op: 'rollDie', who: you, sides: 20, table: [{ min: 1, max: 9, do: [{ op: 'move', what: self, to: { zone: 'hand' } }] }, { min: 10, max: 20, do: [{ op: 'move', what: self, to: { zone: 'library', position: 'top' } }] }] } as unknown as EffectStep] } } as unknown as AbilityDef,
+    readings: ['{3}{G}: Roll a d20. Activate only if ~ is in your graveyard. 1-9 | Return ~ to your hand. 10-20 | Put ~ on top of your library.', '{3}{G}: Roll a d20. 1-9 | Return ~ to your hand. 10-20 | Put ~ on top of your library. Activate only if ~ is in your graveyard.'],
+    near: ['{3}{G}: Roll a d20. 1-9 | Return ~ to your hand. Activate only if ~ is in your graveyard. 10-20 | Put ~ on top of your library.', '{3}{G}: Roll a d20. Activate only if ~ is in your hand. 1-9 | Return ~ to your hand. 10-20 | Put ~ on top of your library.'],
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+  },
+  'self-from-own-graveyard-your': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 1 }] }, zone: ['graveyard'], effect: { targets: [], steps: [{ op: 'move', what: self, to: { zone: 'hand' } } as EffectStep] } } as unknown as AbilityDef,
+    readings: ['{1}: Return ~ to its owner\'s hand.', '{1}: Return ~ to your hand.'],
+    near: ['{1}: Return ~ to an opponent\'s hand.', '{1}: Return ~ to the battlefield.'],
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+  },
+} satisfies Record<string, Example>);
+// edh-c-103 (Commander lane edh-c, ranks 21,501-22,000, third pass): cond.ts +1 alt group (the move to the hand said as a return)
+Object.assign(EXAMPLES, {
+  'returned-to-hand-this-way': {
+    def: spell([
+      { op: 'move', what: t('c'), to: { zone: 'hand' }, as: 'm' } as EffectStep,
+      { op: 'if', cond: { cond: 'did', step: 'm', which: { isCard: true, notTypes: ['Land'] }, to: 'hand' }, then: [gain(2)] } as EffectStep,
+    ], [objTarget('c', { isCard: true, owner: 'you', zone: 'graveyard' })]),
+    readings: [
+      'Return target card from your graveyard to your hand. If you put a nonland card into your hand this way, you gain 2 life.',
+      'Return target card from your graveyard to your hand. If you return a nonland card to your hand this way, you gain 2 life.',
+    ],
+    near: [
+      'Return target card from your graveyard to your hand. If you return a land card to your hand this way, you gain 2 life.',
+      'Return target card from your graveyard to your hand. If you return a nonland card to your graveyard this way, you gain 2 life.',
+    ],
+  },
+  // edh-next-31 (Tori D'Avenant, Fury Rider)
+  'attacking-color-order': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'], attacking: true, colors: ['R'] } } } as EffectStep]),
+    readings: ['Destroy all attacking red creatures.', 'Destroy all red attacking creatures.'],
+    near: ['Destroy all attacking creatures.', 'Destroy all red creatures.', 'Destroy all attacking blue creatures.'],
+  },
+  // edh-next-40
+  'chosen-that-quality': {
+    def: spell([
+      { op: 'chooseValue', who: you, what: 'oddEven', as: 'q', link: 'q' } as EffectStep,
+      { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'restrict', mode: 'cant', action: 'block', subject: { ref: 'each', filter: { types: ['Creature'], chosen: { link: 'q', quality: 'oddEven' } } } }] } as unknown as EffectStep,
+    ]),
+    readings: ["Choose odd or even. Creatures with mana value of the chosen quality can't block this turn.", "Choose odd or even. Creatures with mana value of that quality can't block this turn."],
+    near: ["Choose odd or even. Creatures with power of that quality can't block this turn.", "Choose odd or even. Creatures with mana value of that quality can block this turn."],
+  },
+  'discard-card-or-card': {
+    def: { kind: 'activated', text: '', cost: { other: [{ kind: 'discard', count: 1, filter: { anyOf: [{ types: ['Land'] }, { subtypes: ['Shrine'] }] } }] }, effect: { targets: [], steps: [draw()] } } as unknown as AbilityDef,
+    readings: ['Discard a land or Shrine card: Draw a card.', 'Discard a land card or Shrine card: Draw a card.'],
+    near: ['Discard a land or Shrine: Draw a card.', 'Discard two land cards or Shrine cards: Draw a card.'],
+  },
+  'reveal-hit-rest-their-graveyard': {
+    def: spell([
+      { op: 'revealUntil', who: { ref: 'target', id: 'p' }, filter: { types: ['Land'] }, as: 'h', revealed: 'r' } as EffectStep,
+      { op: 'move', what: { ref: 'bound', name: 'h' }, to: { zone: 'battlefield', controller: you } } as EffectStep,
+      { op: 'move', what: { ref: 'each', filter: { is: { ref: 'bound', name: 'r' }, not: { is: { ref: 'bound', name: 'h' } }, zone: 'library' } }, to: { zone: 'graveyard' } } as EffectStep,
+    ], [{ kind: 'player', id: 'p', min: 1, max: 1, players: { who: 'opponent' } } as never]),
+    readings: [
+      'Target opponent reveals cards from the top of their library until they reveal a land card. Put that card onto the battlefield under your control and the rest into their graveyard.',
+      'Target opponent reveals cards from the top of their library until they reveal a land card. Put that card onto the battlefield under your control. That player puts the rest of the revealed cards into their graveyard.',
+    ],
+    near: ['Target opponent reveals cards from the top of their library until they reveal a land card. Put that card onto the battlefield under your control and the rest into your graveyard.'],
+  },
+  'reveal-player-puts-hit': {
+    def: spell([
+      { op: 'revealUntil', who: { ref: 'target', id: 'p' }, filter: { types: ['Land'] }, as: 'h', revealed: 'r' } as EffectStep,
+      { op: 'move', what: { ref: 'bound', name: 'h' }, to: { zone: 'battlefield', controller: 'owner' } } as EffectStep,
+      { op: 'move', what: { ref: 'each', filter: { is: { ref: 'bound', name: 'r' }, not: { is: { ref: 'bound', name: 'h' } }, zone: 'library' } }, to: { zone: 'library', position: 'bottom', order: 'chosen' } } as EffectStep,
+    ], [{ kind: 'player', id: 'p', min: 1, max: 1, players: { who: 'opponent' } } as never]),
+    readings: [
+      'Target opponent reveals cards from the top of their library until they reveal a land card. The player puts that card onto the battlefield and the rest on the bottom of their library in any order.',
+      'Target opponent reveals cards from the top of their library until they reveal a land card. They put that card onto the battlefield and the rest on the bottom of their library in any order.',
+    ],
+    near: ['Target opponent reveals cards from the top of their library until they reveal a land card. The player puts that card onto the battlefield and the rest on top of their library in any order.'],
+  },
+});
+
 describe('design 6.8 (G6), D14: the equivalence table is documented and every family is exercised', () => {
   it('every family of the table has an example here, and every example a family', () => {
     expect(EQUIVALENCE_FAMILIES.map((f) => f.id).sort()).toEqual(Object.keys(EXAMPLES).sort());
@@ -5418,6 +6029,22 @@ describe('design 6.8 (G6), D14: the equivalence table is documented and every fa
     for (const n of ex.near) rejects(ex.def, n, ex.ctx);
   });
 });
+
+// edh-zones-5 (Commander lane edh-zones): a granted escape whose cost is the card's mana cost plus the rest of a cost (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'keyword-escape-cost-plus-rest': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], zone: 'graveyard', owner: 'you', isCard: true } }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'escape', text: 'escape', costIsManaCost: true, cost: { other: [{ kind: 'exileFrom', zone: 'graveyard', count: 2, filter: { other: true } }] } }] }] } as StaticEffect]),
+    readings: [
+      "Each creature card in your graveyard has escape. The escape cost is equal to the card's mana cost plus exile two other cards from your graveyard.",
+      'Each creature card in your graveyard has escape. The escape cost is equal to its mana cost plus exile two other cards from your graveyard.',
+      "Each creature card in your graveyard has escape. The escape cost is equal to that card's mana cost plus exile two other cards from your graveyard.",
+    ],
+    near: [
+      'Each creature card in your graveyard has escape. The escape cost is equal to its power plus exile two other cards from your graveyard.',
+      "Each creature card in your graveyard has escape. The escape cost is equal to the card's mana cost plus exile three other cards from your graveyard.",
+    ],
+  },
+} satisfies Record<string, Example>);
 
 // pc-counters-1 (precon lane pc-counters): energy "an amount of {E} equal to", other objects entering with a computed number of additional counters, a bare "put into a graveyard"
 // of permanents, "exiled from the battlefield"
@@ -5519,6 +6146,569 @@ Object.assign(EXAMPLES, {
   },
 } satisfies Record<string, Example>);
 
+// edh-mana-keywords-2 (CR 404.1): "in each graveyard" for a counted set (render/np.ts#zonePhrase)
+Object.assign(EXAMPLES, {
+  'in-each-graveyard': {
+    def: spell([{ op: 'draw', who: you, count: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], isCard: true, zone: 'graveyard' } } } } as EffectStep]),
+    readings: ['Draw a card for each creature card in each graveyard.', 'Draw a card for each creature card in all graveyards.', 'Draw a card for each creature card in a graveyard.'],
+    near: ['Draw a card for each creature card in your graveyard.', 'Draw a card for each land card in each graveyard.', 'Draw a card for each creature card in each library.'],
+  },
+});
+
+// edh-misc-3 (Commander effort, lane edh-misc): the exception of a moved group said after the destination; a permanent you own returned "from the battlefield to your hand"
+Object.assign(EXAMPLES, {
+  'move-all-except-for-tail': {
+    def: spell([{ op: 'move', what: { ref: 'each', filter: { types: ['Creature'], not: { subtypes: ['Kraken', 'Leviathan', 'Octopus', 'Serpent'] } } }, to: { zone: 'hand' } } as EffectStep]),
+    readings: ["Return all creatures to their owners' hands except for Krakens, Leviathans, Octopuses, and Serpents."],
+    near: ["Return all creatures to their owners' hands except for Krakens, Leviathans, and Serpents.", "Return all creatures to their owners' graveyards except for Krakens, Leviathans, Octopuses, and Serpents.", "Return all creatures to their owners' hands except Krakens, Leviathans, Octopuses, and Serpents."],
+  },
+  'return-from-battlefield-to-your-hand': {
+    def: spell([{ op: 'move', what: t('c'), to: { zone: 'hand' } }], [objTarget('c', { commander: true, owner: 'you', zone: 'battlefield' })]),
+    readings: ['Return target commander you own from the battlefield to your hand.', "Return target commander you own to its owner's hand."],
+    near: ['Return target commander you own from the graveyard to your hand.', 'Return target commander you control from the battlefield to your hand.', "Return target commander you own from the battlefield to its owner's library."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-zones-4 (Commander lane edh-zones): the wordings of its folds and np alternatives
+Object.assign(EXAMPLES, {
+  'card-or-card-merged-heads': {
+    def: spell([{ op: 'move', what: { ref: 'target', id: 't0' }, to: { zone: 'hand' } } as EffectStep], [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { zone: 'graveyard', owner: 'you', anyOf: [{ types: ['Creature'], isCard: true }, { types: ['Planeswalker'], isCard: true }] } } as unknown as TargetSpec]),
+    readings: ['Return target creature or planeswalker card from your graveyard to your hand.', 'Return target creature card or planeswalker card from your graveyard to your hand.'],
+    near: ['Return target creature card and planeswalker card from your graveyard to your hand.', 'Return target creature card or land card from your graveyard to your hand.', 'Return target creature card or planeswalker card from your graveyard to the battlefield.'],
+  },
+  'card-or-card-shared-zone': {
+    def: spell([{ op: 'move', what: { ref: 'target', id: 't0' }, to: { zone: 'hand' } } as EffectStep], [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { zone: 'graveyard', owner: 'you', anyOf: [{ types: ['Creature'], subtypes: ['Dragon'], isCard: true }, { types: ['Planeswalker'], subtypes: ['Ugin'], isCard: true }] } } as unknown as TargetSpec]),
+    readings: ['Return target Dragon creature card or Ugin planeswalker card from your graveyard to your hand.'],
+    near: ['Return target Dragon creature card and Ugin planeswalker card from your graveyard to your hand.', 'Return target Dragon creature card or Ugin planeswalker card from an opponent\'s graveyard to your hand.', 'Return target Dragon creature card or Ugin planeswalker card from your graveyard to the battlefield.'],
+  },
+  'search-pile-chosen-wording': {
+    def: spell([
+      { op: 'search', who: you, zone: 'library', filter: {}, min: 3, max: 3, reveal: true, as: 'search' } as EffectStep,
+      { op: 'chooseObjects', who: { ref: 'target', id: 't0' }, from: { ref: 'each', filter: { is: bound('search'), zone: 'library' } }, min: 1, max: 1, as: 'chosen' } as EffectStep,
+      { op: 'move', what: bound('chosen'), to: { zone: 'hand' } } as EffectStep,
+      { op: 'move', what: { ref: 'each', filter: { is: bound('search'), not: { is: bound('chosen') }, zone: 'library' } }, to: { zone: 'graveyard' } } as EffectStep,
+      { op: 'shuffle', who: you } as EffectStep,
+    ], [{ id: 't0', kind: 'player', min: 1, max: 1, text: '', players: { who: 'opponent' } } as unknown as TargetSpec]),
+    readings: [
+      'Search your library for three cards and reveal them. Target opponent chooses one. Put that card into your hand and the rest into your graveyard. Then shuffle.',
+      'Search your library for three cards and reveal them. Target opponent chooses one of those cards. Put the chosen cards into your hand and the rest into your graveyard, then shuffle.',
+    ],
+    near: [
+      'Search your library for three cards and reveal them. Target opponent chooses one. Put that card into your graveyard and the rest into your hand. Then shuffle.',
+      'Search your library for three cards and reveal them. Target opponent chooses two. Put that card into your hand and the rest into your graveyard. Then shuffle.',
+      'Search your library for three cards and reveal them. Target opponent chooses one. Put that card into your hand and the rest into your graveyard.',
+    ],
+  },
+  'exile-from-own-zones': {
+    def: trig([{ ev: 'zoneChange', subject: { isCard: true, owner: 'you' }, from: ['library', 'graveyard'], to: 'exile' } as EventPattern], [gain(1)], { batch: true }),
+    ctx: creature,
+    readings: ['Whenever one or more cards are put into exile from your library and/or your graveyard, you gain 1 life.', 'Whenever one or more cards are put into exile from your library or your graveyard, you gain 1 life.'],
+    near: ['Whenever one or more cards are put into exile from your library and your graveyard, you gain 1 life.', 'Whenever one or more cards are put into exile from your library or your hand, you gain 1 life.', 'Whenever one or more cards are put into exile from a library or a graveyard, you gain 1 life.'],
+  },
+  'player-search-top-it-or-that-card': {
+    def: spell([
+      { op: 'search', who: { ref: 'target', id: 't0' }, zone: 'library', filter: {}, max: 1, as: 'search' } as EffectStep,
+      { op: 'shuffle', who: { ref: 'target', id: 't0' } } as EffectStep,
+      { op: 'move', what: bound('search'), to: { zone: 'library', position: 'top' } } as EffectStep,
+    ], [{ id: 't0', kind: 'player', min: 1, max: 1, text: '', players: { who: 'any' } } as unknown as TargetSpec]),
+    readings: ['Target player searches their library for a card, then shuffles and puts that card on top.', 'Target player searches their library for a card, then shuffles and puts it on top.'],
+    near: ['Target player searches their library for a card, then shuffles and puts that card on the bottom.', 'Target player searches their library for a card, then shuffles and puts two cards on top.', 'Target player searches their library for a card, reveals it, then shuffles and puts that card on top.'],
+  },
+});
+
+// edh-perms-12 (Commander lane edh-perms; CR 603.7c, 608.2h, 107.3, 208.1, cites from memory, unverified): "it entered under your control" for the controller test of a named object;
+// "mobilize X, where X is its power" for a keyword whose amount is the power of the creature that has it
+Object.assign(EXAMPLES, {
+  'it-entered-under-your-control': {
+    def: spell([{ op: 'move', what: t('c'), to: { zone: 'exile' }, as: 'moved' } as EffectStep, { op: 'if', cond: { cond: 'matches', object: bound('moved'), filter: { controller: 'you' } }, then: [draw()] } as EffectStep], [objTarget('c')]),
+    readings: ['Exile target creature. If you controlled it, draw a card.', 'Exile target creature. If it entered under your control, draw a card.'],
+    near: ['Exile target creature. If an opponent controlled it, draw a card.', "Exile target creature. If it entered under an opponent's control, draw a card.", 'Exile target creature. If you controlled it, draw two cards.'],
+  },
+  'keyword-where-x-its-power': {
+    def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'menace', text: 'menace' }, { kind: 'keyword', keyword: 'mobilize', amount: { q: 'stat', stat: 'power', of: { ref: 'self' } }, text: 'mobilize X' }] }] } as StaticEffect]),
+    ctx: unknown,
+    readings: ['Equipped creature has menace and mobilize X, where X is its power.', 'Enchanted creature has menace and mobilize X, where X is its power.'],
+    near: ['Equipped creature has menace and mobilize X, where X is its toughness.', 'Equipped creature has menace and mobilize 2.', 'Equipped creature has menace and mobilize X, where X is the number of creatures you control.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-zones-12 (render/np.ts, fold.ts, fold-edhzones12.ts, steps-zones.ts): the four families of the round
+Object.assign(EXAMPLES, {
+  'card-thats-types': {
+    def: spell([{ op: 'move', what: { ref: 'target', id: 't0' }, to: { zone: 'exile' } } as EffectStep], [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { zone: 'graveyard', owner: 'you', isCard: true, types: ['Instant', 'Sorcery'] } } as unknown as TargetSpec]),
+    readings: ['Exile target instant or sorcery card from your graveyard.', "Exile target card that's an instant or sorcery from your graveyard."],
+    near: ["Exile target card that's an instant and sorcery from your graveyard.", "Exile target card that's an instant or sorcery from an opponent's graveyard.", "Exile target card that's an instant or artifact from your graveyard.", "Exile target card that's an instant from your graveyard."],
+  },
+  'exile-described-at-random-order': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Instant', 'Sorcery'] }], zone: 'graveyard', owner: 'you', isCard: true } }, min: 1, max: 1, random: true, as: 'chosen' } as EffectStep,
+      { op: 'move', what: bound('chosen'), to: { zone: 'exile' } } as EffectStep,
+    ]),
+    readings: ['Exile an instant or sorcery card from your graveyard at random.', 'Exile an instant or sorcery card at random from your graveyard.'],
+    near: ["Exile an instant or sorcery card at random from an opponent's graveyard.", 'Exile two instant or sorcery cards at random from your graveyard.', 'Exile an instant or sorcery card at random from your hand.', 'Exile an instant or sorcery card from your graveyard.'],
+  },
+  'linked-put-one-owners-graveyard': {
+    def: spell([{ op: 'chooseObjects', who: you, from: { ref: 'each', filter: { is: { ref: 'linked', link: 'exiled' }, zone: 'any', isCard: true } }, min: 1, max: 1, as: 'back' } as EffectStep, { op: 'move', what: bound('back'), to: { zone: 'graveyard' } } as EffectStep]),
+    readings: ["Put a card exiled with Test Card into its owner's graveyard.", "Put a card exiled with it into its owner's graveyard."],
+    near: ['Put a card exiled with Test Card into your graveyard.', "Put each card exiled with Test Card into its owner's graveyard.", "Put a card exiled with Test Card into its owner's hand."],
+  },
+  'copy-and-cast-in-loop': {
+    def: spell([
+      { op: 'move', what: { ref: 'target', id: 't0' }, to: { zone: 'exile' }, as: 'm' } as EffectStep,
+      { op: 'cast', who: you, what: bound('m'), copyIn: 'exile', optional: true, free: true } as EffectStep,
+    ], [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { zone: 'graveyard', owner: 'you', isCard: true, types: ['Instant'] } } as unknown as TargetSpec]),
+    readings: [
+      'Exile target instant card from your graveyard. Copy it. You may cast the copy without paying its mana cost.',
+      'Exile target instant card from your graveyard. Copy it, then you may cast the copy without paying its mana cost.',
+      'Exile target instant card from your graveyard. Copy it, and you may cast the copy without paying its mana cost.',
+    ],
+    near: ['Exile target instant card from your graveyard. Copy it, and cast the copy.', 'Exile target instant card from your graveyard. Copy it, and you may cast it without paying its mana cost.', 'Exile target instant card from your graveyard. Copy it, and you may cast the copy by paying {1}.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-cast-10 (render/stat.ts, steps-lasting.ts, steps-zones.ts, copy-except.ts, fold.ts): five families of the round (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'single-spell-from-group-those-cards': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: you, count: 3 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'effect', duration: { d: 'endOfNextTurn', whose: you }, effects: [{ s: 'permit', who: you, action: 'cast', of: { is: bound('them') }, onlyTypes: ['Instant', 'Sorcery'], single: true }] } as EffectStep,
+    ]),
+    readings: [
+      'Exile the top three cards of your library. Until the end of your next turn, you may cast an instant or sorcery spell from among those exiled cards.',
+      'Exile the top three cards of your library. Until the end of your next turn, you may cast an instant or sorcery spell from among those cards.',
+    ],
+    near: [
+      'Exile the top three cards of your library. Until the end of your next turn, you may cast an instant spell from among those exiled cards.',
+      'Exile the top three cards of your library. Until the end of your next turn, you may cast instant or sorcery spells from among those exiled cards.',
+      'Exile the top three cards of your library. Until the end of your next turn, you may play an instant or sorcery spell from among those exiled cards.',
+    ],
+  },
+  'cast-your-next-spell': {
+    def: spell([{ op: 'delay', when: { at: 'event', event: { ev: 'cast', player: 'you', spell: { types: ['Instant', 'Sorcery'] } } }, do: [{ op: 'copy', what: { ref: 'event', role: 'spell' }, result: 'spell', who: you } as EffectStep], duration: { d: 'endOfTurn' }, once: true } as EffectStep]),
+    readings: ['When you next cast an instant or sorcery spell this turn, copy it.', 'When you cast your next instant or sorcery spell this turn, copy that spell.'],
+    near: ['When you cast your next instant spell this turn, copy that spell.', 'When you cast your next instant or sorcery spell, copy that spell.', 'When you cast your next instant or sorcery spell this turn, copy it twice.'],
+  },
+  // edh-d-31: the spell of a cast trigger is "that creature" or "it" when it enters with additional counters; half X life rounded down
+  'next-cast-enters': {
+    def: spell([{ op: 'delay', when: { at: 'event', event: { ev: 'cast', player: 'you', spell: { types: ['Creature'] } } }, do: [{ op: 'effect', duration: { d: 'permanent' }, effects: [{ s: 'replace', replaces: { ev: 'zoneChange', subject: { is: { ref: 'event', role: 'spell' } }, to: 'battlefield' }, body: { b: 'enters', counters: [{ kind: '+1/+1', count: 1 }] } }] } as EffectStep], duration: { d: 'endOfTurn' }, once: true } as EffectStep]),
+    readings: ['When you next cast a creature spell this turn, that creature enters with an additional +1/+1 counter on it.', 'When you next cast a creature spell this turn, it enters with an additional +1/+1 counter on it.'],
+    near: ['When you next cast a creature spell this turn, that creature enters with an additional +1/+1 counter on that creature.', 'When you next cast a creature spell, it enters with an additional +1/+1 counter on it.'],
+  },
+  'half-x-life-rounded': {
+    def: spell([{ op: 'delay', when: { at: 'event', event: { ev: 'cast', player: 'you', spell: { manaCostHasX: true } } }, do: [{ op: 'gainLife', who: you, amount: { q: 'math', op: 'floorDiv', args: [{ q: 'spellX' }, 2] } } as EffectStep], duration: { d: 'endOfTurn' }, once: true } as EffectStep]),
+    readings: ['When you next cast a spell with {X} in its mana cost this turn, you gain half X life, rounded down.', 'When you next cast a spell with {X} in its mana cost this turn, you gain life equal to half X, rounded down.'],
+    near: ['When you next cast a spell with {X} in its mana cost this turn, you gain half X life, rounded up.', 'When you next cast a spell with {X} in its mana cost this turn, you gain half life, rounded down.'],
+  },
+  'copy-gains-its-permanent': {
+    def: trig([{ ev: 'cast', player: 'you' }], [{ op: 'copy', what: { ref: 'event', role: 'spell' }, result: 'spell', who: you, gains: { add: [{ kind: 'keyword', keyword: 'haste', text: 'haste' }], ifPermanent: true } } as EffectStep]),
+    ctx: creature,
+    readings: ['Whenever you cast a spell, copy it. If the copy is a permanent spell, it gains haste.', "Whenever you cast a spell, copy it. If it's a permanent spell, the copy gains haste."],
+    near: ["Whenever you cast a spell, copy it. If it's a creature spell, the copy gains haste.", "Whenever you cast a spell, copy it. If it's a permanent spell, the copy gains flying.", "Whenever you cast a spell, copy it. If it's a permanent spell, you gain haste."],
+  },
+  'copy-except-not-legendary-if-legendary': {
+    def: spell([{ op: 'copy', what: { ref: 'target', id: 't0' }, result: 'spell', who: you, except: [{ layer: 4, supertypes: { remove: ['Legendary'] } }] } as EffectStep], [{ id: 't0', kind: 'spell', min: 1, max: 1, text: '', filter: { types: ['Creature'], controller: 'you' } } as unknown as TargetSpec]),
+    readings: ["Copy target creature spell you control, except the copy isn't legendary.", "Copy target creature spell you control, except it isn't legendary if the spell is legendary."],
+    near: ["Copy target creature spell you control, except it isn't legendary if the spell is blue.", "Copy target creature spell you control, except it is legendary if the spell is legendary.", "Copy target creature spell you control, except it isn't legendary unless the spell is legendary."],
+  },
+  'play-a-card-from-exile': {
+    def: trig([{ ev: 'action', verb: 'playLand', actor: 'you', from: 'exile' }, { ev: 'cast', player: 'you', from: 'exile' }], [draw()]),
+    ctx: creature,
+    readings: ['Whenever you play a card from exile, draw a card.', 'Whenever you play a land from exile or cast a spell from exile, draw a card.'],
+    near: ['Whenever you play a card from your hand, draw a card.', 'Whenever you play a land from exile or cast a spell from your graveyard, draw a card.', 'Whenever you cast a card from exile, draw a card.'],
+  },
+  'cast-from-group-revealed-this-way': {
+    def: trig([{ ev: 'cast', player: 'you', from: 'hand' }], [
+      { op: 'reveal', who: you, what: { ref: 'topCards', player: you, count: 3 }, as: 'them' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { notTypes: ['Land'], is: bound('them'), zone: 'library', manaValue: { op: '<=', value: 3 } } }, min: 0, max: 1, as: 'pick' } as EffectStep,
+      { op: 'cast', who: you, what: bound('pick'), free: true, maxManaValue: 3 } as EffectStep,
+    ]),
+    ctx: creature,
+    readings: [
+      'Whenever you cast a spell from your hand, reveal the top three cards of your library. You may cast a spell from among them with mana value less than or equal to 3 without paying its mana cost.',
+      'Whenever you cast a spell from your hand, reveal the top three cards of your library. You may cast a spell with mana value 3 or less from among cards revealed this way without paying its mana cost.',
+    ],
+    near: [
+      'Whenever you cast a spell from your hand, reveal the top three cards of your library. You may cast a spell with mana value 3 or greater from among cards revealed this way without paying its mana cost.',
+      'Whenever you cast a spell from your hand, reveal the top three cards of your library. You may cast a spell with mana value 3 or less from among cards revealed this way.',
+    ],
+  },
+} satisfies Record<string, Example>);
+
+// edh-mana-keywords-10 (Commander lane edh-mana-keywords; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'players-spend-mana-any-color': {
+    def: statics([{ s: 'permit', who: { ref: 'each', who: 'player' }, action: 'spendMana', asThough: 'any color' } as StaticEffect]),
+    ctx: unknown,
+    readings: ['Each player may spend mana as though it were mana of any color.', 'Players may spend mana as though it were mana of any color.', 'All players may spend mana as though it were mana of any color.'],
+    near: ['Each opponent may spend mana as though it were mana of any color.', 'Players may spend mana as though it were mana of any type.'],
+  },
+  'every-object-colorless': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { zone: ['battlefield', 'command', 'exile', 'graveyard', 'hand', 'library', 'stack'], types: ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Instant', 'Kindred', 'Land', 'Planeswalker', 'Sorcery'] } }, mods: [{ layer: 5, colors: { set: [] } }] } as StaticEffect]),
+    ctx: unknown,
+    readings: ["All cards that aren't on the battlefield, spells, and permanents are colorless.", "The cards that aren't on the battlefield, spells, and permanents are colorless."],
+    near: ["All cards that aren't on the battlefield and permanents are colorless.", "All cards that aren't on the battlefield, spells, and permanents are blue."],
+  },
+  'from-any-graveyard': {
+    def: spell([{ op: 'move', what: t('c'), to: { zone: 'exile' } }], [objTarget('c', { zone: 'graveyard', owner: 'any' })]),
+    readings: ['Exile target card from a graveyard.', 'Exile target card from any graveyard.'],
+    near: ['Exile target card from any hand.', 'Exile target card from any graveyards.'],
+  },
+  'exile-again-after-return': {
+    def: spell([
+      { op: 'move', what: { ref: 'each', filter: { types: ['Creature'], controller: 'you', token: false } }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'move', what: bound('them'), to: { zone: 'battlefield', controller: 'owner' } } as EffectStep,
+      { op: 'move', what: bound('them'), to: { zone: 'exile' } } as EffectStep,
+    ]),
+    readings: [
+      "Exile all nontoken creatures you control. Return those cards to the battlefield under their owner's control, then exile them.",
+      "Exile all nontoken creatures you control. Return those cards to the battlefield under their owner's control, then exile them again.",
+    ],
+    near: ["Exile all nontoken creatures you control. Return those cards to the battlefield under their owner's control, then exile them twice."],
+  },
+  'madness-pay-colorless': {
+    def: { kind: 'keyword', keyword: 'madness', cost: { mana: [{ kind: 'colorless' }, { kind: 'colorless' }, { kind: 'colorless' }, { kind: 'colorless' }, { kind: 'colorless' }, { kind: 'colorless' }] }, text: '' } as unknown as AbilityDef,
+    line: [{ kind: 'keyword', keyword: 'madness', cost: { mana: [{ kind: 'colorless' }, { kind: 'colorless' }, { kind: 'colorless' }, { kind: 'colorless' }, { kind: 'colorless' }, { kind: 'colorless' }] }, text: '' } as unknown as KeywordAbilityDef],
+    readings: ['Madness {C}{C}{C}{C}{C}{C}', 'Madness--Pay six {C}.'],
+    near: ['Madness--Pay five {C}.', 'Madness--Pay six {R}.'],
+  },
+} satisfies Record<string, Example>);
+
+// trek-13 (Star Trek: Borg and assimilate): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'next-two-have': {
+    def: spell([
+      { op: 'nextSpell', who: you, filter: { allTypes: ['Artifact', 'Creature'], stackKind: 'spell', zone: 'stack' }, rider: 'keyword', keyword: { kind: 'keyword', keyword: 'undaunted', text: 'undaunted' } } as EffectStep,
+      { op: 'nextSpell', who: you, filter: { subtypes: ['Spacecraft'], stackKind: 'spell', zone: 'stack' }, rider: 'keyword', keyword: { kind: 'keyword', keyword: 'undaunted', text: 'undaunted' } } as EffectStep,
+    ]),
+    readings: ['The next artifact creature spell and the next Spacecraft spell you cast this turn each have undaunted.', 'The next artifact creature spell and the next Spacecraft spell you cast this turn have undaunted.'],
+    near: ['The next artifact creature spell and the next Spacecraft spell you cast this turn each have cascade.', 'The next artifact creature spell and the next Spacecraft spell you cast this turn has undaunted.'],
+  },
+  'next-spell-gains': {
+    def: spell([{ op: 'nextSpell', who: you, filter: { types: ['Artifact'], stackKind: 'spell', zone: 'stack' }, rider: 'keyword', keyword: { kind: 'keyword', keyword: 'sunburst', text: 'sunburst' } } as EffectStep]),
+    readings: ['The next artifact spell you cast this turn has sunburst.', 'When you next cast an artifact spell this turn, that spell gains sunburst.', 'When you next cast an artifact spell this turn, it gains sunburst.'],
+    near: ['When you next cast a creature spell this turn, that spell gains sunburst.', 'When you next cast an artifact spell this turn, that spell gains flying.'],
+  },
+  'that-player-graveyard': {
+    def: spell([{ op: 'action', action: 'assimilate', who: you, subject: t('c') } as EffectStep], [objTarget('c', { types: ['Creature'], isCard: true, zone: 'graveyard', owner: 'opponent' }, { min: 0, perOpponent: true })]),
+    readings: ["For each opponent, assimilate up to one target creature card from that player's graveyard.", "For each opponent, assimilate up to one target creature card from that opponent's graveyard."],
+    near: ['For each opponent, assimilate up to one target creature card from your graveyard.', "For each opponent, assimilate up to one target creature card from that player's hand."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-top-8 (Commander lane edh-top): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'play-lands-cast-spells-among': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: you, count: 2 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'effect', duration: { d: 'endOfNextTurn', whose: you }, effects: [{ s: 'permit', who: you, action: 'play', of: { is: bound('them') } }] } as EffectStep,
+    ]),
+    readings: [
+      'Exile the top two cards of your library. You may play lands and cast spells from among those cards until the end of your next turn.',
+      'Exile the top two cards of your library. You may play lands and cast spells from among cards exiled this way until the end of your next turn.',
+    ],
+    near: [
+      'Exile the top two cards of your library. You may play lands from among those cards until the end of your next turn.',
+      'Exile the top two cards of your library. You may cast spells from among cards milled this way until the end of your next turn.',
+    ],
+  },
+  'play-lands-cast-spells-among-free': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: you, count: 2 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'cast', who: you, what: { ref: 'each', filter: { is: bound('them'), zone: 'exile' } }, free: true, optional: true, play: true } as EffectStep,
+    ]),
+    readings: [
+      'Exile the top two cards of your library. You may play lands and cast spells from among those cards without paying their mana costs.',
+      'Exile the top two cards of your library. You may play lands and cast spells from among cards exiled this way without paying their mana costs.',
+    ],
+    near: [
+      'Exile the top two cards of your library. You may play lands from among those cards without paying their mana costs.',
+      'Exile the top two cards of your library. You may play lands and cast spells from among those cards without paying its mana cost.',
+    ],
+  },
+  'return-group-to-owners-graveyards': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: you, count: 2 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'move', what: bound('them'), to: { zone: 'graveyard' } } as EffectStep,
+    ]),
+    readings: [
+      "Exile the top two cards of your library. Put them into their owners' graveyards.",
+      "Exile the top two cards of your library. Return them to their owners' graveyards.",
+    ],
+    near: [
+      "Exile the top two cards of your library. Return them to their owners' hands.",
+      'Exile the top two cards of your library. Return them to your graveyard.',
+    ],
+  },
+} satisfies Record<string, Example>);
+
+// edh-next-2 (Commander lane edh-next): the plural rider, the chosen player's permanents and the doubling of the damage of one kind of creature (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'still-lands-plural': {
+    def: spell([effectStep([{ s: 'continuous', affects: t('t0'), mods: [{ layer: 4, types: { add: ['Creature'] }, subtypes: { add: ['Elemental'] } }, { layer: 6, add: [{ kind: 'keyword', keyword: 'haste', text: 'haste' }] }, { layer: '7b', power: 2, toughness: 2 }] } as StaticEffect], { d: 'endOfTurn' })],
+      [{ id: 't0', kind: 'object', min: 0, max: 2, text: 'up to two target lands you control', filter: { types: ['Land'], controller: 'you' } } as TargetSpec]),
+    readings: ["Until end of turn, up to two target lands you control become 2/2 Elemental creatures with haste. They're still lands.", 'Until end of turn, up to two target lands you control become 2/2 Elemental creatures with haste. Those permanents are still lands.'],
+    near: ["Until end of turn, up to two target lands you control become 2/2 Elemental creatures with haste. It's still a land.", "Until end of turn, up to two target lands you control become 2/2 Elemental creatures with haste. They're still Forests."],
+  },
+  'damage-to-chosen-player-or-their-permanent': {
+    def: statics([{ s: 'replace', replaces: { ev: 'damage', recipient: { player: { ref: 'linked', link: 'opponent' }, object: { controller: { ref: 'linked', link: 'opponent' } } } }, body: { b: 'modify', amount: { mul: 2 } } } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ['If a source would deal damage to the chosen player or a permanent they control, it deals double that damage instead.', 'If a source would deal damage to the chosen player or a permanent the chosen player controls, it deals double that damage instead.'],
+    near: ['If a source would deal damage to the chosen player or a creature they control, it deals double that damage instead.', 'If a source would deal damage to the chosen player or a permanent an opponent controls, it deals double that damage instead.'],
+  },
+} satisfies Record<string, Example>);
+// edh-next-4 (Commander lane edh-next): invented wordings (design 6.10)
+Object.assign(EXAMPLES, {
+  'still-lands-inline-plural': {
+    def: spell([effectStep([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Land'], controller: 'you' } }, mods: [{ layer: 4, types: { add: ['Creature'] } }, { layer: '7b', power: 2, toughness: 2 }] } as StaticEffect], { d: 'endOfTurn' })]),
+    readings: ['Until end of turn, lands you control become 2/2 creatures that are still lands.', "Lands you control become 2/2 creatures until end of turn. They're still lands."],
+    near: ['Until end of turn, lands you control become 2/2 creatures that are still land.', 'Until end of turn, lands you control become 2/2 creatures that are still lands and artifacts.'],
+  },
+  'becomes-base-and-grant-then-duration': {
+    def: spell([effectStep([{ s: 'continuous', affects: t('t0'), mods: [{ layer: 4, subtypes: { set: ['Bird'] } }, { layer: 6, add: [{ kind: 'keyword', keyword: 'flying', text: 'flying' }] }, { layer: '7b', power: 1, toughness: 1 }] } as StaticEffect], { d: 'endOfTurn' })],
+      [{ id: 't0', kind: 'object', min: 1, max: 1, text: 'target creature', filter: { types: ['Creature'] } } as TargetSpec]),
+    readings: ['Target creature becomes a Bird with base power and toughness 1/1 and flying until end of turn.', 'Target creature becomes a Bird with base power and toughness 1/1 and gains flying until end of turn.'],
+    near: ['Target creature becomes a Bird with base power and toughness 1/1 and flying.', 'Target creature becomes a Bird with base power and toughness 1/1 until end of turn and flying.', 'Target creature becomes a Bird with base power and toughness 1/1 and flying until your next turn.'],
+  },
+  'switch-pt-of-objects': {
+    def: spell([effectStep([{ s: 'continuous', affects: t('t0'), mods: [{ layer: '7d', switchPT: true }] } as StaticEffect], { d: 'endOfTurn' })],
+      [{ id: 't0', kind: 'object', min: 0, max: 2, text: 'up to two target creatures', filter: { types: ['Creature'] } } as TargetSpec]),
+    readings: ["Switch up to two target creatures' power and toughness until end of turn.", 'Switch the power and toughness of up to two target creatures until end of turn.', 'Switch the power and toughness of each of up to two target creatures until end of turn.'],
+    near: ['Switch the power and toughness of each of up to two target creatures.', 'Switch the power and toughness of each of two target creatures until end of turn.', 'Switch the power and toughness of up to two target creatures until your next turn.'],
+  },
+  'prevent-group-would-deal': {
+    def: spell([effectStep([{ s: 'replace', replaces: { ev: 'damage', combat: true, source: { types: ['Creature'], controller: 'you' } }, body: { b: 'prevent', amount: 'all' } } as unknown as StaticEffect], { d: 'endOfTurn' })]),
+    readings: ['Prevent all combat damage that creatures you control would deal this turn.', 'Prevent all combat damage that would be dealt by creatures you control this turn.', 'Prevent all combat damage creatures you control would deal this turn.'],
+    near: ['Prevent all damage that creatures you control would deal this turn.', 'Prevent all combat damage that creatures you control would be dealt this turn.', 'Prevent all combat damage that creatures you control would deal.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-4 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['still-lands-inline-plural', 'becomes-base-and-grant-then-duration', 'switch-pt-of-objects', 'prevent-group-would-deal']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+describe('edh-next-2 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['still-lands-plural', 'damage-to-chosen-player-or-their-permanent']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+  // the family double-all-damage (FAST5 T40) also reads a source of one kind of permanent with its own noun
+  it("double-all-damage: the creatures' own noun is a reading; \"would be dealt\" and a wider group are not", () => {
+    const def = statics([{ s: 'replace', replaces: { ev: 'damage', source: { types: ['Creature'], controller: 'you', counters: { kind: 'any' } } }, body: { b: 'modify', amount: { mul: 2 } } } as unknown as StaticEffect]);
+    const ctx = { selfNames: ['Test Card'], selfTypes: ['Enchantment'] };
+    for (const r of ['Double all damage that creatures you control with counters on them would deal.', 'If a creature you control with a counter on it would deal damage, it deals double that damage instead.']) accepts(def, r, ctx);
+    for (const n of ['Double all damage that creatures you control would deal.', 'Double all damage that creatures you control with counters on them would be dealt.']) rejects(def, n, ctx);
+  });
+  // the family pump-and-group-gains-duration (steps-lasting.ts) also reads a second pump for the group (edh-c-53, Sigil Blessing)
+  it('pump-and-group-gains-duration: a second pump for the group takes the duration in front or behind; another amount is not a reading', () => {
+    const def = spell([{
+      op: 'effect', duration: { d: 'endOfTurn' },
+      effects: [
+        { s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: '7c', power: 3, toughness: 3 }] },
+        { s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, mods: [{ layer: '7c', power: 1, toughness: 1 }] },
+      ],
+    } as EffectStep]);
+    for (const r of ['Until end of turn, Test Card gets +3/+3 and creatures you control get +1/+1.', 'Test Card gets +3/+3 and creatures you control get +1/+1 until end of turn.']) accepts(def, r, creature);
+    rejects(def, 'Test Card gets +3/+3 and creatures you control get +2/+2 until end of turn.', creature);
+  });
+  // the family third-target (np.ts, refs.ts) also reads "a third target" of any target (edh-c-53, Cone of Flame)
+  it('third-target: the third "any target" of one damage step is "another target" or "a third target"; a fourth is not a reading', () => {
+    const def = spell([{
+      op: 'damage', source: { ref: 'self' }, to: { ref: 'target', id: 't0' }, amount: 1,
+      also: [{ to: { ref: 'target', id: 't1' }, amount: 2 }, { to: { ref: 'target', id: 't2' }, amount: 3 }],
+    } as unknown as EffectStep], [
+      { id: 't0', kind: 'anyTarget', min: 1, max: 1, text: 'any target' },
+      { id: 't1', kind: 'anyTarget', min: 1, max: 1, text: 'another target', distinctFrom: ['t0'] },
+      { id: 't2', kind: 'anyTarget', min: 1, max: 1, text: 'a third target', distinctFrom: ['t0', 't1'] },
+    ] as never);
+    for (const r of ['Test Card deals 1 damage to any target, 2 damage to another target, and 3 damage to a third target.', 'Test Card deals 1 damage to any target, 2 damage to another target, and 3 damage to another target.']) accepts(def, r, creature);
+    rejects(def, 'Test Card deals 1 damage to any target, 2 damage to another target, and 3 damage to a fourth target.', creature);
+  });
+});
+
+// edh-c-84 (Commander EDHREC ranks 18,501-19,000, later pass): the readings of its families (invented wordings, design 6.10; CR 602.5b, 506.1, 510.4, 208.1, 107.3)
+Object.assign(EXAMPLES, {
+  'activate-only-before-combat-damage-step': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, effect: { targets: [], steps: [draw()] }, onlyIf: { cond: 'turnOf', whose: 'any', step: ['untap', 'upkeep', 'draw', 'main1', 'beginCombat', 'declareAttackers', 'declareBlockers'] } } as unknown as AbilityDef,
+    readings: ['{T}: Draw a card. Activate only before the combat damage step.'],
+    near: ['{T}: Draw a card. Activate only before the declare blockers step.', '{T}: Draw a card. Activate only during the combat damage step.', '{T}: Draw a card. Activate only before combat.'],
+  },
+  'power-x-or-less-where-x': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: 'you', power: { op: '<=', value: { q: 'count', of: { ref: 'each', filter: { controller: 'you', types: ['Land'] } } } } } }, mods: [{ layer: '7c', power: 1, toughness: 1 }] } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Creatures you control with power less than or equal to the number of lands you control get +1/+1.', 'Creatures you control with power X or less, where X is the number of lands you control get +1/+1.'],
+    near: ['Creatures you control with power X or more, where X is the number of lands you control get +1/+1.', 'Creatures you control with power X or less, where X is the number of Forests you control get +1/+1.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-84 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['activate-only-before-combat-damage-step', 'power-x-or-less-where-x']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-7 (Commander lane edh-d): the families of its renderer changes
+Object.assign(EXAMPLES, {
+  'only-you-draw-instead': {
+    def: spell([{ op: 'if', cond: C9_GAINED, then: [draw()], else: [{ op: 'draw', who: { ref: 'each', who: 'player' }, count: 1 } as EffectStep] } as EffectStep]),
+    readings: ['Each player draws a card. If you gained life this turn, instead only you draw a card.'],
+    near: ['Each player draws a card. If you gained life this turn, only you draw a card.'],
+  },
+} satisfies Record<string, Example>);
+const D7_IN = { ref: 'each' as const, filter: { is: bound('l'), zone: 'library' } };
+Object.assign(EXAMPLES, {
+  'look-hand-graveyard-bottom-of-them': {
+    def: spell([
+      { op: 'look', who: you, at: { ref: 'topCards', player: you, count: 3 }, as: 'l' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: D7_IN, min: 1, max: 1, as: 'k' } as EffectStep,
+      { op: 'move', what: bound('k'), to: { zone: 'hand' } } as EffectStep,
+      { op: 'chooseObjects', who: you, from: D7_IN, min: 1, max: 1, as: 'g' } as EffectStep,
+      { op: 'move', what: bound('g'), to: { zone: 'graveyard' } } as EffectStep,
+      { op: 'chooseObjects', who: you, from: D7_IN, min: 1, max: 1, as: 'b' } as EffectStep,
+      { op: 'move', what: bound('b'), to: { zone: 'library', position: 'bottom' } } as EffectStep,
+    ]),
+    readings: ['Look at the top three cards of your library. Put one of those cards into your hand, one into your graveyard, and one on the bottom of your library.', 'Look at the top three cards of your library. Put one of them into your hand, one into your graveyard, and one on the bottom of your library.'],
+    near: ['Look at the top three cards of your library. Put one of those cards into your hand, one into your graveyard, and one on top of your library.', 'Look at the top three cards of your library. Put one of those cards into your hand and one into your graveyard.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-7 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['only-you-draw-instead', 'look-hand-graveyard-bottom-of-them']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-46 (Commander lane lands, second pass): the families of its renderer changes
+Object.assign(EXAMPLES, {
+  'greatest-highest-power-attackers': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'attacks', attacker: { types: ['Creature'], controller: 'you' }, count: { op: '>=', value: 1 } }], batch: true },
+      effect: { targets: [], steps: [
+        { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { types: ['Land'] } }, min: 0, max: { q: 'stat', stat: 'power', of: { ref: 'event', role: 'attacker' }, agg: 'max' }, as: 'untap' } as EffectStep,
+        { op: 'untap', what: bound('untap') } as EffectStep] } } as AbilityDef,
+    readings: ['Whenever you attack with one or more creatures, untap up to X lands, where X is the greatest power among those creatures.', 'Whenever you attack with one or more creatures, untap up to X lands, where X is the highest power among those creatures.'],
+    near: ['Whenever you attack with one or more creatures, untap up to X lands, where X is the greatest toughness among those creatures.', 'Whenever you attack with one or more creatures, untap up to X lands, where X is the least power among those creatures.'],
+  },
+  'two-groups-are-basic': {
+    def: { kind: 'static', text: '', effects: [
+      { s: 'continuous', affects: { ref: 'each', filter: { types: ['Land'], controller: 'you' } }, mods: [{ layer: 4, supertypes: { add: ['Basic'] } }] },
+      { s: 'continuous', affects: { ref: 'each', filter: { types: ['Land'], zone: 'library', owner: 'you', isCard: true } }, mods: [{ layer: 4, supertypes: { add: ['Basic'] } }] }] } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ['Lands you control and land cards in your library are basic.', 'Lands you control are basic. All land cards from your library are basic.'],
+    near: ['Lands you control and land cards in your library are legendary.', 'Lands you control are basic.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-46 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['greatest-highest-power-attackers', 'two-groups-are-basic']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-62 (Commander lane commander, third pass): the family of its renderer change
+Object.assign(EXAMPLES, {
+  'object-is-all-colors': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, filter: { types: ['Creature'], zone: 'graveyard', owner: 'you', isCard: true } }, ], steps: [
+      { op: 'move', what: { ref: 'target', id: 't0' }, to: { zone: 'hand' } } as EffectStep,
+      { op: 'if', cond: { cond: 'compare', left: { q: 'distinct', what: 'colors', among: { ref: 'target', id: 't0' } }, op: '>=', right: 5 }, then: [{ op: 'draw', who: you, count: 1 } as EffectStep] } as EffectStep] } } as unknown as AbilityDef,
+    readings: ['Return target creature card from your graveyard to your hand. If that card was all colors, draw a card.', 'Return target creature card from your graveyard to your hand. If that card is all colors, draw a card.'],
+    near: ['Return target creature card from your graveyard to your hand. If that card was four colors, draw a card.', 'Return target creature card from your graveyard to your hand. If that card was multicolored, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-62 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['object-is-all-colors']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-95 (Commander coordinator D, EDHREC band 5,001-10,000, group counters): the families of its renderer changes
+Object.assign(EXAMPLES, {
+  'x-counters-after-where-x': {
+    def: {"kind":"triggered","text":"","trigger":{"on":[{"ev":"cast","player":"you","spell":{"notTypes":["Creature"]}}]},"effect":{"targets":[],"steps":[{"op":"pay","who":{"ref":"you"},"cost":{"other":[{"kind":"payLife","amount":{"q":"stat","stat":"manaValue","of":{"ref":"event","role":"spell"}}}]},"then":[{"op":"createToken","who":{"ref":"you"},"count":1,"token":{"colors":[],"types":["Creature"],"subtypes":["Hero"],"power":1,"toughness":1},"as":"token"},{"op":"putCounters","on":{"ref":"bound","name":"token"},"kind":"+1/+1","count":{"q":"stat","stat":"manaValue","of":{"ref":"event","role":"spell"}}}]}]}} as unknown as AbilityDef,
+    readings: ["Whenever you cast a noncreature spell, you may pay X life, where X is that spell's mana value. If you do, create a 1/1 colorless Hero creature token and put X +1/+1 counters on it."],
+    near: ["Whenever you cast a noncreature spell, you may pay X life, where X is that spell's mana value. If you do, create a 1/1 colorless Hero creature token and put two +1/+1 counters on it.", "Whenever you cast a noncreature spell, you may pay X life, where X is that spell's mana value. If you do, create a 1/1 colorless Hero creature token and put X -1/-1 counters on it."],
+  },
+  'you-opening-plain-instruction': {
+    def: {"kind":"triggered","text":"","trigger":{"on":[{"ev":"cast","player":"any","from":"exile"}]},"effect":{"targets":[{"id":"t0","kind":"object","min":1,"max":1,"text":"target creature","filter":{"types":["Creature"]}}],"steps":[{"op":"putCounters","on":{"ref":"target","id":"t0"},"kind":"+1/+1","count":1},{"op":"createToken","who":{"ref":"you"},"count":1,"token":{"predefined":"Food"}}]}} as unknown as AbilityDef,
+    readings: ['Whenever a player casts a spell from exile, you put a +1/+1 counter on target creature and create a Food token.', 'Whenever a player casts a spell from exile, put a +1/+1 counter on target creature and create a Food token.'],
+    near: ['Whenever a player casts a spell from exile, you put a -1/-1 counter on target creature and create a Food token.', 'Whenever a player casts a spell from exile, you put a +1/+1 counter on target creature and you sacrifice a Food token.'],
+  },
+  'each-of-targets-connive': {
+    def: {"kind":"spell","text":"","effect":{"targets":[{"id":"t0","kind":"object","min":{"q":"X"},"max":{"q":"X"},"text":"each of X target creatures you control","filter":{"types":["Creature"],"controller":"you"}}],"steps":[{"op":"forEach","over":{"ref":"target","id":"t0"},"as":"eachConniver","do":[{"op":"action","action":"connive","who":{"ref":"controllerOf","object":{"ref":"bound","name":"eachConniver"}},"subject":{"ref":"bound","name":"eachConniver"}}]}]}} as unknown as AbilityDef,
+    readings: ['Each of X target creatures you control connive.', 'X target creatures you control connive.'],
+    near: ['Each of X target creatures you control connive twice.', 'Each of X target creatures you control explore.'],
+  },
+  'each-card-counter-on-it': {
+    def: {"kind":"spell","text":"","effect":{"targets":[],"steps":[{"op":"move","what":{"ref":"each","filter":{"types":["Creature"],"zone":"graveyard","owner":"you","isCard":true}},"to":{"zone":"battlefield","controller":{"ref":"you"},"counters":[{"kind":"finality","count":1}]}}]}} as unknown as AbilityDef,
+    readings: ['Return each creature card from your graveyard to the battlefield with a finality counter on it.', 'Return all creature cards from your graveyard to the battlefield with a finality counter on each of them.'],
+    near: ['Return each creature card from your graveyard to the battlefield with a +1/+1 counter on it.', 'Return each creature card from your graveyard to your hand with a finality counter on it.'],
+  },
+  'sacrificed-it-in-its-branch': {
+    def: {"kind":"activated","text":"","cost":{"other":[{"kind":"sacrifice","filter":{"types":["Creature"],"other":true},"count":1}]},"effect":{"targets":[],"steps":[{"op":"if","cond":{"cond":"matches","object":{"ref":"costSacrificed"},"filter":{"subtypes":["Angel"],"controller":"you"}},"then":[{"op":"createToken","who":{"ref":"you"},"count":{"q":"stat","stat":"toughness","of":{"ref":"costSacrificed"}},"token":{"predefined":"Blood"}}],"else":[{"op":"createToken","who":{"ref":"you"},"count":1,"token":{"predefined":"Blood"}}]}]}} as unknown as AbilityDef,
+    ctx: { selfNames: ['Example Demon'], selfTypes: ['Creature'], costSacrificeNouns: ['creature'] },
+    readings: ['Sacrifice another creature: Create a Blood token. If you sacrificed an Angel this way, create a number of Blood tokens equal to its toughness instead.', 'Sacrifice another creature: Create a Blood token. If you sacrificed an Angel this way, create a number of Blood tokens equal to the sacrificed creature\'s toughness instead.'],
+    near: ['Sacrifice another creature: Create a Blood token. If you sacrificed an Angel this way, create a number of Blood tokens equal to its power instead.', 'Sacrifice another creature: Create a Blood token. If you sacrificed an Angel this way, create a number of Food tokens equal to its toughness instead.'],
+  },
+  'batch-greatest-among-those-cards': {
+    def: {"kind":"triggered","text":"","trigger":{"on":[{"ev":"zoneChange","subject":{"isCard":true,"owner":"you"},"from":"graveyard"}],"batch":true},"effect":{"targets":[],"steps":[{"op":"gainLife","who":{"ref":"you"},"amount":{"q":"stat","stat":"manaValue","of":{"ref":"event","role":"subject"},"agg":"max"}}]}} as unknown as AbilityDef,
+    readings: ['Whenever one or more cards leave your graveyard, you gain life equal to the greatest mana value among those cards.', 'Whenever one or more cards leave your graveyard, you gain life equal to the greatest mana value among them.'],
+    near: ['Whenever one or more cards leave your graveyard, you gain life equal to the least mana value among those cards.', 'Whenever one or more cards leave your graveyard, you gain life equal to the greatest power among those cards.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-95 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['x-counters-after-where-x', 'you-opening-plain-instruction', 'each-of-targets-connive', 'each-card-counter-on-it', 'sacrificed-it-in-its-branch', 'batch-greatest-among-those-cards']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-92 (Commander coordinator D, band 5,001-10,000, group counters): the families of its renderer changes
+Object.assign(EXAMPLES, {
+  'total-power-died-creature-type-noun': {
+    def: { kind: 'spell', text: '', effect: { targets: [], steps: [
+      { op: 'loseLife', who: { ref: 'each', who: 'opponent' }, amount: { q: 'happenedCount', event: { ev: 'zoneChange', subject: { subtypes: ['Goblin'], types: ['Creature'] }, from: 'battlefield', to: 'graveyard' }, scope: 'turn', sum: 'power' } } as EffectStep] } } as unknown as AbilityDef,
+    readings: ['Each opponent loses life equal to the total power of Goblins that died this turn.', 'Each opponent loses life equal to the total power of Goblin creatures that died this turn.'],
+    near: ['Each opponent loses life equal to the total toughness of Goblins that died this turn.', 'Each opponent loses life equal to the number of Goblins that died this turn.', 'Each opponent loses life equal to the total power of Elves that died this turn.'],
+  },
+  'remove-all-but-one-from-self-it': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 1 }] }, effect: { targets: [], steps: [
+      { op: 'removeCounters', from: { ref: 'self' }, kind: '+1/+1', count: { q: 'math', op: 'max', args: [0, { q: 'math', op: '-', args: [{ q: 'counters', on: { ref: 'self' }, kind: '+1/+1' }, 1] }] }, as: 'removed' } as EffectStep,
+      { op: 'gainLife', who: you, amount: { q: 'countersRemoved', step: 'removed', kind: '+1/+1' } } as EffectStep] } } as unknown as AbilityDef,
+    readings: ['{1}: Remove all but one +1/+1 counter from ~, then you gain 1 life for each +1/+1 counter removed this way.', '{1}: Remove all but one +1/+1 counter from it, then you gain 1 life for each +1/+1 counter removed this way.'],
+    near: ['{1}: Remove all +1/+1 counters from ~, then you gain 1 life for each +1/+1 counter removed this way.', '{1}: Remove all but one +1/+1 counter from ~, then you gain 2 life for each +1/+1 counter removed this way.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-92 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['total-power-died-creature-type-noun', 'remove-all-but-one-from-self-it']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
 describe('design 6.8 (G6): the number of alternative groups per file is the number the table was reviewed for', () => {
   it('matches the sources of render/', () => {
     const dir = fileURLToPath(new URL('../../../src/render/', import.meta.url));
@@ -5531,6 +6721,61 @@ describe('design 6.8 (G6): the number of alternative groups per file is the numb
   });
 });
 
+// edh-next-113 (third pass top-rank-t1): the reading of its new family
+Object.assign(EXAMPLES, {
+  'investigate-additional-time': {
+    def: spell([{ op: 'action', action: 'investigate', who: you, n: 1 } as EffectStep]),
+    readings: ['Investigate.', 'Investigate an additional time.'],
+    near: ['Investigate twice.', 'Investigate an additional card.'],
+  },
+});
+
+// edh-c-62 (Commander EDHREC ranks 25,001-25,500, second pass): the readings of its five new families
+Object.assign(EXAMPLES, {
+  'destroyed-this-way-no-regen-the-noun': {
+    def: spell([{ op: 'destroy', what: t('c'), regeneration: 'cant' } as EffectStep], [objTarget('c', { types: ['Creature'] })]),
+    readings: ["Destroy target creature. It can't be regenerated.", "Destroy target creature. The creature can't be regenerated."],
+    near: ["Destroy target creature. The land can't be regenerated.", 'Destroy target creature. The creature can be regenerated.'],
+  },
+  'that-much-damage-spell-mana-value': {
+    def: trig([{ ev: 'cast', player: 'you', spell: { manaValue: { op: '==', value: { q: 'counters', on: self, kind: 'doom' } } } } as EventPattern],
+      [{ op: 'damage', source: self, to: t('a'), amount: { q: 'stat', stat: 'manaValue', of: { ref: 'event', role: 'spell' } } } as EffectStep], {}, [{ id: 'a', kind: 'anyTarget', min: 1, max: 1, text: '' } as TargetSpec]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: [
+      'Whenever you cast a spell with mana value equal to the number of doom counters on Test Card, Test Card deals damage equal to the mana value of that spell to any target.',
+      'Whenever you cast a spell with mana value equal to the number of doom counters on Test Card, Test Card deals that much damage to any target.',
+    ],
+    near: ['Whenever you cast a spell with mana value equal to the number of doom counters on Test Card, Test Card deals twice that much damage to any target.', 'Whenever you cast a spell with mana value equal to the number of doom counters on Test Card, Test Card deals that much damage to each opponent.'],
+  },
+  'is-sized-artifact-creature-with': {
+    def: { kind: 'static', text: '', condition: { cond: 'not', of: { cond: 'turnOf', whose: 'you' } }, effects: [{ s: 'continuous', affects: self, mods: [
+      { layer: 4, types: { add: ['Artifact', 'Creature'] }, subtypes: { add: ['Gargoyle'] } }, { layer: 6, add: [{ kind: 'keyword', keyword: 'flying' }] }, { layer: '7b', power: 2, toughness: 3 }] }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: [
+      'During turns other than yours, Test Card is a 2/3 Gargoyle artifact creature with flying.',
+      'As long as it is not your turn, Test Card is a Gargoyle artifact creature in addition to its other types, has base power and toughness 2/3, and has flying.',
+    ],
+    near: ['During turns other than yours, Test Card is a 2/3 Gargoyle creature with flying.', 'During turns other than yours, Test Card is a 3/3 Gargoyle artifact creature with flying.'],
+  },
+  'they-may-pay-caster': {
+    def: trig([{ ev: 'cast', player: 'any' } as EventPattern], [{ op: 'pay', who: { ref: 'event', role: 'player' }, cost: { mana: mana(1) }, then: [{ op: 'delay', when: { at: 'step', step: 'end', next: true }, do: [{ op: 'draw', who: { ref: 'event', role: 'player' }, count: 1 }] } as unknown as EffectStep] } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['Whenever a player casts a spell, they may pay {1}. If the player does, they draw a card at the beginning of the next end step.', 'Whenever a player casts a spell, that player may pay {1}. If the player does, they draw a card at the beginning of the next end step.'],
+    near: ['Whenever a player casts a spell, you may pay {1}. If the player does, they draw a card at the beginning of the next end step.', "Whenever a player casts a spell, they may pay {1}. If the player doesn't, they draw a card at the beginning of the next end step."],
+  },
+  'comma-and-cant-attack': {
+    def: spell([
+      effectStep([{ s: 'restrict', subject: t('p'), mode: 'cant', action: 'cast' } as StaticEffect], { d: 'endOfTurn' }),
+      effectStep([{ s: 'restrict', subject: { ref: 'each', filter: { types: ['Creature'], controller: t('p') } }, mode: 'cant', action: 'attack' } as StaticEffect], { d: 'endOfTurn' }),
+    ], [playerTarget('p')]),
+    readings: [
+      "Target player can't cast spells this turn. Creatures that player controls can't attack this turn.",
+      "Target player can't cast spells this turn, and creatures that player controls can't attack this turn.",
+    ],
+    near: ["Target player can't cast spells this turn, but creatures that player controls can't attack this turn.", "Target player can't cast spells this turn, and creatures that player controls can't block this turn."],
+  },
+});
+
 // r4-cost (Standard round 4): costs, mana and choices (zz-cloud/r4-cost.json)
 Object.assign(EXAMPLES, {
   'opponent-dealt-damage-perfect': {
@@ -5538,6 +6783,12 @@ Object.assign(EXAMPLES, {
     ctx: creature,
     readings: ['{T}: Draw a card. Activate only if an opponent was dealt noncombat damage this turn.', '{T}: Draw a card. Activate only if an opponent has been dealt noncombat damage this turn.'],
     near: ['{T}: Draw a card. Activate only if an opponent has been dealt combat damage this turn.', '{T}: Draw a card. Activate only if you have been dealt noncombat damage this turn.'],
+  },
+  'opponent-dealt-damage-any': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, onlyIf: { cond: 'happened', event: { ev: 'damage', recipient: { player: 'opponent' } }, scope: 'turn' }, effect: { targets: [], steps: [draw()] } } as AbilityDef,
+    ctx: creature,
+    readings: ['{T}: Draw a card. Activate only if an opponent was dealt damage this turn.', '{T}: Draw a card. Activate only if an opponent has been dealt damage this turn.'],
+    near: ['{T}: Draw a card. Activate only if an opponent has been dealt combat damage this turn.', '{T}: Draw a card. Activate only if you have been dealt damage this turn.'],
   },
   'unchosen-header-stop': {
     def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { types: ['Creature'], controller: 'you', other: true }, to: 'battlefield' }] }, effect: { targets: [], steps: [], modes: { min: 1, max: 1, unchosen: 'turn', options: [{ program: { targets: [], steps: [draw()] } }, { program: { targets: [], steps: [{ op: 'gainLife', who: you, amount: 2 } as EffectStep] } }] } } } as unknown as AbilityDef,
@@ -5583,7 +6834,7 @@ Object.assign(EXAMPLES, {
   },
   'cast-this-way-any-type': {
     def: {"kind":"spell","text":"","effect":{"targets":[],"steps":[{"op":"move","as":"impulse","to":{"zone":"exile"},"what":{"ref":"topCards","count":1,"player":{"ref":"you"}}},{"op":"effect","duration":{"d":"endOfTurn"},"effects":[{"s":"permit","action":"play","anyManaType":true,"of":{"is":{"ref":"bound","name":"impulse"}},"who":{"ref":"you"}}]}]}} as unknown as AbilityDef,
-    readings: ['Exile the top card of your library. You may play that card this turn, and mana of any type can be spent to cast that spell.', 'Exile the top card of your library. You may play that card this turn. If you cast a spell this way, you may spend mana as though it were mana of any type to cast it.'],
+    readings: ['Exile the top card of your library. You may play that card this turn, and mana of any type can be spent to cast that spell.', 'Exile the top card of your library. You may play that card this turn. If you cast a spell this way, you may spend mana as though it were mana of any type to cast it.', 'Exile the top card of your library. You may play that card this turn. If you cast a spell this way, mana of any type can be spent to cast it.'], // edh-cast-7: the passive rider (Bloodsoaked Insight)
     near: ['Exile the top card of your library. You may play that card this turn. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it.', 'Exile the top card of your library. You may play that card this turn.'],
   },
   'exiled-card-of-this-ability': {
@@ -5676,8 +6927,9 @@ Object.assign(EXAMPLES, {
   'colorless-artifact-loses-others': {
     def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 4, types: { set: ['Artifact'] }, subtypes: { set: ['Food'] } }, { layer: 5, colors: { set: [] } }, { layer: 6, removeAll: true, add: R5_FOOD }] } as unknown as StaticEffect]),
     ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment', 'Aura'] },
-    readings: ['Enchanted permanent is a colorless Food artifact with "{2}, {T}, Sacrifice this artifact: You gain 3 life" and loses all other card types and abilities.'],
-    near: ['Enchanted permanent is a Food artifact with "{2}, {T}, Sacrifice this artifact: You gain 3 life" and loses all other card types and abilities.', 'Enchanted permanent is a colorless Food artifact with "{2}, {T}, Sacrifice this artifact: You gain 3 life" and loses all other abilities.'],
+    // edh-d-41: "and loses all other abilities" (In Too Deep) is a reading of the artifact form too (setting the card type is losing the others)
+    readings: ['Enchanted permanent is a colorless Food artifact with "{2}, {T}, Sacrifice this artifact: You gain 3 life" and loses all other card types and abilities.', 'Enchanted permanent is a colorless Food artifact with "{2}, {T}, Sacrifice this artifact: You gain 3 life" and loses all other abilities.'],
+    near: ['Enchanted permanent is a Food artifact with "{2}, {T}, Sacrifice this artifact: You gain 3 life" and loses all other card types and abilities.', 'Enchanted permanent is a colorless Food artifact with "{2}, {T}, Sacrifice this artifact: You gain 3 life" and loses all other card types.', 'Enchanted permanent is a colorless Food artifact with "{2}, {T}, Sacrifice this artifact: You gain 3 life" and loses all abilities.'],
   },
 });
 // Standard round F (std-rf): the land form of the family above (render/mods.ts, invented wording)
@@ -5754,7 +7006,8 @@ Object.assign(EXAMPLES, {
 const RJ_BATCH: EventPattern = { ev: 'zoneChange', subject: { other: true, types: ['Creature'], controller: 'you' }, to: 'battlefield' };
 const RJ_FREE_CAST_IF: EffectStep[] = [
   { op: 'exileUntil', who: you, filter: { notTypes: ['Land'] }, as: 'e' } as EffectStep,
-  { op: 'if', cond: { cond: 'compare', left: { q: 'stat', stat: 'manaValue', of: bound('e') }, op: '<', right: { q: 'life', of: you } }, then: [{ op: 'cast', who: you, what: bound('e'), free: true, optional: true, as: 'cast' }] } as EffectStep,
+  // edh-cast-9: "if the spell's mana value is less than N" is the cast limited to a resulting spell of mana value N - 1 or less (the family cast-free-spell-mv is gone: its if + compare shape is no longer built)
+  { op: 'cast', who: you, what: bound('e'), free: true, optional: true, as: 'cast', maxManaValue: { q: 'math', op: '-', args: [{ q: 'life', of: you }, 1] } } as EffectStep,
 ];
 Object.assign(EXAMPLES, {
   'some-match-they': {
@@ -5780,11 +7033,6 @@ Object.assign(EXAMPLES, {
     ]),
     readings: ['Exile the top four cards of your library. You may cast up to two spells from among them without paying their mana costs.', 'Exile the top four cards of your library. You may cast up to two spells from among the exiled cards without paying their mana costs.'],
     near: ['Exile the top four cards of your library. You may cast up to three spells from among the exiled cards without paying their mana costs.', 'Exile the top four cards of your library. You may cast up to two spells from among the revealed cards without paying their mana costs.'],
-  },
-  'cast-free-spell-mv': {
-    def: spell(RJ_FREE_CAST_IF),
-    readings: ["Exile cards from the top of your library until you exile a nonland card. If that card's mana value is less than your life total, you may cast that card without paying its mana cost.", "Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if the spell's mana value is less than your life total."],
-    near: ["Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if the spell's mana value is greater than your life total.", "Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if the card's mana value is less than your life total."],
   },
   'lose-life-trailing-if': {
     def: spell([{ op: 'if', cond: { cond: 'exists', of: { ref: 'each', filter: { subtypes: ['Zombie'], controller: 'you' } } }, then: [{ op: 'loseLife', who: you, amount: { q: 'life', of: you } }], else: [{ op: 'loseLife', who: { ref: 'each', who: 'opponent' }, amount: { q: 'life', of: you } }] } as EffectStep]),
@@ -5918,7 +7166,7 @@ Object.assign(EXAMPLES, {
 // linked permission (render/stat.ts#permit) and the condition after "you may put ... onto the battlefield" (render/steps-flow.ts)
 const RU_LINKED = { s: 'permit', who: you, action: 'play', of: { is: { ref: 'linked', link: 'exiled' } } } as unknown as StaticEffect;
 const RU_BAN = { s: 'restrict', subject: { ref: 'each', filter: { types: ['Creature'] } }, mode: 'cant', action: 'attack', other: { self: true } } as unknown as StaticEffect;
-const RU_EQUIPMENT = { selfNames: ['Test Card'], selfTypes: ['Artifact', 'Equipment'] };
+const RU_EQUIPMENT = { selfNames: ['Test Card'], selfTypes: ['Artifact'] };
 Object.assign(EXAMPLES, {
   'attached-to-a': {
     def: { kind: 'static', text: '', condition: { cond: 'matches', object: { ref: 'attachedTo' }, filter: { types: ['Creature'] } }, effects: [{ s: 'continuous', affects: self, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'hexproof', text: 'hexproof' }] }] }] } as unknown as AbilityDef,
@@ -6027,6 +7275,33 @@ Object.assign(EXAMPLES, {
     ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
     readings: ["Test Card's equip abilities cost {2} less to activate.", 'Equip abilities of Test Card cost {2} less to activate.'],
     near: ["Test Card's equip abilities cost {3} less to activate.", "Test Card's equip abilities cost {2} more to activate.", "Test Card's crew abilities cost {2} less to activate."],
+  },
+});
+// edh-next-58 (lane cost): the abilities of the permanent an Aura enchants, said with the possessive (render/stat.ts#costMod)
+Object.assign(EXAMPLES, {
+  'enchanted-object-possessive': {
+    def: statics([{ s: 'costMod', applies: { abilities: { source: { attachedToSource: true } }, caster: 'any' }, change: { kind: 'reduce', mana: [{ kind: 'generic', amount: 2 }], floor: 'one' } } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ["Activated abilities of enchanted creature cost {2} less to activate. This effect can't reduce the mana in that cost to less than one mana.", "Enchanted artifact's activated abilities cost {2} less to activate. This effect can't reduce the mana in that cost to less than one mana."],
+    near: ["Enchanted artifact's activated abilities cost {3} less to activate. This effect can't reduce the mana in that cost to less than one mana.", "Enchanted artifact's activated abilities cost {2} more to activate. This effect can't reduce the mana in that cost to less than one mana.", "Enchanted artifact's activated abilities cost {2} less to activate."],
+  },
+});
+// edh-next-58 (lane cost): the floor of a reduction of activation costs, with or without the ability named (render/stat.ts#costMod)
+Object.assign(EXAMPLES, {
+  'activation-cost-floor-ability-words': {
+    def: statics([{ s: 'costMod', applies: { abilities: { source: { types: ['Artifact'], controller: 'you' } }, caster: 'any' }, change: { kind: 'reduce', mana: [{ kind: 'generic', amount: 2 }], floor: 'one' } } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ["Activated abilities of artifacts you control cost {2} less to activate. This effect can't reduce the mana in that cost to less than one mana.", "Activated abilities of artifacts you control cost {2} less to activate. This effect can't reduce the mana in that ability's activation cost to less than one mana."],
+    near: ["Activated abilities of artifacts you control cost {2} less to activate. This effect can't reduce the mana in that ability's activation cost to less than two mana.", "Activated abilities of artifacts you control cost {2} more to activate. This effect can't reduce the mana in that ability's activation cost to less than one mana.", "Activated abilities of artifacts you control cost {2} less to activate."],
+  },
+});
+// edh-next-58 (lane cost): the cards of every graveyard counted together (render/cond.ts#existsPhrase)
+Object.assign(EXAMPLES, {
+  'cards-total-in-all-graveyards': {
+    def: t12Static({ cond: 'exists', of: { ref: 'each', filter: { types: ['Creature'], zone: 'graveyard', isCard: true } }, atLeast: 10 }, [{ s: 'costMod', applies: { self: true, caster: 'you' }, change: { kind: 'reduce', generic: 6, floor: 'zero' } } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['If there are ten or more creature cards in graveyards, Test Card costs {6} less to cast.', 'If there are ten or more creature cards total in all graveyards, Test Card costs {6} less to cast.'],
+    near: ['If there are nine or more creature cards total in all graveyards, Test Card costs {6} less to cast.', 'If there are ten or more creature cards total in all graveyards, Test Card costs {5} less to cast.', 'If there are ten or more creature cards total in your graveyard, Test Card costs {6} less to cast.'],
   },
 });
 // card wave 2, std-rw6: the choice first, then the instruction for each opponent who didn't (render/steps-flow.ts#eachUnlessThey); "target creature or spell"
@@ -6227,6 +7502,40 @@ Object.assign(EXAMPLES, {
     def: spell([{ op: 'addMana', who: you, units: [['W'], ['W'], ['U'], ['U'], ['R'], ['R']] } as EffectStep]),
     readings: ['Add {W}{W}{U}{U}{R}{R}.', 'Add {W}{W}, {U}{U}, and {R}{R}.'],
     near: ['Add {W}{W}, {U}{U}, or {R}{R}.', 'Add {W}{W}, {U}{U}, and {R}.', 'Add {W}{W} and {U}{U}.'],
+  },
+  // edh-c-17 (family group-as-long-as-creature): "Each land gets +2/+2 as long as it's a creature." (Earth Surge)
+  'group-as-long-as-creature': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Land'], allTypes: ['Creature'] } }, mods: [{ layer: '7c', power: 2, toughness: 2 }] }]),
+    readings: ["Each land gets +2/+2 as long as it's a creature.", "All lands get +2/+2 as long as they're creatures."],
+    near: ["Each land gets +2/+2 as long as it's an artifact.", "Each land gets +3/+3 as long as it's a creature."],
+  },
+  // edh-c-17 (family was-nonbasic): "Destroy target land. If that land was nonbasic, draw a card." (Molten Rain)
+  'was-nonbasic': {
+    def: spell([{ op: 'destroy', what: t('l') }, { op: 'if', cond: { cond: 'matches', object: t('l'), filter: { notSupertypes: ['Basic'] } }, then: [draw()] } as EffectStep], [objTarget('l', { types: ['Land'] })]),
+    readings: ['Destroy target land. If that land was nonbasic, draw a card.', 'Destroy target land. If that land was a nonbasic permanent, draw a card.'],
+    near: ['Destroy target land. If that land was basic, draw a card.', 'Destroy target land. If that land was a basic permanent, draw a card.'],
+  },
+  // edh-next-18 (family static-unless-condition): Tromokratis, a grant while the object is not attacking or blocking
+  'static-unless-condition': {
+    def: t12Static({ cond: 'not', of: { cond: 'matches', object: { ref: 'self' }, filter: { anyOf: [{ attacking: true }, { blocking: true }] } } }, [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'hexproof', text: 'hexproof' }] }] } as StaticEffect]),
+    ctx: creature,
+    readings: ["~ has hexproof as long as it isn't attacking or blocking.", "~ has hexproof unless it's attacking or blocking."],
+    near: ["~ has hexproof as long as it's attacking or blocking.", "~ has hexproof unless it isn't attacking or blocking."],
+  },
+  // edh-c-17 (family draw-that-many-counters-removed): "Remove all +1/+1 counters from target creature you control. Draw that many cards." (Give // Take)
+  'draw-that-many-counters-removed': {
+    def: spell([{ op: 'removeCounters', from: t('c'), kind: '+1/+1', count: 'all', as: 'r' } as EffectStep, { op: 'draw', who: you, count: { q: 'countersRemoved', step: 'r' } } as EffectStep], [objTarget('c', { types: ['Creature'], controller: 'you' })]),
+    readings: ['Remove all +1/+1 counters from target creature you control. Draw that many cards.', 'Remove all +1/+1 counters from target creature you control. Draw a card for each counter removed this way.'],
+    near: ['Remove all +1/+1 counters from target creature you control. Draw a card.'],
+  },
+  // edh-c-50 (family subtypes-basept-cant-be-blocked): "~ is a Human Citizen with base power and toughness 1/1 and can't be blocked" (Futurist Operative)
+  'subtypes-basept-cant-be-blocked': {
+    def: statics([
+      { s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 4, subtypes: { set: ['Goblin'] } }, { layer: '7b', power: 1, toughness: 1 }] } as StaticEffect,
+      { s: 'restrict', subject: { ref: 'self' }, mode: 'cant', action: 'beBlocked' } as StaticEffect,
+    ]),
+    readings: ["~ is a Goblin with base power and toughness 1/1 and can't be blocked.", "~ is a Goblin with base power and toughness 1/1. ~ can't be blocked."],
+    near: ["~ is a Goblin with base power and toughness 1/1 and can't block.", "~ is a Goblin with base power and toughness 2/2 and can't be blocked."],
   },
 });
 
@@ -6771,6 +8080,38 @@ Object.assign(EXAMPLES, {
   },
 });
 
+// edh-c-90 (CR 205.1b, 613.4b, 611.2a, 701.13a, 121.1, 101.4): the sized identity in front of the types, the rider inside the sentence, "You exile", a group's draw up to N
+const C90_SIZED = { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 2 }] }, effect: { targets: [], steps: [{ op: 'effect', duration: { d: 'permanent' }, effects: [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 4, types: { add: ['Artifact', 'Creature'] }, subtypes: { add: ['Golem'] } }, { layer: '7b', power: 4, toughness: 4 }] }] }] } } as unknown as AbilityDef;
+const C90_STILL = { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 6 }] }, effect: { targets: [], steps: [{ op: 'effect', duration: { d: 'permanent' }, effects: [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 4, types: { add: ['Artifact', 'Creature'] }, subtypes: { add: ['Elemental'] } }, { layer: '7b', power: 3, toughness: 3 }] }] }] } } as unknown as AbilityDef;
+const C90_EXILE = { kind: 'spell', text: '', effect: { targets: [], steps: [{ op: 'move', what: { ref: 'topCards', player: { ref: 'you' }, count: 3 }, to: { zone: 'exile' } }] } } as unknown as AbilityDef;
+const C90_DRAW = { kind: 'spell', text: '', effect: { targets: [], steps: [{ op: 'draw', who: { ref: 'each', who: 'player' }, count: 2, upTo: true }] } } as unknown as AbilityDef;
+Object.assign(EXAMPLES, {
+  'artifact-creature-sized-in-addition': {
+    def: C90_SIZED,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['{2}: This artifact becomes a 4/4 Golem artifact creature in addition to its other types.', '{2}: This artifact becomes a Golem artifact creature with base power and toughness 4/4 in addition to its other types.'],
+    near: ['{2}: This artifact becomes a 5/5 Golem artifact creature in addition to its other types.', '{2}: This artifact becomes a 4/4 Golem artifact creature.'],
+  },
+  'still-land-inline-artifact-creature': {
+    def: C90_STILL,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Land'] },
+    readings: ["{6}: This land becomes a 3/3 Elemental artifact creature that's still a land."],
+    near: ["{6}: This land becomes a 3/3 Elemental artifact creature that's still a creature.", "{6}: This land becomes a 4/4 Elemental artifact creature that's still a land."],
+  },
+  'you-exile-explicit': {
+    def: C90_EXILE,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: ['You exile the top three cards of your library.', 'Exile the top three cards of your library.'],
+    near: ['You exile the top four cards of your library.', 'Each opponent exiles the top three cards of your library.'],
+  },
+  'group-draws-up-to': {
+    def: C90_DRAW,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: ['Each player draws up to two cards.', 'Each player may draw up to two cards.'],
+    near: ['Each player draws up to three cards.', 'Each player draws two cards.'],
+  },
+});
+
 // std-cardcopy-7 (CR 400.7j, 608.2c): the cards an "any number of" cost part exiled, "those exiled cards" or "the exiled cards"
 Object.assign(EXAMPLES, {
   'those-or-the-exiled-cards': {
@@ -6856,11 +8197,35 @@ Object.assign(EXAMPLES, {
     readings: ['Prevent all combat damage target creature would deal this turn.', 'Prevent all combat damage that would be dealt by target creature this turn.'],
     near: ['Prevent all damage target creature would deal this turn.', 'Prevent all combat damage target creature would deal.'],
   },
+  // edh-next-16: a group that can't be targeted by the spells and abilities of your opponents (render/stat.ts)
+  'opponents-targets-plural': {
+    def: statics([{ s: 'restrict', subject: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, mode: 'cant', action: 'beTargeted', other: { controller: 'opponent' } } as unknown as StaticEffect]),
+    readings: ["Creatures you control can't be the target of spells or abilities your opponents control.", "Creatures you control can't be the targets of spells or abilities your opponents control."],
+    near: ["Creatures you control can't be the targets of spells your opponents control.", "Creatures you control can't be the targets of spells or abilities you control."],
+  },
+  // edh-next-16: "opponents that were dealt combat damage this turn" is also said "who" (render/qty.ts#happenedPlayersParts)
+  'players-who-were-dealt': {
+    def: spell([{ op: 'draw', who: { ref: 'you' }, count: { q: 'happenedPlayers', of: { ref: 'each', who: 'opponent' }, event: { ev: 'damage', combat: true, recipient: { player: 'you' } }, scope: 'turn', countLeft: true } }]),
+    readings: ['Draw cards equal to the number of opponents that were dealt combat damage this turn.', 'Draw cards equal to the number of opponents who were dealt combat damage this turn.'],
+    near: ['Draw cards equal to the number of opponents who was dealt combat damage this turn.', 'Draw cards equal to the number of opponents who were dealt damage this turn.'],
+  },
   'prevent-by-sources': {
     def: P2RD1_STATIC(P2RD1_PREVENT({ ev: 'damage', source: { not: { controller: 'you' } }, recipient: { player: 'you' } })),
     ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
     readings: ["Prevent all damage that would be dealt to you by sources you don't control.", "Prevent all damage that would be dealt to you by a source you don't control."],
     near: ['Prevent all damage that would be dealt to you by sources you control.', "Prevent all damage that would be dealt to you by creatures you don't control."],
+  },
+  // edh-replace-2: a list of colors is "or" and also "and/or" (np.ts); the damage a group of sources would deal (stat.ts#preventDamage)
+  'colors-and-or': {
+    def: spell([{ op: 'move', what: t('c'), to: { zone: 'exile' } }], [objTarget('c', { types: ['Creature'], colors: ['B', 'R'] })]),
+    readings: ['Exile target black or red creature.', 'Exile target black and/or red creature.'],
+    near: ['Exile target black and red creature.', 'Exile target black creature.', 'Exile target black and/or green creature.'],
+  },
+  'prevent-by-sources-would-deal': {
+    def: P2RD1_SPELL([P2RD1_TURN(P2RD1_PREVENT({ ev: 'damage', source: { colors: ['B', 'R'] }, recipient: { object: { types: ['Creature'], controller: 'you' } } }))]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['Prevent all damage that black and/or red sources would deal to creatures you control this turn.', 'Prevent all damage that would be dealt to creatures you control this turn by black and/or red sources.'],
+    near: ['Prevent all damage that black and red sources would deal to creatures you control this turn.', 'Prevent all combat damage that black and/or red sources would deal to creatures you control this turn.', 'Prevent all damage that black and/or red sources would deal to creatures you control.'],
   },
   'prevent-to-players': {
     def: P2RD1_SPELL([P2RD1_TURN(P2RD1_PREVENT({ ev: 'damage', combat: true, recipient: { player: 'any' } }))]),
@@ -6980,6 +8345,16 @@ Object.assign(EXAMPLES, {
     readings: ['If a source you control would deal damage to a permanent or player, it deals triple that damage instead.', 'If a source you control would deal damage to a permanent or player, it deals three times that much damage instead.'],
     near: ['If a source you control would deal damage to a permanent or player, it deals double that damage instead.', 'If a source you control would deal damage to a permanent or player, it deals quadruple that damage instead.'],
   },
+  // edh-next-12 (render/stat.ts#genericReplace): the duration of a damage replacement sits inside the event
+  'replace-damage-inline-duration': {
+    def: spell([effectStep([{ s: 'replace', replaces: { ev: 'damage', source: { controller: 'you' }, recipient: { player: 'opponent', object: { controller: 'opponent' } } }, body: { b: 'modify', amount: { mul: 3 } } } as unknown as StaticEffect], { d: 'endOfTurn' })]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: [
+      'If a source you control would deal damage to an opponent or a permanent an opponent controls this turn, it deals triple that damage instead.',
+      'If a source you control would deal damage this turn to an opponent or a permanent an opponent controls, it deals triple that damage instead.',
+    ],
+    near: ['If a source you control would deal damage this turn to an opponent or a permanent an opponent controls, it deals double that damage instead.'],
+  },
   'replaced-damage-to-you': {
     def: P2RD2_MORE({ ev: 'damage', source: { types: ['Instant', 'Sorcery'] }, recipient: { player: 'you' }, amount: { op: '>=', value: 3 } }, { set: 2 }),
     ctx: P2RD2_ENCH,
@@ -6993,8 +8368,48 @@ Object.assign(EXAMPLES, {
   'linked-exiled-battlefield-plural': {
     def: trig([dies], [{ op: 'move', what: { ref: 'linked', link: 'exiled' }, to: { zone: 'battlefield', controller: 'owner' } } as EffectStep]),
     ctx: creature,
-    readings: ["When this creature dies, return the exiled card to the battlefield under its owner's control.", "When this creature dies, return the exiled cards to the battlefield under their owners' control.", "When this creature dies, return the exiled cards to the battlefield under their owner's control."],
-    near: ["When this creature dies, return the exiled cards to the battlefield under your control.", "When this creature dies, return the exiled cards to their owners' hands under their owners' control."],
+    readings: ["When this creature dies, return the exiled card to the battlefield under its owner's control.", "When this creature dies, return the exiled cards to the battlefield under their owners' control.", "When this creature dies, return the exiled cards to the battlefield under their owner's control.",
+      "When this creature dies, return each card exiled with this creature to the battlefield under its owner's control.", "When this creature dies, return all cards exiled with this creature to the battlefield under their owners' control.",
+      "When this creature dies, return all cards exiled with it to the battlefield under their owners' control.", "When this creature dies, return each card exiled with it to the battlefield under its owner's control."], // edh-c-13: the 4th and 5th (Safe Haven); edh-c-109: "with it" (Helvault)
+    near: ["When this creature dies, return the exiled cards to the battlefield under your control.", "When this creature dies, return the exiled cards to their owners' hands under their owners' control.",
+      "When this creature dies, return each card exiled with this creature to the battlefield under your control.", "When this creature dies, return each card exiled with this creature to the battlefield tapped under its owner's control."],
+  },
+});
+// edh-c-109 (CR 607.2a, 608.2c, 613.4b)
+Object.assign(EXAMPLES, {
+  'linked-each-battlefield': {
+    def: trig([dies], [{ op: 'move', what: { ref: 'each', filter: { is: { ref: 'linked', link: 'exiled' }, zone: 'exile', isCard: true, anyOf: [{ types: ['Creature'] }] } }, to: { zone: 'battlefield', controller: you } } as EffectStep]),
+    ctx: creature,
+    readings: ['When this creature dies, return each creature card exiled with this creature to the battlefield under your control.', 'When this creature dies, return all creature cards exiled with it to the battlefield under your control.', 'When this creature dies, put all creature cards exiled with this creature onto the battlefield under your control.'],
+    near: ["When this creature dies, return each creature card exiled with this creature to the battlefield under its owner's control.", 'When this creature dies, return each card exiled with this creature to the battlefield under your control.', 'When this creature dies, return each creature card exiled with this creature to your hand.'],
+  },
+  'those-creatures-all-targets': {
+    def: spell([
+      { op: 'effect', duration: { d: 'endOfTurn' }, effects: [
+        { s: 'continuous', affects: t('a'), mods: [{ layer: '7c', power: 1, toughness: 1 }] },
+        { s: 'continuous', affects: t('b'), mods: [{ layer: '7c', power: 2, toughness: 2 }] },
+      ] } as EffectStep,
+      { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'union', of: [t('a'), t('b')] }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'vigilance' }] }] }] } as EffectStep,
+    ], [objTarget('a', { types: ['Creature'] }), { ...objTarget('b', { types: ['Creature'] }), min: 0, distinctFrom: ['a'] }]),
+    readings: ['Until end of turn, target creature gets +1/+1 and up to one other target creature gets +2/+2. Those creatures gain vigilance until end of turn.'],
+    near: ['Until end of turn, target creature gets +1/+1 and up to one other target creature gets +2/+2. Those artifacts gain vigilance until end of turn.', 'Until end of turn, target creature gets +1/+1 and up to one other target creature gets +2/+2. That creature gains vigilance until end of turn.'],
+  },
+  'base-pt-xx-where': {
+    def: trig([{ ev: 'attacks', attacker: { self: true } } as EventPattern], [{ op: 'may', who: you, do: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [
+      { s: 'continuous', affects: t('a'), mods: [{ layer: '7b', power: { q: 'stat', stat: 'power', of: { ref: 'self' } }, toughness: { q: 'stat', stat: 'power', of: { ref: 'self' } } }] },
+    ] }] } as EffectStep], {}, [objTarget('a', { types: ['Creature'], controller: 'you', other: true })]),
+    ctx: creature,
+    readings: ["Whenever this creature attacks, you may have the base power and toughness of another target creature you control become X/X until end of turn, where X is this creature's power.", "Whenever this creature attacks, you may have the base power and toughness of another target creature you control become equal to this creature's power until end of turn."],
+    near: ["Whenever this creature attacks, you may have the base power and toughness of another target creature you control become X/X until end of turn, where X is this creature's toughness.", "Whenever this creature attacks, you may have the base power and toughness of another target creature you control become X/X, where X is this creature's power."],
+  },
+});
+// edh-mana-keywords-4 (CR 120.3): a damage trigger of any source
+Object.assign(EXAMPLES, {
+  'any-source-deals': {
+    def: trig([{ ev: 'damage', source: {}, recipient: { object: { self: true } } }], [gain(1)]),
+    ctx: creature,
+    readings: ['Whenever a source deals damage to this creature, you gain 1 life.', 'Whenever a permanent deals damage to this creature, you gain 1 life.'],
+    near: ['Whenever a source deals damage to this creature, you gain 2 life.', 'Whenever a source deals damage to a creature, you gain 1 life.'],
   },
 });
 // p2-damage-1 (render/steps-flow.ts#damageEqualToTheirCount)
@@ -7015,6 +8430,39 @@ Object.assign(EXAMPLES, {
     ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
     readings: ['All damage that would be dealt to target creature this turn is dealt to you instead.'],
     near: ['All damage that would be dealt to target creature this turn is dealt to an opponent instead.', 'All damage that would be dealt to target creature is dealt to you instead.'],
+  },
+});
+
+// edh-next-60 (Commander lane prevent): the redirection of the damage you and a group would be dealt, and the attacking-creature condition (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'redirect-all-you-and-lead': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, filter: { types: ['Creature'] } }], steps: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [
+      { s: 'replace', replaces: { ev: 'damage', recipient: { player: 'you' } }, body: { b: 'redirect', to: { ref: 'target', id: 't0' } } },
+      { s: 'replace', replaces: { ev: 'damage', recipient: { object: { types: ['Creature'], controller: 'you' } } }, body: { b: 'redirect', to: { ref: 'target', id: 't0' } } }] }] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['All damage that would be dealt this turn to you and creatures you control is dealt to target creature instead.', 'Until end of turn, all damage that would be dealt to you and creatures you control is dealt to target creature instead.'],
+    near: ['All damage that would be dealt this turn to you and permanents you control is dealt to target creature instead.', 'All damage that would be dealt this turn to creatures you control is dealt to target creature instead.', 'All combat damage that would be dealt this turn to you and creatures you control is dealt to target creature instead.'],
+  },
+  'you-control-is-attacking': {
+    def: spell([{ op: 'if', cond: { cond: 'exists', of: { ref: 'each', filter: { allTypes: ['Artifact', 'Creature'], controller: 'you', attacking: true } } }, then: [draw()] } as unknown as EffectStep]),
+    readings: ['If you control an attacking artifact creature, draw a card.', 'If an artifact creature you control is attacking, draw a card.'],
+    near: ['If an artifact creature you control is blocking, draw a card.', 'If an artifact creature an opponent controls is attacking, draw a card.', 'If an artifact creature you control is attacking, draw two cards.'],
+  },
+});
+
+// edh-c-60 (Commander ranks 17,501-18,000): the nongreen restriction and the target with the creatures sharing a color with it (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'nongreen-spells-or-sources': {
+    def: statics([{ s: 'restrict', subject: { ref: 'self' }, mode: 'cant', action: 'beTargeted', other: { notColors: ['G'] } }]),
+    ctx: creature,
+    readings: ["~ can't be the target of nongreen spells or abilities from nongreen sources."],
+    near: ["~ can't be the target of nongreen spells or abilities from green sources.", "~ can't be the target of nonblue spells or abilities from nongreen sources."],
+  },
+  'target-and-each-other-shares-color': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, filter: { types: ['Creature'] } }], steps: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'union', of: [{ ref: 'target', id: 't0' }, { ref: 'each', filter: { other: true, types: ['Creature'], sharesWith: { with: { ref: 'target', id: 't0' }, quality: 'color' } } }] }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'flying', text: 'flying' }] }] }] }] } } as never,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['Target creature and each other creature that shares a color with it gain flying until end of turn.', 'Target creature and all other creatures that share a color with that creature gain flying until end of turn.'],
+    near: ['Target creature and each other creature that shares a creature type with it gain flying until end of turn.', 'Target creature and each other creature that shares a color with it gain flying.'],
   },
 });
 
@@ -7069,6 +8517,7 @@ Object.assign(EXAMPLES, {
   },
 });
 
+
 // p2-attack-block-1: leading durations of a ban with "its activated abilities can't be activated", two groups' "can't block this turn", a group's grant with
 // "can't be blocked by" (render/stat.ts#lastingCants and the static loop)
 Object.assign(EXAMPLES, {
@@ -7090,6 +8539,37 @@ Object.assign(EXAMPLES, {
     ctx: creature,
     readings: ["Fish you control have haste and can't be blocked by Humans.", "Fish you control have haste. Fish you control can't be blocked by Humans."],
     near: ["Fish you control have haste and can't be blocked by Goblins.", "Fish you control have flying and can't be blocked by Humans."],
+  },
+  // edh-c-8 (Commander effort, coordinator C): the grant and the attack requirement of one group
+  'group-grant-then-must-attack': {
+    def: statics([
+      { s: 'continuous', affects: { ref: 'each', filter: { subtypes: ['Goblin'], controller: 'you' } }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'haste' }] }] },
+      { s: 'restrict', subject: { ref: 'each', filter: { subtypes: ['Goblin'], controller: 'you' } }, mode: 'mustIfAble', action: 'attack' },
+    ] as StaticEffect[]),
+    ctx: creature,
+    readings: ['Goblins you control have haste and attack each combat if able.', 'Goblins you control have haste. Goblins you control attack each combat if able.'],
+    near: ['Goblins you control have haste and block each combat if able.', 'Goblins you control have flying and attack each combat if able.'],
+  },
+  'total-of-sacrificed-group': {
+    def: spell([{ op: 'draw', who: { ref: 'you' }, count: { q: 'stat', stat: 'power', of: { ref: 'costSacrificed' }, sum: true } } as EffectStep]),
+    readings: ['Draw cards equal to the total power of the sacrificed creatures.', 'Draw cards equal to the total power of the sacrificed artifacts.'],
+    near: ['Draw cards equal to the total power of the sacrificed creature.', 'Draw cards equal to the total toughness of the sacrificed creatures.', 'Draw cards equal to the total power of the exiled cards.'],
+  },
+  'nontoken-color-order': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { token: false, colors: ['B'], controller: 'opponent' } } } as EffectStep]),
+    readings: ['Destroy all nontoken black permanents your opponents control.', 'Destroy all black nontoken permanents your opponents control.'],
+    near: ['Destroy all black permanents your opponents control.', 'Destroy all nontoken red permanents your opponents control.', 'Destroy all nontoken permanents your opponents control.'],
+  },
+  'attached-it-attack-no-defender': {
+    def: { ...statics([{ s: 'permit', who: { ref: 'controllerOf', object: { ref: 'attachedTo' } }, of: { attachedToSource: true }, action: 'attackAsThoughNoDefender' }] as StaticEffect[]), condition: { cond: 'matches', object: { ref: 'attachedTo' }, filter: { keyword: 'defender' } } } as AbilityDef,
+    ctx: creature,
+    readings: ["As long as equipped creature has defender, it can attack as though it didn't have defender.", "As long as equipped creature has defender, equipped creature can attack as though it didn't have defender."],
+    near: ["As long as equipped creature has defender, it can attack as though it had defender.", "As long as equipped creature has defender, it can block as though it didn't have defender.", "As long as equipped creature has flying, it can attack as though it didn't have defender."],
+  },
+  'player-shroud-gain': {
+    def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'restrict', subject: { ref: 'you' }, mode: 'cant', action: 'beTargeted' }] } as EffectStep]),
+    readings: ['You gain shroud until end of turn.', "You can't be the target of spells or abilities until end of turn."],
+    near: ['You gain shroud.', 'You gain hexproof until end of turn.', 'Each opponent gains shroud until end of turn.', "You can't be the target of spells or abilities your opponents control until end of turn."],
   },
 } satisfies Record<string, Example>);
 
@@ -7191,10 +8671,46 @@ Object.assign(EXAMPLES, {
 Object.assign(EXAMPLES, {
   'life-total-highest-greatest': {
     def: spell([{ op: 'setLife', who: { ref: 'each', who: 'player' }, value: { q: 'life', of: { ref: 'each', who: 'player' }, agg: 'max' } } as EffectStep]),
-    readings: ["Each player's life total becomes the highest life total among all players.", "Each player's life total becomes the greatest life total among all players."],
+    readings: ["Each player's life total becomes the highest life total among all players.", "Each player's life total becomes the greatest life total among all players.", "Each player's life total becomes the highest life total among players."],
     near: ["Each player's life total becomes the lowest life total among all players.", "Each player's life total becomes the highest life total among your opponents."],
   },
 });
+
+// edh-next-14 (CR 205.2a): a list of three kinds where one option is "instant or sorcery"
+Object.assign(EXAMPLES, {
+  'list-of-three-flat': {
+    def: spell([{ op: 'counter', what: t('t0') } as EffectStep], [{ id: 't0', kind: 'spell', min: 1, max: 1, text: '', filter: { anyOf: [{ types: ['Instant', 'Sorcery'] }, { subtypes: ['Wizard'] }] } } as never]),
+    readings: ['Counter target instant, sorcery, or Wizard spell.', 'Counter target instant or sorcery or Wizard spell.'],
+    near: ['Counter target instant, sorcery, or Goblin spell.', 'Counter target instant, Wizard, or sorcery spell.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-next-14 (CR 201.2): the same name as a card of a graveyard
+Object.assign(EXAMPLES, {
+  'same-name-that-has': {
+    def: spell([{ op: 'counter', what: t('t0') } as EffectStep], [{ id: 't0', kind: 'spell', min: 1, max: 1, text: '', filter: { sharesWith: { with: { ref: 'each', filter: { zone: 'graveyard', owner: 'you', isCard: true } }, quality: 'name' } } } as never]),
+    readings: ['Counter target spell with the same name as a card from your graveyard.', 'Counter target spell that has the same name as a card in your graveyard.'],
+    near: ['Counter target spell that has the same name as a card from your hand.', 'Counter target spell that shares a name with a card in your graveyard.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-next-14 (CR 700.6): "attacking historic" in either order
+Object.assign(EXAMPLES, {
+  'historic-attacking-order': {
+    def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: t('t0'), mods: [{ layer: '7c', power: 1, toughness: 1 }] }] } as EffectStep], [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { attacking: true, anyOf: [{ types: ['Artifact'] }, { supertypes: ['Legendary'] }, { subtypes: ['Saga'] }], types: ['Creature'] } } as never]),
+    readings: ['Target attacking historic creature gets +1/+1 until end of turn.', 'Target historic attacking creature gets +1/+1 until end of turn.'],
+    near: ['Target attacking legendary creature gets +1/+1 until end of turn.', 'Target blocking historic creature gets +1/+1 until end of turn.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-next-14 (CR 701.23a, 701.24a): the players who searched shuffle, said with "a library" or "their library"
+Object.assign(EXAMPLES, {
+  'who-searched-their-library': {
+    def: spell([{ op: 'shuffle', who: { ref: 'each', who: 'player' }, ifSearched: true } as EffectStep]),
+    readings: ['Each player who searched a library this way shuffles.', 'Each player who searched their library this way shuffles.'],
+    near: ['Each player who searched a library this way draws a card.', 'Each opponent who searched their library this way shuffles.'],
+  },
+} satisfies Record<string, Example>);
 
 // p2-cost-parts-1 (CR 118.3, 602.2b): counters removed from ~ and ~ itself sacrificed, exiled or returned, said with "it"
 const P2CP1_COST = (second: Record<string, unknown>): AbilityDef => ({ kind: 'activated', text: '', cost: { other: [{ kind: 'removeCounters', counter: 'quest', count: 3, self: true }, second] }, effect: { targets: [], steps: [draw()] } } as unknown as AbilityDef);
@@ -7922,8 +9438,9 @@ Object.assign(EXAMPLES, {
   'opponent-attacks-you': {
     def: trig([{ ev: 'attacks', attacker: { types: ['Creature'], controller: 'opponent' }, count: { op: '>=', value: 2 }, defender: 'you' } as EventPattern], [draw()], { batch: true }),
     ctx: creature,
-    readings: ['Whenever an opponent attacks you with two or more creatures, draw a card.', 'Whenever two or more creatures your opponents control attack you, draw a card.'],
-    near: ['Whenever an opponent attacks you with three or more creatures, draw a card.', 'Whenever an opponent attacks with two or more creatures, draw a card.', 'Whenever a player attacks you with two or more creatures, draw a card.'],
+    // edh-d-70: "a player attacks you with ..." says the same declaration (a player who attacks you is an opponent)
+    readings: ['Whenever an opponent attacks you with two or more creatures, draw a card.', 'Whenever two or more creatures your opponents control attack you, draw a card.', 'Whenever a player attacks you with two or more creatures, draw a card.'],
+    near: ['Whenever an opponent attacks you with three or more creatures, draw a card.', 'Whenever an opponent attacks with two or more creatures, draw a card.', 'Whenever a player attacks with two or more creatures, draw a card.'],
   },
   'attacking-you-or-planeswalker': {
     def: rx30Def('Creature — Spider', "{2}: Test Card deals 2 damage to target creature that's attacking you or a planeswalker you control."), ctx: creature,
@@ -8033,6 +9550,9 @@ Object.assign(EXAMPLES, {
     readings: [
       'Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and the rest into your graveyard.',
       'Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and all other cards revealed this way into your graveyard.',
+      'Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and the rest of the cards into your graveyard.',
+      'Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and the rest of those cards into your graveyard.',
+      'Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and the rest of the cards revealed this way into your graveyard.', // edh-c-65 (Aethermage's Touch)
     ],
     near: ['Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and all other cards revealed this way into your hand.'],
   },
@@ -8075,3 +9595,8930 @@ Object.assign(EXAMPLES, {
       'Each opponent exiles cards from the top of their library until that player has exiled a nonland card.'],
   },
 } satisfies Record<string, Example>);
+
+// edh-cast-2 (CR 601.3, 101.2): a ban on casting spells for the rest of the turn, said of the additional casts
+Object.assign(EXAMPLES, {
+  'cant-cast-additional-spells': {
+    def: { kind: 'static', text: '', effects: [{ s: 'restrict', subject: { ref: 'you' }, mode: 'cant', action: 'cast' }] } as AbilityDef,
+    readings: ["You can't cast spells.", "You can't cast additional spells."],
+    near: ["You can't cast additional creature spells.", "Your opponents can't cast additional spells."],
+  },
+} satisfies Record<string, Example>);
+// edh-players-2 (Veil of Summer, Tataru Taru; CR 702.11d, 102.1): granted "hexproof from <color>" said once for several colors, and a turn condition said "isn't"
+Object.assign(EXAMPLES, {
+  'hexproof-from-pair-granted': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, mods: [{ layer: 6, add: [
+      { kind: 'keyword', keyword: 'hexproof', quality: 'color:U', text: 'hexproof from blue' }, { kind: 'keyword', keyword: 'hexproof', quality: 'color:B', text: 'hexproof from black' }] }] } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ['Creatures you control have hexproof from blue and from black.', 'Creatures you control have hexproof from blue and hexproof from black.'],
+    near: ['Creatures you control have hexproof from blue and from red.', 'Creatures you control have hexproof from blue.', 'Creatures you control have hexproof from black and from blue.'],
+  },
+  'turn-isnt': {
+    def: spell([gain(1), { op: 'if', cond: { cond: 'not', of: { cond: 'turnOf', whose: 'you' } }, then: [draw()] } as EffectStep]),
+    readings: ["You gain 1 life. Then if it isn't your turn, draw a card.", "You gain 1 life. Then if it's not your turn, draw a card."],
+    near: ["You gain 1 life. Then if it's your turn, draw a card.", "You gain 1 life. Then if it isn't an opponent's turn, draw a card."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-perms-2 (Commander lane edh-perms; Sage's Reverie)
+const EDHPM2_AURAS: Quantity = { q: 'count', of: { ref: 'each', filter: { subtypes: ['Aura'], controller: 'you', attachedToObject: { ref: 'each', filter: { types: ['Creature'] } } } } };
+Object.assign(EXAMPLES, {
+  'attached-relative': {
+    def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: '7c', power: EDHPM2_AURAS, toughness: EDHPM2_AURAS }] }]),
+    ctx: unknown,
+    readings: [
+      'Enchanted creature gets +1/+1 for each Aura you control attached to a creature.',
+      "Enchanted creature gets +1/+1 for each Aura you control that's attached to a creature.",
+      'Enchanted creature gets +1/+1 for each Aura you control that is attached to a creature.',
+    ],
+    near: ["Enchanted creature gets +1/+1 for each Aura you control that's attached to a land.", "Enchanted creature gets +1/+1 for each Aura you control that's not attached to a creature.", "Enchanted creature gets +1/+1 for each Aura that's attached to a creature."],
+  },
+});
+
+// edh-cast-3 (CR 601.2i, 101.2): a limit of one spell of a kind each turn, said as the additional casts
+Object.assign(EXAMPLES, {
+  'cant-cast-additional-kind': {
+    def: { kind: 'static', text: '', effects: [{ s: 'restrict', subject: { ref: 'each', who: 'player' }, mode: 'cant', action: 'cast', other: { notTypes: ['Artifact'], zone: 'stack' }, max: 1 }] } as AbilityDef,
+    readings: ["Each player can't cast more than one nonartifact spell each turn.", "Each player who has cast a nonartifact spell this turn can't cast additional nonartifact spells."],
+    near: ["Each player who has cast a nonartifact spell this turn can't cast additional creature spells.", "Each opponent who has cast a nonartifact spell this turn can't cast additional nonartifact spells."],
+  },
+} satisfies Record<string, Example>);
+// edh-perms-3 (Commander lane edh-perms; CR cites from memory, unverified): the size said first with the added subtypes as creature types, and the static ability of every zone but the battlefield
+Object.assign(EXAMPLES, {
+  'becomes-then-loses-then-gains': {
+    def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 4, subtypes: { set: ['Frog'] } }, { layer: 6, removeAll: true }, { layer: 6, add: [{ kind: 'keyword', keyword: 'hexproof' }] }, { layer: '7b', power: 1, toughness: 1 }] }] }] as unknown as EffectStep[]),
+    readings: ['Until end of turn, ~ becomes a Frog with base power and toughness 1/1, loses all abilities, and gains hexproof.'],
+    near: ['Until end of turn, ~ becomes a Frog with base power and toughness 2/2, loses all abilities, and gains hexproof.',
+      'Until end of turn, ~ becomes a Frog with base power and toughness 1/1, loses all abilities, and gains flying.'],
+  },
+  'base-pt-then-becomes-creature-types': {
+    def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], subtypes: ['Elf'], controller: 'you' } }, mods: [{ layer: 4, subtypes: { add: ['Dinosaur'] } }, { layer: '7b', power: 5, toughness: 5 }] }] }] as unknown as EffectStep[]),
+    readings: ['Until end of turn, each Elf creature you control has base power and toughness 5/5 and becomes a Dinosaur in addition to its other creature types.',
+      'Until end of turn, Elf creatures you control become Dinosaurs in addition to their other types and have base power and toughness 5/5.'],
+    near: ['Until end of turn, each Elf creature you control has base power and toughness 4/4 and becomes a Dinosaur in addition to its other creature types.',
+      'Until end of turn, each Elf creature you control has base power and toughness 5/5 and becomes a Dinosaur in addition to its other types and gains haste.',
+      'Until end of turn, each Elf creature an opponent controls has base power and toughness 5/5 and becomes a Dinosaur in addition to its other creature types.'],
+  },
+  'sized-creature-in-addition-static': {
+    def: { ...statics([{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 4, types: { add: ['Creature'] }, subtypes: { add: ['Insect'] } }, { layer: '7b', power: 1, toughness: 1 }] }]), zone: ['library', 'hand', 'graveyard', 'stack', 'exile', 'command'] } as AbilityDef,
+    ctx: unknown,
+    readings: ["As long as ~ isn't on the battlefield, it's a 1/1 Insect creature in addition to its other types.",
+      "As long as ~ isn't on the battlefield, it is an Insect creature in addition to its other types and has base power and toughness 1/1."],
+    near: ["As long as ~ isn't on the battlefield, it's a 2/1 Insect creature in addition to its other types.", "As long as ~ isn't in your graveyard, it's a 1/1 Insect creature in addition to its other types.",
+      "As long as ~ isn't on the battlefield, it's a 1/1 Insect creature."],
+  },
+} satisfies Record<string, Example>);
+// edh-players-3 (Commander lane edh-players; CR 205.2a, 205.4a, 614.1c, 205.1b, 107.3a, 508.4, 102.3; cites from memory, unverified): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'plural-kind-and-kind': {
+    def: statics([{ s: 'replace', replaces: { ev: 'zoneChange', subject: { anyOf: [{ types: ['Creature'] }, { notSupertypes: ['Basic'], types: ['Land'] }], controller: 'opponent' }, to: 'battlefield' }, body: { b: 'enters', tapped: true } } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ['Creatures and nonbasic lands your opponents control enter tapped.', 'Creatures your opponents control or nonbasic lands your opponents control enter tapped.'],
+    near: ['Creatures and basic lands your opponents control enter tapped.', 'Creatures and nonbasic lands you control enter tapped.', 'Creatures and nonbasic lands your opponents control enter untapped.'],
+  },
+  'still-land-sized-artifact-creature-with': {
+    def: {
+      kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 1 }] },
+      effect: { targets: [], steps: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 4, types: { add: ['Artifact', 'Creature'] }, subtypes: { add: ['Bird'] } }, { layer: 6, add: [{ kind: 'keyword', keyword: 'flying', text: 'flying' }] }, { layer: '7b', power: 1, toughness: 1 }] }] }] },
+    } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Land'] },
+    readings: ["{1}: This land becomes a 1/1 Bird artifact creature with flying until end of turn. It's still a land."],
+    near: ["{1}: This land becomes a 1/1 Bird artifact creature with flying until end of turn. It's still a creature.", "{1}: This land becomes a 2/2 Bird artifact creature with flying until end of turn. It's still a land."],
+  },
+  'becomes-x-over-x-announced': {
+    def: {
+      kind: 'activated', text: '', cost: { mana: [{ kind: 'variable', name: 'X' }, { kind: 'colored', color: 'G' }] }, xMin: 1,
+      effect: { targets: [], steps: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 4, types: { add: ['Creature'] }, subtypes: { add: ['Hydra'] } }, { layer: 5, colors: { set: ['G'] } }, { layer: '7b', power: { q: 'X' }, toughness: { q: 'X' } }] }] }] },
+    } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Land'] },
+    readings: ["{X}{G}: Until end of turn, this land becomes an X/X green Hydra creature. It's still a land. X can't be 0."],
+    near: ["{X}{G}: Until end of turn, this land becomes an X/X green Hydra creature, where X is the number of lands you control. It's still a land. X can't be 0.", "{X}{G}: Until end of turn, this land becomes a 1/1 green Hydra creature. It's still a land. X can't be 0."],
+  },
+  'for-each-opponent-that-player': {
+    def: {
+      kind: 'triggered', text: '', trigger: { on: [{ ev: 'attacks', attacker: { controller: 'you' }, count: { op: '>=', value: 1 } }], batch: true },
+      effect: { targets: [], steps: [{ op: 'forEach', over: { ref: 'each', who: 'opponent' }, as: 'each', do: [{ op: 'createToken', who: you, count: 1, token: { colors: ['W'], types: ['Creature'], subtypes: ['Human'], power: 1, toughness: 1 }, tapped: true, attacking: { defender: { ref: 'bound', name: 'each' }, orPlaneswalkers: true } }] }] },
+    } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ["Whenever you attack, for each opponent, create a 1/1 white Human creature token that's tapped and attacking that player or a planeswalker they control.", "Whenever you attack, for each opponent, create a 1/1 white Human creature token that's tapped and attacking that opponent or a planeswalker they control."],
+    near: ["Whenever you attack, for each opponent, create a 1/1 white Human creature token that's tapped and attacking that player.", "Whenever you attack, for each opponent, create a 1/1 white Human creature token that's tapped and attacking you or a planeswalker they control."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-misc-2 (Commander lane edh-misc): the command zone, a nontoken permanent sacrificed ("that card"), "the following process" as the next sentence
+Object.assign(EXAMPLES, {
+  'sacrificed-nontoken-that-card': {
+    def: trig([{ ev: 'action', verb: 'sacrifice', actor: 'opponent', object: { token: false } } as EventPattern], [{ op: 'move', what: { ref: 'event', role: 'subject' }, to: { zone: 'battlefield', controller: you } } as EffectStep]),
+    ctx: creature,
+    readings: ['Whenever an opponent sacrifices a nontoken permanent, put it onto the battlefield under your control.', 'Whenever an opponent sacrifices a nontoken permanent, put that card onto the battlefield under your control.'],
+    near: ['Whenever an opponent sacrifices a permanent, put that card onto the battlefield under your control.', 'Whenever an opponent sacrifices a nontoken permanent, put that token onto the battlefield under your control.'],
+  },
+  'command-zone-from-or-in': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { commander: true, owner: 'you', zone: 'command' } }, min: 0, max: 1, as: 'put' } as EffectStep,
+      { op: 'move', what: bound('put'), to: { zone: 'battlefield', controller: you } } as EffectStep,
+    ]),
+    readings: ['You may put a commander you own from the command zone onto the battlefield.', 'You may put a commander you own in the command zone onto the battlefield.'],
+    near: ['You may put a commander an opponent owns from the command zone onto the battlefield.', 'You may put a commander you own from your hand onto the battlefield.'],
+  },
+  'return-to-command-zone': {
+    def: spell([{ op: 'move', what: t('c'), to: { zone: 'command' } } as EffectStep], [objTarget('c')]),
+    readings: ['Return target creature to the command zone.', 'Put target creature into the command zone.'],
+    near: ['Return target creature to the battlefield.', 'Return target creature to your hand.'],
+  },
+  'self-from-command-zone': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 2 }] }, zone: ['command'], effect: { targets: [], steps: [{ op: 'move', what: { ref: 'self' }, to: { zone: 'battlefield', controller: { ref: 'you' } } }] } } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['{2}: Put ~ onto the battlefield from the command zone.', '{2}: Put ~ onto the battlefield.'],
+    near: ['{2}: Put ~ onto the battlefield from your hand.', '{2}: Put ~ onto the battlefield from the command zone tapped.'],
+  },
+  'repeat-following-process-sentence': {
+    def: spell([{ op: 'repeat', times: { q: 'X' }, do: [gain(2)] } as EffectStep]),
+    readings: ['Repeat the following process X times: you gain 2 life.', 'Repeat the following process X times. You gain 2 life.', 'Do the following X times: gain 2 life.'],
+    near: ['Repeat the following process X times. You gain 3 life.', 'Repeat the following process twice. You gain 2 life.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-combat-3 (Commander lane edh-combat): a shared adjective list, "also get" in a static ability of a group, five kinds of counters at once
+Object.assign(EXAMPLES, {
+  'shared-adjectives-list': {
+    def: trig([{ ev: 'zoneChange', subject: { anyOf: [{ attacking: true }, { blocking: true }], goaded: true, types: ['Creature'] }, from: 'battlefield', to: 'graveyard' }], [{ op: 'createToken', who: you, count: 1, token: { predefined: 'Treasure' } } as EffectStep]),
+    ctx: creature,
+    readings: ['Whenever a goaded attacking or blocking creature dies, you create a Treasure token.', 'Whenever an attacking goaded or blocking goaded creature dies, you create a Treasure token.'],
+    near: ['Whenever a goaded attacking or blocking creature dies, each opponent creates a Treasure token.', 'Whenever a goaded attacking or blocking creature dies, you create a Food token.', 'Whenever a goaded attacking creature dies, you create a Treasure token.', 'Whenever an attacking or blocking goaded creature dies, you create a Treasure token.'],
+  },
+  'also-get-static': {
+    def: t12Static({ cond: 'exists', atLeast: 6, of: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } } }, [{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, mods: [{ layer: '7c', power: 1, toughness: 0 }, { layer: 6, add: [{ kind: 'keyword', keyword: 'trample', text: 'Trample' }] }] } as StaticEffect]),
+    ctx: creature,
+    readings: ['Creatures you control get +1/+0 and have trample as long as you control six or more creatures.', 'Creatures you control also get +1/+0 and have trample as long as you control six or more creatures.'],
+    near: ['Creatures you control also get +1/+0 and have trample as long as you control five or more creatures.', 'Creatures you control also get +1/+1 and have trample as long as you control six or more creatures.', 'Creatures your opponents control also get +1/+0 and have trample as long as you control six or more creatures.'],
+  },
+  'five-counter-kinds': {
+    def: spell([
+      { op: 'putCounters', on: t('c'), kind: '+1/+1', count: 4 } as EffectStep,
+      { op: 'putCounters', on: t('c'), kind: 'reach', count: 1 } as EffectStep,
+      { op: 'putCounters', on: t('c'), kind: 'menace', count: 1 } as EffectStep,
+      { op: 'putCounters', on: t('c'), kind: 'deathtouch', count: 1 } as EffectStep,
+      { op: 'putCounters', on: t('c'), kind: 'haste', count: 1 } as EffectStep,
+    ], [objTarget('c')]),
+    readings: ['Put four +1/+1 counters, a reach counter, a menace counter, a deathtouch counter, and a haste counter on target creature.', 'Put four +1/+1 counters, a reach counter, and a menace counter on target creature. Put a deathtouch counter and a haste counter on it.'],
+    near: ['Put four +1/+1 counters, a reach counter, a menace counter, a deathtouch counter, or a haste counter on target creature.', 'Put four +1/+1 counters, a reach counter, a menace counter, a deathtouch counter, and a flying counter on target creature.', 'Put three +1/+1 counters, a reach counter, a menace counter, a deathtouch counter, and a haste counter on target creature.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-replace-3 (Commander lane edh-replace; Stuffy Doll)
+Object.assign(EXAMPLES, {
+  'self-damage-itself': {
+    def: spell([{ op: 'damage', source: { ref: 'self' }, to: { ref: 'self' }, amount: 1 } as EffectStep]),
+    readings: ['~ deals 1 damage to itself.', '~ deals 1 damage to it.'],
+    near: ['~ deals 2 damage to itself.', '~ deals 1 damage to you.', '~ deals 1 damage to each creature.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-perms-4 (Commander lane edh-perms; Animate Dead, Necromancy; CR 201.5a, 607.2a, 613.1f, 603.7, 701.21a)
+const EDHPM4_LINK = { ref: 'linked', link: 'putWith' } as const;
+Object.assign(EXAMPLES, {
+  'put-with-itself-or-name': {
+    def: trig([enters], [effectStep([{ s: 'continuous', affects: self, mods: [{ layer: 4, subtypes: { add: ['Aura'] } }, { layer: 6, add: [{ kind: 'keyword', keyword: 'enchant', filter: { types: ['Artifact'], is: EDHPM4_LINK }, text: '' }] }] } as unknown as StaticEffect], { d: 'permanent' })]),
+    ctx: unknown,
+    readings: [
+      'When Test Card enters, it becomes an Aura with "enchant artifact put onto the battlefield with Test Card."',
+      'When Test Card enters, it becomes an Aura with "enchant artifact put onto the battlefield with this enchantment."',
+    ],
+    near: [
+      'When Test Card enters, it becomes an Aura with "enchant artifact put onto the battlefield with an opponent."',
+      'When Test Card enters, it becomes an Aura with "enchant artifact put onto the battlefield with Test Card"',
+      'When Test Card enters, it becomes an Equipment with "enchant artifact put onto the battlefield with Test Card."',
+    ],
+  },
+  'off-timing-any-time': {
+    def: statics([{ s: 'permit', who: you, action: 'haveFlash', of: { self: true }, offTimingSacrifice: true } as unknown as StaticEffect]),
+    ctx: unknown,
+    readings: [
+      "You may cast Test Card as though it had flash. If you cast it any time a sorcery couldn't have been cast, the controller of the permanent it becomes sacrifices it at the beginning of the next cleanup step.",
+      "You may cast Test Card as though it had flash. If you cast it at any time a sorcery couldn't have been cast, the controller of the permanent it becomes sacrifices it at the beginning of the next cleanup step.",
+    ],
+    near: [
+      "You may cast Test Card as though it had flash. If you cast it any time a sorcery couldn't have been cast, the controller of the permanent it becomes sacrifices it at the beginning of the next end step.",
+      "You may cast Test Card as though it had flash. If you cast it any time a sorcery couldn't have been cast, the owner of the permanent it becomes sacrifices it at the beginning of the next cleanup step.",
+      "You may cast Test Card as though it had flash. If you cast it at any time a creature couldn't have been cast, the controller of the permanent it becomes sacrifices it at the beginning of the next cleanup step.",
+    ],
+  },
+  'that-creature-or-permanent-controller': {
+    def: trig([{ ev: 'zoneChange', subject: { self: true }, from: 'battlefield' }], [{ op: 'sacrificeChoice', who: { ref: 'controllerOf', object: EDHPM4_LINK }, filter: { is: EDHPM4_LINK }, count: 1 } as EffectStep]),
+    ctx: unknown,
+    readings: [
+      "When Test Card leaves the battlefield, that creature's controller sacrifices it.",
+      "When Test Card leaves the battlefield, that permanent's controller sacrifices it.",
+    ],
+    near: [
+      "When Test Card leaves the battlefield, that creature's owner sacrifices it.",
+      "When Test Card leaves the battlefield, that creature's controller sacrifices a creature.",
+      "When Test Card leaves the battlefield, that player's controller sacrifices it.",
+    ],
+  },
+} satisfies Record<string, Example>);
+
+// edh-perms-4 (CR 400.7, 603.4): "is on the battlefield" and "is still on the battlefield" of one object
+Object.assign(EXAMPLES, {
+  'on-the-battlefield-still': {
+    def: trig([enters], [gain(1)], { interveningIf: { cond: 'exists', of: self } }),
+    ctx: unknown,
+    readings: ["When Test Card enters, if it's on the battlefield, you gain 1 life.", "When Test Card enters, if it's still on the battlefield, you gain 1 life.", 'When Test Card enters, if Test Card is on the battlefield, you gain 1 life.'],
+    near: ["When Test Card enters, if it isn't on the battlefield, you gain 1 life.", "When Test Card enters, if it's on the stack, you gain 1 life.", "When Test Card enters, if you control it, you gain 1 life."],
+  },
+} satisfies Record<string, Example>);
+// edh-combat-4 (Commander lane edh-combat; CR cites checked against the 2026-09-25 text): tapped and attacking before the token words, tapped before and attacking whom after, a player attacks one of your opponents
+Object.assign(EXAMPLES, {
+  'token-tapped-attacking-front': {
+    def: trig([{ ev: 'attacks', attacker: { controller: 'you' }, count: { op: '>=', value: 1 } } as EventPattern], [{ op: 'createToken', who: you, count: 1, tapped: true, attacking: true,
+      token: { power: { q: 'count', of: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } }, toughness: { q: 'count', of: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } }, colors: ['R'], subtypes: ['Elemental'], types: ['Creature'] } } as EffectStep], { batch: true }),
+    ctx: creature,
+    readings: [
+      'Whenever you attack, create a tapped and attacking X/X red Elemental creature token, where X is the number of lands you control.',
+      "Whenever you attack, create an X/X red Elemental creature token that's tapped and attacking, where X is the number of lands you control.",
+    ],
+    near: [
+      'Whenever you attack, create a tapped X/X red Elemental creature token, where X is the number of lands you control.',
+      'Whenever you attack, create an attacking X/X red Elemental creature token, where X is the number of lands you control.',
+      'Whenever you attack, create a tapped and attacking X/X red Elemental creature token, where X is the number of lands an opponent controls.',
+    ],
+  },
+  // trek-15 (lane trek; CR 508.4, 111.1, 506.3): the count in front, and the two flags before the token words
+  'token-tapped-attacking-front-counted': {
+    def: trig([{ ev: 'attacks', attacker: { controller: 'you' }, count: { op: '>=', value: 1 } } as EventPattern], [{ op: 'createToken', who: you, count: { q: 'opponentsAttacked', scope: 'turn' }, tapped: true, attacking: true,
+      token: { power: 2, toughness: 1, colors: ['R'], subtypes: ['Klingon', 'Warrior'], types: ['Creature'], keywords: ['haste'] } } as EffectStep], { batch: true }),
+    ctx: creature,
+    readings: [
+      'Whenever you attack, for each opponent you attacked this turn, create a tapped and attacking 2/1 red Klingon Warrior creature token with haste.',
+      "Whenever you attack, for each opponent you attacked this turn, create a 2/1 red Klingon Warrior creature token with haste that's tapped and attacking.",
+      "Whenever you attack, create a 2/1 red Klingon Warrior creature token with haste that's tapped and attacking for each opponent you attacked this turn.",
+    ],
+    near: [
+      'Whenever you attack, for each opponent you attacked this turn, create a tapped 2/1 red Klingon Warrior creature token with haste.',
+      'Whenever you attack, for each opponent you attacked this turn, create an attacking 2/1 red Klingon Warrior creature token with haste.',
+      'Whenever you attack, for each opponent you attacked this combat, create a tapped and attacking 2/1 red Klingon Warrior creature token with haste.',
+    ],
+  },
+  'token-tapped-front-attacking-whom': {
+    def: trig([{ ev: 'attacks', attacker: { types: ['Creature'] }, defender: 'opponent', count: { op: '>=', value: 1 } } as EventPattern], [{ op: 'createToken', who: { ref: 'active' }, count: 1, tapped: true, attacking: { defender: { ref: 'event', role: 'defender' } },
+      token: { power: 2, toughness: 1, colors: ['W', 'B'], subtypes: ['Inkling'], types: ['Creature'], keywords: ['flying'] } } as EffectStep], { batch: true }),
+    ctx: creature,
+    readings: [
+      "Whenever a player attacks one of your opponents, that attacking player creates a tapped 2/1 white and black Inkling creature token with flying that's attacking that opponent.",
+      "Whenever a player attacks one of your opponents, that attacking player creates a 2/1 white and black Inkling creature token with flying that's tapped and attacking that opponent.",
+    ],
+    near: [
+      "Whenever a player attacks one of your opponents, that attacking player creates a 2/1 white and black Inkling creature token with flying that's attacking that opponent.",
+      "Whenever a player attacks one of your opponents, you create a tapped 2/1 white and black Inkling creature token with flying that's attacking that opponent.",
+      "Whenever a player attacks one of your opponents, that attacking player creates a tapped 2/1 white and black Inkling creature token with flying that's attacking you.",
+    ],
+  },
+  'player-attacks-one-of-your-opponents': {
+    def: trig([{ ev: 'attacks', attacker: { types: ['Creature'] }, defender: 'opponent', count: { op: '>=', value: 1 } } as EventPattern], [draw()], { batch: true }),
+    ctx: creature,
+    readings: [
+      'Whenever a player attacks one of your opponents, draw a card.',
+      'Whenever one or more creatures attack one of your opponents, draw a card.',
+      'Whenever one or more creatures attack an opponent, draw a card.',
+    ],
+    near: [
+      'Whenever a player attacks one or more of your opponents, draw a card.',
+      'Whenever a player attacks you, draw a card.',
+      'Whenever a player attacks one of your opponents or a planeswalker they control, draw a card.',
+    ],
+  },
+} satisfies Record<string, Example>);
+
+// edh-cast-5 (CR 107.3, 601.2c, 608.2b): a target's mana value limit by a calculated quantity said with "where X is" (render/program.ts#targetManaValueWhereX)
+Object.assign(EXAMPLES, {
+  'target-mana-value-where-x': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'spell', min: 1, max: 1, filter: { manaValue: { op: '<=', value: { q: 'count', of: { ref: 'each', filter: { subtypes: ['Faerie'], controller: 'you' } } } } } }], steps: [{ op: 'counter', what: { ref: 'target', id: 't0' } }] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['Counter target spell with mana value X or less, where X is the number of Faeries you control.', 'Counter target spell with mana value less than or equal to the number of Faeries you control.'],
+    near: ['Counter target spell with mana value X or less, where X is the number of Elves you control.', 'Counter target spell with mana value X or more, where X is the number of Faeries you control.', 'Counter target spell with mana value X or less.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-players-5 (Commander lane edh-players): an ability of a permanent that isn't a mana ability, said with its zone and an "if"; the object and a group that each get a change
+Object.assign(EXAMPLES, {
+  'activate-permanent-ability-if-not-mana': {
+    def: trig([{ ev: 'activate', player: 'opponent', source: { types: ['Creature'] }, manaAbility: false } as EventPattern], [draw()]),
+    ctx: creature,
+    readings: ["Whenever an opponent activates an ability of a creature that isn't a mana ability, draw a card.", "Whenever an opponent activates an ability of a creature on the battlefield, if it isn't a mana ability, draw a card."],
+    near: ["Whenever an opponent activates an ability of a creature on the battlefield, if it is a mana ability, draw a card.", "Whenever you activate an ability of a creature on the battlefield, if it isn't a mana ability, draw a card.", "Whenever an opponent activates an ability of a creature in a graveyard, if it isn't a mana ability, draw a card."],
+  },
+  'object-and-group-each-get': {
+    def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'union', of: [{ ref: 'self' }, { ref: 'each', filter: { subtypes: ['Goblin'], controller: 'you' } }] }, mods: [{ layer: '7c', power: 1, toughness: 1 }] }] } as EffectStep]),
+    ctx: creature,
+    readings: ['Test Card and Goblins you control each get +1/+1 until end of turn.', 'Test Card and all Goblins you control get +1/+1 until end of turn.'],
+    near: ['Test Card and Goblins you control each get +2/+2 until end of turn.', 'Test Card and Elves you control each get +1/+1 until end of turn.'],
+  },
+} satisfies Record<string, Example>);
+// edh-combat-5 (Commander lane edh-combat; CR cites checked against the 2026-09-25 text): "if a creature you control has K" and "The same is true for ..." (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'exists-has-keyword': {
+    def: xp2Def('Legendary Creature — Test', 'At the beginning of each combat, creatures you control gain flying until end of turn if a creature you control has flying.'),
+    ctx: creature,
+    readings: [
+      'At the beginning of each combat, creatures you control gain flying until end of turn if a creature you control has flying.',
+      'At the beginning of each combat, creatures you control gain flying until end of turn if you control a creature with flying.',
+    ],
+    near: [
+      'At the beginning of each combat, creatures you control gain flying until end of turn if a creature an opponent controls has flying.',
+      'At the beginning of each combat, creatures you control gain flying until end of turn if a creature you control has reach.',
+      'At the beginning of each combat, creatures you control gain flying until end of turn if a creature you control has flying or reach.',
+    ],
+  },
+  'the-same-is-true-for': {
+    def: xp2Def('Legendary Creature — Test', 'At the beginning of each combat, creatures you control gain flying until end of turn if a creature you control has flying. The same is true for reach and trample.'),
+    ctx: creature,
+    readings: [
+      'At the beginning of each combat, creatures you control gain flying until end of turn if a creature you control has flying. The same is true for reach and trample.',
+    ],
+    near: [
+      'At the beginning of each combat, creatures you control gain flying until end of turn if a creature you control has flying. The same is true for trample and reach.',
+      'At the beginning of each combat, creatures you control gain flying until end of turn if a creature you control has flying. The same is true for reach.',
+      'At the beginning of each combat, creatures you control gain flying until end of turn if a creature you control has flying. Do the same for reach and trample, and vigilance.',
+    ],
+  },
+} satisfies Record<string, Example>);
+// edh-mana-keywords-5 (CR 602.2, 605.1a, 603.4, 608.2c, 608.2h, 106.6, 607.2d): activation triggers said with the condition after the comma, mana of the chosen color, a mana's own trigger and a loop over what one instruction moved
+Object.assign(EXAMPLES, {
+  'activate-if-not-mana': {
+    def: trig([{ ev: 'activate', player: 'you', manaAbility: false }], [gain(1)]),
+    ctx: creature,
+    readings: ["Whenever you activate an ability that isn't a mana ability, you gain 1 life.", "Whenever you activate an ability, if it isn't a mana ability, you gain 1 life."],
+    near: ['Whenever you activate an ability, you gain 1 life.', "Whenever you activate an ability, if it is a mana ability, you gain 1 life."],
+  },
+  'chosen-color-mana-trigger': {
+    def: trig([{ ev: 'activate', player: 'you', source: { types: ['Land'] }, manaAbility: true, produced: 'chosen' }], [{ op: 'addMana', who: you, dynamic: { kind: 'chosen', link: 'color', count: 1 } } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ["Whenever a land's ability causes you to add one or more mana of the chosen color, add an additional one mana of that color.", "Whenever a land's ability causes you to add one or more mana of the chosen color, add one mana of the chosen color."],
+    near: ["Whenever a land's ability causes you to add one or more mana of any color, add one mana of the chosen color.", "Whenever a land's ability causes you to add one or more mana of the chosen color, add an additional two mana of that color."],
+  },
+  'when-you-spend-this-mana': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, isMana: true, effect: { targets: [], steps: [{ op: 'addMana', who: you, units: [['G']], whenSpent: { spells: { types: ['Creature'], subtypes: ['Dragon'] }, do: [gain(2)] } }] } } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['{T}: Add {G}. When that mana is spent to cast a Dragon creature spell, you gain 2 life.', '{T}: Add {G}. When you spend this mana to cast a Dragon creature spell, you gain 2 life.'],
+    near: ['{T}: Add {G}. When you spend this mana to cast a Dragon creature spell, you gain 3 life.', '{T}: Add {G}. When you spend this mana to cast a Dragon spell, you gain 2 life.'],
+  },
+  'for-each-this-way': {
+    def: spell([
+      { op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'] } }, as: 'gone' } as EffectStep,
+      { op: 'forEach', over: bound('gone'), as: 'eachMoved', do: [{ op: 'createToken', who: { ref: 'controllerOf', object: bound('eachMoved') }, count: 1, token: { colors: ['G'], types: ['Creature'], subtypes: ['Wolf'], power: 2, toughness: 2 } }] } as EffectStep,
+    ]),
+    readings: ['Destroy all creatures. For each creature destroyed this way, its controller creates a 2/2 green Wolf creature token.'],
+    near: ['Destroy all creatures. For each of them, its controller creates a 2/2 green Wolf creature token.', 'Destroy all creatures. For each artifact destroyed this way, its controller creates a 2/2 green Wolf creature token.'],
+  },
+});
+
+// edh-perms-5 (Commander lane edh-perms; CR 700.4, 701.8a, 614.6; cites from memory, unverified): "if that creature dies this way" after a destroy of one target
+Object.assign(EXAMPLES, {
+  'dies-this-way': {
+    def: spell([{ op: 'destroy', what: t('c'), as: 'moved' }, { op: 'if', cond: { cond: 'did', step: 'moved', which: { types: ['Creature'] }, to: 'graveyard' }, then: [gain(2)] }] as EffectStep[], [objTarget('c')]),
+    readings: ['Destroy target creature. If that creature dies this way, you gain 2 life.', 'Destroy target creature. If a creature was put into a graveyard this way, you gain 2 life.', 'Destroy target creature. If that creature is put into a graveyard this way, you gain 2 life.' /* edh-d-51 */],
+    near: ['Destroy target creature. If that artifact dies this way, you gain 2 life.', 'Destroy target creature. If that creature was destroyed this way, you gain 2 life.', 'Destroy target creature. If that creature dies this way, you gain 3 life.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-d-51 (Commander coordinator D, lane d-rank-1; CR cites from memory, unverified): the possessive have-form of a base power and toughness set, the life gained once for each exiled card said first, several spells and/or abilities
+Object.assign(EXAMPLES, {
+  'base-pt-possessive-have': {
+    def: spell([{ op: 'may', who: you, do: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: self, mods: [{ layer: '7b', power: { q: 'stat', stat: 'power', of: t('c') }, toughness: { q: 'stat', stat: 'toughness', of: t('c') } }] }] } as EffectStep] } as EffectStep], [objTarget('c')]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ["You may have the base power and toughness of Test Card become equal to target creature's power and toughness until end of turn.", "You may have Test Card's base power and toughness become equal to target creature's power and toughness until end of turn."],
+    near: ["You may have Test Card's base power and toughness become equal to target creature's power until end of turn.", "Test Card's base power and toughness become equal to target creature's power and toughness until end of turn.", "You may have target creature's base power and toughness become equal to Test Card's power and toughness until end of turn."],
+  },
+  'for-each-exiled-lead': {
+    def: spell([{ op: 'move', what: t('c'), to: { zone: 'exile' }, as: 'them' } as EffectStep, { op: 'gainLife', who: you, amount: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], zone: 'exile', is: bound('them'), isCard: true } } } } as EffectStep], [objTarget('c', { zone: 'graveyard', isCard: true })]),
+    readings: ['Exile target card from a graveyard. You gain 1 life for each creature card exiled this way.', 'Exile target card from a graveyard. For each creature card exiled this way, you gain 1 life.'],
+    near: ['Exile target card from a graveyard. For each creature card exiled this way, you gain 2 life.', 'Exile target card from a graveyard. For each land card exiled this way, you gain 1 life.', 'Exile target card from a graveyard. For each creature card exiled this way, you lose 1 life.'],
+  },
+  'spells-and-or-abilities': {
+    def: spell([{ op: 'counter', what: t('s') } as EffectStep], [{ id: 's', kind: 'stackObject', min: 0, max: 3, text: '' } as TargetSpec]),
+    readings: ['Counter up to three target spells or abilities.', 'Counter up to three target spells and/or abilities.'],
+    near: ['Counter up to three target spells.', 'Counter up to two target spells and/or abilities.', 'Counter up to three target spells and abilities.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-misc-4 (Commander lane edh-misc): "you may pay 2 life and exile it" (a payment with the instruction said in its sentence), "Otherwise" after an option (also when declined)
+Object.assign(EXAMPLES, {
+  'pay-and-instruction': {
+    def: spell([{ op: 'pay', who: you, cost: { other: [{ kind: 'payLife', amount: 2 }] }, then: [draw(), gain(1)] } as EffectStep]),
+    readings: ['You may pay 2 life. If you do, draw a card and you gain 1 life.', 'You may pay 2 life and draw a card. If you do, you gain 1 life.'],
+    near: ['You may pay 2 life. Draw a card. If you do, you gain 1 life.', 'You may pay 3 life and draw a card. If you do, you gain 1 life.', 'You may pay 2 life and draw a card. If you do, you gain 2 life.'],
+  },
+  'otherwise-also-when-declined': {
+    def: spell([{
+      op: 'if', cond: { cond: 'exists', of: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } },
+      then: [{ op: 'may', who: you, do: [gain(1)], otherwise: [draw()] } as EffectStep], else: [draw()],
+    } as EffectStep]),
+    readings: ['If you control a land, you may gain 1 life. Otherwise, draw a card.'],
+    near: ['If you control a land, you may gain 1 life. Otherwise, draw two cards.', 'If you control a land, gain 1 life. Otherwise, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-players-6 (CR 606.1, 606.3, 602.5): loyalty abilities that can't be activated; twice each turn; "you didn't activate a loyalty ability of a planeswalker this turn"
+Object.assign(EXAMPLES, {
+  'loyalty-abilities-cant-activate': {
+    def: { kind: 'static', text: '', effects: [{ s: 'restrict', subject: { ref: 'each', filter: {} }, mode: 'cant', action: 'activate', abilityKeyword: 'loyalty' }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ["Loyalty abilities can't be activated.", "Players can't activate planeswalkers' loyalty abilities.", "Players can't activate loyalty abilities."],
+    near: ["Exhaust abilities can't be activated.", "Players can't activate planeswalkers' exhaust abilities."],
+  },
+  'loyalty-twice-each-turn': {
+    def: { kind: 'static', text: '', effects: [{ s: 'rule', rule: 'additionalActivation', keyword: 'loyalty:twice', of: { types: ['Planeswalker'], controller: 'you' } }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['Each loyalty ability of planeswalkers you control can be activated an additional time.', 'You may activate the loyalty abilities of planeswalkers you control twice each turn rather than only once.'],
+    near: ['You may activate the loyalty abilities of planeswalkers you control three times each turn rather than only once.', 'You may activate the loyalty abilities of planeswalkers your opponents control twice each turn rather than only once.'],
+  },
+  'didnt-activate-loyalty-ability': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'step', step: 'end', whose: 'you' } as unknown as EventPattern] }, interveningIf: { cond: 'not', of: { cond: 'happened', event: { ev: 'activate', player: 'you', ability: 'loyalty' }, scope: 'turn' } }, effect: { targets: [], steps: [draw()] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ["At the beginning of your end step, if you haven't activated a loyalty ability this turn, draw a card.", "At the beginning of your end step, if you didn't activate a loyalty ability of a planeswalker this turn, draw a card."],
+    near: ["At the beginning of your end step, if you didn't activate an exhaust ability this turn, draw a card.", "At the beginning of your end step, if an opponent didn't activate a loyalty ability of a planeswalker this turn, draw a card."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-players-6 (CR 608.2f, 109.4, 120.3): "that opponent controls" beside "that player controls" (render/steps-flow.ts#damageEqualToTheirCount)
+Object.assign(EXAMPLES, {
+  'each-opponent-that-opponent-controls': {
+    def: spell([{ op: 'forEach', over: { ref: 'each', who: 'opponent' }, as: 'eachPlayer', do: [{ op: 'damage', source: self, to: bound('eachPlayer'), amount: P2D_COUNT() }] } as EffectStep]),
+    readings: ['Test Card deals damage to each opponent equal to the number of lands that opponent controls.', 'Test Card deals damage to each opponent equal to the number of lands that player controls.'],
+    near: ['Test Card deals damage to each opponent equal to the number of lands you control.', 'Test Card deals damage to each player equal to the number of lands that opponent controls.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-players-6 (CR 107.3, 118.12, 608.2h): the life paid and the cards drawn are one computed number said as X (render/steps-flow.ts#payLifeWhereX)
+Object.assign(EXAMPLES, {
+  'pay-x-life-where-x': {
+    def: trig([{ ev: 'zoneChange', subject: { self: true }, from: 'battlefield', to: 'graveyard' } as EventPattern], [{ op: 'pay', who: { ref: 'you' }, cost: { other: [{ kind: 'payLife', amount: { q: 'stat', stat: 'power', of: { ref: 'event', role: 'subject' } } }] }, then: [{ op: 'draw', who: { ref: 'you' }, count: { q: 'stat', stat: 'power', of: { ref: 'event', role: 'subject' } } }] } as EffectStep]),
+    ctx: creature,
+    readings: ['When this creature dies, you may pay life equal to its power. If you do, draw cards equal to its power.', 'When this creature dies, you may pay X life, where X is its power. If you do, draw X cards.'],
+    near: ['When this creature dies, you may pay X life, where X is its toughness. If you do, draw X cards.', 'When this creature dies, you may pay X life, where X is its power. If you do, you gain X life.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-players-6 (CR 508.1, 611.3a): "as long as it attacked this turn" (render/cond.ts)
+Object.assign(EXAMPLES, {
+  'it-attacked-this-turn': {
+    def: { kind: 'static', text: '', condition: { cond: 'happened', event: { ev: 'attacks', attacker: { self: true } }, scope: 'turn' }, effects: [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 6, add: [{ keyword: 'flying', kind: 'keyword' }] }] }] } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ['As long as this creature attacked this turn, it has flying.', 'This creature has flying as long as it attacked this turn.'],
+    near: ['This creature has flying as long as it attacked last turn.', 'This creature has flying as long as it blocked this turn.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-players-6 (CR 608.2d, 608.2e, 101.4): each opponent in turn may do something; each who doesn't loses life (render/fold-edhp6.ts#eachOpponentMayElse)
+Object.assign(EXAMPLES, {
+  'each-opponent-may-who-doesnt': {
+    def: spell([{ op: 'may', who: { ref: 'each', who: 'opponent' }, do: [{ op: 'discard', who: { ref: 'iterating' }, count: 1 }], otherwise: [{ op: 'loseLife', who: { ref: 'iterating' }, amount: 3 }] } as EffectStep]),
+    readings: ["Each opponent may discard a card. If they don't, they lose 3 life.", "Each opponent may discard a card. Each opponent who doesn't loses 3 life."],
+    near: ["Each opponent may discard a card. If they do, they lose 3 life.", "Each opponent may discard a card. If they don't, they lose 4 life."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-cast-6 (Commander lane edh-cast; CR cites checked against the Comprehensive Rules 2026-09-25): three families of render/stat.ts (196 -> 198 alt sites)
+Object.assign(EXAMPLES, {
+  'cards-you-own-have-flash': {
+    def: statics([{ s: 'permit', who: { ref: 'each', who: 'player' }, action: 'haveFlash', of: { types: ['Creature'], owner: 'you', stackKind: 'spell', zone: 'stack' } } as StaticEffect]),
+    ctx: creature,
+    readings: ["Any player may cast creature spells you own as though they had flash.", "Creature cards you own that aren't on the battlefield have flash."],
+    near: ["Creature cards you control that aren't on the battlefield have flash.", "Creature cards you own that aren't in your graveyard have flash.", 'Creature cards you own have flash.', "Creature cards you own that aren't on the battlefield have haste."],
+  },
+  'cost-less-and-cant-be-countered': {
+    def: statics([
+      { s: 'costMod', applies: { spells: { stackKind: 'spell', zone: 'stack', manaValue: { op: '>=', value: 5 } }, caster: 'you' }, change: { kind: 'reduce', mana: [{ kind: 'generic', amount: 1 }], floor: 'zero' } } as StaticEffect,
+      { s: 'restrict', subject: { ref: 'each', filter: { anyOf: [{ stackKind: 'spell', zone: 'stack', manaValue: { op: '>=', value: 5 } }], controller: 'you', not: { stackKind: 'copy', zone: 'stack' }, zone: 'stack' } }, mode: 'cant', action: 'beCountered' } as StaticEffect,
+    ]),
+    ctx: creature,
+    readings: ["Spells you cast with mana value 5 or greater cost {1} less to cast and can't be countered.", 'Spells you cast with mana value 5 or greater cost {1} less to cast. Spells you cast with mana value 5 or greater can\'t be countered.'],
+    near: ["Spells you cast with mana value 5 or greater cost {1} less to cast and can't be copied.", "Spells you cast with mana value 5 or less cost {1} less to cast and can't be countered.", "Spells your opponents cast with mana value 5 or greater cost {1} less to cast and can't be countered."],
+  },
+  'plain-spells-mana-value-after-caster': {
+    def: statics([{ s: 'costMod', applies: { spells: { stackKind: 'spell', zone: 'stack', manaValue: { op: '>=', value: 5 } }, caster: 'you' }, change: { kind: 'reduce', mana: [{ kind: 'generic', amount: 1 }], floor: 'zero' } } as StaticEffect]),
+    ctx: creature,
+    readings: ['Spells you cast with mana value 5 or greater cost {1} less to cast.', 'Spells with mana value 5 or greater you cast cost {1} less to cast.'],
+    near: ['Spells you cast with mana value 5 or less cost {1} less to cast.', 'Spells your opponents cast with mana value 5 or greater cost {1} less to cast.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-perms-6 (Commander lane edh-perms; CR cites from memory, unverified): "if you didn't create a token this way", "on them" of a group's per-counter change, the same name as the modified
+// creature, a pronoun for the equipped creature the condition tests, and a condition said right after a payment
+const E6_SOLDIER = { colors: ['W'], types: ['Creature'], subtypes: ['Soldier'], power: 1, toughness: 1 };
+const E6_NEG: Quantity = { q: 'math', op: '*', args: [-1, { q: 'counters', on: { ref: 'subject' }, kind: 'slime' }] };
+const E6_SAME: Quantity = { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you', sharesWith: { with: { ref: 'subject' }, quality: 'name', other: true } } } };
+Object.assign(EXAMPLES, {
+  'didnt-create-token-this-way': {
+    def: spell([{ op: 'createToken', who: you, count: 1, token: E6_SOLDIER, as: 'made' } as EffectStep, { op: 'if', cond: { cond: 'did', step: 'made', not: true }, then: [gain(2)] } as EffectStep]),
+    readings: ["Create a 1/1 white Soldier creature token. If you didn't create a token this way, you gain 2 life.", 'Create a 1/1 white Soldier creature token. If you did not create a token this way, you gain 2 life.', "Create a 1/1 white Soldier creature token. If you don't, you gain 2 life."],
+    near: ["Create a 1/1 white Soldier creature token. If you didn't create a creature this way, you gain 2 life.", "Create a 1/1 white Soldier creature token. If you didn't create a token this way, you gain 3 life.", 'Create a 1/1 white Soldier creature token. If you create a token this way, you gain 2 life.'],
+  },
+  'plural-for-each-counter-on-them': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: 'opponent' } }, mods: [{ layer: '7c', power: E6_NEG, toughness: E6_NEG }] } as StaticEffect]),
+    ctx: creature,
+    readings: ['Creatures your opponents control get -1/-1 for each slime counter on them.', 'Each creature an opponent controls gets -1/-1 for each slime counter on it.'],
+    near: ['Creatures your opponents control get -2/-2 for each slime counter on them.', 'Creatures your opponents control get -1/-1 for each flood counter on them.', 'Creatures you control get -1/-1 for each slime counter on them.'],
+  },
+  'same-name-as-subject': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: 'you', token: false } }, mods: [{ layer: '7c', power: { q: 'math', op: '*', args: [1, E6_SAME] }, toughness: { q: 'math', op: '*', args: [1, E6_SAME] } }] } as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['Each nontoken creature you control gets +1/+1 for each other creature you control with the same name as that creature.', 'Each nontoken creature you control gets +1/+1 for each other creature you control with the same name as it.'],
+    near: ['Each nontoken creature you control gets +1/+1 for each creature you control with the same name as that creature.', 'Each nontoken creature you control gets +2/+2 for each other creature you control with the same name as that creature.', 'Each nontoken creature you control gets +1/+1 for each other creature an opponent controls with the same name as that creature.'],
+  },
+  'if-tested-attached-it': {
+    def: trig([{ ev: 'zoneChange', subject: { types: ['Creature'] }, from: 'battlefield', to: 'graveyard' }], [{ op: 'if', cond: { cond: 'matches', object: { ref: 'attachedTo' }, filter: { subtypes: ['Vampire'] } }, then: [{ op: 'putCounters', on: { ref: 'attachedTo' }, kind: '+1/+1', count: 2 }], else: [{ op: 'putCounters', on: { ref: 'attachedTo' }, kind: '+1/+1', count: 1 }] } as unknown as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['Whenever a creature dies, put a +1/+1 counter on equipped creature. If equipped creature is a Vampire, put two +1/+1 counters on it instead.', 'Whenever a creature dies, put a +1/+1 counter on equipped creature. If equipped creature is a Vampire, put two +1/+1 counters on equipped creature instead.'],
+    near: ['Whenever a creature dies, put a +1/+1 counter on equipped creature. If equipped creature is a Vampire, put three +1/+1 counters on it instead.', 'Whenever a creature dies, put a +1/+1 counter on equipped creature. If equipped creature is a Goblin, put two +1/+1 counters on it instead.'],
+  },
+  'maypay-if-before-branches': {
+    def: trig([enters], [{ op: 'pay', who: you, cost: { mana: [{ kind: 'generic', amount: 1 }, { kind: 'colored', color: 'G' }] }, guard: { cond: 'matches', object: { ref: 'attachedTo' }, filter: { types: ['Creature'], controller: 'you' } }, then: [draw(1)] } as unknown as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['When this permanent enters, you may pay {1}{G} if this permanent is attached to a creature you control. If you do, draw a card.'],
+    near: ['When this permanent enters, you may pay {1}{G}. If you do, draw a card if this permanent is attached to a creature you control.', 'When this permanent enters, you may pay {1}{G} if this permanent is attached to a creature an opponent controls. If you do, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-players-7 (Commander lane edh-players): losing keywords and being unable to have them, said either way
+Object.assign(EXAMPLES, {
+  'cant-have-or-gain': {
+    def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: 'opponent' } }, mods: [{ layer: 6, remove: ['hexproof', 'shroud'], cantHave: ['hexproof', 'shroud'] }] }] } as EffectStep]),
+    readings: ["Until end of turn, creatures your opponents control lose hexproof and shroud and can't have or gain hexproof and shroud.", "Until end of turn, creatures your opponents control lose hexproof and shroud and can't have hexproof or shroud."],
+    near: ["Until end of turn, creatures your opponents control lose hexproof and shroud and can't have hexproof.", "Until end of turn, creatures your opponents control lose hexproof and shroud and can't have hexproof and shroud."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-zones-7 (Commander effort, lane edh-zones): the readings of its families (invented wordings, design 6.10)
+const EZ7_CHOOSE = 'Choose an exiled card an opponent owns with a gloom counter on it.';
+Object.assign(EXAMPLES, {
+  'exiled-card-owner-owns': {
+    def: xp2Def('Sorcery', EZ7_CHOOSE),
+    readings: [EZ7_CHOOSE, 'Choose a card an opponent owns in exile with a gloom counter on it.'],
+    near: ['Choose an exiled card you own with a gloom counter on it.', 'Choose an exiled card an opponent owns with a husk counter on it.', 'Choose a card an opponent owns in a graveyard with a gloom counter on it.'],
+  },
+  'permit-free-this-turn-mid': {
+    def: xp2Def('Sorcery', `${EZ7_CHOOSE} You may play it this turn without paying its mana cost.`),
+    readings: [`${EZ7_CHOOSE} You may play it this turn without paying its mana cost.`, `${EZ7_CHOOSE} You may play it without paying its mana cost this turn.`, `${EZ7_CHOOSE} Until end of turn, you may play it without paying its mana cost.`],
+    near: [`${EZ7_CHOOSE} You may play it this combat without paying its mana cost.`, `${EZ7_CHOOSE} You may cast it this turn without paying its mana cost.`, `${EZ7_CHOOSE} You may play it this turn by paying {1}.`],
+  },
+  'one-card-from-among-them': {
+    def: xp2Def('Sorcery', 'Look at the top four cards of your library. Put one of them into your hand.'),
+    readings: ['Look at the top four cards of your library. Put one of them into your hand.', 'Look at the top four cards of your library. Put a card from among them into your hand.'],
+    near: ['Look at the top four cards of your library. Put one of them into your graveyard.', 'Look at the top four cards of your library. Put two cards from among them into your hand.', 'Look at the top four cards of your library. Put a card from among them onto the battlefield.'],
+  },
+  'shuffle-self-from-graveyard': {
+    def: xp2Def('Creature — Construct', '{1}, Discard ~: Draw a card. Shuffle ~ into your library from your graveyard.'),
+    readings: ['{1}, Discard ~: Draw a card. Shuffle ~ into your library from your graveyard.', '{1}, Discard ~: Draw a card. Shuffle ~ into your library.'],
+    near: ['{1}, Discard ~: Draw a card. Shuffle ~ into your library from your hand.', "{1}, Discard ~: Draw a card. Shuffle ~ into target player's library from your graveyard.", '{1}, Discard ~: Draw a card. Shuffle ~ into your graveyard from your library.'],
+  },
+  'linked-put-onto-battlefield': {
+    def: xp2Def('Artifact — Vehicle', "When ~ enters, exile target player's graveyard.\nWhenever ~ deals combat damage to a player, you may put a creature card exiled with ~ onto the battlefield under your control."),
+    readings: ['Whenever ~ deals combat damage to a player, you may put a creature card exiled with ~ onto the battlefield under your control.',
+      'Whenever ~ deals combat damage to a player, you may return a creature card exiled with ~ to the battlefield under your control.'],
+    near: ["Whenever ~ deals combat damage to a player, you may put a creature card exiled with ~ onto the battlefield under an opponent's control.",
+      'Whenever ~ deals combat damage to a player, you may put a creature card exiled with ~ onto the battlefield.'],
+  },
+  'you-have-cards-in-graveyard': {
+    def: xp2Def('Enchantment', 'At the beginning of your upkeep, if you have seven or more cards in your graveyard, draw a card.'),
+    readings: ['At the beginning of your upkeep, if you have seven or more cards in your graveyard, draw a card.', 'At the beginning of your upkeep, if seven or more cards are in your graveyard, draw a card.'],
+    near: ['At the beginning of your upkeep, if you have six or more cards in your graveyard, draw a card.', 'At the beginning of your upkeep, if you have seven or more cards in your hand, draw a card.', 'At the beginning of your upkeep, if you have seven or fewer cards in your graveyard, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-perms-7 (Commander lane edh-perms; CR 205.3m, cites from memory, unverified): two to five excluded creature types of a singular noun
+Object.assign(EXAMPLES, {
+  'not-subtypes-that-isnt': {
+    def: spell([{ op: 'destroy', what: t('c') }], [objTarget('c', { types: ['Creature'], notSubtypes: ['Rat', 'Spider'] })]),
+    readings: ["Destroy target non-Rat, non-Spider creature.", "Destroy target creature that isn't a Rat or Spider."],
+    near: ["Destroy target creature that isn't a Rat.", "Destroy target creature that isn't a Rat or Insect.", "Destroy target creature that is a Rat or Spider."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-mana-keywords-6 (CR 701.21a, 118.3, 602.2b; checked against the 2026-09-25 text): two sacrifice cost parts of one permanent each said with one verb
+const EMK6_COST = (a: Record<string, unknown>, b: Record<string, unknown>): AbilityDef => ({ kind: 'activated', text: '', cost: { other: [a, b] }, effect: { targets: [], steps: [draw()] } } as unknown as AbilityDef);
+Object.assign(EXAMPLES, {
+  'sacrifice-two-permanents-and': {
+    def: EMK6_COST({ kind: 'sacrifice', filter: { subtypes: ['Swamp'] }, count: 1 }, { kind: 'sacrifice', filter: { subtypes: ['Forest'] }, count: 1 }),
+    readings: ['Sacrifice a Swamp and a Forest: Draw a card.', 'Sacrifice a Swamp, Sacrifice a Forest: Draw a card.'],
+    near: ['Sacrifice a Swamp and a Forest: Draw two cards.', 'Sacrifice a Forest and a Swamp: Draw a card.', 'Sacrifice a Swamp and two Forests: Draw a card.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-c-40 (zz-cloud/edh-c-40.json; parser/holes/cond.ts#cardsInYourGraveyard, parser/holes/cost.ts#sacrifice): its reviewed families (synthetic lines)
+Object.assign(EXAMPLES, {
+  // CR 404.1, 604.1: Vengeful Firebrand
+  'card-is-in-your-graveyard': {
+    def: {"kind": "static", "condition": {"cond": "exists", "of": {"ref": "each", "filter": {"subtypes": ["Pirate"], "isCard": true, "zone": "graveyard", "owner": "you"}}}, "effects": [{"s": "continuous", "affects": {"ref": "self"}, "mods": [{"layer": 6, "add": [{"keyword": "haste", "kind": "keyword"}]}]}], "text": ""} as unknown as AbilityDef,
+    readings: ['This creature has haste as long as there is a Pirate card in your graveyard.', 'This creature has haste as long as a Pirate card is in your graveyard.'],
+    near: ['This creature has haste as long as a Pirate card is in an opponent\'s graveyard.', 'This creature has haste as long as a Pirate card is on the battlefield.'],
+  },
+  // CR 701.21a, 118.3, 602.2b: Dragon's Herald
+  'sacrifice-three-permanents-list': {
+    def: { kind: 'activated', text: '', cost: { other: [{ kind: 'sacrifice', filter: { colors: ['B'], types: ['Creature'] }, count: 1 }, { kind: 'sacrifice', filter: { colors: ['R'], types: ['Creature'] }, count: 1 }, { kind: 'sacrifice', filter: { colors: ['G'], types: ['Creature'] }, count: 1 }] }, effect: { targets: [], steps: [draw()] } } as unknown as AbilityDef,
+    readings: ['Sacrifice a black creature, a red creature, and a green creature: Draw a card.', 'Sacrifice a black creature, Sacrifice a red creature, Sacrifice a green creature: Draw a card.'],
+    near: ['Sacrifice a black creature, a red creature, and a green creature: Draw two cards.', 'Sacrifice a red creature, a black creature, and a green creature: Draw a card.', 'Sacrifice a black creature, a red creature, and two green creatures: Draw a card.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-cast-7 (CR 705.2): the two results of one coin flip are said in either order (render/steps-lasting.ts#flipCoin)
+Object.assign(EXAMPLES, {
+  'flip-results-either-order': {
+    def: spell([{ op: 'flipCoin', who: you, onWin: [{ op: 'draw', who: you, count: 1 }], onLose: [{ op: 'loseLife', who: you, amount: 1 }] } as EffectStep]),
+    readings: ['Flip a coin. If you win the flip, draw a card. If you lose the flip, you lose 1 life.', 'Flip a coin. If you lose the flip, you lose 1 life. If you win the flip, draw a card.'],
+    near: ['Flip a coin. If you win the flip, you lose 1 life. If you lose the flip, draw a card.', 'Flip a coin. If you lose the flip, draw a card. If you win the flip, you lose 1 life.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-cast-7 (CR 601.2f, 103.4, 119.1): the reduction by how far your life total is below your starting life total is "the difference" (render/stat.ts#costChange, render/abil.ts)
+Object.assign(EXAMPLES, {
+  'cost-less-life-difference': {
+    def: { kind: 'static', text: '', zone: ['stack'], condition: { cond: 'compare', left: { q: 'life', of: you }, op: '<', right: { q: 'startingLife' } }, effects: [{ s: 'costMod', applies: { self: true, caster: 'you' }, change: { kind: 'reduce', generic: { q: 'math', op: '-', args: [{ q: 'startingLife' }, { q: 'life', of: you }] }, floor: 'zero' } }] } as unknown as AbilityDef,
+    readings: [
+      'If your life total is less than your starting life total, this spell costs {X} less to cast, where X is the difference.',
+      'If your life total is less than your starting life total, this spell costs {X} less to cast, where X is your starting life total minus your life total.',
+    ],
+    near: [
+      'If your life total is less than your starting life total, this spell costs {X} less to cast, where X is the sum.',
+      'If your life total is greater than your starting life total, this spell costs {X} less to cast, where X is the difference.',
+      'If your life total is less than your starting life total, this spell costs {X} more to cast, where X is the difference.',
+    ],
+  },
+} satisfies Record<string, Example>);
+
+// edh-c-45 (CR 614.1a, 701.19b, 400.3, 105.2; render/stat.ts, evt.ts, np.ts): a permanent's own static regeneration, a colored object put into a graveyard from anywhere, the colors of a group of cards before the zone
+Object.assign(EXAMPLES, {
+  'static-regenerate': {
+    def: statics([{ s: 'replace', replaces: { ev: 'action', verb: 'destroy', object: { self: true } }, body: { b: 'regeneration' } } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ['If Test Card would be destroyed, regenerate it.', 'If Test Card would be destroyed, regenerate it instead.'],
+    near: ['If Test Card would be destroyed, regenerate target creature.', 'If Test Card would be destroyed, regenerate it and draw a card.', 'If Test Card would be sacrificed, regenerate it.'],
+  },
+  'colored-anything-to-graveyard': {
+    def: statics([{ s: 'replace', replaces: { ev: 'zoneChange', subject: { colors: ['B', 'R'] }, to: 'graveyard' }, body: { b: 'modify', destination: { zone: 'exile' } } } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['If a black or red permanent, spell, or card not on the battlefield would be put into a graveyard, exile it instead.'],
+    near: [
+      'If a black or red permanent, spell, or card would be put into a graveyard, exile it instead.',
+      'If a black or blue permanent, spell, or card not on the battlefield would be put into a graveyard, exile it instead.',
+      'If a black or red permanent, spell, or card not on the battlefield would be put into a graveyard, put it into your hand instead.',
+    ],
+  },
+  'colors-that-are-before-zone': {
+    def: spell([{ op: 'move', what: { ref: 'each', filter: { colors: ['B', 'R'], zone: 'graveyard', isCard: true } }, to: { zone: 'exile' } } as EffectStep]),
+    readings: ['Exile all cards that are black or red from all graveyards.', 'Exile all black or red cards from all graveyards.'],
+    near: ['Exile all cards that are black or blue from all graveyards.', 'Exile all cards that are black or red from your graveyard.'],
+  },
+} satisfies Record<string, Example>);
+Object.assign(EXAMPLES, {
+  'sacrifice-for-each-life-lost': {
+    def: trig([{ ev: 'life', change: 'loss', player: 'you' } as EventPattern], [{ op: 'sacrificeChoice', who: you, filter: {}, count: { q: 'eventAmount' } } as unknown as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever you lose life, sacrifice a permanent for each 1 life you lost.'],
+    near: ['Whenever you lose life, sacrifice a permanent for each 2 life you lost.', 'Whenever you lose life, sacrifice a land for each 1 life you lost.', 'Whenever you gain life, sacrifice a permanent for each 1 life you lost.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-45 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['static-regenerate', 'colored-anything-to-graveyard', 'colors-that-are-before-zone', 'sacrifice-for-each-life-lost']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+  it('lesser-mana-value: in a trigger on a creature dying also "lesser mana value than the creature that died" (Death\'s Oasis); not after an entering trigger', () => {
+    const filter = { types: ['Creature'], zone: 'graveyard', owner: 'you', isCard: true, manaValue: { op: '<', value: { q: 'stat', stat: 'manaValue', of: { ref: 'event', role: 'subject' } } } } as ObjectFilter;
+    const step = { op: 'chooseObjects', who: you, from: { ref: 'each', filter }, min: 1, max: 1, as: 'c' } as unknown as EffectStep;
+    const move = { op: 'move', what: bound('c'), to: { zone: 'hand' } } as EffectStep;
+    const died = trig([{ ev: 'zoneChange', subject: { token: false, types: ['Creature'], controller: 'you' }, from: 'battlefield', to: 'graveyard' } as EventPattern], [step, move]);
+    const entered = trig([{ ev: 'zoneChange', subject: { token: false, types: ['Creature'], controller: 'you' }, to: 'battlefield' } as EventPattern], [step, move]);
+    const ctx = { selfNames: ['Test Card'], selfTypes: ['Enchantment'] };
+    accepts(died, 'Whenever a nontoken creature you control dies, return a creature card with lesser mana value than the creature that died from your graveyard to your hand.', ctx);
+    rejects(entered, 'Whenever a nontoken creature you control enters, return a creature card with lesser mana value than the creature that died from your graveyard to your hand.', ctx);
+    rejects(died, 'Whenever a nontoken creature you control dies, return a creature card with greater mana value than the creature that died from your graveyard to your hand.', ctx);
+  });
+});
+
+// edh-zones-9 (Commander lane edh-zones; CR cites from memory, unverified): "both cards", "and/or" in a search of two descriptions, the article said once in "a basic land card or Gate card",
+// "return all cards exiled with ~ to their owner's hand"
+const E9_SEARCH_TAIL = (): EffectStep[] => [
+  { op: 'reveal', who: you, what: bound('search') } as EffectStep,
+  { op: 'move', what: bound('search'), to: { zone: 'hand' } } as EffectStep,
+  { op: 'shuffle', who: you } as EffectStep,
+];
+Object.assign(EXAMPLES, {
+  'both-cards': {
+    def: spell([
+      { op: 'move', what: t('t0'), to: { zone: 'exile' }, as: 'moved' } as EffectStep,
+      { op: 'search', who: you, zone: 'library', filter: { supertypes: ['Basic'], types: ['Land'] }, max: 1, as: 'search' } as EffectStep,
+      { op: 'move', what: { ref: 'union', of: [bound('moved'), bound('search')] }, to: { zone: 'battlefield', controller: you } } as EffectStep,
+      { op: 'shuffle', who: you } as EffectStep,
+    ], [objTarget('t0', { types: ['Creature'], owner: 'you' }, { min: 0 })]),
+    readings: [
+      'Exile up to one target creature you own, then search your library for a basic land card. Put both cards onto the battlefield under your control, then shuffle.',
+      'Exile up to one target creature you own, then search your library for a basic land card. Put the exiled card and it onto the battlefield under your control, then shuffle.',
+    ],
+    near: [
+      'Exile up to one target creature you own, then search your library for a basic land card. Put both cards into your hand, then shuffle.',
+      'Exile up to one target creature you own, then search your library for a basic land card. Put both cards onto the battlefield under their owners\' control, then shuffle.',
+      'Exile up to one target creature you own, then search your library for a basic land card. Put the card onto the battlefield under your control, then shuffle.',
+    ],
+  },
+  'search-and-or': {
+    def: spell([{ op: 'search', who: you, zone: 'library', filter: { subtypes: ['Aura'] }, and: [{ subtypes: ['Equipment'] }], max: 1, as: 'search' } as EffectStep, ...E9_SEARCH_TAIL()]),
+    readings: [
+      'Search your library for an Aura card and an Equipment card, reveal them, put them into your hand, then shuffle.',
+      'Search your library for an Aura card and/or an Equipment card, reveal them, put them into your hand, then shuffle.',
+    ],
+    near: [
+      'Search your library for an Aura card or an Equipment card, reveal them, put them into your hand, then shuffle.',
+      'Search your library for an Aura card and/or an Equipment card, reveal them, put them onto the battlefield, then shuffle.',
+      'Search your library for an Aura card and/or two Equipment cards, reveal them, put them into your hand, then shuffle.',
+    ],
+  },
+  'search-or-article-once': {
+    def: spell([{ op: 'search', who: you, zone: 'library', filter: { anyOf: [{ supertypes: ['Basic'], types: ['Land'] }, { subtypes: ['Gate'] }] }, max: 1, reveal: true, as: 'search' } as EffectStep,
+      { op: 'move', what: bound('search'), to: { zone: 'hand' } } as EffectStep, { op: 'shuffle', who: you } as EffectStep]),
+    readings: [
+      'Search your library for a basic land card or a Gate card, reveal it, put it into your hand, then shuffle.',
+      'Search your library for a basic land card or Gate card, reveal it, put it into your hand, then shuffle.',
+    ],
+    near: [
+      'Search your library for a basic land card and Gate card, reveal it, put it into your hand, then shuffle.',
+      'Search your library for a basic land card or Equipment card, reveal it, put it into your hand, then shuffle.',
+      'Search your library for a basic land card or Gate card, reveal it, put it onto the battlefield, then shuffle.',
+    ],
+  },
+  'linked-return-all-owner-hand': {
+    def: trig([enters], [{ op: 'move', what: { ref: 'linked', link: 'exiled' }, to: { zone: 'hand' } } as EffectStep]),
+    ctx: creature,
+    readings: [
+      'When this creature enters, return all cards exiled with this creature to their owner\'s hand.',
+      'When this creature enters, put all cards exiled with this creature into their owners\' hands.',
+    ],
+    near: [
+      'When this creature enters, return all cards exiled with this creature to your hand.',
+      'When this creature enters, return all cards exiled with this creature to their owner\'s graveyard.',
+      'When this creature enters, return a card exiled with this creature to its owner\'s hand.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-zones-9 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['both-cards', 'search-and-or', 'search-or-article-once', 'linked-return-all-owner-hand']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-perms-9 (Commander lane edh-perms; CR 205.4a, 608.2, 603.4, cites from memory, unverified): the supertype said for each card type; the negated "put onto the battlefield with this ability"
+Object.assign(EXAMPLES, {
+  'supertype-before-each-type': {
+    def: spell([{ op: 'pay', who: you, cost: { other: [{ kind: 'sacrifice', filter: { anyOf: [{ supertypes: ['Legendary'], types: ['Artifact'] }, { supertypes: ['Legendary'], types: ['Creature'] }] }, count: 1 }] }, then: [draw(1)] } as EffectStep]),
+    readings: ['You may sacrifice a legendary artifact or creature. If you do, draw a card.', 'You may sacrifice a legendary artifact or legendary creature. If you do, draw a card.'],
+    near: ['You may sacrifice a legendary artifact or enchantment. If you do, draw a card.', 'You may sacrifice an artifact or legendary creature. If you do, draw a card.', 'You may sacrifice a legendary artifact and legendary creature. If you do, draw a card.'],
+  },
+  'wasnt-put-by-ability': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { other: true, controller: 'you' }, to: 'battlefield' }] },
+      interveningIf: { cond: 'not', of: { cond: 'putBySource', object: { ref: 'event', role: 'subject' } } }, effect: { targets: [], steps: [draw(1)] } } as AbilityDef,
+    ctx: creature,
+    readings: ["Whenever another permanent you control enters, if it wasn't put onto the battlefield with this ability, draw a card.", 'Whenever another permanent you control enters, if it was not put onto the battlefield with this ability, draw a card.'],
+    near: ['Whenever another permanent you control enters, if it was put onto the battlefield with this ability, draw a card.', 'Whenever another permanent you control enters, if it wasn\'t put onto the battlefield with a spell, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-perms-9 (Commander lane edh-perms; CR 115.1, 122.1, cites from memory, unverified): "each of" before the targets of two folded puts of counters
+Object.assign(EXAMPLES, {
+  'each-of-targets-two-puts': {
+    def: trig([enters], [{ op: 'putCounters', on: t('c'), kind: '+1/+1', count: 1 } as EffectStep, { op: 'putCounters', on: t('a'), kind: 'charge', count: 1 } as EffectStep], {}, [objTarget('c', { types: ['Creature'] }, { min: 0, max: 'any' }), objTarget('a', { types: ['Artifact'] }, { min: 0, max: 'any' })]),
+    ctx: creature,
+    readings: ['When this creature enters, put a +1/+1 counter on any number of target creatures and a charge counter on any number of target artifacts.', 'When this creature enters, put a +1/+1 counter on each of any number of target creatures and a charge counter on each of any number of target artifacts.'],
+    near: ['When this creature enters, put a +1/+1 counter on each of any number of target creatures and two charge counters on each of any number of target artifacts.', 'When this creature enters, put a +1/+1 counter on each of any number of target creatures and a charge counter on each of any number of target creatures.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-perms-9 (Commander lane edh-perms; CR 205.1a, 613.1d, 613.1f, cites from memory, unverified): a static ability that sets an artifact type and subtype and grants an ability
+Object.assign(EXAMPLES, {
+  'type-set-vehicle-loses-others': {
+    def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 4, types: { set: ['Artifact'] }, subtypes: { set: ['Vehicle'] } }, { layer: 6, add: [{ kind: 'keyword', keyword: 'crew', amount: 5, text: 'crew 5' }] }] } as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment', 'Aura'] },
+    readings: ['Enchanted creature is a Vehicle artifact and has crew 5.', 'Enchanted permanent is a Vehicle artifact with crew 5 and it loses all other card types.'],
+    near: ['Enchanted creature is a Vehicle artifact with crew 5.', 'Enchanted creature is a Vehicle artifact with crew 5 and it loses all other abilities.', 'Enchanted creature is a Vehicle artifact with crew 4 and it loses all other card types.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-perms-9 (Commander lane edh-perms; CR 205.2a, 111.1, cites from memory, unverified): the negated kinds said out
+Object.assign(EXAMPLES, {
+  'except-for-kinds': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { notTypes: ['Land'], token: false } } }]),
+    readings: ['Destroy all nonland, nontoken permanents.', 'Destroy all permanents except for lands and tokens.'],
+    near: ['Destroy all permanents except for lands.', 'Destroy all permanents except for lands and creatures.', 'Destroy all nonland permanents except for tokens.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-players-8 (Commander lane edh-players): wordings of the cards it made full (render/turn.ts, kw.ts, np.ts, cond.ts, evt.ts, steps.ts)
+const EP8_MOVE_EXILE = { op: 'move', what: t('t0'), to: { zone: 'exile' }, as: 'moved' } as EffectStep;
+const EP8_OWNER_RETURN = { op: 'delay', when: { at: 'step', step: 'end', whose: { ref: 'ownerOf', object: t('t0') }, next: true }, do: [{ op: 'move', what: bound('moved'), to: { zone: 'battlefield', controller: 'owner' } }], capture: ['moved'] } as EffectStep;
+const EP8_CHOOSE_COLOR = { op: 'chooseValue', who: you, what: 'color', as: 'chosenColor', link: 'color' } as EffectStep;
+const EP8_HEXPROOF_CHOSEN = effectStep([{ s: 'continuous', affects: t('t0'), mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'hexproof', quality: 'chosen:color', text: 'hexproof from the chosen color' }] }] } as StaticEffect], { d: 'endOfTurn' });
+const EP8_NOT_BLOCKED_BY_CHOSEN = effectStep([{ s: 'restrict', subject: t('t0'), mode: 'cant', action: 'beBlockedBy', other: { types: ['Creature'], chosen: { link: 'color', quality: 'color' } } } as StaticEffect], { d: 'endOfTurn' });
+const EP8_ATTACKS: EventPattern = { ev: 'attacks', defender: 'you', attacker: { types: ['Creature'], controller: 'opponent' }, count: { op: '>=', value: 2 } };
+const EP8_LASTING = effectStep([
+  { s: 'restrict', subject: you, mode: 'cant', action: 'gainLife' }, { s: 'restrict', subject: you, mode: 'cant', action: 'loseLife' }, { s: 'restrict', subject: you, mode: 'cant', action: 'beEnchanted' },
+  { s: 'restrict', subject: you, mode: 'cant', action: 'beTargeted' }, { s: 'restrict', subject: you, mode: 'cant', action: 'receiveDamage' },
+] as StaticEffect[], { d: 'untilNextTurn', whose: you });
+Object.assign(EXAMPLES, {
+  'delayed-owners-next-step': {
+    def: spell([EP8_MOVE_EXILE, EP8_OWNER_RETURN], [objTarget('t0', { types: ['Creature'] })]),
+    readings: ["Exile target creature. Return that card to the battlefield under its owner's control at the beginning of that player's next end step.", "Exile target creature. Return that card to the battlefield under its owner's control at the beginning of its owner's next end step."],
+    near: ["Exile target creature. Return that card to the battlefield under its owner's control at the beginning of your next end step.", "Exile target creature. Return that card to the battlefield under its owner's control at the beginning of the next end step.", "Exile target creature. Return that card to the battlefield under your control at the beginning of that player's next end step."],
+  },
+  'chosen-color-that-color': {
+    def: spell([EP8_CHOOSE_COLOR, EP8_HEXPROOF_CHOSEN, EP8_NOT_BLOCKED_BY_CHOSEN], [objTarget('t0')]),
+    readings: ["Choose a color. Target creature gains hexproof from the chosen color until end of turn. It can't be blocked by creatures of the chosen color until end of turn.", "Choose a color. Target creature gains hexproof from that color until end of turn. It can't be blocked by creatures of that color this turn."],
+    near: ["Choose a color. Target creature gains hexproof from that color until end of turn. It can't be blocked by creatures of that type this turn.", "Choose a color. Target creature gains hexproof from a color until end of turn. It can't be blocked by creatures of that color this turn.", "Choose a color. Target creature gains hexproof from that color until end of turn. It can't be blocked by creatures that color this turn."],
+  },
+  'a-graveyard-has-cards': {
+    def: spell([{ op: 'if', cond: { cond: 'compare', left: { q: 'countPlayers', of: { ref: 'each', who: 'player' }, sizeIs: { zone: 'graveyard', op: '>=', n: 20 } }, op: '>=', right: 1 }, then: [draw(3)], else: [draw()] } as EffectStep]),
+    readings: ['Draw a card. If a graveyard has twenty or more cards in it, draw three cards instead.', 'Draw a card. If a player has twenty or more cards in their graveyard, draw three cards instead.', 'Draw a card. If there are twenty or more cards in a single graveyard, draw three cards instead.'],
+    near: ['Draw a card. If a graveyard has twenty cards in it, draw three cards instead.', 'Draw a card. If your graveyard has twenty or more cards in it, draw three cards instead.', 'Draw a card. If a graveyard has twenty or fewer cards in it, draw three cards instead.'],
+  },
+  'events-serial-list': {
+    def: trig([EP8_ATTACKS, { ev: 'draw', player: 'opponent', nth: 2 }, { ev: 'cast', player: 'opponent', nth: 2 }], [draw()], { batch: true }),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever an opponent attacks you with two or more creatures, draws their second card each turn, or casts their second spell each turn, you draw a card.', 'Whenever an opponent attacks you with two or more creatures or draws their second card each turn or casts their second spell each turn, you draw a card.'],
+    near: ['Whenever an opponent attacks you with two or more creatures, draws their second card each turn, and casts their second spell each turn, you draw a card.', 'Whenever an opponent attacks you with two or more creatures, draws their third card each turn, or casts their second spell each turn, you draw a card.'],
+  },
+  'opponent-attacks-you-or-events': {
+    def: trig([EP8_ATTACKS, { ev: 'draw', player: 'opponent', nth: 2 }], [draw()], { batch: true }),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever an opponent attacks you with two or more creatures or draws their second card each turn, you draw a card.'],
+    near: ['Whenever an opponent attacks you with three or more creatures or draws their second card each turn, you draw a card.', 'Whenever an opponent attacks you with two or more creatures or draws their second card, you draw a card.'],
+  },
+  'comma-and-until-lead': {
+    def: spell([{ op: 'phaseOut', what: { ref: 'each', filter: { controller: 'you' } } } as EffectStep, EP8_LASTING]),
+    readings: ["All permanents you control phase out, and until your next turn, your life total can't change and you gain protection from everything.", "Phase out all permanents you control. Until your next turn, your life total can't change and you gain protection from everything."],
+    near: ["All permanents you control phase out, and until end of turn, your life total can't change and you gain protection from everything.", "All permanents you control phase out, and until your next turn, your life total can't change."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-mana-keywords-7 (render/cond.ts): "with the same name" for "with the same name as one another" (same-name-count-as-one-another)
+Object.assign(EXAMPLES, {
+  'same-name-count-as-one-another': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'step', step: 'end', whose: 'you' }] },
+      interveningIf: { cond: 'compare', left: { q: 'mostSharingName', among: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } }, op: '>=', right: 3 },
+      effect: { targets: [], steps: [draw()] } } as AbilityDef,
+    ctx: creature,
+    readings: ['At the beginning of your end step, if you control three or more lands with the same name as one another, draw a card.', 'At the beginning of your end step, if you control three or more lands with the same name, draw a card.'],
+    near: ['At the beginning of your end step, if you control two or more lands with the same name, draw a card.', 'At the beginning of your end step, if you control three or more lands with different names, draw a card.', 'At the beginning of your end step, if you control three or more creatures with the same name, draw a card.'],
+  },
+});
+
+// edh-cast-8 (CR 106.3, 601.2h, 700.2, 608.2c, 118.9, 205.3m; Scryfall rulings read live): the readings and alt groups of the round
+const EC8_CAST_TRIG = (steps: EffectStep[], nth?: number): AbilityDef => ({ kind: 'triggered', text: '', trigger: { on: [{ ev: 'cast', player: 'you', ...(nth !== undefined ? { nth } : {}) }] }, effect: { targets: [], steps } } as unknown as AbilityDef);
+Object.assign(EXAMPLES, {
+  'mana-spent-from-type-at-least': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'cast', player: 'you', spell: { types: ['Creature'] } }] },
+      interveningIf: { cond: 'compare', left: { q: 'spellManaSpent', of: { ref: 'event', role: 'spell' }, from: { types: ['Creature'] } }, op: '>=', right: 3 }, effect: { targets: [], steps: [draw(1)] } } as AbilityDef,
+    ctx: creature,
+    readings: ['Whenever you cast a creature spell, if three or more mana from creatures was spent to cast it, draw a card.', 'Whenever you cast a creature spell, if at least three mana from creatures was spent to cast that spell, draw a card.'],
+    near: ['Whenever you cast a creature spell, if three mana from creatures was spent to cast it, draw a card.', 'Whenever you cast a creature spell, if four or more mana from creatures was spent to cast it, draw a card.', 'Whenever you cast a creature spell, if three or more mana from artifacts was spent to cast it, draw a card.'],
+  },
+  'modes-may-choose-two-instead': {
+    def: { kind: 'spell', text: '', effect: { targets: [], steps: [], modes: { min: 1, max: 1, override: { when: { cond: 'exists', of: { ref: 'each', filter: { subtypes: ['Wizard'], controller: 'you' } } }, min: 1, max: 2 },
+      options: [{ text: '', program: { targets: [], steps: [draw(1)] } }, { text: '', program: { targets: [], steps: [{ op: 'gainLife', who: you, amount: 2 } as EffectStep] } }, { text: '', program: { targets: [], steps: [{ op: 'gainLife', who: you, amount: 3 } as EffectStep] } }] } } } as AbilityDef,
+    readings: ['Choose one. If you control a Wizard, you may choose two instead. • Draw a card. • You gain 2 life. • You gain 3 life.', 'Choose one. If you control a Wizard as you cast this spell, you may choose two instead. • Draw a card. • You gain 2 life. • You gain 3 life.'],
+    near: ['Choose one. If you control a Wizard, choose two instead. • Draw a card. • You gain 2 life. • You gain 3 life.', 'Choose one. If you control a Wizard, you may choose both instead. • Draw a card. • You gain 2 life. • You gain 3 life.', 'Choose one. If you control a Goblin, you may choose two instead. • Draw a card. • You gain 2 life. • You gain 3 life.'],
+  },
+  'didnt-cast-it': {
+    def: spell([...RJ_FREE_CAST_IF, { op: 'if', cond: { cond: 'did', step: 'cast', not: true }, then: [{ op: 'move', what: bound('e'), to: { zone: 'hand' } }] } as EffectStep]),
+    readings: ["Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if the spell's mana value is less than your life total. If you don't cast it, put it into your hand.", "Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if the spell's mana value is less than your life total. If you don't cast it this way, put it into your hand."],
+    near: ["Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if the spell's mana value is less than your life total. If you cast it, put it into your hand.", "Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost if the spell's mana value is less than your life total. If you don't cast it, put it onto the battlefield."],
+  },
+  'cast-free-if-lesser-mv': {
+    def: EC8_CAST_TRIG([
+      { op: 'reveal', who: you, what: { ref: 'topCards', player: you, count: 1 }, as: 'them' } as EffectStep,
+      { op: 'cast', who: you, what: bound('them'), free: true, optional: true, maxManaValue: { q: 'math', op: '-', args: [{ q: 'stat', stat: 'manaValue', of: { ref: 'event', role: 'spell' } }, 1] } } as EffectStep,
+    ], 1),
+    ctx: creature,
+    readings: ["Whenever you cast your first spell each turn, reveal the top card of your library. You may cast it without paying its mana cost if it's a spell with lesser mana value."],
+    near: ["Whenever you cast your first spell each turn, reveal the top card of your library. You may cast it without paying its mana cost if it's a spell with greater mana value.", "Whenever you cast your first spell each turn, reveal the top card of your library. You may cast it without paying its mana cost if it's a spell with lesser mana value than that spell."],
+  },
+  'not-subtype-that-isnt-one': {
+    def: spell([{ op: 'destroy', what: t('c') }], [objTarget('c', { types: ['Creature'], notSubtypes: ['Rat'] })]),
+    readings: ["Destroy target non-Rat creature.", "Destroy target creature that isn't a Rat."],
+    near: ["Destroy target creature that isn't a Spider.", "Destroy target creature that is a Rat.", "Destroy target creature that isn't a Rat or Spider."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-perms-10 (Commander lane edh-perms; CR 110.2, 603.7, 614.1c, 508.4 checked against the 2026-09-25 text): "return each of them", the rider sentence after a delayed return, the token copy's status sentence
+Object.assign(EXAMPLES, {
+  'return-each-of-them-owner': {
+    def: xp2Def('Instant', "Exile up to two target creatures you control. At the beginning of the next end step, return each of them to the battlefield under its owner's control."),
+    readings: ["Exile up to two target creatures you control. At the beginning of the next end step, return each of them to the battlefield under its owner's control.",
+      "Exile up to two target creatures you control. At the beginning of the next end step, return them to the battlefield under their owners' control."],
+    near: ["Exile up to two target creatures you control. At the beginning of the next end step, return each of them to the battlefield under your control.",
+      "Exile up to two target creatures you control. At the beginning of the next end step, return each of them to their owners' hands."],
+  },
+  'delayed-return-then-rider-sentence': {
+    def: xp2Def('Instant', "Exile target artifact you control. Return that card to the battlefield under its owner's control at the beginning of the next end step. If it enters as a creature, it enters with an additional +1/+1 counter on it."),
+    readings: ["Exile target artifact you control. Return that card to the battlefield under its owner's control at the beginning of the next end step. If it enters as a creature, it enters with an additional +1/+1 counter on it.",
+      "Exile target artifact you control. At the beginning of the next end step, return that card to the battlefield under its owner's control. If it enters as a creature, it enters with an additional +1/+1 counter on it."],
+    near: ["Exile target artifact you control. Return that card to the battlefield under its owner's control at the beginning of the next end step. If it enters as a creature, it enters with an additional +1/+1 counter on it at the beginning of the next end step.",
+      "Exile target artifact you control. Return that card to the battlefield under its owner's control at the beginning of your next end step. If it enters as a creature, it enters with an additional +1/+1 counter on it."],
+  },
+  'copy-token-then-enters-tapped-attacking': {
+    def: xp2Def('Creature — Beast', "Whenever ~ attacks, create a token that's a copy of another target attacking creature. The token enters tapped and attacking."),
+    readings: ["Whenever ~ attacks, create a token that's a copy of another target attacking creature. The token enters tapped and attacking.",
+      "Whenever ~ attacks, create a tapped and attacking token that's a copy of another target attacking creature."],
+    near: ["Whenever ~ attacks, create a token that's a copy of another target attacking creature. The token enters tapped.",
+      "Whenever ~ attacks, create a token that's a copy of another target attacking creature. The token enters attacking."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-perms-11 (Commander lane edh-perms; cites from memory, unverified): the one more token of a replacement for the creature tokens you create without "additional"; the permanents that
+// entered under your control "you had enter"; the counters an object had on it; a counted group "other than ~"; the cards a linked ability exiled "with it"
+Object.assign(EXAMPLES, {
+  'tokens-plus-a-typed': {
+    def: { kind: 'static', text: '', effects: [{ s: 'replace', replaces: { ev: 'createToken', player: 'you', token: { types: ['Creature'] } }, body: { b: 'modify', then: { as: 'created', do: [{ op: 'createToken', who: { ref: 'you' }, count: 1, token: { name: 'Bear', colors: ['G'], types: ['Creature'], subtypes: ['Bear'], power: 2, toughness: 2 } }] } } }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['If one or more creature tokens would be created under your control, those tokens plus a 2/2 green Bear creature token are created instead.',
+      'If one or more creature tokens would be created under your control, those tokens plus an additional 2/2 green Bear creature token are created instead.'],
+    near: ['If one or more artifact tokens would be created under your control, those tokens plus a 2/2 green Bear creature token are created instead.',
+      "If one or more creature tokens would be created under an opponent's control, those tokens plus a 2/2 green Bear creature token are created instead."],
+  },
+  'entered-you-had-enter': {
+    def: spell([{ op: 'gainLife', who: you, amount: { q: 'happenedCount', event: { ev: 'zoneChange', subject: { token: false, types: ['Creature'], controller: 'you' }, to: 'battlefield' }, scope: 'turn' } } as EffectStep]),
+    readings: ['You gain life equal to the number of nontoken creatures that entered the battlefield under your control this turn.',
+      'You gain life equal to the number of nontoken creatures you had enter the battlefield under your control this turn.'],
+    near: ['You gain life equal to the number of nontoken creatures you had leave the battlefield under your control this turn.',
+      'You gain life equal to the number of creatures you had enter the battlefield under your control this turn.'],
+  },
+  'counters-it-had-on-it': {
+    def: spell([{ op: 'gainLife', who: you, amount: { q: 'counters', on: { ref: 'self' }, kind: 'any' } } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['You gain life equal to the number of counters on Test Card.', 'You gain life equal to the number of counters Test Card had on it.'],
+    near: ['You gain life equal to the number of +1/+1 counters Test Card had on it.', 'You gain life equal to the number of counters Test Card has on it.'],
+  },
+  'number-of-other-than-self': {
+    def: spell([{ op: 'gainLife', who: you, amount: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you', other: true } } } } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['You gain life equal to the number of other creatures you control.', 'You gain life equal to the number of creatures you control other than Test Card.'],
+    near: ['You gain life equal to the number of creatures you control.', 'You gain life equal to the number of creatures an opponent controls other than Test Card.'],
+  },
+  'count-cards-exiled-with-it': {
+    def: spell([{ op: 'gainLife', who: you, amount: { q: 'count', of: { ref: 'linked', link: 'exiled' } } } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['You gain life equal to the number of cards exiled with Test Card.', 'You gain life equal to the number of cards exiled with it.'],
+    near: ['You gain life equal to the number of cards exiled with them.', 'You gain life equal to the number of cards exiled this way.'],
+  },
+} satisfies Record<string, Example>);
+// edh-players-11 (render/steps.ts, refs.ts, fold.ts, fold-edhp11.ts): the group `may` and its doers, the X stated before a gain of life, the ban "during their next turn"
+const EP11_ITER: PlayerRef = { ref: 'iterating' };
+const EP11_DID = { ref: 'bound', name: 'did' } as unknown as PlayerRef;
+const EP11_MAY: EffectStep = { op: 'may', who: { ref: 'each', who: 'player' }, do: [{ op: 'draw', who: EP11_ITER, count: 1 }], as: 'did' } as EffectStep;
+const EP11_ARTIFACTS: Quantity = { q: 'count', of: { ref: 'each', filter: { types: ['Artifact'], controller: 'you' } } };
+const EP11_ATTACK_BAN = (subject: unknown, other: unknown): StaticEffect[] => [
+  { s: 'restrict', subject, mode: 'cant', action: 'attackPlayer', otherPlayer: { ref: 'you' } },
+  { s: 'restrict', subject, mode: 'cant', action: 'attack', other },
+] as unknown as StaticEffect[];
+Object.assign(EXAMPLES, {
+  'may-group-then': {
+    def: spell([EP11_MAY, { op: 'gainLife', who: EP11_DID, amount: 2 } as EffectStep]),
+    readings: ['Each player may draw a card, then each player who drew a card this way gains 2 life.', 'Each player may draw a card. Each player who drew a card this way gains 2 life.'],
+    near: ['Each player may draw a card, then each player who drew a card this way gains 3 life.', 'Each player may draw a card, then each opponent who drew a card this way gains 2 life.', 'Each player may draw a card, then you gain 2 life.'],
+  },
+  // edh-d-70
+  'opponent-draws-you-draw-this-way': {
+    def: spell([{ op: 'draw', who: { ref: 'each', who: 'opponent' }, count: 1, as: 'a' } as EffectStep, { op: 'draw', who: you, count: { q: 'resultCount', step: 'a' } } as EffectStep]),
+    readings: ['Each opponent draws a card, then you draw a card for each opponent who drew a card this way.', 'Each opponent draws a card. You draw a card for each card drawn this way.'],
+    near: ['Each opponent draws a card. You draw a card for each opponent who drew a card this way and a card.', 'Each opponent draws two cards. You draw a card for each card drawn this way.'],
+  },
+  'who-does-did-drew-this-way': {
+    def: spell([EP11_MAY, { op: 'gainLife', who: EP11_DID, amount: 2 } as EffectStep]),
+    readings: ['Each player may draw a card. Each player who does gains 2 life.', 'Each player may draw a card. Each player who did gains 2 life.', 'Each player may draw a card. Each player who drew a card this way gains 2 life.'],
+    near: ['Each player may draw a card. Each player who doesn\'t gains 2 life.', 'Each player may draw a card. Each player who drew two cards this way gains 2 life.'],
+  },
+  'where-x-then-gain-sentence': {
+    def: spell([{ op: 'damage', source: self, to: { ref: 'each', who: 'opponent' }, amount: EP11_ARTIFACTS } as EffectStep, { op: 'gainLife', who: you, amount: EP11_ARTIFACTS } as EffectStep]),
+    readings: ['Test Card deals X damage to each opponent, where X is the number of artifacts you control. You gain X life.', 'Test Card deals X damage to each opponent and you gain X life, where X is the number of artifacts you control.'],
+    near: ['Test Card deals X damage to each opponent, where X is the number of creatures you control. You gain X life.', 'Test Card deals X damage to each opponent, where X is the number of artifacts you control. You gain 2 life.'],
+  },
+  'during-their-next-turn': {
+    def: spell([{
+      op: 'forEach', over: { ref: 'each', who: 'opponent' }, as: 'restricted',
+      do: [{ op: 'effect', duration: { d: 'endOfNextTurn', whose: EP11_ITER }, effects: EP11_ATTACK_BAN({ ref: 'each', filter: { types: ['Creature'], controller: EP11_ITER } }, { controller: 'you' }) } as EffectStep],
+    } as EffectStep]),
+    readings: ["Each opponent can't attack you or permanents you control during their next turn.", "Each opponent can't attack you or permanents you control until the end of their next turn."],
+    near: ["Each opponent can't attack you or permanents you control until the end of your next turn.", "Each opponent can't attack you or planeswalkers you control during their next turn.", "Each opponent can't attack you or permanents you control this turn."],
+  },
+  'if-a-player-does-did': {
+    def: spell([EP11_MAY, effectStep(EP11_ATTACK_BAN({ ref: 'each', filter: { types: ['Creature'], controller: EP11_DID } }, { types: ['Planeswalker'], controller: 'you' }), { d: 'untilNextTurn', whose: you })]),
+    readings: ["Each player may draw a card. If a player does, creatures that player controls can't attack you or planeswalkers you control until your next turn.", "Each player may draw a card. If a player did, creatures that player controls can't attack you or planeswalkers you control until your next turn."],
+    near: ["Each player may draw a card. If a player does, creatures that player controls can't attack you or planeswalkers you control until end of turn.", "Each player may draw a card. If a player doesn't, creatures that player controls can't attack you or planeswalkers you control until your next turn."],
+  },
+  'put-all-from-among-them': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: you, count: 6 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'move', what: { ref: 'each', filter: { anyOf: [{ types: ['Artifact'] }], is: bound('them'), zone: 'any' } }, to: { zone: 'battlefield', controller: you } } as EffectStep,
+    ]),
+    readings: ['Exile the top six cards of your library. Put all artifact cards from among them onto the battlefield.', 'Exile the top six cards of your library. Put all artifacts exiled this way onto the battlefield under your control.'],
+    near: ['Exile the top six cards of your library. Put all creature cards from among them onto the battlefield.', 'Exile the top six cards of your library. Put all artifact cards from among them into your hand.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-zones-14 (Commander lane edh-zones): three families (invented card, design 6.10; the abilities are the compiler's own for the synthetic text)
+const EZ14_OPTS = defaultParseOptions({ templates: [...TEMPLATE_SET], capabilities: ENGINE_CAPABILITIES });
+const ez14 = (type: string, text: string): AbilityDef[] => parseCard({ name: 'Test Card', layout: 'normal', mana_cost: '{0}', type_line: type, oracle_text: text, colors: [] } as never, EZ14_OPTS).faces[0]!.abilities;
+const EZ14_LINKED = ez14('Enchantment', "Whenever a land you control enters, exile the top card of your library.\nAt the beginning of your end step, if there are cards exiled with this enchantment, put them into their owner's graveyard, then this enchantment deals that much damage to each opponent.")[1]!;
+const EZ14_TAIL = "put them into their owner's graveyard, then Test Card deals that much damage to each opponent.";
+Object.assign(EXAMPLES, {
+  'each-of-those-players': {
+    def: ez14('Enchantment', "At the beginning of your upkeep, any number of target players each mill two cards. If you're the monarch, each of those players mills ten cards instead.")[0]!,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ["At the beginning of your upkeep, any number of target players each mill two cards. If you're the monarch, each of those players mills ten cards instead.", "At the beginning of your upkeep, any number of target players each mill two cards. If you're the monarch, those players each mill ten cards instead."],
+    near: ["At the beginning of your upkeep, any number of target players each mill two cards. If you're the monarch, each of those players mill ten cards instead.", "At the beginning of your upkeep, any number of target players each mill two cards. If you're the monarch, each of those players mills eleven cards instead."],
+  },
+  'some-cards-exiled-with': {
+    def: EZ14_LINKED,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: [`At the beginning of your end step, if there are cards exiled with Test Card, ${EZ14_TAIL}`, `At the beginning of your end step, if a card is exiled with Test Card, ${EZ14_TAIL}`, `At the beginning of your end step, if a card is exiled with it, ${EZ14_TAIL}`, `At the beginning of your end step, if there are cards exiled with it, ${EZ14_TAIL}` /* edh-next-73 */],
+    near: [`At the beginning of your end step, if there are two or more cards exiled with Test Card, ${EZ14_TAIL}`, `At the beginning of your end step, if there are cards exiled with Test Card, put them into their owner's hand, then Test Card deals that much damage to each opponent.`],
+  },
+  'that-much-damage-moved': {
+    def: EZ14_LINKED,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: [`At the beginning of your end step, if there are cards exiled with Test Card, ${EZ14_TAIL}`],
+    near: [`At the beginning of your end step, if there are cards exiled with Test Card, put them into their owner's graveyard, then Test Card deals that much damage to each creature.`, `At the beginning of your end step, if there are cards exiled with Test Card, put them into their owner's graveyard, then Test Card deals twice that much damage to each opponent.`],
+  },
+  'each-opponent-controls-sources': {
+    def: ez14('Creature — Bird', "Spells and abilities your opponents control can't cause their controller to search their library.")[0]!,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ["Spells and abilities your opponents control can't cause their controller to search their library.", "Spells and abilities each opponent controls can't cause their controller to search their library."],
+    near: ["Spells and abilities you control can't cause their controller to search their library.", "Spells and abilities each opponent controls can't cause you to search your library."],
+  },
+});
+
+// edh-mana-keywords-8 (Commander lane edh-mana-keywords): "any time" or "at any time" you could cast an instant (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'equip-instant-any-time': {
+    def: statics([{ s: 'permit', who: you, action: 'activateEquipAsInstant' }] as unknown as StaticEffect[]),
+    ctx: creature,
+    readings: ['You may activate equip abilities any time you could cast an instant.', 'You may activate equip abilities at any time you could cast an instant.'],
+    near: ['You may activate equip abilities any time you could cast a sorcery.', 'You may activate loyalty abilities at any time you could cast an instant.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-players-10 (Commander lane edh-players): families of the round (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'those-opponents-players': {
+    def: spell([{ op: 'action', action: 'investigate', who: you, n: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], controller: t('p') } } } } as unknown as EffectStep], [{ id: 'p', kind: 'player', min: 0, max: 'any', text: '', players: { who: 'opponent' } } as unknown as TargetSpec]),
+    readings: [
+      'Choose any number of target opponents. Investigate X times, where X is the total number of creatures those opponents control.',
+      'Choose any number of target opponents. Investigate X times, where X is the number of creatures those players control.',
+    ],
+    near: ['Choose any number of target opponents. Investigate X times, where X is the total number of creatures those spirits control.', 'Choose any number of target opponents. Investigate X times, where X is the total number of lands those opponents control.'],
+  },
+  'other-players-opponents': {
+    def: spell([{ op: 'draw', who: { ref: 'otherOf', of: { ref: 'each', who: 'player' }, than: you }, count: 1 } as unknown as EffectStep]),
+    readings: ['Each player other than you draws a card.', 'Each of your opponents draws a card.'],
+    near: ['Each player other than you draws two cards.', 'Each of your opponents discards a card.'],
+  },
+  'mv-parity-article': {
+    def: spell([{ op: 'move', what: t('o'), to: { zone: 'exile' } } as EffectStep], [{ ...objTarget('o', { controller: 'opponent', manaValueParity: 'even' }), min: 0, perOpponent: true } as TargetSpec]),
+    readings: [
+      'For each opponent, exile up to one target permanent that player controls with an even mana value.',
+      'For each opponent, exile up to one target permanent that player controls with even mana value.',
+      'For each opponent, exile up to one target permanent with an even mana value that player controls.',
+    ],
+    near: ['For each opponent, exile up to one target permanent that player controls with an odd mana value.', 'For each opponent, exile up to one target permanent that player controls with an even power.'],
+  },
+  'for-any-number-of-opponents': {
+    def: spell([{ op: 'destroy', what: t('o') } as EffectStep], [{ ...objTarget('o', { types: ['Creature'], controller: 'opponent' }), min: 0, perOpponent: true } as TargetSpec]),
+    readings: ['For any number of opponents, destroy target creature that player controls.', 'For each opponent, destroy up to one target creature that player controls.'],
+    near: ['For any number of opponents, destroy target creature you control.', 'For any number of players, destroy target creature that player controls.', 'For any number of opponents, destroy two target creatures that player controls.'],
+  },
+  'player-loses-all-counters': {
+    def: spell([{ op: 'removeCounters', from: { ref: 'each', who: 'opponent' }, kind: 'any', count: 'all' } as EffectStep]),
+    readings: ['Each opponent loses all counters.', 'Remove all counters from each opponent.'],
+    near: ['Each opponent loses all poison counters.', 'Each player loses all counters.', 'Remove all counters from each player.'],
+  },
+  'life-lost-they-amount': {
+    def: spell([{ op: 'loseLife', who: t('p'), amount: { q: 'lifeLostThisTurn', of: t('p') } } as EffectStep], [playerTarget('p')]),
+    readings: ['Target player loses life equal to the amount of life they lost this turn.', 'Target player loses life equal to the life that player lost this turn.', 'Target player loses life equal to the amount of life that player lost this turn.'],
+    near: ['Target player loses life equal to the amount of life you lost this turn.', 'Target player loses life equal to the amount of life they gained this turn.'],
+  },
+});
+
+// edh-perms-14 (Commander lane edh-perms; CR cites checked against the 2026-09-25 text): the bans on counters (Solemnity) and the counters for the mana of a kind of source spent on an entering creature (Kalain, Coin of Mastery)
+Object.assign(EXAMPLES, {
+  'players-cant-get-counters': {
+    def: statics([{ s: 'restrict', subject: { ref: 'each', who: 'player' }, mode: 'cant', action: 'haveCountersPut' }]),
+    ctx: unknown,
+    readings: ["Players can't get counters.", "Each player can't get counters."],
+    near: ["Your opponents can't get counters.", "Players can't get poison counters.", "Players can't lose counters."],
+  },
+  'counters-cant-be-put-on-group': {
+    def: statics([{ s: 'restrict', subject: { ref: 'each', filter: { types: ['Artifact', 'Creature'] } }, mode: 'cant', action: 'haveCountersPut' }]),
+    ctx: unknown,
+    readings: ["Counters can't be put on artifacts or creatures."],
+    near: ["Counters can't be put on artifacts and creatures you control.", "Counters can't be put on artifacts."],
+  },
+  'enters-with-counters-for-mana-from': {
+    def: statics([{ s: 'replace', replaces: { ev: 'zoneChange', subject: { other: true, types: ['Creature'], controller: 'you' }, to: 'battlefield' }, body: { b: 'enters', counters: [{ kind: '+1/+1', count: { q: 'spellManaSpent', of: { ref: 'subject' }, from: { subtypes: ['Treasure'] } } }] } } as StaticEffect]),
+    ctx: creature,
+    readings: [
+      'Other creatures you control enter with an additional +1/+1 counter on them for each mana from a Treasure spent to cast them.',
+      'Each other creature you control enters with an additional +1/+1 counter on it for each mana from a Treasure spent to cast it.',
+    ],
+    near: [
+      'Other creatures you control enter with an additional +1/+1 counter on them for each mana from a Clue spent to cast them.',
+      'Other creatures you control enter with an additional +1/+1 counter on them for each mana spent to cast them.',
+      'Each creature you control enters with an additional +1/+1 counter on it for each mana from a Treasure spent to cast it.',
+    ],
+  },
+} satisfies Record<string, Example>);
+
+// edh-zones-15 (Commander lane edh-zones): families of the round (invented wordings, design 6.10)
+const EZ15_LOOK = 'Look at the top three cards of your library, then put one into your hand and the rest into your graveyard.';
+const EZ15_EXILE = 'Target opponent exiles cards from the top of their library until they exile an instant or sorcery card. You may cast that card without paying its mana cost.';
+const EZ15_PUT = "Then put the exiled cards that weren't cast this way on the bottom of that library in a random order.";
+Object.assign(EXAMPLES, {
+  'one-hand-rest-graveyard': {
+    def: xp2Def('Sorcery', EZ15_LOOK),
+    readings: [EZ15_LOOK, EZ15_LOOK.replace('the rest', 'the other'), EZ15_LOOK.replace(', then', '.')],
+    near: [EZ15_LOOK.replace('the rest into your graveyard', 'the rest on the bottom of your library'), EZ15_LOOK.replace('one into your hand', 'one onto the battlefield'), EZ15_LOOK.replace('one into your hand', 'two into your hand')],
+  },
+  'exiled-not-cast-put-on-the-bottom': {
+    def: xp2Def('Sorcery', `${EZ15_EXILE} ${EZ15_PUT}`),
+    readings: [`${EZ15_EXILE} ${EZ15_PUT}`, `${EZ15_EXILE} Then that player puts the exiled cards that weren't cast this way on the bottom of their library in a random order.`],
+    near: [`${EZ15_EXILE} ${EZ15_PUT.replace('bottom', 'top')}`, `${EZ15_EXILE} ${EZ15_PUT.replace('in a random order', 'in any order')}`, `${EZ15_EXILE} ${EZ15_PUT.replace("weren't", 'were')}`, `${EZ15_EXILE} Then put the rest on the bottom of that library in a random order.`],
+  },
+} satisfies Record<string, Example>);
+// edh-zones-13 (Commander lane edh-zones; CR 701.23a, 701.23b; cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'search-exactly-n': {
+    def: spell([
+      { op: 'search', who: you, zone: 'library', filter: { types: ['Artifact'] }, min: 2, max: 2, differentNames: true, as: 'found' } as EffectStep,
+      { op: 'move', what: bound('found'), to: { zone: 'hand' } } as EffectStep,
+    ]),
+    readings: ['Search your library for two artifact cards that have different names. Put them into your hand.', 'Search your library for exactly two artifact cards that have different names. Put them into your hand.'],
+    near: ['Search your library for exactly one artifact card that has a different name. Put it into your hand.', 'Search your library for exactly three artifact cards that have different names. Put them into your hand.'],
+  },
+  'each-card-type-revealed-cards': {
+    def: spell([
+      { op: 'reveal', who: you, what: { ref: 'topCards', player: you, count: 6 }, as: 'them' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { is: bound('them'), zone: 'library' } }, min: 0, max: 'any', as: 'chosen', eachCardType: true } as EffectStep,
+      { op: 'move', what: bound('chosen'), to: { zone: 'hand' } } as EffectStep,
+    ]),
+    readings: [
+      'Reveal the top 6 cards of your library. For each card type, you may put a card of that type from among them into your hand.',
+      'Reveal the top 6 cards of your library. For each card type, you may put a card of that type from among the revealed cards into your hand.',
+    ],
+    near: [
+      'Reveal the top 6 cards of your library. For each card type, you may put a card of that type from among the milled cards into your hand.',
+      'Reveal the top 6 cards of your library. For each color, you may put a card of that color from among the revealed cards into your hand.',
+    ],
+  },
+  'chosen-one-the-other': {
+    def: spell([
+      { op: 'search', who: you, zone: 'library', filter: {}, min: 2, max: 2, reveal: true, as: 'found' } as EffectStep,
+      { op: 'chooseObjects', who: { ref: 'anOpponent' }, from: { ref: 'each', filter: { is: bound('found'), zone: 'library' } }, min: 1, max: 1, as: 'chosen' } as EffectStep,
+      { op: 'move', what: bound('chosen'), to: { zone: 'hand' } } as EffectStep,
+      { op: 'move', what: { ref: 'each', filter: { is: bound('found'), not: { is: bound('chosen') }, zone: 'library' } }, to: { zone: 'graveyard' } } as EffectStep,
+    ]),
+    readings: [
+      'Search your library for two cards, reveal them. An opponent chooses one of them. Put that card into your hand and the rest into your graveyard.',
+      'Search your library for two cards, reveal them. An opponent chooses one of them. Put the chosen card into your hand and the other into your graveyard.',
+    ],
+    near: [
+      'Search your library for two cards, reveal them. An opponent chooses one of them. Put the chosen card into your graveyard and the other into your graveyard.',
+      'Search your library for two cards, reveal them. An opponent chooses one of them. Put the chosen card into your hand and the other into your hand.',
+    ],
+  },
+  'shares-type-and-has-mana-value': {
+    def: {
+      kind: 'activated', text: '', cost: { tap: true, other: [{ kind: 'sacrifice', filter: { types: ['Creature'] }, count: 1 }] },
+      effect: { targets: [], steps: [
+        { op: 'search', who: you, zone: 'library', filter: { types: ['Creature'], sharesWith: { with: { ref: 'costSacrificed' }, quality: 'creatureType' }, manaValue: { op: '==', value: { q: 'math', op: '+', args: [1, { q: 'stat', stat: 'manaValue', of: { ref: 'costSacrificed' } }] } } }, max: 1, as: 'search' } as EffectStep,
+        { op: 'move', what: bound('search'), to: { zone: 'battlefield', controller: you } } as EffectStep,
+        { op: 'shuffle', who: you } as EffectStep,
+      ] },
+    } as AbilityDef,
+    ctx: creature,
+    readings: [
+      '{T}, Sacrifice a creature: Search your library for a creature card that shares a creature type with the sacrificed creature and has mana value equal to 1 plus that creature\'s mana value. Put that card onto the battlefield, then shuffle.',
+      '{T}, Sacrifice a creature: Search your library for a creature card that shares a creature type with the sacrificed creature and has mana value equal to 1 plus the sacrificed creature\'s mana value. Put that card onto the battlefield, then shuffle.',
+      '{T}, Sacrifice a creature: Search your library for a creature card with mana value equal to 1 plus the sacrificed creature\'s mana value that shares a creature type with the sacrificed creature. Put that card onto the battlefield, then shuffle.',
+    ],
+    near: [
+      '{T}, Sacrifice a creature: Search your library for a creature card that shares a creature type with the sacrificed creature and has mana value equal to 2 plus that creature\'s mana value. Put that card onto the battlefield, then shuffle.',
+      '{T}, Sacrifice a creature: Search your library for a creature card that shares a creature type with the sacrificed creature and has power equal to 1 plus that creature\'s mana value. Put that card onto the battlefield, then shuffle.',
+    ],
+  },
+  'one-card-an-even-mana-value': {
+    def: spell([
+      { op: 'search', who: you, zone: 'library', filter: { types: ['Creature'], manaValueParity: 'even' }, max: 1, as: 'search' } as EffectStep,
+      { op: 'move', what: bound('search'), to: { zone: 'hand' } } as EffectStep,
+      { op: 'shuffle', who: you } as EffectStep,
+    ]),
+    readings: [
+      'Search your library for a creature card with even mana value. Put that card into your hand, then shuffle.',
+      'Search your library for a creature card with an even mana value. Put that card into your hand, then shuffle.',
+    ],
+    near: [
+      'Search your library for a creature card with an odd mana value. Put that card into your hand, then shuffle.',
+      'Search your library for a creature card with an even power. Put that card into your hand, then shuffle.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-zones-13 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['search-exactly-n', 'each-card-type-revealed-cards', 'chosen-one-the-other', 'shares-type-and-has-mana-value', 'one-card-an-even-mana-value']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-perms-13 (Commander lane edh-perms; cites from memory, unverified): the cast trigger of the spell itself with the permanent's own battlefield events, said "When you cast this spell and whenever ~ attacks"
+Object.assign(EXAMPLES, {
+  'cast-self-and-whenever': {
+    def: trig([{ ev: 'cast', player: 'you', spell: { self: true } } as EventPattern, { ev: 'attacks', attacker: { self: true } }], [draw()]),
+    ctx: creature,
+    readings: ['When you cast this spell and whenever this creature attacks, draw a card.', 'Whenever you cast this spell or this creature attacks, draw a card.'],
+    near: ['When you cast this spell and whenever this creature blocks, draw a card.', 'When you cast this spell and whenever this creature attacks while saddled, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-zones-16 (Commander lane edh-zones; CR 102.1): "the number of players in the game"
+Object.assign(EXAMPLES, {
+  'players-in-the-game': {
+    def: spell([{ op: 'gainLife', who: you, amount: { q: 'countPlayers', of: { ref: 'each', who: 'player' } } } as EffectStep]),
+    readings: ['You gain life equal to the number of players.', 'You gain life equal to the number of players in the game.'],
+    near: ['You gain life equal to the number of opponents.', 'You gain life equal to the number of players in the graveyard.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-zones-16 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['players-in-the-game']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-top-2 (Commander lane edh-top; CR 205.1a, 611.2a, 613.1d, 613.1f, from the Comprehensive Rules text of 2026-09-25): a resolved effect that sets a card type for good, with the abilities it grants
+const ET2_CLUE = { kind: 'activated', text: '{2}, Sacrifice this artifact: Draw a card', cost: { mana: [{ kind: 'generic', amount: 2 }], other: [{ kind: 'sacrifice', filter: { self: true }, count: 1, self: true }] }, effect: { targets: [], steps: [{ op: 'draw', who: you, count: 1 }] } };
+Object.assign(EXAMPLES, {
+  'becomes-artifact-loses-others': {
+    def: spell([effectStep([{ s: 'continuous', affects: t('t0'), mods: [{ layer: 4, types: { set: ['Artifact'] }, subtypes: { set: ['Clue'] } }, { layer: 6, removeAll: true, add: [ET2_CLUE] }] } as StaticEffect], { d: 'permanent' })], [objTarget('t0', { types: ['Creature'] })]),
+    readings: ['Target creature loses all abilities, becomes a Clue artifact, and gains "{2}, Sacrifice this artifact: Draw a card."', 'Target creature becomes a Clue artifact with "{2}, Sacrifice this artifact: Draw a card" and loses all other card types and abilities.'],
+    near: ['Target creature becomes a Clue artifact with "{2}, Sacrifice this artifact: Draw a card" and loses all other abilities.', 'Target creature becomes a Clue artifact with "{2}, Sacrifice this artifact: Draw a card" and loses all other card types.', 'Target creature becomes a colorless Clue artifact with "{2}, Sacrifice this artifact: Draw a card" and loses all other card types and abilities.'],
+  },
+} satisfies Record<string, Example>);
+
+
+// edh-c-113 (Commander lane edh-c; CR 201.2, 205.1a, 613.1d, 613.1f, 613.4b): a resolved effect that makes a creature a sized legendary creature with a name and no abilities
+Object.assign(EXAMPLES, {
+  'becomes-legendary-named-loses-all': {
+    def: spell([effectStep([{ s: 'continuous', affects: t('t0'), mods: [{ layer: 4, types: { set: ['Creature'] }, subtypes: { set: ['Horror'] }, supertypes: { add: ['Legendary'] }, named: 'Fenric' }, { layer: 6, removeAll: true }, { layer: '7b', power: 6, toughness: 6 }] } as StaticEffect], { d: 'permanent' })], [objTarget('t0', { types: ['Creature'] })]),
+    readings: ['Target creature becomes a 6/6 legendary Horror creature named Fenric and loses all abilities.'],
+    near: ['Target creature becomes a 6/6 Horror creature named Fenric and loses all abilities.', 'Target creature becomes a 6/6 legendary Horror creature named Fenric.', 'Target creature becomes a 6/6 legendary Horror creature named Lantern and loses all abilities.', 'Target creature becomes a 5/5 legendary Horror creature named Fenric and loses all abilities.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-players-12 (Commander lane edh-players): the player a group step is read for, and an artifact put into an opponent's graveyard
+Object.assign(EXAMPLES, {
+  'iterating-player-pronoun': {
+    def: spell([{ op: 'loseLife', who: { ref: 'each', who: 'opponent' }, amount: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], attacking: { defender: { ref: 'iterating' } } } } } } as unknown as EffectStep]),
+    readings: ['Each opponent loses life equal to the number of creatures attacking them.', 'Each opponent loses life equal to the number of creatures attacking that player.'],
+    near: ['Each opponent loses life equal to the number of creatures attacking you.', 'Each opponent loses life equal to the number of creatures they control.', 'Each player loses life equal to the number of creatures attacking them.'],
+  },
+  'put-into-opponents-graveyard': {
+    def: trig([{ ev: 'zoneChange', subject: { types: ['Artifact'], owner: 'opponent' }, from: 'battlefield', to: 'graveyard' } as EventPattern], [draw()]),
+    ctx: creature,
+    readings: ["Whenever an artifact is put into an opponent's graveyard from the battlefield, draw a card.", 'Whenever an artifact an opponent owns is put into a graveyard from the battlefield, draw a card.'],
+    near: ["Whenever an artifact is put into your graveyard from the battlefield, draw a card.", "Whenever an artifact is put into an opponent's graveyard from your hand, draw a card.", "Whenever an artifact is put into an opponent's hand from the battlefield, draw a card."],
+  },
+  'player-reveals-top': {
+    def: spell([{ op: 'reveal', who: { ref: 'each', who: 'player' }, what: { ref: 'topCards', player: { ref: 'each', who: 'player' }, count: 1 } } as EffectStep]),
+    readings: ['Each player reveals the top card of their library.', "Each player reveals the top card of each player's library."],
+    near: ['Each player reveals the top two cards of their library.', 'Each player reveals the top card of your library.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-players-15 (Commander lane edh-players): "with greater power" of the source, the rider sentence for mana of any color, and the pair of the object and the target each getting a change (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'greater-power-of-source': {
+    def: trig([enters], [{ op: 'move', what: t('t0'), to: { zone: 'exile' } } as EffectStep], {}, [objTarget('t0', { types: ['Creature'], controller: 'opponent', power: { op: '>', value: { q: 'stat', stat: 'power', of: self } } })]),
+    ctx: creature,
+    readings: ['When this creature enters, exile target creature an opponent controls with greater power.', 'When this creature enters, exile target creature an opponent controls with power greater than this creature\'s power.'],
+    near: ['When this creature enters, exile target creature an opponent controls with greater toughness.', 'When this creature enters, exile target creature you control with greater power.', 'When this creature enters, exile target creature an opponent controls with lesser power.'],
+  },
+  'cast-this-way-any-color': {
+    def: trig([enters], [
+      { op: 'move', what: { ref: 'topCards', player: t('t0') as unknown as PlayerRef, count: 1 }, to: { zone: 'exile' }, as: 'them' } as unknown as EffectStep,
+      { op: 'effect', duration: { d: 'remainsExiled' }, effects: [{ s: 'permit', who: you, action: 'play', of: { is: bound('them') }, anyManaColor: true } as unknown as StaticEffect] } as EffectStep,
+    ], {}, [playerTarget('t0')]),
+    ctx: creature,
+    readings: [
+      'When this creature enters, exile the top card of target player\'s library. You may play that card for as long as it remains exiled, and you may spend mana as though it were mana of any color to cast that spell.',
+      'When this creature enters, exile the top card of target player\'s library. You may play that card for as long as it remains exiled. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it.',
+    ],
+    near: [
+      'When this creature enters, exile the top card of target player\'s library. You may play that card for as long as it remains exiled. If you cast a spell this way, you may spend mana as though it were mana of any type to cast it.',
+      'When this creature enters, exile the top card of target player\'s library. You may play that card for as long as it remains exiled. If you cast a spell this way, you lose 2 life.',
+    ],
+  },
+  'object-and-target-each-get': {
+    def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'union', of: [{ ref: 'self' }, t('t0')] }, mods: [{ layer: '7c', power: 2, toughness: 0 }] }] } as EffectStep], [objTarget('t0', { types: ['Creature'], controller: 'you' })]),
+    ctx: creature,
+    readings: ['Test Card and target creature you control each get +2/+0 until end of turn.', 'Test Card and target creature you control get +2/+0 until end of turn.'],
+    near: ['Test Card and target creature you control each get +2/+2 until end of turn.', 'Test Card and target creature an opponent controls each get +2/+0 until end of turn.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-perms-15 (Commander lane edh-perms; CR 122.1, 608.2d): one more counter of the kind just chosen on a target
+Object.assign(EXAMPLES, {
+  'another-counter-of-that-kind': {
+    def: spell([
+      { op: 'chooseValue', who: you, what: 'counterKind', counterOn: t('c'), as: 'k', link: 'k' } as EffectStep,
+      { op: 'putCounters', on: t('c'), kind: '', count: 1, kindOfChoice: 'k' } as EffectStep,
+    ], [objTarget('c')]),
+    readings: ['Choose a counter on target creature. Put an additional counter of that kind on that creature.', 'Choose a counter on target creature. Put another counter of that kind on it.', 'Choose a counter on target creature. Give that creature another counter of that kind.', 'Choose a counter on target creature. Put another of those counters on that creature.'],
+    near: ['Choose a counter on target creature. Put two counters of that kind on that creature.', 'Choose a counter on target creature. Put an additional counter of that kind on target land.', 'Choose a counter on target creature. Put an additional +1/+1 counter on that creature.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-perms-15: two guarded counter puts on one target
+Object.assign(EXAMPLES, {
+  'two-guarded-puts': {
+    def: spell([
+      { op: 'putCounters', on: t('c'), kind: '+1/+1', count: 1, guard: { cond: 'matches', object: t('c'), filter: { types: ['Creature'] } } } as unknown as EffectStep,
+      { op: 'putCounters', on: t('c'), kind: 'loyalty', count: 1, guard: { cond: 'matches', object: t('c'), filter: { types: ['Planeswalker'] } } } as unknown as EffectStep,
+    ], [objTarget('c')]),
+    readings: ["Put a +1/+1 counter on target creature if it's a creature and a loyalty counter on it if it's a planeswalker.", "Put a +1/+1 counter on target creature if it's a creature. Put a loyalty counter on it if it's a planeswalker."],
+    near: ["Put a +1/+1 counter on target creature if it's a creature and a loyalty counter on it if it's an artifact.", "Put a +1/+1 counter on target creature if it's a creature. Put a loyalty counter on target land if it's a planeswalker."],
+  },
+} satisfies Record<string, Example>);
+
+
+// edh-top-3 (Commander lane edh-top; CR cites from the Comprehensive Rules text of 2026-09-25): different mana values among targets, "it's blocking", the zone lead of a return
+Object.assign(EXAMPLES, {
+  'different-mv-that-each-have': {
+    def: spell(
+      [{ op: 'draw', who: you, count: 1 } as EffectStep, { op: 'move', what: t('t0'), to: { zone: 'hand' } } as EffectStep],
+      [objTarget('t0', { types: ['Creature'], zone: 'graveyard', owner: 'you', isCard: true, manaValue: { op: '<=', value: { q: 'X' } } }, { min: 0, max: 'any', differentManaValues: true })],
+    ),
+    readings: ['Draw a card. Return any number of target creature cards that each have a different mana value X or less from your graveyard to your hand.', 'Draw a card. Return any number of target creature cards that have a different mana value X or less from your graveyard to your hand.'],
+    near: ['Draw a card. Return any number of target creature cards that each have mana value X or less from your graveyard to your hand.', 'Draw a card. Return any number of target creature cards that each have a different mana value X or less from a graveyard to your hand.'],
+  },
+  'creature-it-is-blocking': {
+    def: { kind: 'activated', text: '', cost: { other: [{ kind: 'sacrifice', filter: { self: true }, count: 1, self: true }] }, effect: { targets: [objTarget('t0', { types: ['Creature'], blockedByObject: self })], steps: [{ op: 'damage', source: self, to: t('t0'), amount: 2 } as EffectStep] } } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ["Sacrifice this creature: It deals 2 damage to target creature it's blocking.", 'Sacrifice this creature: This creature deals 2 damage to target creature blocked by this creature.'],
+    near: ["Sacrifice this creature: It deals 2 damage to target creature that's blocking it.", "Sacrifice this creature: It deals 2 damage to target creature it's blocked by."],
+  },
+  'return-zone-lead-different-mv': {
+    def: spell(
+      [{ op: 'move', what: t('t0'), to: { zone: 'battlefield', controller: you } } as EffectStep],
+      [objTarget('t0', { types: ['Creature'], zone: 'graveyard', owner: 'you', isCard: true, manaValue: { op: '<=', value: { q: 'X' } } }, { min: 0, max: 'any', differentManaValues: true })],
+    ),
+    readings: ['Return from your graveyard to the battlefield any number of target creature cards that each have a different mana value X or less.', 'Return any number of target creature cards from your graveyard that each have a different mana value X or less to the battlefield under your control.'],
+    near: ['Return from a graveyard to the battlefield any number of target creature cards that each have a different mana value X or less.', 'Return from your graveyard to your hand any number of target creature cards that each have a different mana value X or less.'],
+  },
+} satisfies Record<string, Example>);
+// edh-zones-17 (Commander lane edh-zones): an optional mill with the pick after "if you do", a count of your graveyard below a number, and the sacrifice of your own other permanents (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'may-mill-if-you-do-put': {
+    def: trig([{ ev: 'damage', source: { self: true }, combat: true, recipient: { player: 'any' } } as EventPattern], [
+      { op: 'may', who: you, do: [{ op: 'mill', who: you, count: { q: 'eventAmount' }, as: 'them' } as EffectStep], as: 'did' } as EffectStep,
+      { op: 'if', cond: { cond: 'did', step: 'did' }, then: [
+        { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Creature'] }], is: bound('them'), zone: 'any' } }, min: 0, max: 1, as: 'chosen' } as EffectStep,
+        { op: 'move', what: bound('chosen'), to: { zone: 'hand' } } as EffectStep,
+      ] } as EffectStep,
+    ]),
+    ctx: creature,
+    readings: [
+      'Whenever this creature deals combat damage to a player, you may mill that many cards. If you do, you may put a creature card from among them into your hand.',
+      'Whenever this creature deals combat damage to a player, you may mill that many cards. If you do, you may put a creature card from among those cards into your hand.',
+      'Whenever this creature deals combat damage to a player, you may mill that many cards. If you do, you may return a creature card from among the milled cards to your hand.',
+    ],
+    near: [
+      'Whenever this creature deals combat damage to a player, you may mill that many cards. If you do, put a creature card from among them into your hand.',
+      'Whenever this creature deals combat damage to a player, you may mill that many cards. If you do, you may put a creature card from among them onto the battlefield.',
+      'Whenever this creature deals combat damage to a player, mill that many cards. If you do, you may put a creature card from among them into your hand.',
+      'Whenever this creature deals combat damage to a player, you may mill that many cards. If you do, you may put a land card from among them into your hand.',
+    ],
+  },
+  'fewer-cards-in-your-graveyard': {
+    def: t12Static({ cond: 'compare', left: { q: 'count', of: { ref: 'each', filter: { zone: 'graveyard', owner: 'you', isCard: true } } }, op: '<', right: 8 }, [grow]),
+    ctx: creature,
+    readings: [
+      'As long as there are fewer than eight cards in your graveyard, this creature gets +1/+1.',
+      'As long as you have fewer than eight cards in your graveyard, this creature gets +1/+1.',
+    ],
+    near: [
+      'As long as there are fewer than seven cards in your graveyard, this creature gets +1/+1.',
+      'As long as there are eight or fewer cards in your graveyard, this creature gets +1/+1.',
+      "As long as there are fewer than eight cards in an opponent's graveyard, this creature gets +1/+1.",
+      'As long as there are eight or more cards in your graveyard, this creature gets +1/+1.',
+    ],
+  },
+  'sacrifice-any-number-of-yours': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { controller: 'you', anyOf: [{ other: true }] } }, min: 0, max: 'any', as: 'toSacrifice' } as EffectStep,
+      { op: 'sacrifice', what: bound('toSacrifice'), as: 'sacrifice' } as EffectStep,
+      { op: 'draw', who: you, count: { q: 'resultCount', step: 'sacrifice' } } as EffectStep,
+    ]),
+    ctx: creature,
+    readings: [
+      'Sacrifice any number of other permanents, then draw that many cards.',
+      'Sacrifice any number of other permanents you control, then draw that many cards.',
+    ],
+    near: [
+      'Sacrifice any number of permanents, then draw that many cards.',
+      'Sacrifice any number of other permanents an opponent controls, then draw that many cards.',
+      'Sacrifice any number of other permanents, then draw a card.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-zones-17 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['may-mill-if-you-do-put', 'fewer-cards-in-your-graveyard', 'sacrifice-any-number-of-yours']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-players-14 (Commander lane edh-players; CR cites checked against the CR of 2026-09-25): three families of the round
+Object.assign(EXAMPLES, {
+  'for-each-opponent-you-attacked': {
+    def: spell([{ op: 'createToken', who: you, count: { q: 'opponentsAttacked', scope: 'turn' }, token: { predefined: 'Treasure' } } as EffectStep]),
+    readings: ['Create a Treasure token for each opponent you attacked this turn.', 'Create a Treasure token for each opponent you attacked.', "Create a Treasure token for each opponent you've attacked this turn."],
+    near: ['Create a Treasure token for each opponent you attacked this combat.', 'Create a Treasure token for each player you attacked.', 'Create two Treasure tokens for each opponent you attacked.'],
+  },
+  'discard-then-who-didnt': {
+    def: spell([
+      { op: 'discard', who: { ref: 'each', who: 'opponent' }, count: 1, as: 'discard' } as EffectStep,
+      { op: 'forEach', over: { ref: 'each', who: 'opponent' }, as: 'each', do: [{
+        op: 'if', cond: { cond: 'compare', left: { q: 'resultCount', step: 'discard', which: { anyOf: [{ notTypes: ['Land'], isCard: true }], owner: { ref: 'bound', name: 'each' } } }, op: '<', right: 1 },
+        then: [{ op: 'loseLife', who: { ref: 'bound', name: 'each' }, amount: 3 }],
+      }] } as EffectStep,
+    ]),
+    readings: [
+      "Each opponent discards a card, then each opponent who didn't discard a nonland card this way loses 3 life.",
+      "Each opponent discards a card. For each opponent who didn't discard a nonland card this way, that player loses 3 life.",
+    ],
+    near: [
+      "Each opponent discards a card, then each opponent who didn't discard a land card this way loses 3 life.",
+      'Each opponent discards a card, then each opponent who discarded a nonland card this way loses 3 life.',
+      "Each opponent discards a card, then each opponent who didn't discard a nonland card this way loses 2 life.",
+    ],
+  },
+  'who-discarded-hand-this-way': {
+    def: spell([
+      { op: 'may', who: { ref: 'each', who: 'player' }, do: [{ op: 'discard', who: { ref: 'iterating' }, count: 'hand' }, { op: 'draw', who: { ref: 'iterating' }, count: 5 }], as: 'did' } as EffectStep,
+      { op: 'damage', source: { ref: 'self' }, to: { ref: 'otherOf', of: { ref: 'bound', name: 'did' }, than: you }, amount: 5 } as EffectStep,
+    ]),
+    readings: [
+      'Each player may discard their hand and draw five cards. Then Test Card deals 5 damage to each opponent who discarded their hand this way.',
+      'Each player may discard their hand and draw five cards. Then Test Card deals 5 damage to each opponent who does.',
+      'Each player may discard their hand and draw five cards. Then Test Card deals 5 damage to each opponent who did.',
+    ],
+    near: [
+      'Each player may discard their hand and draw five cards. Then Test Card deals 5 damage to each player who discarded their hand this way.',
+      'Each player may discard their hand and draw five cards. Then Test Card deals 5 damage to each opponent who drew a card this way.',
+      'Each player may discard their hand and draw five cards. Then Test Card deals 4 damage to each opponent who discarded their hand this way.',
+    ],
+  },
+} satisfies Record<string, Example>);
+// edh-next-43 (render/evt.ts, render/refs.ts; CR 706.2, 701.9a, 608.2c): a die roll of one of two results; the players who discarded one card (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'roll-a-or-number': {
+    def: trig([{ ev: 'dieRoll', player: 'you', result: { op: '==', value: 1 } }, { ev: 'dieRoll', player: 'you', result: { op: '==', value: 2 } }], [draw()]),
+    ctx: creature,
+    readings: ['Whenever you roll a 1 or 2, draw a card.', 'Whenever you roll a 1 or roll a 2, draw a card.'],
+    near: ['Whenever you roll a 2 or 1, draw a card.', 'Whenever you roll a 1 or 3, draw a card.', 'Whenever you roll a 1 and 2, draw a card.'],
+  },
+  'who-discarded-card-this-way': {
+    def: spell([
+      { op: 'may', who: { ref: 'each', who: 'player' }, do: [{ op: 'discard', who: { ref: 'iterating' }, count: 1 }], as: 'did' } as EffectStep,
+      { op: 'draw', who: { ref: 'bound', name: 'did' }, count: 1 } as EffectStep,
+    ]),
+    readings: [
+      'Each player may discard a card. Each player who discarded a card this way draws a card.',
+      'Each player may discard a card. Each player who does draws a card.',
+      'Each player may discard a card. Each player who did draws a card.',
+    ],
+    near: [
+      'Each player may discard a card. Each player who drew a card this way draws a card.',
+      'Each player may discard a card. Each player who discarded their hand this way draws a card.',
+      'Each player may discard a card. Each player who discarded a card this way draws two cards.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-43 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['roll-a-or-number', 'who-discarded-card-this-way']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+describe('edh-players-14 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['for-each-opponent-you-attacked', 'discard-then-who-didnt', 'who-discarded-hand-this-way']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-players-17 (Commander lane edh-players): the player an "Enchant opponent" Aura is attached to, and the pair of attack declarations around it (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'enchanted-opponent-name': {
+    def: trig([{ ev: 'step', step: 'end', whose: { ref: 'enchantedPlayer' } } as EventPattern], [draw()]),
+    ctx: creature,
+    readings: ["At the beginning of enchanted player's end step, draw a card.", "At the beginning of enchanted opponent's end step, draw a card."],
+    near: ["At the beginning of enchanted creature's end step, draw a card.", "At the beginning of each opponent's end step, draw a card.", "At the beginning of enchanted opponent's upkeep, draw a card."],
+  },
+  'attack-enchanted-opponent-or-they-attack-you': {
+    def: trig([
+      { ev: 'attacks', attacker: { types: ['Creature'], controller: 'you' }, count: { op: '>=', value: 1 }, defender: { ref: 'enchantedPlayer' }, orPlaneswalker: true } as EventPattern,
+      { ev: 'attacks', attacker: { types: ['Creature'], controller: { ref: 'enchantedPlayer' } }, count: { op: '>=', value: 1 }, defender: 'you', orPlaneswalker: true } as EventPattern,
+    ], [draw()], { batch: true }),
+    ctx: creature,
+    readings: [
+      'When you attack enchanted opponent or a planeswalker they control or when they attack you or a planeswalker you control, draw a card.',
+      'When you attack enchanted player or a planeswalker they control or when they attack you or a planeswalker you control, draw a card.',
+    ],
+    near: [
+      'When you attack enchanted opponent or a planeswalker they control, draw a card.',
+      'When you attack enchanted opponent or a planeswalker they control or when they attack you, draw a card.',
+      'When you attack enchanted opponent or a planeswalker they control or when an opponent attacks you or a planeswalker you control, draw a card.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-players-17 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['enchanted-opponent-name', 'attack-enchanted-opponent-or-they-attack-you']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-zones-19 (Commander lane edh-zones): opponents losing life as a batch, and a permanent that is a card type or a subtype (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'opponents-lose-life': {
+    def: trig([{ ev: 'life', change: 'loss', player: 'opponent' } as EventPattern], [gain(1)], { batch: true, wholeBatch: true }),
+    ctx: creature,
+    readings: ['Whenever one or more opponents lose life, you gain 1 life.', 'Whenever one or more of your opponents lose life, you gain 1 life.'],
+    near: ['Whenever one or more players lose life, you gain 1 life.', 'Whenever one or more opponents gain life, you gain 1 life.', 'Whenever one or more of your opponents lose 2 or more life, you gain 1 life.'],
+  },
+  'permanent-thats-type-or-subtype': {
+    def: spell([{ op: 'putCounters', on: { ref: 'each', filter: { controller: 'you', anyOf: [{ types: ['Creature'] }, { subtypes: ['Vehicle'] }] } }, kind: '+1/+1', count: 1 } as EffectStep]),
+    readings: ["Put a +1/+1 counter on each permanent you control that's a creature or Vehicle.", "Put a +1/+1 counter on each creature or Vehicle you control."],
+    near: ["Put a +1/+1 counter on each permanent you control that's a creature or a Treasure.", "Put a +1/+1 counter on each permanent you control that's a creature and Vehicle.", "Put a +1/+1 counter on each permanent that's a creature or Vehicle."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-zones-19 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['opponents-lose-life', 'permanent-thats-type-or-subtype']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-players-16 (Commander lane edh-players)
+Object.assign(EXAMPLES, {
+  'damage-dealt-to-opponents-plain': {
+    def: spell([{ op: 'draw', who: you, count: { q: 'happenedCount', event: { ev: 'damage', recipient: { player: 'opponent' } }, scope: 'turn', sum: 'amount' } } as EffectStep]),
+    ctx: creature,
+    readings: ['Draw cards equal to the damage dealt to your opponents this turn.', 'Draw cards equal to the total amount of damage dealt to your opponents this turn.'],
+    near: ['Draw cards equal to the damage dealt to your opponent this turn.', 'Draw cards equal to the damage dealt to your opponents.', 'Draw cards equal to the combat damage dealt to your opponents this turn.', 'Draw cards equal to the damage dealt to you this turn.'],
+  },
+  'that-much-discarded-mana': {
+    def: spell([
+      { op: 'discard', who: you, count: 'hand', as: 'discard' } as EffectStep,
+      { op: 'addMana', who: you, dynamic: { kind: 'ofType', type: 'R', count: { q: 'resultCount', step: 'discard' } } } as EffectStep,
+    ]),
+    ctx: creature,
+    readings: ['Discard your hand. Add that much {R}.', 'Discard your hand. Add an amount of {R} equal to the number of cards discarded this way.'],
+    near: ['Discard your hand. Add that much {G}.', 'Discard your hand. Add that much {R}{R}.', 'Discard your hand. Add {R}.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-players-16 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['damage-dealt-to-opponents-plain', 'that-much-discarded-mana']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-zones-22 (Commander lane edh-zones): the readings of its two families (render/equivalence.ts)
+const six = ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'];
+Object.assign(EXAMPLES, {
+  'dies-in-granted-quotes': {
+    def: {
+      kind: 'static', text: '', condition: { cond: 'turnOf', whose: 'you' },
+      effects: [{
+        s: 'permit', who: you, action: 'play', of: { types: six, manaValue: { op: '<=', value: 3 } }, from: 'graveyard', oncePerTurn: true,
+        entersAbilities: [{ kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { self: true }, from: 'battlefield', to: 'graveyard' }] }, effect: { targets: [], steps: [{ op: 'move', what: { ref: 'event', role: 'subject' }, to: { zone: 'exile' } }, { op: 'gainLife', who: you, amount: 2 }] } }],
+      }],
+    } as unknown as AbilityDef,
+    ctx: creature,
+    readings: [
+      'Once during each of your turns, you may play a land from your graveyard or cast a permanent spell with mana value 3 or less from your graveyard. If you do, it gains "When this permanent is put into a graveyard from the battlefield, exile it and you gain 2 life."',
+      'Once during each of your turns, you may play a land from your graveyard or cast a permanent spell with mana value 3 or less from your graveyard. If you do, it gains "When this permanent dies, exile it and you gain 2 life."',
+    ],
+    near: [
+      'Once during each of your turns, you may play a land from your graveyard or cast a permanent spell with mana value 3 or less from your graveyard. If you do, it gains "When this permanent is put into a graveyard from anywhere, exile it and you gain 2 life."',
+      'Once during each of your turns, you may play a land from your graveyard or cast a permanent spell with mana value 4 or less from your graveyard. If you do, it gains "When this permanent dies, exile it and you gain 2 life."',
+      'Once during each of your turns, you may play a land from your graveyard or cast a permanent spell with mana value 3 or less from your graveyard. If you do, it gains "When this permanent dies, exile it and you gain 3 life."',
+    ],
+  },
+  'choose-from-group-where-x': {
+    def: spell([
+      { op: 'look', who: you, at: { ref: 'topCards', player: you, count: 5 }, as: 'seen' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Creature'] }], manaValue: { op: '<=', value: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } } } }, is: bound('seen'), zone: 'library' } }, min: 0, max: 1, as: 'chosen' } as EffectStep,
+      { op: 'move', what: bound('chosen'), to: { zone: 'battlefield', controller: you } } as EffectStep,
+    ]),
+    ctx: creature,
+    readings: [
+      'Look at the top five cards of your library. You may put a creature card with mana value X or less from among them onto the battlefield, where X is the number of creatures you control.',
+      'Look at the top five cards of your library. You may put a creature card with mana value less than or equal to the number of creatures you control from among them onto the battlefield under your control.',
+    ],
+    near: [
+      'Look at the top five cards of your library. You may put a creature card with mana value X or less from among them onto the battlefield, where X is the number of lands you control.',
+      'Look at the top five cards of your library. You may put a creature card with mana value X or more from among them onto the battlefield, where X is the number of creatures you control.',
+      'Look at the top five cards of your library. You may put a land card with mana value X or less from among them onto the battlefield, where X is the number of creatures you control.',
+    ],
+  },
+});
+describe('edh-zones-22 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['dies-in-granted-quotes', 'choose-from-group-where-x']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-players-19 (Commander lane edh-players)
+const LOLTH_EVENT = { ev: 'damage', combat: true, source: { types: ['Creature'], controller: 'you' }, recipient: { player: 'opponent' } } as EventPattern;
+const RECIPIENT = { ref: 'event', role: 'recipient' } as never;
+Object.assign(EXAMPLES, {
+  'player-dealt-by-creatures': {
+    def: trig([LOLTH_EVENT], [{ op: 'loseLife', who: RECIPIENT, amount: 1 } as EffectStep], { batch: true }),
+    ctx: creature,
+    readings: ['Whenever one or more creatures you control deal combat damage to an opponent, that player loses 1 life.', 'Whenever an opponent is dealt combat damage by one or more creatures you control, that player loses 1 life.'],
+    near: ['Whenever an opponent is dealt combat damage by one or more creatures, that player loses 1 life.', 'Whenever a player is dealt combat damage by one or more creatures you control, that player loses 1 life.', 'Whenever an opponent is dealt damage by one or more creatures you control, that player loses 1 life.'],
+  },
+  'lost-less-than-life': {
+    def: trig([LOLTH_EVENT], [{ op: 'loseLife', who: RECIPIENT, amount: 1 } as EffectStep], { batch: true, interveningIf: { cond: 'compare', left: { q: 'lifeLostThisTurn', of: RECIPIENT }, op: '<', right: 8 } }),
+    ctx: creature,
+    readings: ['Whenever one or more creatures you control deal combat damage to an opponent, if that player lost less than 8 life this turn, that player loses 1 life.', 'Whenever an opponent is dealt combat damage by one or more creatures you control, if that player lost less than 8 life this turn, they lose 1 life.'],
+    near: ['Whenever an opponent is dealt combat damage by one or more creatures you control, if that player lost less than 7 life this turn, they lose 1 life.', 'Whenever an opponent is dealt combat damage by one or more creatures you control, if that player lost more than 8 life this turn, they lose 1 life.', 'Whenever an opponent is dealt combat damage by one or more creatures you control, if you lost less than 8 life this turn, they lose 1 life.'],
+  },
+} satisfies Record<string, Example>);
+// edh-perms-17 (Commander lane edh-perms)
+Object.assign(EXAMPLES, {
+  'attacking-that-player-relative': {
+    def: rx30Def('Enchantment', "Whenever you attack a player, target creature attacking that player gets +1/+1 until end of turn."), ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever you attack a player, target creature attacking that player gets +1/+1 until end of turn.', "Whenever you attack a player, target creature that's attacking that player gets +1/+1 until end of turn.",
+      'Whenever you attack a player, target creature that is attacking that player gets +1/+1 until end of turn.'],
+    near: ['Whenever you attack a player, target creature attacking you gets +1/+1 until end of turn.', "Whenever you attack a player, target creature that's blocking that player gets +1/+1 until end of turn."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-perms-17 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['attacking-that-player-relative']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-players-18 (Commander lane edh-players): three families (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'to-one-or-more-of-your-opponents': {
+    def: trig([{ ev: 'damage', source: { subtypes: ['Zombie'], controller: 'you' }, combat: true, recipient: { player: 'opponent' } } as EventPattern], [draw()], { batch: true, wholeBatch: true }),
+    ctx: creature,
+    readings: ['Whenever one or more Zombies you control deal combat damage to your opponents, draw a card.', 'Whenever one or more Zombies you control deal combat damage to one or more of your opponents, draw a card.'],
+    near: ['Whenever one or more Zombies you control deal combat damage to one of your opponents, draw a card.', 'Whenever one or more Zombies you control deal combat damage to one or more players, draw a card.', 'Whenever one or more Zombies you control deal damage to one or more of your opponents, draw a card.'],
+  },
+  'player-is-your-opponent': {
+    def: trig([{ ev: 'step', step: 'end' }], [
+      { op: 'draw', who: { ref: 'event', role: 'player' }, count: 1 } as EffectStep,
+      { op: 'if', cond: { cond: 'all', of: [{ cond: 'playerIs', who: { ref: 'event', role: 'player' }, is: 'opponent' }, { cond: 'compare', left: { q: 'zoneSize', zone: 'hand', of: { ref: 'event', role: 'player' } }, op: '>=', right: 4 }] }, then: [{ op: 'damage', source: { ref: 'self' }, to: { ref: 'event', role: 'player' }, amount: 2 }] } as EffectStep,
+    ]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: [
+      "At the beginning of each player's end step, that player draws a card. If the player is your opponent and has four or more cards in hand, ~ deals 2 damage to that player.",
+      "At the beginning of each player's end step, that player draws a card. If that player is an opponent and has four or more cards in hand, ~ deals 2 damage to that player.",
+    ],
+    near: [
+      "At the beginning of each player's end step, that player draws a card. If the player is your opponent and has three or more cards in hand, ~ deals 2 damage to that player.",
+      "At the beginning of each player's end step, that player draws a card. If the player is an opponent or has four or more cards in hand, ~ deals 2 damage to that player.",
+    ],
+  },
+  'discard-that-many-drawn': {
+    def: trig([{ ev: 'damage', source: { types: ['Creature'], controller: 'you' }, combat: true, recipient: { player: 'opponent' } } as EventPattern], [
+      { op: 'draw', who: you, count: { q: 'countPlayers', of: { ref: 'event', role: 'recipient' } } } as EffectStep,
+      { op: 'discard', who: you, count: { q: 'countPlayers', of: { ref: 'event', role: 'recipient' } } } as EffectStep,
+    ], { batch: true, wholeBatch: true }),
+    ctx: creature,
+    readings: ['Whenever one or more creatures you control deal combat damage to your opponents, draw cards equal to the number of opponents dealt damage this way. Discard cards equal to the number of opponents dealt damage this way.', 'Whenever one or more creatures you control deal combat damage to your opponents, draw cards equal to the number of opponents dealt damage this way. Discard that many cards.'],
+    near: ['Whenever one or more creatures you control deal combat damage to your opponents, draw cards equal to the number of opponents dealt damage this way. Discard two cards.', 'Whenever one or more creatures you control deal combat damage to your opponents, draw a card. Discard that many cards.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-players-18 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['to-one-or-more-of-your-opponents', 'player-is-your-opponent', 'discard-that-many-drawn']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-zones-20 (Commander lane edh-zones): the graveyard of the player a mill names (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'enchanted-players-own-graveyard': {
+    def: spell([
+      { op: 'mill', who: { ref: 'enchantedPlayer' }, count: { q: 'happenedCount', event: { ev: 'zoneChange', subject: { owner: { ref: 'enchantedPlayer' }, isCard: true }, to: 'graveyard' }, scope: 'turn' } } as EffectStep,
+    ]),
+    readings: [
+      'Enchanted player mills X cards, where X is the number of cards put into their graveyard from anywhere this turn.',
+      "Enchanted player mills X cards, where X is the number of cards put into enchanted player's graveyard from anywhere this turn.",
+    ],
+    near: [
+      'Enchanted player mills X cards, where X is the number of cards put into your graveyard from anywhere this turn.',
+      'Enchanted player mills X cards, where X is the number of cards put into their graveyard from your library this turn.',
+      'Enchanted player mills X cards, where X is the number of cards put into their graveyard from anywhere.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-zones-20 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['enchanted-players-own-graveyard']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-cast-13 (Commander lane edh-cast; CR 601.2f, 500.1, 611.3a): the turn between the caster and the verb of a cost increase on the spells your opponents cast (Paladin Class)
+const EDHC13_PALADIN = 'Spells your opponents cast during your turn cost {1} more to cast.';
+Object.assign(EXAMPLES, {
+  'cost-spells-during-your-turn': {
+    def: xp2Def('Enchantment', EDHC13_PALADIN),
+    readings: [EDHC13_PALADIN, 'During your turn, spells your opponents cast cost {1} more to cast.', 'Spells an opponent casts during your turn cost {1} more to cast.'],
+    near: ['Spells your opponents cast during your turn cost {2} more to cast.', 'Spells your opponents cast during your turn cost {1} less to cast.', 'Spells you cast during your turn cost {1} more to cast.', 'Spells your opponents cast cost {1} more to cast.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-cast-13 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['cost-spells-during-your-turn']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-perms-18 (Commander lane edh-perms; CR 701.21a, 118.3, 602.2b)
+Object.assign(EXAMPLES, {
+  'sacrifice-self-and-many': {
+    def: EMK6_COST({ kind: 'sacrifice', filter: { self: true }, count: 1, self: true }, { kind: 'sacrifice', filter: { subtypes: ['Clue'] }, count: 3 }),
+    ctx: creature,
+    readings: ['Sacrifice ~ and three Clues: Draw a card.', 'Sacrifice ~, Sacrifice three Clues: Draw a card.'],
+    near: ['Sacrifice ~ and two Clues: Draw a card.', 'Sacrifice ~ and three Clues: Draw two cards.', 'Sacrifice three Clues and ~: Draw a card.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-perms-18 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['sacrifice-self-and-many']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-perms-18: the where-X reading of counters put on a chosen permanent
+Object.assign(EXAMPLES, {
+  'counters-where-x-chosen': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, min: 1, max: 1, as: 'pick' } as EffectStep,
+      { op: 'putCounters', on: bound('pick'), kind: '+1/+1', count: { q: 'count', of: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } } } as EffectStep,
+    ]),
+    ctx: creature,
+    readings: ['Put a number of +1/+1 counters equal to the number of lands you control on a creature you control.', 'Put X +1/+1 counters on a creature you control, where X is the number of lands you control.'],
+    near: ['Put X +1/+1 counters on a creature you control, where X is the number of creatures you control.', 'Put X +1/+1 counters on a creature, where X is the number of lands you control.', 'Put X -1/-1 counters on a creature you control, where X is the number of lands you control.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-perms-18 (G6): the where-X reading of counters on a chosen permanent', () => {
+  for (const id of ['counters-where-x-chosen']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-top-6: the rider of a cast step said "a spell cast this way" (render/steps-zones.ts#graveyardInsteadText)
+Object.assign(EXAMPLES, {
+  'cast-this-way-spell-step': {
+    def: gy2Def("Whenever ~ attacks, you may cast target instant card from your graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it instead."),
+    readings: ["Whenever ~ attacks, you may cast target instant card from your graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it instead.",
+      "Whenever ~ attacks, you may cast target instant card from your graveyard without paying its mana cost. If that spell would be put into a graveyard, exile it instead."],
+    near: ["Whenever ~ attacks, you may cast target instant card from your graveyard without paying its mana cost. If a spell cast this way would be put into your graveyard, exile it instead.",
+      "Whenever ~ attacks, you may cast target instant card from your graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-top-7: another player's cast, the rest of your own exile-until, a computed number of token copies (render/evt.ts#event, render/steps-zones.ts)
+Object.assign(EXAMPLES, {
+  'another-player-opponent': {
+    def: gy2Def('Whenever an opponent casts a spell from anywhere other than their hand, draw a card.'),
+    readings: ['Whenever an opponent casts a spell from anywhere other than their hand, draw a card.', 'Whenever another player casts a spell from anywhere other than their hand, draw a card.'],
+    near: ['Whenever a player casts a spell from anywhere other than their hand, draw a card.', 'Whenever another player casts a spell from anywhere other than your hand, draw a card.'],
+  },
+  'exile-rest-your-library': {
+    def: gy2Def('Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost. Put the rest on the bottom of your library in a random order.'),
+    readings: ['Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost. Put the rest on the bottom of your library in a random order.'],
+    near: ['Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost. Put the rest on top of your library in a random order.',
+      'Exile cards from the top of your library until you exile a nonland card. You may cast that card without paying its mana cost. Put the rest on the bottom of your library in any order.'],
+  },
+  'token-copies-where-x': {
+    def: gy2Def('Create X tokens that are copies of target creature you control, where X is the number of creatures you control.'),
+    readings: ['Create X tokens that are copies of target creature you control, where X is the number of creatures you control.'],
+    near: ['Create X tokens that are copies of target creature you control, where X is the number of lands you control.', 'Create X tokens that are copies of target creature you control, where X is the number of creatures you control, tapped.'],
+  },
+} satisfies Record<string, Example>);
+
+describe('edh-players-19 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['player-dealt-by-creatures', 'lost-less-than-life']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// trek-14 (Star Trek lane trek-14; CR 122.1a, 208.1, 603.4, 614.1c, 205.3m): the printed wordings of Jett Reno, Ensign Harry Kim and Jean-Luc
+Object.assign(EXAMPLES, {
+  'plus-one-slash-one-counter': {
+    def: spell([{ op: 'putCounters', on: t('c'), kind: '+1/+1', count: 1 } as EffectStep], [objTarget('c')]),
+    readings: ['Put a +1/+1 counter on target creature.', 'Put a +1/1 counter on target creature.'],
+    near: ['Put a +1/2 counter on target creature.', 'Put a +2/1 counter on target creature.', 'Put a -1/-1 counter on target creature.'],
+  },
+  'greater-power-than-self': {
+    def: trig([{ ev: 'zoneChange', subject: { types: ['Creature'], controller: 'you', other: true }, to: 'battlefield' }], [{ op: 'putCounters', on: self, kind: '+1/+1', count: 1 } as EffectStep], {
+      interveningIf: { cond: 'matches', object: { ref: 'event', role: 'subject' }, filter: { power: { op: '>', value: { q: 'stat', stat: 'power', of: { ref: 'self' } } } } },
+    }),
+    ctx: creature,
+    readings: [
+      'Whenever another creature you control enters, if it has greater power than ~, put a +1/+1 counter on ~.',
+      "Whenever another creature you control enters, if it has power greater than ~'s power, put a +1/+1 counter on ~.",
+    ],
+    near: [
+      'Whenever another creature you control enters, if it has greater toughness than ~, put a +1/+1 counter on ~.',
+      'Whenever another creature you control enters, if it has less power than ~, put a +1/+1 counter on ~.',
+      'Whenever another creature you control enters, if it has greater power than target creature, put a +1/+1 counter on ~.',
+    ],
+  },
+  'creature-types-enter-plural': {
+    def: statics([{ s: 'replace', replaces: { ev: 'zoneChange', subject: { subtypes: ['Faerie'], controller: 'you' }, to: 'battlefield' }, body: { b: 'enters', counters: [{ kind: '+1/+1', count: { q: 'distinct', what: 'creatureTypes', among: { ref: 'each', filter: { anyOf: [{ notSubtypes: ['Borg'], types: ['Creature'] }], controller: 'you' } } } }] } } as StaticEffect]),
+    ctx: creature,
+    readings: [
+      'Faeries you control enter with an additional +1/+1 counter on them for each creature type among non-Borg creatures you already control.',
+      'Each Faerie you control enters with an additional +1/+1 counter on it for each creature type among non-Borg creatures you already control.',
+    ],
+    near: [
+      'Faeries you control enter with an additional +1/+1 counter on them for each color among non-Borg creatures you already control.',
+      'Elves you control enter with an additional +1/+1 counter on them for each creature type among non-Borg creatures you already control.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('trek-14 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['plus-one-slash-one-counter', 'greater-power-than-self', 'creature-types-enter-plural']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// trek-20 (Star Trek lane trek, reprints; CR cites checked against the 2026-09-25 text): an added combat phase and main phase after the second main phase
+Object.assign(EXAMPLES, {
+  'extra-combat-after-second-main': {
+    def: spell([{ op: 'extraPhase', phase: 'combat', after: 'main2', followedBy: 'main' } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: [
+      'After the second main phase this turn, there is an additional combat phase followed by an additional main phase.',
+      "After the second main phase this turn, there's an additional combat phase followed by an additional main phase.",
+    ],
+    near: [
+      'After the first main phase this turn, there is an additional combat phase followed by an additional main phase.',
+      'After this main phase, there is an additional combat phase followed by an additional main phase.',
+      'After the second main phase this turn, there is an additional combat phase.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('trek-20 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['extra-combat-after-second-main']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// trek-16 (Star Trek lane; CR 707.2, 707.9b, 614.12): the copy of a card in a graveyard said with "a", and the card itself as "~" in its exceptions
+Object.assign(EXAMPLES, {
+  'enter-copy-of-card-in-graveyard-a': {
+    def: statics([{ s: 'replace', replaces: enters, body: { b: 'enters', copy: { of: { types: ['Creature'], zone: 'graveyard', isCard: true }, optional: true } } }]),
+    ctx: creature,
+    readings: ['You may have Test Card enter as a copy of a creature card in a graveyard.', 'You may have Test Card enter as a copy of any creature card in a graveyard.'],
+    near: ['You may have Test Card enter as a copy of a creature card in your graveyard.', 'You may have Test Card enter as a copy of a creature in a graveyard.'],
+  },
+  'copy-except-tilde-other-types': {
+    def: statics([{ s: 'replace', replaces: enters, body: { b: 'enters', copy: { of: { types: ['Creature'], zone: 'graveyard', isCard: true }, optional: true, except: [{ layer: 4, subtypes: { add: ['Spy'] } }] } } }]),
+    ctx: creature,
+    readings: [
+      "You may have Test Card enter as a copy of a creature card in a graveyard, except it's a Spy in addition to its other types.",
+      "You may have Test Card enter as a copy of a creature card in a graveyard, except ~ is a Spy in addition to ~'s other types.",
+    ],
+    near: [
+      "You may have Test Card enter as a copy of a creature card in a graveyard, except it's a Spy.",
+      "You may have Test Card enter as a copy of a creature card in a graveyard, except ~ is a Spy in addition to its other abilities.",
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('trek-16 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['enter-copy-of-card-in-graveyard-a', 'copy-except-tilde-other-types']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// trek-19 (Star Trek; CR 205.3m, 613.4c): the creature types of a pump said as plurals joined by "and"
+const TREK19_ANTHEM = 'Other Elves, Goblins, and Wizards creatures you control get +1/+1.';
+Object.assign(EXAMPLES, {
+  'creature-type-plurals-list': {
+    def: xp2Def('Creature — Human', TREK19_ANTHEM),
+    readings: [TREK19_ANTHEM, 'Other Elf, Goblin, and Wizard creatures you control get +1/+1.'],
+    near: ['Other Elves, Goblins, and Clerics creatures you control get +1/+1.', 'Other Elves, Goblins, and Wizards creatures you control get +2/+2.', 'Other Elves, Goblins, and Wizards creatures your opponents control get +1/+1.'],
+  },
+} satisfies Record<string, Example>);
+const TREK19_NAME = 'As this creature enters, choose a nonland card name.\nWhenever an opponent casts a spell with the chosen name or activates an ability of a source with the chosen name, that player loses 1 life.';
+const TREK19_COMMANDER = '{T}: Add {C}. Spend this mana only to cast your commander.';
+Object.assign(EXAMPLES, {
+  'source-with-the-chosen-name': {
+    def: xp2Def('Creature — Cleric', TREK19_NAME),
+    readings: ['Whenever an opponent casts a spell with the chosen name or activates an ability of a source with the chosen name, that player loses 1 life.', 'Whenever an opponent casts a spell with the chosen name or activates an ability of a card with the chosen name, that player loses 1 life.'],
+    near: ['Whenever an opponent casts a spell with the chosen name or activates an ability of a source with the chosen name, that player loses 2 life.', 'Whenever you cast a spell with the chosen name or activate an ability of a source with the chosen name, that player loses 1 life.', 'Whenever an opponent casts a spell with the chosen name or activates an ability of a creature with the chosen name, that player loses 1 life.'],
+  },
+  'cast-your-commander': {
+    def: xp2Def('Artifact', TREK19_COMMANDER),
+    readings: [TREK19_COMMANDER, '{T}: Add {C}. Spend this mana only to cast a commander spell you own.'],
+    near: ['{T}: Add {C}. Spend this mana only to cast a commander spell.', '{T}: Add {C}. Spend this mana only to cast your commanders.', '{T}: Add {C}. Spend this mana only to cast a spell you own.', '{T}: Add {R}. Spend this mana only to cast your commander.'],
+  },
+} satisfies Record<string, Example>);
+describe('trek-19 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['creature-type-plurals-list', 'source-with-the-chosen-name', 'cast-your-commander']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// trek-18 (lane trek, Star Trek; CR 702.11c, 508.4, 506.1, 500.7): the readings of four families
+const TREK18_HEXPROOF: EffectStep = { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'restrict', subject: you, mode: 'cant', action: 'beTargeted', other: { controller: 'opponent' } }] } as EffectStep;
+const TREK18_TOKEN: EffectStep = { op: 'createToken', who: you, count: 1, tapped: true, attacking: true, token: { power: 4, toughness: 3, colors: [], types: ['Artifact', 'Creature'], subtypes: ['Illusion'], keywords: ['flying'] } } as EffectStep;
+const TREK18_COMBAT = ['beginCombat', 'declareAttackers', 'declareBlockers', 'combatDamage', 'endCombat'] as const;
+Object.assign(EXAMPLES, {
+  'player-hexproof-gain': {
+    def: spell([TREK18_HEXPROOF]),
+    readings: ['You gain hexproof until end of turn.', "You can't be the target of spells or abilities your opponents control until end of turn."],
+    near: ['You gain hexproof.', 'You gain shroud until end of turn.', 'Each opponent gains hexproof until end of turn.', "You can't be the target of spells or abilities until end of turn."],
+  },
+  'token-tapped-attacking-front-plain': {
+    def: spell([TREK18_TOKEN]),
+    readings: ['Create a tapped and attacking 4/3 colorless Illusion artifact creature token with flying.', "Create a 4/3 colorless Illusion artifact creature token with flying that's tapped and attacking."],
+    near: ['Create a tapped 4/3 colorless Illusion artifact creature token with flying.', 'Create a tapped and blocking 4/3 colorless Illusion artifact creature token with flying.', 'Create an attacking 4/3 colorless Illusion artifact creature token with flying.'],
+  },
+  'its-a-combat-phase': {
+    def: spell([{ op: 'if', cond: { cond: 'turnOf', whose: 'any', step: [...TREK18_COMBAT] }, then: [draw()] } as EffectStep]),
+    readings: ["If it's a combat phase, draw a card.", 'If it is a combat phase, draw a card.'],
+    near: ["If it's your combat phase, draw a card.", "If it's a main phase, draw a card.", "If it's an opponent's combat phase, draw a card."],
+  },
+  'and-havent-begun-extra-turn': {
+    def: spell([{ op: 'if', cond: { cond: 'all', of: [{ cond: 'exists', of: { ref: 'each', filter: { controller: 'you', subtypes: ['Whale'] } } }, { cond: 'compare', left: { q: 'extraTurnsBegun' }, op: '==', right: 0 }] }, then: [{ op: 'extraTurn', who: you, count: 1 }] } as EffectStep]),
+    readings: ["If you control a Whale and haven't begun an extra turn this game, take an extra turn after this one.", "If you control a Whale and you haven't begun an extra turn this game, take an extra turn after this one."],
+    near: ["If you control a Whale or haven't begun an extra turn this game, take an extra turn after this one.", "If you control a Whale and haven't begun a turn this game, take an extra turn after this one.", "If you control a Whale and haven't begun an extra turn this turn, take an extra turn after this one."],
+  },
+} satisfies Record<string, Example>);
+describe('trek-18 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['player-hexproof-gain', 'token-tapped-attacking-front-plain', 'its-a-combat-phase', 'and-havent-begun-extra-turn']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-perms-20 (Commander lane edh-perms): steps-lasting.ts +1
+Object.assign(EXAMPLES, {
+  'delay-move-then-sentence': {
+    def: trig([{ ev: 'zoneChange', subject: { types: ['Creature'], not: { controller: 'you' } }, from: 'battlefield', to: 'graveyard' }], [
+      {
+        op: 'delay', when: { at: 'step', step: 'end', next: true },
+        do: [
+          { op: 'move', what: { ref: 'event', role: 'subject' }, to: { zone: 'battlefield', controller: you, counters: [{ kind: '+1/+1', count: 1 }] }, as: 'moved' },
+          { op: 'effect', duration: { d: 'permanent' }, effects: [{ s: 'continuous', affects: { ref: 'bound', name: 'moved' }, mods: [{ layer: 4, subtypes: { add: ['Zombie'] } }, { layer: 5, colors: { add: ['B'] } }] }] },
+        ],
+      } as unknown as EffectStep,
+    ]),
+    ctx: creature,
+    readings: [
+      "Whenever a creature you don't control dies, return it to the battlefield under your control with an additional +1/+1 counter on it at the beginning of the next end step. That creature is a black Zombie in addition to its other colors and types.",
+    ],
+    near: [
+      "Whenever a creature you don't control dies, return it to the battlefield under your control with an additional +1/+1 counter on it at the beginning of the next end step. That creature is a red Zombie in addition to its other colors and types.",
+      "Whenever a creature you don't control dies, return it to the battlefield under your control with an additional +1/+1 counter on it at the beginning of the next upkeep. That creature is a black Zombie in addition to its other colors and types.",
+    ],
+  },
+  'event-amount-milled-this-way': {
+    def: trig([{ ev: 'action', verb: 'mill', object: { isCard: true, notTypes: ['Land'] } }], [{ op: 'gainLife', who: you, amount: { q: 'eventAmount' } } as EffectStep], { batch: true, wholeBatch: true }),
+    ctx: creature,
+    readings: ['Whenever one or more nonland cards are milled, you gain that much life.', 'Whenever one or more nonland cards are milled, you gain life equal to the number of nonland cards milled this way.'],
+    near: ['Whenever one or more nonland cards are milled, you gain life equal to the number of creature cards milled this way.', 'Whenever one or more nonland cards are milled, you gain life equal to the number of nonland cards discarded this way.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-perms-20 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['delay-move-then-sentence', 'event-amount-milled-this-way']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-zones-24 (Commander lane edh-zones): the readings of its families (invented wordings, design 6.10)
+const spawn = { colors: [], types: ['Creature'], subtypes: ['Eldrazi', 'Spawn'], power: 0, toughness: 1, abilities: [{ kind: 'activated', text: '', cost: { other: [{ kind: 'sacrifice', filter: { self: true }, count: 1, self: true }] }, isMana: true, effect: { targets: [], steps: [{ op: 'addMana', who: you, units: [['C']] }] } }] };
+Object.assign(EXAMPLES, {
+  'token-rider-those-have': {
+    def: spell([{ op: 'createToken', who: you, count: 2, token: spawn } as EffectStep]),
+    readings: ['Create two 0/1 colorless Eldrazi Spawn creature tokens. Those tokens have "Sacrifice this creature: Add {C}."', 'Create two 0/1 colorless Eldrazi Spawn creature tokens. They have "Sacrifice this creature: Add {C}."'],
+    near: ['Create two 0/1 colorless Eldrazi Spawn creature tokens. That token has "Sacrifice this creature: Add {C}."', 'Create two 0/1 colorless Eldrazi Spawn creature tokens. Those tokens have "Sacrifice this creature: Add {R}."'],
+  },
+  'still-exiled-any-of-those': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: you, count: 3 }, to: { zone: 'exile' }, as: 'cards' } as EffectStep,
+      { op: 'delay', when: { at: 'step', step: 'end', next: true }, capture: ['cards'], do: [{ op: 'if', cond: { cond: 'exists', of: { ref: 'each', filter: { is: bound('cards'), zone: 'exile' } } }, then: [{ op: 'move', what: bound('cards'), to: { zone: 'graveyard' } } as EffectStep], intervening: true } as EffectStep] } as EffectStep,
+    ]),
+    readings: ['Exile the top three cards of your library. At the beginning of the next end step, if any of those cards remain exiled, put them into your graveyard.'],
+    near: ['Exile the top three cards of your library. At the beginning of the next end step, if all of those cards remain exiled, put them into your graveyard.', 'Exile the top three cards of your library. At the beginning of the next end step, if any of those cards remain in your graveyard, put them into your graveyard.'],
+  },
+  'player-chooses-and-returns': {
+    def: spell([
+      { op: 'chooseObjects', who: t('p'), from: { ref: 'each', filter: { types: ['Creature'], controller: t('p') } }, min: 1, max: 1, as: 'pick' } as EffectStep,
+      { op: 'move', what: bound('pick'), to: { zone: 'hand' } } as EffectStep,
+    ], [{ id: 'p', kind: 'player', min: 1, max: 1, text: '', players: { who: 'opponent' } } as TargetSpec]),
+    readings: ["Target opponent chooses a creature they control and returns it to its owner's hand.", "Target opponent returns a creature they control to its owner's hand."],
+    near: ["Target opponent chooses a creature you control and returns it to its owner's hand.", "Target opponent chooses a creature they control and returns it to your hand.", "Target opponent chooses two creatures they control and returns them to their owners' hands."],
+  },
+  'they-shuffle-each-into-owner': {
+    def: spell([
+      { op: 'forEach', over: { ref: 'each', filter: { notTypes: ['Land'], controller: t('p') } }, as: 'gone', do: [
+        { op: 'move', what: bound('gone'), to: { zone: 'library' } } as EffectStep,
+        { op: 'shuffle', who: { ref: 'ownerOf', object: bound('gone') } } as EffectStep,
+      ] } as EffectStep,
+    ], [{ id: 'p', kind: 'player', min: 1, max: 1, text: '', players: { who: 'opponent' } } as TargetSpec]),
+    readings: ["Target opponent shuffles each nonland permanent they control into its owner's library.", "Target opponent shuffles each nonland permanent that player controls into its owner's library."],
+    near: ["Target opponent shuffles each nonland permanent they control into their library.", "Target opponent shuffles each permanent they control into its owner's library.", "Target opponent shuffles each nonland permanent you control into its owner's library."],
+  },
+  'mill-put-up-to-bf': {
+    def: spell([
+      { op: 'mill', who: you, count: 10, as: 'm' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Creature'] }], is: bound('m'), zone: 'any' } }, min: 0, max: 2, as: 'c' } as EffectStep,
+      { op: 'move', what: bound('c'), to: { zone: 'battlefield', controller: you } } as EffectStep,
+    ]),
+    readings: ['Mill ten cards. Put up to two creature cards from among the milled cards onto the battlefield.', 'Mill ten cards, then put up to two creature cards from among them onto the battlefield.'],
+    near: ['Mill ten cards. Put up to two creature cards from among the milled cards onto the battlefield under an opponent\'s control.', 'Mill ten cards. Put up to three creature cards from among the milled cards onto the battlefield.', 'Mill ten cards. Put up to two creature cards from among the milled cards into your hand.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-zones-24 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['token-rider-those-have', 'still-exiled-any-of-those', 'player-chooses-and-returns', 'they-shuffle-each-into-owner', 'mill-put-up-to-bf']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-players-20 (Commander lane edh-players): four families (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'draw-another-then-if': {
+    def: trig([{ ev: 'attacks', attacker: { self: true } }], [
+      { op: 'draw', who: you, count: 2 } as EffectStep,
+      { op: 'draw', who: you, count: 1, guard: { cond: 'compare', left: { q: 'lifeGainedThisTurn' }, op: '>=', right: 3 } } as EffectStep,
+    ]),
+    ctx: creature,
+    readings: ["Whenever ~ attacks, draw two cards, then draw another card if you've gained 3 or more life this turn.", "Whenever ~ attacks, draw two cards. Then draw another card if you've gained 3 or more life this turn.", "Whenever ~ attacks, draw two cards. Draw another card if you've gained 3 or more life this turn."],
+    near: ["Whenever ~ attacks, draw two cards, then draw a card if you've gained 3 or more life this turn.", "Whenever ~ attacks, draw three cards, then draw another card if you've gained 3 or more life this turn.", "Whenever ~ attacks, draw two cards, then draw another card unless you've gained 3 or more life this turn."],
+  },
+  'controller-of-those-creatures': {
+    def: trig([{ ev: 'damage', source: { types: ['Creature'], controller: 'opponent' }, combat: true, recipient: { player: 'opponent' } } as EventPattern], [
+      { op: 'draw', who: you, count: 1 } as EffectStep,
+      { op: 'draw', who: { ref: 'controllerOf', object: { ref: 'event', role: 'source' } }, count: 1 } as EffectStep,
+    ], { batch: true, wholeBatch: true }),
+    ctx: creature,
+    readings: ['Whenever one or more creatures an opponent controls deal combat damage to one or more of your opponents, you and the controller of those creatures each draw a card.',
+      'Whenever one or more creatures an opponent controls deal combat damage to one or more of your opponents, you and their controller each draw a card.'],
+    near: ['Whenever one or more creatures an opponent controls deal combat damage to one or more of your opponents, you and the owner of those creatures each draw a card.',
+      'Whenever one or more creatures an opponent controls deal combat damage to one or more of your opponents, you and the controller of that creature each draw a card.'],
+  },
+  'each-of-those-creatures-subject': {
+    def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: t('c'), mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'haste', text: 'haste' }] }] }] } as EffectStep], [{ id: 'c', kind: 'object', min: 0, max: 'any', filter: { types: ['Creature'] } } as never]),
+    readings: ['Choose any number of target creatures. Those creatures gain haste until end of turn.', 'Choose any number of target creatures. Each of those creatures gains haste until end of turn.'],
+    near: ['Choose any number of target creatures. Each of those creatures gain haste until end of turn.', 'Choose any number of target creatures. Each of those lands gains haste until end of turn.'],
+  },
+  'opponents-each-lose-exactly': {
+    def: trig([{ ev: 'life', change: 'loss', player: 'opponent', amount: { op: '==', value: 1 }, totalAmount: true } as EventPattern], [draw()], { batch: true, wholeBatch: true }),
+    ctx: creature,
+    readings: ['Whenever one or more opponents each lose exactly 1 life, draw a card.', 'Whenever one or more of your opponents each lose exactly 1 life, draw a card.'],
+    near: ['Whenever one or more opponents each lose exactly 2 life, draw a card.', 'Whenever one or more opponents each lose at least 1 life, draw a card.', 'Whenever one or more opponents lose life, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-players-20 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['draw-another-then-if', 'controller-of-those-creatures', 'each-of-those-creatures-subject', 'opponents-each-lose-exactly']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-zones-26 (Commander lane edh-zones; CR 608.2b, 701.21a, 107.4h, 601.2h, 608.2d, 406.1, 601.2a, 701.23a, 401.4 checked against the 2026-09-25 text)
+const Z26_ARTIFACT_PAIR = [objTarget('t0', { types: ['Artifact'] }), objTarget('t1', { types: ['Artifact'], zone: 'graveyard', isCard: true, owner: { ref: 'controllerOf', object: t('t0') } })];
+const Z26_OPP = (): TargetSpec => ({ id: 'p', kind: 'player', min: 1, max: 1, text: '', players: { who: 'opponent' } });
+Object.assign(EXAMPLES, {
+  'sacrifice-return-pair': {
+    def: spell([{ op: 'exchange', what: 'sacrificeReturn', a: t('t0'), b: t('t1') } as EffectStep], Z26_ARTIFACT_PAIR),
+    readings: [
+      "Choose target artifact a player controls and target artifact card in that player's graveyard. If both targets are still legal as this ability resolves, that player simultaneously sacrifices the artifact and returns the artifact card to the battlefield.",
+      "Choose target artifact a player controls and target artifact card in that player's graveyard. Then that player simultaneously sacrifices the artifact and returns the artifact card to the battlefield.",
+    ],
+    near: [
+      "Choose target artifact a player controls and target artifact card in that player's graveyard. If both targets are still legal as this ability resolves, that player simultaneously sacrifices the artifact and returns the artifact card to their hand.",
+      "Choose target artifact a player controls and target artifact card in that player's graveyard. If both targets are still legal as this ability resolves, that player sacrifices the artifact and returns the artifact card to the battlefield.",
+      "Choose target artifact a player controls and target artifact card in your graveyard. Then that player simultaneously sacrifices the artifact and returns the artifact card to the battlefield.",
+    ],
+  },
+  'snow-mana-spent': {
+    def: spell([{ op: 'gainLife', who: you, amount: { q: 'snowSpent' } } as EffectStep]),
+    readings: ['You gain 1 life for each {S} spent to cast this spell.', 'You gain life equal to the amount of {S} spent to cast this spell.'],
+    near: ['You gain 1 life for each {S} spent to cast that spell.', 'You gain 1 life for each {G} spent to cast this spell.', 'You gain 1 life for each mana spent to cast this spell.'],
+  },
+  'chosen-number-that-many': {
+    def: spell([
+      { op: 'chooseValue', who: you, what: 'number', min: 1, max: 3, random: true, as: 'chosenNumber', link: 'chosenNumber' } as EffectStep,
+      { op: 'mill', who: you, count: { q: 'chosenNumber', link: 'chosenNumber' } } as EffectStep,
+    ]),
+    readings: ['Choose 1, 2, or 3 at random. Mill that many cards.', 'Choose 1, 2, or 3 at random. Mill X cards, where X is the chosen number.'],
+    near: ['Choose 1, 2, or 3. Mill that many cards.', 'Choose 1, 2, or 4 at random. Mill that many cards.', 'Choose 1, 2, or 3 at random. Draw that many cards.'],
+  },
+  'exiled-cards-still-exiled': {
+    def: spell([
+      { op: 'exileUntil', who: t('p'), filter: { notTypes: ['Land'] }, as: 'hit', exiled: 'all' } as EffectStep,
+      { op: 'cast', who: t('p'), what: bound('hit'), free: true, optional: true } as EffectStep,
+      { op: 'move', what: { ref: 'each', filter: { is: bound('all'), zone: 'exile' } }, to: { zone: 'library', position: 'bottom', order: 'random' } } as EffectStep,
+    ], [Z26_OPP()]),
+    readings: [
+      'Target opponent exiles cards from the top of their library until they exile a nonland card. They may cast that card without paying its mana cost. Then they put the exiled cards on the bottom of their library in a random order.',
+      "Target opponent exiles cards from the top of their library until they exile a nonland card. They may cast that card without paying its mana cost. Then they put the exiled cards that weren't cast this way on the bottom of their library in a random order.",
+    ],
+    near: [
+      'Target opponent exiles cards from the top of their library until they exile a nonland card. They may cast that card without paying its mana cost. Then they put the exiled cards on top of their library in a random order.',
+      'Target opponent exiles cards from the top of their library until they exile a nonland card. They may cast that card without paying its mana cost. Then they put the exiled card on the bottom of their library in a random order.',
+    ],
+  },
+  'modal-they': {
+    def: spell([{ op: 'exileUntil', who: t('p'), filter: { notTypes: ['Land'] }, as: 'hit' } as EffectStep, { op: 'cast', who: t('p'), what: bound('hit'), free: true, optional: true } as EffectStep], [Z26_OPP()]),
+    readings: [
+      'Target opponent exiles cards from the top of their library until they exile a nonland card. That player may cast that card without paying its mana cost.',
+      'Target opponent exiles cards from the top of their library until they exile a nonland card. They may cast that card without paying its mana cost.',
+    ],
+    near: [
+      'Target opponent exiles cards from the top of their library until they exile a nonland card. You may cast that card without paying its mana cost.',
+      'Target opponent exiles cards from the top of their library until they exile a nonland card. They cast that card without paying its mana cost.',
+    ],
+  },
+  'search-three-descriptions': {
+    def: spell([
+      { op: 'search', who: you, zone: 'library', filter: { anyOf: [{ types: ['Creature'] }, { subtypes: ['Cave'] }, { subtypes: ['Dragon'] }] }, max: 1, reveal: true, as: 'search' } as EffectStep,
+      { op: 'move', what: bound('search'), to: { zone: 'hand' } } as EffectStep,
+      { op: 'shuffle', who: you } as EffectStep,
+    ]),
+    readings: ['Search your library for a creature card, a Cave card, or a Dragon card, reveal it, put it into your hand, then shuffle.'],
+    near: [
+      'Search your library for a creature card, a Cave card, and a Dragon card, reveal it, put it into your hand, then shuffle.',
+      'Search your library for a creature card, a Cave card, or a Dragon card, reveal it, put it onto the battlefield, then shuffle.',
+      'Search your library for a creature card or a Cave card, reveal it, put it into your hand, then shuffle.',
+    ],
+  },
+  'dig-other-bottom-that-library': {
+    def: spell([
+      { op: 'look', who: you, at: { ref: 'topCards', player: t('p'), count: 2 }, as: 'them' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { is: bound('them'), zone: 'library' } }, min: 1, max: 1, as: 'chosen' } as EffectStep,
+      { op: 'move', what: bound('chosen'), to: { zone: 'exile', faceDown: true } } as EffectStep,
+      { op: 'move', what: { ref: 'each', filter: { is: bound('them'), not: { is: bound('chosen') }, zone: 'library' } }, to: { zone: 'library', position: 'bottom' } } as EffectStep,
+    ], [Z26_OPP()]),
+    readings: [
+      "Look at the top two cards of target opponent's library. Exile one of them face down and put the other on the bottom of that library.",
+      "Look at the top two cards of target opponent's library. Exile one of them face down, then put the other on the bottom of that library.",
+    ],
+    near: [
+      "Look at the top two cards of target opponent's library. Exile one of them face down and put the other on top of that library.",
+      "Look at the top two cards of target opponent's library. Exile one of them face down and put the other on the bottom of that library in a random order.",
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-zones-26 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['sacrifice-return-pair', 'snow-mana-spent', 'chosen-number-that-many', 'exiled-cards-still-exiled', 'modal-they', 'search-three-descriptions', 'dig-other-bottom-that-library']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-cast-14 (Commander lane edh-cast)
+Object.assign(EXAMPLES, {
+  'alternative-cost-rather-than-first': {
+    def: statics([{ s: 'alternativeCost', cost: { other: [{ kind: 'opponentGainsLife', amount: 3 }] }, name: 'alternative', when: { cond: 'exists', of: { ref: 'each', filter: { subtypes: ['Forest'], controller: 'you' } } } } as StaticEffect]),
+    readings: ["If you control a Forest, you may have an opponent gain 3 life rather than pay Test Card's mana cost.", "If you control a Forest, rather than pay Test Card's mana cost, you may have an opponent gain 3 life."],
+    near: ["If you control a Forest, rather than pay Test Card's mana cost, you may have each opponent gain 3 life.", "Unless you control a Forest, rather than pay Test Card's mana cost, you may have an opponent gain 3 life."],
+  },
+  'play-this-way-free-rider': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: you, count: 2 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      {
+        op: 'if', cond: { cond: 'wasCast', from: 'graveyard' },
+        then: [{ op: 'effect', duration: { d: 'endOfNextTurn', whose: you }, effects: [{ s: 'permit', who: you, action: 'play', of: { is: bound('them') } }, { s: 'permit', who: you, action: 'play', of: { is: bound('them') }, costChange: { kind: 'set', cost: {} } }] } as EffectStep],
+        else: [{ op: 'effect', duration: { d: 'endOfNextTurn', whose: you }, effects: [{ s: 'permit', who: you, action: 'play', of: { is: bound('them') } }] } as EffectStep],
+      } as EffectStep,
+    ]),
+    readings: [
+      'Exile the top two cards of your library. Until the end of your next turn, you may play those cards. If Test Card was cast from a graveyard, you may play cards this way without paying their mana costs.',
+    ],
+    near: [
+      'Exile the top two cards of your library. Until the end of your next turn, you may play those cards. If Test Card was cast from a graveyard, you may play cards this way.',
+      'Exile the top two cards of your library. Until the end of this turn, you may play those cards. If Test Card was cast from a graveyard, you may play cards this way without paying their mana costs.',
+    ],
+  },} satisfies Record<string, Example>);
+describe('edh-cast-14 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['alternative-cost-rather-than-first', 'play-this-way-free-rider']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+
+
+// edh-perms-21: the readings of the copy step's "except", a choice then a copy, and the one target of a cast spell
+Object.assign(EXAMPLES, {
+  'copy-except-comma': {
+    def: gy2Def("Whenever you cast a spell, create a token that's a copy of target Dragon you control, except it's an Illusion in addition to its other types."),
+    readings: ["Whenever you cast a spell, create a token that's a copy of target Dragon you control, except it's an Illusion in addition to its other types.",
+      "Whenever you cast a spell, create a token that's a copy of target Dragon you control except it's an Illusion in addition to its other types."],
+    near: ["Whenever you cast a spell, create a token that's a copy of target Dragon you control except it's an Illusion.",
+      "Whenever you cast a spell, create a token that's a copy of target Dragon you control; except it's an Illusion in addition to its other types.",
+      "Whenever you cast a spell, create a token that's a copy of target Dragon you control, except it's a Wizard in addition to its other types."],
+  },
+  'choose-then-copy-token': {
+    def: gy2Def("At the beginning of your upkeep, create a token that's a copy of a Goblin you control."),
+    readings: ["At the beginning of your upkeep, create a token that's a copy of a Goblin you control.",
+      "At the beginning of your upkeep, choose a Goblin you control. Create a token that's a copy of it."],
+    near: ["At the beginning of your upkeep, create a token that's a copy of a Goblin an opponent controls.",
+      "At the beginning of your upkeep, choose a Goblin you control. Create a token that's a copy of that spell.",
+      "At the beginning of your upkeep, choose a Goblin you control. Create two tokens that are copies of it."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-perms-21 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['copy-except-comma', 'choose-then-copy-token']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-zones-27 (Commander lane edh-zones): the readings of its families (invented wordings, design 6.10)
+const z27Def = (text: string, type = 'Sorcery'): AbilityDef =>
+  parseCard({ name: 'Test Card', layout: 'normal', mana_cost: '{0}', type_line: type, oracle_text: text, colors: [] } as OracleCard, GY2_OPTS).faces[0]!.abilities.at(-1)!;
+Object.assign(EXAMPLES, {
+  'cast-count-and-or-types': {
+    def: gy2Def("{1}: Gain 2 life. Activate only if you've cast three or more instant and/or sorcery spells this turn."),
+    readings: ["{1}: Gain 2 life. Activate only if you've cast three or more instant and/or sorcery spells this turn.", "{1}: Gain 2 life. Activate only if you've cast three or more instant or sorcery spells this turn."],
+    near: ["{1}: Gain 2 life. Activate only if you've cast four or more instant and/or sorcery spells this turn.", "{1}: Gain 2 life. Activate only if you've cast three or more creature and/or sorcery spells this turn."],
+  },
+  'put-one-from-among-them-exiled': {
+    def: z27Def('Exile the top six cards of your library. You may put a land card from among them onto the battlefield.'),
+    readings: ['Exile the top six cards of your library. You may put a land card from among them onto the battlefield.', 'Exile the top six cards of your library. You may put a land exiled this way onto the battlefield under your control.'],
+    near: ['Exile the top six cards of your library. You may put a creature card from among them onto the battlefield.', 'Exile the top six cards of your library. You may put a land card from among them into your hand.', 'Exile the top five cards of your library. You may put a land card from among them onto the battlefield.'],
+  },
+  'each-nonland-type-group-name': {
+    def: z27Def('Exile the top six cards of your library. Until end of turn, for each nonland card type, you may cast a spell of that type from among them without paying its mana cost.'),
+    readings: ['Exile the top six cards of your library. Until end of turn, for each nonland card type, you may cast a spell of that type from among them without paying its mana cost.', 'Exile the top six cards of your library. Until end of turn, for each nonland card type, you may cast a spell of that type from among the exiled cards without paying its mana cost.'],
+    near: ['Exile the top six cards of your library. Until end of turn, for each nonland card type, you may cast a spell of that type from among them.', 'Exile the top six cards of your library. Until end of turn, for each card type, you may cast a spell of that type from among them without paying its mana cost.', 'Exile the top six cards of your library. Until end of turn, for each nonland card type, you may cast a spell of that type from among the cards in your graveyard without paying its mana cost.'],
+  },
+  'next-draw-they-that-player': {
+    def: gy2Def("At the beginning of each opponent's upkeep, the next time they would draw a card this turn, instead they exile the top card of their library. They may play it this turn."),
+    readings: ["At the beginning of each opponent's upkeep, the next time they would draw a card this turn, instead they exile the top card of their library. They may play it this turn.",
+      "At the beginning of each opponent's upkeep, the next time that player would draw a card this turn, instead that player exiles the top card of that player's library. That player may play it this turn."],
+    near: ["At the beginning of each opponent's upkeep, the next time they would draw a card this turn, instead they exile the top card of their library. They may play it until your next turn.",
+      "At the beginning of each opponent's upkeep, the next time they would draw a card this turn, instead they exile the top card of your library. They may play it this turn."],
+  },
+} satisfies Record<string, Example>);
+// edh-players-21 (Commander lane edh-players): one family (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'hand-of-the-opponent': {
+    def: spell([{ op: 'draw', who: you, count: { q: 'countPlayers', of: { ref: 'each', who: 'opponent' }, sizeVs: { zone: 'hand', op: '>', than: you } } } as EffectStep]),
+    readings: ['Draw a card for each opponent who has more cards in hand than you.', 'Draw a card for each opponent who has more cards in their hand than you.'],
+    near: ['Draw a card for each opponent who has fewer cards in their hand than you.', 'Draw a card for each opponent who has more cards in their library than you.', 'Draw a card for each opponent who has more cards in their hand than each other player.'],
+  },
+  'types-and-or': {
+    def: spell([{ op: 'if', cond: { cond: 'exists', atLeast: 2, of: { ref: 'each', filter: { isCard: true, owner: 'you', types: ['Instant', 'Sorcery'], zone: 'graveyard' } } }, then: [draw()] } as EffectStep]),
+    readings: ['If there are two or more instant and/or sorcery cards in your graveyard, draw a card.', 'If there are two or more instant or sorcery cards in your graveyard, draw a card.'],
+    near: ['If there are two or more instant and/or land cards in your graveyard, draw a card.', 'If there are three or more instant and/or sorcery cards in your graveyard, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-players-21 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['hand-of-the-opponent', 'types-and-or']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-perms-24 (Commander lane edh-perms): one family (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'instruction-choice-comma': {
+    def: spell([
+      { op: 'chooseValue', who: you, what: 'option', options: ['first', 'second'], as: 'instructionChoice', link: 'instructionChoice' } as EffectStep,
+      { op: 'if', cond: { cond: 'chosen', link: 'instructionChoice', equals: 'first' }, then: [{ op: 'tap', what: { ref: 'each', filter: { types: ['Land'], controller: 'you', tapped: false } } } as EffectStep] } as EffectStep,
+      { op: 'if', cond: { cond: 'chosen', link: 'instructionChoice', equals: 'second' }, then: [{ op: 'untap', what: { ref: 'each', filter: { types: ['Land'], controller: 'you', tapped: true } } } as EffectStep] } as EffectStep,
+    ]),
+    readings: ['Tap all untapped lands you control or untap all tapped lands you control.', 'Tap all untapped lands you control, or untap all tapped lands you control.'],
+    near: ['Tap all untapped lands you control and untap all tapped lands you control.', 'Tap all untapped lands you control, or untap all tapped creatures you control.'],
+  },
+  'chosen-target-controller-order': {
+    def: spell([
+      { op: 'chooseValue', who: you, what: 'cardType', options: ['Artifact', 'Creature', 'Land'], as: 'chosenCardType', link: 'chosenCardType' } as EffectStep,
+      { op: 'tap', what: { ref: 'each', filter: { tapped: false, chosen: { link: 'chosenCardType', quality: 'cardType' }, controller: t('p') } } } as EffectStep,
+    ], [playerTarget('p')]),
+    readings: ['Choose artifact, creature, or land. Tap all untapped permanents of the chosen type target player controls.', 'Choose artifact, creature, or land. Tap all untapped permanents target player controls of the chosen type.'],
+    near: ['Choose artifact, creature, or land. Tap all untapped permanents of the chosen type you control.', 'Choose artifact, creature, or land. Tap all permanents of the chosen type target player controls.'],
+  },
+} satisfies Record<string, Example>);
+// edh-combat-6 (Commander lane edh-combat): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'another-player-attacks-with': {
+    def: rx30Def('Creature — Human Advisor', 'Whenever another player attacks with two or more creatures, you gain 2 life.'), ctx: creature,
+    readings: ['Whenever another player attacks with two or more creatures, you gain 2 life.', 'Whenever an opponent attacks with two or more creatures, you gain 2 life.'],
+    near: ['Whenever a player attacks with two or more creatures, you gain 2 life.', 'Whenever another player attacks with three or more creatures, you gain 2 life.'],
+  },
+  'that-opponent-damaging-creatures': {
+    def: rx30Def('Enchantment', 'Whenever one or more creatures an opponent controls deal combat damage to you, that opponent gets two poison counters.'),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever one or more creatures an opponent controls deal combat damage to you, that opponent gets two poison counters.', 'Whenever one or more creatures an opponent controls deal combat damage to you, their controller gets two poison counters.'],
+    near: ['Whenever one or more creatures an opponent controls deal combat damage to you, that opponent gets three poison counters.', 'Whenever one or more creatures an opponent controls deal combat damage to you, each opponent gets two poison counters.'],
+  },
+  'players-who-attacked-you-last-turn': {
+    def: rx30Def('Artifact Creature — Wall', "Defender\nTest Card can attack opponents who attacked you during their last turn as though it didn't have defender."), ctx: creature,
+    readings: ["~ can attack players who attacked you during their last turn as though it didn't have defender.", "~ can attack opponents who attacked you during their last turn as though it didn't have defender."],
+    near: ["~ can attack players who attacked you this turn as though it didn't have defender.", "~ can attack players who attacked you during their last turn as though it didn't have flying."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-combat-7: render/np.ts (attacking-your-opponents)
+Object.assign(EXAMPLES, {
+  'attacking-your-opponents': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], attacking: { defender: 'opponent' } } }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'trample' }] }] } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ["Creatures attacking your opponents have trample.", 'Creatures attacking one of your opponents have trample.', "Creatures that are attacking one of your opponents have trample."],
+    near: ["Creatures attacking you have trample.", 'Attacking creatures have trample.', 'Creatures attacking all of your opponents have trample.'],
+  },
+});
+
+// edh-top-9: "if you don't or can't make an exchange" after an exchange of control; a restriction between the header and the modes of a modal activated ability
+Object.assign(EXAMPLES, {
+  'didnt-or-cant-make-an-exchange': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }] }, effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { types: ['Creature'], controller: 'opponent' } }], steps: [
+      { op: 'exchange', a: { ref: 'self' }, b: { ref: 'target', id: 't0' }, what: 'control', as: 'did' } as EffectStep, { op: 'if', cond: { cond: 'did', step: 'did', not: true }, then: [{ op: 'sacrifice', what: { ref: 'self' } } as EffectStep] } as EffectStep] } } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ["When Test Card enters, exchange control of Test Card and target creature an opponent controls. If you don't, sacrifice Test Card.",
+      "When Test Card enters, exchange control of Test Card and target creature an opponent controls. If you don't or can't make an exchange, sacrifice Test Card."],
+    near: ["When Test Card enters, exchange control of Test Card and target creature an opponent controls. If you do, sacrifice Test Card.",
+      "When Test Card enters, exchange control of Test Card and target creature an opponent controls. If you don't or can't make a trade, sacrifice Test Card.",
+      "When Test Card enters, exchange control of Test Card and target creature an opponent controls. If you can't make an exchange, sacrifice Test Card."],
+  },
+  'modal-header-then-restriction': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 4 }], tap: true }, sorcerySpeed: true, effect: { targets: [], steps: [], modes: { min: 1, max: 1, options: [{ text: '', program: { targets: [], steps: [draw(1)] } }, { text: '', program: { targets: [], steps: [gain(2)] } }] } } } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ['{4}, {T}: Choose one — • Draw a card. • You gain 2 life. Activate only as a sorcery.', '{4}, {T}: Choose one. Activate only as a sorcery. • Draw a card. • You gain 2 life.'],
+    near: ['{4}, {T}: Choose one. • Draw a card. • You gain 2 life. Activate only as a sorcery.', '{4}, {T}: Choose one. Activate only as an instant. • Draw a card. • You gain 2 life.', '{4}, {T}: Choose two. Activate only as a sorcery. • Draw a card. • You gain 2 life.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-top-9 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['didnt-or-cant-make-an-exchange', 'modal-header-then-restriction']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-top-10 (Commander lane edh-top): one family (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'player-no-kind-counters': {
+    def: gy2Def("Whenever a creature deals combat damage to a player, that player gets two rad counters if they don't have any rad counters."),
+    readings: [
+      "Whenever a creature deals combat damage to a player, that player gets two rad counters if they don't have any rad counters.",
+      "Whenever a creature deals combat damage to a player, that player gets two rad counters if that player doesn't have any rad counters.",
+      'Whenever a creature deals combat damage to a player, that player gets two rad counters if that player has no rad counters.',
+    ],
+    near: [
+      "Whenever a creature deals combat damage to a player, that player gets two rad counters if they don't have any energy counters.",
+      'Whenever a creature deals combat damage to a player, that player gets two rad counters if they have no rad counters.',
+      "Whenever a creature deals combat damage to a player, that player gets two rad counters if you don't have any rad counters.",
+      "Whenever a creature deals combat damage to a player, that player gets three rad counters if they don't have any rad counters.",
+    ],
+  },
+  'remove-them-all-counters': {
+    def: gy2Def('At the beginning of your upkeep, put a charge counter on this artifact. Then if it has three or more charge counters on it, remove them all and draw a card.'),
+    readings: [
+      'At the beginning of your upkeep, put a charge counter on this artifact. Then if it has three or more charge counters on it, remove them all and draw a card.',
+      'At the beginning of your upkeep, put a charge counter on this artifact. Then if it has three or more charge counters on it, remove all of them and draw a card.',
+    ],
+    near: [
+      'At the beginning of your upkeep, put a charge counter on this artifact. Then if it has three or more charge counters on it, remove two of them and draw a card.',
+      'At the beginning of your upkeep, put a charge counter on this artifact. Then if it has two or more charge counters on it, remove them all and draw a card.',
+      'At the beginning of your upkeep, put a charge counter on this artifact. Then if it has three or more charge counters on it, remove them all and draw two cards.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-top-10 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['player-no-kind-counters', 'remove-them-all-counters']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+describe('edh-zones-27 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['cast-count-and-or-types', 'put-one-from-among-them-exiled', 'each-nonland-type-group-name', 'next-draw-they-that-player']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-players-22 (CR 702.76a): "its prowl cost was paid" is the object's own prowl cast
+Object.assign(EXAMPLES, {
+  'prowl-cost-paid-its': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }] }, interveningIf: { cond: 'wasCast', via: 'prowl' }, effect: { targets: [], steps: [{ op: 'draw', who: { ref: 'you' }, count: 1 }] } } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ['When Test Card enters, if its prowl cost was paid, draw a card.', "When Test Card enters, if Test Card's prowl cost was paid, draw a card."],
+    near: ['When Test Card enters, if its dash cost was paid, draw a card.', "When Test Card enters, if its prowl cost wasn't paid, draw a card."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-players-22 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['prowl-cost-paid-its']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+// edh-players-23 (Commander lane edh-players): the readings of its families (synthetic wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+Object.assign(EXAMPLES, {
+  'damage-to-you-or-a-permanent': {
+    def: rx30Def('Creature — Cleric', 'Whenever a source an opponent controls deals damage to you or a creature you control, draw a card.'), ctx: creature,
+    readings: ['Whenever a source an opponent controls deals damage to you or a creature you control, draw a card.', 'Whenever a source an opponent controls deals damage to you or creature you control, draw a card.'],
+    near: ['Whenever a source an opponent controls deals damage to you or a creature an opponent controls, draw a card.', 'Whenever a source you control deals damage to you or a creature you control, draw a card.', 'Whenever a source an opponent controls deals damage to you and a creature you control, draw a card.'],
+  },
+  'if-they-dont-named-player': {
+    def: rx30Def('Creature — Rogue', 'Whenever Test Card attacks, choose target artifact. Its controller may sacrifice it. If they don\'t, Test Card deals 3 damage to that player.'), ctx: creature,
+    readings: ["Whenever ~ attacks, choose target artifact. Its controller may sacrifice it. If they don't, ~ deals 3 damage to that player.", "Whenever ~ attacks, choose target artifact. Its controller may sacrifice it. If that player doesn't, ~ deals 3 damage to that player."],
+    near: ["Whenever ~ attacks, choose target artifact. Its controller may sacrifice it. If you don't, ~ deals 3 damage to that player.", "Whenever ~ attacks, choose target artifact. Its controller may sacrifice it. If they do, ~ deals 3 damage to that player.", "Whenever ~ attacks, choose target artifact. Its controller may sacrifice it. If they don't, ~ deals 2 damage to that player."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-players-23 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['damage-to-you-or-a-permanent', 'if-they-dont-named-player']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      expect(ex.def.kind, id).not.toBe('manual');
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-perms-24 (Commander lane edh-perms): one family (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'instruction-choice-comma': {
+    def: spell([
+      { op: 'chooseValue', who: you, what: 'option', options: ['first', 'second'], as: 'instructionChoice', link: 'instructionChoice' } as EffectStep,
+      { op: 'if', cond: { cond: 'chosen', link: 'instructionChoice', equals: 'first' }, then: [{ op: 'tap', what: { ref: 'each', filter: { types: ['Land'], controller: 'you', tapped: false } } } as EffectStep] } as EffectStep,
+      { op: 'if', cond: { cond: 'chosen', link: 'instructionChoice', equals: 'second' }, then: [{ op: 'untap', what: { ref: 'each', filter: { types: ['Land'], controller: 'you', tapped: true } } } as EffectStep] } as EffectStep,
+    ]),
+    readings: ['Tap all untapped lands you control or untap all tapped lands you control.', 'Tap all untapped lands you control, or untap all tapped lands you control.'],
+    near: ['Tap all untapped lands you control and untap all tapped lands you control.', 'Tap all untapped lands you control, or untap all tapped creatures you control.'],
+  },
+  'chosen-target-controller-order': {
+    def: spell([
+      { op: 'chooseValue', who: you, what: 'cardType', options: ['Artifact', 'Creature', 'Land'], as: 'chosenCardType', link: 'chosenCardType' } as EffectStep,
+      { op: 'tap', what: { ref: 'each', filter: { tapped: false, chosen: { link: 'chosenCardType', quality: 'cardType' }, controller: t('p') } } } as EffectStep,
+    ], [playerTarget('p')]),
+    readings: ['Choose artifact, creature, or land. Tap all untapped permanents of the chosen type target player controls.', 'Choose artifact, creature, or land. Tap all untapped permanents target player controls of the chosen type.'],
+    near: ['Choose artifact, creature, or land. Tap all untapped permanents of the chosen type you control.', 'Choose artifact, creature, or land. Tap all permanents of the chosen type target player controls.'],
+  },
+} satisfies Record<string, Example>);
+// edh-combat-6 (Commander lane edh-combat): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'another-player-attacks-with': {
+    def: rx30Def('Creature — Human Advisor', 'Whenever another player attacks with two or more creatures, you gain 2 life.'), ctx: creature,
+    readings: ['Whenever another player attacks with two or more creatures, you gain 2 life.', 'Whenever an opponent attacks with two or more creatures, you gain 2 life.'],
+    near: ['Whenever a player attacks with two or more creatures, you gain 2 life.', 'Whenever another player attacks with three or more creatures, you gain 2 life.'],
+  },
+  'that-opponent-damaging-creatures': {
+    def: rx30Def('Enchantment', 'Whenever one or more creatures an opponent controls deal combat damage to you, that opponent gets two poison counters.'),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever one or more creatures an opponent controls deal combat damage to you, that opponent gets two poison counters.', 'Whenever one or more creatures an opponent controls deal combat damage to you, their controller gets two poison counters.'],
+    near: ['Whenever one or more creatures an opponent controls deal combat damage to you, that opponent gets three poison counters.', 'Whenever one or more creatures an opponent controls deal combat damage to you, each opponent gets two poison counters.'],
+  },
+  'players-who-attacked-you-last-turn': {
+    def: rx30Def('Artifact Creature — Wall', "Defender\nTest Card can attack opponents who attacked you during their last turn as though it didn't have defender."), ctx: creature,
+    readings: ["~ can attack players who attacked you during their last turn as though it didn't have defender.", "~ can attack opponents who attacked you during their last turn as though it didn't have defender."],
+    near: ["~ can attack players who attacked you this turn as though it didn't have defender.", "~ can attack players who attacked you during their last turn as though it didn't have flying."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-top-9: "if you don't or can't make an exchange" after an exchange of control; a restriction between the header and the modes of a modal activated ability
+Object.assign(EXAMPLES, {
+  'didnt-or-cant-make-an-exchange': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }] }, effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { types: ['Creature'], controller: 'opponent' } }], steps: [
+      { op: 'exchange', a: { ref: 'self' }, b: { ref: 'target', id: 't0' }, what: 'control', as: 'did' } as EffectStep, { op: 'if', cond: { cond: 'did', step: 'did', not: true }, then: [{ op: 'sacrifice', what: { ref: 'self' } } as EffectStep] } as EffectStep] } } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ["When Test Card enters, exchange control of Test Card and target creature an opponent controls. If you don't, sacrifice Test Card.",
+      "When Test Card enters, exchange control of Test Card and target creature an opponent controls. If you don't or can't make an exchange, sacrifice Test Card."],
+    near: ["When Test Card enters, exchange control of Test Card and target creature an opponent controls. If you do, sacrifice Test Card.",
+      "When Test Card enters, exchange control of Test Card and target creature an opponent controls. If you don't or can't make a trade, sacrifice Test Card.",
+      "When Test Card enters, exchange control of Test Card and target creature an opponent controls. If you can't make an exchange, sacrifice Test Card."],
+  },
+  'modal-header-then-restriction': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 4 }], tap: true }, sorcerySpeed: true, effect: { targets: [], steps: [], modes: { min: 1, max: 1, options: [{ text: '', program: { targets: [], steps: [draw(1)] } }, { text: '', program: { targets: [], steps: [gain(2)] } }] } } } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ['{4}, {T}: Choose one — • Draw a card. • You gain 2 life. Activate only as a sorcery.', '{4}, {T}: Choose one. Activate only as a sorcery. • Draw a card. • You gain 2 life.'],
+    near: ['{4}, {T}: Choose one. • Draw a card. • You gain 2 life. Activate only as a sorcery.', '{4}, {T}: Choose one. Activate only as an instant. • Draw a card. • You gain 2 life.', '{4}, {T}: Choose two. Activate only as a sorcery. • Draw a card. • You gain 2 life.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-top-9 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['didnt-or-cant-make-an-exchange', 'modal-header-then-restriction']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-top-10 (Commander lane edh-top): one family (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'player-no-kind-counters': {
+    def: gy2Def("Whenever a creature deals combat damage to a player, that player gets two rad counters if they don't have any rad counters."),
+    readings: [
+      "Whenever a creature deals combat damage to a player, that player gets two rad counters if they don't have any rad counters.",
+      "Whenever a creature deals combat damage to a player, that player gets two rad counters if that player doesn't have any rad counters.",
+      'Whenever a creature deals combat damage to a player, that player gets two rad counters if that player has no rad counters.',
+    ],
+    near: [
+      "Whenever a creature deals combat damage to a player, that player gets two rad counters if they don't have any energy counters.",
+      'Whenever a creature deals combat damage to a player, that player gets two rad counters if they have no rad counters.',
+      "Whenever a creature deals combat damage to a player, that player gets two rad counters if you don't have any rad counters.",
+      "Whenever a creature deals combat damage to a player, that player gets three rad counters if they don't have any rad counters.",
+    ],
+  },
+  'remove-them-all-counters': {
+    def: gy2Def('At the beginning of your upkeep, put a charge counter on this artifact. Then if it has three or more charge counters on it, remove them all and draw a card.'),
+    readings: [
+      'At the beginning of your upkeep, put a charge counter on this artifact. Then if it has three or more charge counters on it, remove them all and draw a card.',
+      'At the beginning of your upkeep, put a charge counter on this artifact. Then if it has three or more charge counters on it, remove all of them and draw a card.',
+    ],
+    near: [
+      'At the beginning of your upkeep, put a charge counter on this artifact. Then if it has three or more charge counters on it, remove two of them and draw a card.',
+      'At the beginning of your upkeep, put a charge counter on this artifact. Then if it has two or more charge counters on it, remove them all and draw a card.',
+      'At the beginning of your upkeep, put a charge counter on this artifact. Then if it has three or more charge counters on it, remove them all and draw two cards.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-top-10 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['player-no-kind-counters', 'remove-them-all-counters']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+describe('edh-perms-24 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['instruction-choice-comma', 'chosen-target-controller-order']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-replace-7 (Commander lane edh-replace): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'permanent-or-player': {
+    def: rx30Def('Creature — Human', 'Whenever another source you control deals damage to a permanent or player, you gain 1 life.'), ctx: creature,
+    readings: ['Whenever another source you control deals damage to a permanent or player, you gain 1 life.', 'Whenever another source you control deals damage to a player or permanent, you gain 1 life.'],
+    near: ['Whenever another source you control deals damage to a creature or player, you gain 1 life.', 'Whenever another source you control deals damage to a permanent, you gain 1 life.'],
+  },
+  'opponent-of-your-choice': {
+    def: rx30Def('Sorcery', 'An opponent loses 2 life.'),
+    readings: ['An opponent loses 2 life.', 'An opponent of your choice loses 2 life.'],
+    near: ['Each opponent loses 2 life.', 'Target opponent loses 2 life.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-replace-7 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['permanent-or-player', 'opponent-of-your-choice']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+
+// edh-next-1 (Commander lane edh-next): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'static-grant-then-pump-for-each': {
+    def: rx30Def('Artifact — Equipment', 'Equipped creature gets +1/+0 for each land you control and has first strike.'),
+    readings: ['Equipped creature gets +1/+0 for each land you control and has first strike.', 'Equipped creature has first strike and gets +1/+0 for each land you control.'],
+    near: ['Equipped creature has first strike and gets +0/+1 for each land you control.', 'Equipped creature has flying and gets +1/+0 for each land you control.'],
+  },
+  'discard-a-card-for-each': {
+    def: rx30Def('Sorcery', 'Target opponent discards a card for each Shrine you control.'),
+    readings: ['Target opponent discards a card for each Shrine you control.', 'Target opponent discards X cards, where X is the number of Shrines you control.', 'Target opponent discards a number of cards equal to the number of Shrines you control.'],
+    near: ['Target opponent discards two cards for each Shrine you control.', 'Target opponent discards a card for each Shrine they control.'],
+  },
+  // edh-c-3 (Commander lane edh-c; invented wordings, design 6.10)
+  'opponent-graveyard-their-hand': {
+    def: spell([{ op: 'move', what: t('c'), to: { zone: 'hand' } }], [objTarget('c', { zone: 'graveyard', owner: 'opponent' })]),
+    readings: ["Return target card from an opponent's graveyard to its owner's hand.", "Return target card from an opponent's graveyard to their hand."],
+    near: ["Exile target card from an opponent's graveyard."],
+  },
+  'other-creature-types': {
+    def: spell([{ op: 'effect', effects: [{ s: 'continuous', affects: t('c'), mods: [{ layer: 4, subtypes: { add: ['Bird'] } }] }], duration: { d: 'permanent' } }], [objTarget('c')]),
+    readings: ['Target creature becomes a Bird in addition to its other types.', 'Target creature becomes a Bird in addition to its other creature types.'],
+    near: ['Target creature becomes a Bird in addition to its other colors.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-1 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['static-grant-then-pump-for-each', 'discard-a-card-for-each']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-b-1 (Commander coordinator B): the subtype list "is also" and the color-identity note (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'also-subtypes-list': {
+    def: statics([{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 4, subtypes: { add: ['Cleric', 'Rogue', 'Wizard'] } }] } as StaticEffect]),
+    ctx: creature,
+    readings: ['Test Card is a Cleric Rogue Wizard in addition to its other types.', 'Test Card is also a Cleric, Rogue, and Wizard.'],
+    near: ['Test Card is also a Cleric and Rogue.', 'Test Card is also a Cleric, Rogue, and Warrior.'],
+  },
+  'all-colors-identity-note': {
+    def: statics([{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 5, colors: { set: ['W', 'U', 'B', 'R', 'G'] } }] } as StaticEffect]),
+    ctx: creature,
+    readings: ['Test Card is all colors.', "Test Card is all colors. This ability doesn't affect its color identity."],
+    near: ['Test Card is all colors. This ability affects its color identity.', 'Test Card is colorless.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-b-1 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['also-subtypes-list', 'all-colors-identity-note']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-b-2 (Commander effort, coordinator B): the step skipped by every player, the pair of preventions with a leading duration and the keyword list (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'players-skip-step': {
+    def: statics([{ s: 'replace', replaces: { ev: 'step', step: 'untap', whose: 'any' }, body: { b: 'skip' } } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Players skip their untap steps.', 'All players skip their untap steps.'],
+    near: ['Players skip their untap step.', 'Each player skips their untap steps.', 'You skip your untap step.'],
+  },
+  'prevent-to-and-by-duration-first': {
+    def: spell([effectStep([
+      { s: 'replace', replaces: { ev: 'damage', recipient: { object: { is: { ref: 'target', id: 't0' } } } }, body: { b: 'prevent', amount: 'all' } } as unknown as StaticEffect,
+      { s: 'replace', replaces: { ev: 'damage', source: { is: { ref: 'target', id: 't0' } } }, body: { b: 'prevent', amount: 'all' } } as unknown as StaticEffect,
+    ], { d: 'endOfTurn' })], [{ id: 't0', kind: 'object', min: 1, max: 1, text: 'target creature', filter: { types: ['Creature'] } } as TargetSpec]),
+    readings: ['Prevent all damage that would be dealt to and dealt by target creature this turn.', 'Until end of turn, prevent all damage that would be dealt to and dealt by target creature.'],
+    near: ['Prevent all damage that would be dealt to or dealt by target creature this turn.', 'Prevent all combat damage that would be dealt to and dealt by target creature this turn.'],
+  },
+  'keyword-list-or-and-or': {
+    def: spell([effectStep([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: 'you', keyword: ['flying', 'deathtouch', 'lifelink'] } }, mods: [{ layer: '7c', power: 1, toughness: 0 }] } as StaticEffect], { d: 'endOfTurn' })]),
+    readings: ['Each creature you control with flying, deathtouch, or lifelink gets +1/+0 until end of turn.', 'Each creature you control with flying, deathtouch, and/or lifelink gets +1/+0 until end of turn.'],
+    near: ['Each creature you control with flying, deathtouch, and lifelink gets +1/+0 until end of turn.', 'Each creature you control with flying or deathtouch or lifelink gets +1/+0 until end of turn.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-b-2 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['players-skip-step', 'prevent-to-and-by-duration-first', 'keyword-list-or-and-or']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-6 (Commander lane edh-next, second pass): the readings of its family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'return-group-destination-first': {
+    def: rx30Def('Sorcery', "Return all creatures with toughness 2 or less to their owners' hands."),
+    readings: ["Return all creatures with toughness 2 or less to their owners' hands.", "Return to their owners' hands all creatures with toughness 2 or less."],
+    near: ["Return to their owners' hands all creatures with toughness 3 or less.", "Return to their owners' hands all artifacts with toughness 2 or less."],
+  },
+  'double-counters-choose-targets': {
+    def: rx30Def('Sorcery', 'Double the number of +1/+1 counters on any number of target creatures.'),
+    readings: ['Double the number of +1/+1 counters on any number of target creatures.', 'Choose any number of target creatures. Double the number of +1/+1 counters on each of them.'],
+    near: ['Choose any number of target artifacts. Double the number of +1/+1 counters on each of them.', 'Choose any number of target creatures. Double the number of -1/-1 counters on each of them.'],
+  },
+} satisfies Record<string, Example>);
+Object.assign(EXAMPLES, {
+  'x-plus-n-damage': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'anyTarget', min: 1, max: 1, text: 'any target' }], steps: [{ op: 'damage', source: { ref: 'self' }, to: { ref: 'target', id: 't0' }, amount: { q: 'math', op: '+', args: [{ q: 'X' }, 2] } }] } } as unknown as AbilityDef,
+    ctx: instant,
+    readings: ['Test Card deals X plus 2 damage to any target.', 'Test Card deals damage equal to X plus 2 to any target.'],
+    near: ['Test Card deals X plus 3 damage to any target.', 'Test Card deals X plus 2 damage to up to two targets.'],
+  },
+  'counter-that-has': {
+    def: rx30Def('Sorcery', 'Put a +1/+1 counter on each creature you control that has a +1/+1 counter on it.'),
+    readings: ['Put a +1/+1 counter on each creature you control that has a +1/+1 counter on it.', 'Put a +1/+1 counter on each creature you control with a +1/+1 counter on it.'],
+    near: ['Put a +1/+1 counter on each creature you control that has a -1/-1 counter on it.', 'Put a +1/+1 counter on each creature you control that has a +1/+1 counter on it, then draw a card.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-6 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['return-group-destination-first', 'double-counters-choose-targets']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-8 (Commander lane edh-next, ranks 10,001-12,500, second pass): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'for-each-opponent-you-have': {
+    def: rx30Def('Creature — Bear', 'This spell costs {1} less to cast for each opponent you have.'),
+    readings: ['This spell costs {1} less to cast for each opponent you have.', 'This spell costs {1} less to cast for each opponent.'],
+    near: ['This spell costs {1} less to cast for each opponent you control.', 'This spell costs {2} less to cast for each opponent you have.'],
+  },
+  'untapped-nontoken-order': {
+    def: rx30Def('Artifact', 'Tap an untapped nontoken artifact you control: Add {G}.'),
+    readings: ['Tap an untapped nontoken artifact you control: Add {G}.', 'Tap a nontoken untapped artifact you control: Add {G}.'],
+    near: ['Tap an untapped nontoken creature you control: Add {G}.', 'Tap an untapped token artifact you control: Add {G}.'],
+  },
+  'enchanted-that-are': {
+    def: rx30Def('Enchantment — Aura', 'Enchanted creatures you control get +1/+0.'),
+    readings: ['Enchanted creatures you control get +1/+0.', 'Creatures you control that are enchanted get +1/+0.'],
+    near: ['Creatures you control that are enchanted get +1/+1.', 'Creatures your opponents control that are enchanted get +1/+0.'],
+  },
+  'equipped-that-are': {
+    def: rx30Def('Artifact — Equipment', 'Equipped creatures you control get +1/+0.'),
+    readings: ['Equipped creatures you control get +1/+0.', 'Creatures you control that are equipped get +1/+0.'],
+    near: ['Creatures you control that are equipped get +1/+1.', 'Creatures your opponents control that are equipped get +1/+0.'],
+  },
+  'on-the-battlefield-before-name': {
+    def: rx30Def('Creature — Rat', 'This creature gets +1/+1 for each other creature on the battlefield named Example Plan.'),
+    readings: ['This creature gets +1/+1 for each other creature on the battlefield named Example Plan.', 'This creature gets +1/+1 for each other creature named Example Plan.'],
+    near: ['This creature gets +1/+1 for each creature on the battlefield named Example Plan.', 'This creature gets +1/+1 for each other creature you control named Example Plan.'],
+  },
+  'block-an-additional-number': {
+    def: rx30Def('Creature — Spider', 'This creature can block an additional five creatures each combat.'),
+    readings: ['This creature can block an additional five creatures each combat.', 'This creature can block up to 5 additional creatures each combat.'],
+    near: ['This creature can block an additional four creatures each combat.', 'This creature can block an additional five creatures this turn.'],
+  },
+  'untap-all-target-player-they-control': {
+    def: rx30Def('Sorcery', 'Target player untaps all Forests they control.'),
+    readings: ['Target player untaps all Forests they control.', 'Untap all Forests target player controls.'],
+    near: ['Target player untaps all Forests you control.', 'Target player untaps all Islands they control.'],
+  },
+  'return-all-player-owns-their-hand': {
+    def: rx30Def('Sorcery', 'Return all enchantments target player owns to their hand.'),
+    readings: ['Return all enchantments target player owns to their hand.', "Return all enchantments target player owns to their owners' hands."],
+    near: ['Return all artifacts target player owns to their hand.', 'Return all enchantments target player controls to their hand.'],
+  },
+  'enchanted-thats-singular': {
+    def: rx30Def('Enchantment', "If a creature you control that's enchanted would die, return it to its owner's hand instead."),
+    readings: ["If a creature you control that's enchanted would die, return it to its owner's hand instead.", "If an enchanted creature you control would die, return it to its owner's hand instead."],
+    near: ["If a creature you control that isn't enchanted would die, return it to its owner's hand instead.", "If a creature you control that's enchanted would die, exile it instead."],
+  },
+  'copy-spell-or-ability': {
+    def: rx30Def('Creature — Human', 'Whenever you cast an instant or sorcery spell that targets only Test Card or activate an ability that targets only Test Card, copy that spell or ability.'), ctx: creature,
+    readings: ['Whenever you cast an instant or sorcery spell that targets only ~ or activate an ability that targets only ~, copy that spell or ability.', 'Whenever you cast an instant or sorcery spell that targets only ~ or activate an ability that targets only ~, copy it.'],
+    near: ['Whenever you cast an instant or sorcery spell that targets only ~ or activate an ability that targets only ~, copy that ability.', 'Whenever you cast an instant or sorcery spell that targets only ~ or activate an ability that targets only ~, copy that spell or ability twice.'],
+  },
+  'return-all-each-player-graveyard': {
+    def: rx30Def('Sorcery', 'Each player returns all Elf cards from their graveyard to the battlefield.'),
+    readings: ['Each player returns all Elf cards from their graveyard to the battlefield.', "Return all Elf cards from all graveyards to the battlefield under their owners' control."],
+    near: ["Return all Elf cards from all graveyards to the battlefield under your control.", 'Each player returns all Elf cards from their graveyard to their hand.'],
+  },
+  // edhd19
+  'return-each-player-graveyard': {
+    def: rx30Def('Sorcery', 'Each player returns each Elf card from their graveyard to the battlefield.'),
+    readings: ['Each player returns each Elf card from their graveyard to the battlefield.', 'Each player returns all Elf cards from their graveyard to the battlefield.'],
+    near: ['Each player returns each Elf card from their graveyard to their hand.', 'Each opponent returns each Elf card from their graveyard to the battlefield.'],
+  },
+  'linked-bottom-owner': {
+    def: trig([dies], [{ op: 'move', what: { ref: 'linked', link: 'exiled' }, to: { zone: 'library', position: 'bottom' } } as EffectStep]),
+    ctx: creature,
+    readings: ['When this creature dies, the owner of each card exiled with this creature puts that card on the bottom of their library.'],
+    near: ['When this creature dies, the owner of each card exiled with this creature puts that card on top of their library.', 'When this creature dies, the owner of each card exiled with this creature puts that card into their hand.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-8 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['for-each-opponent-you-have', 'untapped-nontoken-order', 'enchanted-that-are', 'equipped-that-are', 'on-the-battlefield-before-name', 'block-an-additional-number', 'untap-all-target-player-they-control', 'return-all-player-owns-their-hand']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-2 (Commander lane edh-c): four families (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'event-creature-other-than-self': {
+    def: trig([{ ev: 'zoneChange', from: 'battlefield', to: 'exile', subject: { other: true, types: ['Creature'] } }], [{ op: 'gainLife', who: you, amount: { q: 'stat', stat: 'power', of: { ref: 'event', role: 'subject' } } } as EffectStep]),
+    ctx: creature,
+    readings: ['Whenever another creature is exiled from the battlefield, you gain life equal to its power.', 'Whenever a creature other than Test Card is exiled from the battlefield, you gain life equal to its power.'],
+    near: ['Whenever a creature is exiled from the battlefield, you gain life equal to its power.', 'Whenever a creature other than Test Card is put into a graveyard from the battlefield, you gain life equal to its power.', 'Whenever a creature other than Test Card is exiled from the battlefield, you gain life equal to its toughness.'],
+  },
+  'opponent-drew-tense': {
+    def: { kind: 'static', text: '', zone: ['stack'], effects: [{ s: 'alternativeCost', name: 'alternative', cost: { mana: [{ kind: 'colored', color: 'R' }] }, when: { cond: 'compare', left: { q: 'happenedCount', event: { ev: 'draw' }, scope: 'turn', per: 'player', by: 'opponent' }, op: '>=', right: 3 } }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ["If an opponent has drawn three or more cards this turn, you may pay {R} rather than pay this spell's mana cost.", "If an opponent drew three or more cards this turn, you may pay {R} rather than pay this spell's mana cost."],
+    near: ["If an opponent drew four or more cards this turn, you may pay {R} rather than pay this spell's mana cost.", "If you drew three or more cards this turn, you may pay {R} rather than pay this spell's mana cost.", "If an opponent drew three or more cards this turn, you may pay {G} rather than pay this spell's mana cost."],
+  },
+  'token-colors-after-noun': {
+    def: spell([{ op: 'createToken', count: 1, token: { colors: ['R', 'G', 'W'], power: 5, toughness: 5, subtypes: ['Beast'], types: ['Creature'] }, who: you } as EffectStep]),
+    readings: ['Create a 5/5 red, green, and white Beast creature token.', "Create a 5/5 Beast creature token that's red, green, and white."],
+    near: ["Create a 5/5 Beast creature token that's red and white.", "Create a 5/5 Beast creature token that's red, green, and blue.", "Create a 5/5 Beast creature token that's red, green, and white with flying."],
+  },
+  'on-the-battlefield-keyword': {
+    def: statics([{ s: 'continuous', cda: true, affects: self, mods: [{ layer: '7a', power: { q: 'count', of: { ref: 'each', filter: { keyword: 'shadow', types: ['Creature'] } } } }] } as StaticEffect]),
+    ctx: creature,
+    readings: ["Test Card's power is equal to the number of creatures with shadow.", "Test Card's power is equal to the number of creatures on the battlefield with shadow."],
+    near: ["Test Card's power is equal to the number of creatures you control with shadow.", "Test Card's power is equal to the number of creatures with flying.", "Test Card's power is equal to the number of creatures on the battlefield with shadow plus 1."],
+  },
+} satisfies Record<string, Example>);
+// edh-b-5 (CR 205.3i, 305.1): lands of a land subtype played from the graveyard (render/stat.ts#graveyardPermit)
+Object.assign(EXAMPLES, {
+  'land-subtype-lands': {
+    def: statics([{ s: 'permit', who: you, action: 'play', of: { subtypes: ['Swamp'] }, from: 'graveyard' } as unknown as StaticEffect]),
+    readings: ['You may play swamps from your graveyard.', 'You may play swamp lands from your graveyard.'],
+    near: ['You may play swamp creatures from your graveyard.', 'You may play swamp lands from exile.', 'You may play swamp lands and forests from your graveyard.'],
+  },
+} satisfies Record<string, Example>);
+Object.assign(EXAMPLES, {
+  'life-lost-by-all-players': {
+    def: spell([{ op: 'gainLife', who: you, amount: { q: 'lifeLostTotal', of: { ref: 'each', who: 'player' } } } as EffectStep]),
+    readings: ['You gain life equal to the total life lost by all players this turn.', 'You gain life equal to the total amount of life lost by all players this turn.'],
+    near: ['You gain life equal to the total life lost by all players.', 'You gain life equal to the total life lost by your opponents this turn.', 'You gain life equal to the life lost by all players this turn.'],
+  },
+} satisfies Record<string, Example>);
+Object.assign(EXAMPLES, {
+  'mill-a-card-for-each': {
+    def: spell([{ op: 'mill', who: { ref: 'each', who: 'opponent' }, count: { q: 'count', of: { ref: 'each', filter: { subtypes: ['Locus'], controller: 'you' } } } } as unknown as EffectStep]),
+    readings: ['Each opponent mills a card for each Locus you control.', 'Each opponent mills cards equal to the number of Locuses you control.'],
+    near: ['Each opponent mills two cards for each Locus you control.', 'Each opponent mills a card for each Locus.', 'Each opponent mills a card for each Locus an opponent controls.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-2 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['event-creature-other-than-self', 'opponent-drew-tense', 'token-colors-after-noun', 'on-the-battlefield-keyword']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-top-15 (Commander lane edh-top): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'unattach-from-yours-folded': {
+    def: rx30Def('Creature — Kor', '{W}: You may unattach an Equipment from a creature you control. If you do, tap that creature and it gains vigilance until end of turn.'), ctx: creature,
+    readings: ['{W}: You may unattach an Equipment from a creature you control. If you do, tap that creature and it gains vigilance until end of turn.', '{W}: You may choose an Equipment attached to a creature you control and unattach it. If you do, tap that creature and it gains vigilance until end of turn.'],
+    near: ['{W}: You may unattach an Equipment from a creature an opponent controls. If you do, tap that creature and it gains vigilance until end of turn.', '{W}: You may unattach an Aura from a creature you control. If you do, tap that creature and it gains vigilance until end of turn.'],
+  },
+  'event-excess-wording': {
+    def: rx30Def('Creature — Human', 'Whenever a creature an opponent controls is dealt excess noncombat damage, Test Card deals damage equal to the excess to any target.'), ctx: creature,
+    readings: ['Whenever a creature an opponent controls is dealt excess noncombat damage, ~ deals damage equal to the excess to any target.', 'Whenever a creature an opponent controls is dealt excess noncombat damage, ~ deals damage equal to the excess damage to any target.'],
+    near: ['Whenever a creature an opponent controls is dealt excess noncombat damage, ~ deals damage equal to the damage to any target.', 'Whenever a creature an opponent controls is dealt excess combat damage, ~ deals damage equal to the excess to any target.'],
+  },
+  'grantor-pronoun-via-cost': {
+    def: rx30Def('Artifact — Equipment', 'Equipped creature has "{T}, Unattach Test Card: Test Card deals 2 damage to any target."'), ctx: creature,
+    readings: ['Equipped creature has "{T}, Unattach ¤: ¤ deals 2 damage to any target."', 'Equipped creature has "{T}, Unattach ¤: it deals 2 damage to any target."'],
+    near: ['Equipped creature has "{T}, Unattach ¤: ~ deals 2 damage to any target."', 'Equipped creature has "{T}, Unattach ¤: it deals 3 damage to any target."'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-top-15 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['unattach-from-yours-folded', 'event-excess-wording', 'grantor-pronoun-via-cost']) {
+// edh-next-7 (Commander lane edh-next, third pass): the readings of its families (invented wordings, design 6.10)
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+Object.assign(EXAMPLES, {
+  'token-creature-word': {
+    def: rx30Def('Sorcery', "If you don't control a Pest creature token, draw a card."),
+    readings: ["If you don't control a Pest creature token, draw a card.", "If you don't control a Pest token, draw a card.", 'If you control no Pest tokens, draw a card.'],
+    near: ["If you don't control a Pest creature, draw a card.", "If you don't control a Goblin creature token, draw a card."],
+  },
+  'discard-their-hands': {
+    def: rx30Def('Sorcery', 'Any number of target opponents each discard their hands, then draw four cards.'),
+    readings: ['Any number of target opponents each discard their hands, then draw four cards.', 'Any number of target opponents each discard their hand, then draw four cards.'],
+    near: ['Any number of target opponents each discard their hands, then draw three cards.', 'Any number of target opponents each discard two cards, then draw four cards.'],
+  },
+  'sacrifice-greatest-power-they-control': {
+    def: rx30Def('Sorcery', 'Each opponent sacrifices a creature they control with the greatest power.'),
+    readings: ['Each opponent sacrifices a creature they control with the greatest power.', 'Each opponent sacrifices a creature with the greatest power among creatures they control.'],
+    near: ['Each opponent sacrifices a creature they control with the least power.', 'Each opponent sacrifices a creature with the greatest toughness among creatures they control.'],
+  },
+  'choose-color-return-all': {
+    def: rx30Def('Sorcery', "Return all permanents of the color of your choice to their owners' hands."),
+    readings: ["Return all permanents of the color of your choice to their owners' hands.", "Choose a color. Return all permanents of the chosen color to their owners' hands."],
+    near: ["Return all creatures of the color of your choice to their owners' hands.", "Choose a color. Return all creatures of the chosen color to their owners' hands."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-7 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['token-creature-word', 'discard-their-hands', 'sacrifice-greatest-power-they-control', 'choose-color-return-all']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-1 (Commander lane edh-c): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'cast-nth-in-a-turn': {
+    def: gy1Def('Creature — Test', 'Whenever you cast your third spell each turn, draw a card.'),
+    readings: ['Whenever you cast your third spell each turn, draw a card.', 'Whenever you cast your third spell in a turn, draw a card.'],
+    near: ['Whenever you cast your second spell in a turn, draw a card.', 'Whenever you cast your third spell this turn, draw a card.'],
+  },
+  'damage-recipient-types-list': {
+    def: gy1Def('Enchantment', 'If a noncreature source you control would deal damage to a creature, battle, or opponent, it deals that much damage plus 2 instead.'),
+    readings: ['If a noncreature source you control would deal damage to a creature, battle, or opponent, it deals that much damage plus 2 instead.', 'If a noncreature source you control would deal damage to a battle, creature, or opponent, it deals that much damage plus 2 instead.'],
+    near: ['If a noncreature source you control would deal damage to a creature, planeswalker, or opponent, it deals that much damage plus 2 instead.', 'If a noncreature source you control would deal damage to a creature, battle, or player, it deals that much damage plus 2 instead.'],
+  },
+  'equip-costs-you-pay': {
+    def: gy1Def('Enchantment', 'Equip abilities you activate cost {1} less to activate.'),
+    readings: ['Equip abilities you activate cost {1} less to activate.', 'Equip costs you pay cost {1} less.'],
+    near: ['Equip costs you pay cost {2} less.', 'Equip costs your opponents pay cost {1} less.'],
+  },
+  'cycled-or-discarded-count': {
+    def: gy1Def('Creature — Test', "Test Card costs {2} less to cast for each card you've discarded this turn."),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ["Test Card costs {2} less to cast for each card you've discarded this turn.", "Test Card costs {2} less to cast for each card you've cycled or discarded this turn."],
+    near: ["Test Card costs {2} less to cast for each card you've cycled this turn.", "Test Card costs {2} less to cast for each card you've drawn this turn."],
+  },
+  'no-creature-died-this-turn': {
+    def: gy1Def('Enchantment', 'At the beginning of your end step, if no creatures died this turn, you gain 1 life.'),
+    readings: ['At the beginning of your end step, if no creatures died this turn, you gain 1 life.', 'At the beginning of your end step, if no creature died this turn, you gain 1 life.'],
+    near: ['At the beginning of your end step, if a creature died this turn, you gain 1 life.', 'At the beginning of your end step, if no creatures died this turn, you lose 1 life.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-1 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['cast-nth-in-a-turn', 'damage-recipient-types-list', 'equip-costs-you-pay', 'cycled-or-discarded-count', 'no-creature-died-this-turn']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-top-16 (CR 706.2, 603.12, 115.1; Ancient Brass Dragon): a limit on the total of the targets that reads the die result, said with X and its definition at the end
+Object.assign(EXAMPLES, {
+  'group-limit-where-x': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 2 }] }, effect: { targets: [], steps: [
+      { op: 'rollDie', who: you, sides: 20, as: 'did' } as EffectStep,
+      { op: 'reflexive', when: { did: 'did' }, targets: [{ id: 't0', kind: 'object', min: 0, max: 'any', text: '', filter: { types: ['Creature'], isCard: true, zone: 'graveyard' }, groupLimit: { stat: 'manaValue', cmp: { op: '<=', value: { q: 'dieResult' } } } }],
+        do: [{ op: 'move', what: { ref: 'target', id: 't0' }, to: { zone: 'battlefield', controller: you } }] } as unknown as EffectStep,
+    ] } } as unknown as AbilityDef,
+    ctx: creature,
+    readings: [
+      '{2}: Roll a d20. When you do, put any number of target creature cards with total mana value X or less from graveyards onto the battlefield under your control, where X is the result.',
+      '{2}: Roll a d20. When you do, put any number of target creature cards from graveyards with total mana value X or less onto the battlefield under your control, where X is the result.',
+    ],
+    near: [
+      '{2}: Roll a d20. When you do, put any number of target creature cards with total mana value X or less from graveyards onto the battlefield under your control, where X is the number of cards in your hand.',
+      '{2}: Roll a d20. When you do, put any number of target creature cards with total mana value X or less from graveyards onto the battlefield under your control.',
+    ],
+  },
+});
+
+// edh-c-10 (Commander lane edh-c, code edhv10): the readings its two render changes add to existing families (invented wordings, design 6.10; CR 105.1, 400.3)
+describe('edh-c-10 (G6): the added readings of five-colors and return-group-destination-first are accepted and the near misses are not', () => {
+  it('five-colors: "you control a permanent of each color" is five or more colors among your permanents; a lesser or wider reading is not', () => {
+    const ex = (EXAMPLES as Record<string, Example>)['five-colors']!;
+    accepts(ex.def, 'Draw a card. If you control a permanent of each color, you gain 2 life.', ex.ctx);
+    rejects(ex.def, 'Draw a card. If you control a permanent of each type, you gain 2 life.', ex.ctx);
+    rejects(ex.def, 'Draw a card. If an opponent controls a permanent of each color, you gain 2 life.', ex.ctx);
+  });
+  it('return-group-destination-first: "Return to its owner\'s hand each creature with ..." is the same return of a group; another group or another number is not', () => {
+    const ex = (EXAMPLES as Record<string, Example>)['return-group-destination-first']!;
+    accepts(ex.def, "Return to its owner's hand each creature with toughness 2 or less.", ex.ctx);
+    rejects(ex.def, "Return to its owner's hand each artifact with toughness 2 or less.", ex.ctx);
+    rejects(ex.def, "Return to its owner's hand each creature with toughness 3 or less.", ex.ctx);
+  });
+});
+Object.assign(EXAMPLES, {
+  // edh-c-9: a list of colors a known object is asked to be is "or" and also "and/or" (cond.ts); "that target" for the one object a target named (refs.ts); a permanent you controlled left (cond.ts)
+  'cond-colors-and-or': {
+    def: spell([{ op: 'destroy', what: t('c') } as EffectStep, { op: 'if', cond: { cond: 'matches', object: t('c'), filter: { colors: ['W', 'U'] } }, then: [draw()] } as EffectStep], [objTarget('c')]),
+    readings: ["Destroy target creature. If it's white or blue, draw a card.", "Destroy target creature. If it's white and/or blue, draw a card."],
+    near: ["Destroy target creature. If it's white and blue, draw a card.", "Destroy target creature. If it's white and/or green, draw a card."],
+  },
+  'that-target': {
+    def: spell([{ op: 'destroy', what: t('c') } as EffectStep, { op: 'if', cond: { cond: 'matches', object: t('c'), filter: { colors: ['R'] } }, then: [draw()] } as EffectStep], [objTarget('c')]),
+    readings: ["Destroy target creature. If it's red, draw a card.", 'Destroy target creature. If that creature is red, draw a card.', 'Destroy target creature. If that target is red, draw a card.'],
+    near: ['Destroy target creature. If that player is red, draw a card.', 'Destroy target creature. If that targets is red, draw a card.'],
+  },
+  // edh-c-86 (render/refs.ts#specInfo): a target announced as "target <noun> <controller words>" is also "the <noun> <controller words>" later; the lesser power filter (render/np.ts)
+  'target-by-controller': {
+    def: spell([{ op: 'destroy', what: t('c') } as EffectStep, { op: 'if', cond: { cond: 'matches', object: t('c'), filter: { colors: ['R'] } }, then: [draw()] } as EffectStep], [objTarget('c', { types: ['Creature'], controller: 'you' }, { text: 'target creature you control' })]),
+    readings: ["Destroy target creature you control. If it's red, draw a card.", "Destroy target creature you control. If the creature you control is red, draw a card."],
+    near: ["Destroy target creature you control. If the creature an opponent controls is red, draw a card.", "Destroy target creature you control. If the creature you don't control is red, draw a card."],
+  },
+  'lesser-power': {
+    def: trig([{ ev: 'attacks', attacker: { self: true } }], [{ op: 'move', what: t('c'), to: { zone: 'hand' } }], {}, [objTarget('c', { zone: 'graveyard', owner: 'you', types: ['Creature'], power: { op: '<', value: { q: 'stat', stat: 'power', of: { ref: 'event', role: 'subject' } } } })]),
+    ctx: creature,
+    readings: ['Whenever Test Card attacks, return target creature card with lesser power from your graveyard to your hand.'],
+    near: ['Whenever Test Card attacks, return target creature card with greater power from your graveyard to your hand.', 'Whenever Test Card attacks, return target creature card with lesser toughness from your graveyard to your hand.'],
+  },
+  'left-you-controlled': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'step', step: 'end', whose: 'you' }] },
+      interveningIf: { cond: 'happened', event: { ev: 'zoneChange', from: 'battlefield', subject: { controller: 'you' } }, scope: 'turn' }, effect: { targets: [], steps: [draw(1)] } } as AbilityDef,
+    ctx: creature,
+    readings: ['At the beginning of your end step, if a permanent left the battlefield under your control this turn, draw a card.', 'At the beginning of your end step, if a permanent you controlled left the battlefield this turn, draw a card.'],
+    near: ['At the beginning of your end step, if a creature you controlled left the battlefield this turn, draw a card.', 'At the beginning of your end step, if a permanent you controlled left the battlefield, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+// edh-c-24 (render/steps-life.ts): one computed amount of damage to two recipients, the amount said for each
+Object.assign(EXAMPLES, {
+  'damage-same-where-x': {
+    def: spell([
+      { op: 'damage', source: { ref: 'self' }, to: { ref: 'target', id: 't0' }, amount: { q: 'count', of: { ref: 'each', filter: { subtypes: ['Goblin'] } } }, also: [{ to: you, amount: { q: 'count', of: { ref: 'each', filter: { subtypes: ['Goblin'] } } } }] } as EffectStep,
+    ], [{ id: 't0', kind: 'object', min: 1, max: 1, text: 'target creature', filter: { types: ['Creature'] } }]),
+    readings: ['~ deals X damage to target creature and X damage to you, where X is the number of Goblins on the battlefield.'],
+    near: ['~ deals X damage to target creature and X damage to you, where X is the number of Elves on the battlefield.'],
+  },
+});
+
+describe('edh-c-9 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['cond-colors-and-or', 'that-target', 'left-you-controlled', 'target-by-controller', 'lesser-power']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-b-7 (Commander coordinator B): steps-zones.ts +1 (token-tapped-front-computed), steps-flow.ts (no new alt: "a third" next to "half" of each-player life loss)
+Object.assign(EXAMPLES, {
+  'token-tapped-front-computed': {
+    def: spell([{ op: 'createToken', who: you, count: 3, tapped: true, token: { power: { q: 'count', of: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } }, toughness: { q: 'count', of: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } }, colors: ['G'], subtypes: ['Treefolk'], types: ['Creature'] } } as EffectStep]),
+    readings: ['Create three tapped X/X green Treefolk creature tokens, where X is the number of lands you control.', 'Create three X/X green Treefolk creature tokens that are tapped, where X is the number of lands you control.'],
+    near: ['Create three tapped and attacking X/X green Treefolk creature tokens, where X is the number of lands you control.', 'Create two tapped X/X green Treefolk creature tokens, where X is the number of lands you control.', 'Create three tapped X/X green Treefolk creature tokens, where X is the number of lands an opponent controls.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-b-7 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['token-tapped-front-computed']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-13 (Commander lane edh-c, EDHREC ranks 18,751-19,375): "you play a card", counters on the object itself said two ways, remove them / all of them
+Object.assign(EXAMPLES, {
+  // "Whenever you play a card, draw a card." (Null Profusion)
+  'play-a-card-land-or-spell': {
+    def: trig([{ ev: 'action', verb: 'playLand', actor: 'you' }, { ev: 'cast', player: 'you', spell: { isCard: true } }], [draw()]),
+    ctx: creature,
+    readings: ['Whenever you play a card, draw a card.', 'Whenever you play a land or cast a spell, draw a card.'],
+    near: ['Whenever you play a land, draw a card.', 'Whenever you cast a spell, draw a card.', 'Whenever a player plays a card, draw a card.'],
+  },
+  // "Put a ritual counter on ~. Then if it has three or more ritual counters on it, remove them and transform it." (Heirloom Mirror)
+  'self-has-n-counters': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, effect: { targets: [], steps: [
+      { op: 'putCounters', on: { ref: 'self' }, kind: 'ritual', count: 1 } as EffectStep,
+      { op: 'if', cond: { cond: 'compare', left: { q: 'counters', on: { ref: 'self' }, kind: 'ritual' }, op: '>=', right: 3 }, then: [
+        { op: 'removeCounters', from: { ref: 'self' }, kind: 'ritual', count: 'all' } as EffectStep, { op: 'changeFace', what: { ref: 'self' }, to: 'transform' } as EffectStep] } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: creature,
+    readings: ['{T}: Put a ritual counter on ~. Then if there are three or more ritual counters on it, remove those counters and transform it.', '{T}: Put a ritual counter on ~. Then if it has three or more ritual counters on it, remove those counters and transform it.'],
+    near: ['{T}: Put a ritual counter on ~. Then if it has three or more verse counters on it, remove those counters and transform it.', '{T}: Put a ritual counter on ~. Then if it has four or more ritual counters on it, remove those counters and transform it.', '{T}: Put a ritual counter on ~. Then if it has three or fewer ritual counters on it, remove those counters and transform it.'],
+  },
+  'remove-counters-them-transform': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, effect: { targets: [], steps: [
+      { op: 'putCounters', on: { ref: 'self' }, kind: 'ritual', count: 1 } as EffectStep,
+      { op: 'if', cond: { cond: 'compare', left: { q: 'counters', on: { ref: 'self' }, kind: 'ritual' }, op: '>=', right: 3 }, then: [
+        { op: 'removeCounters', from: { ref: 'self' }, kind: 'ritual', count: 'all' } as EffectStep, { op: 'changeFace', what: { ref: 'self' }, to: 'transform' } as EffectStep] } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: creature,
+    readings: ['{T}: Put a ritual counter on ~. Then if there are three or more ritual counters on it, remove those counters and transform it.', '{T}: Put a ritual counter on ~. Then if there are three or more ritual counters on it, remove them and transform it.', '{T}: Put a ritual counter on ~. Then if there are three or more ritual counters on it, remove all of them and transform it.'],
+    near: ['{T}: Put a ritual counter on ~. Then if there are three or more ritual counters on it, remove a counter and transform it.', '{T}: Put a ritual counter on ~. Then if there are three or more ritual counters on it, remove them and sacrifice it.', '{T}: Put a ritual counter on ~. Then if there are three or more ritual counters on it, you may remove them and transform it.'],
+  },
+});
+
+// edh-c-14 (Commander EDHREC ranks 16,251-16,875): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'remove-counters-among-and-sacrifice-self': {
+    def: rx30Def('Artifact', '{T}, Remove six rust counters from among permanents you control and sacrifice Test Card: Test Card deals 6 damage to any target.'), ctx: creature,
+    readings: ['{T}, Remove six rust counters from among permanents you control and sacrifice ~: ~ deals 6 damage to any target.', '{T}, Remove six rust counters from among permanents you control, Sacrifice ~: ~ deals 6 damage to any target.'],
+    near: ['{T}, Remove six rust counters from among permanents you control and sacrifice a creature: ~ deals 6 damage to any target.', '{T}, Remove six rust counters from among permanents you control and sacrifice ~: ~ deals 7 damage to any target.'],
+  },
+  'greatest-power-implicit-set': {
+    def: rx30Def('Sorcery', 'Put a +1/+1 counter on target creature you control with the greatest power among creatures you control.'), ctx: creature,
+    readings: ['Put a +1/+1 counter on target creature you control with the greatest power among creatures you control.', 'Put a +1/+1 counter on target creature you control with the greatest power.'],
+    near: ['Put a +1/+1 counter on target creature you control with the greatest toughness.', 'Put a +1/+1 counter on target creature an opponent controls with the greatest power.'],
+  },
+  'cycling-ability-keyword': {
+    def: rx30Def('Sorcery', 'Test Card deals X damage to any target, where X is the number of cards with a cycling ability in your graveyard.'), ctx: creature,
+    readings: ['~ deals X damage to any target, where X is the number of cards with a cycling ability in your graveyard.', '~ deals X damage to any target, where X is the number of cards with cycling or typecycling in your graveyard.'],
+    near: ['~ deals X damage to any target, where X is the number of cards with flying in your graveyard.', '~ deals X damage to any target, where X is the number of cards with a cycling ability in an opponent\'s graveyard.'],
+  },
+  // edh-b-6 (Commander lane edh-b, ranks 9,001-10,000)
+  'creature-other-than-self': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'step', step: 'upkeep', whose: 'you' }] }, effect: { targets: [], steps: [{ op: 'sacrificeChoice', who: you, filter: { types: ['Creature'], other: true }, count: 1 } as EffectStep] } } as AbilityDef,
+    ctx: creature,
+    readings: ['At the beginning of your upkeep, sacrifice another creature.', 'At the beginning of your upkeep, sacrifice a creature other than Test Card.'],
+    near: ['At the beginning of your upkeep, sacrifice a creature other than enchanted creature.', 'At the beginning of your upkeep, sacrifice two creatures other than Test Card.'],
+  },
+  'opponents-with-n-cards-in-hand': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'step', step: 'upkeep', whose: 'you' }] }, effect: { targets: [], steps: [{ op: 'gainLife', who: you, amount: { q: 'countPlayers', of: { ref: 'each', who: 'opponent' }, sizeIs: { zone: 'hand', op: '>=', n: 4 } } } as EffectStep] } } as AbilityDef,
+    ctx: creature,
+    readings: ['At the beginning of your upkeep, you gain life equal to the number of opponents who have four or more cards in hand.', 'At the beginning of your upkeep, you gain life equal to the number of your opponents with four or more cards in hand.'],
+    near: ['At the beginning of your upkeep, you gain life equal to the number of your opponents with three or more cards in hand.', 'At the beginning of your upkeep, you gain life equal to the number of your opponents with four or fewer cards in hand.'],
+  },
+  'life-total-it-becomes': {
+    def: spell([{ op: 'setLife', who: you, value: { q: 'startingLife' } } as EffectStep]),
+    readings: ['Your life total becomes equal to your starting life total.', 'It becomes equal to your starting life total.'],
+    near: ['Your life total becomes equal to half your starting life total.', 'Target player\'s life total becomes equal to your starting life total.'],
+  },
+  'spell-list-and-cant-be-countered': {
+    def: statics([{ s: 'restrict', subject: { ref: 'each', filter: { anyOf: [{ types: ['Instant', 'Sorcery'] }, { subtypes: ['Dragon'] }], controller: 'you', stackKind: 'spell', zone: 'stack' } }, mode: 'cant', action: 'beCountered' } as unknown as StaticEffect]),
+    readings: ["Instant, sorcery, and Dragon spells you control can't be countered.", "Instant or sorcery or Dragon spells you control can't be countered."],
+    near: ["Instant, sorcery, and Merfolk spells you control can't be countered.", "Instant, sorcery, and Dragon spells your opponents control can't be countered."],
+  },
+} satisfies Record<string, Example>);
+// edh-c-41 (CR 502.3, 611.2a): a grant and "doesn't untap" in one sentence (render/costs.ts, render/fold.ts#gainsThenNoUntap)
+Object.assign(EXAMPLES, {
+  'gains-and-no-untap': {
+    def: spell([
+      { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'haste' }] }] }] } as EffectStep,
+      { op: 'effect', duration: { d: 'throughNextUntap', whose: 'you' }, effects: [{ s: 'restrict', subject: { ref: 'self' }, mode: 'cant', action: 'untapDuringUntapStep' }] } as EffectStep,
+    ]),
+    readings: ["~ gains haste until end of turn and doesn't untap during your next untap step.", "~ gains haste until end of turn. ~ doesn't untap during your next untap step."],
+    near: ["~ gains haste until end of turn and doesn't untap during your untap step.", "~ gains flying until end of turn and doesn't untap during your next untap step.", "~ gains haste and doesn't untap during your next untap step."],
+  },
+} satisfies Record<string, Example>);
+
+describe('edh-c-14 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['remove-counters-among-and-sacrifice-self', 'greatest-power-implicit-set', 'cycling-ability-keyword']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-b-12 (CR 102.3, 119.3): "for each of your opponents who lost life this turn" (Belbe, Corrupted Observer)
+Object.assign(EXAMPLES, {
+  'for-each-of-your-opponents-who-lost-life': {
+    def: rx30Def('Sorcery', 'Draw a card for each opponent who lost life this turn.'), ctx: creature,
+    readings: ['Draw a card for each opponent who lost life this turn.', 'Draw a card for each of your opponents who lost life this turn.'],
+    near: ['Draw a card for each of your opponents who gained life this turn.', 'Draw a card for each of your opponents.', 'Draw a card for each of your opponents who lost life last turn.'],
+  },
+} satisfies Record<string, Example>);
+// edh-c-35 (Commander EDHREC ranks 25,501-26,000): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'attached-grant-and-cant-be-enchanted': {
+    def: {
+      kind: 'static', text: '',
+      effects: [
+        { s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'hexproof', text: 'hexproof' }] }] },
+        { s: 'restrict', subject: { ref: 'attachedTo' }, mode: 'cant', action: 'beEnchanted', other: { subtypes: ['Aura'], other: true } },
+      ],
+    } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment', 'Aura'] },
+    readings: ["Enchanted creature has hexproof and can't be enchanted by other Auras.", "Enchanted creature has hexproof. It can't be enchanted by other Auras."],
+    near: ["Enchanted creature has hexproof and can't be enchanted by Auras.", "Enchanted creature has hexproof and can't be equipped by other Auras.", "Enchanted creature has flying and can't be enchanted by other Auras."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-35 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['attached-grant-and-cant-be-enchanted']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-b-9 (Commander coordinator B): steps-life.ts +3 (player-additional-counter, damage-where-x-both, and the "they control" pair of the same damage), text.ts +1 (spawn-plural), steps-zones.ts +1 (token-rider-number-equal)
+const B9_LANDS: Quantity = { q: 'count', of: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } };
+const B9_COUNTERS: Quantity = { q: 'counters', on: { ref: 'self' }, kind: '+1/+1' };
+Object.assign(EXAMPLES, {
+  'player-additional-counter': {
+    def: spell([{ op: 'putCounters', on: you, kind: 'poison', count: 1 } as EffectStep]),
+    readings: ['You get a poison counter.', 'You get an additional poison counter.'],
+    near: ['You get two additional poison counters.', 'You get an additional experience counter.'],
+  },
+  'damage-where-x-both': {
+    def: spell([{ op: 'damage', source: { ref: 'self' }, to: { ref: 'each', who: 'opponent' }, amount: B9_LANDS, also: [{ to: { ref: 'each', filter: { types: ['Planeswalker'], controller: 'opponent' } }, amount: B9_LANDS }] } as EffectStep]),
+    ctx: unknown,
+    readings: ['Test Card deals damage equal to the number of lands you control to each opponent and each planeswalker your opponents control.', 'Test Card deals X damage to each opponent and each planeswalker they control, where X is the number of lands you control.', 'Test Card deals damage equal to the number of lands you control to each opponent and each planeswalker they control.'],
+    near: ['Test Card deals X damage to each opponent and each creature they control, where X is the number of lands you control.', 'Test Card deals X damage to each player and each planeswalker they control, where X is the number of lands you control.'],
+  },
+  'spawn-plural': {
+    def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'each', filter: { subtypes: ['Spawn'], controller: 'you' } }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'indestructible', text: 'indestructible' }] }] }] } as EffectStep]),
+    readings: ['Spawn you control gain indestructible until end of turn.', 'Spawns you control gain indestructible until end of turn.'],
+    near: ['Spawnses you control gain indestructible until end of turn.', 'Spawns you control gain deathtouch until end of turn.'],
+  },
+  'token-rider-number-equal': {
+    def: spell([{ op: 'createToken', who: you, count: B9_COUNTERS, token: { colors: ['B', 'G'], types: ['Creature'], subtypes: ['Pest'], power: 1, toughness: 1, abilities: [{ kind: 'triggered', text: '', trigger: { on: [dies] }, effect: { targets: [], steps: [gain(1)] } }] } } as EffectStep]),
+    ctx: creature,
+    readings: ['Create a number of 1/1 black and green Pest creature tokens equal to the number of +1/+1 counters on ~. They have "When ~ dies, you gain 1 life."', 'Create a number of 1/1 black and green Pest creature tokens equal to the number of +1/+1 counters on ~. The tokens have "When ~ dies, you gain 1 life."'],
+    near: ['Create a number of 1/1 black and green Pest creature tokens equal to the number of +1/+1 counters on ~. It has "When ~ dies, you gain 1 life."', 'Create a number of 1/1 black and green Pest creature tokens equal to the number of +1/+1 counters on ~.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-b-9 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['player-additional-counter', 'damage-where-x-both', 'spawn-plural', 'token-rider-number-equal']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+describe('edh-b-6 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['creature-other-than-self', 'opponents-with-n-cards-in-hand', 'life-total-it-becomes', 'spell-list-and-cant-be-countered']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-b-10 (Commander lane edh-b, ranks 9,001-10,000, second pass): one family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'owned-by-opponent': {
+    def: rx30Def('Creature — Human', 'Whenever a creature an opponent owns dies, draw a card.'),
+    ctx: creature,
+    readings: ['Whenever a creature an opponent owns dies, draw a card.', 'Whenever a creature owned by an opponent dies, draw a card.', 'Whenever a creature owned by another player dies, draw a card.'],
+    near: ['Whenever a creature you own dies, draw a card.', 'Whenever a creature owned by a player dies, draw a card.', 'Whenever a creature an opponent controls dies, draw a card.'],
+  },
+  'damage-player-or-battle': {
+    def: rx30Def('Sorcery', 'If a source would deal damage to a player or battle this turn, it deals that much damage plus 2 instead.'),
+    ctx: instant,
+    readings: ['If a source would deal damage to a player or battle this turn, it deals that much damage plus 2 instead.', 'If a source would deal damage to a player or a battle this turn, it deals that much damage plus 2 instead.'],
+    near: ['If a source would deal damage to a player or battle this turn, it deals that much damage plus 3 instead.', 'If a source would deal damage to a player or creature this turn, it deals that much damage plus 2 instead.'],
+  },
+} satisfies Record<string, Example>);
+// edh-c-52 (Commander lane edh-c, ranks 19,001-19,500): one family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'no-counter-controller-order': {
+    def: trig([{ ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }], [{ op: 'putCounters', on: t('c'), kind: '+1/+1', count: 1 } as EffectStep], {}, [objTarget('c', { types: ['Creature'], controller: 'you', not: { counters: { kind: '+1/+1' } } })]),
+    ctx: creature,
+    readings: ["When ~ enters, put a +1/+1 counter on target creature you control that doesn't have a +1/+1 counter on it.", 'When ~ enters, put a +1/+1 counter on target creature you control without a +1/+1 counter on it.', 'When ~ enters, put a +1/+1 counter on target creature without a +1/+1 counter on it you control.'],
+    near: ["When ~ enters, put a +1/+1 counter on target creature you control that doesn't have a -1/-1 counter on it.", "When ~ enters, put a +1/+1 counter on target creature you control that has a +1/+1 counter on it.", "When ~ enters, put a +1/+1 counter on target creature that doesn't have a +1/+1 counter on it."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-52 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['no-counter-controller-order']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-c-111 (Commander lane edh-c, ranks 19,501-20,000, later pass): one family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'cost-all-counters-that-much': {
+    def: { kind: 'activated', text: '', cost: { tap: true, other: [{ kind: 'removeCounters', counter: 'charge', count: { q: 'X' }, self: true, all: true }] },
+      effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { types: ['Creature'] } }], steps: [{ op: 'damage', source: { ref: 'self' }, to: t('t0'), amount: { q: 'X' } }] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['{T}, Remove all charge counters from Test Card: It deals that much damage to target creature.', '{T}, Remove all charge counters from Test Card: Test Card deals damage to target creature equal to the number of charge counters removed this way.'],
+    near: ['{T}, Remove all charge counters from Test Card: It deals that much damage to each creature.', '{T}, Remove all time counters from Test Card: It deals that much damage to target creature.', '{T}, Remove a charge counter from Test Card: It deals that much damage to target creature.'],
+  },
+  'toughness-to-the-other': {
+    def: spell([{ op: 'fight', a: t('a'), b: t('b'), by: 'toughness' } as EffectStep], [RX10_MINE, RX10_THEIRS]),
+    readings: ["Choose target creature you control and target creature you don't control. Each of those creatures deals damage equal to its toughness to the other.", "Choose target creature you control and target creature you don't control. Then each of the chosen creatures deals damage equal to its toughness to the other."],
+    near: ["Choose target creature you control and target creature you don't control. Each of those creatures deals damage equal to its power to the other.", "Choose target creature you control and target creature you don't control. Those creatures fight each other."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-111 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['cost-all-counters-that-much', 'toughness-to-the-other']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+describe('edh-b-10 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['owned-by-opponent', 'damage-player-or-battle']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+
+// edh-c-67 (Commander lane edh-c, ranks 27,001-27,500, second pass): the family that-players-zone (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'that-players-zone': {
+    def: rx30Def('Creature — Human', '{2}, {T}: Look at the top card of target player\'s library. You may put that card into its owner\'s graveyard.'),
+    ctx: creature,
+    readings: ["{2}, {T}: Look at the top card of target player's library. You may put that card into its owner's graveyard.", "{2}, {T}: Look at the top card of target player's library. You may put that card into that player's graveyard."],
+    near: ["{2}, {T}: Look at the top card of target player's library. You may put that card into an opponent's graveyard.", "{2}, {T}: Look at the top card of target player's library. You may put that card into that player's hand."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-67 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['that-players-zone']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-b-8 (Commander lane edh-b): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'exiled-card-face-first': {
+    def: spell([{ op: 'move', what: t('t0'), to: { zone: 'hand' } } as EffectStep], [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { faceDown: false, isCard: true, zone: 'exile' } }]),
+    readings: ["Return target face-up exiled card to its owner's hand.", "Return target exiled face-up card to its owner's hand.", "Return target face-up card in exile to its owner's hand."],
+    near: ["Return target face-down exiled card to its owner's hand.", "Return target face-up exiled creature card to its owner's hand.", "Return target exiled card to its owner's hand."],
+  },
+  'cast-from-that-players-graveyard': {
+    def: spell([
+      { op: 'mill', who: t('t0'), count: 4 } as unknown as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Instant', 'Sorcery'] }], notTypes: ['Land'], zone: 'graveyard', owner: t('t0'), isCard: true } }, min: 0, max: 1, as: 'cast' } as unknown as EffectStep,
+      { op: 'cast', who: you, what: bound('cast'), free: true } as unknown as EffectStep,
+    ], [{ id: 't0', kind: 'player', min: 1, max: 1, text: '', players: { who: 'opponent' } } as never]),
+    readings: ["Target opponent mills four cards, then you may cast an instant or sorcery spell from that player's graveyard without paying its mana cost.", "Target opponent mills four cards, then you may cast an instant or sorcery spell from their graveyard without paying its mana cost."],
+    near: ["Target opponent mills four cards, then you may cast an instant or sorcery spell from your graveyard without paying its mana cost.", "Target opponent mills four cards, then you may cast an instant or sorcery spell from that player's library without paying its mana cost.", "Target opponent mills four cards, then you may cast an instant or sorcery spell from that player's graveyard."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-c-44 (Commander lane edh-c, ranks 17,501-18,000, fourth pass): steps-life.ts (no new alt site: "For each ..., ~ deals 1 damage ..." joins the damage-n-for-each site)
+Object.assign(EXAMPLES, {
+  'damage-for-each-lead': {
+    def: spell([{ op: 'damage', source: { ref: 'self' }, to: { ref: 'each', who: 'opponent' }, amount: { q: 'count', of: { ref: 'each', filter: { types: ['Land'], controller: 'you' } } } }] as EffectStep[]),
+    readings: ['~ deals damage equal to the number of lands you control to each opponent.', '~ deals 1 damage to each opponent for each land you control.', 'For each land you control, ~ deals 1 damage to each opponent.'],
+    near: ['For each creature you control, ~ deals 1 damage to each opponent.', 'For each land you control, ~ deals 2 damage to each opponent.', 'For each land you control, ~ deals 1 damage to you.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-44 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['damage-for-each-lead']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-17 (Commander lane edh-next, ranks 13,751-15,000, second pass): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'each-is-subtype-has': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], counters: { kind: 'gold' } } }, mods: [{ layer: 4, subtypes: { add: ['Wall'] } }, { layer: 6, add: [{ kind: 'keyword', keyword: 'defender', text: 'defender' }] }] } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ['Each creature with a gold counter on it is a Wall in addition to its other creature types and has defender.', 'All creatures with a gold counter on them are Walls in addition to their other types and have defender.'],
+    near: ['Each creature with a gold counter on it is a Wall and has defender.', 'Each creature with a gold counter on it is a Wall in addition to its other creature types and has flying.', 'Each creature with a gold counter on it is a Wizard in addition to its other creature types and has defender.'],
+  },
+  'creature-or-creature-words': {
+    def: trig([{ ev: 'attacks', attacker: { controller: 'you', anyOf: [{ types: ['Creature'], enchanted: true }, { allTypes: ['Enchantment', 'Creature'] }] } } as EventPattern], [gain(2)]),
+    ctx: creature,
+    readings: ['Whenever an enchanted creature or enchantment creature you control attacks, you gain 2 life.', 'Whenever an enchanted creature you control or an enchantment creature you control attacks, you gain 2 life.'],
+    near: ['Whenever an enchanted creature or enchantment creature an opponent controls attacks, you gain 2 life.', 'Whenever an enchanted creature or equipped creature you control attacks, you gain 2 life.', 'Whenever an enchanted creature or enchantment creature you control attacks, you gain 3 life.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-17 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['creature-or-creature-words', 'each-is-subtype-has']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+describe('edh-c-24 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['damage-same-where-x']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-15
+Object.assign(EXAMPLES, {
+  'each-of-those-deal-own-power': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }] }, effect: { targets: [{ id: 't0', kind: 'object', min: 0, max: 'any', text: '', filter: { types: ['Creature'], controller: 'opponent' }, divide: { what: 'damage', total: 3 } }], steps: [
+      { op: 'damage', source: { ref: 'self' }, to: t('t0'), amount: 3, divided: 'announced' } as EffectStep,
+      { op: 'damage', source: t('t0'), to: { ref: 'self' }, amount: { q: 'stat', stat: 'power', of: { ref: 'subject' } }, perSource: true } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: [
+      'When Test Card enters, it deals 3 damage divided as you choose among any number of target creatures your opponents control. Each of those creatures deals damage equal to its power to Test Card.',
+      'When Test Card enters, it deals 3 damage divided as you choose among any number of target creatures your opponents control. They each deal damage equal to their power to it.',
+    ],
+    near: [
+      'When Test Card enters, it deals 3 damage divided as you choose among any number of target creatures your opponents control. Each of those creatures deals damage equal to its toughness to Test Card.',
+      'When Test Card enters, it deals 3 damage divided as you choose among any number of target creatures your opponents control. Each of those creatures deals damage equal to its power to you.',
+      'When Test Card enters, it deals 4 damage divided as you choose among any number of target creatures your opponents control. Each of those creatures deals damage equal to its power to Test Card.',
+    ],
+  },
+});
+
+// edh-c-66 (appended at the end)
+Object.assign(EXAMPLES, {
+  'that-spells-mana-value': {
+    def: trig([{ ev: 'cast', player: 'you' }], [{ op: 'destroy', what: { ref: 'each', filter: { manaValue: { op: '==', value: { q: 'stat', stat: 'manaValue', of: { ref: 'event', role: 'spell' } } } } } }]),
+    ctx: creature,
+    readings: ['Whenever you cast a spell, destroy all permanents with that spell\'s mana value.', 'Whenever you cast a spell, destroy all permanents with mana value equal to that spell\'s mana value.'],
+    near: ['Whenever you cast a spell, destroy all permanents with mana value less than that spell\'s mana value.', 'Whenever you cast a spell, destroy all permanents with that creature\'s mana value.'],
+  },
+  'also-damage-trailing-if': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { types: ['Creature'] } }], steps: [{ op: 'damage', source: { ref: 'self' }, to: { ref: 'target', id: 't0' }, amount: 3 }, { op: 'if', cond: { cond: 'exists', of: { ref: 'each', filter: { modified: true, types: ['Creature'], controller: 'you' } } }, then: [{ op: 'damage', source: { ref: 'self' }, to: { ref: 'controllerOf', object: { ref: 'target', id: 't0' } }, amount: 2 }] }] } } as never,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ["~ deals 3 damage to target creature. ~ also deals 2 damage to that creature's controller if you control a modified creature.", "~ deals 3 damage to target creature. If you control a modified creature, ~ also deals 2 damage to that creature's controller."],
+    near: ["~ deals 3 damage to target creature. ~ also deals 2 damage to that creature's controller unless you control a modified creature.", "~ deals 3 damage to target creature. ~ also deals 2 damage to that creature if you control a modified creature."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-c-33 (Commander lane edh-c; invented wordings, design 6.10): render/fold.ts#chooseThenTapAny (+1 alt site), render/edhv33.ts (3 alt sites)
+Object.assign(EXAMPLES, {
+  'tap-any-number-may': {
+    def: spell([{ op: 'chooseObjects', who: you, from: { ref: 'each', filter: { types: ['Creature'], controller: 'you', tapped: false } }, min: 0, max: 'any', as: 'c' } as EffectStep, { op: 'tap', what: { ref: 'bound', name: 'c' }, as: 'd' } as EffectStep]),
+    readings: ['Tap any number of untapped creatures you control.', 'You may tap any number of untapped creatures you control.'],
+    near: ['Tap any number of untapped artifacts you control.', 'You may tap two untapped creatures you control.'],
+  },
+  'edhv33-history-words': {
+    def: trig([{ ev: 'step', step: 'end', whose: 'you' } as EventPattern], [draw()], { interveningIf: { cond: 'not', of: { cond: 'happened', event: { ev: 'attacks', attacker: { self: true } }, scope: 'turn' } } }),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ["At the beginning of your end step, if ~ didn't attack this turn, draw a card.", 'At the beginning of your end step, if ~ did not attack this turn, draw a card.'],
+    near: ["At the beginning of your end step, if ~ didn't block this turn, draw a card.", "At the beginning of your end step, if you didn't attack this turn, draw a card."],
+  },
+  // edh-c-33 (Commander lane edh-c; invented wordings, design 6.10)
+  'opponent-graveyard-their-library': {
+    def: spell([{ op: 'move', what: t('c'), to: { zone: 'library', position: 'bottom' } }], [objTarget('c', { zone: 'graveyard', owner: 'opponent' })]),
+    readings: ["Put target card from an opponent's graveyard on the bottom of its owner's library.", "Put target card from an opponent's graveyard on the bottom of their library."],
+    near: ["Put target card from an opponent's graveyard on top of their library.", "Put target card from an opponent's graveyard into their library."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-c-25 (Commander EDHREC ranks 20,501-21,000): the readings of its families (invented wordings, design 6.10; CR 119.1, 102.3, 701.24a, 608.2c)
+const C25_OPP_LIFE_MORE = { cond: 'compare', left: { q: 'countPlayers', of: { ref: 'each', who: 'opponent' }, lifeVs: { op: '>', than: you } }, op: '>=', right: 1 };
+const C25_OPP_MORE_CREATURES = { cond: 'compare', left: { q: 'countPlayers', of: { ref: 'each', who: 'opponent' }, controlsVs: { filter: { types: ['Creature'] }, op: '>', than: you } }, op: '>=', right: 1 };
+Object.assign(EXAMPLES, {
+  'less-life-than-opponent': {
+    def: spell([{ op: 'if', cond: C25_OPP_LIFE_MORE, then: [gain(6)] } as unknown as EffectStep]),
+    readings: ['If you have less life than an opponent, you gain 6 life.', 'If an opponent has more life than you, you gain 6 life.'],
+    near: ['If you have more life than an opponent, you gain 6 life.', 'If you have less life than each opponent, you gain 6 life.', 'If you have less life than an opponent, you gain 5 life.'],
+  },
+  'fewer-than-opponent': {
+    def: spell([{ op: 'if', cond: C25_OPP_MORE_CREATURES, then: [gain(2)] } as unknown as EffectStep]),
+    readings: ['If you control fewer creatures than an opponent, you gain 2 life.', 'If an opponent controls more creatures than you, you gain 2 life.'],
+    near: ['If you control fewer lands than an opponent, you gain 2 life.', 'If you control more creatures than an opponent, you gain 2 life.', 'If you control fewer creatures than each opponent, you gain 2 life.'],
+  },
+  'another-player-is-opponent': {
+    def: trig([{ ev: 'damage', source: { controller: 'you' }, recipient: { player: 'opponent' } } as EventPattern], [gain(1)]), ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever a source you control deals damage to another player, you gain 1 life.', 'Whenever a source you control deals damage to an opponent, you gain 1 life.'],
+    near: ['Whenever a source you control deals damage to a player, you gain 1 life.', 'Whenever a source you control deals damage to you, you gain 1 life.'],
+  },
+  'spell-or-ability-causes-shuffle': {
+    def: trig([{ ev: 'action', verb: 'shuffle', actor: 'any' } as EventPattern], [gain(1)]), ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever a spell or ability causes a player to shuffle their library, you gain 1 life.', 'Whenever a player shuffles their library, you gain 1 life.'],
+    near: ['Whenever a spell or ability causes an opponent to shuffle their library, you gain 1 life.', 'Whenever a spell causes a player to shuffle their library, you gain 1 life.', 'Whenever a spell or ability causes a player to shuffle their graveyard, you gain 1 life.'],
+  },
+  'create-and-those-tokens-gain': {
+    def: spell([
+      { op: 'createToken', who: you, count: 2, token: { colors: ['B'], types: ['Creature'], subtypes: ['Goblin', 'Rogue'], power: 1, toughness: 1 }, as: 'token' } as EffectStep,
+      effectStep([{ s: 'continuous', affects: bound('token'), mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'haste', text: 'haste' }] }] } as StaticEffect], { d: 'endOfTurn' }),
+    ]),
+    readings: ['Create two 1/1 black Goblin Rogue creature tokens, and those tokens gain haste until end of turn.', 'Create two 1/1 black Goblin Rogue creature tokens. They gain haste until end of turn.'],
+    near: ['Create two 1/1 black Goblin Rogue creature tokens, and those tokens gain flying until end of turn.', 'Create three 1/1 black Goblin Rogue creature tokens, and those tokens gain haste until end of turn.', 'Create two 1/1 black Goblin Rogue creature tokens, and those tokens gain haste until your next turn.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-25 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['less-life-than-opponent', 'fewer-than-opponent', 'another-player-is-opponent', 'spell-or-ability-causes-shuffle', 'create-and-those-tokens-gain']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-26 (Commander EDHREC ranks 21,001-21,500): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'group-cant-be-targeted-by-spells': {
+    def: statics([{ s: 'restrict', subject: { ref: 'each', filter: { types: ['Artifact'] } }, mode: 'cant', action: 'beTargeted', other: { stackKind: 'spell' } } as unknown as StaticEffect]),
+    readings: ["Artifacts can't be the targets of spells.", "All artifacts can't be the target of spells."],
+    near: ["Artifacts can't be the targets of spells or abilities.", "Artifacts you control can't be the targets of spells.", "Artifacts can't be the targets of abilities."],
+  },
+  'choose-type-destroy-all': {
+    def: spell([
+      { op: 'chooseValue', who: you, what: 'creatureType', as: 'chosenCreatureType', link: 'chosenCreatureType' },
+      { op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'], chosen: { link: 'chosenCreatureType', quality: 'creatureType' } } } },
+    ] as unknown as EffectStep[]),
+    readings: ['Choose a creature type. Destroy all creatures of the chosen type.', 'Destroy all creatures of the creature type of your choice.'],
+    near: ['Choose a creature type. Destroy all creatures of the chosen type. Draw a card.', 'Destroy all lands of the creature type of your choice.', 'Destroy target creature of the creature type of your choice.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-26 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['group-cant-be-targeted-by-spells', 'choose-type-destroy-all']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-28 (Commander lane edh-c, EDHREC ranks 22,001-22,500): the readings of its two families
+Object.assign(EXAMPLES, {
+  'control-either-description': {
+    def: { kind: 'static', text: '', effects: [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: '7c', power: 1, toughness: 1 }] }], condition: {
+      cond: 'any', of: [
+        { cond: 'exists', of: { ref: 'each', filter: { controller: 'you', other: true, subtypes: ['Merfolk'] } } },
+        { cond: 'exists', of: { ref: 'each', filter: { controller: 'you', subtypes: ['Island'] } } },
+      ],
+    } } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ['Test Card gets +1/+1 as long as you control another Merfolk or an Island.', 'Test Card gets +1/+1 as long as you control another Merfolk or you control an Island.'],
+    near: ['Test Card gets +1/+1 as long as you control another Merfolk and an Island.', 'Test Card gets +1/+1 as long as you control a Merfolk or an Island.'],
+  },
+  'damage-exile-library-possessive': {
+    def: statics([{ s: 'replace', replaces: { ev: 'damage', recipient: { player: 'any' } }, body: { b: 'instead', do: [{ op: 'move', to: { zone: 'exile' }, what: { ref: 'topCards', player: { ref: 'event', role: 'recipient' }, count: { q: 'eventAmount' } } }] } } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ["If damage would be dealt to a player, that player exiles that many cards from the top of their library instead.", "If damage would be dealt to a player, that player exiles that many cards from the top of that player's library instead."],
+    near: ["If damage would be dealt to a player, that player exiles that many cards from the bottom of their library instead.", "If combat damage would be dealt to a player, that player exiles that many cards from the top of their library instead."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-28 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['control-either-description', 'damage-exile-library-possessive']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-64 (Commander EDHREC ranks 20,501-21,000, second pass): the readings of its families (invented wordings, design 6.10; CR 601.2i, 603.2c, 406.1, 121.1)
+Object.assign(EXAMPLES, {
+  'cast-spell-or-spell-bare': {
+    def: trig([{ ev: 'cast', player: 'you', spell: { anyOf: [{ subtypes: ['Elf'] }, { types: ['Creature'], keyword: 'flying' }] } } as EventPattern], [gain(1)]), ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever you cast an Elf spell or a creature spell with flying, you gain 1 life.', 'Whenever you cast an Elf spell or creature spell with flying, you gain 1 life.'],
+    near: ['Whenever you cast an Elf spell and creature spell with flying, you gain 1 life.', 'Whenever you cast an Elf spell or creature spell with reach, you gain 1 life.', 'Whenever an opponent casts an Elf spell or creature spell with flying, you gain 1 life.'],
+  },
+  'cards-put-into-exile-anywhere': {
+    def: trig([{ ev: 'zoneChange', subject: { isCard: true }, to: 'exile' } as EventPattern], [gain(1)], { batch: true }), ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever one or more cards are put into exile from anywhere, you gain 1 life.', 'Whenever one or more cards are put into exile, you gain 1 life.'],
+    near: ['Whenever one or more cards are put into exile from your graveyard, you gain 1 life.', 'Whenever one or more cards are put into a graveyard, you gain 1 life.', 'Whenever one or more creature cards are put into exile, you gain 1 life.'],
+  },
+  'draw-another-additional': {
+    def: trig([enters], [draw(1), draw(1)]), ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['When this creature enters, draw a card. Draw another card.', 'When this creature enters, draw a card. Draw an additional card.'],
+    near: ['When this creature enters, draw a card. Draw two additional cards.', 'When this creature enters, draw a card. Discard an additional card.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-64 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['cast-spell-or-spell-bare', 'cards-put-into-exile-anywhere', 'draw-another-additional']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-c-54 (Commander lane edh-c, ranks 18,001-18,500, third pass): three families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'attacking-nonwhite-order': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'], attacking: true, notColors: ['W'] } } } as EffectStep]),
+    readings: ['Destroy all attacking nonwhite creatures.', 'Destroy all nonwhite attacking creatures.'],
+    near: ['Destroy all attacking white creatures.', 'Destroy all nonwhite creatures.', 'Destroy all attacking nonblack creatures.'],
+  },
+  'neither-own-nor-control': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { types: ['Creature'], owner: 'opponent', controller: 'opponent' } }], steps: [{ op: 'destroy', what: { ref: 'target', id: 't0' } }] } } as AbilityDef,
+    readings: ['Destroy target creature you neither own nor control.'],
+    near: ['Destroy target creature you own but don\'t control.', 'Destroy target creature an opponent controls.', 'Destroy target creature you don\'t control.'],
+  },
+  'choose-up-to-where-x': {
+    def: spell([
+      { op: 'chooseObjects', who: { ref: 'you' }, from: { ref: 'each', filter: { types: ['Creature'], zone: 'graveyard', owner: 'you', isCard: true } }, min: 0, max: { q: 'colorsSpent' }, as: 'b0' } as EffectStep,
+      { op: 'move', what: { ref: 'bound', name: 'b0' }, to: { zone: 'hand' } } as EffectStep,
+    ]),
+    readings: ['Return up to X creature cards from your graveyard to your hand, where X is the number of colors of mana spent to cast ~.', 'Return up to the number of colors of mana spent to cast ~ creature cards from your graveyard to your hand.'],
+    near: ['Return up to X creature cards from your graveyard to your hand, where X is the number of lands you control.', 'Return up to X creature cards from your graveyard to your hand.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-54 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['attacking-nonwhite-order', 'neither-own-nor-control', 'choose-up-to-where-x']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-65 (Commander lane edh-c, ranks 21,001-21,500, second pass): three families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'destroy-all-except-self': {
+    def: rx30Def('Creature — Human', '{2}{W}{W}, {T}, Discard two cards: Destroy all creatures except for ~. Those creatures can\'t be regenerated.'),
+    ctx: creature,
+    readings: ['{2}{W}{W}, {T}, Discard two cards: Destroy all creatures except for ~. Those creatures can\'t be regenerated.', '{2}{W}{W}, {T}, Discard two cards: Destroy all creatures except ~. Those creatures can\'t be regenerated.', '{2}{W}{W}, {T}, Discard two cards: Destroy all other creatures. They can\'t be regenerated.'],
+    near: ['{2}{W}{W}, {T}, Discard two cards: Destroy all creatures except for ~. Those lands can\'t be regenerated.', '{2}{W}{W}, {T}, Discard two cards: Destroy all creatures except for target creature. Those creatures can\'t be regenerated.', '{2}{W}{W}, {T}, Discard two cards: Destroy all artifacts except for ~. Those creatures can\'t be regenerated.'],
+  },
+  'still-land-aura-creature': {
+    def: rx30Def('Enchantment — Aura', 'Enchanted artifact is an Elemental creature with base power and toughness 4/4 in addition to its other types.'),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment', 'Aura'] },
+    readings: ['Enchanted artifact is an Elemental creature with base power and toughness 4/4 in addition to its other types.', "Enchanted land is a 4/4 Elemental creature. It's still a land."],
+    near: ["Enchanted land is a 5/5 Elemental creature. It's still a land.", 'Enchanted land is a 4/4 Elemental creature.', "Enchanted land is a 4/4 Elemental creature. It's still a creature."],
+  },
+  'more-creatures-than-defending-player': {
+    def: rx30Def('Creature — Goblin', '~ can\'t attack unless you control more creatures than defending player.'),
+    ctx: creature,
+    readings: ['~ can\'t attack unless you control more creatures than defending player.', '~ can\'t attack unless you control more creatures than the defending player.'],
+    near: ['~ can\'t attack unless you control more lands than defending player.', '~ can\'t attack unless you control fewer creatures than defending player.', '~ can\'t attack unless you control more creatures than an opponent.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-65 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['destroy-all-except-self', 'still-land-aura-creature', 'more-creatures-than-defending-player']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-next-19 (Commander lane edh-next, ranks 11,251-12,500, fourth pass): invented wordings (design 6.10)
+Object.assign(EXAMPLES, {
+  'another-player-loses-the-game': {
+    def: rx30Def('Creature — Human', 'Whenever an opponent loses the game, draw a card.'),
+    ctx: creature,
+    readings: ['Whenever an opponent loses the game, draw a card.', 'Whenever another player loses the game, draw a card.'],
+    near: ['Whenever you lose the game, draw a card.', 'Whenever a player loses the game, draw a card.'],
+  },
+  'cant-gain-life-rest-of-game': {
+    def: rx30Def('Instant', "Target player can't gain life for the rest of the game."),
+    ctx: instant,
+    readings: ["Target player can't gain life for the rest of the game."],
+    near: ["Target player can't gain life this turn.", "Target player can't lose life for the rest of the game."],
+  },
+  'control-and-haste-you': {
+    def: rx30Def('Instant', 'Until end of turn, you gain control of target creature and it gains haste.'),
+    ctx: instant,
+    readings: ['Until end of turn, you gain control of target creature and it gains haste.', 'Until end of turn, gain control of target creature and it gains haste.'],
+    near: ['Until end of turn, you gain control of target creature and it gains flying.', 'Until end of turn, target creature gains control of you and it gains haste.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-19 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['another-player-loses-the-game', 'control-and-haste-you', 'cant-gain-life-rest-of-game']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-85 (Commander lane edh-c, EDHREC ranks 15,501-16,000, later pass): one family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'destroyed-under-your-control': {
+    def: { kind: 'static', text: '', zone: ['stack'], effects: [{ s: 'alternativeCost', name: 'alternative', cost: { mana: [{ kind: 'colored', color: 'G' }] }, when: { cond: 'happened', event: { ev: 'action', verb: 'destroy', object: { notTypes: ['Artifact'], controller: 'you' }, by: 'opponent' }, scope: 'turn' } }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ["If a nonartifact permanent under your control was destroyed this turn by a spell or ability an opponent controlled, you may pay {G} rather than pay this spell's mana cost.", "If a nonartifact permanent you control was destroyed this turn by a spell or ability an opponent controlled, you may pay {G} rather than pay this spell's mana cost."],
+    near: ["If a nonartifact permanent under your control was destroyed this turn by a spell or ability you controlled, you may pay {G} rather than pay this spell's mana cost.", "If a nonartifact permanent an opponent controls was destroyed this turn by a spell or ability an opponent controlled, you may pay {G} rather than pay this spell's mana cost.", "If a nonartifact permanent under your control was exiled this turn by a spell or ability an opponent controlled, you may pay {G} rather than pay this spell's mana cost."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-85 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['destroyed-under-your-control']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-97 (coordinator C, ranks 20,001-20,500, third pass): the two families of render/fold-edhv97.ts
+const C97_HAND: Quantity = { q: 'zoneSize', zone: 'hand', of: you } as Quantity;
+Object.assign(EXAMPLES, {
+  'where-x-then-damage-x': {
+    def: spell([
+      { op: 'createToken', who: you, count: 1, token: { colors: ['B'], types: ['Creature'], subtypes: ['Horror'], power: C97_HAND, toughness: C97_HAND }, as: 'token' } as unknown as EffectStep,
+      { op: 'damage', source: bound('token'), to: you, amount: C97_HAND } as unknown as EffectStep,
+    ]),
+    readings: ['Create an X/X black Horror creature token, where X is the number of cards in your hand. It deals X damage to you.'],
+    near: ['Create an X/X black Horror creature token, where X is the number of cards in your hand. It deals 2 damage to you.', 'Create an X/X black Horror creature token, where X is the number of cards in your hand. It deals X damage to target player.', 'Create an X/X black Horror creature token, where X is the number of creatures you control. It deals X damage to you.'],
+  },
+  'reveal-hit-shuffle-rest': {
+    def: spell([
+      { op: 'revealUntil', who: you, filter: { types: ['Land'] }, as: 'hit', revealed: 'revealed' } as unknown as EffectStep,
+      { op: 'move', what: bound('hit'), to: { zone: 'battlefield', controller: you } } as unknown as EffectStep,
+      { op: 'shuffle', who: you } as unknown as EffectStep,
+    ]),
+    readings: ['Reveal cards from the top of your library until you reveal a land card. Put that card onto the battlefield and shuffle all other cards revealed this way into your library.'],
+    near: ['Reveal cards from the top of your library until you reveal a land card. Put that card into your hand and shuffle all other cards revealed this way into your library.', 'Reveal cards from the top of your library until you reveal a land card. Put that card onto the battlefield and shuffle all other cards revealed this way into your graveyard.'],
+  },
+} satisfies Record<string, Example>);
+// edh-c-51 (Commander effort, coordinator C, EDHREC ranks 23,501-24,000): the readings of its five families (render/equivalence.ts)
+const C51_BLOCK_PAIR: EffectStep = { op: 'destroy', what: { ref: 'union', of: [{ ref: 'event', role: 'blocker' }, { ref: 'event', role: 'attacker' }] } } as unknown as EffectStep;
+const C51_UNTAP = (): EffectStep => effectStep([{ s: 'restrict', subject: { ref: 'each', filter: { types: ['Creature'], controller: t('t0') } }, mode: 'cant', action: 'untapDuringUntapStep' } as unknown as StaticEffect], { d: 'throughNextUntap', whose: t('t0') });
+const C51_NO_TARGET = (colors: string[]): StaticEffect => ({ s: 'restrict', subject: { ref: 'each', filter: { controller: 'you' } }, mode: 'cant', action: 'beTargeted', other: { stackKind: 'spell', colors, controller: 'opponent' } } as unknown as StaticEffect);
+Object.assign(EXAMPLES, {
+  'damage-already-dealt-to-that-player': {
+    def: spell([{ op: 'loseLife', who: t('t0'), amount: { q: 'happenedCount', event: { ev: 'damage', recipient: { player: t('t0') } }, scope: 'turn', sum: 'amount' } } as unknown as EffectStep], [playerTarget('t0')]),
+    readings: ['Target player loses life equal to the damage dealt to them this turn.', 'Target player loses life equal to the damage already dealt to that player this turn.'],
+    near: ['Target player loses life equal to the damage already dealt to you this turn.', 'Target player loses life equal to the damage already dealt to that player.', 'Target player loses life equal to the combat damage already dealt to that player this turn.'],
+  },
+  'both-creatures-block': {
+    def: trig([{ ev: 'blocks', blocker: { self: true }, attacker: { types: ['Creature'] } } as EventPattern], [C51_BLOCK_PAIR]),
+    ctx: creature,
+    readings: ['When ~ blocks a creature, destroy both creatures.', 'When ~ blocks a creature, destroy it and that creature.'],
+    near: ['When ~ blocks a creature, destroy all creatures.', 'When ~ blocks a creature, destroy that creature.', 'When ~ blocks a creature, destroy it.'],
+  },
+  'untap-step-first': {
+    def: spell([C51_UNTAP()], [playerTarget('t0')]),
+    readings: ["Creatures target player controls don't untap during that player's next untap step.", "During that player's next untap step, creatures they control don't untap."],
+    near: ["Creatures target player controls don't untap during that player's untap step.", "During that player's next untap step, creatures they control untap."],
+  },
+  'targets-plural-colored': {
+    def: spell([effectStep([C51_NO_TARGET(['U', 'B'])], { d: 'endOfTurn' })]),
+    readings: ["Permanents you control can't be the target of blue or black spells your opponents control this turn.", "Permanents you control can't be the targets of blue or black spells your opponents control this turn."],
+    near: ["Permanents you control can't be the targets of blue or black spells you control this turn.", "Permanents you control can't be the targets of blue spells your opponents control this turn."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-51 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['damage-already-dealt-to-that-player', 'both-creatures-block', 'untap-step-first', 'targets-plural-colored']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-c-63 (Commander lane edh-c, ranks 24,501-25,000): five families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'returned-to-players-hand': {
+    def: rx30Def('Creature — Human', 'Whenever a permanent is returned to a player\'s hand, draw a card.'),
+    ctx: creature,
+    readings: ['Whenever a permanent is returned to a player\'s hand, draw a card.', 'Whenever a permanent is returned to its owner\'s hand, draw a card.'],
+    near: ['Whenever a permanent is returned to your hand, draw a card.', 'Whenever a permanent is returned to an opponent\'s hand, draw a card.', 'Whenever a permanent is returned to a player\'s library, draw a card.'],
+  },
+  'returned-to-your-hand': {
+    def: rx30Def('Creature — Human', 'Whenever a permanent is returned to your hand, draw a card.'),
+    ctx: creature,
+    readings: ['Whenever a permanent is returned to your hand, draw a card.', 'Whenever a permanent you own is returned to its owner\'s hand, draw a card.'],
+    near: ['Whenever a permanent is returned to a player\'s hand, draw a card.', 'Whenever a permanent is returned to an opponent\'s hand, draw a card.', 'Whenever a permanent you control is returned to your hand, draw a card.'],
+  },
+  'put-into-players-graveyard': {
+    def: rx30Def('Creature — Human', 'Whenever an artifact is put into a player\'s graveyard from the battlefield, draw a card.'),
+    ctx: creature,
+    readings: ['Whenever an artifact is put into a player\'s graveyard from the battlefield, draw a card.', 'Whenever an artifact is put into a graveyard from the battlefield, draw a card.'],
+    near: ['Whenever an artifact is put into an opponent\'s graveyard from the battlefield, draw a card.', 'Whenever an artifact is put into a player\'s graveyard from a hand, draw a card.', 'Whenever an artifact is put into a player\'s library from the battlefield, draw a card.'],
+  },
+  'owner-of-zone-change-player': {
+    def: rx30Def('Enchantment', 'Whenever a nontoken permanent is put into a player\'s graveyard from the battlefield, that player loses 1 life.'),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever a nontoken permanent is put into a player\'s graveyard from the battlefield, that player loses 1 life.', 'Whenever a nontoken permanent is put into a graveyard from the battlefield, its owner loses 1 life.'],
+    near: ['Whenever a nontoken permanent is put into a player\'s graveyard from the battlefield, that player loses 2 life.', 'Whenever a nontoken permanent is put into a player\'s graveyard from the battlefield, you lose 1 life.', 'Whenever a nontoken permanent is put into a player\'s graveyard from the battlefield, that opponent loses 1 life.'],
+  },
+  'both-gain-your-choice': {
+    def: rx30Def('Creature — Human', 'Whenever Test Card attacks, Test Card and up to one other target creature you control both gain your choice of first strike or lifelink until end of turn.'),
+    ctx: creature,
+    readings: ['Whenever ~ attacks, ~ and up to one other target creature you control both gain your choice of first strike or lifelink until end of turn.', 'Whenever ~ attacks, ~ and up to one other target creature you control gain your choice of first strike or lifelink until end of turn.'],
+    near: ['Whenever ~ attacks, ~ and up to one other target creature you control both gain your choice of first strike or flying until end of turn.', 'Whenever ~ attacks, ~ and up to one other target creature you control both gain first strike until end of turn.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-63 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['returned-to-players-hand', 'returned-to-your-hand', 'put-into-players-graveyard', 'owner-of-zone-change-player', 'both-gain-your-choice']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-c-36 (Commander EDHREC ranks 26,001-26,500): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'each-opponent-controls': {
+    def: rx30Def('Sorcery', 'Put a +1/+1 counter on each creature your opponents control.'), ctx: creature,
+    readings: ['Put a +1/+1 counter on each creature your opponents control.', 'Put a +1/+1 counter on each creature each opponent controls.', 'Put a +1/+1 counter on each creature an opponent controls.'],
+    near: ['Put a +1/+1 counter on each creature you control.', 'Put a +1/+1 counter on each creature each opponent owns.'],
+  },
+  'sole-creature-that-creature': {
+    def: rx30Def('Enchantment', 'As long as you control exactly one creature, creatures you control get +2/+2 and have vigilance.'), ctx: creature,
+    readings: ['As long as you control exactly 1 creature, creatures you control get +2/+2 and have vigilance.', 'As long as you control exactly 1 creature, that creature gets +2/+2 and has vigilance.'],
+    near: ['As long as you control exactly 1 creature, that creature gets +2/+2 and has flying.', 'As long as you control exactly 2 creatures, that creature gets +2/+2 and has vigilance.'],
+  },
+  'hand-and-graveyard-all': {
+    def: rx30Def('Sorcery', "Exile all cards from target player's hand and graveyard."), ctx: creature,
+    readings: ["Exile all cards from target player's hand and graveyard.", "Exile all cards from target player's hand or graveyard."],
+    near: ["Exile all cards from target player's hand and library.", "Exile all cards from target player's graveyard."],
+  },
+  'beneath-top-where-x': {
+    def: rx30Def('Creature — Giant', "When Test Card enters, put target creature into its owner's library just beneath the top X cards of that library, where X is the number of Plains you control."), ctx: creature,
+    readings: ["When ~ enters, put target creature into its owner's library just beneath the top X cards of that library, where X is the number of Plains you control.", "When ~ enters, put target creature into its owner's library just beneath the top the number of Plains you control cards of that library."],
+    near: ["When ~ enters, put target creature into its owner's library just beneath the top X cards of that library, where X is the number of Forests you control.", "When ~ enters, put target creature into its owner's library just beneath the top X cards of that library."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-36 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['each-opponent-controls', 'sole-creature-that-creature', 'hand-and-graveyard-all', 'beneath-top-where-x']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+describe('edh-b-12 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['for-each-of-your-opponents-who-lost-life']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-22 (Commander lane edh-next, ranks 5,751-6,500): five render families, one example each (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'enter-copy-of-entered-this-turn-a': {
+    def: statics([{ s: 'replace', replaces: enters, body: { b: 'enters', copy: { of: { enteredThisTurn: true }, optional: true } } }]),
+    ctx: creature,
+    readings: ['You may have Test Card enter as a copy of a permanent that entered this turn.', 'You may have Test Card enter as a copy of any permanent that entered this turn.'],
+    near: ['You may have Test Card enter as a copy of a creature that entered this turn.', 'You may have Test Card enter as a copy of a permanent you control that entered this turn.'],
+  },
+  'color-negation-order': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'], colors: ['G'], notSupertypes: ['Legendary'] } } } as EffectStep]),
+    readings: ['Destroy all nonlegendary green creatures.', 'Destroy all green nonlegendary creatures.'],
+    near: ['Destroy all green creatures.', 'Destroy all nonlegendary red creatures.', 'Destroy all nonlegendary creatures.'],
+  },
+  'nontoken-face-order': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'], token: false, faceDown: false } } } as EffectStep]),
+    readings: ['Destroy all face-up nontoken creatures.', 'Destroy all nontoken face-up creatures.'],
+    near: ['Destroy all face-down nontoken creatures.', 'Destroy all nontoken creatures.', 'Destroy all face-up creatures.'],
+  },
+  'players-who-control-more': {
+    def: spell([{ op: 'draw', who: { ref: 'you' }, count: { q: 'countPlayers', of: { ref: 'each', who: 'opponent' }, controlsVs: { filter: { types: ['Land'] }, op: '>', than: { ref: 'you' } } } } as EffectStep]),
+    readings: ['Draw a card for each player who controls more lands than you.', 'Draw a card for each opponent who controls more lands than you.'],
+    near: ['Draw a card for each player who controls more creatures than you.', 'Draw a card for each player who controls fewer lands than you.', 'Draw a card for each player who controls a land.'],
+  },
+  'if-first-instead-every-card': {
+    def: spell([{ op: 'look', who: { ref: 'you' }, at: { ref: 'topCards', player: { ref: 'you' }, count: 3 }, as: 'them' }, { op: 'if', cond: { cond: 'any', of: [{ cond: 'wasCast', from: 'graveyard' }, { cond: 'wasCast', from: 'exile' }, { cond: 'wasCast', from: 'library' }, { cond: 'wasCast', from: 'command' }] }, then: [{ op: 'move', what: { ref: 'each', filter: { is: { ref: 'bound', name: 'them' }, zone: 'library' } }, to: { zone: 'hand' } }], else: [{ op: 'chooseObjects', who: { ref: 'you' }, from: { ref: 'each', filter: { is: { ref: 'bound', name: 'them' }, zone: 'library' } }, min: 1, max: 1, as: 'chosen' }, { op: 'move', what: { ref: 'bound', name: 'chosen' }, to: { zone: 'hand' } }, { op: 'move', what: { ref: 'each', filter: { is: { ref: 'bound', name: 'them' }, not: { is: { ref: 'bound', name: 'chosen' } }, zone: 'library' } }, to: { zone: 'library', position: 'bottom', order: 'chosen' } }] }] as EffectStep[]),
+    readings: [
+      'Look at the top 3 cards of your library. Put 1 of those cards into your hand and the rest on the bottom of your library in any order. If Test Card was cast from anywhere other than your hand, put each of those cards into your hand instead.',
+      'Look at the top 3 cards of your library. Put 1 of those cards into your hand and the rest on the bottom of your library in any order. Put each of those cards into your hand instead if Test Card was cast from anywhere other than your hand.',
+    ],
+    near: ['Look at the top 3 cards of your library. Put 1 of those cards into your hand and the rest on the bottom of your library in any order. If Test Card was cast from anywhere other than your hand, put each of those cards into your graveyard instead.'],
+  },
+});
+describe('edh-next-22 render families: every reading is accepted and a near miss is not', () => {
+  for (const id of ['enter-copy-of-entered-this-turn-a', 'color-negation-order', 'nontoken-face-order', 'players-who-control-more', 'if-first-instead-every-card']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-58 (Commander lane edh-c, ranks 19,501-20,000): three wordings, invented (design 6.10)
+Object.assign(EXAMPLES, {
+  'shared-control-pair': {
+    def: rx30Def('Sorcery', 'Green creatures and blue creatures you control gain flying until end of turn.'),
+    ctx: instant,
+    readings: ['Green creatures and blue creatures you control gain flying until end of turn.', 'All green creatures you control and all blue creatures you control gain flying until end of turn.'],
+    near: ['Green creatures and blue creatures gain flying until end of turn.', 'Green creatures and blue creatures an opponent controls gain flying until end of turn.', 'Green creatures and blue creatures you control gain reach until end of turn.'],
+  },
+  'leading-duration-pump-choice': {
+    def: rx30Def('Creature — Human', '{1}: Until end of turn, Test Card gets +1/+1 and gains your choice of flying, reach, trample, or haste.'),
+    ctx: creature,
+    readings: ['{1}: Until end of turn, ~ gets +1/+1 and gains your choice of flying, reach, trample, or haste.', '{1}: ~ gets +1/+1 and gains your choice of flying, reach, trample, or haste until end of turn.'],
+    near: ['{1}: Until end of turn, ~ gets +1/+1 and gains flying, reach, trample, or haste.', '{1}: Until end of turn, ~ gets +2/+1 and gains your choice of flying, reach, trample, or haste.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-58 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['shared-control-pair', 'leading-duration-pump-choice']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+  it('base-pt-x-over-x: the duration before the where clause is accepted', () => {
+    const def = rx30Def('Sorcery', 'Creatures you control have base power and toughness X/X until end of turn, where X is the number of lands you control.');
+    accepts(def, 'Creatures you control have base power and toughness X/X until end of turn, where X is the number of lands you control.', instant);
+    rejects(def, 'Creatures you control have base power and toughness X/X until end of turn, where X is the number of creatures you control.', instant);
+  });
+});
+// edh-c-39 (Commander lane edh-c, ranks 27,501-28,000): the families of render/equivalence.ts it added
+Object.assign(EXAMPLES, {
+  'life-x-plus-n': {
+    def: xp2Def('Instant', 'You gain X plus 3 life.', '{X}{W}'),
+    readings: ['You gain X plus 3 life.', 'You gain life equal to X plus 3.'],
+    near: ['You gain X plus 4 life.', 'You gain X life.'],
+  },
+  'exists-has-counter': {
+    def: xp2Def('Creature — Test', 'As long as a creature has a -1/-1 counter on it, Test Card has vigilance.'),
+    ctx: creature,
+    readings: ['As long as a creature has a -1/-1 counter on it, Test Card has vigilance.', 'As long as any player controls a creature with a -1/-1 counter on it, Test Card has vigilance.'],
+    near: ['As long as a creature has a +1/+1 counter on it, Test Card has vigilance.', 'As long as a creature you control has a -1/-1 counter on it, Test Card has vigilance.'],
+  },
+  'put-their-graveyard': {
+    def: xp2Def('Instant', "Look at the top card of target player's library. You may put that card into their graveyard."),
+    readings: ["Look at the top card of target player's library. You may put that card into their graveyard.", "Look at the top card of target player's library. You may put that card into your graveyard."],
+    near: ["Look at the top card of target player's library. You may put that card into their hand.", "Look at the top card of target opponent's library. You may put that card into their graveyard."],
+  },
+  'may-then-have': {
+    def: xp2Def('Sorcery', "Look at the top five cards of target player's library. You may then have that player shuffle that library."),
+    readings: ["Look at the top five cards of target player's library. You may then have that player shuffle that library.", "Look at the top five cards of target player's library. You may have that player shuffle."],
+    near: ["Look at the top five cards of target player's library. You may then shuffle that library.", "Look at the top four cards of target player's library. You may then have that player shuffle that library."],
+  },
+  'shuffle-that-library': {
+    def: xp2Def('Sorcery', "Look at the top five cards of target player's library. You may then have that player shuffle that library."),
+    readings: ["Look at the top five cards of target player's library. You may then have that player shuffle that library.", "Look at the top five cards of target player's library. You may then have that player shuffle their library."],
+    near: ["Look at the top five cards of target player's library. You may then have that player shuffle their hand.", "Look at the top five cards of target opponent's library. You may then have that player shuffle that library."],
+  },
+  'bottom-of-that-players-library': {
+    def: xp2Def('Instant', "Look at the top card of target player's library. You may put that card on the bottom of that player's library."),
+    readings: ["Look at the top card of target player's library. You may put that card on the bottom of that player's library.", "Look at the top card of target player's library. You may put it on the bottom of that player's library."],
+    near: ["Look at the top card of target player's library. You may put that card on top of that player's library.", "Look at the top card of target opponent's library. You may put that card on the bottom of that player's library."],
+  },
+  'damage-trailing-if': {
+    def: xp2Def('Sorcery', 'Test Card deals 5 damage to each creature without flying if there are seven or more cards in your graveyard.'),
+    readings: ['Test Card deals 5 damage to each creature without flying if there are seven or more cards in your graveyard.', 'If there are seven or more cards in your graveyard, Test Card deals 5 damage to each creature without flying.'],
+    near: ['Test Card deals 5 damage to each creature without flying if there are eight or more cards in your graveyard.', 'Test Card deals 5 damage to each creature if there are seven or more cards in your graveyard.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-39 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['life-x-plus-n', 'exists-has-counter', 'put-their-graveyard', 'may-then-have', 'shuffle-that-library', 'bottom-of-that-players-library', 'damage-trailing-if']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-27 (Commander lane edh-next; CR 106.1b, 107.3, 119.3, 122.1, 208.1, 701.17a, 603.12): invented wordings (design 6.10)
+Object.assign(EXAMPLES, {
+  'that-much-mana-combination': {
+    def: spell([{ op: 'addMana', who: { ref: 'you' }, dynamic: { kind: 'anyColor', count: { q: 'eventAmount' }, from: ['R', 'G'] } } as unknown as EffectStep]),
+    readings: ['Add that much mana in any combination of {R} and/or {G}.', 'Add X mana in any combination of {R} and/or {G}, where X is that much.'],
+    near: ['Add that much mana in any combination of colors.', 'Add that much mana in any combination of {R} and/or {W}.'],
+  },
+  'mill-n-times-x': {
+    def: spell([{ op: 'mill', who: { ref: 'you' }, count: { q: 'math', op: '*', args: [3, { q: 'X' }] } } as unknown as EffectStep]),
+    readings: ['Mill three times X cards.', 'Mill cards equal to 3 times X.'],
+    near: ['Mill two times X cards.', 'Mill four times X cards.'],
+  },
+  'counters-equal-life-gained': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, filter: { types: ['Creature'], controller: 'you' } }], steps: [{ op: 'putCounters', on: { ref: 'target', id: 't0' }, kind: '+1/+1', count: { q: 'lifeGainedThisTurn' } }] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['Put a number of +1/+1 counters on target creature you control equal to the amount of life you gained this turn.', 'Put X +1/+1 counters on target creature you control, where X is the amount of life you gained this turn.'],
+    near: ['Put a number of +1/+1 counters on target creature you control equal to the amount of life you lost this turn.', 'Put a number of -1/-1 counters on target creature you control equal to the amount of life you gained this turn.'],
+  },
+  'target-toughness-where-x': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, filter: { types: ['Creature'], toughness: { op: '<=', value: { q: 'count', of: { ref: 'each', filter: { subtypes: ['Shrine'], controller: 'you' } } } } } }], steps: [{ op: 'destroy', what: { ref: 'target', id: 't0' } }] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['Destroy target creature with toughness X or less, where X is the number of Shrines you control.', 'Destroy target creature with toughness less than or equal to the number of Shrines you control.'],
+    near: ['Destroy target creature with toughness X or more, where X is the number of Shrines you control.', 'Destroy target creature with power X or less, where X is the number of Shrines you control.', 'Destroy target creature with toughness X or less, where X is the number of Elves you control.'],
+  },
+} satisfies Record<string, Example>);
+// edh-c-46 (G6): the readings of three new families
+Object.assign(EXAMPLES, {
+  // CR 614.10, 121.3: Possessed Portal
+  'that-player-skips-that-draw': {
+    def: {"effects": [{"body": {"b": "skip"}, "replaces": {"ev": "draw", "player": "any"}, "s": "replace"}], "kind": "static", "text": ""} as unknown as AbilityDef,
+    ctx: creature,
+    readings: ['If a player would draw a card, skip that draw instead.', 'If a player would draw a card, that player skips that draw instead.'],
+    near: ['If a player would draw a card, that player loses 2 life instead.', 'If an opponent would draw a card, that player skips that draw instead.'],
+  },
+  // CR 608.2c, 701.9a: Skull Rend
+  'those-players-each-discard-random': {
+    def: {"effect": {"steps": [{"amount": 2, "op": "damage", "source": {"ref": "self"}, "to": {"ref": "each", "who": "opponent"}}, {"count": 2, "mode": "random", "op": "discard", "who": {"ref": "each", "who": "opponent"}}], "targets": []}, "kind": "spell", "text": ""} as unknown as AbilityDef,
+    ctx: creature,
+    readings: ['Test Card deals 2 damage to each opponent. Each opponent discards 2 cards at random.', 'Test Card deals 2 damage to each opponent. Those players each discard 2 cards at random.'],
+    near: ['Test Card deals 2 damage to each opponent. Those players each discard 3 cards at random.', 'Test Card deals 2 damage to each player. Those players each discard 2 cards at random.'],
+  },
+  // CR 611.2c, 502.3: Spore Cloud
+  'each-attacking-and-blocking-singular': {
+    def: {"kind": "spell", "text": "", "effect": {"targets": [], "steps": [{"duration": {"d": "throughNextUntap"}, "effects": [{"action": "untapDuringUntapStep", "mode": "cant", "s": "restrict", "subject": {"filter": {"anyOf": [{"attacking": true}, {"blocking": true}], "types": ["Creature"]}, "ref": "each"}}], "op": "effect"}]}} as unknown as AbilityDef,
+    ctx: creature,
+    readings: ["Each attacking creature and each blocking creature doesn't untap during its controller's next untap step.", "All attacking or blocking creatures don't untap during their controller's next untap step."],
+    near: ["Each attacking creature and each tapped creature doesn't untap during its controller's next untap step.", "Each attacking creature and each blocking creature doesn't untap during your next untap step."],
+  },
+} satisfies Record<string, Example>);
+// edh-c-61 (Commander lane edh-c, ranks 25,501-26,000, second pass): families of its wordings (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'dealt-damage-participle': {
+    def: spell([{ op: 'damage', source: { ref: 'self' }, to: { ref: 'each', filter: { types: ['Creature'], dealtDamageThisTurn: true } }, amount: 2 } as EffectStep]),
+    ctx: unknown,
+    readings: ['Test Card deals 2 damage to each creature that was dealt damage this turn.', 'Test Card deals 2 damage to each creature that has been dealt damage this turn.', 'Test Card deals 2 damage to each creature dealt damage this turn.'],
+    near: ['Test Card deals 2 damage to each creature that dealt damage this turn.', "Test Card deals 2 damage to each creature that wasn't dealt damage this turn.", 'Test Card deals 2 damage to each creature dealt damage last turn.'],
+  },
+  'put-into-your-graveyard-history-cards': {
+    def: spell([{ op: 'move', what: { ref: 'each', filter: { types: ['Creature'], zone: 'graveyard', owner: 'you', putThereThisTurn: true, putThereFrom: 'battlefield', isCard: true } }, to: { zone: 'hand' } } as EffectStep]),
+    ctx: unknown,
+    readings: ['Return all creature cards in your graveyard that were put there from the battlefield this turn to your hand.', 'Return all creature cards that were put into your graveyard from the battlefield this turn to your hand.'],
+    near: ['Return all creature cards that were put into your graveyard from your library this turn to your hand.', "Return all creature cards that were put into an opponent's graveyard from the battlefield this turn to your hand."],
+  },
+  'damage-x-plus-where-x': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'] } }, as: 'd' } as EffectStep, { op: 'damage', source: { ref: 'self' }, to: you, amount: { q: 'math', op: '+', args: [{ q: 'resultCount', step: 'd' }, 3] } } as EffectStep]),
+    ctx: unknown,
+    readings: ['Destroy all creatures. Test Card deals damage to you equal to the number of creatures destroyed this way plus 3.', 'Destroy all creatures. Test Card deals X plus 3 damage to you, where X is the number of creatures destroyed this way.'],
+    near: ['Destroy all creatures. Test Card deals X plus 4 damage to you, where X is the number of creatures destroyed this way.', 'Destroy all creatures. Test Card deals X plus 3 damage to you, where X is the number of creatures exiled this way.'],
+  },
+} satisfies Record<string, Example>);
+// edh-c-71 (Commander lane edh-c, EDHREC ranks 28,501-29,000, second pass): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'attack-with-source-and-another': {
+    def: rx30Def('Creature — Warrior', 'Whenever Test Card and at least one other Warrior attack, put a +1/+1 counter on Test Card.'), ctx: creature,
+    readings: ['Whenever ~ and at least one other Warrior attack, put a +1/+1 counter on ~.', 'Whenever you attack with ~ and another Warrior, put a +1/+1 counter on ~.', 'Whenever ~ and at least one Warrior attack, put a +1/+1 counter on ~.' /* edh-next-76 */],
+    near: ['Whenever ~ and at least one Goblin attack, put a +1/+1 counter on ~.' /* edh-next-76 */, 'Whenever ~ and at least one other Goblin attack, put a +1/+1 counter on ~.', 'Whenever you attack with ~ and another Goblin, put a +1/+1 counter on ~.', 'Whenever ~ and at least one other Warrior block, put a +1/+1 counter on ~.'],
+  },
+  'prevent-two-groups-would-deal': {
+    def: rx30Def('Instant', 'Prevent all combat damage blue creatures and black creatures would deal this turn.'),
+    readings: ['Prevent all combat damage blue creatures and black creatures would deal this turn.'],
+    near: ['Prevent all damage blue creatures and black creatures would deal this turn.', 'Prevent all combat damage blue creatures and red creatures would deal this turn.', 'Prevent all combat damage blue creatures or black creatures would deal this turn.'],
+  },
+  'stat-of-the-creature-tapped-this-way': {
+    def: rx30Def('Creature — Vehicle', 'Tap an untapped creature you control: This creature gets +X/+0 until end of turn, where X is the power of the creature tapped this way.'), ctx: creature,
+    readings: ['Tap an untapped creature you control: ~ gets +X/+0 until end of turn, where X is the power of the creature tapped this way.', 'Tap an untapped creature you control: ~ gets +X/+0 until end of turn, where X is the power of the tapped creature.'],
+    near: ['Tap an untapped creature you control: ~ gets +X/+0 until end of turn, where X is the toughness of the creature tapped this way.', 'Tap an untapped creature you control: ~ gets +X/+0 until end of turn, where X is the power of the creature sacrificed this way.'],
+  },
+  'choose-color-destroy-all': {
+    def: rx30Def('Sorcery', 'Destroy all enchantments of the color of your choice.'),
+    readings: ['Destroy all enchantments of the color of your choice.', 'Choose a color. Destroy all enchantments of the chosen color.'],
+    near: ['Destroy all creatures of the color of your choice.', 'Choose a color. Destroy all creatures of the chosen color.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-71 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['attack-with-source-and-another', 'choose-color-destroy-all', 'prevent-two-groups-would-deal', 'stat-of-the-creature-tapped-this-way']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-77 (Commander lane edh-c, EDHREC ranks 23,501-24,000, third pass): the readings of its two families
+Object.assign(EXAMPLES, {
+  'it-attacked-or-blocked': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { types: ['Creature'] } }], steps: [{ op: 'move', what: { ref: 'target', id: 't0' }, to: { zone: 'exile' }, guard: { cond: 'any', of: [
+      { cond: 'happened', event: { ev: 'attacks', attacker: { is: { ref: 'target', id: 't0' } } }, scope: 'turn' },
+      { cond: 'happened', event: { ev: 'blocks', blocker: { is: { ref: 'target', id: 't0' } } }, scope: 'turn' },
+    ] } }] } } as unknown as AbilityDef,
+    readings: ['Exile target creature if it attacked or blocked this turn.'],
+    near: ['Exile target creature if it attacked this turn.', 'Exile target creature if it blocked this turn.', 'Exile target creature if it attacked and blocked this turn.'],
+  },
+  'with-a-kicker-ability': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { types: ['Creature'], zone: 'graveyard', owner: 'you', isCard: true, keyword: ['kicker', 'multikicker'] } }], steps: [{ op: 'move', what: { ref: 'target', id: 't0' }, to: { zone: 'hand' } }] } } as unknown as AbilityDef,
+    readings: ['Return target creature card with a kicker ability from your graveyard to your hand.'],
+    near: ['Return target creature card with kicker from your graveyard to your hand.', 'Return target creature card with a cycling ability from your graveyard to your hand.', 'Return target creature card with multikicker from your graveyard to your hand.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-77 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['it-attacked-or-blocked', 'with-a-kicker-ability']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-72 (Commander lane edh-c, EDHREC ranks 26,501-27,000): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'attached-cant-target-spells-and-be-enchanted': {
+    def: statics([
+      { s: 'restrict', subject: { ref: 'attachedTo' }, mode: 'cant', action: 'beTargeted', other: { stackKind: 'spell' } } as StaticEffect,
+      { s: 'restrict', subject: { ref: 'attachedTo' }, mode: 'cant', action: 'beEnchanted', other: { subtypes: ['Aura'], other: true } } as StaticEffect,
+    ]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment', 'Aura'] },
+    readings: ["Enchanted permanent can't be the target of spells and can't be enchanted by other Auras.", "Enchanted permanent can't be the target of spells. It can't be enchanted by other Auras."],
+    near: ["Enchanted permanent can't be the target of spells and can't be enchanted by Auras.", "Enchanted permanent can't be the target of abilities and can't be enchanted by other Auras.", "Enchanted permanent can't be the target of spells and can't be equipped by other Auras."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-72 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['attached-cant-target-spells-and-be-enchanted']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-69 (Commander lane edh-c, ranks 28,001-28,500, second pass): three families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'you-both-own-and-control': {
+    def: spell([{ op: 'move', what: t('t0'), to: { zone: 'hand' } } as EffectStep], [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { owner: 'you', controller: 'you' } }]),
+    readings: ['Return target permanent you own and control to your hand.', 'Return target permanent you both own and control to your hand.'],
+    near: ['Return target permanent you own to your hand.', 'Return target permanent you control to your hand.'],
+  },
+  'attacking-or-blocking-color-first': {
+    def: spell([{ op: 'move', what: t('t0'), to: { zone: 'exile' } } as EffectStep], [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { anyOf: [{ attacking: true }, { blocking: true }], colors: ['W'], types: ['Creature'] } }]),
+    readings: ["Exile target attacking or blocking white creature.", "Exile target white creature that's attacking or blocking.", 'Exile target white creature that is attacking or blocking.'],
+    near: ["Exile target attacking white creature.", "Exile target white creature that's attacking.", "Exile target attacking or blocking creature.", "Exile target attacking or blocking black creature."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-69 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['you-both-own-and-control', 'attacking-or-blocking-color-first']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-c-79 (Commander lane edh-c; invented wordings, design 6.10): render/steps-life.ts (+1 alt site: remove a counter for each; the 'additional' reading joins an existing alt group)
+Object.assign(EXAMPLES, {
+  'damage-additional': {
+    def: spell([{ op: 'damage', source: { ref: 'self' }, to: { ref: 'each', filter: { types: ['Creature'], keyword: 'flying' } }, amount: 2, also: [{ to: { ref: 'each', filter: { types: ['Creature'], colors: ['U'] } }, amount: 1 }] } as EffectStep]),
+    readings: ['Test Card deals 2 damage to each creature with flying and 1 damage to each blue creature.', 'Test Card deals 2 damage to each creature with flying and 1 additional damage to each blue creature.'],
+    near: ['Test Card deals 2 damage to each creature with flying and 2 additional damage to each blue creature.', 'Test Card deals 2 damage to each creature with flying and 1 additional damage to each blue permanent.'],
+  },
+  'counter-remove-count': {
+    def: spell([{ op: 'removeCounters', from: { ref: 'self' }, kind: '+1/+1', count: { q: 'count', of: { ref: 'each', filter: { zone: 'hand', owner: 'you', isCard: true } } } } as EffectStep]),
+    readings: ['Remove a number of +1/+1 counters equal to the number of cards in your hand from Test Card.', 'Remove a +1/+1 counter from Test Card for each card in your hand.'],
+    near: ['Remove a +1/+1 counter from Test Card for each creature you control.', 'Remove a -1/-1 counter from Test Card for each card in your hand.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-79 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['damage-additional', 'counter-remove-count']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-80 (Commander EDHREC ranks 21,001-21,500, third pass): the readings of its one family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'half-return-chosen-player': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { types: ['Land'], controller: { ref: 'target', id: 't0' } } }, min: { q: 'math', op: 'ceilDiv', args: [{ q: 'count', of: { ref: 'each', filter: { types: ['Land'], controller: { ref: 'target', id: 't0' } } } }, 2] }, max: { q: 'math', op: 'ceilDiv', args: [{ q: 'count', of: { ref: 'each', filter: { types: ['Land'], controller: { ref: 'target', id: 't0' } } } }, 2] }, as: 'b0' },
+      { op: 'move', what: { ref: 'bound', name: 'b0' }, to: { zone: 'hand' } },
+    ] as unknown as EffectStep[], [{ id: 't0', kind: 'player', min: 1, max: 1, text: 'target player', players: { who: 'any' } }]),
+    readings: ["Choose target player. Return half the lands they control to their owner's hand, rounded up.", "Choose target player. Return half the lands that player controls to their owner's hand, rounded up."],
+    near: ["Choose target player. Return half the lands they control to their owner's hand, rounded down.", "Choose target player. Return half the creatures they control to their owner's hand, rounded up.", "Choose target player. Return half the lands they control to their owner's hand."],
+  },
+  'exiled-with-it-or-name': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', from: 'battlefield', subject: { self: true } }] }, effect: { targets: [], steps: [{ op: 'move', what: { ref: 'each', filter: { is: { ref: 'linked', link: 'exiled' }, zone: 'any', isCard: true } }, to: { zone: 'battlefield', controller: 'owner' } }] } } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ['When Test Card leaves the battlefield, each player returns to the battlefield all cards they own exiled with it.', 'When Test Card leaves the battlefield, each player returns to the battlefield all cards they own exiled with Test Card.'],
+    near: ['When Test Card leaves the battlefield, each player returns to the battlefield all cards you own exiled with it.', 'When Test Card leaves the battlefield, each player returns to their hand all cards they own exiled with it.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-80 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['half-return-chosen-player', 'exiled-with-it-or-name']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-57 (Commander EDHREC ranks 21,501-22,000, second pass): the readings of its families (invented wordings, design 6.10); np.ts +1, steps-flow.ts +1 (and a reading added to the attached-creature group of stat.ts)
+Object.assign(EXAMPLES, {
+  'enchanted-wall': {
+    def: rx30Def('Enchantment — Aura', "Enchanted Wall can attack as though it didn't have defender."), ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ["Enchanted Wall can attack as though it didn't have defender.", "Enchanted creature can attack as though it didn't have defender."],
+    near: ["Enchanted Wall can block as though it didn't have defender.", "Enchanted Wall can attack as though it didn't have flying."],
+  },
+  'morph-ability-keyword': {
+    def: rx30Def('Instant', 'Turn target creature with a morph ability face down.'), ctx: creature,
+    readings: ['Turn target creature with a morph ability face down.', 'Turn target creature with morph or megamorph face down.'],
+    near: ['Turn target creature with a flying ability face down.', 'Turn target creature with a morph ability face up.'],
+  },
+  'unless-remove-counters-from-it': {
+    def: rx30Def('Creature — Warrior', "At the beginning of your end step, return Test Card to its owner's hand unless you remove two fuse counters from it."), ctx: creature,
+    readings: ["At the beginning of your end step, return ~ to its owner's hand unless you remove two fuse counters from it.", "At the beginning of your end step, return ~ to its owner's hand unless you remove two fuse counters from ~."],
+    near: ["At the beginning of your end step, return ~ to its owner's hand unless you remove three fuse counters from it.", "At the beginning of your end step, return ~ to its owner's hand if you remove two fuse counters from it."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-57 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['enchanted-wall', 'morph-ability-keyword', 'unless-remove-counters-from-it']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-73 (Commander lane edh-c, EDHREC ranks 22,501-23,000): the readings of its family
+Object.assign(EXAMPLES, {
+  'discard-equal-to-damage': {
+    def: trig([{ ev: 'damage', combat: true, recipient: { player: 'any' }, source: { self: true } } as unknown as EventPattern], [{ op: 'discard', who: { ref: 'event', role: 'recipient' }, count: { q: 'eventAmount' } } as unknown as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['Whenever Test Card deals combat damage to a player, that player discards that many cards.', 'Whenever Test Card deals combat damage to a player, that player discards cards equal to the damage.'],
+    near: ['Whenever Test Card deals combat damage to a player, that player discards two cards.', 'Whenever Test Card deals combat damage to a player, that player discards cards equal to the life.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-73 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['discard-equal-to-damage']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-15 (Commander lane edh-c, second pass over ranks 15,001-15,625): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'put-them-after-reveal': {
+    def: gy1Def('Sorcery', 'Look at the top five cards of your library. You may reveal any number of creature cards from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in a random order.'),
+    readings: ['Look at the top five cards of your library. You may reveal any number of creature cards from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in a random order.', 'Look at the top five cards of your library. You may reveal any number of creature cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order.'],
+    near: ['Look at the top five cards of your library. You may reveal any number of creature cards from among them and put them onto the battlefield. Put the rest on the bottom of your library in a random order.', 'Look at the top five cards of your library. You may reveal up to two creature cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order.'],
+  },
+  'dealt-this-way-tap-it': {
+    def: gy1Def('Creature — Test', '{2}, {T}: Test Card deals 1 damage to target creature. If a colorless creature is dealt damage this way, tap that creature.'),
+    ctx: creature,
+    readings: ['{2}, {T}: ~ deals 1 damage to target creature. If a colorless creature is dealt damage this way, tap that creature.', '{2}, {T}: ~ deals 1 damage to target creature. If a colorless creature is dealt damage this way, tap it.'],
+    near: ['{2}, {T}: ~ deals 1 damage to target creature. If a colorless creature is dealt damage this way, untap it.', '{2}, {T}: ~ deals 1 damage to target creature. If a colorless creature is dealt damage this way, tap each creature.'],
+  },
+  'payer-they-else': {
+    def: gy1Def('Artifact', "At the beginning of each player's upkeep, that player may pay 2 life. If they don't, they return a permanent they control to its owner's hand."),
+    readings: ["At the beginning of each player's upkeep, that player may pay 2 life. If they don't, they return a permanent they control to its owner's hand.", "At the beginning of each player's upkeep, that player may pay 2 life. If that player doesn't, that player returns a permanent that player controls to its owner's hand."],
+    near: ["At the beginning of each player's upkeep, that player may pay 2 life. If they do, they return a permanent they control to its owner's hand.", "At the beginning of each player's upkeep, that player may pay 3 life. If they don't, they return a permanent they control to its owner's hand."],
+  },
+  'batch-into-graveyards': {
+    def: gy1Def('Creature — Test', 'Whenever one or more creature cards are put into graveyards from anywhere, draw a card.'),
+    readings: ['Whenever one or more creature cards are put into graveyards from anywhere, draw a card.', 'Whenever one or more creature cards are put into a graveyard from anywhere, draw a card.'],
+    near: ['Whenever one or more creature cards are put into your graveyard from anywhere, draw a card.', 'Whenever one or more artifact cards are put into graveyards from anywhere, draw a card.'],
+  },
+  'each-of-those-untap': {
+    def: gy1Def('Creature — Test', "When Test Card enters, for each opponent, tap up to one target creature that player controls. Those creatures don't untap during their controllers' next untap steps."),
+    ctx: creature,
+    readings: ["When ~ enters, for each opponent, tap up to one target creature that player controls. Those creatures don't untap during their controllers' next untap steps.", "When ~ enters, for each opponent, tap up to one target creature that player controls. Each of those creatures doesn't untap during its controller's next untap step."],
+    near: ["When ~ enters, for each opponent, tap up to one target creature that player controls. Each of those creatures doesn't untap during your next untap step.", "When ~ enters, for each opponent, tap up to one target creature that player controls. Each of those creatures untaps during its controller's next untap step."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-15 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['put-them-after-reveal', 'dealt-this-way-tap-it', 'payer-they-else', 'batch-into-graveyards', 'each-of-those-untap']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-31 (CR 506.4, 105.2, 615.12): "target nonblack attacking creature" in either order; unpreventable damage said in one sentence
+Object.assign(EXAMPLES, {
+  'attacking-nonblack-order': {
+    def: rx30Def('Instant', 'Destroy target nonblack attacking creature.'), ctx: creature,
+    readings: ['Destroy target nonblack attacking creature.', 'Destroy target attacking nonblack creature.'],
+    near: ['Destroy target nonwhite attacking creature.', 'Destroy target nonblack blocking creature.'],
+  },
+  'damage-and-unpreventable': {
+    def: rx30Def('Sorcery', "Test Card deals 4 damage to any target. The damage can't be prevented."), ctx: creature,
+    readings: ["~ deals 4 damage to any target. The damage can't be prevented.", "~ deals 4 damage to any target and the damage can't be prevented.", "~ deals 4 damage to any target. That damage can't be prevented."],
+    near: ["~ deals 4 damage to any target and the damage can be prevented.", "~ deals 5 damage to any target and the damage can't be prevented."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-31 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['attacking-nonblack-order', 'damage-and-unpreventable']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+Object.assign(EXAMPLES, {
+  // edh-c-22: a grant to the source and an additional number of blocks said as one sentence (stat.ts)
+  'has-and-can-block-additional-number': {
+    def: { kind: 'static', text: '', effects: [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'reach', text: 'reach' }] }] }, { s: 'rule', rule: 'extraBlockers', value: 3, of: { self: true } }] } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ['This creature has reach and can block an additional three creatures each combat.', 'This creature has reach. This creature can block up to 3 additional creatures each combat.'],
+    near: ['This creature has reach and can block an additional four creatures each combat.', 'This creature has reach and can block an additional three creatures this turn.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-22 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['has-and-can-block-additional-number']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-43 (Commander EDHREC ranks 29,501-30,000): two plural groups of one noun that differ in one adjective
+Object.assign(EXAMPLES, {
+  'two-groups-and': {
+    def: t12Static(undefined, [{ s: 'continuous', affects: { ref: 'each', filter: { anyOf: [{ colors: ['G'], types: ['Creature'] }, { colors: ['W'], types: ['Creature'] }], zone: 'any' } }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'protection', quality: 'subtype:gorgons', text: 'protection from Gorgons' }] }] } as StaticEffect]),
+    ctx: creature,
+    readings: ['Green creatures and white creatures have protection from Gorgons.', 'All green or white creatures have protection from Gorgons.'],
+    near: ['Green creatures and white lands have protection from Gorgons.', 'Green creatures and blue creatures have protection from Gorgons.', 'Green creatures and white creatures have protection from Giants.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-43 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['two-groups-and']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-38 (Commander lane edh-c): mods.ts +1 (color-after-pump), steps-lasting.ts +1 (manifest-top-n)
+Object.assign(EXAMPLES, {
+  'color-after-pump': {
+    def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 5, colors: { set: ['B'] } }, { layer: '7c', power: 3, toughness: 1 }] }]),
+    readings: ['Enchanted creature gets +3/+1 and is black.', 'Enchanted creature is black and gets +3/+1.'],
+    near: ['Enchanted creature gets +3/+1 and is red.', 'Enchanted creature gets +3/+1 and is black until end of turn.'],
+  },
+  'manifest-top-n': {
+    def: spell([{ op: 'action', action: 'manifest', who: you, n: 2 } as EffectStep]),
+    readings: ['Manifest the top two cards of your library.', 'Manifest the top card of your library twice.'],
+    near: ['Manifest the top three cards of your library.', 'Manifest the top two cards of target player\'s library.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-38 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['color-after-pump', 'manifest-top-n']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-42 (CR 614.12a, 702.38a, 614.1a, 107.1a): the permanent that enters after the reveal of its replacement; the rounding of halved damage said before the recipient
+Object.assign(EXAMPLES, {
+  'enters-reveal-then-it': {
+    def: rx30Def('Artifact Creature — Construct', 'As Test Card enters, you may reveal any number of other artifact cards from your hand. It enters with a +1/+1 counter on it for each card revealed this way.'), ctx: creature,
+    readings: ['As ~ enters, you may reveal any number of other artifact cards from your hand. It enters with a +1/+1 counter on it for each card revealed this way.', 'As ~ enters, you may reveal any number of other artifact cards from your hand. ~ enters with a +1/+1 counter on it for each card revealed this way.'],
+    near: ['As ~ enters, you may reveal any number of other artifact cards from your hand. It enters with two +1/+1 counters on it for each card revealed this way.', 'As ~ enters, you may reveal up to three other artifact cards from your hand. It enters with a +1/+1 counter on it for each card revealed this way.'],
+  },
+  'half-damage-rounding-place': {
+    def: rx30Def('Creature — Spirit', 'If a source would deal damage to a permanent or player, it deals half that damage, rounded down, to that permanent or player instead.'), ctx: creature,
+    readings: ['If a source would deal damage to a permanent or player, it deals half that damage, rounded down, to that permanent or player instead.', 'If a source would deal damage to a permanent or player, it deals half that much damage, rounded down instead.'],
+    near: ['If a source would deal damage to a permanent or player, it deals half that damage, rounded up, to that permanent or player instead.', 'If a source would deal damage to a permanent or player, it deals double that damage, rounded down, to that permanent or player instead.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-42 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['enters-reveal-then-it', 'half-damage-rounding-place']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-23 (Commander EDHREC ranks 7,251-8,000): two plural groups of one card type that differ in the subtype, the second "other"
+Object.assign(EXAMPLES, {
+  'subtype-groups-and-other': {
+    def: t12Static(undefined, [{ s: 'continuous', affects: { ref: 'each', filter: { anyOf: [{ types: ['Creature'], subtypes: ['Saproling'] }, { types: ['Creature'], subtypes: ['Treefolk'], other: true }] } }, mods: [{ layer: '7c', power: 1, toughness: 1 }] } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ['Saproling creatures and other Treefolk creatures get +1/+1.', 'Saproling creatures or other Treefolk creatures get +1/+1.'],
+    near: ['Saproling creatures and Treefolk creatures get +1/+1.', 'Saproling creatures and other Treefolk lands get +1/+1.', 'Saproling creatures and other Elf creatures get +1/+1.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-23 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['subtype-groups-and-other']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-92 (Commander effort, coordinator C; render/fold-edhv92.ts): each opponent / each other player may return a card from their graveyard to the battlefield (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'each-other-player-may-return': {
+    def: spell([
+      { op: 'chooseObjects', who: { ref: 'iterating' }, perPlayer: { ref: 'each', who: 'opponent' }, from: { ref: 'each', filter: { anyOf: [{ types: ['Creature'] }], zone: 'graveyard', owner: { ref: 'iterating' }, isCard: true } }, min: 0, max: 1, as: 'returned' } as EffectStep,
+      { op: 'move', what: { ref: 'bound', name: 'returned' }, to: { zone: 'battlefield', controller: 'owner' } } as EffectStep,
+    ]),
+    readings: ['Each opponent may return a creature card from their graveyard to the battlefield.', 'Each other player may return a creature card from their graveyard to the battlefield.'],
+    near: ['Each opponent may return an artifact card from their graveyard to the battlefield.', 'Each player may return a creature card from their graveyard to the battlefield.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-92 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['each-other-player-may-return']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-91 (Commander EDHREC ranks 25,501-26,000, third pass): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'if-player-does-they-do': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'cast', player: 'any' }] }, effect: { targets: [], steps: [{ op: 'pay', who: { ref: 'event', role: 'player' }, cost: { mana: [{ kind: 'generic', amount: 3 }] }, then: [{ op: 'draw', who: { ref: 'event', role: 'player' }, count: 1 } as EffectStep] } as EffectStep] } } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever a player casts a spell, that player may pay {3}. If the player does, they draw a card.', 'Whenever a player casts a spell, that player may pay {3}. If that player does, that player draws a card.'],
+    near: ['Whenever a player casts a spell, that player may pay {3}. If the player does, they draw a card and you gain 2 life.', 'Whenever a player casts a spell, that player may pay {3}. If the player does, you draw a card.', 'Whenever a player casts a spell, that player may pay {3}. If the player doesn\'t, they draw a card.', 'Whenever a player casts a spell, that player may pay {2}. If the player does, they draw a card.'],
+  },
+  'kicks-a-spell': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'cast', player: 'any', spell: { kicked: true } }] }, effect: { targets: [], steps: [gain(1)] } } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Whenever a player casts a kicked spell, you gain 1 life.', 'Whenever a player kicks a spell, you gain 1 life.'],
+    near: ['Whenever you kick a spell, you gain 1 life.', 'Whenever a player casts a spell, you gain 1 life.', 'Whenever a player kicks a creature spell, you gain 1 life.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-91 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['if-player-does-they-do', 'kicks-a-spell']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-next-25 (G6): Vivien on the Hunt's wording
+Object.assign(EXAMPLES, {
+  'mill-any-number-milled-this-way': {
+    def: spell([
+      STD_TLA_MILL,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Creature'] }], is: bound('m'), zone: 'any' } }, min: 0, max: 'any', as: 'c' } as EffectStep,
+      { op: 'move', what: bound('c'), to: { zone: 'hand' } } as EffectStep,
+    ]),
+    readings: [
+      'Mill three cards, then put any number of creature cards milled this way into your hand.',
+      'Mill three cards, then put any number of creature cards from among them into your hand.',
+    ],
+    near: ['Mill three cards, then put any number of land cards milled this way into your hand.', 'Mill three cards, then put any number of creature cards milled this way onto the battlefield.', 'Mill three cards, then put each creature card milled this way into your hand.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-25 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['mill-any-number-milled-this-way']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+describe('edh-c-97 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['where-x-then-damage-x', 'reveal-hit-shuffle-rest']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-75 (Commander lane edh-c, ranks 27,501-28,000, second pass): the families of render/equivalence.ts it added
+Object.assign(EXAMPLES, {
+  'each-of-them-subject': {
+    def: xp2Def('Instant', 'Untap two target creatures. Each of them gets +1/+1 until end of turn.'),
+    readings: ['Untap two target creatures. Each of them gets +1/+1 until end of turn.', 'Untap two target creatures. They each get +1/+1 until end of turn.', 'Untap two target creatures. Each of those creatures gets +1/+1 until end of turn.'],
+    near: ['Untap two target creatures. Each of them gets +2/+2 until end of turn.', 'Untap two target creatures. Each of them gets +1/+1.', 'Untap two target creatures. Each of them gets -1/-1 until end of turn.'],
+  },
+  'chosen-opponent-that-player': {
+    def: xp2Def('Creature — Test', 'As Test Card enters, choose an opponent. Test Card enters with a -1/-1 counter on it for each creature that player controls.'),
+    readings: ['As Test Card enters, choose an opponent. Test Card enters with a -1/-1 counter on it for each creature that player controls.', 'As Test Card enters, choose an opponent. Test Card enters with a -1/-1 counter on it for each creature the chosen player controls.'],
+    near: ['As Test Card enters, choose an opponent. Test Card enters with a -1/-1 counter on it for each creature you control.', 'As Test Card enters, choose an opponent. Test Card enters with a +1/+1 counter on it for each creature that player controls.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-75 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['each-of-them-subject', 'chosen-opponent-that-player']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+Object.assign(EXAMPLES, {
+  // edh-c-21: several cards put on top are in their owner's order (fold.ts); a keyword ability named with the noun (np.ts)
+  'any-order-implied': {
+    def: spell([
+      { op: 'search', who: you, zone: 'library', filter: { subtypes: ['Wizard'] }, min: 0, max: 'any', reveal: true, as: 's' } as EffectStep,
+      { op: 'shuffle', who: you } as EffectStep,
+      { op: 'move', what: { ref: 'bound', name: 's' }, to: { zone: 'library', position: 'top', order: 'chosen' } } as EffectStep,
+    ]),
+    readings: ['Search your library for any number of Wizard cards, reveal them, then shuffle and put them on top.', 'Search your library for any number of Wizard cards, reveal them, then shuffle and put them on top in any order.'],
+    near: ['Search your library for any number of Wizard cards, reveal them, then shuffle and put them on the bottom.', 'Search your library for any number of Wizard cards, reveal them, then put them on top.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-21 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['any-order-implied']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-108 (Commander lane edh-c): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  // edh-c-108 (Mind Carver: any condition under the always-on change; Genju of the Cedars: the Aura that returns from the graveyard)
+  'attached-instead-as-long-as': {
+    def: { kind: 'static', text: '', condition: { cond: 'compare', left: { q: 'countPlayers', of: { ref: 'each', who: 'opponent' }, sizeIs: { zone: 'graveyard', op: '>=', n: 8 } }, op: '>=', right: 1 }, effects: [{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: '7c', power: 3, toughness: 1 }] }], otherwise: [{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: '7c', power: 1, toughness: 0 }] }] } as unknown as AbilityDef,
+    readings: ['Equipped creature gets +1/+0. It gets +3/+1 instead as long as an opponent has eight or more cards in their graveyard.', 'As long as an opponent has eight or more cards in their graveyard, equipped creature gets +3/+1. Otherwise, it gets +1/+0.'],
+    near: ['Equipped creature gets +1/+0. It gets +3/+1 instead as long as an opponent has seven or more cards in their graveyard.', 'Equipped creature gets +1/+0. It gets +3/+1 as long as an opponent has eight or more cards in their graveyard.'],
+  },
+  'aura-returns-from-graveyard': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { subtypes: ['Forest'], attachedToSource: true }, from: 'battlefield', to: 'graveyard' }] }, effect: { targets: [], steps: [{ op: 'may', who: you, do: [{ op: 'move', what: { ref: 'self', moved: true }, to: { zone: 'hand' } }] } as EffectStep] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment', 'Aura'] },
+    readings: ['When enchanted Forest is put into a graveyard, you may return this card from your graveyard to your hand.', 'Whenever enchanted Forest dies, you may return ~ to its owner\'s hand.'],
+    near: ['When enchanted Forest is put into a graveyard, you may return this card from your library to your hand.', 'When enchanted Forest is put into a graveyard, you may return this card from your graveyard to the battlefield.'],
+  },
+});
+
+// edh-c-99 (Commander lane edh-c, ranks 29,501-30,000, fourth pass): one family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'their-graveyard-owner': {
+    def: {
+      kind: 'spell', text: '',
+      effect: {
+        targets: [{ id: 't0', kind: 'player', min: 1, max: 1, text: 'target player' }],
+        steps: [
+          { op: 'look', who: { ref: 'you' }, at: { ref: 'topCards', player: { ref: 'target', id: 't0' }, count: 3 }, as: 'b0' },
+          { op: 'chooseObjects', who: { ref: 'you' }, from: { ref: 'each', filter: { is: { ref: 'bound', name: 'b0' }, zone: 'library' } }, min: 1, max: 1, as: 'b1' },
+          { op: 'move', what: { ref: 'bound', name: 'b1' }, to: { zone: 'graveyard' } },
+        ],
+      },
+    } as unknown as AbilityDef,
+    readings: ["Look at the top three cards of target player's library. Put one of them into their graveyard."],
+    near: ["Look at the top three cards of target player's library. Put one of them into their hand.", "Look at the top three cards of target player's library. Put two of them into their graveyard."],
+  },
+  'destroy-and-no-regen': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'] } }, regeneration: 'cant' } as EffectStep]),
+    readings: ["Destroy all creatures. They can't be regenerated.", "Destroy all creatures and they can't be regenerated."],
+    near: ["Destroy all creatures. They can be regenerated.", "Destroy all creatures and they can't be blocked."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-99 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['their-graveyard-owner', 'destroy-and-no-regen']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-c-87 (Commander lane edh-c, EDHREC ranks 26,001-26,500, third pass): one family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'extreme-implicit-set': {
+    def: spell([{ op: 'destroy', what: t('c') }], [{ id: 'c', kind: 'object', min: 1, max: 1, text: 'target nonland permanent with the lowest mana value', filter: { notTypes: ['Land'], manaValue: { op: '<=', value: { q: 'stat', stat: 'manaValue', of: { ref: 'each', filter: { notTypes: ['Land'] } }, agg: 'min' } } } } as TargetSpec]),
+    readings: ['Destroy target nonland permanent with the lowest mana value.'],
+    near: ['Destroy target nonland permanent with the highest mana value.', 'Destroy target permanent with the lowest mana value.', 'Destroy target nonland permanent with the lowest power.'],
+  },
+  'damage-already-dealt': {
+    def: spell([{ op: 'damage', source: self, to: t('c'), amount: { q: 'happenedCount', event: { ev: 'damage', recipient: { object: { is: t('c') } } }, scope: 'turn', sum: 'amount' } } as unknown as EffectStep], [objTarget('c')]),
+    readings: ['Test Card deals damage to target creature equal to the damage already dealt to it this turn.'],
+    near: ['Test Card deals damage to target creature equal to the damage already dealt to you this turn.', 'Test Card deals damage to target creature equal to the damage already dealt to it.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-87 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['extreme-implicit-set', 'damage-already-dealt']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-27 (Commander EDHREC ranks 21,501-22,000): the readings of its families (invented wordings, design 6.10); np.ts +1, qty.ts +1, steps-zones.ts +1, mods.ts +1
+Object.assign(EXAMPLES, {
+  'colors-that-are-and-or': {
+    def: rx30Def('Sorcery', 'Creatures that are red and/or blue get -2/-2 until end of turn.'), ctx: creature,
+    readings: ['Creatures that are red and/or blue get -2/-2 until end of turn.', 'Creatures that are red or blue get -2/-2 until end of turn.'],
+    near: ['Creatures that are red and blue get -2/-2 until end of turn.', 'Creatures that are red and/or green get -2/-2 until end of turn.'],
+  },
+  'spent-to-cast-this-spell': {
+    def: rx30Def('Sorcery', 'Create a 1/1 colorless Thopter artifact creature token with flying for each color of mana spent to cast this spell.'), ctx: creature,
+    readings: ['Create a 1/1 colorless Thopter artifact creature token with flying for each color of mana spent to cast this spell.', 'Create a 1/1 colorless Thopter artifact creature token with flying for each color of mana spent to cast ~.'],
+    near: ['Create a 1/1 colorless Thopter artifact creature token with flying for each color of mana spent to cast that spell.', 'Create a 1/1 colorless Thopter artifact creature token with flying for each mana spent to cast this spell.'],
+  },
+  'all-on-the-battlefield': {
+    def: rx30Def('Creature — Knight', 'When Test Card enters, attach all Equipment on the battlefield to it.'), ctx: creature,
+    readings: ['When ~ enters, attach all Equipment on the battlefield to it.', 'When ~ enters, attach all Equipment to it.'],
+    near: ['When ~ enters, attach all Equipment you control to it.', 'When ~ enters, attach all Auras on the battlefield to it.'],
+  },
+  'color-and-creature-types-static': {
+    def: rx30Def('Enchantment', 'All Elves are red and are Wizards in addition to their other creature types.'), ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['All Elves are red and are Wizards in addition to their other creature types.', 'All Elves are red Wizards.'],
+    near: ['All Elves are red and are Wizards.', 'All Elves are red and are Wizards in addition to their other colors.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-27 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['colors-that-are-and-or', 'spent-to-cast-this-spell', 'all-on-the-battlefield', 'color-and-creature-types-static']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+
+
+// edh-c-104 (CR 400.1, 404.1, 406.1, 608.2c; Soulquake, Specter's Shriek, Charmed Griffin): the render alts of the round, with invented wordings (design 6.10)
+Object.assign(EXAMPLES, {
+  'owner-exiles-chosen-hand-card': {
+    def: xp2Def('Sorcery', 'Target opponent reveals their hand. You may choose a nonland card from it. If you do, that player exiles that card.', '{1}{B}'),
+    readings: ['Target opponent reveals their hand. You may choose a nonland card from it. If you do, that player exiles that card.', 'Target opponent reveals their hand. You may choose a nonland card from it. If you do, exile that card.'],
+    near: ['Target opponent reveals their hand. You may choose a nonland card from it. If you do, that player discards that card.', 'Target opponent reveals their hand. You may choose a land card from it. If you do, that player exiles that card.'],
+  },
+  'union-creatures-battlefield-graveyards': {
+    def: xp2Def('Sorcery', "Return all creatures on the battlefield and all creature cards in graveyards to their owners' hands.", '{3}{B}'),
+    readings: ["Return all creatures on the battlefield and all creature cards in graveyards to their owners' hands.", "Return all creatures and all creature cards in graveyards to their owners' hands."],
+    near: ["Return all creatures on the battlefield and all creature cards in your graveyard to their owners' hands.", "Return all creatures and all artifact cards in graveyards to their owners' hands."],
+  },
+  'put-onto-battlefield-from-hand-order': {
+    def: spell([
+      { op: 'chooseObjects', who: { ref: 'iterating' }, perPlayer: { ref: 'each', who: 'opponent' }, from: { ref: 'each', filter: { anyOf: [{ types: ['Artifact'] }], zone: 'hand', owner: { ref: 'iterating' }, isCard: true } }, min: 0, max: 1, as: 'put' } as EffectStep,
+      { op: 'move', what: { ref: 'bound', name: 'put' }, to: { zone: 'battlefield', controller: 'owner' } } as EffectStep,
+    ]),
+    readings: ['Each opponent may put an artifact card from their hand onto the battlefield.', 'Each opponent may put an artifact card onto the battlefield from their hand.', 'Each other player may put an artifact card onto the battlefield from their hand.'],
+    near: ['Each opponent may put an artifact card onto the battlefield from your hand.', 'Each opponent may put a creature card onto the battlefield from their hand.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-c-98 (Commander EDHREC ranks 28,001-28,500, third pass): the readings of its seven families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'that-player-defending': {
+    def: rx30Def('Creature — Human', "Whenever Test Card attacks, defending player may pay {4}. If that player doesn't, Test Card can't be blocked this turn."), ctx: creature,
+    readings: ["Whenever ~ attacks, defending player may pay {4}. If that player doesn't, ~ can't be blocked this turn.", "Whenever ~ attacks, defending player may pay {4}. If defending player doesn't, ~ can't be blocked this turn."],
+    near: ["Whenever ~ attacks, defending player may pay {4}. If that player does, ~ can't be blocked this turn.", "Whenever ~ attacks, defending player may pay {3}. If that player doesn't, ~ can't be blocked this turn."],
+  },
+  'unless-pays-leading': {
+    def: rx30Def('Creature — Human', '{T}: Unless an opponent pays {2}, gain control of target artifact for as long as Test Card remains on the battlefield.'), ctx: creature,
+    readings: ['{T}: Unless an opponent pays {2}, gain control of target artifact for as long as ~ remains on the battlefield.', '{T}: Gain control of target artifact for as long as ~ remains on the battlefield unless an opponent pays {2}.'],
+    near: ['{T}: Unless an opponent pays {3}, gain control of target artifact for as long as ~ remains on the battlefield.', '{T}: Unless you pay {2}, gain control of target artifact for as long as ~ remains on the battlefield.'],
+  },
+  'it-after-may-exile-self': {
+    def: rx30Def('Creature — Spirit', "Whenever you cast a Spirit spell, you may exile Test Card. If you do, return it to the battlefield under its owner's control at the beginning of the next end step."), ctx: creature,
+    readings: ["Whenever you cast a Spirit spell, you may exile ~. If you do, return it to the battlefield under its owner's control at the beginning of the next end step.", "Whenever you cast a Spirit spell, you may exile ~. If you do, return that card to the battlefield under its owner's control at the beginning of the next end step."],
+    near: ["Whenever you cast a Spirit spell, you may exile ~. If you do, return it to the battlefield under your control at the beginning of the next end step.", "Whenever you cast a Spirit spell, you may exile ~. If you do, return it to the battlefield under its owner's control at the beginning of your next end step."],
+  },
+  'that-creature-after-type-guard': {
+    def: rx30Def('Enchantment', "At the beginning of your upkeep, reveal the top card of your library. If it's a creature card, put it onto the battlefield. That creature gains haste until end of turn."), ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ["At the beginning of your upkeep, reveal the top card of your library. If it's a creature card, put it onto the battlefield. That creature gains haste until end of turn.", "At the beginning of your upkeep, reveal the top card of your library. If it's a creature card, put it onto the battlefield. It gains haste until end of turn."],
+    near: ["At the beginning of your upkeep, reveal the top card of your library. If it's a creature card, put it onto the battlefield. That artifact gains haste until end of turn.", "At the beginning of your upkeep, reveal the top card of your library. If it's a creature card, put it onto the battlefield. That creature gains flying until end of turn."],
+  },
+  'discard-any-number-description': {
+    def: rx30Def('Creature — Human', 'When Test Card enters, discard any number of creature cards. You gain 2 life for each card discarded this way.'), ctx: creature,
+    readings: ['When ~ enters, discard any number of creature cards. You gain 2 life for each card discarded this way.'],
+    near: ['When ~ enters, discard any number of land cards. You gain 2 life for each card discarded this way.', 'When ~ enters, discard any number of creature cards. You gain 3 life for each card discarded this way.'],
+  },
+  'counters-for-each-lead': {
+    def: rx30Def('Creature — Human', 'When Test Card enters, discard a card. For each card discarded this way, put two +1/+1 counters on Test Card.'), ctx: creature,
+    readings: ['When ~ enters, discard a card. For each card discarded this way, put two +1/+1 counters on ~.', 'When ~ enters, discard a card. Put two +1/+1 counters on ~ for each card discarded this way.'],
+    near: ['When ~ enters, discard a card. For each card discarded this way, put three +1/+1 counters on ~.', 'When ~ enters, discard a card. For each card discarded this way, put two -1/-1 counters on ~.'],
+  },
+  'has-same-name-card-graveyard': {
+    def: rx30Def('Artifact', '{T}: Reveal the top card of your library. If it has the same name as a card in your graveyard, put it into your graveyard. Otherwise, draw a card.'), ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['{T}: Reveal the top card of your library. If it has the same name as a card in your graveyard, put it into your graveyard. Otherwise, draw a card.'],
+    near: ['{T}: Reveal the top card of your library. If it has the same name as a card in your hand, put it into your graveyard. Otherwise, draw a card.', '{T}: Reveal the top card of your library. If it has the same name as a card in your graveyard, put it into your hand. Otherwise, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-98 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['that-player-defending', 'unless-pays-leading', 'it-after-may-exile-self', 'that-creature-after-type-guard', 'discard-any-number-description', 'counters-for-each-lead', 'has-same-name-card-graveyard']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-94 (Commander lane edh-c, ranks 26,501-27,000, third pass): four families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'untap-lock-all-bare': {
+    def: rx30Def('Instant', "Creatures don't untap during target player's next untap step."),
+    ctx: instant,
+    readings: ["Creatures don't untap during target player's next untap step.", "All creatures don't untap during target player's next untap step."],
+    near: ["Creatures don't untap during target player's untap step.", "Lands don't untap during target player's next untap step.", "Creatures target player controls don't untap during that player's next untap step."],
+  },
+  'adamant-same-color-self': {
+    def: rx30Def('Artifact Creature — Golem', 'If at least three mana of the same color was spent to cast ~, ~ enters with a +1/+1 counter on it.'),
+    ctx: creature,
+    readings: ['If at least three mana of the same color was spent to cast ~, ~ enters with a +1/+1 counter on it.', 'If at least three mana of the same color was spent to cast it, ~ enters with a +1/+1 counter on it.'],
+    near: ['If at least two mana of the same color was spent to cast ~, ~ enters with a +1/+1 counter on it.', 'If at least three mana of different colors was spent to cast ~, ~ enters with a +1/+1 counter on it.', 'If at least three mana of the same color was spent to cast ~, ~ enters with two +1/+1 counters on it.'],
+  },
+  'source-you-control-deals-to-opponents': {
+    def: rx30Def('Creature — Elemental', 'Whenever a source you control deals noncombat damage to one or more of your opponents during your turn, draw a card.'),
+    ctx: creature,
+    readings: ['Whenever a source you control deals noncombat damage to one or more of your opponents during your turn, draw a card.', 'Whenever one or more permanents you control deal noncombat damage to one or more of your opponents during your turn, draw a card.'],
+    near: ['Whenever a source you control deals combat damage to one or more of your opponents during your turn, draw a card.', 'Whenever a source you control deals noncombat damage to one or more of your opponents, draw a card.', 'Whenever a source you control deals noncombat damage to one or more creatures during your turn, draw a card.'],
+  },
+  'it-didnt-attack-this-turn': {
+    def: rx30Def('Enchantment — Aura', "Enchant creature\nAt the beginning of the end step of enchanted creature's controller, destroy that creature if it didn't attack this turn."),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment', 'Aura'] },
+    readings: ["At the beginning of the end step of enchanted creature's controller, destroy that creature if it didn't attack this turn.", "At the beginning of the end step of enchanted creature's controller, destroy it if it did not attack this turn."],
+    near: ["At the beginning of the end step of enchanted creature's controller, destroy that creature if it attacked this turn.", "At the beginning of the end step of enchanted creature's controller, destroy that creature if it didn't block this turn."],
+  },
+  'self-isnt-enchanted': {
+    def: rx30Def('Creature — Wizard', "{U}{U}: Draw a card. Activate only if ~ isn't enchanted."),
+    ctx: creature,
+    readings: ["{U}{U}: Draw a card. Activate only if ~ isn't enchanted.", '{U}{U}: Draw a card. Activate only if ~ is not enchanted.'],
+    near: ['{U}{U}: Draw a card. Activate only if ~ is enchanted.', "{U}{U}: Draw a card. Activate only if ~ isn't equipped."],
+  },
+  'alone-unless-self-counter': {
+    def: rx30Def('Legendary Creature — Human Rebel', "~ can't attack alone unless ~ has a +1/+1 counter on ~."),
+    ctx: creature,
+    readings: ["~ can't attack alone unless ~ has a +1/+1 counter on ~.", "~ can't attack alone unless ~ has a +1/+1 counter on it."],
+    near: ["~ can't attack alone unless ~ has a -1/-1 counter on ~.", "~ can't block alone unless ~ has a +1/+1 counter on ~.", "~ can't attack alone."],
+  },
+  'block-an-additional-for-each': {
+    def: rx30Def('Creature — Cat Soldier', '~ can block an additional creature each combat for each Aura attached to ~.'),
+    ctx: creature,
+    readings: ['~ can block an additional creature each combat for each Aura attached to ~.', '~ can block up to the number of Auras attached to ~ additional creatures each combat.'],
+    near: ['~ can block an additional creature each combat for each Aura you control.', '~ can block two additional creatures each combat for each Aura attached to ~.', '~ can block an additional creature each combat.'],
+  },
+  'additional-pump-spell-grant': {
+    def: rx30Def('Sorcery', 'Citizens you control get an additional +1/+1 and gain vigilance until end of turn.'),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: ['Citizens you control get an additional +1/+1 and gain vigilance until end of turn.', 'Citizens you control get +1/+1 and gain vigilance until end of turn.'],
+    near: ['Citizens you control get an additional +1/+2 and gain vigilance until end of turn.', 'Citizens you control get an additional +1/+1 and gain flying until end of turn.', 'Citizens you control get an additional +1/+1 and lose vigilance until end of turn.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-94 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['untap-lock-all-bare', 'adamant-same-color-self', 'source-you-control-deals-to-opponents', 'additional-pump-spell-grant', 'it-didnt-attack-this-turn', 'self-isnt-enchanted', 'alone-unless-self-counter', 'block-an-additional-for-each']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-26 (render/np.ts): the two families of the round
+Object.assign(EXAMPLES, {
+  'enchanted-by-an-aura-plural': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { zone: 'battlefield', types: ['Creature'], enchantedBy: 'you' } } } as EffectStep]),
+    readings: ['Destroy all creatures that are enchanted by Auras you control.', 'Destroy all creatures that are enchanted by an Aura you control.'],
+    near: ['Destroy all creatures that are enchanted by an Aura an opponent controls.', 'Destroy all creatures that are enchanted by Auras.'],
+  },
+  'permanent-thats-types': {
+    def: spell([{ op: 'destroy', what: { ref: 'target', id: 't0' } } as EffectStep], [{ id: 't0', kind: 'object', min: 1, max: 1, text: '', filter: { zone: 'battlefield', supertypes: ['Legendary'], types: ['Artifact', 'Creature', 'Enchantment'] } } as unknown as TargetSpec]),
+    readings: ['Destroy target legendary artifact, creature, or enchantment.', "Destroy target legendary permanent that's an artifact, creature, or enchantment."],
+    near: ["Destroy target legendary permanent that's an artifact or creature.", "Destroy target nonlegendary permanent that's an artifact, creature, or enchantment.", "Destroy target legendary permanent that's an artifact, creature, or land."],
+  },
+});
+describe('edh-c-46 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['that-player-skips-that-draw', 'those-players-each-discard-random', 'each-attacking-and-blocking-singular']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-c-100 (Commander EDHREC ranks 23,501-24,000, fourth pass): the readings of its families (invented wordings, design 6.10)
+const V100_MILL: EffectStep = { op: 'mill', who: t('p'), count: 4, as: 'm' } as EffectStep;
+Object.assign(EXAMPLES, {
+  'put-into-their-graveyard-this-way': {
+    def: spell([V100_MILL, { op: 'draw', who: you, count: { q: 'resultCount', step: 'm', which: { types: ['Creature'], isCard: true } } } as EffectStep], [playerTarget('p')]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['Target player mills four cards. Draw a card for each creature card put into a graveyard this way.', 'Target player mills four cards. Draw a card for each creature card put into their graveyard this way.'],
+    near: ['Target player mills four cards. Draw a card for each creature card put into your graveyard this way.', 'Target player mills four cards. Draw a card for each creature card put into exile this way.'],
+  },
+  'greatest-among-two-sets': {
+    def: { kind: 'static', text: '', effects: [{ s: 'continuous', cda: true, affects: { ref: 'self' }, mods: [{ layer: '7a', power: { q: 'stat', stat: 'manaValue', of: { ref: 'each', filter: { anyOf: [{ types: ['Artifact'], controller: 'you' }, { types: ['Artifact'], zone: 'graveyard', owner: 'you', isCard: true }], zone: ['battlefield', 'graveyard'] } }, agg: 'max' } }] }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ["~'s power is equal to the greatest mana value among artifacts you control and artifact cards in your graveyard.", "Test Card's power is equal to the greatest mana value among artifacts you control and artifact cards in your graveyard."],
+    near: ["~'s power is equal to the greatest mana value among artifacts you control or artifact cards in your graveyard.", "~'s toughness is equal to the greatest mana value among artifacts you control and artifact cards in your graveyard.", "~'s power is equal to the greatest mana value among artifacts you control and artifact cards in a graveyard."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-c-100 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['put-into-their-graveyard-this-way', 'greatest-among-two-sets']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-1 (render families cast-free-if-able, opponent-activates-they-control, choose-at-random-before-zone; templates of parser/templates/zz-cloud/edh-d-1.json)
+Object.assign(EXAMPLES, {
+  // CR 608.2g, 601.2, 118.9: Omen Machine
+  'cast-free-if-able': {
+    def: {"effect":{"steps":[{"as":"b0","op":"move","to":{"zone":"exile"},"what":{"count":1,"player":{"ref":"event","role":"player"},"ref":"topCards"}},{"cond":{"cond":"matches","filter":{"isCard":true,"types":["Land"]},"object":{"name":"b0","ref":"bound"}},"else":[{"free":true,"op":"cast","what":{"name":"b0","ref":"bound"},"who":{"ref":"event","role":"player"}}],"op":"if","then":[{"op":"move","to":{"controller":{"ref":"event","role":"player"},"zone":"battlefield"},"what":{"name":"b0","ref":"bound"}}]}],"targets":[]},"kind":"triggered","trigger":{"on":[{"ev":"step","step":"draw"}]},"text":""} as unknown as AbilityDef,
+    ctx: creature,
+    readings: ["At the beginning of each player's draw step, that player exiles the top card of their library. If it's a land card, the player puts it onto the battlefield. Otherwise, the player casts it without paying its mana cost if able.", "At the beginning of each player's draw step, that player exiles the top card of their library. If it's a land card, the player puts it onto the battlefield. Otherwise, the player casts it without paying its mana cost."],
+    near: ["At the beginning of each player's draw step, that player exiles the top card of their library. If it's a land card, the player puts it onto the battlefield. Otherwise, the player may cast it without paying its mana cost if able.", "At the beginning of each player's draw step, that player exiles the top card of their library. If it's a land card, the player puts it onto the battlefield. Otherwise, the player casts it if able."],
+  },
+  // CR 602.2, 603.2, 605.1a: Avalanche of Sector 7
+  'opponent-activates-they-control': {
+    def: {"effect":{"steps":[{"amount":1,"op":"damage","source":{"ref":"self"},"to":{"ref":"event","role":"player"}}],"targets":[]},"kind":"triggered","trigger":{"on":[{"ev":"activate","manaAbility":false,"player":"opponent","source":{"controller":"opponent","types":["Artifact"]}},{"ev":"activate","manaAbility":true,"player":"opponent","source":{"controller":"opponent","types":["Artifact"]}}]},"text":""} as unknown as AbilityDef,
+    ctx: creature,
+    readings: ["Whenever an opponent activates an ability of an artifact they control, this creature deals 1 damage to that player.", "Whenever an opponent activates an ability of an artifact an opponent controls, this creature deals 1 damage to that player."],
+    near: ["Whenever an opponent activates an ability of an artifact you control, this creature deals 1 damage to that player.", "Whenever an opponent activates an ability of an artifact they control, this creature deals 2 damage to that player."],
+  },
+  // CR 608.2d, 700.2: Tariel, Reckoner of Souls
+  'choose-at-random-before-zone': {
+    def: {"cost":{"tap":true},"effect":{"steps":[{"as":"b0","from":{"filter":{"isCard":true,"owner":{"id":"t0","ref":"target"},"types":["Creature"],"zone":"graveyard"},"ref":"each"},"max":1,"min":1,"op":"chooseObjects","random":true,"who":{"ref":"you"}},{"op":"move","to":{"controller":{"ref":"you"},"zone":"battlefield"},"what":{"name":"b0","ref":"bound"}}],"targets":[{"id":"t0","kind":"player","max":1,"min":1,"players":{"who":"opponent"}}]},"kind":"activated","text":""} as unknown as AbilityDef,
+    ctx: creature,
+    readings: ["{T}: Choose a creature card at random from target opponent's graveyard. Put that card onto the battlefield under your control.", "{T}: Choose a creature card from target opponent's graveyard at random. Put that card onto the battlefield under your control."],
+    near: ["{T}: Choose a creature card at random from target opponent's hand. Put that card onto the battlefield under your control.", "{T}: Choose a creature card at random from target opponent's graveyard. Put that card onto the battlefield under their control."],
+  },
+});
+describe('edh-d-1 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['cast-free-if-able', 'opponent-activates-they-control', 'choose-at-random-before-zone']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-34 (Commander EDHREC ranks 15,001-16,250): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'graveyard-exile-that-card': {
+    def: statics([{ s: 'replace', replaces: { ev: 'zoneChange', subject: { isCard: true, owner: 'you' }, to: 'graveyard' }, body: { b: 'modify', destination: { zone: 'exile' } } } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['If a card would be put into your graveyard from anywhere, exile that card instead.', 'If a card would be put into your graveyard from anywhere, exile it instead.'],
+    near: ['If a card would be put into an opponent\'s graveyard from anywhere, exile that card instead.', 'If a card would be put into your graveyard from anywhere, put that card into your hand instead.'],
+  },
+  'linked-put-one-owned-hand': {
+    def: spell([{ op: 'chooseObjects', who: you, from: { ref: 'each', filter: { is: { ref: 'linked', link: 'exiled' }, zone: 'any', isCard: true, owner: 'you' } }, min: 1, max: 1, as: 'back' } as EffectStep, { op: 'move', what: bound('back'), to: { zone: 'hand' } } as EffectStep]),
+    readings: ['Put a card you own exiled with Test Card into your hand.', 'Put a card you own exiled with it into your hand.'],
+    near: ['Put a card exiled with Test Card into your hand.', 'Put a card you own exiled with Test Card into its owner\'s hand.', 'Put each card you own exiled with Test Card into your hand.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-34 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['graveyard-exile-that-card', 'linked-put-one-owned-hand']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-32 (Commander EDHREC ranks 7,501-8,750): the readings of its one family (invented wordings, design 6.10)
+const OWN_POWER = { q: 'stat', stat: 'power', of: { ref: 'self' } };
+Object.assign(EXAMPLES, {
+  'own-power-less-than-possessive': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: 'you', power: { op: '<', value: OWN_POWER } } }, mods: [{ layer: '7c', power: 1, toughness: 1 }] } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Creatures you control with power less than ~\'s power get +1/+1.', 'Creatures you control with power less than Test Card\'s get +1/+1.'],
+    near: ['Creatures you control with power less than ~\'s toughness get +1/+1.', 'Creatures you control with power greater than ~\'s get +1/+1.'],
+  },
+  'equal-or-lesser-power': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: 'you', power: { op: '<=', value: OWN_POWER } } }, mods: [{ layer: '7c', power: 1, toughness: 1 }] } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Creatures you control with power less than or equal to ~\'s power get +1/+1.', 'Creatures you control with equal or lesser power get +1/+1.'],
+    near: ['Creatures you control with equal or greater power get +1/+1.', 'Creatures you control with lesser power get +1/+1.'],
+  },
+  'counters-if-creature-wordings': {
+    def: spell([{ op: 'move', what: t('c'), to: { zone: 'battlefield', controller: you, countersIf: [{ if: { types: ['Creature'] }, counters: [{ kind: '+1/+1', count: 2 }] }] } } as unknown as EffectStep], [objTarget('c', { types: ['Permanent'], zone: 'graveyard', owner: 'you', isCard: true })]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: ['Return target permanent card from your graveyard to the battlefield. If a creature enters this way, it enters with two additional +1/+1 counters on it.', 'Return target permanent card from your graveyard to the battlefield. It enters with two additional +1/+1 counters on it if it\'s a creature.'],
+    near: ['Return target permanent card from your graveyard to the battlefield. If an artifact enters this way, it enters with two additional +1/+1 counters on it.', 'Return target permanent card from your graveyard to the battlefield. It enters with two additional +1/+1 counters on it if it\'s an artifact.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-32 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['own-power-less-than-possessive', 'equal-or-lesser-power', 'counters-if-creature-wordings']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-6 (zz-cloud/edh-d-6.json, render/evt.ts, render/steps-zones.ts): the readings of its two families (synthetic lines, design 6.10)
+Object.assign(EXAMPLES, {
+  'self-or-another-dies-or-damages': {
+    def: rx30Def('Creature — Spirit', 'Whenever Test Card or another nontoken Spirit you control dies or deals combat damage to a player, draw a card.'),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature', 'Spirit'] },
+    readings: ['Whenever ~ or another nontoken Spirit you control dies or deals combat damage to a player, draw a card.'],
+    near: ['Whenever ~ or another Spirit you control dies or deals combat damage to a player, draw a card.', 'Whenever ~ or another nontoken Spirit an opponent controls dies or deals combat damage to a player, draw a card.', 'Whenever ~ or another nontoken Spirit you control dies or deals damage to a player, draw a card.'],
+  },
+  'exiled-card-owner-casts': {
+    def: rx30Def('Creature — Faerie', 'When Test Card enters, exile target spell with mana value 4 or less.\nWhen Test Card leaves the battlefield, the exiled card\'s owner may cast that card without paying its mana cost.'),
+    ctx: creature,
+    readings: ['When ~ leaves the battlefield, the exiled card\'s owner may cast that card without paying its mana cost.', 'When ~ leaves the battlefield, that card\'s owner may cast the exiled card without paying its mana cost.'],
+    near: ['When ~ leaves the battlefield, the exiled card\'s controller may cast that card without paying its mana cost.', 'When ~ leaves the battlefield, the exiled card\'s owner may cast that card.', 'When ~ leaves the battlefield, you may cast that card without paying its mana cost.'],
+  },
+} satisfies Record<string, Example>);
+// edh-d-4 (Commander EDHREC ranks 13,751-15,000): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'no-x-are-on-the-battlefield': {
+    def: trig([{ ev: 'state', cond: { cond: 'not', of: { cond: 'exists', of: { ref: 'each', filter: { types: ['Creature'], zone: 'battlefield' } } } } }], [gain(1)]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['When there are no creatures on the battlefield, you gain 1 life.', 'When no creatures are on the battlefield, you gain 1 life.'],
+    near: ['When no creatures are in the battlefield, you gain 1 life.', 'When no creature is on the battlefield, you gain 1 life.'],
+  },
+  'scry-equal-result': {
+    def: spell([{ op: 'rollDie', who: you, sides: 6 } as EffectStep, { op: 'scry', who: you, count: { q: 'dieResult' } } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['Roll a six-sided die. Scry X, where X is the result.', 'Roll a six-sided die. Scry a number of cards equal to the result.'],
+    near: ['Roll a six-sided die. Scry a number of lands equal to the result.', 'Roll a six-sided die. Scry X, where X is the number of creatures you control.'],
+  },
+  'player-other-than-you-lost-life': {
+    def: trig([{ ev: 'step', step: 'end' }], [gain(1)], { interveningIf: { cond: 'happened', event: { ev: 'life', change: 'loss', player: 'opponent' }, scope: 'turn' } }),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['At the beginning of each end step, if an opponent lost life this turn, you gain 1 life.', 'At the beginning of each end step, if a player other than you lost life this turn, you gain 1 life.'],
+    near: ['At the beginning of each end step, if a player other than you lost life, you gain 1 life.', 'At the beginning of each end step, if each player other than you lost life this turn, you gain 1 life.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-4 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['no-x-are-on-the-battlefield', 'scry-equal-result', 'player-other-than-you-lost-life']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-next-35 (render/steps-life.ts, render/cond.ts): the readings of its one family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'life-plus-for-each-sacrificed': {
+    def: spell([{ op: 'loseLife', who: t('p'), amount: { q: 'math', op: '+', args: [3, { q: 'math', op: '*', args: [2, { q: 'count', of: { ref: 'costSacrificed' } }] }] } } as EffectStep], [playerTarget('p')]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'], costSacrificeNouns: ['goblins'] },
+    readings: ['Target player loses 3 life plus 2 life for each Goblin sacrificed this way.', 'Target player loses life equal to 3 plus twice the number of Goblins sacrificed this way.'],
+    near: ['Target player loses 3 life plus 2 life for each Spirit sacrificed this way.', 'Target player loses 2 life plus 3 life for each Goblin sacrificed this way.', 'Target player gains 3 life plus 2 life for each Goblin sacrificed this way.'],
+  },
+  'snow-spent-condition': {
+    def: spell([{ op: 'if', cond: { cond: 'compare', left: { q: 'snowSpent' }, op: '>=', right: 1 }, then: [{ op: 'draw', who: you, count: 1 } as EffectStep] } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: ['If {S} was spent to cast this spell, draw a card.', 'If {S} was spent to cast Test Card, draw a card.'],
+    near: ['If {S}{S} was spent to cast this spell, draw a card.', 'If {R} was spent to cast this spell, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-35 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['life-plus-for-each-sacrificed', 'snow-spent-condition']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-3 (coordinator D): the ban on paying life for the cost of a spell or of an ability that is not a mana ability (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'each-player-cant-pay-life-costs': {
+    def: statics([{ s: 'restrict', subject: { ref: 'each', who: 'player' }, mode: 'cant', action: 'payLife', forCosts: true, exceptMana: true } as StaticEffect]),
+    ctx: unknown,
+    readings: ["Players can't pay life to cast spells or to activate abilities that aren't mana abilities.", "Each player can't pay life to cast spells or to activate abilities that aren't mana abilities."],
+    near: ["Players can't pay life to cast spells or to activate abilities.", "Your opponents can't pay life to cast spells or to activate abilities that aren't mana abilities.", "Players can't pay life."],
+  },
+});
+
+// edh-next-39 (Commander EDHREC ranks 5,001-6,250, second pass): the number of targets said with the time it is read (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'where-x-as-you-activate': {
+    def: {
+      kind: 'activated', text: '', cost: { tap: true },
+      effect: {
+        targets: [objTarget('c', { types: ['Creature'], controller: 'you' }, { min: 0, max: { q: 'count', of: { ref: 'each', filter: { types: ['Artifact'], controller: 'you' } } } })],
+        steps: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: t('c'), mods: [{ layer: '7c', power: 1, toughness: 0 }] }] } as EffectStep],
+      },
+    } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: [
+      '{T}: Up to X target creatures you control get +1/+0 until end of turn, where X is the number of artifacts you control.',
+      '{T}: Up to X target creatures you control get +1/+0 until end of turn, where X is the number of artifacts you control as you activate this ability.',
+    ],
+    near: [
+      '{T}: Up to X target creatures you control get +1/+0 until end of turn, where X is the number of artifacts you control as you cast this spell.',
+      '{T}: Up to X target creatures you control get +1/+0 until end of turn, where X is the number of lands you control as you activate this ability.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-39 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['where-x-as-you-activate']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-37 (Commander lane edh-next, ranks 18,751-20,000): families of its wordings (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  // CR 615.1a, 120.3: Divine Deflection
+  'prevent-you-and-or-permanents': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'anyTarget', max: 1, min: 1 }], steps: [{ duration: { d: 'endOfTurn' }, effects: [{ body: { amount: 3, b: 'prevent', then: [{ amount: { q: 'preventedAmount' }, op: 'damage', source: { ref: 'self' }, to: { id: 't0', ref: 'target' } }] }, replaces: { ev: 'damage', recipient: { object: { controller: 'you' }, player: 'you' } }, s: 'replace', shield: { uses: 'all' } }], op: 'effect' }] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['Prevent the next 3 damage that would be dealt to you and permanents you control this turn. If damage is prevented this way, Test Card deals that much damage to any target.', 'Prevent the next 3 damage that would be dealt to you and/or permanents you control this turn. If damage is prevented this way, Test Card deals that much damage to any target.'],
+    near: ['Prevent the next 3 damage that would be dealt to you or permanents you control this turn. If damage is prevented this way, Test Card deals that much damage to any target.', 'Prevent the next 3 damage that would be dealt to you and/or permanents you control this turn. If damage is prevented this way, Test Card deals twice that much damage to any target.'],
+  },
+  // CR 615.7, 107.3: Acolyte's Reward
+  'prevent-x-where-then-damage': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ filter: { types: ['Creature'] }, id: 't0', kind: 'object', max: 1, min: 1 }, { id: 't1', kind: 'anyTarget', max: 1, min: 1 }], steps: [{ duration: { d: 'endOfTurn' }, effects: [{ body: { amount: { of: { ref: 'you' }, q: 'devotion', to: ['W'] }, b: 'prevent', then: [{ amount: { q: 'preventedAmount' }, op: 'damage', source: { ref: 'self' }, to: { id: 't1', ref: 'target' } }] }, replaces: { ev: 'damage', recipient: { object: { is: { id: 't0', ref: 'target' } } } }, s: 'replace', shield: { uses: 'all' } }], op: 'effect' }] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['Prevent the next X damage that would be dealt to target creature this turn, where X is your devotion to white. If damage is prevented this way, Test Card deals that much damage to any target.'],
+    near: ['Prevent the next X damage that would be dealt to target creature this turn, where X is your devotion to red. If damage is prevented this way, Test Card deals that much damage to any target.', 'Prevent the next X damage that would be dealt to target creature this turn, where X is your devotion to white.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-37 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['prevent-you-and-or-permanents', 'prevent-x-where-then-damage']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+Object.assign(EXAMPLES, {
+  // edh-d-2 (Commander lane edh-d, ranks 11,251-12,500)
+  'search-library-their-graveyard': {
+    def: spell([
+      { op: 'search', who: you, zone: 'library', owner: t('p'), filter: { types: ['Creature'] }, min: 0, max: 3, as: 'search' } as EffectStep,
+      { op: 'move', what: bound('search'), to: { zone: 'graveyard' } } as EffectStep,
+    ], [{ id: 'p', kind: 'player', min: 1, max: 1, text: '', players: { who: 'opponent' } }]),
+    readings: ["Search target opponent's library for up to three creature cards and put them into their graveyard.", "Search target opponent's library for up to three creature cards and put them into that player's graveyard."],
+    near: ["Search target opponent's library for up to three creature cards and put them into your graveyard.", "Search target opponent's library for up to two creature cards and put them into their graveyard.", "Search target opponent's library for up to three creature cards and put them into their hand."],
+  },
+  'choose-random-exiled-with-and-put': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'attacks', attacker: { self: true } }] }, effect: { targets: [], steps: [
+      { op: 'chooseObjects', who: you, from: { ref: 'linked', link: 'exiled' }, min: 1, max: 1, random: true, as: 'chosen' } as EffectStep,
+      { op: 'move', what: bound('chosen'), to: { zone: 'hand' } } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: creature,
+    readings: ["Whenever Test Card attacks, choose a card at random exiled with it and put that card into its owner's hand.", "Whenever Test Card attacks, choose a card at random that was exiled with it. Put that card into its owner's hand."],
+    near: ["Whenever Test Card attacks, choose a card exiled with it and put that card into its owner's hand.", "Whenever Test Card attacks, choose a card at random exiled with it and put that card into your hand."],
+  },
+  'milled-cards-them': {
+    def: spell([
+      { op: 'mill', who: you, count: 4, as: 'milled' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Creature'] }], is: bound('milled'), zone: 'any' } }, min: 0, max: 1, as: 'chosen' } as EffectStep,
+      { op: 'move', what: bound('chosen'), to: { zone: 'battlefield', controller: you } } as EffectStep,
+    ]),
+    readings: ['Mill four cards. You may put a creature card from among them onto the battlefield.', 'Mill four cards. You may put a creature card from among the milled cards onto the battlefield.'],
+    near: ['Mill four cards. You may put a creature card from among them into your hand.', 'Mill three cards. You may put a creature card from among them onto the battlefield.'],
+  },
+});
+
+Object.assign(EXAMPLES, {
+  // edh-next-42 (Commander lane edh-next, ranks 15,001-16,250, second pass)
+  'prevent-source-controller-draws': {
+    def: statics([{ s: 'replace', replaces: { ev: 'damage', recipient: { object: { self: true } } }, body: { b: 'prevent', amount: 'all', then: [{ op: 'draw', who: { ref: 'controllerOf', object: { ref: 'event', role: 'source' } }, count: { q: 'preventedAmount' } }] } } as StaticEffect]),
+    ctx: creature,
+    readings: ["If a source would deal damage to Test Card, prevent that damage. The source's controller draws cards equal to the damage prevented this way.", 'If a source would deal damage to Test Card, prevent that damage and its controller draws that many cards.'],
+    near: ["If a source would deal damage to Test Card, prevent that damage. The source's controller draws cards equal to the damage prevented this way, then discards a card.", 'If a source would deal damage to Test Card, prevent that damage. You draw cards equal to the damage prevented this way.'],
+  },
+});
+
+// edh-d-8 (Commander EDHREC ranks 11,251-12,500): the readings of its families (invented wordings, design 6.10)
+const D8_AURAS: ObjectFilter = { subtypes: ['Aura'], attachedToObject: { ref: 'self' } };
+Object.assign(EXAMPLES, {
+  'enchanted-by-auras': {
+    def: { ...statics([{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: '7b', power: 3, toughness: 3 }] }]), condition: { cond: 'compare', left: { q: 'count', of: { ref: 'each', filter: D8_AURAS } }, op: '==', right: 2 } } as AbilityDef,
+    ctx: creature,
+    readings: ['As long as Test Card is enchanted by exactly two Auras, it has base power and toughness 3/3.', 'As long as the number of Auras attached to Test Card is two, it has base power and toughness 3/3.'],
+    near: ['As long as Test Card is enchanted by exactly two Equipment, it has base power and toughness 3/3.', 'As long as Test Card is enchanted by two Auras, it has base power and toughness 3/3.'],
+  },
+  'static-base-pt-then-abilities': {
+    def: { ...statics([{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'vigilance', text: 'vigilance' }, { kind: 'keyword', keyword: 'trample', text: 'trample' }] }, { layer: '7b', power: 5, toughness: 5 }] }]), condition: { cond: 'turnOf', whose: 'you' } } as AbilityDef,
+    ctx: creature,
+    readings: ['As long as it\'s your turn, Test Card has base power and toughness 5/5, vigilance, and trample.', 'As long as it\'s your turn, Test Card has base power and toughness 5/5 and has vigilance and trample.'],
+    near: ['As long as it\'s your turn, Test Card has base power and toughness 5/5, vigilance, and haste.', 'As long as it\'s your turn, Test Card has base power and toughness 5/5, vigilance, or trample.'],
+  },
+  'replaced-damage-to-self': {
+    def: statics([{ s: 'replace', replaces: { ev: 'damage', recipient: { object: { self: true } } }, body: { b: 'modify', amount: { mul: 2 } } } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ['If a source would deal damage to Test Card, it deals double that damage to Test Card instead.', 'If a source would deal damage to Test Card, it deals double that damage instead.'],
+    near: ['If a source would deal damage to Test Card, it deals double that damage to you instead.', 'If a source would deal damage to Test Card, it deals triple that damage to Test Card instead.'],
+  },
+  'random-opponent-chosen-at-random': {
+    def: spell([{ op: 'damage', source: { ref: 'self' }, to: { ref: 'randomOpponent' }, amount: 3 } as unknown as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['Test Card deals 3 damage to a random opponent.', 'Test Card deals 3 damage to an opponent chosen at random.'],
+    near: ['Test Card deals 3 damage to an opponent at random.', 'Test Card deals 3 damage to each opponent chosen at random.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-8 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['enchanted-by-auras', 'static-base-pt-then-abilities', 'replaced-damage-to-self', 'random-opponent-chosen-at-random']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-44 (Commander EDHREC ranks 16,251-17,500): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'cast-nth-of-kind-if': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'cast', player: 'you', spell: { types: ['Creature'] }, nth: 2, nthMatching: true }] }, effect: { targets: [], steps: [gain(1)] } } as AbilityDef,
+    ctx: creature,
+    readings: ['Whenever you cast your second creature spell each turn, you gain 1 life.', "Whenever you cast a spell, if it's the second creature spell you cast this turn, you gain 1 life."],
+    near: ["Whenever you cast a spell, if it's the third creature spell you cast this turn, you gain 1 life.", "Whenever you cast a spell, if it's the second artifact spell you cast this turn, you gain 1 life."],
+  },
+  'base-power-become-sum': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, effect: { targets: [], steps: [{ op: 'may', who: you, do: [effectStep([{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: '7b', power: { q: 'math', op: '+', args: [1, { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } } }] } }] } as StaticEffect], { d: 'endOfTurn' })] } as EffectStep] } } as AbilityDef,
+    ctx: creature,
+    readings: ["{T}: You may have Test Card's base power become equal to 1 plus the number of creatures you control until end of turn.", "{T}: You may have Test Card's base power become 1 plus the number of creatures you control until end of turn."],
+    near: ["{T}: You may have Test Card's base power become 2 plus the number of creatures you control until end of turn.", "{T}: You may have Test Card's base toughness become 1 plus the number of creatures you control until end of turn."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-44 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['cast-nth-of-kind-if', 'base-power-become-sum']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-next-45 (CR 118.3, 119.4, 702.24a; render/costs.ts#cost): a mana cost and a fixed payment of life are "Pay {B} and 1 life" as well as "{B}, Pay 1 life"
+Object.assign(EXAMPLES, {
+  'mana-and-life-cost': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'colored', color: 'B' }], other: [{ kind: 'payLife', amount: 1 }] }, effect: { targets: [], steps: [draw()] } } as unknown as AbilityDef,
+    readings: ['{B}, Pay 1 life: Draw a card.', 'Pay {B} and 1 life: Draw a card.'],
+    near: ['Pay {B} and 2 life: Draw a card.', 'Pay {B} and 1 life: Draw two cards.', 'Pay {G} and 1 life: Draw a card.'],
+  },
+} satisfies Record<string, Example>);
+
+describe('edh-next-45 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['mana-and-life-cost']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+Object.assign(EXAMPLES, {
+  // edh-d-9 (Commander coordinator D, ranks 13,751-15,000, third pass)
+  'mana-cost-their-singular': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, isMana: true, effect: { targets: [], steps: [
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ manaCostHasX: true }], zone: 'hand', owner: 'you' } }, min: 0, max: 'any', as: 'chosen' } as EffectStep,
+      { op: 'reveal', who: you, what: bound('chosen'), as: 'revealed' } as EffectStep,
+      { op: 'addMana', who: you, dynamic: { kind: 'ofType', type: 'C', count: { q: 'math', op: '*', args: [2, { q: 'resultCount', step: 'revealed' }] } } } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: creature,
+    readings: ['{T}: Reveal any number of cards with {X} in their mana cost in your hand. Add {C}{C} for each card revealed this way.', '{T}: Reveal any number of cards with {X} in their mana costs in your hand. Add {C}{C} for each card revealed this way.'],
+    near: ['{T}: Reveal any number of cards with {X} in its mana cost in your hand. Add {C}{C} for each card revealed this way.', '{T}: Reveal any number of cards with {X} in their mana cost in your graveyard. Add {C}{C} for each card revealed this way.'],
+  },
+  'reveal-two-descs-apart': {
+    def: spell([
+      { op: 'look', who: you, at: { ref: 'topCards', player: you, count: 5 }, as: 'them' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Creature'] }, { types: ['Artifact'] }], is: bound('them'), zone: 'library' } }, min: 0, max: 1, as: 'chosen' } as EffectStep,
+      { op: 'reveal', who: you, what: bound('chosen') } as EffectStep,
+      { op: 'move', what: bound('chosen'), to: { zone: 'hand' } } as EffectStep,
+    ]),
+    readings: ['Look at the top five cards of your library. You may reveal a creature card or artifact card from among them and put it into your hand.', 'Look at the top five cards of your library. You may reveal a creature card or an artifact card from among them and put that card into your hand.', 'Look at the top five cards of your library. You may reveal a creature or artifact card from among them and put it into your hand.'],
+    near: ['Look at the top five cards of your library. You may reveal a creature card and artifact card from among them and put it into your hand.', 'Look at the top five cards of your library. You may reveal a creature card or artifact card from among them and put it onto the battlefield.'],
+  },
+});
+
+Object.assign(EXAMPLES, {
+  // edh-d-9 (Commander coordinator D, ranks 13,751-15,000, third pass), continued
+  'sacrifice-for-each-discarded': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }] }, effect: { targets: [], steps: [
+      { op: 'discard', who: you, count: 'hand', as: 'discard' } as EffectStep,
+      { op: 'sacrificeChoice', who: { ref: 'each', who: 'opponent' }, filter: { types: ['Creature'] }, count: { q: 'resultCount', step: 'discard', which: { isCard: true } } } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: creature,
+    readings: ['When ~ enters, discard your hand. Each opponent sacrifices a creature of their choice for each card discarded this way.', 'When ~ enters, discard your hand. Each opponent sacrifices the number of cards discarded this way creatures.'],
+    near: ['When ~ enters, discard your hand. Each opponent sacrifices a creature of their choice for each card discarded this turn.', 'When ~ enters, discard your hand. Each opponent sacrifices a creature of your choice for each card discarded this way.'],
+  },
+  'each-creature-that-convoked': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }] }, effect: { targets: [], steps: [
+      { op: 'putCounters', on: { ref: 'convokers' }, kind: '+1/+1', count: 1 } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: creature,
+    readings: ['When ~ enters, put a +1/+1 counter on each creature that convoked it.', 'When ~ enters, put a +1/+1 counter on the creatures that convoked this spell.'],
+    near: ['When ~ enters, put a +1/+1 counter on each creature that convoked this turn.', 'When ~ enters, put a +1/+1 counter on target creature that convoked it.'],
+  },
+  'skip-your-next-turn-imperative': {
+    def: spell([
+      { op: 'effect', duration: { d: 'permanent' }, effects: [{ s: 'replace', replaces: { ev: 'beginTurn', whose: you }, body: { b: 'skip' }, shield: { uses: 1 } }] } as unknown as EffectStep,
+    ]),
+    readings: ['Skip your next turn.', 'You skip your next turn.'],
+    near: ['Skip your next two turns.', 'Skip their next turn.'],
+  },
+});
+
+// edh-next-49 (Commander EDHREC ranks 6,251-7,500, third pass): the readings of its one new family (steps-zones.ts +1))
+Object.assign(EXAMPLES, {
+  'cast-pay-life-its-or-that-spell': {
+    def: trig([{ ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }],
+      [{ op: 'cast', who: you, what: t('c'), optional: true, costChange: { kind: 'set', life: 'manaValue' } } as EffectStep], {},
+      [objTarget('c', { zone: 'graveyard', owner: 'you', types: ['Instant'], isCard: true }, { text: 'target instant card from your graveyard' })]),
+    ctx: creature,
+    readings: [
+      'When Test Card enters, you may cast target instant card from your graveyard by paying life equal to its mana value rather than paying its mana cost.',
+      "When Test Card enters, you may cast target instant card from your graveyard by paying life equal to that spell's mana value rather than paying its mana cost.",
+    ],
+    near: [
+      'When Test Card enters, you may cast target instant card from your graveyard by paying life equal to its power rather than paying its mana cost.',
+      'When Test Card enters, you may cast target instant card from your graveyard by paying life equal to its mana value in addition to paying its mana cost.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-49 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['cast-pay-life-its-or-that-spell']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-15 (Commander coordinator D, ranks 12,501-13,750): the players who can't, one at a time losing half their life (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'each-who-cant-loses-half': {
+    def: spell([
+      { op: 'sacrificeChoice', who: { ref: 'each', who: 'opponent' }, filter: { types: ['Artifact'] }, count: 1, cantAs: 'cant' } as EffectStep,
+      { op: 'forEach', over: { ref: 'bound', name: 'cant' }, as: 'each', do: [{ op: 'loseLife', who: { ref: 'iterating' }, amount: { q: 'math', op: 'ceilDiv', args: [{ q: 'life', of: { ref: 'iterating' } }, 2] } }] } as EffectStep,
+    ]),
+    readings: [
+      "Each opponent sacrifices an artifact of their choice. For each opponent who can't, that player loses life equal to half their life total, rounded up.",
+      "Each opponent sacrifices an artifact of their choice. Each opponent who can't loses half their life, rounded up.",
+    ],
+    near: [
+      "Each opponent sacrifices an artifact of their choice. Each opponent who can't loses half their life, rounded down.",
+      "Each opponent sacrifices an artifact of their choice. Each opponent loses half their life, rounded up.",
+    ],
+  },
+} satisfies Record<string, Example>);
+// edh-d-26 (Commander coordinator D, lane name-hand): the card a player chose in a hand, named again later in the ability (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'chosen-card-that-card': {
+    def: { kind: 'spell', effect: { targets: [{ id: 't0', kind: 'player', min: 1, max: 1, text: 'target player', players: { who: 'any' } }], steps: [
+      { op: 'look', who: { ref: 'you' }, at: { ref: 'each', filter: { zone: 'hand', owner: { ref: 'target', id: 't0' } } }, as: 'them' },
+      { op: 'chooseObjects', who: { ref: 'you' }, from: { ref: 'each', filter: { anyOf: [{ notTypes: ['Land'], isCard: true }], is: { ref: 'bound', name: 'them' }, zone: 'any' } }, min: 0, max: 1, as: 'chosen' },
+      { op: 'if', cond: { cond: 'did', step: 'chosen' }, then: [
+        { op: 'reveal', who: { ref: 'target', id: 't0' }, what: { ref: 'bound', name: 'chosen' } },
+        { op: 'move', what: { ref: 'bound', name: 'chosen' }, to: { zone: 'library', position: 'bottom' } },
+        { op: 'draw', who: { ref: 'target', id: 't0' }, count: 2 },
+      ] },
+    ] } } as never,
+    readings: [
+      "Look at target player's hand. You may choose a nonland card from it. If you do, that player reveals the chosen card, puts it on the bottom of their library, then draws two cards.",
+      "Look at target player's hand. You may choose a nonland card from it. If you do, that player reveals that card, puts it on the bottom of their library, then draws two cards.",
+    ],
+    near: [
+      "Look at target player's hand. You may choose a nonland card from it. If you do, that player reveals the chosen card, puts it on the top of their library, then draws two cards.",
+      "Look at target player's hand. You may choose a nonland card from it. If you do, that player reveals the chosen card, puts it on the bottom of their library, then draws three cards.",
+    ],
+  },
+} satisfies Record<string, Example>);
+// edh-d-25 (Commander coordinator D, lane combat): the duration of a permission to assign combat damage as though unblocked, and of a rule of one object's damage (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'unblocked-damage-duration': {
+    def: spell([{ op: 'may', who: you, do: [{ op: 'effect', effects: [{ s: 'permit', who: you, action: 'assignAsUnblocked', of: { types: ['Creature'], controller: 'you' }, mandatory: true }], duration: { d: 'endOfTurn' } } as EffectStep] } as EffectStep]),
+    readings: [
+      "You may have creatures you control assign their combat damage this turn as though they weren't blocked.",
+      "You may have creatures you control assign their combat damage as though they weren't blocked this turn.",
+    ],
+    near: [
+      "You may have creatures you control assign their combat damage this turn as though they had trample.",
+      "You may have creatures you control assign their combat damage next turn as though they weren't blocked.",
+    ],
+  },
+  'unblocked-damage-duration-targets': {
+    def: { kind: 'spell', effect: { targets: [{ id: 't0', kind: 'object', min: 2, max: 2, text: 'two target blocked creatures', filter: { types: ['Creature'], blocked: true } }], steps: [{ op: 'effect', effects: [{ s: 'permit', who: { ref: 'each', who: 'player' }, action: 'assignAsUnblocked', of: { is: { ref: 'target', id: 't0' } }, mandatory: true }], duration: { d: 'endOfTurn' } } as EffectStep] } } as AbilityDef,
+    readings: [
+      "Two target blocked creatures assign their combat damage this turn as though they weren't blocked.",
+      "Two target blocked creatures assign their combat damage as though they weren't blocked this turn.",
+    ],
+    near: [
+      "Two target blocked creatures assign their combat damage this turn as though they had trample.",
+      "Two target blocked creatures assign their combat damage next turn as though they weren't blocked.",
+    ],
+  },
+  'toughness-damage-duration': {
+    def: { kind: 'spell', effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, text: 'target creature you control', filter: { types: ['Creature'], controller: 'you' } }], steps: [{ op: 'effect', effects: [{ s: 'rule', rule: 'combatDamageUsesToughness', of: { is: { ref: 'target', id: 't0' } } }], duration: { d: 'endOfTurn' } } as EffectStep] } } as AbilityDef,
+    readings: [
+      'Target creature you control assigns combat damage equal to its toughness rather than its power this turn.',
+      'Until end of turn, target creature you control assigns combat damage equal to its toughness rather than its power.',
+    ],
+    near: [
+      'Target creature you control assigns combat damage equal to its power rather than its toughness this turn.',
+      'Until your next turn, target creature you control assigns combat damage equal to its toughness rather than its power.',
+    ],
+  },
+} satisfies Record<string, Example>);
+// edh-d-12 (render/np.ts, stat.ts, evt.ts): the five families of the round
+Object.assign(EXAMPLES, {
+  'that-is-blocking': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'], blockingObject: self } } } as EffectStep]),
+    ctx: creature,
+    readings: ['Destroy each creature blocking Test Card.', 'Destroy each creature that is blocking Test Card.'],
+    near: ['Destroy each creature that is attacking Test Card.', 'Destroy each creature that is blocking you.'],
+  },
+  'card-other-than-kind': {
+    def: spell([{ op: 'move', what: t('c'), to: { zone: 'exile' } }], [objTarget('c', { zone: 'graveyard', isCard: true, not: { supertypes: ['Basic'], types: ['Land'] } })]),
+    readings: ['Exile target card in a graveyard other than a basic land card.', "Exile target card that isn't a basic land from a graveyard."],
+    near: ['Exile target card in a graveyard other than a land card.', 'Exile target card in a graveyard other than a basic card.'],
+  },
+  'cant-be-blocked-greater-power-subject': {
+    def: spell([effectStep([{ s: 'restrict', subject: t('c'), mode: 'cant', action: 'beBlockedBy', other: { types: ['Creature'], power: { op: '>', value: { q: 'stat', stat: 'power', of: t('c') } } } } as StaticEffect], { d: 'endOfTurn' })], [objTarget('c')]),
+    readings: ["Target creature can't be blocked by creatures with greater power this turn.", "Target creature can't be blocked by creatures with power greater than its power this turn."],
+    near: ["Target creature can't be blocked by creatures with greater toughness this turn.", "Target creature can't be blocked by creatures with lesser power this turn."],
+  },
+  'exert-as-name-attacks': {
+    def: statics([{ s: 'rule', rule: 'mayExertAsAttacks' } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ['You may exert Test Card as it attacks.', 'You may exert Test Card as Test Card attacks.'],
+    near: ['You may exert Test Card as it blocks.', 'You may exert Test Card as another creature attacks.'],
+  },
+  'dealt-n-by-a-single-source': {
+    def: trig([{ ev: 'damage', source: {}, recipient: { player: 'opponent' }, amount: { op: '>=', value: 3 } }], [draw()]),
+    readings: ['Whenever an opponent is dealt 3 or more damage by a single source, draw a card.', 'Whenever a source deals 3 or more damage to an opponent, draw a card.'],
+    near: ['Whenever an opponent is dealt 3 or more damage by two sources, draw a card.', 'Whenever an opponent is dealt 3 or less damage by a single source, draw a card.'],
+  },
+  // edh-next-66 (Angelic Arbiter): a ban on attacking of the creatures of a player group
+  'player-group-cant-attack-with-creatures': {
+    def: statics([{ s: 'restrict', subject: { ref: 'each', filter: { types: ['Creature'], controller: { ref: 'eachWho', who: 'opponent', did: { ev: 'cast' }, scope: 'turn' } } }, mode: 'cant', action: 'attack' } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ["Each opponent who cast a spell this turn can't attack with creatures.", "Creatures each opponent who cast a spell this turn controls can't attack."],
+    near: ["Each opponent who cast a spell this turn can't block with creatures.", "Each opponent who cast a spell this turn can't attack with Goblins."],
+  },
+  // edh-next-72 (Fatal Grudge, Martyr's Bond): each opponent's sacrifice of a permanent that shares a card type with an object
+  'choose-and-sacrifice-it': {
+    def: spell([{ op: 'sacrificeChoice', who: { ref: 'each', who: 'opponent' }, filter: { sharesWith: { with: { ref: 'self' }, quality: 'cardType' } }, count: 1 } as EffectStep]),
+    readings: ['Each opponent sacrifices a permanent of their choice that shares a card type with Test Card.', 'Each opponent chooses a permanent they control that shares a card type with Test Card and sacrifices it.'],
+    near: ['Each opponent chooses a creature they control that shares a card type with Test Card and sacrifices it.', 'Each player chooses a permanent they control that shares a card type with Test Card and sacrifices it.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-12 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['that-is-blocking', 'card-other-than-kind', 'cant-be-blocked-greater-power-subject', 'exert-as-name-attacks', 'dealt-n-by-a-single-source']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-17 (render/np.ts): the three families of the round
+Object.assign(EXAMPLES, {
+  'one-article-two-card-kinds': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Land'] }, { subtypes: ['Elf'] }], zone: 'graveyard', owner: 'you', isCard: true } }, min: 1, max: 1, as: 'regrow' } as EffectStep,
+      { op: 'move', what: bound('regrow'), to: { zone: 'hand' } } as EffectStep,
+    ]),
+    readings: ['Return a land card or Elf card from your graveyard to your hand.', 'Return a land card or an Elf card from your graveyard to your hand.'],
+    near: ['Return a land card and Elf card from your graveyard to your hand.', 'Return a land card or Elf card from your library to your hand.'],
+  },
+  'cards-with-keyword-you-own-in-exile': {
+    def: spell([{ op: 'gainLife', who: you, amount: { q: 'count', of: { ref: 'each', filter: { keyword: 'flashback', zone: 'exile', owner: 'you', isCard: true } } } } as EffectStep]),
+    readings: ['You gain life equal to the number of cards with flashback you own in exile.', 'You gain life equal to the number of cards you own in exile with flashback.'],
+    near: ['You gain life equal to the number of cards with flashback you own in graveyards.', 'You gain life equal to the number of cards with flashback an opponent owns in exile.'],
+  },
+  'card-that-has-an-adventure-in-list': {
+    def: spell([{ op: 'draw', who: you, count: { q: 'count', of: { ref: 'each', filter: { anyOf: [{ types: ['Instant'] }, { types: ['Sorcery'] }, { adventure: true }], zone: 'graveyard', owner: 'you', isCard: true } } } } as EffectStep]),
+    readings: ["Draw a card for each card in your graveyard that's an instant card, a sorcery card, or has an Adventure.", "Draw a card for each card in your graveyard that's an instant card, a sorcery card, or a card that has an Adventure."],
+    near: ["Draw a card for each card in your graveyard that's an instant card, a sorcery card, and a card that has an Adventure.", "Draw a card for each card in your graveyard that's an instant card, a sorcery card, or a card that has flashback."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-17 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['one-article-two-card-kinds', 'cards-with-keyword-you-own-in-exile', 'card-that-has-an-adventure-in-list']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+Object.assign(EXAMPLES, {
+  // edh-next-48 (Commander EDHREC ranks 7,501-8,750, third pass): invented wordings (design 6.10)
+  'pay-any-amount-of-energy': {
+    def: spell([
+      { op: 'putCounters', on: you, kind: 'energy', count: 2 } as EffectStep,
+      { op: 'pay', who: you, cost: { other: [{ kind: 'payEnergy', amount: 1 }] }, anyAmount: true, as: 'pay', then: [gain(1)] } as EffectStep,
+    ]),
+    readings: ['You get {E}{E}, then you may pay any amount of {E}. If you do, you gain 1 life.', 'You get {E}{E}, then you may pay one or more {E}. If you do, you gain 1 life.'],
+    near: ['You get {E}{E}, then you may pay any amount of {R}. If you do, you gain 1 life.', 'You get {E}{E}, then you may pay any amount of {E}{E}. If you do, you gain 1 life.'],
+  },
+  // edh-next-81 (the Adversary cycle): invented wordings (design 6.10)
+  'when-you-pay-this-cost-times': {
+    def: spell([
+      { op: 'pay', who: you, cost: { mana: [{ kind: 'generic', amount: 1 }, { kind: 'colored', color: 'W' }] }, anyAmount: true, as: 'pay' } as EffectStep,
+      { op: 'reflexive', when: { did: 'pay' }, targets: [], do: [gain(1)] } as EffectStep,
+    ]),
+    readings: ['You may pay {1}{W} any number of times. When you do, you gain 1 life.', 'You may pay {1}{W} any number of times. When you pay this cost one or more times, you gain 1 life.'],
+    near: ['You may pay {1}{W} twice. When you pay this cost one or more times, you gain 1 life.'],
+    ctx: {},
+  },
+  'pays-for-each-energy-paid': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'spell', min: 1, max: 1, text: 'target spell' }], steps: [
+      { op: 'pay', who: you, cost: { other: [{ kind: 'payEnergy', amount: 1 }] }, anyAmount: true, as: 'pay' } as EffectStep,
+      { op: 'pay', who: { ref: 'controllerOf', object: { ref: 'target', id: 't0' } }, cost: { mana: [{ kind: 'generic', amount: 1 }] }, times: { q: 'resultCount', step: 'pay' }, else: [{ op: 'counter', what: { ref: 'target', id: 't0' } } as EffectStep] } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: {},
+    readings: ['You may pay any amount of {E}. Counter target spell unless its controller pays {1} for each {E} paid this way.'],
+    near: ['You may pay any amount of {E}. Counter target spell unless its controller pays {1} for each {R} paid this way.'],
+  },
+});
+
+// edh-d-14 (Commander coordinator D, ranks 13,751-15,000, fourth pass): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'next-creature-card-played': {
+    def: spell([{ op: 'nextSpell', who: you, filter: { types: ['Creature'], stackKind: 'spell', zone: 'stack' }, rider: 'flash' } as EffectStep]),
+    readings: ['The next creature spell you cast this turn can be cast as though it had flash.', 'The next creature card you play this turn can be played as though it had flash.'],
+    near: ['The next creature card you cast this turn can be played as though it had flash.', 'The next artifact card you play this turn can be played as though it had flash.'],
+  },
+  'draw-nth-in-a-turn': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'draw', player: you, nth: 3 }] }, effect: { targets: [], steps: [{ op: 'draw', who: you, count: 1 } as EffectStep] } } as AbilityDef,
+    readings: ['Whenever you draw your third card each turn, draw a card.', 'Whenever you draw your third card in a turn, draw a card.'],
+    near: ['Whenever you draw your third card each turn, draw two cards.', 'Whenever you draw your second card in a turn, draw a card.'],
+  },
+});
+
+// edh-next-54 (Commander lane exchange, EDHREC top 20,000): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'shares-type-with-earlier-target': {
+    def: { kind: 'spell', text: '', effect: { targets: [
+      { id: 't0', kind: 'object', min: 1, max: 1, text: 'target nonland permanent you control', filter: { notTypes: ['Land'], controller: 'you' } },
+      { id: 't1', kind: 'object', min: 1, max: 1, text: 'target permanent an opponent controls that shares a card type with it', filter: { controller: 'opponent', sharesWith: { with: { ref: 'target', id: 't0' }, quality: 'cardType' } } },
+    ], steps: [{ op: 'exchange', a: { ref: 'target', id: 't0' }, b: { ref: 'target', id: 't1' }, what: 'control' }] } } as AbilityDef,
+    ctx: {},
+    readings: ['Exchange control of target nonland permanent you control and target permanent an opponent controls that shares a card type with it.',
+      'Exchange control of target nonland permanent you control and target permanent an opponent controls that shares a card type with that permanent.'],
+    near: ['Exchange control of target nonland permanent you control and target permanent an opponent controls that shares a color with it.',
+      'Exchange control of target nonland permanent you control and target permanent an opponent controls that shares a card type with you.'],
+  },
+  'player-they-gain-control': {
+    def: { kind: 'spell', text: '', effect: { targets: [
+      { id: 't0', kind: 'player', min: 1, max: 1, text: 'target opponent', players: { who: 'opponent' } },
+      { id: 't1', kind: 'object', min: 1, max: 1, text: 'target creature you control', filter: { types: ['Creature'], controller: 'you' } },
+    ], steps: [
+      { op: 'loseLife', who: { ref: 'target', id: 't0' }, amount: 2 } as EffectStep,
+      { op: 'effect', duration: { d: 'permanent' }, effects: [{ s: 'continuous', affects: { ref: 'target', id: 't1' }, mods: [{ layer: 2, controller: { ref: 'target', id: 't0' } }] }] } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: {},
+    readings: ['Target opponent loses 2 life. They gain control of target creature you control.', 'Target opponent loses 2 life. That player gains control of target creature you control.'],
+    near: ['Target opponent loses 2 life. They gains control of target creature you control.', 'Target opponent loses 2 life. You gain control of target creature you control.'],
+  },
+  'delayed-lone-if-trailing': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, text: 'target creature', filter: { types: ['Creature'] } }], steps: [
+      { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'target', id: 't0' }, mods: [{ layer: 2, controller: { ref: 'you' } }] }] } as EffectStep,
+      { op: 'untap', what: { ref: 'target', id: 't0' } } as EffectStep,
+      { op: 'delay', when: { at: 'step', step: 'end', next: true }, do: [{ op: 'if', cond: { cond: 'matches', object: { ref: 'target', id: 't0' }, filter: { manaValue: { op: '<=', value: 3 } } }, then: [{ op: 'sacrifice', what: { ref: 'target', id: 't0' } }] }] } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: {},
+    readings: ['Gain control of target creature until end of turn. Untap it. Sacrifice it at the beginning of the next end step if it has mana value 3 or less.',
+      'Gain control of target creature until end of turn. Untap it. At the beginning of the next end step, if it has mana value 3 or less, sacrifice it.'],
+    near: ['Gain control of target creature until end of turn. Untap it. Sacrifice it at the beginning of the next end step if it has mana value 4 or less.',
+      'Gain control of target creature until end of turn. Untap it. Sacrifice it at the beginning of the next end step if it has mana value 3 or greater.'],
+  },
+});
+
+// edh-next-46 (Commander lane edh-next, EDHREC ranks 8,751-10,000, third pass): the readings of its two families (render/fold-edhn46.ts, render/steps-life.ts)
+const N46_REST = (zone: string, group: string): EffectStep => ({ op: 'move', what: { ref: 'each', filter: { is: bound(group), not: { is: bound('hit') }, zone } }, to: { zone: 'library', position: 'bottom', order: 'random' } } as unknown as EffectStep);
+Object.assign(EXAMPLES, {
+  'put-hit-rest-bottom-random': {
+    def: spell([
+      { op: 'revealUntil', who: you, filter: { types: ['Creature'] }, as: 'hit', revealed: 'revealed' } as unknown as EffectStep,
+      { op: 'move', what: bound('hit'), to: { zone: 'battlefield', controller: you } } as unknown as EffectStep,
+      N46_REST('library', 'revealed'),
+    ]),
+    readings: [
+      'Reveal cards from the top of your library until you reveal a creature card. Put that card onto the battlefield and the rest on the bottom of your library in a random order.',
+      'Reveal cards from the top of your library until you reveal a creature card, put it onto the battlefield, then put the rest on the bottom of your library in a random order.',
+    ],
+    near: [
+      'Reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and the rest on the bottom of your library in a random order.',
+      'Reveal cards from the top of your library until you reveal a creature card. Put that card onto the battlefield and the rest on the bottom of your library in any order.',
+      'Reveal cards from the top of your library until you reveal a land card. Put that card onto the battlefield and the rest on the bottom of your library in a random order.',
+    ],
+  },
+  'distribute-counters-where-x': {
+    def: xp2Def('Creature', 'When this creature dies, distribute X +1/+1 counters among any number of target creatures you control, where X is the number of +1/+1 counters on this creature.'),
+    readings: [
+      'When this creature dies, distribute X +1/+1 counters among any number of target creatures you control, where X is the number of +1/+1 counters on this creature.',
+      'When this creature dies, distribute a number of +1/+1 counters equal to the number of +1/+1 counters on it among any number of target creatures you control.',
+    ],
+    near: [
+      'When this creature dies, distribute X +1/+1 counters among any number of target creatures you control, where X is the number of -1/-1 counters on this creature.',
+      'When this creature dies, distribute X +1/+1 counters among any number of target creatures an opponent controls, where X is the number of +1/+1 counters on this creature.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-46 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['put-hit-rest-bottom-random', 'distribute-counters-where-x']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-53 (Commander lane edh-next, EDHREC ranks 8,751-10,000, fourth pass): the readings of its two families (render/evt.ts, render/steps-life.ts; invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'opponent-attacks-you-intervening-if': {
+    def: xp2Def('Enchantment', 'Whenever an opponent attacks you and/or one or more planeswalkers you control, you gain 2 life.'),
+    readings: ['Whenever an opponent attacks you and/or one or more planeswalkers you control, you gain 2 life.', 'Whenever an opponent attacks, if they attacked you and/or a planeswalker you control, you gain 2 life.'],
+    near: ['Whenever an opponent attacks, if they attacked a planeswalker you control, you gain 2 life.', 'Whenever an opponent attacks, if they attacked you and/or a planeswalker you control, you gain 3 life.'],
+  },
+  'damage-equal-and-that-much': {
+    def: xp2Def('Artifact', '{2}, Sacrifice this artifact: It deals damage equal to the number of charge counters on it to target player and that much damage to up to one target creature.'),
+    readings: [
+      '{2}, Sacrifice this artifact: It deals damage equal to the number of charge counters on it to target player and up to one target creature.',
+      '{2}, Sacrifice this artifact: It deals damage equal to the number of charge counters on it to target player and that much damage to up to one target creature.',
+    ],
+    near: [
+      '{2}, Sacrifice this artifact: It deals damage equal to the number of charge counters on it to target player and twice that much damage to up to one target creature.',
+      '{2}, Sacrifice this artifact: It deals damage equal to the number of charge counters on it to target player and that much damage to each creature.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-53 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['opponent-attacks-you-intervening-if', 'damage-equal-and-that-much']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-16: the alternative cost to cast from your graveyard, said with "paying its"
+Object.assign(EXAMPLES, {
+  'alternative-cost-paying-its': {
+    def: statics([{ s: 'alternativeCost', cost: { mana: [{ kind: 'generic', amount: 2 }, { kind: 'colored', color: 'W' }] }, from: 'graveyard', name: 'alternative' } as StaticEffect]),
+    readings: ["You may cast Test Card from your graveyard by paying {2}{W} rather than pay Test Card's mana cost.", 'You may cast Test Card from your graveyard by paying {2}{W} rather than paying its mana cost.'],
+    near: ['You may cast Test Card from your hand by paying {2}{W} rather than paying its mana cost.', 'You may cast Test Card from your graveyard by paying {2}{W} in addition to paying its mana cost.'],
+  },
+});
+
+// edh-next-57 (Commander lane copy, EDHREC top 20,000): the readings of its two families (render/copy-except.ts, render/steps-zones.ts)
+Object.assign(EXAMPLES, {
+  'copy-except-loses-other-types': {
+    def: statics([{ s: 'replace', replaces: enters, body: { b: 'enters', copy: { of: { types: ['Creature'], zone: 'battlefield' }, optional: true, except: [{ layer: 4, types: { set: ['Enchantment'] } }] } } }]),
+    ctx: creature,
+    readings: [
+      "You may have Test Card enter as a copy of any creature on the battlefield, except it's an enchantment and loses all other card types.",
+      "You may have Test Card enter as a copy of any creature on the battlefield, except it's an enchantment and it loses all other card types.",
+    ],
+    near: [
+      "You may have Test Card enter as a copy of any creature on the battlefield, except it's an enchantment.",
+      "You may have Test Card enter as a copy of any creature on the battlefield, except it's an enchantment and loses all other creature types.",
+    ],
+  },
+  'copy-except-color-set-with-abilities': {
+    def: spell([{ op: 'copy', what: t('c'), result: 'token', who: you, except: [
+      { layer: 4, types: { add: ['Creature'] }, subtypes: { add: ['Spirit'] } }, { layer: '7b', power: 1, toughness: 1 }, { layer: 5, colors: { set: ['W'] } }, { layer: 6, add: [{ kind: 'keyword', keyword: 'flying', text: 'flying' } as unknown as AbilityDef] },
+    ] } as EffectStep], [objTarget('c', { types: ['Creature'], controller: 'you' })]),
+    readings: [
+      "Create a token that's a copy of target creature you control, except it's a 1/1 white Spirit creature with flying in addition to its other types.",
+      "Create a token that's a copy of target creature you control, except it's a 1/1 white Spirit creature in addition to its other types and it has flying.",
+    ],
+    near: [
+      "Create a token that's a copy of target creature you control, except it's a 1/1 white Spirit creature with haste in addition to its other types.",
+      "Create a token that's a copy of target creature you control, except it's a 1/1 white Spirit creature with flying.",
+    ],
+  },
+  'copy-per-object-that-spell-could-target': {
+    def: trig([{ ev: 'cast', player: 'you', spell: { types: ['Instant', 'Sorcery'] } } as EventPattern], [{ op: 'copy', what: { ref: 'event', role: 'spell' }, result: 'spell', who: you, retargetEach: { ref: 'each', filter: { subtypes: ['Golem'] } }, different: true } as EffectStep]),
+    readings: [
+      'Whenever you cast an instant or sorcery spell, copy that spell for each Golem that the spell could target. Each copy targets a different one of those Golems.',
+      'Whenever you cast an instant or sorcery spell, copy that spell for each Golem that spell could target. Each copy targets a different one of those Golems.',
+    ],
+    near: [
+      'Whenever you cast an instant or sorcery spell, copy that spell for each Golem that you could target. Each copy targets a different one of those Golems.',
+      'Whenever you cast an instant or sorcery spell, copy that spell for each Golem that spell could target. Each copy targets one of those Golems.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-57 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['copy-except-loses-other-types', 'copy-except-color-set-with-abilities', 'copy-per-object-that-spell-could-target']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-22 (Commander coordinator D, lane mana): the families of its renderer changes
+Object.assign(EXAMPLES, {
+  'mana-restriction-comma-or': {
+    def: spendMana({ spells: { anyOf: [{ subtypes: ['Assassin'] }, { keyword: 'flashback' }] }, abilities: { subtypes: ['Assassin'] } }),
+    readings: [
+      '{T}: Add {C}. Spend this mana only to cast an Assassin spell or a spell that has flashback, or to activate an ability of an Assassin source.',
+      '{T}: Add {C}. Spend this mana only to activate an ability of an Assassin source or to cast an Assassin spell or a spell that has flashback.',
+    ],
+    near: [
+      '{T}: Add {C}. Spend this mana only to cast an Assassin spell or a spell that has flashback or to activate an ability of an Assassin source.',
+      '{T}: Add {C}. Spend this mana only to cast an Assassin spell or a spell that has reach, or to activate an ability of an Assassin source.',
+    ],
+  },
+  'choose-a-player-adds': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, isMana: true, effect: { targets: [], steps: [{ op: 'addMana', who: you, units: [['G'], ['G'], ['G']], ofYourChoice: true }] } } as unknown as AbilityDef,
+    readings: ['{T}: A player of your choice adds {G}{G}{G}.', '{T}: Choose a player. That player adds {G}{G}{G}.'],
+    near: ['{T}: Choose a player. That player adds {G}{G}.', '{T}: Choose an opponent. That player adds {G}{G}{G}.', '{T}: You add {G}{G}{G}.'],
+  },
+  'mana-spent-on-or-to-cast': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, isMana: true, effect: { targets: [], steps: [{ op: 'addMana', who: you, units: [['W', 'U', 'B', 'R', 'G']], rider: { spells: { types: ['Creature'], multicolored: true }, entersWith: [{ kind: '+1/+1', count: 1 }] } }] } } as unknown as AbilityDef,
+    readings: [
+      '{T}: Add one mana of any color. If that mana is spent to cast a multicolored creature spell, that creature enters with an additional +1/+1 counter on it.',
+      '{T}: Add one mana of any color. If that mana is spent on a multicolored creature spell, that creature enters with an additional +1/+1 counter on it.',
+    ],
+    near: [
+      '{T}: Add one mana of any color. If that mana is spent to cast a creature spell, that creature enters with an additional +1/+1 counter on it.',
+      '{T}: Add one mana of any color. If that mana is spent to cast a multicolored creature spell, that creature enters with a +1/+1 counter on it.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-22 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['mana-restriction-comma-or', 'mana-spent-on-or-to-cast', 'choose-a-player-adds']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-23 (lane dig): the same X after "look at the top X cards ... where X is", and the player who puts the hit onto the battlefield and shuffles the rest
+Object.assign(EXAMPLES, {
+  'dig-where-x-mana-value': {
+    def: xp2Def('Sorcery', 'Look at the top X cards of your library, where X is the number of creatures you control. You may put a permanent card with mana value X or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order.'),
+    readings: [
+      'Look at the top X cards of your library, where X is the number of creatures you control. You may put a permanent card with mana value X or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order.',
+    ],
+    near: [
+      'Look at the top X cards of your library, where X is the number of creatures you control. You may put a permanent card with mana value X or more from among them onto the battlefield. Put the rest on the bottom of your library in a random order.',
+      'Look at the top X cards of your library, where X is the number of creatures you control. You may put a permanent card with mana value less than X from among them onto the battlefield. Put the rest on the bottom of your library in a random order.',
+    ],
+  },
+  'player-puts-hit-shuffles-rest': {
+    def: xp2Def('Sorcery', 'Destroy target creature. It can\'t be regenerated. Its controller reveals cards from the top of their library until they reveal a creature card. The player puts that card onto the battlefield, then shuffles all other cards revealed this way into their library.'),
+    readings: [
+      'Destroy target creature. It can\'t be regenerated. Its controller reveals cards from the top of their library until they reveal a creature card. The player puts that card onto the battlefield, then shuffles all other cards revealed this way into their library.',
+      'Destroy target creature. It can\'t be regenerated. Its controller reveals cards from the top of their library until they reveal a creature card. That player puts that card onto the battlefield, then shuffles the rest into their library.',
+    ],
+    near: [
+      'Destroy target creature. It can\'t be regenerated. Its controller reveals cards from the top of their library until they reveal a creature card. The player puts that card into their hand, then shuffles all other cards revealed this way into their library.',
+      'Destroy target creature. It can\'t be regenerated. Its controller reveals cards from the top of their library until they reveal a creature card. The player puts that card onto the battlefield, then shuffles all other cards revealed this way into their graveyard.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-23 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['dig-where-x-mana-value', 'player-puts-hit-shuffles-rest']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-51 (Commander EDHREC ranks 17,501-18,750, third pass): the readings of its two new families (cond.ts +2)
+Object.assign(EXAMPLES, {
+  'you-are-attacking-n-opponents': {
+    def: statics([{ s: 'restrict', subject: { ref: 'self' }, mode: 'onlyIf', action: 'attack', when: { cond: 'compare', left: { q: 'opponentsAttacked' }, op: '>=', right: 2 } } as StaticEffect]),
+    ctx: creature,
+    readings: ["~ can't attack unless you are attacking two or more opponents.", "~ can't attack unless you're attacking two or more opponents."],
+    near: ["~ can't attack unless you are attacking three or more opponents.", "~ can't attack unless you are attacking two or more players."],
+  },
+  'sacrificed-n-typed-you-have': {
+    def: statics([{ s: 'restrict', subject: { ref: 'self' }, mode: 'onlyIf', action: 'attack', when: { cond: 'happened', event: { ev: 'action', verb: 'sacrifice', actor: 'you', object: { subtypes: ['Clue'] } }, scope: 'turn', times: { op: '>=', value: 3 } } } as StaticEffect]),
+    ctx: creature,
+    readings: ["~ can't attack unless you sacrificed three or more Clues this turn.", "~ can't attack unless you've sacrificed three or more Clues this turn."],
+    near: ["~ can't attack unless you sacrificed two or more Clues this turn.", "~ can't attack unless you sacrificed three or more Foods this turn."],
+  },
+  'discard-for-each-drawn-lead': {
+    def: trig([enters], [{ op: 'draw', who: you, count: 2, as: 'drawn' } as EffectStep, { op: 'discard', who: you, count: { q: 'resultCount', step: 'drawn' } } as EffectStep]),
+    ctx: creature,
+    readings: ['When this creature enters, draw two cards. For each card drawn this way, discard a card.', 'When this creature enters, draw two cards. For each card drawn this way, discard a card.'],
+    near: ['When this creature enters, draw two cards. For each card drawn this way, discard two cards.', 'When this creature enters, draw two cards. For each card in your hand, discard a card.'],
+  },
+  'ring-tempts-then-counter': {
+    def: trig([enters], [{ op: 'action', action: 'ringTempts', who: you } as EffectStep, { op: 'putCounters', on: { ref: 'each', filter: { ringBearer: 'you' } }, kind: '+1/+1', count: 1 } as EffectStep]),
+    ctx: creature,
+    readings: ['When this creature enters, the Ring tempts you, then you put a +1/+1 counter on your Ring-bearer.', 'When this creature enters, the Ring tempts you. Put a +1/+1 counter on your Ring-bearer.'],
+    near: ['When this creature enters, the Ring tempts you, then you put a -1/-1 counter on your Ring-bearer.', 'When this creature enters, the Ring tempts you, then you put two +1/+1 counters on your Ring-bearer.'],
+  },
+  'no-noun-got-votes': {
+    def: spell([{ op: 'action', action: 'vote', who: you, secret: true, upTo: true, subject: { ref: 'each', filter: { types: ['Creature'] } }, as: 'v' } as EffectStep, { op: 'if', cond: { cond: 'not', of: { cond: 'exists', of: { ref: 'bound', name: 'v' } } }, then: [draw()] } as EffectStep]),
+    readings: ['Each player secretly votes for up to one creature, then those votes are revealed. If no creature got votes, draw a card.'],
+    near: ['Each player secretly votes for up to one creature, then those votes are revealed. If no creature got votes, draw two cards.', 'Each player secretly votes for up to one creature, then those votes are revealed. If a creature got votes, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-51 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['you-are-attacking-n-opponents', 'sacrificed-n-typed-you-have']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-56 (Commander lane exile-play): a reflexive trigger on what an exile moved, in the present tense
+Object.assign(EXAMPLES, {
+  'moved-this-way-present-exile': {
+    def: spell([
+      { op: 'move', what: t('c'), to: { zone: 'exile' }, as: 'd' } as EffectStep,
+      { op: 'reflexive', when: { did: 'd', if: { cond: 'did', step: 'd', which: { notTypes: ['Land'], isCard: true }, to: 'exile' } }, targets: [], do: [gain(2)] } as EffectStep,
+    ], [objTarget('c', { zone: 'graveyard', isCard: true })]),
+    readings: [
+      'Exile target card from a graveyard. When you exile a nonland card this way, you gain 2 life.',
+      'Exile target card from a graveyard. When you exile one or more nonland cards this way, you gain 2 life.',
+      'Exile target card from a graveyard. When a nonland card was exiled this way, you gain 2 life.',
+    ],
+    near: [
+      'Exile target card from a graveyard. When you exile a land card this way, you gain 2 life.',
+      'Exile target card from a graveyard. When you sacrifice a nonland card this way, you gain 2 life.',
+    ],
+  },
+});
+
+Object.assign(EXAMPLES, {
+  'linked-put-one-counter-words': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { is: { ref: 'linked', link: 'exiled' }, zone: 'any', isCard: true, anyOf: [{ types: ['Creature'] }] } }, min: 1, max: 1, as: 'returned' } as EffectStep,
+      { op: 'move', what: bound('returned'), to: { zone: 'battlefield', controller: you, counters: [{ kind: 'finality', count: 1 }] } } as EffectStep,
+    ]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: [
+      'Put a creature card exiled with Test Card onto the battlefield under your control with a finality counter on it.',
+      'Put a creature card exiled with Test Card onto the battlefield under your control with an additional finality counter on it.',
+    ],
+    near: [
+      'Put a creature card exiled with Test Card onto the battlefield under your control with a stun counter on it.',
+      'Put a creature card exiled with Test Card onto the battlefield under an opponent\'s control with a finality counter on it.',
+    ],
+  },
+  // edh-next-62
+  'look-the-cards-exiled-with': {
+    def: statics([{ s: 'permit', who: you, action: 'lookAt', of: { is: { ref: 'linked', link: 'exiled' } } } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['You may look at the cards exiled with Test Card.', 'You may look at cards exiled with Test Card.'],
+    near: ['You may look at the cards exiled with Test Card any time.', 'You may look at the cards you own exiled with Test Card.'],
+  },
+  'linked-return-one-owned-hand': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { is: { ref: 'linked', link: 'exiled' }, zone: 'any', isCard: true, owner: 'you' } }, min: 1, max: 1, as: 'returned' } as EffectStep,
+      { op: 'move', what: bound('returned'), to: { zone: 'hand' } } as EffectStep,
+    ]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['Put a card you own exiled with Test Card into your hand.', 'Return a card you own exiled with Test Card to your hand.'],
+    near: ['Put a card you own exiled with Test Card onto the battlefield.', 'Return a card exiled with Test Card to your hand.'],
+  },
+  'linked-put-all-owner-graveyard': {
+    def: spell([{ op: 'move', what: { ref: 'each', filter: { is: { ref: 'linked', link: 'exiled' }, zone: 'exile' } }, to: { zone: 'graveyard' } } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ["Put all cards exiled with Test Card into their owner's graveyard.", "Put all cards exiled with it into their owner's graveyard."],
+    near: ["Put all cards exiled with Test Card into their owner's hand.", "Put all cards exiled with Test Card into your graveyard."],
+  },
+  'all-activated-of-exiled-with-it': {
+    def: statics([{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 6, addActivatedOf: { ref: 'linked', link: 'exiled' } }] } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact', 'Creature'] },
+    readings: ['Test Card has all activated abilities of the exiled card.', 'Test Card has all activated abilities of all cards exiled with it.', 'Test Card has all activated abilities of all cards exiled with Test Card.'],
+    near: ['Test Card has all triggered abilities of the exiled card.', 'Test Card has all activated abilities of all cards in your graveyard.'],
+  },
+});
+
+// edh-next-55 (Commander lane dice): the readings of its six families (invented wordings, design 6.10)
+const E55_GOBLIN = { colors: ['R'], power: 1, toughness: 1, subtypes: ['Goblin'], types: ['Creature'] };
+Object.assign(EXAMPLES, {
+  'die-row-nine-or-less': {
+    def: spell([{ op: 'rollDie', who: you, sides: 20, table: [{ min: 1, max: 9, do: [gain(2)] }, { min: 10, max: 20, do: [gain(4)] }] } as EffectStep]),
+    readings: ['Roll a d20. 1-9 | Gain 2 life. 10-20 | Gain 4 life.', 'Roll a d20. 9 or less | Gain 2 life. 10-20 | Gain 4 life.'],
+    near: ['Roll a d20. 8 or less | Gain 2 life. 10-20 | Gain 4 life.', 'Roll a d20. 1-9 | Gain 2 life. 20 or less | Gain 4 life.'],
+  },
+  'die-row-dash': {
+    def: spell([{ op: 'rollDie', who: you, sides: 6, table: [{ min: 1, max: 1, do: [gain(2)] }, { min: 2, max: 6, do: [gain(4)] }] } as EffectStep]),
+    readings: ['Roll a d6. 1 | Gain 2 life. 2-6 | Gain 4 life.', 'Roll a d6. 1 -- Gain 2 life. 2-6 | Gain 4 life.'],
+    near: ['Roll a d6. 1 | Gain 2 life. 2-6 -- Gain 4 life.', 'Roll a d6. 2 -- Gain 2 life. 2-6 | Gain 4 life.'],
+  },
+  'die-row-of-those-tokens': {
+    def: spell([{ op: 'rollDie', who: you, sides: 6, table: [
+      { min: 1, max: 3, do: [{ op: 'createToken', who: you, count: 1, token: E55_GOBLIN } as EffectStep] },
+      { min: 4, max: 6, do: [{ op: 'createToken', who: you, count: 2, token: E55_GOBLIN } as EffectStep] },
+    ] } as EffectStep]),
+    readings: ['Roll a d6. 1-3 | Create a 1/1 red Goblin creature token. 4-6 | Create two 1/1 red Goblin creature tokens.', 'Roll a d6. 1-3 | Create a 1/1 red Goblin creature token. 4-6 | Create two of those tokens.'],
+    near: ['Roll a d6. 1-3 | Create a 1/1 red Goblin creature token. 4-6 | Create three of those tokens.', 'Roll a d6. 1-3 | Create a 1/1 red Goblin creature token. 4-6 | Create two of those creatures.', 'Roll a d6. 1-3 | Create two of those tokens. 4-6 | Create two 1/1 red Goblin creature tokens.'],
+  },
+  'roll-n-or-higher-event': {
+    def: trig([{ ev: 'dieRoll', player: 'you', result: { op: '>=', value: 3 } }], [draw()]),
+    ctx: creature,
+    readings: ['Whenever you roll a 3 or higher, draw a card.', 'Whenever you roll a die and the result is 3 or more, draw a card.'],
+    near: ['Whenever you roll a 4 or higher, draw a card.', 'Whenever you roll a 3 or lower, draw a card.', 'Whenever an opponent rolls a 3 or higher, draw a card.'],
+  },
+  'roll-was-n-or-higher': {
+    def: trig([{ ev: 'dieRoll', player: 'you' }], [gain(1), { op: 'if', cond: { cond: 'compare', left: { q: 'dieResult' }, op: '>=', right: 4 }, then: [draw()] } as EffectStep]),
+    ctx: creature,
+    readings: ['Whenever you roll a die, gain 1 life. If the roll was 4 or higher, draw a card.', 'Whenever you roll a die, gain 1 life. If you rolled 4 or higher, draw a card.', 'Whenever you roll a die, gain 1 life. If the result is 4 or greater, draw a card.'],
+    near: ['Whenever you roll a die, gain 1 life. If the roll was 5 or higher, draw a card.', 'Whenever you roll a die, gain 1 life. If the roll was 4 or lower, draw a card.'],
+  },
+  'greatest-power-or-tied': {
+    def: trig([{ ev: 'attacks', attacker: { self: true } }], [gain(1), { op: 'if', cond: { cond: 'compare', left: { q: 'stat', stat: 'power', of: { ref: 'self' } }, op: '>=', right: { q: 'stat', stat: 'power', of: { ref: 'each', filter: { types: ['Creature'] } }, agg: 'max' } }, then: [draw()] } as EffectStep]),
+    ctx: creature,
+    readings: ['Whenever this creature attacks, gain 1 life. If no other creature has greater power, draw a card.', 'Whenever this creature attacks, gain 1 life. If this creature has the greatest power or is tied for greatest power among creatures on the battlefield, draw a card.'],
+    near: ['Whenever this creature attacks, gain 1 life. If this creature has the greatest power among creatures on the battlefield, draw a card.', 'Whenever this creature attacks, gain 1 life. If this creature has the greatest toughness or is tied for greatest toughness among creatures on the battlefield, draw a card.'],
+  },
+  // edh-next-63 (Commander lane counters)
+  'counters-removed-that-many': {
+    def: spell([
+      { op: 'removeCounters', from: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, kind: '+1/+1', count: 'all', upTo: true, among: true, as: 'r' } as EffectStep,
+      { op: 'putCounters', on: self, kind: '+1/+1', count: { q: 'math', op: '*', args: [2, { q: 'countersRemoved', step: 'r' }] } } as EffectStep,
+    ]),
+    ctx: creature,
+    readings: [
+      'Remove any number of +1/+1 counters from among creatures you control. Put twice that many +1/+1 counters on this creature.',
+      'Remove any number of +1/+1 counters from among creatures you control. Put a number of +1/+1 counters equal to twice the number of counters removed this way on this creature.',
+    ],
+    near: ['Remove any number of +1/+1 counters from among creatures you control. Put that many +1/+1 counters on this creature.', 'Remove any number of +1/+1 counters from among creatures you control. Put three times that many +1/+1 counters on this creature.'],
+  },
+  'among-unnarrowed-group': {
+    def: spell([{ op: 'removeCounters', from: { ref: 'each', filter: {} }, kind: 'any', count: 'all', upTo: true, among: true } as EffectStep]),
+    readings: ['Remove any number of counters from among permanents.', 'Remove any number of counters from among all permanents.', 'Remove any number of counters from among permanents on the battlefield.'],
+    near: ['Remove any number of counters from among permanents you control.', 'Remove all counters from among permanents.'],
+  },
+  // edh-next-65 (Commander lane copy, second round): a single copy made by a delayed trigger beside another that copies too (Howl of the Horde)
+  'copy-an-additional-time': {
+    def: spell([{ op: 'delay', when: { at: 'event', event: { ev: 'cast', player: 'you', spell: { types: ['Instant', 'Sorcery'] } } }, do: [{ op: 'copy', what: { ref: 'event', role: 'spell' }, result: 'spell', who: you, count: 1 } as EffectStep], duration: { d: 'endOfTurn' }, once: true } as EffectStep]),
+    readings: ['When you next cast an instant or sorcery spell this turn, copy that spell an additional time.', 'When you next cast an instant or sorcery spell this turn, copy it an additional time.'],
+    near: ['When you next cast an instant or sorcery spell this turn, copy that spell twice.', 'When you next cast an instant or sorcery spell this turn, copy that spell an additional time and gain 1 life.', 'When you next cast an instant or sorcery spell, copy that spell an additional time.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-55 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['die-row-nine-or-less', 'die-row-dash', 'die-row-of-those-tokens', 'roll-n-or-higher-event', 'roll-was-n-or-higher', 'greatest-power-or-tied']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-20 (lane random): the result of another player's flip, "they" or "that player"; every player sacrificing what they control, said as "is sacrificed by its controller"; and the
+// Otherwise reading of the second result of a flip (family flip-results-either-order)
+Object.assign(EXAMPLES, {
+  'flip-result-they': {
+    def: spell([{ op: 'flipCoin', who: { ref: 'target', id: 't0' }, onLose: [{ op: 'loseLife', who: you, amount: 1 }] } as EffectStep], [playerTarget('t0')]),
+    readings: ['Target player flips a coin. If that player loses the flip, you lose 1 life.', 'Target player flips a coin. If they lose the flip, you lose 1 life.'],
+    near: ['Target player flips a coin. If you lose the flip, you lose 1 life.', 'Target player flips a coin. If they win the flip, you lose 1 life.'],
+  },
+  'sacrificed-by-its-controller': {
+    def: spell([{ op: 'sacrificeChoice', who: { ref: 'each', who: 'player' }, filter: { types: ['Creature'], tapped: true, controller: { ref: 'iterating' } }, count: 1, mode: 'all' } as EffectStep]),
+    readings: ['Each player sacrifices all tapped creatures they control.', 'Each tapped creature is sacrificed by its controller.'],
+    near: ['Each tapped creature is sacrificed by you.', 'Each player sacrifices a tapped creature they control.'],
+  },
+} satisfies Record<string, Example>);
+
+describe('edh-next-58 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['enchanted-object-possessive', 'activation-cost-floor-ability-words', 'cards-total-in-all-graveyards']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-34 (Commander coordinator D, lane turns-stack): the readings of its family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'if-you-pay-did': {
+    def: spell([
+      { op: 'pay', who: you, cost: { other: [{ kind: 'payEnergy', amount: 1 }] }, as: 'pay', then: [gain(1)] } as EffectStep,
+    ]),
+    readings: ['You may pay {E}. If you do, you gain 1 life.', 'You may pay {E}. If you pay, you gain 1 life.'],
+    near: ['You may pay {E}. If you paid, you gain 1 life.', 'You may pay {E}. If you pay {E}, you gain 1 life.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-34 (G6): the readings of its family are accepted and the near misses are not', () => {
+  it('if-you-pay-did: every reading is accepted and a near miss is not', () => {
+    const ex = (EXAMPLES as Record<string, Example>)['if-you-pay-did']!;
+    for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+    for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+  });
+});
+// edh-next-68: a graveyard alternative cost under a condition, said "as long as C, ..."
+Object.assign(EXAMPLES, {
+  'alternative-cost-as-long-as': {
+    def: statics([{ s: 'alternativeCost', cost: { mana: [{ kind: 'colored', color: 'U' }] }, from: 'graveyard', name: 'alternative', when: { cond: 'exists', of: { ref: 'each', filter: { subtypes: ['Giant'], controller: 'you' } } } } as StaticEffect]),
+    readings: ['If you control a Giant, you may cast Test Card from your graveyard by paying {U} rather than pay Test Card\'s mana cost.', 'As long as you control a Giant, you may cast Test Card from your graveyard by paying {U} rather than pay Test Card\'s mana cost.'],
+    near: ['As long as you control a Giant, you may cast Test Card from your hand by paying {U} rather than pay Test Card\'s mana cost.'],
+  },
+});
+
+// edh-next-68: a card of a type that is one of several subtypes, "that's a X, Y, and/or Z"
+Object.assign(EXAMPLES, {
+  'thats-kinds-and-or': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], zone: 'graveyard', owner: 'you', anyOf: [{ subtypes: ['Cleric'] }, { subtypes: ['Rogue'] }, { subtypes: ['Wizard'] }] } }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'unearth', text: 'unearth {1}{B}', cost: { mana: [{ kind: 'generic', amount: 1 }, { kind: 'colored', color: 'B' }] } } as unknown as AbilityDef] }] } as StaticEffect]),
+    readings: ["Each creature card in your graveyard that's a Cleric, Rogue, or Wizard has unearth {1}{B}.", "Each creature card in your graveyard that's a Cleric, Rogue, and/or Wizard has unearth {1}{B}."],
+    near: ["Each creature card in your graveyard that's a Cleric, Rogue, and Wizard has unearth {1}{B}."],
+  },
+});
+
+// edh-next-68: a group returned to the battlefield tapped, the destination said first
+Object.assign(EXAMPLES, {
+  'return-tapped-first': {
+    def: spell([{ op: 'move', what: { ref: 'each', filter: { types: ['Creature'], zone: 'graveyard', owner: 'you', isCard: true } }, to: { zone: 'battlefield', controller: you, tapped: true } } as EffectStep]),
+    readings: ['Return all creature cards in your graveyard to the battlefield tapped.', 'Return to the battlefield tapped all creature cards in your graveyard.'],
+    near: ['Return to the battlefield all creature cards in your graveyard.'],
+  },
+});
+
+
+// edh-next-69 (Commander lane rest): the sacrifice ban of an opponent's spells and abilities (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'each-opponent-controls-sources-sacrifice': {
+    def: ez14('Creature — Bird', "Spells and abilities your opponents control can't cause you to sacrifice permanents.")[0]!,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ["Spells and abilities your opponents control can't cause you to sacrifice permanents.", "Spells and abilities each opponent controls can't cause you to sacrifice permanents."],
+    near: ["Spells and abilities you control can't cause you to sacrifice permanents.", "Spells and abilities each opponent controls can't cause you to sacrifice creatures."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-63 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['counters-removed-that-many', 'among-unnarrowed-group']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-70 (Commander lane counters, second round): the readings of its two families
+Object.assign(EXAMPLES, {
+  'cond-static-enters-as-long-as': {
+    def: { kind: 'static', text: '', condition: { cond: 'turnOf', whose: 'you' }, effects: [{ s: 'replace', replaces: { ev: 'zoneChange', subject: { subtypes: ['Elf'], controller: 'you', other: true }, to: 'battlefield' }, body: { b: 'enters', counters: [{ kind: '+1/+1', count: 1 }] } }] } as AbilityDef,
+    readings: ["As long as it's your turn, each other Elf you control enters with an additional +1/+1 counter on it.", "If it's your turn, each other Elf you control enters with an additional +1/+1 counter on it."],
+    near: ["As long as it's your turn, each other Elf you control enters with an additional -1/-1 counter on it.", "As long as it's your turn, each other Elf you control enters tapped."],
+  },
+  'self-pair-become': {
+    def: trig([{ ev: 'becomes', what: 'tapped', object: { self: true } } as EventPattern], [draw()]),
+    readings: ['Whenever Test Card becomes tapped, draw a card.', 'Whenever Test Card become tapped, draw a card.'],
+    near: ['Whenever Test Card becomes untapped, draw a card.', 'Whenever Test Card become untapped, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+// edh-next-64 (Commander lane tokens): one family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'token-rider-the-token-has': {
+    def: spell([{ op: 'createToken', who: you, count: 1, token: spawn } as EffectStep]),
+    readings: ['Create a 0/1 colorless Eldrazi Spawn creature token. That token has "Sacrifice this creature: Add {C}."', 'Create a 0/1 colorless Eldrazi Spawn creature token. The token has "Sacrifice this creature: Add {C}."', 'Create a 0/1 colorless Eldrazi Spawn creature token. It has "Sacrifice this creature: Add {C}."'],
+    near: ['Create a 0/1 colorless Eldrazi Spawn creature token. The tokens have "Sacrifice this creature: Add {C}."', 'Create a 0/1 colorless Eldrazi Spawn creature token. The token has "Sacrifice this creature: Add {R}."'],
+  },
+});
+describe('edh-next-64 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['token-rider-the-token-has']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-d-37 (Commander lane lands): one family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'enters-under-opponent': {
+    def: trig([{ ev: 'zoneChange', subject: { types: ['Land'], controller: 'opponent' }, to: 'battlefield' }], [gain(1)]),
+    readings: ['Whenever a land an opponent controls enters, you gain 1 life.', "Whenever a land enters under an opponent's control, you gain 1 life."],
+    near: ["Whenever a creature enters under an opponent's control, you gain 1 life.", "Whenever a land enters under your control, you gain 1 life.", "Whenever a land enters under an opponent's control, you gain 2 life."],
+  },
+  'trigger-player-puts-onto-battlefield': {
+    def: trig([{ ev: 'zoneChange', subject: { types: ['Creature'], token: false }, to: 'battlefield' }], [gain(1)]),
+    readings: ['Whenever a nontoken creature enters, you gain 1 life.', 'Whenever a player puts a nontoken creature onto the battlefield, you gain 1 life.'],
+    near: ['Whenever a player puts a creature onto the battlefield, you gain 1 life.', 'Whenever you put a nontoken creature onto the battlefield, you gain 1 life.', 'Whenever a player puts a nontoken creature onto the battlefield, you gain 2 life.'],
+  },
+});
+describe('edh-d-37 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['enters-under-opponent', 'trigger-player-puts-onto-battlefield']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-29 (lane attach, second pass): the families static-condition-it and attached-to-it
+Object.assign(EXAMPLES, {
+  'static-condition-it': {
+    def: { kind: 'static', text: '', condition: { cond: 'matches', object: { ref: 'attachedTo' }, filter: { supertypes: ['Legendary'] } }, effects: [{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: '7c', power: 2, toughness: 2 }] }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact', 'Equipment'] },
+    readings: ['As long as equipped creature is legendary, it gets an additional +2/+2.', 'As long as it is legendary, it gets an additional +2/+2.', 'As long as it is legendary, it gets +2/+2.'],
+    near: ['As long as it is legendary, it gets an additional +1/+1.', 'As long as it is red, it gets an additional +2/+2.', 'As long as it is legendary, it gets an additional +2/+2 and has trample.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-29 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['static-condition-it']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-71 (Commander lane instead, second round): the readings of its one family (invented wordings, design 6.10)
+const EDHN71_THEIR_GRAVEYARD = {
+  kind: 'spell',
+  effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, text: "target instant card from an opponent's graveyard", filter: { types: ['Instant'], zone: 'graveyard', owner: 'opponent', isCard: true } }], steps: [{ op: 'cast', who: you, what: { ref: 'target', id: 't0' }, free: true, optional: true, graveyardInstead: { to: { zone: 'exile' } } }] },
+} as unknown as AbilityDef;
+const EDHN71_DRAW_RUNS_ON = {
+  kind: 'static',
+  effects: [{ s: 'replace', replaces: { ev: 'draw', player: 'you' }, body: { b: 'instead', do: [{ op: 'move', what: { ref: 'topCards', player: you, count: 2 }, to: { zone: 'exile' }, as: 'impulse' }, { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'permit', who: you, action: 'play', of: { is: { ref: 'bound', name: 'impulse' } } }] }] } }],
+} as unknown as AbilityDef;
+Object.assign(EXAMPLES, {
+  'spell-into-their-graveyard': {
+    def: EDHN71_THEIR_GRAVEYARD,
+    readings: [
+      "You may cast target instant card from an opponent's graveyard without paying its mana cost. If that spell would be put into a graveyard, exile it instead.",
+      "You may cast target instant card from an opponent's graveyard without paying its mana cost. If that spell would be put into their graveyard, exile it instead.",
+    ],
+    near: ["You may cast target instant card from an opponent's graveyard without paying its mana cost. If that spell would be put into your graveyard, exile it instead."],
+  },
+  'instead-closes-first-sentence': {
+    def: EDHN71_DRAW_RUNS_ON,
+    readings: [
+      'If you would draw a card, exile the top two cards of your library instead. You may play those cards this turn.',
+    ],
+    near: ['If you would draw a card, exile the top two cards of your library instead. You may play those cards until end of turn. Draw a card.'],
+  },
+});
+
+// edh-d-41 (lane d-leftovers-2; CR 205.1a, 613.1d, 613.1f, cites from memory, unverified): a static ability that sets an artifact type and subtype, grants an ability and takes every other ability away, colors unchanged
+Object.assign(EXAMPLES, {
+  'artifact-set-loses-other-abilities': {
+    def: statics([{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: 4, types: { set: ['Artifact'] }, subtypes: { set: ['Treasure'] } }, { layer: 6, removeAll: true, add: [{ kind: 'activated', text: '{T}, Sacrifice this artifact: Add one mana of any color', cost: { tap: true, other: [{ kind: 'sacrifice', filter: { self: true }, count: 1, self: true }] }, isMana: true, effect: { targets: [], steps: [{ op: 'addMana', who: you, units: [['W', 'U', 'B', 'R', 'G']] } as EffectStep] } }] }] } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment', 'Aura'] },
+    readings: ['Enchanted permanent is a Treasure artifact with "{T}, Sacrifice this artifact: Add one mana of any color" and it loses all other abilities.', 'Enchanted permanent is a Treasure artifact with "{T}, Sacrifice this artifact: Add one mana of any color," and it loses all other abilities.'],
+    near: ['Enchanted permanent is a Treasure artifact with "{T}, Sacrifice this artifact: Add one mana of any color" and it loses all other card types.', 'Enchanted permanent is a Treasure artifact with "{T}, Sacrifice this artifact: Add one mana of any color" and it loses all abilities.', 'Enchanted permanent is a colorless Treasure artifact with "{T}, Sacrifice this artifact: Add one mana of any color" and it loses all other abilities.'],
+  },
+} satisfies Record<string, Example>);
+
+describe('edh-next-70 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['cond-static-enters-as-long-as', 'self-pair-become']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-43 (Commander coordinator D, lane counter-modes, second pass): three families (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+const edhd43Def = (type: string, text: string, cost = '{0}'): AbilityDef =>
+  parseCard({ name: 'Test Card', layout: 'normal', mana_cost: cost, type_line: type, oracle_text: text, colors: [], ...(type.includes('Creature') ? { power: '2', toughness: '2' } : {}) } as OracleCard, RX30_OPTS).faces[0]!.abilities.at(-1)!;
+Object.assign(EXAMPLES, {
+  'player-may-discard-up-to': {
+    def: edhd43Def('Sorcery', 'Target player may discard up to three cards.'),
+    readings: ['Target player may discard up to three cards.', 'Target player discards up to three cards.'],
+    near: ['Target player may discard up to four cards.', 'Target player may discard three cards.', 'Target player discards three cards.'],
+  },
+  'if-the-player-pays-untap-chosen': {
+    def: edhd43Def('Enchantment', "At the beginning of each player's upkeep, that player may choose any number of tapped creatures they control and pay {1} for each creature chosen this way. If the player does, untap those creatures."),
+    readings: ["At the beginning of each player's upkeep, that player may choose any number of tapped creatures they control and pay {1} for each creature chosen this way. If the player does, untap those creatures.", "At the beginning of each player's upkeep, that player may choose any number of tapped creatures they control and pay {1} for each creature chosen this way. If that player does, untap those creatures."],
+    near: ["At the beginning of each player's upkeep, that player may choose any number of tapped creatures they control and pay {1} for each creature chosen this way. If the player doesn't, untap those creatures.", "At the beginning of each player's upkeep, that player may choose any number of tapped creatures they control and pay {2} for each creature chosen this way. If the player does, untap those creatures."],
+  },
+  'cant-target-nongreen-by-opponents': {
+    def: edhd43Def('Creature — Troll', "~ can't be the target of nongreen spells your opponents control or abilities from nongreen sources your opponents control."),
+    readings: ["~ can't be the target of nongreen spells your opponents control or abilities from nongreen sources your opponents control."],
+    near: ["~ can't be the target of nongreen spells or abilities from nongreen sources.", "~ can't be the target of nonblue spells your opponents control or abilities from nonblue sources your opponents control."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-43 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['player-may-discard-up-to', 'if-the-player-pays-untap-chosen', 'cant-target-nongreen-by-opponents']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-35 (lane dig, second pass): the count of a reveal until, "that many ...", "a number of ... equal to ..." or "X ..., where X is ..."
+const ED35_UNTIL = 'Sacrifice X Zombies, then reveal cards from the top of your library until you reveal ';
+const ED35_TAIL = ' Put those cards onto the battlefield and the rest on the bottom of your library in a random order.';
+Object.assign(EXAMPLES, {
+  'reveal-until-count-wording': {
+    def: xp2Def('Sorcery', `${ED35_UNTIL}a number of Zombie creature cards equal to the number of Zombies sacrificed this way.${ED35_TAIL}`, '{X}'),
+    readings: [
+      `${ED35_UNTIL}a number of Zombie creature cards equal to the number of Zombies sacrificed this way.${ED35_TAIL}`,
+      `${ED35_UNTIL}X Zombie creature cards, where X is the number of Zombies sacrificed this way.${ED35_TAIL}`,
+    ],
+    near: [
+      `${ED35_UNTIL}a number of Zombie creature cards equal to the number of Zombies sacrificed this turn.${ED35_TAIL}`,
+      `${ED35_UNTIL}a number of Zombie creature cards equal to the number of Zombies you control.${ED35_TAIL}`,
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-35 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['reveal-until-count-wording']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+const ED35_DIG = 'Look at the top five cards of your library. You may put any number of them into your hand and the rest into your graveyard. You lose 3 life for each card ';
+Object.assign(EXAMPLES, {
+  'put-into-hand-this-way': {
+    def: xp2Def('Sorcery', `${ED35_DIG}you put into your hand this way.`),
+    readings: [`${ED35_DIG}you put into your hand this way.`, `${ED35_DIG}put into your hand this way.`],
+    near: [`${ED35_DIG}you put into your graveyard this way.`, `${ED35_DIG}you put onto the battlefield this way.`],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-35 (G6): put-into-hand-this-way readings', () => {
+  it('every reading is accepted and a near miss is not', () => {
+    const ex = (EXAMPLES as Record<string, Example>)['put-into-hand-this-way']!;
+    for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+    for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+  });
+});
+
+// edh-d-36 (Commander coordinator D, lane counter-modes): three families (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+const edhd36Def = (type: string, text: string, cost = '{0}'): AbilityDef =>
+  parseCard({ name: 'Test Card', layout: 'normal', mana_cost: cost, type_line: type, oracle_text: text, colors: [], ...(type.includes('Creature') ? { power: '2', toughness: '2' } : {}) } as OracleCard, RX30_OPTS).faces[0]!.abilities.at(-1)!;
+Object.assign(EXAMPLES, {
+  'pay-twice-x': {
+    def: edhd36Def('Instant', 'Counter target creature spell unless its controller pays twice {X}.', '{X}{U}{U}'),
+    readings: ['Counter target creature spell unless its controller pays twice {X}.', 'Counter target creature spell unless its controller pays {X}{X}.'],
+    near: ['Counter target creature spell unless its controller pays {X}.', 'Counter target creature spell unless its controller pays thrice {X}.'],
+  },
+  'has-mana-abilities': {
+    def: edhd36Def('Sorcery', 'Tap all lands with mana abilities you control.'),
+    readings: ['Tap all lands with mana abilities you control.', 'Tap all lands you control with mana abilities.', 'Tap all lands you control with a mana ability.'],
+    near: ['Tap all lands without mana abilities you control.', 'Tap all lands with activated abilities you control.'],
+  },
+  'tap-all-they-control': {
+    def: edhd36Def('Sorcery', 'Target opponent taps all creatures they control and loses all unspent mana.'),
+    readings: ['Target opponent taps all creatures they control and loses all unspent mana.', 'Tap all creatures target opponent controls. That player loses all unspent mana.'],
+    near: ['Target opponent taps all creatures you control and loses all unspent mana.', 'Target opponent taps all lands they control and loses all unspent mana.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-36 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['pay-twice-x', 'has-mana-abilities', 'tap-all-they-control']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-74 (Commander lane copy, third round): the reading of its one family (invented wording, design 6.10)
+Object.assign(EXAMPLES, {
+  'x-in-mana-cost-contains': {
+    def: trig([{ ev: 'cast', player: 'you', spell: { types: ['Creature'], manaCostHasX: true } }], [draw()]),
+    readings: ['Whenever you cast a creature spell with {X} in its mana cost, draw a card.', 'Whenever you cast a creature spell with a mana cost that contains {X}, draw a card.'],
+    near: ['Whenever you cast a creature spell with {X} in its mana costs, draw a card.', 'Whenever you cast a creature spell with a mana cost that contains {Y}, draw a card.', 'Whenever you cast a creature spell without {X} in its mana cost, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-74 (G6): the readings of its family are accepted and the near misses are not', () => {
+  it('x-in-mana-cost-contains: every reading is accepted and a near miss is not', () => {
+    const ex = (EXAMPLES as Record<string, Example>)['x-in-mana-cost-contains']!;
+    for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+    for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+  });
+});
+
+// edh-next-76 (lane transform): the family delay-exile-then-return
+Object.assign(EXAMPLES, {
+  'delay-exile-then-return': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'attacks', attacker: { self: true } }] }, effect: { targets: [], steps: [{ op: 'delay', when: { at: 'endOfCombat' }, do: [
+      { op: 'move', what: { ref: 'self' }, to: { zone: 'exile' }, as: 'selfExiled' },
+      { op: 'move', what: { ref: 'bound', name: 'selfExiled' }, to: { zone: 'battlefield', controller: { ref: 'you' }, transformed: true } },
+    ] }] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact', 'Vehicle'] },
+    readings: ['Whenever ~ attacks, at end of combat, exile it and return it to the battlefield transformed under your control.', 'Whenever ~ attacks, exile it at end of combat, then return it to the battlefield transformed under your control.'],
+    near: ['Whenever ~ attacks, exile it at end of combat, then return it to the battlefield under your control.', 'Whenever ~ attacks, exile it at end of turn, then return it to the battlefield transformed under your control.', 'Whenever ~ attacks, exile it at end of combat, then return it to the battlefield transformed under its owner\'s control.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-76 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['delay-exile-then-return']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-76 (lane transform): the family creatures-that-each-have-tgp
+Object.assign(EXAMPLES, {
+  'creatures-that-each-have-tgp': {
+    def: { kind: 'spell', text: '', effect: { targets: [], steps: [{ op: 'draw', who: { ref: 'you' }, count: 1, guard: { cond: 'compare', left: { q: 'count', of: { ref: 'each', filter: { types: ['Creature'], controller: 'you', toughnessGreaterThanPower: true } } }, op: '>=', right: 3 } }] } } as unknown as AbilityDef,
+    readings: ['If you control three or more creatures with toughness greater than their power, draw a card.', 'If you control three or more creatures that each have toughness greater than their power, draw a card.'],
+    near: ['If you control three or more creatures that each have toughness greater than your power, draw a card.', 'If you control three or more creatures that each have power greater than their toughness, draw a card.', 'If you control three creatures that each have toughness greater than their power, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-76 (G6): the readings of its second family are accepted and the near misses are not', () => {
+  for (const id of ['creatures-that-each-have-tgp']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-40 (lane d-leftovers): the family another-player-controls-enchanted
+Object.assign(EXAMPLES, {
+  'another-player-controls-enchanted': {
+    def: { kind: 'static', text: '', condition: { cond: 'matches', object: { ref: 'attachedTo' }, filter: { controller: 'opponent' } }, effects: [{ s: 'restrict', subject: { ref: 'attachedTo' }, mode: 'cant', action: 'attack' }, { s: 'restrict', subject: { ref: 'attachedTo' }, mode: 'cant', action: 'block' }], otherwise: [{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'flying', text: 'flying' }] }] }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment', 'Aura'] },
+    readings: ['As long as another player controls enchanted creature, it can\'t attack or block. Otherwise, ~ has flying.', 'As long as an opponent controls enchanted creature, it can\'t attack or block. Otherwise, ~ has flying.'],
+    near: ['As long as another player controls enchanted creature, it can\'t attack. Otherwise, ~ has flying.', 'As long as another player controls enchanted creature, it can\'t attack or block. Otherwise, ~ has trample.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-40 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['another-player-controls-enchanted']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-41 (second part; CR 205.1a, 611.2a, 613.1d-f, cites from memory, unverified): the identity with a quoted ability, the duration in front
+Object.assign(EXAMPLES, {
+  'becomes-identity-with-quoted-lead-dur': {
+    def: { kind: 'activated', cost: { mana: [{ kind: 'generic', amount: 1 }] }, effect: { targets: [], steps: [effectStep([{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 4, types: { set: ['Artifact', 'Creature'] }, subtypes: { set: ['Golem'] } }, { layer: 6, add: [{ kind: 'static', text: 'This creature can\'t block.', effects: [{ s: 'restrict', subject: { ref: 'self' }, mode: 'cant', action: 'block' }] }] }] } as unknown as StaticEffect], { d: 'endOfTurn' })] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['{1}: Until end of turn, ~ becomes a Golem artifact creature with "~ can\'t block."'],
+    near: ['{1}: Until end of turn, ~ becomes a Golem artifact creature with "~ can\'t attack."', '{1}: ~ becomes a Golem artifact creature with "~ can\'t block." until your next turn.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-next-79 (Commander lane rest, second round): the readings of its families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'return-and-those-gain': {
+    def: spell([
+      { op: 'move', what: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, to: { zone: 'exile' }, as: 'them' } as unknown as EffectStep,
+      { op: 'delay', when: { at: 'step', step: 'beginCombat', next: true }, capture: ['them'], do: [
+        { op: 'move', what: bound('them'), to: { zone: 'battlefield', controller: 'owner' }, as: 'returned' },
+        effectStep([{ s: 'continuous', affects: bound('returned'), mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'haste', text: 'haste' }] }] } as StaticEffect], { d: 'endOfTurn' }),
+      ] } as unknown as EffectStep,
+    ]),
+    readings: ["Exile all creatures you control. At the beginning of the next combat, return those cards to the battlefield under their owner's control and those creatures gain haste until end of turn."],
+    near: ["Exile all creatures you control. At the beginning of the next combat, return those cards to the battlefield under their owner's control and those creatures gain flying until end of turn.", "Exile all creatures you control. At the beginning of the next combat, return those cards to the battlefield under your control and those creatures gain haste until end of turn."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-79 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['return-and-those-gain']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-next-82 (Commander lane commander, second round): the readings of its two families (synthetic wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'freerunning-cost-paid-its': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }] }, interveningIf: { cond: 'wasCast', via: 'freerunning' }, effect: { targets: [], steps: [{ op: 'draw', who: { ref: 'you' }, count: 1 }] } } as AbilityDef,
+    ctx: creature,
+    readings: ['When Test Card enters, if its freerunning cost was paid, draw a card.', "When Test Card enters, if Test Card's freerunning cost was paid, draw a card."],
+    near: ['When Test Card enters, if its dash cost was paid, draw a card.', "When Test Card enters, if its freerunning cost wasn't paid, draw a card."],
+  },
+  'no-permanent-left-battlefield-this-turn': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'step', step: 'end', whose: 'you' }] }, interveningIf: { cond: 'not', of: { cond: 'happened', event: { ev: 'zoneChange', from: 'battlefield', subject: {} }, scope: 'turn' } }, effect: { targets: [], steps: [{ op: 'gainLife', who: { ref: 'you' }, amount: 1 }] } } as AbilityDef,
+    ctx: creature,
+    readings: ['At the beginning of your end step, if no permanents left the battlefield this turn, you gain 1 life.', 'At the beginning of your end step, if no permanent left the battlefield this turn, you gain 1 life.'],
+    near: ['At the beginning of your end step, if a permanent left the battlefield this turn, you gain 1 life.', 'At the beginning of your end step, if no permanents left the battlefield this turn, you lose 1 life.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-82 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['freerunning-cost-paid-its', 'no-permanent-left-battlefield-this-turn']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-84 (lane top-rank): one family (invented wordings, design 6.10; CR cites from memory, unverified)
+const edhn84Def = (type: string, text: string, cost = '{0}'): AbilityDef =>
+  parseCard({ name: 'Test Card', layout: 'normal', mana_cost: cost, type_line: type, oracle_text: text, colors: [], ...(type.includes('Creature') ? { power: '2', toughness: '2' } : {}) } as OracleCard, RX30_OPTS).faces[0]!.abilities.at(-1)!;
+Object.assign(EXAMPLES, {
+  'that-number-of-counters': {
+    def: edhn84Def('Creature', 'Whenever another permanent you control is put into a graveyard from the battlefield, if it had one or more counters on it, you may put that number of +1/+1 counters on target creature.'),
+    readings: ['Whenever another permanent you control is put into a graveyard from the battlefield, if it had one or more counters on it, you may put that number of +1/+1 counters on target creature.', 'Whenever another permanent you control is put into a graveyard from the battlefield, if it had one or more counters on it, you may put that many +1/+1 counters on target creature.'],
+    near: ['Whenever another permanent you control is put into a graveyard from the battlefield, if it had one or more counters on it, you may put that number of -1/-1 counters on target creature.', 'Whenever another permanent you control is put into a graveyard from the battlefield, if it had one or more counters on it, you may put that number of +1/+1 counters on each creature.', 'Whenever another permanent you control is put into a graveyard from the battlefield, you may put that number of +1/+1 counters on target creature.'],
+  },
+  'control-player-that-players-turn': {
+    def: edhn84Def('Sorcery', 'You control target player during that player\'s next turn.'),
+    readings: ['You control target player during that player\'s next turn.', 'You control target player during their next turn.'],
+    near: ['You control target player during that player\'s next combat phase.', 'You control target player during your next turn.'],
+  },
+  'different-controllers-with': {
+    def: edhn84Def('Instant', 'Destroy any number of target tapped creatures with different controllers.'),
+    readings: ['Destroy any number of target tapped creatures with different controllers.', 'Destroy any number of target tapped creatures controlled by different players.'],
+    near: ['Destroy any number of target tapped creatures with the same controller.', 'Destroy any number of target creatures with different controllers.', 'Destroy any number of target tapped creatures you control with different controllers.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-84 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['that-number-of-counters', 'control-player-that-players-turn', 'different-controllers-with']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-87 (top-rank round 3, code edhn87): one family (invented wordings, design 6.10; CR cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'counters-equal-to-event-amount': {
+    def: edhd36Def('Creature', 'Whenever one or more creatures you control with base power 0 deal combat damage to a player, create a 0/0 green and blue Fractal creature token. Put a number of +1/+1 counters on it equal to the damage dealt.', '{2}'),
+    readings: ['Whenever one or more creatures you control with base power 0 deal combat damage to a player, create a 0/0 green and blue Fractal creature token. Put a number of +1/+1 counters on it equal to the damage dealt.', 'Whenever one or more creatures you control with base power 0 deal combat damage to a player, create a 0/0 green and blue Fractal creature token. Put that many +1/+1 counters on it.'],
+    near: ['Whenever one or more creatures you control with base power 0 deal combat damage to a player, create a 0/0 green and blue Fractal creature token. Put a number of +1/+1 counters on it equal to the damage dealt this turn.', 'Whenever one or more creatures you control with base power 0 deal combat damage to a player, create a 0/0 green and blue Fractal creature token. Put a number of +2/+2 counters on it equal to the damage dealt.'],
+  },
+  'subjects-together-two-moves': {
+    def: edhd36Def('Artifact', 'Whenever this artifact or another nontoken artifact you control is put into a graveyard from the battlefield or is put into exile from the battlefield, create a tapped Powerstone token.', '{2}'),
+    readings: ['Whenever this artifact or another nontoken artifact you control is put into a graveyard from the battlefield or is put into exile from the battlefield, create a tapped Powerstone token.', 'Whenever this artifact is put into a graveyard from the battlefield or is put into exile from the battlefield, or another nontoken artifact you control is put into a graveyard from the battlefield or is put into exile from the battlefield, create a tapped Powerstone token.'],
+    near: ['Whenever this artifact or another nontoken artifact you control is put into a graveyard from the battlefield or is put into exile from anywhere, create a tapped Powerstone token.', 'Whenever this artifact or another artifact you control is put into a graveyard from the battlefield or is put into exile from the battlefield, create a tapped Powerstone token.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-87 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['counters-equal-to-event-amount', 'subjects-together-two-moves']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-85 (top-rank round, part 2): three families (invented wordings, design 6.10; CR cites from memory, unverified)
+const edhn85Def = (type: string, text: string): AbilityDef =>
+  parseCard({ name: 'Test Card', layout: 'normal', mana_cost: '{0}', type_line: type, oracle_text: text, colors: [] } as OracleCard, RX30_OPTS).faces[0]!.abilities.at(-1)!;
+const EDHN85_PUT = 'Put target creature card from a graveyard onto the battlefield under your control. ';
+Object.assign(EXAMPLES, {
+  'notname-beside-zone': {
+    def: edhn85Def('Sorcery', 'Put target legendary permanent card not named Test Relic from a graveyard onto the battlefield under your control.'),
+    readings: ['Put target legendary permanent card not named Test Relic from a graveyard onto the battlefield under your control.', 'Put target legendary permanent card from a graveyard not named Test Relic onto the battlefield under your control.'],
+    near: ['Put target legendary permanent card named Test Relic from a graveyard onto the battlefield under your control.', 'Put target legendary permanent card not named Test Relic from your graveyard onto the battlefield under your control.'],
+  },
+  'they-are-color-subtype': {
+    def: edhn85Def('Sorcery', 'Put all creature cards from all graveyards onto the battlefield under your control. They\'re black Zombies in addition to their other colors and types.'),
+    readings: ['Put all creature cards from all graveyards onto the battlefield under your control. They\'re black Zombies in addition to their other colors and types.', 'Put all creature cards from all graveyards onto the battlefield under your control. Each of them is a black Zombie in addition to its other colors and types.'],
+    near: ['Put all creature cards from all graveyards onto the battlefield under your control. They\'re black Zombies in addition to their other types.', 'Put all creature cards from all graveyards onto the battlefield under your control. They\'re red Zombies in addition to their other colors and types.'],
+  },
+  'color-and-type-added': {
+    def: edhn85Def('Sorcery', `${EDHN85_PUT}That creature is black and is a Nightmare in addition to its other creature types.`),
+    readings: [`${EDHN85_PUT}That creature is black and is a Nightmare in addition to its other creature types.`, `${EDHN85_PUT}That creature becomes a black Nightmare in addition to its other types.`],
+    near: [`${EDHN85_PUT}That creature is red and is a Nightmare in addition to its other creature types.`, `${EDHN85_PUT}That creature is black and is a Nightmare.`],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-85 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['notname-beside-zone', 'they-are-color-subtype', 'color-and-type-added']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+  it('color-and-type-added: the same size reading, "It\'s a green Mutant with base power and toughness 3/3" and "becomes", and a near miss', () => {
+    const def = edhn85Def('Sorcery', `${EDHN85_PUT}It's a green Mutant with base power and toughness 3/3.`);
+    for (const r of [`${EDHN85_PUT}It's a green Mutant with base power and toughness 3/3.`, `${EDHN85_PUT}It becomes a green Mutant with base power and toughness 3/3.`]) accepts(def, r, undefined);
+    for (const n of [`${EDHN85_PUT}It's a green Mutant with base power and toughness 3/2.`, `${EDHN85_PUT}It's a blue Mutant with base power and toughness 3/3.`]) rejects(def, n, undefined);
+  });
+});
+
+// edh-next-88 (cites from memory, unverified): the readings of its three families (synthetic lines, design 6.10)
+Object.assign(EXAMPLES, {
+  'cast-from-elsewhere-turn-order': {
+    def: spell([{ op: 'gainLife', who: { ref: 'you' }, amount: { q: 'happenedCount', event: { ev: 'cast', player: 'you', notFrom: 'hand' }, scope: 'turn', by: 'you' } } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ["You gain life equal to the number of spells you've cast this turn from anywhere other than your hand.", "You gain life equal to the number of spells you've cast from anywhere other than your hand this turn."],
+    near: ["You gain life equal to the number of spells you've cast from anywhere other than your graveyard this turn.", "You gain life equal to the number of spells you've cast from anywhere this turn."],
+  },
+  'spent-colors-all': {
+    def: rx30Def('Instant', 'Destroy target creature if {G}{W} was spent to cast this spell.'),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['Destroy target creature if {G}{W} was spent to cast ~.', 'Destroy target creature if {G}{W} was spent to cast it.'],
+    near: ['Destroy target creature if {G}{U} was spent to cast ~.', 'Destroy target creature if {G} was spent to cast ~.'],
+  },
+} satisfies Record<string, Example>);// edh-next-99 (Commander top-rank second pass 5; CR 608.2c, 406.1, 601.2; cites from memory, unverified): the cards a free cast left in exile are "the rest"
+Object.assign(EXAMPLES, {
+  'rest-of-exiled-the-rest': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: you, count: 4 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { notTypes: ['Land'], is: bound('them'), zone: 'exile' } }, min: 0, max: 'any', as: 'cast' } as EffectStep,
+      { op: 'cast', who: you, what: bound('cast'), free: true } as EffectStep,
+      { op: 'move', what: { ref: 'each', filter: { is: bound('them'), not: { is: bound('cast') }, zone: 'exile' } }, to: { zone: 'hand' } } as EffectStep,
+    ]),
+    readings: [
+      'Exile the top four cards of your library. You may cast any number of spells from among them without paying their mana costs. Put the rest into your hand.',
+      'Exile the top four cards of your library. You may cast any number of spells from among them without paying their mana costs. Put the rest of the exiled cards into your hand.',
+    ],
+    near: ['Exile the top four cards of your library. You may cast any number of spells from among them without paying their mana costs. Put the rest into your graveyard.'],
+  },
+});
+// edh-next-108 (concept lane sac-random; CR 608.2c, 406.1; cites from memory, unverified): "cards exiled this way" for the group an earlier exile moved
+Object.assign(EXAMPLES, {
+  'cards-exiled-this-way-bare': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: you, count: 4 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { notTypes: ['Land'], is: bound('them'), zone: 'exile' } }, min: 0, max: 'any', as: 'cast' } as EffectStep,
+      { op: 'cast', who: you, what: bound('cast'), free: true } as EffectStep,
+    ]),
+    readings: [
+      'Exile the top four cards of your library. You may cast any number of spells from among them without paying their mana costs.',
+      'Exile the top four cards of your library. You may cast any number of spells from among cards exiled this way without paying their mana costs.',
+    ],
+    near: ['Exile the top four cards of your library. You may cast any number of spells from among cards milled this way without paying their mana costs.'],
+  },
+});
+
+describe('edh-next-88 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['cast-from-elsewhere-turn-order', 'spent-colors-all']) {
+
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-95 (lane top-rank, second pass 3): the readings of its family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'put-any-number-from-among-them-exiled': {
+    def: z27Def('Exile the top six cards of your library. You may put any number of creature and/or land cards from among them onto the battlefield.'),
+    readings: [
+      'Exile the top six cards of your library. You may put any number of creature and/or land cards from among them onto the battlefield.',
+      'Exile the top six cards of your library. Put any number of creature and/or land cards from among them onto the battlefield.',
+      'Exile the top six cards of your library. Put any number of creatures or lands exiled this way onto the battlefield under your control.',
+    ],
+    near: ['Exile the top six cards of your library. You may put any number of creature cards from among them onto the battlefield.', 'Exile the top five cards of your library. You may put any number of creature and/or land cards from among them onto the battlefield.', 'Exile the top six cards of your library. You may put a creature or land card from among them onto the battlefield.'],
+  },
+});
+
+
+describe('edh-next-95 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['put-any-number-from-among-them-exiled']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-92 (top-rank part 8; invented wordings, design 6.10): three families
+Object.assign(EXAMPLES, {
+  'none-of-keywords-relative': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'], notKeyword: ['flying', 'vigilance'] } } }]),
+    readings: ['Destroy all creatures without flying or vigilance.', "Destroy all creatures that don't have flying or vigilance."],
+    near: ["Destroy all creatures that don't have flying or reach.", "Destroy all creatures that have flying or vigilance.", "Destroy all creatures that don't have flying and vigilance."],
+  },
+  'attack-with-at-least-n': {
+    def: trig([{ ev: 'attacks', attacker: { controller: 'you', types: ['Creature'] }, count: { op: '>=', value: 2 } }], [draw()], { batch: true }),
+    ctx: creature,
+    readings: ['Whenever you attack with two or more creatures, draw a card.', 'Whenever you attack with at least two creatures, draw a card.'],
+    near: ['Whenever you attack with at least three creatures, draw a card.', 'Whenever you attack with exactly two creatures, draw a card.', 'Whenever an opponent attacks with at least two creatures, draw a card.'],
+  },
+  'choose-at-random-attacked': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ types: ['Creature'] }], attackedThisTurn: true } }, min: 1, max: 1, random: true, as: 'chosen' } as EffectStep,
+      { op: 'destroy', what: bound('chosen') } as EffectStep,
+    ]),
+    readings: ['Choose a creature at random that attacked this turn. Destroy that creature.', 'Choose a creature that attacked this turn at random. Destroy that creature.'],
+    near: ['Choose a creature at random that attacked last turn. Destroy that creature.', 'Choose two creatures at random that attacked this turn. Destroy those creatures.', 'Choose a creature at random. Destroy that creature.'],
+  },
+});
+
+describe('edh-next-92 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['none-of-keywords-relative', 'attack-with-at-least-n', 'choose-at-random-attacked']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-next-89 (Commander top-rank part 5; invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'then-if-counters-remove-them-transform': {
+    def: spell([
+      { op: 'putCounters', on: self, kind: 'time', count: 1 } as EffectStep,
+      { op: 'if', cond: { cond: 'matches', object: self, filter: { counters: { kind: 'time', cmp: { op: '>=', value: 3 } } } }, then: [{ op: 'removeCounters', from: self, kind: 'time', count: 'all' }, { op: 'changeFace', what: self, to: 'transform' }] } as EffectStep,
+    ]),
+    readings: ['Put a time counter on Test Card. Then if Test Card has three or more time counters on it, remove them and transform Test Card.', 'Put a time counter on Test Card. Then if it has three or more time counters on it, remove them and transform it.'],
+    near: ['Put a time counter on Test Card. Then if Test Card has four or more time counters on it, remove them and transform Test Card.', 'Put a time counter on Test Card. Then if Test Card has three or more time counters on it, remove one of them and transform Test Card.'],
+  },
+  'distribute-counters-where-x-group': {
+    def: spell([{ op: 'putCounters', on: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, kind: '+1/+1', count: { q: 'snowSpent' }, distribute: true } as EffectStep]),
+    readings: ['Distribute X +1/+1 counters among any number of creatures you control, where X is the amount of {S} spent to cast Test Card.'],
+    near: ['Distribute X +1/+1 counters among any number of lands you control, where X is the amount of {S} spent to cast Test Card.', 'Distribute X +1/+1 counters among any number of creatures you control, where X is the amount of {S} spent to cast it twice.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-next-96 (top-rank round, second pass 4): one family (invented wordings, design 6.10; CR cites from memory, unverified)
+const EDHN96_REVEAL = 'Target opponent reveals cards from the top of their library until four land cards are revealed. That player puts all cards revealed this way into their graveyard.';
+Object.assign(EXAMPLES, {
+  'reveal-until-are-revealed': {
+    def: edhn85Def('Sorcery', EDHN96_REVEAL),
+    readings: [EDHN96_REVEAL, EDHN96_REVEAL.replace('until four land cards are revealed', 'until they reveal four land cards')],
+    near: [EDHN96_REVEAL.replace('four land cards', 'three land cards'), EDHN96_REVEAL.replace('four land cards are revealed', 'a land card is revealed'), EDHN96_REVEAL.replace('their library', 'your library')],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-96 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['reveal-until-are-revealed']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, undefined);
+      for (const n of ex.near) rejects(ex.def, n, undefined);
+    });
+  }
+});
+const TREK22_CAST = ez14('Creature — Insect Beast', "This creature can't be the target of abilities from artifact sources your opponents control.")[0]!;
+const TREK22_LINK = ez14('Artifact Creature — Vehicle', "{T}: Each opponent exiles a card from their graveyard.\nWhenever this creature deals combat damage to a player, return each creature card you own exiled with it to the battlefield.")[1]!;
+Object.assign(EXAMPLES, {
+  'cant-target-abilities-from-sources': {
+    def: TREK22_CAST,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ["This creature can't be the target of abilities from artifact sources your opponents control.", "This creature can't be the target of artifact abilities your opponents control."],
+    near: ["This creature can't be the target of abilities from artifact sources you control.", "This creature can't be the target of abilities from creature sources your opponents control.", "This creature can't be the target of spells or abilities from artifact sources your opponents control."],
+  },
+  'linked-return-each-creature-you-own': {
+    def: TREK22_LINK,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['Whenever this creature deals combat damage to a player, return each creature card you own exiled with it to the battlefield.', 'Whenever Test Card deals combat damage to a player, return each creature card you own exiled with Test Card to the battlefield.'],
+    near: ['Whenever this creature deals combat damage to a player, return each artifact card you own exiled with it to the battlefield.', "Whenever this creature deals combat damage to a player, return each creature card you own exiled with it to the battlefield under its owner's control."],
+  },
+} satisfies Record<string, Example>);
+describe('trek-22 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['cant-target-abilities-from-sources', 'linked-return-each-creature-you-own']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-103 (zz-cloud/edh-next-103.json, render/np.ts, render/mods.ts): the readings of its families (synthetic lines, design 6.10)
+Object.assign(EXAMPLES, {
+  'equal-or-lesser-toughness': {
+    def: trig([{ ev: 'zoneChange', subject: { types: ['Creature'], controller: 'you' }, from: 'battlefield', to: 'graveyard' }], [{ op: 'move', what: t('c'), to: { zone: 'hand' } }], {}, [objTarget('c', { zone: 'graveyard', owner: 'you', types: ['Creature'], toughness: { op: '<=', value: { q: 'stat', stat: 'toughness', of: { ref: 'event', role: 'subject' } } } })]),
+    ctx: creature,
+    readings: ['Whenever a creature you control dies, return target creature card with equal or lesser toughness from your graveyard to your hand.'],
+    near: ['Whenever a creature you control dies, return target creature card with greater toughness from your graveyard to your hand.', 'Whenever a creature you control dies, return target creature card with equal or lesser power from your hand to the battlefield.'],
+  },
+  'static-set-types-pt-each-equal': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Artifact'], notTypes: ['Creature'] } }, mods: [{ layer: 4, types: { add: ['Artifact', 'Creature'] } }, { layer: '7b', power: { q: 'stat', stat: 'manaValue', of: { ref: 'subject' } }, toughness: { q: 'stat', stat: 'manaValue', of: { ref: 'subject' } } }] } as unknown as StaticEffect]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['Each noncreature artifact is an artifact creature with power and toughness each equal to its mana value.', 'Each noncreature artifact is an artifact creature in addition to its other types and has base power and base toughness each equal to its mana value.'],
+    near: ['Each noncreature artifact is an artifact creature with power and toughness each equal to its power.', 'Each noncreature artifact is an artifact creature with power and toughness each equal to its toughness.'],
+  },
+  'self-on-battlefield-or-graveyard': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 2 }] }, effect: { targets: [], steps: [{ op: 'move', what: { ref: 'self' }, to: { zone: 'hand' } } as EffectStep] },
+      onlyIf: { cond: 'any', of: [{ cond: 'matches', object: { ref: 'self' }, filter: { zone: 'graveyard', owner: 'you' } }, { cond: 'matches', object: { ref: 'self' }, filter: { zone: 'battlefield' } }] }, zone: ['battlefield', 'graveyard'] } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ["{2}: Return ~ to its owner's hand. Activate only if ~ is in your graveyard or on the battlefield.", "{2}: Return ~ to its owner's hand. Activate only if ~ is on the battlefield or in your graveyard."],
+    near: ["{2}: Return ~ to its owner's hand. Activate only if ~ is in your graveyard.", "{2}: Return ~ to its owner's hand. Activate only if ~ is on the battlefield or in a graveyard."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-103 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['equal-or-lesser-toughness', 'static-set-types-pt-each-equal', 'self-on-battlefield-or-graveyard']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-91: the readings of its two families
+Object.assign(EXAMPLES, {
+  'damage-dealt-to-you': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'damage', recipient: { player: 'you' }, combat: true }] }, effect: { targets: [], steps: [draw(1)] } } as unknown as AbilityDef,
+    ctx: creature,
+    readings: ['Whenever you are dealt combat damage, draw a card.', 'Whenever combat damage is dealt to you, draw a card.'],
+    near: ['Whenever combat damage is dealt to an opponent, draw a card.', 'Whenever damage is dealt to you, draw a card.'],
+  },
+  'that-many-counters-result': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { zone: 'hand', owner: 'you', anyOf: [{ types: ['Land'] }] } }, min: 0, max: 'any', as: 'toDiscard' } as EffectStep,
+      { op: 'discard', who: you, count: { q: 'count', of: bound('toDiscard') }, filter: { is: bound('toDiscard') }, as: 'gone' } as unknown as EffectStep,
+      { op: 'putCounters', on: t('c'), kind: '+1/+1', count: { q: 'resultCount', step: 'gone' } } as unknown as EffectStep,
+    ], [objTarget('c')]),
+    readings: ['Discard any number of land cards. Put that many +1/+1 counters on target creature.', 'Discard any number of land cards. Put a number of +1/+1 counters equal to the number of cards discarded this way on target creature.'],
+    near: ['Discard any number of land cards. Put a +1/+1 counter on target creature.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-91 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['damage-dealt-to-you', 'that-many-counters-result']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-52 (Commander coordinator D, lane d-rank-2): four families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'for-each-died-player-creates': {
+    def: { kind: 'spell', effect: { targets: [{ id: 't0', kind: 'player', min: 1, max: 1, text: 'target player', players: { who: 'any' } }], steps: [
+      { op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'], controller: { ref: 'target', id: 't0' } } }, as: 'destroy' },
+      { op: 'createToken', who: { ref: 'target', id: 't0' }, count: { q: 'math', op: '*', args: [2, { q: 'resultCount', step: 'destroy', which: {}, to: 'graveyard' }] }, token: { colors: ['R'], types: ['Creature'], subtypes: ['Goblin'], power: 1, toughness: 1 } },
+    ] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: ['Destroy all creatures target player controls. For each creature that died this way, that player creates two 1/1 red Goblin creature tokens.'],
+    near: ['Destroy all creatures target player controls. For each creature that died this way, that player creates three 1/1 red Goblin creature tokens.', 'Destroy all creatures target player controls. For each creature that died this way, you create two 1/1 red Goblin creature tokens.', 'Destroy all creatures target player controls. For each creature that died this way, that player creates two 1/1 blue Goblin creature tokens.'],
+  },
+  'pump-and-fights': {
+    def: { kind: 'spell', effect: { targets: [
+      { id: 't0', kind: 'object', min: 1, max: 1, text: 'target creature you control', filter: { types: ['Creature'], controller: 'you' } },
+      { id: 't1', kind: 'object', min: 1, max: 1, text: "target creature you don't control", filter: { types: ['Creature'], not: { controller: 'you' } } },
+    ], steps: [
+      { op: 'effect', effects: [{ s: 'continuous', affects: { ref: 'target', id: 't0' }, mods: [{ layer: '7c', power: 1, toughness: 1 }] }], duration: { d: 'endOfTurn' } },
+      { op: 'fight', a: { ref: 'target', id: 't0' }, b: { ref: 'target', id: 't1' } },
+    ] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: ["Target creature you control gets +1/+1 until end of turn and fights target creature you don't control.", "Target creature you control gets +1/+1 until end of turn. Then it fights target creature you don't control."],
+    near: ["Target creature you control gets +2/+2 until end of turn and fights target creature you don't control.", "Target creature you control gets +1/+1 until end of turn and fights each creature you don't control.", "Target creature you control fights target creature you don't control and gets +1/+1 until end of turn."],
+  },
+} satisfies Record<string, Example>);
+
+Object.assign(EXAMPLES, {
+  'base-pt-set-become-equal-object': {
+    def: edhn84Def('Creature', "Whenever ~ attacks, you may have the base power and toughness of other creatures you control become equal to ~'s power and toughness until end of turn."),
+    readings: ["Whenever ~ attacks, you may have the base power and toughness of other creatures you control become equal to ~'s power and toughness until end of turn.", "Whenever ~ attacks, you may have the base power and toughness of all other creatures you control become equal to its power and toughness until end of turn."],
+    near: ["Whenever ~ attacks, you may have the base power and toughness of other creatures you control become equal to ~'s power until end of turn.", "Whenever ~ attacks, you may have the base power and toughness of other creatures you control become equal to ~'s toughness and power until end of turn.", "Whenever ~ attacks, you may have the base power and toughness of other creatures your opponents control become equal to ~'s power and toughness until end of turn."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-94 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['base-pt-set-become-equal-object']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-54 (lane d-rank-4): one family (invented wordings, design 6.10; CR cites from memory, unverified)
+const edhd54Def = (type: string, text: string): AbilityDef =>
+  parseCard({ name: 'Test Card', layout: 'normal', mana_cost: '{0}', type_line: type, oracle_text: text, colors: [], ...(type.includes('Creature') ? { power: '2', toughness: '2' } : {}) } as OracleCard, RX30_OPTS).faces[0]!.abilities.at(-1)!;
+Object.assign(EXAMPLES, {
+  'enters-it-self-after-if-you-do': {
+    def: edhd54Def('Creature — Human Wizard', 'As ~ enters, you may reveal a Wizard card from your hand. If you do or if you control a Wizard, ~ enters with two +1/+1 counters on it.'),
+    readings: ['As ~ enters, you may reveal a Wizard card from your hand. If you do or if you control a Wizard, ~ enters with two +1/+1 counters on it.', 'As ~ enters, you may reveal a Wizard card from your hand. If you do or if you control a Wizard, it enters with two +1/+1 counters on it.'],
+    near: ['As ~ enters, you may reveal a Wizard card from your hand. If you do and if you control a Wizard, it enters with two +1/+1 counters on it.', 'As ~ enters, you may reveal a Wizard card from your hand. If you don\'t, it enters with two +1/+1 counters on it.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-54 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['enters-it-self-after-if-you-do']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-57 (Commander lane instead, third pass): four families of the round, each with the model's other wordings and near misses
+Object.assign(EXAMPLES, {
+  'drew-n-this-turn-tense': {
+    def: rx30Def('Enchantment', 'At the beginning of each end step, if you drew two or more cards this turn, you may put a quest counter on this enchantment.'),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ["At the beginning of each end step, if you've drawn two or more cards this turn, you may put a quest counter on ~.", 'At the beginning of each end step, if you drew two or more cards this turn, you may put a quest counter on ~.'],
+    near: ['At the beginning of each end step, if you drew three or more cards this turn, you may put a quest counter on ~.', 'At the beginning of each end step, if you draw two or more cards this turn, you may put a quest counter on ~.'],
+  },
+  'double-damage-any-source-to-recipient': {
+    def: rx30Def('Enchantment', '{R}: If any source you control would deal damage to a permanent or player this turn, it deals double that damage to that permanent or player instead.'),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ['{R}: If any source you control would deal damage to a permanent or player this turn, it deals double that damage to that permanent or player instead.', '{R}: If a source you control would deal damage this turn, it deals double that damage instead.'],
+    near: ['{R}: If any source you control would deal damage to a permanent or player this turn, it deals triple that damage to that permanent or player instead.', '{R}: If any source an opponent controls would deal damage to a permanent or player this turn, it deals double that damage to that permanent or player instead.'],
+  },
+  'milled-into-their-library': {
+    def: rx30Def('Creature — Zombie', "Whenever a creature card is put into an opponent's graveyard from their library, exile that card and create a 2/2 black Zombie creature token."),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ["Whenever a creature card is put into an opponent's graveyard from their library, exile that card and create a 2/2 black Zombie creature token.", "Whenever a creature card is put into an opponent's graveyard from an opponent's library, exile that card and create a 2/2 black Zombie creature token."],
+    near: ["Whenever a creature card is put into an opponent's graveyard from your library, exile that card and create a 2/2 black Zombie creature token.", "Whenever a creature card is put into an opponent's graveyard from their hand, exile that card and create a 2/2 black Zombie creature token."],
+  },
+  'redirect-to-you-source-deals': {
+    def: rx30Def('Artifact', '{1}: The next time a source of your choice would deal damage to target creature this turn, that source deals that damage to you instead.'),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['{1}: The next time a source of your choice would deal damage to target creature this turn, that damage is dealt to you instead.', '{1}: The next time a source of your choice would deal damage to target creature this turn, that source deals that damage to you instead.'],
+    near: ['{1}: The next time a source of your choice would deal damage to target creature this turn, that source deals that damage to ~ instead.', '{1}: The next time a source of your choice would deal damage to target creature this turn, prevent that damage.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-57 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['drew-n-this-turn-tense', 'double-damage-any-source-to-recipient', 'milled-into-their-library', 'redirect-to-you-source-deals']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-101 (concept lane secret-vote; CR cites from memory, unverified): manifest of another player's top card, reveal until / put per vote, "the rest"
+const EN101_VOTE = 'Starting with you, each player votes for wild or free. ';
+const EN101_STAMPEDE = `${EN101_VOTE}Reveal cards from the top of your library until you reveal a creature card for each wild vote. Put those creature cards onto the battlefield, then shuffle the rest into your library. You may put a permanent card from your hand onto the battlefield for each free vote.`;
+Object.assign(EXAMPLES, {
+  'manifest-top-of-player': {
+    def: xp2Def('Creature — Ape', "At the beginning of each opponent's upkeep, you manifest the top card of that player's library."),
+    readings: ["At the beginning of each opponent's upkeep, you manifest the top card of that player's library.", "At the beginning of each opponent's upkeep, manifest the top card of that player's library."],
+    near: ["At the beginning of each opponent's upkeep, you manifest the top card of your library.", "At the beginning of each opponent's upkeep, you manifest the top two cards of that player's library."],
+  },
+  'shuffle-the-rest-short': {
+    def: xp2Def('Sorcery', EN101_STAMPEDE),
+    readings: [EN101_STAMPEDE, EN101_STAMPEDE.replace('shuffle the rest into', 'shuffle the rest of the revealed cards into')],
+    near: [EN101_STAMPEDE.replace('shuffle the rest into your library', 'put the rest on the bottom of your library'), EN101_STAMPEDE.replace('Put those creature cards', 'Put one of those creature cards')],
+  },
+  'reveal-until-per-vote': {
+    def: xp2Def('Sorcery', EN101_STAMPEDE),
+    readings: [EN101_STAMPEDE, EN101_STAMPEDE.replace('a creature card for each wild vote', 'X creature cards, where X is the number of wild votes')],
+    near: [EN101_STAMPEDE.replace('for each wild vote', 'for each free vote'), EN101_STAMPEDE.replace('a creature card for each wild vote', 'a land card for each wild vote')],
+  },
+  'repeat-put-per-vote': {
+    def: xp2Def('Sorcery', EN101_STAMPEDE),
+    readings: [EN101_STAMPEDE, EN101_STAMPEDE.replace('You may put a permanent card from your hand onto the battlefield for each free vote.', 'Do the following the number of free votes times: you may put a permanent card from your hand onto the battlefield under your control.')],
+    near: [EN101_STAMPEDE.replace('for each free vote.', 'for each wild vote.'), EN101_STAMPEDE.replace('from your hand', 'from your graveyard')],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-101 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['manifest-top-of-player', 'shuffle-the-rest-short', 'reveal-until-per-vote', 'repeat-put-per-vote']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-98 (top-rank second pass 8): one family (invented wordings, design 6.10; CR cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'for-each-drain-lead': {
+    def: edhd43Def('Sorcery', 'Exile up to two target cards from graveyards. For each creature card exiled this way, each opponent loses 1 life and you gain 1 life.'),
+    readings: [
+      'Exile up to two target cards from graveyards. For each creature card exiled this way, each opponent loses 1 life and you gain 1 life.',
+      'Exile up to two target cards from graveyards. Each opponent loses 1 life and you gain 1 life for each creature card exiled this way.',
+    ],
+    near: [
+      'Exile up to two target cards from graveyards. For each creature card exiled this way, each opponent loses 2 life and you gain 1 life.',
+      'Exile up to two target cards from graveyards. For each land card exiled this way, each opponent loses 1 life and you gain 1 life.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-98 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['for-each-drain-lead']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-75 (Commander lane attack-requirements, concept round): one family (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'put-counters-and-you-draw': {
+    def: edhd43Def('Creature — Dragon', 'Whenever this creature attacks, you put a +1/+1 counter on this creature and you draw a card.'),
+    readings: [
+      'Whenever ~ attacks, you put a +1/+1 counter on ~ and you draw a card.',
+      'Whenever ~ attacks, put a +1/+1 counter on ~. Draw a card.',
+    ],
+    near: [
+      'Whenever ~ attacks, you put a +1/+1 counter on ~ and you draw two cards.',
+      'Whenever ~ attacks, you put two +1/+1 counters on ~ and you draw a card.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-75 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['put-counters-and-you-draw']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-59 (lane graveyard, fourth pass): four families (invented wordings, design 6.10; CR cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'counters-of-dying-object-in-full': {
+    def: edhd43Def('Enchantment', 'Whenever a creature you control with a counter on it dies, you may return another target permanent card with mana value less than or equal to the number of counters on that creature from your graveyard to your hand.'),
+    readings: [
+      'Whenever a creature you control with a counter on it dies, you may return another target permanent card with mana value less than or equal to the number of counters on that creature from your graveyard to your hand.',
+      'Whenever a creature you control with a counter on it dies, you may return another target permanent card with mana value less than or equal to that many from your graveyard to your hand.',
+    ],
+    near: ['Whenever a creature you control with a counter on it dies, you may return another target permanent card with mana value less than or equal to the number of counters on this creature from your graveyard to your hand.'],
+  },
+  'same-name-as-that-spell-before-zone': {
+    def: edhd43Def('Enchantment', 'Whenever you cast an instant or sorcery spell from your hand, you may cast target card with the same name as that spell from your graveyard.'),
+    readings: [
+      'Whenever you cast an instant or sorcery spell from your hand, you may cast target card with the same name as that spell from your graveyard.',
+      'Whenever you cast an instant or sorcery spell from your hand, you may cast target card from your graveyard that shares a name with it.',
+    ],
+    near: ['Whenever you cast an instant or sorcery spell from your hand, you may cast target card with the same name as that spell from your hand.'],
+  },
+  'creature-type-of-your-choice': {
+    def: edhd43Def('Sorcery', 'Return up to three target creature cards of the creature type of your choice from your graveyard to your hand.'),
+    readings: [
+      'Return up to three target creature cards of the creature type of your choice from your graveyard to your hand.',
+      'Return up to three target creature cards that share a creature type from your graveyard to your hand.',
+    ],
+    near: ['Return up to three target creature cards of the creature type of your choice from a graveyard to your hand.'],
+  },
+  'either-of-them-counter': {
+    def: edhd43Def('Sorcery', 'Untap two target lands. Put a +1/+1 counter on either of them.'),
+    readings: ['Untap two target lands. Put a +1/+1 counter on either of them.', 'Untap two target lands. Put a +1/+1 counter on one of them.'],
+    near: ['Untap two target lands. Put a +1/+1 counter on each of them.', 'Untap two target lands. Put two +1/+1 counters on either of them.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-59 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['counters-of-dying-object-in-full', 'same-name-as-that-spell-before-zone', 'creature-type-of-your-choice', 'either-of-them-counter']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-61 (Commander lane transform, second pass): two families (invented wordings, design 6.10; CR cites from memory, unverified)
+const EDHD61_LINK = ez14('Artifact', '{1}, {T}: Draw a card, then exile a card from your hand. If cards with five or more different mana values are exiled with this artifact, you gain 5 life.')[0]!;
+const EDHD61_DELAY = ez14('Artifact Creature — Golem', '{2}: This creature fights another target creature you control. When this creature dies this turn, draw a card.')[0]!;
+Object.assign(EXAMPLES, {
+  'linked-exile-different-values': {
+    def: EDHD61_LINK,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['{1}, {T}: Draw a card, then exile a card from your hand. If cards with five or more different mana values are exiled with this artifact, you gain 5 life.', '{1}, {T}: Draw a card, then exile a card from your hand. If there are five or more mana values among cards exiled with this artifact, you gain 5 life.'],
+    near: ['{1}, {T}: Draw a card, then exile a card from your hand. If cards with four or more different mana values are exiled with this artifact, you gain 5 life.', '{1}, {T}: Draw a card, then exile a card from your hand. If cards with five or more different colors are exiled with this artifact, you gain 5 life.', '{1}, {T}: Draw a card, then exile a card from your hand. If cards with five or more different mana values are exiled with this artifact, you lose 5 life.'],
+  },
+  'delayed-event-self-name': {
+    def: EDHD61_DELAY,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact', 'Creature'] },
+    readings: ['{2}: This creature fights another target creature you control. When this creature dies this turn, draw a card.', '{2}: This creature fights another target creature you control. When it dies this turn, draw a card.'],
+    near: ['{2}: This creature fights another target creature you control. When this creature dies, draw a card.', '{2}: This creature fights another target creature you control. When that creature dies this turn, draw a card.', '{2}: This creature fights another target creature you control. When this creature dies this turn, draw two cards.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-61 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['linked-exile-different-values', 'delayed-event-self-name']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-110 (concept lane tokens-counters): one family (invented wordings except the token's name, which the template reads; CR cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'named-token-enters-tapped-attacking-sentence': {
+    def: edhd43Def('Creature — Human', 'Whenever this creature attacks, create Ragavan, a legendary 2/1 red Monkey creature token. Ragavan enters tapped and attacking.'),
+    readings: [
+      'Whenever this creature attacks, create Ragavan, a legendary 2/1 red Monkey creature token. Ragavan enters tapped and attacking.',
+      "Whenever this creature attacks, create a legendary 2/1 red Monkey creature token named Ragavan that's tapped and attacking.",
+    ],
+    near: [
+      'Whenever this creature attacks, create Ragavan, a legendary 2/1 red Monkey creature token. Ragavan enters tapped.',
+      'Whenever this creature attacks, create Ragavan, a legendary 3/1 red Monkey creature token. Ragavan enters tapped and attacking.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-110 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['named-token-enters-tapped-attacking-sentence']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-71 (concept lane turns-phases; CR cites from memory, unverified): an added upkeep step after this step, said with who "gets" it
+Object.assign(EXAMPLES, {
+  'extra-upkeep-step-you-get': {
+    def: spell([{ op: 'extraStep', step: 'upkeep' } as EffectStep]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: ['There is an additional upkeep step after this step.', 'You get an additional upkeep step after this step.', 'That player gets an additional upkeep step after this step.'],
+    near: ['You get an additional upkeep step after this phase.', 'You get an additional draw step after this step.', 'You get two additional upkeep steps after this step.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-71 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['extra-upkeep-step-you-get']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-d-69 (lane designations)
+Object.assign(EXAMPLES, {
+  // edh-d-69 (lane designations): a resolved effect that sets only creature types and grants a quoted ability, said with "with" (render/mods.ts)
+  'becomes-types-with-quoted': {
+    def: { kind: 'activated', cost: { mana: [{ kind: 'generic', amount: 1 }] }, effect: { targets: [], steps: [effectStep([{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 4, subtypes: { set: ['Golem'] } }, { layer: 6, add: [{ kind: 'static', text: 'This creature can\'t block.', effects: [{ s: 'restrict', subject: { ref: 'self' }, mode: 'cant', action: 'block' }] }] }] } as unknown as StaticEffect], { d: 'permanent' })] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['{1}: ~ becomes a Golem with "~ can\'t block."', '{1}: ~ becomes a Golem and gains "~ can\'t block."'],
+    near: ['{1}: ~ becomes a Golem with "~ can\'t attack."', '{1}: ~ becomes a Golem with "~ can\'t block." until end of turn.'],
+  },
+  // edh-d-69 (lane designations): the chosen player is "they" (render/fold-edhd32.ts)
+  'chosen-player-they-separate': {
+    def: {"kind":"spell","text":"","effect":{"targets":[],"steps":[{"op":"chooseValue","who":{"ref":"you"},"what":"opponent","as":"chosenPlayer"},{"op":"look","who":{"ref":"bound","name":"chosenPlayer"},"at":{"ref":"topCards","player":{"ref":"you"},"count":4},"as":"looked"},{"op":"piles","cards":{"ref":"bound","name":"looked"},"separator":{"ref":"bound","name":"chosenPlayer"},"chooser":{"ref":"you"},"chosen":"keep","other":"rest","faceDown":true},{"op":"move","what":{"ref":"bound","name":"keep"},"to":{"zone":"hand"}},{"op":"move","what":{"ref":"bound","name":"rest"},"to":{"zone":"graveyard"}}]}} as unknown as AbilityDef,
+    readings: ['Choose an opponent. That player looks at the top four cards of your library and separates them into a face-down pile and a face-up pile. Put one pile into your hand and the other into your graveyard.', 'Choose an opponent. They look at the top four cards of your library and separate them into a face-down pile and a face-up pile. Put one pile into your hand and the other into your graveyard.'],
+    near: ['Choose an opponent. They look at the top five cards of your library and separate them into a face-down pile and a face-up pile. Put one pile into your hand and the other into your graveyard.', 'Choose an opponent. They look at the top four cards of your library and separate them into a face-down pile and a face-up pile. Put one pile into your graveyard and the other into your hand.'],
+  },
+  // edh-d-78 (lane must-finish-5000; CR cites from memory, unverified): the permanent after the sentence that removes counters as it enters
+  'enters-removes-counters-it': {
+    def: statics([{ s: 'replace', replaces: enters, body: { b: 'enters', removeCounters: { filter: { anyOf: [{ types: ['Artifact'] }, { types: ['Creature'] }, { types: ['Enchantment'] }] }, kind: '+1/+1', times: 2 } } } as StaticEffect]),
+    readings: ['As ~ enters, remove all counters from any number of artifacts, creatures, and enchantments. ~ enters with X +1/+1 counters on it, where X is twice the number of counters removed this way.', 'As ~ enters, remove all counters from any number of artifacts, creatures, and enchantments. It enters with X +1/+1 counters on it, where X is twice the number of counters removed this way.'],
+    near: ['As ~ enters, remove all counters from any number of artifacts, creatures, and enchantments. ~ enters with X +1/+1 counters on it, where X is the number of counters removed this way.', 'As ~ enters, remove all counters from any number of artifacts, creatures, and enchantments. Target creature enters with X +1/+1 counters on it, where X is twice the number of counters removed this way.'],
+  },
+} satisfies Record<string, Example>);
+
+// edh-d-73 (lane face-down, zz-cloud/edh-d-73.json, render/steps-zones.ts): two families (invented wordings, design 6.10; CR cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'all-each-milled-this-way': {
+    def: edhd43Def('Sorcery', 'Mill three cards. Put all creature cards milled this way onto the battlefield face down under your control.'),
+    readings: [
+      'Mill three cards. Put all creature cards milled this way onto the battlefield face down under your control.',
+      'Mill three cards. Put each creature card milled this way onto the battlefield face down under your control.',
+    ],
+    near: [
+      'Mill three cards. Put all artifact cards milled this way onto the battlefield face down under your control.',
+      'Mill three cards. Put all creature cards milled this way onto the battlefield under your control.',
+    ],
+  },
+  'return-facedown-tapped-control-first': {
+    def: edhd43Def('Creature — Wizard', 'Whenever another creature dies, return it to the battlefield under your control face down and tapped.'),
+    ctx: creature,
+    readings: [
+      'Whenever another creature dies, return it to the battlefield under your control face down and tapped.',
+      'Whenever another creature dies, put it onto the battlefield tapped face down under your control.',
+    ],
+    near: [
+      'Whenever another creature dies, return it to the battlefield under your control face down.',
+      'Whenever another creature dies, return it to the battlefield under your control tapped.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-73 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['all-each-milled-this-way', 'return-facedown-tapped-control-first']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-next-119 (must-finish round, control changes and searches; CR 723.2, 723.5, 701.23a, 614.1a): the players of Opposition Agent's two rules, and the cards they find
+Object.assign(EXAMPLES, {
+  'search-control-opponents': {
+    def: statics([{ s: 'rule', rule: 'controlSearching' } as StaticEffect]),
+    readings: [
+      "You control your opponents while they're searching their libraries.",
+      "You control each opponent while they're searching their libraries.",
+    ],
+    near: ["You control each player while they're searching their libraries.", "You control your opponents while they're searching their graveyards."],
+  },
+});
+
+// edh-next-126 (must-finish round: library, manifest and the rest): the readings of its two families (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'different-name-than-each': {
+    def: edhd43Def('Sorcery', "Search your library for an Aura card that doesn't have the same name as an Aura you control, reveal it, put it into your hand, then shuffle."),
+    readings: [
+      "Search your library for an Aura card that doesn't have the same name as an Aura you control, reveal it, put it into your hand, then shuffle.",
+      'Search your library for an Aura card with a different name than each Aura you control, reveal it, put it into your hand, then shuffle.',
+    ],
+    near: ['Search your library for an Aura card with a different name than each Aura an opponent controls, reveal it, put it into your hand, then shuffle.', 'Search your library for an Aura card with the same name as an Aura you control, reveal it, put it into your hand, then shuffle.'],
+  },
+  'twice-x-after-where-x': {
+    def: edhd43Def('Sorcery', 'Draw X cards, where X is the number of creatures you control. You gain twice X life.'),
+    readings: ['Draw X cards, where X is the number of creatures you control. You gain twice X life.', 'Draw X cards, where X is the number of creatures you control. You gain 2 times X life.'],
+    near: ['Draw X cards, where X is the number of creatures you control. You gain three times X life.', 'Draw X cards, where X is the number of lands you control. You gain twice X life.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-126 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['different-name-than-each', 'twice-x-after-where-x']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-114: the reading of its family (synthetic line, design 6.10)
+Object.assign(EXAMPLES, {
+  'copy-token-for-each-flip': {
+    def: trig([{ ev: 'zoneChange', subject: { types: ['Creature'], controller: 'you', token: false }, to: 'battlefield' }], [{ op: 'flipCoin', who: { ref: 'you' }, untilLose: true, as: 'f' } as EffectStep, { op: 'copy', what: { ref: 'event', role: 'subject' }, result: 'token', who: { ref: 'you' }, count: { q: 'resultCount', step: 'f' } } as EffectStep]),
+    ctx: creature,
+    readings: ['Whenever a nontoken creature you control enters, flip a coin until you lose a flip. For each flip you won, create a token that\'s a copy of that creature.'],
+    near: ['Whenever a nontoken creature you control enters, flip a coin until you lose a flip. For each flip you lost, create a token that\'s a copy of that creature.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-114 (G6): the reading of its family is accepted and the near miss is not', () => {
+  it('copy-token-for-each-flip: every reading is accepted and a near miss is not', () => {
+    const ex = (EXAMPLES as Record<string, Example>)['copy-token-for-each-flip']!;
+    for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+    for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+  });
+});
+
+// edh-next-125 (must-finish round: becomes a creature, counters, artifacts): its family (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'each-is-sized-creature-has': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Artifact'], notTypes: ['Creature'], controller: 'you' } }, mods: [{ layer: 4, types: { add: ['Creature'] }, subtypes: { add: ['Golem'] } }, { layer: 6, add: [{ kind: 'keyword', keyword: 'haste', text: 'haste' }] }, { layer: '7b', power: 3, toughness: 3 }] } as unknown as StaticEffect]),
+    ctx: creature,
+    readings: ['Each noncreature artifact you control is a 3/3 Golem creature in addition to its other types and has haste.'],
+    near: ['Each noncreature artifact you control is a 3/3 Golem creature and has haste.', 'Each noncreature artifact you control is a 2/3 Golem creature in addition to its other types and has haste.', 'Each noncreature artifact you control is a 3/3 Golem creature in addition to its other types and has flying.'],
+  },
+  'shared-card-kinds-and-or': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'object', min: 0, max: 2, text: '', filter: { anyOf: [{ types: ['Artifact'] }, { types: ['Enchantment'], notSubtypes: ['Aura'] }], zone: 'graveyard', owner: 'you', isCard: true } }], steps: [{ op: 'move', what: t('t0'), to: { zone: 'hand' } } as EffectStep] } } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: ['Return up to two target artifact or non-Aura enchantment cards from your graveyard to your hand.', 'Return up to two target artifact and/or non-Aura enchantment cards from your graveyard to your hand.'],
+    near: ['Return up to two target artifact and/or Aura enchantment cards from your graveyard to your hand.', 'Return up to two target artifact and/or non-Aura creature cards from your graveyard to your hand.', 'Return up to three target artifact and/or non-Aura enchantment cards from your graveyard to your hand.'],
+  },
+  'each-gain-control-of-the-others': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'player', min: 1, max: 1, text: '', players: { who: 'opponent' } }], steps: [
+      { op: 'effect', duration: { d: 'endOfTurn' }, effects: [
+        { s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: { ref: 'target', id: 't0' } } }, mods: [{ layer: 2, controller: { ref: 'you' } }] },
+        { s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, mods: [{ layer: 2, controller: { ref: 'target', id: 't0' } }] },
+      ] } as EffectStep] } } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: ['You and target opponent each gain control of all creatures the other controls until end of turn.'],
+    near: ['You and target opponent each gain control of all artifacts the other controls until end of turn.', 'You and target opponent each gain control of all creatures the other controls.'],
+  },
+  'exile-self-and-others': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 3 }], other: [{ kind: 'exileFrom', zone: 'battlefield', count: 1, self: true }, { kind: 'exileFrom', zone: 'battlefield', count: 2, filter: { other: true, types: ['Artifact'], controller: 'you' } }] }, effect: { targets: [], steps: [{ op: 'draw', who: { ref: 'you' }, count: 1 } as EffectStep] } } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ['{3}, Exile Test Card and two other artifacts you control: Draw a card.', '{3}, Exile Test Card, Exile two other artifacts you control: Draw a card.'],
+    near: ['{3}, Exile Test Card and three other artifacts you control: Draw a card.', '{3}, Exile Test Card and two artifacts you control: Draw a card.'],
+  },
+  'cost-exiled-except-self': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 3 }], other: [{ kind: 'exileFrom', zone: 'battlefield', count: 1, self: true }, { kind: 'exileFrom', zone: 'battlefield', count: 2, filter: { other: true, types: ['Artifact'], controller: 'you' } }] }, effect: { targets: [], steps: [{ op: 'move', what: { ref: 'costExiled' }, to: { zone: 'battlefield', controller: 'owner', tapped: true } } as EffectStep] } } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Artifact'] },
+    readings: ["{3}, Exile Test Card and two other artifacts you control: Return all cards exiled with Test Card except Test Card to the battlefield tapped under their owners' control."],
+    near: ["{3}, Exile Test Card and two other artifacts you control: Return all cards exiled with Test Card to the battlefield tapped under their owners' control.", "{3}, Exile Test Card and two other artifacts you control: Return all cards exiled with Test Card except Test Card to the battlefield under their owners' control."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-125 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['each-is-sized-creature-has', 'shared-card-kinds-and-or', 'each-gain-control-of-the-others', 'exile-self-and-others', 'cost-exiled-except-self']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-next-124 (must-finish round, planeswalkers): a reflexive trigger's damage amount is the X of its later instructions (render/steps-lasting.ts#reflexiveSharedX)
+Object.assign(EXAMPLES, {
+  'reflexive-damage-shared-x': {
+    def: { kind: 'spell', text: '', effect: { targets: [], steps: [
+      { op: 'sacrificeChoice', who: { ref: 'you' }, filter: { types: ['Creature'] }, count: 1, as: 'them' },
+      { op: 'reflexive', when: { did: 'them' }, targets: [{ id: 't0', kind: 'anyTarget', min: 1, max: 1, text: 'any target' }], do: [
+        { op: 'damage', source: { ref: 'self' }, to: { ref: 'target', id: 't0' }, amount: { q: 'stat', stat: 'power', of: { ref: 'bound', name: 'them' } } },
+        { op: 'if', cond: { cond: 'matches', object: { ref: 'bound', name: 'them' }, filter: { subtypes: ['Goblin'] } }, then: [{ op: 'draw', who: { ref: 'you' }, count: { q: 'stat', stat: 'power', of: { ref: 'bound', name: 'them' } } }] },
+      ] },
+    ] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] },
+    readings: ["Sacrifice a creature. When you do, ~ deals X damage to any target, where X is that creature's power. If the sacrificed creature was a Goblin, draw X cards."],
+    near: ["Sacrifice a creature. When you do, ~ deals X damage to any target, where X is that creature's toughness. If the sacrificed creature was a Goblin, draw X cards.", "Sacrifice a creature. When you do, ~ deals X damage to any target, where X is that creature's power. If the sacrificed creature was a Goblin, draw two cards."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-124 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['reflexive-damage-shared-x']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-next-120 (must-finish, hidden and simultaneous choices): the reading of its new family
+Object.assign(EXAMPLES, {
+  'text-box-of-self-pronoun': {
+    def: { kind: 'static', text: '', zone: ['stack', 'battlefield'], effects: [{ s: 'replace', replaces: { ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }, body: { b: 'enters', exchangeText: { with: { other: true, types: ['Creature'] } } } }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ["As Test Card enters, you may exchange Test Card's text box and another creature's.", "As Test Card enters, you may exchange its text box and another creature's."],
+    near: ["As Test Card enters, you may exchange its text box and another artifact's.", "As Test Card enters, exchange its text box and another creature's."],
+  },
+});
+// edh-next-123 (must-finish round: exile and cast): the reading of its new family
+Object.assign(EXAMPLES, {
+  'those-exiled-cards-they-them': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: { ref: 'each', who: 'opponent' }, count: 2 }, to: { zone: 'exile', faceDown: true }, as: 'them' },
+      { op: 'effect', duration: { d: 'remainsExiled' }, effects: [
+        { s: 'permit', who: you, action: 'lookAt', of: { is: { ref: 'bound', name: 'them' } } },
+        { s: 'permit', who: you, action: 'cast', of: { is: { ref: 'bound', name: 'them' } }, onlyTypes: ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Planeswalker'], anyManaColor: true },
+      ] },
+    ] as EffectStep[]),
+    readings: [
+      "Exile the top two cards of each opponent's library face down. For as long as those cards remain exiled, you may look at them, you may cast permanent spells from among them, and you may spend mana as though it were mana of any color to cast those spells.",
+      "Exile the top two cards of each opponent's library face down. For as long as they remain exiled, you may look at them, you may cast permanent spells from among those cards, and you may spend mana as though it were mana of any color to cast those spells.",
+    ],
+    near: [
+      "Exile the top two cards of each opponent's library face down. For as long as those cards remain exiled, you may look at them, you may cast spells from among them, and you may spend mana as though it were mana of any color to cast those spells.",
+      "Exile the top two cards of each opponent's library face down. For as long as those cards remain exiled, you may look at them, you may cast permanent spells from among them, and you may spend mana as though it were mana of any type to cast those spells.",
+    ],
+  },
+});
+
+// edh-d-76 (concept lane graveyard-cast): one family (invented wordings, design 6.10; CR cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'card-keyword-you-own-from-exile': {
+    def: edhd43Def('Creature', '{T}: Return target card with flashback you own from exile to your hand.'),
+    readings: [
+      '{T}: Return target card with flashback you own from exile to your hand.',
+      '{T}: Return target exiled card with flashback you own to your hand.',
+    ],
+    near: [
+      '{T}: Return target card with flashback you own from a graveyard to your hand.',
+      '{T}: Return target card with flashback an opponent owns from exile to your hand.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-76 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['card-keyword-you-own-from-exile']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-121 (must-finish round, dice, coins and random; CR 601.3, 304.1, 307.1, 611.2a): the instant and sorcery cards of a group, as one permission
+Object.assign(EXAMPLES, {
+  'cast-typed-spells-from-among-group': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: you, count: 8 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'permit', who: you, action: 'cast', of: { is: bound('them') }, onlyTypes: ['Instant', 'Sorcery'], costChange: { kind: 'set', cost: {} } }] } as unknown as EffectStep,
+    ]),
+    readings: [
+      'Exile the top eight cards of your library. You may cast instant and sorcery spells from among them this turn without paying their mana costs.',
+      'Exile the top eight cards of your library. Until end of turn, you may cast instant and sorcery spells from among them without paying their mana costs.',
+    ],
+    near: [
+      'Exile the top eight cards of your library. You may cast creature spells from among them this turn without paying their mana costs.',
+      'Exile the top eight cards of your library. You may cast instant and sorcery spells from among them this turn.',
+    ],
+  },
+});
+
+describe('edh-next-121 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['cast-typed-spells-from-among-group']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-d-84 (must-finish round; CR 603.12, 608.2c): the reflexive lead after another player's action, "When they do" (Yes Man, Personal Securitron)
+Object.assign(EXAMPLES, {
+  'reflexive-when-they-do': {
+    def: spell([
+      { op: 'effect', duration: { d: 'permanent' }, effects: [{ s: 'continuous', affects: self, mods: [{ layer: 2, controller: { ref: 'target', id: 't0' } }] }], as: 'did' } as EffectStep,
+      { op: 'reflexive', when: { did: 'did' }, targets: [], do: [draw(2)] } as EffectStep,
+    ], [{ id: 't0', kind: 'player', min: 1, max: 1, text: 'target opponent', players: { who: 'opponent' } }]),
+    readings: [
+      'Target opponent gains control of Test Card. When they do, you draw two cards.',
+      'Target opponent gains control of Test Card. When that player does, you draw two cards.',
+    ],
+    near: ['Target opponent gains control of Test Card. When you do, you draw two cards.', "Target opponent gains control of Test Card. When they don't, you draw two cards."],
+  },
+});
+describe('edh-d-84 equivalence family (design 6.8 G6)', () => {
+  it('reflexive-when-they-do: every reading is accepted and a near miss is not', () => {
+    const ex = (EXAMPLES as Record<string, Example>)['reflexive-when-they-do']!;
+    for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+    for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+  });
+});
+
+// edh-next-131 (must-finish round, group copies; CR 400.7j, 608.2c, 118.12): the card an optional payment of the effect exiled from a graveyard is "the exiled card" and "that card"
+Object.assign(EXAMPLES, {
+  'exiled-card-that-card': {
+    def: spell([
+      { op: 'pay', who: you, cost: { other: [{ kind: 'exileFrom', zone: 'graveyard', filter: { types: ['Creature'] }, count: 1 }] }, then: [{ op: 'copy', what: { ref: 'costExiled' }, result: 'token', who: you }] } as unknown as EffectStep,
+    ]),
+    readings: [
+      "You may exile a creature card from your graveyard. If you do, create a token that's a copy of that card.",
+      "You may exile a creature card from your graveyard. If you do, create a token that's a copy of the exiled card.",
+    ],
+    near: [
+      "You may exile a creature card from your graveyard. If you do, create a token that's a copy of that creature.",
+      "You may exile a creature card from your graveyard. If you do, create two tokens that are copies of that card.",
+    ],
+  },
+});
+
+describe('edh-next-131 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['exiled-card-that-card']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-134 (MUST-FINISH round, group control; CR 611.2a, 613.1b): a control change for a duration, the duration first
+Object.assign(EXAMPLES, {
+  'duration-leads-gain-control': {
+    def: spell([
+      { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'target', id: 't' }, mods: [{ layer: 2, controller: you }] }] } as unknown as EffectStep,
+    ], [{ kind: 'object', id: 't', min: 1, max: 1, filter: { types: ['Creature'] } } as never]),
+    readings: [
+      'Gain control of target creature until end of turn.',
+      'Until end of turn, gain control of target creature.',
+    ],
+    near: [
+      'Until end of turn, gain control of target artifact.',
+      'Gain control of target creature.',
+    ],
+  },
+} satisfies Record<string, Example>);
+
+describe('edh-next-134 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['duration-leads-gain-control']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-134: the counters a dies trigger's intervening "if" named are "that many" / "that much"; "each other player" other than a named player
+Object.assign(EXAMPLES, {
+  'that-many-counters-it-had': {
+    def: {
+      kind: 'triggered',
+      trigger: { on: [{ ev: 'zoneChange', subject: { self: true }, from: 'battlefield', to: 'graveyard' }] },
+      interveningIf: { cond: 'matches', object: { ref: 'event', role: 'subject' }, filter: { counters: { kind: '+1/+1', cmp: { op: '>=', value: 1 } } } },
+      effect: { targets: [], steps: [{ op: 'draw', who: you, count: { q: 'counters', on: { ref: 'event', role: 'subject' }, kind: '+1/+1' } } as EffectStep, { op: 'gainLife', who: you, amount: { q: 'counters', on: { ref: 'event', role: 'subject' }, kind: '+1/+1' } } as EffectStep] },
+    } as never,
+    readings: [
+      'When Test Card dies, if it had one or more +1/+1 counters on it, draw that many cards. You gain that much life.',
+      'When Test Card dies, if it had one or more +1/+1 counters on it, draw cards equal to the number of +1/+1 counters on it. You gain that much life.',
+    ],
+    near: [
+      'When Test Card dies, if it had one or more +1/+1 counters on it, draw that many cards. You gain 1 life.',
+      'When Test Card dies, if it had one or more -1/-1 counters on it, draw that many cards. You gain that much life.',
+    ],
+  },
+  'each-other-than-named': {
+    def: {
+      kind: 'triggered',
+      trigger: { on: [{ ev: 'zoneChange', subject: { self: true }, from: 'battlefield', to: 'graveyard' }] },
+      effect: { targets: [], steps: [
+        { op: 'draw', who: { ref: 'ownerOf', object: { ref: 'event', role: 'subject' } }, count: 2 } as EffectStep,
+        { op: 'loseLife', who: { ref: 'each', who: 'otherPlayer', than: { ref: 'ownerOf', object: { ref: 'event', role: 'subject' } } }, amount: 2 } as EffectStep,
+      ] },
+    } as never,
+    readings: [
+      'When Test Card dies, its owner draws two cards and each other player loses 2 life.',
+      'When Test Card dies, its owner draws two cards and each player other than its owner loses 2 life.',
+    ],
+    near: [
+      'When Test Card dies, its owner draws two cards and each opponent loses 2 life.',
+      'When Test Card dies, its owner draws two cards and each player loses 2 life.',
+    ],
+  },
+} satisfies Record<string, Example>);
+
+describe('edh-next-134 (G6): the readings of its families are accepted and the near misses are not (counters it had, each other player)', () => {
+  for (const id of ['that-many-counters-it-had', 'each-other-than-named']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-134: the families of cond.ts, np.ts, steps-zones.ts and fold-edhn134.ts
+Object.assign(EXAMPLES, {
+  'players-lost-or-more': {
+    def: { kind: 'triggered', trigger: { on: [{ ev: 'step', step: 'upkeep', whose: 'you' }] }, interveningIf: { cond: 'compare', left: { q: 'playersLost' }, op: '>=', right: 2 }, effect: { targets: [], steps: [{ op: 'draw', who: you, count: 1 } as EffectStep] } } as never,
+    readings: ['At the beginning of your upkeep, if two or more players have lost the game, draw a card.'],
+    near: ['At the beginning of your upkeep, if three or more players have lost the game, draw a card.', 'At the beginning of your upkeep, if two or more opponents have lost the game, draw a card.'],
+  },
+  'goaded-and-or-suspected': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { anyOf: [{ goaded: true }, { suspected: true }], types: ['Creature'] } } } as EffectStep]),
+    readings: ['Destroy all goaded or suspected creatures.', 'Destroy all goaded and/or suspected creatures.'],
+    near: ['Destroy all goaded creatures.', 'Destroy all tapped and/or suspected creatures.'],
+  },
+  'spells-controller-new-targets': {
+    def: spell([
+      { op: 'exchange', what: 'control', a: { ref: 'target', id: 's' }, b: { ref: 'target', id: 'c' } } as EffectStep,
+      { op: 'chooseNewTargets', who: { ref: 'controllerOf', object: { ref: 'target', id: 's' } }, what: { ref: 'target', id: 's' } } as EffectStep,
+    ], [{ kind: 'spell', id: 's', min: 1, max: 1, filter: { notTypes: ['Creature'] } } as never, { kind: 'object', id: 'c', min: 1, max: 1, filter: { types: ['Creature'] } } as never]),
+    readings: ['Exchange control of target noncreature spell and target creature. Then the spell\'s controller may choose new targets for it.'],
+    near: ['Exchange control of target noncreature spell and target creature. Then you may choose new targets for it.'],
+  },
+  'goaded-while-here-leads': {
+    def: spell([
+      { op: 'tap', what: { ref: 'target', id: 't' } } as EffectStep,
+      { op: 'effect', duration: { d: 'whileSource', as: 'onBattlefield' }, effects: [{ s: 'restrict', subject: { ref: 'target', id: 't' }, mode: 'mustIfAble', action: 'attack', goad: true }] } as unknown as EffectStep,
+    ], [{ kind: 'object', id: 't', min: 1, max: 1, filter: { types: ['Creature'] } } as never]),
+    readings: [
+      'Tap target creature. That creature is goaded for as long as Test Card remains on the battlefield.',
+      'Tap target creature. As long as Test Card remains on the battlefield, that creature is also goaded.',
+    ],
+    near: ['Tap target creature. As long as Test Card remains tapped, that creature is also goaded.'],
+  },
+} satisfies Record<string, Example>);
+
+describe('edh-next-134 (G6): the readings of its other families are accepted and the near misses are not', () => {
+  for (const id of ['players-lost-or-more', 'goaded-and-or-suspected', 'spells-controller-new-targets', 'goaded-while-here-leads']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-142 (must-finish round, library, draw and search; CR checked against 2026-09-25): an option to reveal one card offered only while a condition holds; a hand of any player
+Object.assign(EXAMPLES, {
+  'may-reveal-if': {
+    def: spell([
+      { op: 'look', who: you, at: { ref: 'topCards', player: you, count: 1 }, as: 'seen' } as EffectStep,
+      { op: 'if', cond: { cond: 'matches', object: bound('seen'), filter: { types: ['Creature'], isCard: true } }, then: [
+        { op: 'may', who: you, do: [{ op: 'reveal', who: you, what: bound('seen') }], as: 'did' },
+        { op: 'if', cond: { cond: 'did', step: 'did' }, then: [{ op: 'draw', who: you, count: 1 }] },
+      ] } as unknown as EffectStep,
+    ]),
+    readings: [
+      'Look at the top card of your library. You may reveal that card if it\'s a creature card. If you do, draw a card.',
+      'Look at the top card of your library. If it\'s a creature card, you may reveal it. If you do, draw a card.',
+    ],
+    near: [
+      'Look at the top card of your library. You may reveal that card if it\'s a land card. If you do, draw a card.',
+      'Look at the top card of your library. You may reveal that card if it\'s a creature card. If you do, draw two cards.',
+    ],
+  },
+  'in-each-players-hand': {
+    def: statics([{ s: 'continuous', affects: { ref: 'each', filter: { subtypes: ['Sliver'], zone: 'hand', owner: 'any', isCard: true } }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'cycling', cost: { mana: [{ kind: 'generic', amount: 2 }] }, text: 'cycling {2}' }] }] } as StaticEffect]),
+    readings: ["Each Sliver card in each player's hand has cycling {2}."],
+    near: ["Each Sliver card in your hand has cycling {2}.", "Each Sliver card in each player's graveyard has cycling {2}."],
+  },
+});
+
+describe('edh-next-142 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['may-reveal-if', 'in-each-players-hand']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-138 (must-finish round, tokens; CR 115.1, 601.2c, 608.2f): a target for each opponent, "they control", with the singular verb
+Object.assign(EXAMPLES, {
+  'per-opponent-they-control': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { self: true }, to: 'battlefield' }] }, effect: { targets: [{ id: 't0', kind: 'object', min: 0, max: 1, text: '', filter: { types: ['Artifact'], notTypes: ['Creature'], controller: 'opponent' }, perOpponent: true }], steps: [{ op: 'effect', duration: { d: 'whileSource', as: 'controlled' }, effects: [{ s: 'continuous', affects: { ref: 'target', id: 't0' }, mods: [{ layer: 4, types: { add: ['Artifact', 'Creature'] }, subtypes: { set: ['Wall'] } }, { layer: 6, add: [{ kind: 'keyword', keyword: 'defender', text: 'defender' }] }, { layer: '7b', power: 0, toughness: 4 }] }] } as unknown as EffectStep] } } as AbilityDef,
+    ctx: creature,
+    readings: [
+      'When Test Card enters, for each opponent, up to one target noncreature artifact they control becomes a 0/4 Wall artifact creature with defender for as long as you control Test Card.',
+      'When Test Card enters, for each opponent, up to one target noncreature artifact that player controls becomes a 0/4 Wall artifact creature with defender for as long as you control Test Card.',
+    ],
+    near: [
+      'When Test Card enters, for each opponent, up to one target noncreature artifact you control becomes a 0/4 Wall artifact creature with defender for as long as you control Test Card.',
+      'When Test Card enters, up to one target noncreature artifact they control becomes a 0/4 Wall artifact creature with defender for as long as you control Test Card.',
+    ],
+  },
+});
+
+// edh-next-138 (CR 611.2a, 118.9, 614.1a): a free permission for this turn with a graveyard rider, the duration inside
+Object.assign(EXAMPLES, {
+  'permit-free-this-turn-mid-rider': {
+    def: spell([{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'permit', who: you, action: 'cast', of: { is: t('c') }, costChange: { kind: 'set', cost: {} }, graveyardInstead: { to: { zone: 'library', position: 'bottom' } } }] } as unknown as EffectStep], [{ id: 'c', kind: 'object', min: 1, max: 1, text: '', filter: { zone: 'graveyard', owner: 'you', isCard: true, types: ['Instant'] } } as TargetSpec]),
+    readings: [
+      "You may cast target instant card from your graveyard this turn without paying its mana cost. If that spell would be put into a graveyard, put it on the bottom of its owner's library instead.",
+      "You may cast target instant card from your graveyard without paying its mana cost until end of turn. If that spell would be put into a graveyard, put it on the bottom of its owner's library instead.",
+    ],
+    near: [
+      "You may cast target instant card from your graveyard this turn. If that spell would be put into a graveyard, put it on the bottom of its owner's library instead.",
+      "You may cast target instant card from your graveyard this turn without paying its mana cost. If that spell would be put into a graveyard, exile it instead.",
+    ],
+  },
+});
+
+// edh-next-138 (CR 608.2h, 701.8a): the total of what one destroy destroyed
+Object.assign(EXAMPLES, {
+  'total-of-destroyed-this-way': {
+    def: spell([{ op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'] } }, as: 'destroy' } as EffectStep, { op: 'gainLife', who: you, amount: { q: 'stat', stat: 'manaValue', of: { ref: 'bound', name: 'destroy' }, sum: true } } as EffectStep]),
+    readings: ['Destroy all creatures. You gain life equal to the total mana value of permanents destroyed this way.'],
+    near: ['Destroy all creatures. You gain life equal to the total mana value of permanents exiled this way.', 'Destroy all creatures. You gain life equal to the total power of permanents destroyed this way.'],
+  },
+});
+
+describe('edh-next-138 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['per-opponent-they-control', 'permit-free-this-turn-mid-rider', 'total-of-destroyed-this-way']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-145 (must-finish round, group "other"; CR 119.4, 118.3, 601.2h): a life payment of one life for each card in your hand
+Object.assign(EXAMPLES, {
+  'pay-life-for-each': {
+    def: { kind: 'activated', text: '', cost: { other: [{ kind: 'payLife', amount: { q: 'zoneSize', zone: 'hand', of: you } }] }, effect: { targets: [], steps: [{ op: 'draw', who: you, count: 1 }] } } as unknown as AbilityDef,
+    readings: [
+      'Pay 1 life for each card in your hand: Draw a card.',
+      'Pay life equal to the number of cards in your hand: Draw a card.',
+    ],
+    near: [
+      'Pay 2 life for each card in your hand: Draw a card.',
+      'Pay 1 life for each card in your graveyard: Draw a card.',
+    ],
+  },
+});
+
+describe('edh-next-145 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['pay-life-for-each']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-133 (must-finish round, group copies; CR 115.9c, 109.2): a spell that targets only a single other object
+Object.assign(EXAMPLES, {
+  'targets-only-other-than-self': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'cast', player: 'any', spell: { targetsOnly: { ref: 'each', filter: { types: ['Creature'], other: true } } } }] }, effect: { targets: [], steps: [draw(1)] } } as AbilityDef,
+    ctx: creature,
+    readings: ['Whenever a player casts a spell that targets only a single creature other than ~, draw a card.', 'Whenever a player casts a spell that targets only a single other creature, draw a card.'],
+    near: ['Whenever a player casts a spell that targets only a single creature, draw a card.', 'Whenever a player casts a spell that targets a single creature other than ~, draw a card.'],
+  },
+} satisfies Record<string, Example>);
+
+describe('edh-next-133 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['targets-only-other-than-self']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-130 (must-finish round, group copies; CR 707.9b, 205.1a, 508.4, 113.2): the token copy exceptions of its families, the defs as the parser builds them
+const EDHN130_OPTS = defaultParseOptions({ templates: [...TEMPLATE_SET], capabilities: ENGINE_CAPABILITIES });
+const edhn130Def = (type: string, text: string): AbilityDef => parseCard({ name: 'Test Card', layout: 'normal', type_line: type, oracle_text: text, power: '2', toughness: '2' } as OracleCard, EDHN130_OPTS).faces[0]!.abilities[0]!;
+const EDHN130_CLUE = edhn130Def('Creature — Spider', "Whenever another creature you control dies, create a token that's a copy of that creature, except it's a Clue artifact with \"{2}, Sacrifice this token: Draw a card.\" and it loses all other card types.");
+const EDHN130_BOSS = edhn130Def('Legendary Creature — Human Ninja', "Whenever Test Card attacks a player, for each other opponent, create a token that's a copy of Test Card tapped and attacking that player, except it isn't legendary.");
+Object.assign(EXAMPLES, {
+  'copy-except-quoted-with-comma': {
+    def: EDHN130_CLUE,
+    ctx: creature,
+    readings: [
+      "Whenever another creature you control dies, create a token that's a copy of that creature, except it's a Clue artifact with \"{2}, Sacrifice this token: Draw a card.\" and it loses all other card types.",
+      "Whenever another creature you control dies, create a token that's a copy of that creature, except it's a Clue artifact with \"{2}, Sacrifice this token: Draw a card,\" and it loses all other card types.",
+      "Whenever another creature you control dies, create a token that's a copy of that creature, except it's a Clue artifact with \"{2}, Sacrifice this token: Draw a card\" and it loses all other card types.",
+    ],
+    near: [
+      "Whenever another creature you control dies, create a token that's a copy of that creature, except it's a Clue artifact with \"{2}, Sacrifice this token: Draw two cards,\" and it loses all other card types.",
+      "Whenever another creature you control dies, create a token that's a copy of that creature, except it's a Clue artifact with \"{2}, Sacrifice this token: Draw a card.\"",
+    ],
+  },
+  'copy-token-types-set-with': {
+    def: EDHN130_CLUE,
+    ctx: creature,
+    readings: [
+      "Whenever another creature you control dies, create a token that's a copy of that creature, except it's a Clue artifact with \"{2}, Sacrifice this token: Draw a card.\" and it loses all other card types.",
+    ],
+    near: [
+      "Whenever another creature you control dies, create a token that's a copy of that creature, except it's a Clue artifact with \"{2}, Sacrifice this token: Draw a card.\" in addition to its other types.",
+      "Whenever another creature you control dies, create a token that's a copy of that creature, except it's a Food artifact with \"{2}, Sacrifice this token: Draw a card.\" and it loses all other card types.",
+    ],
+  },
+  'copy-self-tapped-attacking-whom': {
+    def: EDHN130_BOSS,
+    ctx: creature,
+    readings: [
+      "Whenever Test Card attacks a player, for each other opponent, create a token that's a copy of Test Card tapped and attacking that player, except it isn't legendary.",
+      "Whenever Test Card attacks a player, for each other opponent, create a token that's a copy of it, except it isn't legendary. The token enters tapped and attacking that opponent.",
+    ],
+    near: [
+      "Whenever Test Card attacks a player, for each other opponent, create a token that's a copy of Test Card tapped and attacking you, except it isn't legendary.",
+      "Whenever Test Card attacks a player, for each other opponent, create a token that's a copy of Test Card tapped and attacking that player.",
+    ],
+  },
+});
+
+describe('edh-next-130 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['copy-except-quoted-with-comma', 'copy-token-types-set-with', 'copy-self-tapped-attacking-whom']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      expect(ex.def.kind, JSON.stringify(ex.def)).toBe('triggered');
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+// edh-next-136 (must-finish round, planeswalkers): the readings of its new families
+Object.assign(EXAMPLES, {
+  "rest-other-counter-on-it": { def: {"kind": "spell", "text": "Reveal the top two cards of your library. Target opponent chooses one of those cards. Put that card into your hand and exile the other with a silver counter on it.", "effect": {"targets": [{"id": "t0", "kind": "player", "min": 1, "max": 1, "text": "target opponent", "players": {"who": "opponent"}}], "steps": [{"op": "reveal", "who": {"ref": "you"}, "what": {"ref": "topCards", "player": {"ref": "you"}, "count": 2}, "as": "them"}, {"op": "chooseObjects", "who": {"ref": "target", "id": "t0"}, "from": {"ref": "each", "filter": {"is": {"ref": "bound", "name": "them"}}}, "min": 1, "max": 1, "as": "chosen"}, {"op": "move", "what": {"ref": "bound", "name": "chosen"}, "to": {"zone": "hand"}}, {"op": "move", "what": {"ref": "each", "filter": {"is": {"ref": "bound", "name": "them"}, "not": {"is": {"ref": "bound", "name": "chosen"}}, "zone": "library"}}, "to": {"zone": "exile", "counters": [{"kind": "silver", "count": 1}]}}]}} as unknown as AbilityDef, ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] }, readings: ["Reveal the top two cards of your library. Target opponent chooses one of those cards. Put that card into your hand and exile the other with a silver counter on it.", "Reveal the top two cards of your library. Target opponent chooses one of those cards. Put that card into your hand and exile the rest with a silver counter on each of them."], near: ["Reveal the top two cards of your library. Target opponent chooses one of those cards. Put that card into your hand and exile the other with a gold counter on it."] },
+  "own-counter-from-exile": { def: {"kind": "spell", "text": "Draw a card, then put a card you own with a silver counter on it from exile into your hand.", "effect": {"targets": [], "steps": [{"op": "draw", "who": {"ref": "you"}, "count": 1}, {"op": "chooseObjects", "who": {"ref": "you"}, "from": {"ref": "each", "filter": {"zone": "exile", "owner": "you", "counters": {"kind": "silver"}}}, "min": 1, "max": 1, "as": "chosen"}, {"op": "move", "what": {"ref": "bound", "name": "chosen"}, "to": {"zone": "hand"}}]}} as unknown as AbilityDef, ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] }, readings: ["Draw a card, then put a card you own with a silver counter on it from exile into your hand."], near: ["Draw a card, then put a card you own with a gold counter on it from exile into your hand."] },
+  "pay-any-amount-of-mana": { def: {"kind": "spell", "text": "Pay any amount of mana. Draw that many cards.", "effect": {"targets": [], "steps": [{"op": "pay", "who": {"ref": "you"}, "cost": {"mana": [{"kind": "generic", "amount": 1}]}, "anyAmount": true, "as": "pay"}, {"op": "draw", "who": {"ref": "you"}, "count": {"q": "resultCount", "step": "pay"}}]}} as unknown as AbilityDef, ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] }, readings: ["Pay any amount of mana. Draw that many cards.", "You may pay {1} any number of times. Draw that many cards."], near: ["Pay any amount of life. Draw that many cards."] },
+  "put-from-hand-or-graveyard-after": { def: {"kind": "spell", "text": "You may put an artifact creature card onto the battlefield from your hand or graveyard with a +1/+1 counter on it.", "effect": {"targets": [], "steps": [{"op": "chooseObjects", "who": {"ref": "you"}, "from": {"ref": "each", "filter": {"allTypes": ["Artifact", "Creature"], "zone": ["hand", "graveyard"], "owner": "you", "isCard": true}}, "min": 0, "max": 1, "as": "put"}, {"op": "move", "what": {"ref": "bound", "name": "put"}, "to": {"zone": "battlefield", "controller": {"ref": "you"}, "counters": [{"kind": "+1/+1", "count": 1}]}}]}} as unknown as AbilityDef, ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] }, readings: ["You may put an artifact creature card onto the battlefield from your hand or graveyard with a +1/+1 counter on it."], near: ["You may put an artifact creature card onto the battlefield from your hand or graveyard with two +1/+1 counters on it."] },
+  "counted-impulse-them": { def: {"kind": "spell", "text": "Discard any number of cards. Exile that many cards from the top of your library. You may play them this turn.", "effect": {"targets": [], "steps": [{"op": "chooseObjects", "who": {"ref": "you"}, "from": {"ref": "each", "filter": {"zone": "hand", "owner": "you"}}, "min": 0, "max": "any", "as": "toDiscard"}, {"op": "discard", "who": {"ref": "you"}, "count": {"q": "count", "of": {"ref": "bound", "name": "toDiscard"}}, "filter": {"is": {"ref": "bound", "name": "toDiscard"}}, "as": "discard"}, {"op": "move", "what": {"ref": "topCards", "player": {"ref": "you"}, "count": {"q": "resultCount", "step": "discard"}}, "to": {"zone": "exile"}, "as": "impulse"}, {"op": "effect", "duration": {"d": "endOfTurn"}, "effects": [{"s": "permit", "who": {"ref": "you"}, "action": "play", "of": {"is": {"ref": "bound", "name": "impulse"}}}]}]}} as unknown as AbilityDef, ctx: { selfNames: ['Test Card'], selfTypes: ['Sorcery'] }, readings: ["Discard any number of cards. Exile that many cards from the top of your library. You may play them this turn."], near: ["Discard any number of cards. Exile that many cards from the top of your library. You may play them until your next turn."] },
+  "each-opponent-controls-discard-sacrifice": { def: {"kind": "static", "text": "Spells and abilities your opponents control can't cause you to discard cards or sacrifice permanents.", "effects": [{"s": "restrict", "subject": {"ref": "you"}, "mode": "cant", "action": "discard", "causedByOpponents": true}, {"s": "restrict", "subject": {"ref": "you"}, "mode": "cant", "action": "sacrifice", "causedByOpponents": true}]} as unknown as AbilityDef, ctx: { selfNames: ['Test Card'], selfTypes: ['Planeswalker'] }, readings: ["Spells and abilities your opponents control can't cause you to discard cards or sacrifice permanents.", "Spells and abilities each opponent controls can't cause you to discard cards or sacrifice permanents."], near: ["Spells and abilities you control can't cause you to discard cards or sacrifice permanents."] },
+} satisfies Record<string, Example>);
+describe('edh-next-136 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ["rest-other-counter-on-it", "own-counter-from-exile", "pay-any-amount-of-mana", "put-from-hand-or-graveyard-after", "counted-impulse-them", "each-opponent-controls-discard-sacrifice"]) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-128 (must-finish round, dice, coins and random; CR 614.12a, 706.2, 608.2d, 120.3): "it" or "~" after "As ~ enters, roll X d6."; a planeswalker "that player" or "they" control
+Object.assign(EXAMPLES, {
+  'enters-roll-it-or-self': {
+    def: { kind: 'static', text: '', zone: ['stack', 'battlefield'], effects: [{ s: 'replace', replaces: enters, body: { b: 'enters', roll: { sides: 6, count: 2 }, counters: [{ kind: '+1/+1', count: { q: 'dieResult' } }] } }] } as unknown as AbilityDef,
+    readings: [
+      'As Test Card enters, roll two d6. It enters with a number of +1/+1 counters on it equal to the total of those results.',
+      'As Test Card enters, roll two d6. Test Card enters with a number of +1/+1 counters on it equal to the total of those results.',
+    ],
+    near: [
+      'As Test Card enters, roll two d6. It enters with a number of +1/+1 counters on it equal to the highest of those results.',
+      'As Test Card enters, roll three d6. It enters with a number of +1/+1 counters on it equal to the total of those results.',
+    ],
+    ctx: creature,
+  },
+  'planeswalker-that-player-or-they-control': {
+    def: trig([enters], [{ op: 'damage', source: self, to: { ref: 'active' }, amount: 2, orPlaneswalker: true } as EffectStep]),
+    readings: [
+      "When Test Card enters, Test Card deals 2 damage to the active player or a planeswalker that player controls.",
+      "When Test Card enters, Test Card deals 2 damage to the active player or a planeswalker they control.",
+    ],
+    near: [
+      "When Test Card enters, Test Card deals 2 damage to the active player or a creature that player controls.",
+      "When Test Card enters, Test Card deals 2 damage to the active player.",
+    ],
+    ctx: creature,
+  },
+});
+
+describe('edh-next-128 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['enters-roll-it-or-self', 'planeswalker-that-player-or-they-control']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-127 (must-finish round, dice, coins and random; CR 400.3, 608.2c, 614.1a, 608.2n): the readings of its two families
+Object.assign(EXAMPLES, {
+  'put-into-graveyards-this-way': {
+    def: spell([
+      { op: 'sacrificeChoice', who: { ref: 'each', who: 'player' }, filter: { types: ['Creature'] }, count: 1, as: 'them' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { types: ['Creature'], is: bound('them'), zone: 'graveyard', isCard: true } }, min: 0, max: 2, as: 'returned' } as unknown as EffectStep,
+      { op: 'move', what: bound('returned'), to: { zone: 'battlefield', controller: you } } as EffectStep,
+    ]),
+    readings: [
+      'Each player sacrifices a creature of their choice. Return up to two creature cards put into graveyards this way to the battlefield under your control.',
+      'Each player sacrifices a creature of their choice. Return up to two creature cards put into a graveyard this way to the battlefield under your control.',
+    ],
+    near: [
+      'Each player sacrifices a creature of their choice. Return up to two creature cards put into your graveyard this way to the battlefield under your control.',
+      'Each player sacrifices a creature of their choice. Return up to three creature cards put into graveyards this way to the battlefield under your control.',
+    ],
+  },
+  'spell-exiled-as-it-resolves-a-graveyard': {
+    def: trig([{ ev: 'cast', spell: { types: ['Instant'] } } as EventPattern], [
+      { op: 'effect', duration: { d: 'permanent' }, effects: [{ s: 'replace', replaces: { ev: 'zoneChange', subject: { is: { ref: 'event', role: 'spell' } }, from: 'stack', to: 'graveyard', cause: 'resolve' }, body: { b: 'modify', destination: { zone: 'exile' } } }] } as unknown as EffectStep,
+    ]),
+    readings: [
+      'Whenever a player casts an instant spell, exile it instead of putting it into a graveyard as it resolves.',
+      'Whenever a player casts an instant spell, exile that spell instead of putting it into a graveyard as it resolves.',
+      'Whenever a player casts an instant spell, exile that spell instead of putting it into your graveyard as it resolves.',
+    ],
+    near: [
+      'Whenever a player casts an instant spell, exile it instead of putting it into a graveyard.',
+      'Whenever a player casts an instant spell, exile it instead of putting it into its owner\'s hand as it resolves.',
+    ],
+  },
+});
+
+describe('edh-next-127 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['put-into-graveyards-this-way', 'spell-exiled-as-it-resolves-a-graveyard']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-94 (band 5,001-10,000, group counters; CR 400.7j, 608.2c, 111.1, 122.6, 614.1c): the card a cost exiled named again, and a token that enters with counters said in a sentence of its own
+Object.assign(EXAMPLES, {
+  'cost-exiled-card-it': {
+    def: edhd43Def('Creature — Wizard', "{2}, Exile a nonland card from your hand: Put three time counters on the exiled card. If it doesn't have suspend, it gains suspend."),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: [
+      "{2}, Exile a nonland card from your hand: Put three time counters on the exiled card. If it doesn't have suspend, it gains suspend.",
+      "{2}, Exile a nonland card from your hand: Put three time counters on the exiled card. If the exiled card doesn't have suspend, the exiled card gains suspend.",
+    ],
+    near: [
+      "{2}, Exile a nonland card from your hand: Put four time counters on the exiled card. If it doesn't have suspend, it gains suspend.",
+      "{2}, Exile a nonland card from your hand: Put three time counters on the exiled card. If it doesn't have flying, it gains suspend.",
+    ],
+  },
+  'token-enters-with-counters-sentence': {
+    def: edhd43Def('Creature — Zombie', 'When this creature enters, create a 0/0 black Zombie creature token. The token enters with X +1/+1 counters on it, where X is the number of other creatures you control.'),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: [
+      'When ~ enters, create a 0/0 black Zombie creature token. The token enters with X +1/+1 counters on it, where X is the number of other creatures you control.',
+      'When ~ enters, create a 0/0 black Zombie creature token with the number of creatures you control +1/+1 counters on it.',
+    ],
+    near: [
+      'When ~ enters, create a 0/0 black Zombie creature token. The token enters with X +1/+1 counters on it, where X is the number of other artifacts you control.',
+      'When ~ enters, create a 0/0 black Zombie creature token. The token enters with X -1/-1 counters on it, where X is the number of other creatures you control.',
+    ],
+  },
+});
+
+describe('edh-d-94 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['cost-exiled-card-it', 'token-enters-with-counters-sentence']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-93 (Commander coordinator D, EDHREC ranks 5,001-10,000, group counters): the readings of its new families
+const EDHD93_DIED: Quantity = { q: 'happenedCount', event: { ev: 'zoneChange', subject: { types: ['Creature'] }, from: 'battlefield', to: 'graveyard' }, scope: 'turn' };
+const EDHD93_HOST = { ref: 'event', role: 'subject' } as const;
+Object.assign(EXAMPLES, {
+  'deals-damage-to-permanents-and-or-players': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'damage', source: { colors: ['R'], controller: 'you' } }] }, effect: { targets: [], steps: [gain(1)] } } as AbilityDef,
+    ctx: creature,
+    readings: ['Whenever a red source you control deals damage, you gain 1 life.', 'Whenever a red source you control deals damage to one or more permanents and/or players, you gain 1 life.'],
+    near: ['Whenever a red source you control deals damage to one or more creatures, you gain 1 life.', 'Whenever a red source you control deals damage to one or more players, you gain 1 life.'],
+  },
+  'that-many-counters-died-count': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'step', step: 'end', whose: 'you' }] },
+      interveningIf: { cond: 'happened', event: EDHD93_DIED.event, scope: 'turn', times: { op: '>=', value: 1 } },
+      effect: { targets: [], steps: [{ op: 'putCounters', on: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, kind: '+1/+1', count: EDHD93_DIED, distribute: true } as EffectStep] } } as AbilityDef,
+    ctx: creature,
+    readings: ['At the beginning of your end step, if one or more creatures died this turn, distribute that many +1/+1 counters among any number of creatures you control.', 'At the beginning of your end step, if one or more creatures died this turn, distribute a number of +1/+1 counters equal to that much among any number of creatures you control.'],
+    near: ['At the beginning of your end step, if one or more creatures died this turn, distribute twice that many +1/+1 counters among any number of creatures you control.', 'At the beginning of your end step, if one or more creatures died this turn, distribute that many -1/-1 counters among any number of creatures you control.'],
+  },
+  'dont-control-it-or-that-creature': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'counters', change: 'put', kind: '-1/-1', on: { types: ['Creature'] } }], batch: true },
+      effect: { targets: [], steps: [
+        { op: 'if', cond: { cond: 'playerIs', who: { ref: 'controllerOf', object: EDHD93_HOST }, is: 'you' }, then: [draw(1)] },
+        { op: 'if', cond: { cond: 'not', of: { cond: 'playerIs', who: { ref: 'controllerOf', object: EDHD93_HOST }, is: 'you' } }, then: [{ op: 'loseLife', who: { ref: 'controllerOf', object: EDHD93_HOST }, amount: 1 }] },
+      ] as EffectStep[] } } as AbilityDef,
+    ctx: creature,
+    readings: ["Whenever one or more -1/-1 counters are put on a creature, draw a card if you control that creature. If you don't control it, its controller loses 1 life.", "Whenever one or more -1/-1 counters are put on a creature, draw a card if you control that creature. If you don't control that creature, its controller loses 1 life."],
+    near: ["Whenever one or more -1/-1 counters are put on a creature, draw a card if you control that creature. If you control it, its controller loses 1 life.", "Whenever one or more -1/-1 counters are put on a creature, draw a card if you control that creature. If you don't control it, its controller loses 2 life."],
+  },
+} satisfies Record<string, Example>);
+Object.assign(EXAMPLES, {
+  'attached-controller-sacrifices-it': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'step', step: 'upkeep', whose: 'you' }] },
+      effect: { targets: [], steps: [{ op: 'sacrificeChoice', who: { ref: 'controllerOf', object: { ref: 'attachedTo' } }, filter: { is: { ref: 'attachedTo' } }, count: 1 } as EffectStep] } } as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: ["At the beginning of your upkeep, enchanted creature's controller sacrifices it.", "At the beginning of your upkeep, enchanted creature's controller sacrifices that creature."],
+    near: ["At the beginning of your upkeep, enchanted creature's owner sacrifices it.", "At the beginning of your upkeep, enchanted creature's controller sacrifices a creature."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-93 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['attached-controller-sacrifices-it', 'deals-damage-to-permanents-and-or-players', 'that-many-counters-died-count', 'dont-control-it-or-that-creature']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-98 (Commander coordinator D, must-finish, graveyard-exile-cast): four families (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+const edhd98Def = (type: string, text: string, cost = '{0}'): AbilityDef =>
+  parseCard({ name: 'Test Card', layout: 'normal', mana_cost: cost, type_line: type, oracle_text: text, colors: [], ...(type.includes('Creature') ? { power: '2', toughness: '2' } : {}) } as OracleCard, RX30_OPTS).faces[0]!.abilities.at(-1)!;
+Object.assign(EXAMPLES, {
+  'result-count-that-much': {
+    def: edhd98Def('Artifact', "Whenever this artifact becomes tapped, exile the top card of your library face down.\n{2}{B}: Return all cards exiled with this artifact to their owner's hand and you lose that much life."),
+    readings: ["{2}{B}: Return all cards exiled with ~ to their owner's hand and you lose that much life."],
+    near: ["{2}{B}: Return all cards exiled with ~ to their owner's hand and you gain that much life.", "{2}{B}: Return all cards exiled with ~ to their owner's hand and you lose 1 life."],
+  },
+  'chooses-destroy-all-other': {
+    def: edhd98Def('Sorcery', 'Each player chooses two artifacts they control. Destroy the rest.'),
+    readings: ['Each player chooses two artifacts they control. Destroy the rest.', 'Each player chooses two artifacts they control. Destroy all other artifacts.'],
+    near: ['Each player chooses two artifacts they control. Destroy all other creatures.', 'Each player chooses two artifacts they control. Exile all other artifacts.'],
+  },
+  'cycled-shuffle-or-battlefield-instead': {
+    def: edhd98Def('Creature — Turtle', "Cycling {2}\nWhen you cycle this card, shuffle it into your library from your graveyard. If you control two or more Turtles, put it onto the battlefield from your graveyard instead."),
+    readings: ['When you cycle ~, shuffle it into your library from your graveyard. If you control two or more Turtles, put it onto the battlefield from your graveyard instead.'],
+    near: ['When you cycle ~, shuffle it into your library from your graveyard. If you control two or more Turtles, put it into your hand from your graveyard instead.'],
+  },
+  'reveal-until-put-all-one-sentence': {
+    def: edhd98Def('Artifact', '{4}, {T}: Reveal cards from the top of your library until you reveal two creature cards, put all creature cards revealed this way onto the battlefield, then shuffle the rest of the revealed cards into your library.'),
+    readings: [
+      '{4}, {T}: Reveal cards from the top of your library until you reveal two creature cards, put all creature cards revealed this way onto the battlefield, then shuffle the rest of the revealed cards into your library.',
+      '{4}, {T}: Reveal cards from the top of your library until you reveal two creature cards. Put all creature cards revealed this way onto the battlefield, then shuffle the rest of the revealed cards into your library.',
+    ],
+    near: ['{4}, {T}: Reveal cards from the top of your library until you reveal two creature cards, put all creature cards revealed this way into your hand, then shuffle the rest of the revealed cards into your library.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-98 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['result-count-that-much', 'chooses-destroy-all-other', 'cycled-shuffle-or-battlefield-instead', 'reveal-until-put-all-one-sentence']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-99 (Commander coordinator D, group graveyard-exile-cast; CR 603.12, 118.12; Tranquil Frillback): the reflexive trigger of a payment "up to N times"
+Object.assign(EXAMPLES, {
+  'when-you-pay-up-to-times': {
+    def: spell([
+      { op: 'pay', who: { ref: 'you' }, cost: { mana: [{ kind: 'colored', color: 'G' }] }, upTo: 2, as: 'pay' } as EffectStep,
+      { op: 'reflexive', when: { did: 'pay' }, targets: [], do: [{ op: 'gainLife', who: { ref: 'you' }, amount: 1 }] } as unknown as EffectStep,
+    ]),
+    readings: ['You may pay {G} up to two times. When you do, you gain 1 life.', 'You may pay {G} up to two times. When you pay this cost one or more times, you gain 1 life.'],
+    near: ['You may pay {G} up to two times. When you pay this cost two or more times, you gain 1 life.', 'You may pay {G} up to two times. When you pay this cost, you gain 1 life.'],
+    ctx: {},
+  },
+  'sacrifice-greatest-mv-creature-or-planeswalker': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'player', min: 1, max: 1, players: { who: 'opponent' }, text: 'target opponent' }], steps: [
+      { op: 'sacrificeChoice', who: { ref: 'target', id: 't0' }, filter: { types: ['Creature', 'Planeswalker'], controller: { ref: 'target', id: 't0' }, manaValue: { op: '>=', value: { q: 'stat', stat: 'manaValue', of: { ref: 'each', filter: { types: ['Creature', 'Planeswalker'], controller: { ref: 'target', id: 't0' } } }, agg: 'max' } } }, count: 1 } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: {},
+    readings: ['Target opponent sacrifices a creature or planeswalker with the greatest mana value among creatures or planeswalkers that player controls.', 'Target opponent sacrifices a creature or planeswalker they control with the greatest mana value among creatures and planeswalkers they control.'],
+    near: ['Target opponent sacrifices a creature or planeswalker they control with the greatest power among creatures and planeswalkers they control.', 'Target opponent sacrifices a creature or planeswalker they control with the lowest mana value among creatures and planeswalkers they control.'],
+  },  'graveyard-card-has-keyword': {
+    def: spell([
+      { op: 'gainLife', who: { ref: 'you' }, amount: 2, guard: { cond: 'exists', of: { ref: 'each', filter: { types: ['Creature'], zone: 'graveyard', owner: 'you', isCard: true, keyword: 'flying' } } } } as unknown as EffectStep,
+    ]),
+    ctx: {},
+    readings: ['If there is a creature card with flying in your graveyard, you gain 2 life.', 'If a creature card in your graveyard has flying, you gain 2 life.'],
+    near: ['If a creature card in your graveyard has reach, you gain 2 life.', 'If a creature card in your library has flying, you gain 2 life.'],
+  },  'player-whose-turn-it-is': {
+    def: spell([{ op: 'may', who: { ref: 'active' }, do: [{ op: 'draw', who: { ref: 'active' }, count: 1 }] } as unknown as EffectStep]),
+    ctx: {},
+    readings: ['The active player may draw a card.', 'The player whose turn it is may draw a card.'],
+    near: ['The player whose turn it was may draw a card.', 'The player whose turn it is may draw two cards.'],
+  },
+});
+
+describe('edh-d-99 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['when-you-pay-up-to-times', 'sacrifice-greatest-mv-creature-or-planeswalker', 'graveyard-card-has-keyword', 'player-whose-turn-it-is']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-129 (must-finish round, dice, coins and random): one family (invented wordings, design 6.10; CR cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'opponent-named-again-that-opponent': {
+    def: edhd43Def('Sorcery', 'Flip a coin. If you win the flip, you gain 2 life and target opponent loses 2 life, and you decide whether to flip again. If you lose the flip, you lose 2 life and that opponent gains 2 life, and that player decides whether to flip again. Double the life stakes with each flip.'),
+    readings: [
+      'Flip a coin. If you win the flip, you gain 2 life and target opponent loses 2 life, and you decide whether to flip again. If you lose the flip, you lose 2 life and that opponent gains 2 life, and that player decides whether to flip again. Double the life stakes with each flip.',
+      'Flip a coin. If you win the flip, you gain 2 life and target opponent loses 2 life, and you decide whether to flip again. If you lose the flip, you lose 2 life and that player gains 2 life, and that player decides whether to flip again. Double the life stakes with each flip.',
+    ],
+    near: [
+      'Flip a coin. If you win the flip, you gain 2 life and target opponent loses 2 life, and you decide whether to flip again. If you lose the flip, you lose 2 life and you gain 2 life, and that player decides whether to flip again. Double the life stakes with each flip.',
+      'Flip a coin. If you win the flip, you gain 2 life and target opponent loses 2 life, and you decide whether to flip again. If you lose the flip, you lose 2 life and that opponent gains 3 life, and that player decides whether to flip again. Double the life stakes with each flip.',
+    ],
+  },
+});
+
+// edh-next-135 (must-finish round, choices, votes and opponents; CR 701.20a, 603.12): your reveal of any number of cards of your hand, done with none too
+Object.assign(EXAMPLES, {
+  'reveal-any-number-from-hand': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { anyOf: [{ subtypes: ['Elf'] }], zone: 'hand', owner: 'you' } }, min: 0, max: 'any', as: 'chosen' } as EffectStep,
+      { op: 'reveal', who: you, what: bound('chosen'), as: 'revealed', anyNumber: true } as EffectStep,
+      { op: 'gainLife', who: you, amount: { q: 'resultCount', step: 'revealed' } } as unknown as EffectStep,
+    ]),
+    readings: [
+      'Reveal any number of Elf cards in your hand. You gain 1 life for each card revealed this way.',
+      'Reveal any number of Elf cards from your hand. You gain 1 life for each card revealed this way.',
+    ],
+    near: [
+      'Reveal any number of Elf cards from your graveyard. You gain 1 life for each card revealed this way.',
+      'Reveal up to two Elf cards from your hand. You gain 1 life for each card revealed this way.',
+    ],
+  },
+});
+
+Object.assign(EXAMPLES, {
+  'opponent-faces-villainous-again': {
+    def: statics([{ s: 'rule', rule: 'villainousChoiceExtra', player: { ref: 'each', who: 'opponent' } } as StaticEffect]),
+    readings: ['If an opponent would face a villainous choice, they face that choice an additional time.', 'If an opponent would face a villainous choice, that player faces that choice an additional time.'],
+    near: ['If an opponent would face a villainous choice, you face that choice an additional time.', 'If an opponent would face a villainous choice, they face that choice two additional times.'],
+  },
+});
+
+const GUESS_DEF = { kind: 'triggered', text: '', trigger: { on: [{ ev: 'attacks', attacker: { self: true } }] }, effect: { targets: [], steps: [
+  { op: 'look', who: you, at: { ref: 'topCards', player: you, count: 2 }, as: 'looked' },
+  { op: 'move', what: bound('looked'), to: { zone: 'library', position: 'top', order: 'chosen' } },
+  { op: 'guess', chooser: you, guesser: { ref: 'anOpponent' }, card: { ref: 'topCards', player: you, count: 1 }, kinds: [{ word: 'land', filter: { types: ['Land'] } }, { word: 'nonland', filter: { notTypes: ['Land'] } }], as: 'guessedRight', reveal: true },
+  { op: 'if', cond: { cond: 'did', step: 'guessedRight' }, then: [{ op: 'removeFromCombat', what: { ref: 'self' } }], else: [{ op: 'draw', who: you, count: 1 }, { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'restrict', subject: { ref: 'self' }, mode: 'cant', action: 'beBlocked' }] }] },
+] } } as unknown as AbilityDef;
+const GUESS_TEXT = (it: string, other = 'can\'t be blocked') => `Whenever ~ attacks, look at the top two cards of your library, put them back in any order, then choose land or nonland. An opponent guesses whether the top card of your library is the chosen kind. Reveal that card. If they guessed right, remove ${it} from combat. Otherwise, you draw a card and ~ ${other} this turn.`;
+Object.assign(EXAMPLES, {
+  'attacker-it-removed': {
+    def: GUESS_DEF,
+    readings: [GUESS_TEXT('~'), GUESS_TEXT('it')],
+    near: [GUESS_TEXT('target creature'), GUESS_TEXT('it', "can't block")],
+  },
+});
+
+describe('edh-next-135 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['reveal-any-number-from-hand', 'opponent-faces-villainous-again', 'attacker-it-removed']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-137 (must-finish round, planeswalkers; invented wordings, design 6.10; CR cites checked against the 2026-09-25 text): its families
+const edhn137Def = (type: string, text: string, at = -1, cost = '{0}'): AbilityDef =>
+  parseCard({ name: 'Test Card', layout: 'normal', mana_cost: cost, type_line: type, oracle_text: text, colors: [], ...(type.includes('Planeswalker') ? { loyalty: '3' } : {}), ...(type.includes('Creature') ? { power: '2', toughness: '2' } : {}) } as OracleCard, RX30_OPTS).faces[0]!.abilities.at(at)!;
+const PW137 = { selfNames: ['Test Card'], selfTypes: ['Planeswalker'] };
+Object.assign(EXAMPLES, {
+  'loyalty-instant-any-turn': {
+    def: edhn137Def('Legendary Planeswalker — Testy', "As long as Test Card entered this turn, you may activate Test Card's loyalty abilities any time you could cast an instant.\n+1: You gain 1 life.", 0),
+    ctx: PW137,
+    readings: [
+      "As long as ~ entered this turn, you may activate ~'s loyalty abilities any time you could cast an instant.",
+      "As long as ~ entered this turn, you may activate its loyalty abilities on any player's turn any time you could cast an instant.",
+    ],
+    near: [
+      "As long as ~ entered this turn, you may activate ~'s loyalty abilities any time you could cast a sorcery.",
+      "As long as ~ entered this turn, you may activate ~'s activated abilities any time you could cast an instant.",
+    ],
+  },
+  'each-reveals-their-hand': {
+    def: edhn137Def('Sorcery', 'Each opponent reveals their hand.'),
+    readings: ['Each opponent reveals their hand.', "Each opponent reveals each opponent's hand."],
+    near: ['Each opponent reveals your hand.', 'Each player reveals their hand.'],
+  },
+  'loyalty-symbol-in-effect': {
+    def: edhn137Def('Legendary Planeswalker — Testy', '0: Draw a card, then [+2].'),
+    ctx: PW137,
+    readings: ['0: Draw a card, then [+2].', '0: Draw a card, then put two loyalty counters on ~.'],
+    near: ['0: Draw a card, then [+3].', '0: Draw a card, then [-2].'],
+  },
+  'self-loyalty-possessive': {
+    def: edhn137Def('Legendary Planeswalker — Testy', "0: You gain 1 life, and you may activate Test Card's loyalty ability two more times this turn."),
+    ctx: PW137,
+    readings: [
+      "0: You gain 1 life, and you may activate ~'s loyalty ability two more times this turn.",
+      '0: You gain 1 life, and you may activate its loyalty ability two more times this turn.',
+    ],
+    near: [
+      "0: You gain 1 life, and you may activate ~'s loyalty ability three more times this turn.",
+      "0: You gain 1 life, and you may activate ~'s loyalty ability two more times each turn.",
+    ],
+  },
+  'yourturn-self-creature-still-planeswalker': {
+    def: edhn137Def('Legendary Planeswalker — Testy', "During your turn, Test Card is a 4/4 Human Soldier creature with indestructible that's still a planeswalker.\n+1: You gain 1 life.", 0),
+    ctx: PW137,
+    readings: [
+      "During your turn, ~ is a 4/4 Human Soldier creature with indestructible that's still a planeswalker.",
+      "As long as it's your turn, ~ is a Human Soldier creature in addition to its other types, has base power and toughness 4/4, and has indestructible.",
+    ],
+    near: [
+      "During your turn, ~ is a 5/5 Human Soldier creature with indestructible that's still a planeswalker.",
+      "During your turn, ~ is a 4/4 Human Soldier creature with hexproof that's still a planeswalker.",
+    ],
+  },
+  'die-row-two-results': {
+    def: edhn137Def('Sorcery', 'Roll a six-sided die.\n1 or 2 — You gain 1 life.\n3 | Draw a card.\n4-6 | Draw two cards.'),
+    readings: [
+      'Roll a six-sided die.\n1 or 2 — You gain 1 life.\n3 | Draw a card.\n4-6 | Draw two cards.',
+      'Roll a six-sided die.\n1-2 | You gain 1 life.\n3 | Draw a card.\n4-6 | Draw two cards.',
+    ],
+    near: [
+      'Roll a six-sided die.\n1 or 2 — You gain 2 life.\n3 | Draw a card.\n4-6 | Draw two cards.',
+      'Roll a six-sided die.\n1-3 | You gain 1 life.\n3 | Draw a card.\n4-6 | Draw two cards.',
+    ],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-137 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['loyalty-instant-any-turn', 'each-reveals-their-hand', 'loyalty-symbol-in-effect', 'self-loyalty-possessive', 'yourturn-self-creature-still-planeswalker', 'die-row-two-results']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-139 (must-finish round, tokens; CR 113.1a, 702.6a, 202.3): a quoted ability listed before the keywords, and the mana value compared with the entering creature unsaid
+Object.assign(EXAMPLES, {
+  'quoted-first-then-keywords': {
+    def: { kind: 'static', text: '', effects: [{ s: 'continuous', affects: { ref: 'each', filter: { subtypes: ['Clue'], controller: 'you' } }, mods: [{ layer: 6, add: [
+      { kind: 'static', text: 'Equipped creature gets +1/+0', effects: [{ s: 'continuous', affects: { ref: 'attachedTo' }, mods: [{ layer: '7c', power: 1, toughness: 0 }] }] },
+      { kind: 'keyword', keyword: 'equip', cost: { mana: [{ kind: 'generic', amount: 1 }] }, filter: { types: ['Creature'], subtypes: ['Knight'], controller: 'you' } },
+      { kind: 'keyword', keyword: 'equip', cost: { mana: [{ kind: 'generic', amount: 3 }] } },
+    ] }] }] } as unknown as AbilityDef,
+    readings: ['Clues you control have "Equipped creature gets +1/+0," equip Knight {1}, and equip {3}.'],
+    near: ['Clues you control have "Equipped creature gets +1/+0," equip Knight {1}, and equip {2}.', 'Clues you control have "Equipped creature gets +2/+0," equip Knight {1}, and equip {3}.'],
+  },
+  'same-mana-value-unsaid': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'zoneChange', subject: { types: ['Creature'], controller: 'you' }, to: 'battlefield' }] }, effect: {
+      targets: [{ id: 't0', kind: 'object', min: 0, max: 1, text: '', filter: { types: ['Creature'], not: { controller: 'you' }, sharesWith: { with: { ref: 'event', role: 'subject' }, quality: 'manaValue' } } }],
+      steps: [{ op: 'fight', a: { ref: 'event', role: 'subject' }, b: { ref: 'target', id: 't0' } }] } } as unknown as AbilityDef,
+    readings: ["Whenever a creature you control enters, it fights up to one target creature you don't control with the same mana value."],
+    near: ["Whenever a creature you control enters, it fights up to one target creature you don't control with the same power."],
+  },
+});
+
+describe('edh-next-139 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['quoted-first-then-keywords', 'same-mana-value-unsaid']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-143 (must-finish round, library, draw and search; CR 118.9, 601.2b, 701.9a): the free cast of the first spell of the game said with "it", and a whole hand discarded "all cards from"
+Object.assign(EXAMPLES, {
+  'first-spell-cast-it': {
+    def: { kind: 'static', text: '', zone: ['stack'], effects: [{ s: 'alternativeCost', cost: {}, name: 'alternative', when: { cond: 'firstSpellCast', scope: 'game' } }] } as unknown as AbilityDef,
+    readings: [
+      "If Test Card is the first spell you've cast this game, you may cast it without paying its mana cost.",
+      "If it is the first spell you've cast this game, you may cast Test Card without paying its mana cost.",
+    ],
+    near: [
+      "If Test Card is the first spell you've cast this turn, you may cast it without paying its mana cost.",
+      "If Test Card is the first spell you've cast this game, you may cast it.",
+    ],
+  },
+  'discard-all-cards-from-hand': {
+    def: spell([{ op: 'discard', who: { ref: 'each', who: 'player' }, count: 'hand' } as EffectStep]),
+    readings: ['Each player discards their hand.', 'Each player discards all the cards in their hand.', 'Each player discards all cards from their hand.'],
+    near: ['Each player discards a card from their hand.', 'Each player discards all cards from their graveyard.'],
+  },
+});
+
+describe('edh-next-143 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['first-spell-cast-it', 'discard-all-cards-from-hand']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-144 (must-finish round: library, draw and search; CR 701.4a, 601.2b): behold said with its two ways in the other order
+Object.assign(EXAMPLES, {
+  'behold-reveal-first': {
+    def: { kind: 'static', text: '', zone: ['stack'], effects: [{ s: 'additionalCost', cost: { other: [{ kind: 'behold', filter: { subtypes: ['Dragon'] }, count: 1 }] }, optional: true } as StaticEffect] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Instant'] },
+    readings: ['As an additional cost to cast Test Card, you may behold a Dragon.', 'As an additional cost to cast Test Card, you may reveal a Dragon card from your hand or choose a Dragon you control.'],
+    near: ['As an additional cost to cast Test Card, you may reveal a Dragon card from your graveyard or choose a Dragon you control.', 'As an additional cost to cast Test Card, you may reveal a Goblin card from your hand or choose a Goblin you control.'],
+  },
+});
+
+Object.assign(EXAMPLES, {
+  'enchanted-player-that-player': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'step', step: 'upkeep', whose: 'you' }] }, effect: { targets: [], steps: [{ op: 'may', who: you, do: [
+      { op: 'search', who: you, zone: 'library', filter: { subtypes: ['Curse'], not: { sharesWith: { with: { ref: 'each', filter: { subtypes: ['Curse'], attachedToPlayer: { ref: 'enchantedPlayer' } } }, quality: 'name' } } }, max: 1, as: 'search' },
+      { op: 'move', what: bound('search'), to: { zone: 'battlefield', controller: you, attachedToPlayer: { ref: 'enchantedPlayer' } } },
+      { op: 'shuffle', who: you }] }] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: [
+      "At the beginning of your upkeep, you may search your library for a Curse card that doesn't have the same name as a Curse attached to enchanted player, put it onto the battlefield attached to enchanted player, then shuffle.",
+      "At the beginning of your upkeep, you may search your library for a Curse card that doesn't have the same name as a Curse attached to enchanted player, put it onto the battlefield attached to that player, then shuffle.",
+    ],
+    near: [
+      "At the beginning of your upkeep, you may search your library for a Curse card that doesn't have the same name as a Curse attached to enchanted player, put it onto the battlefield attached to that creature, then shuffle.",
+      "At the beginning of your upkeep, you may search your library for a Curse card that doesn't have the same name as a Curse attached to enchanted player, put it onto the battlefield attached to each player, then shuffle.",
+    ],
+  },
+});
+
+describe('edh-next-144 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['behold-reveal-first', 'enchanted-player-that-player']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-132 (must-finish round, group copies; CR cites checked against the 2026-09-25 text): its six families, defs parsed from the Oracle text (index-picked ability)
+const edhn132Def = (type: string, text: string, at = -1, cost = '{0}'): AbilityDef =>
+  parseCard({ name: 'Test Card', layout: 'normal', mana_cost: cost, type_line: type, oracle_text: text, colors: [], ...(type.includes('Creature') ? { power: '2', toughness: '2' } : {}) } as OracleCard, RX30_OPTS).faces[0]!.abilities.at(at)!;
+const EDHN132_PORTAL = "Imprint — When Test Card enters, you may exile an artifact card from your hand.\n{X}, {T}: Create a token that's a copy of the exiled card. ";
+const EDHN132_KEFNET = 'Flying\nYou may reveal the first card you draw each turn as you draw it.\nWhenever you reveal an instant or sorcery card this way, ';
+Object.assign(EXAMPLES, {
+  'or-player-either-order': {
+    def: edhn132Def('Instant', "Test Card deals 3 damage to any target. Then that player or that permanent's controller may pay {R}{R}. If the player does, they may copy this spell and may choose a new target for that copy."),
+    readings: [
+      "Test Card deals 3 damage to any target. Then that player or that permanent's controller may pay {R}{R}. If the player does, they may copy this spell and may choose a new target for that copy.",
+      "Test Card deals 3 damage to any target. Then that permanent's controller or that player may pay {R}{R}. If the player does, they may copy this spell and may choose a new target for that copy.",
+    ],
+    near: [
+      "Test Card deals 3 damage to any target. Then that player or that permanent's controller may pay {R}. If the player does, they may copy this spell and may choose a new target for that copy.",
+      "Test Card deals 2 damage to any target. Then that permanent's controller or that player may pay {R}{R}. If the player does, they may copy this spell and may choose a new target for that copy.",
+    ],
+  },
+  'token-kinds-and-or': {
+    def: edhn132Def('Sorcery', "Choose any number of artifact tokens and/or creature tokens you control with different names. For each of them, create a token that's a copy of it."),
+    readings: [
+      "Choose any number of artifact tokens and/or creature tokens you control with different names. For each of them, create a token that's a copy of it.",
+      "Choose any number of artifact or creature tokens you control with different names. For each of them, create a token that's a copy of it.",
+    ],
+    near: [
+      "Choose any number of artifact tokens and/or enchantment tokens you control with different names. For each of them, create a token that's a copy of it.",
+      "Choose any number of artifact or creature tokens you control. For each of them, create a token that's a copy of it.",
+    ],
+  },
+  'x-is-exiled-card-mana-value': {
+    def: edhn132Def('Artifact', `${EDHN132_PORTAL}X is the mana value of that card.`),
+    readings: [
+      "{X}, {T}: Create a token that's a copy of the exiled card. X is the mana value of that card.",
+      "{X}, {T}: Create a token that's a copy of the exiled card. X is the mana value of the exiled card.",
+    ],
+    near: [
+      "{X}, {T}: Create a token that's a copy of the exiled card.",
+      "{X}, {T}: Create two tokens that are copies of the exiled card. X is the mana value of that card.",
+    ],
+  },
+  'becomes-sized-colored-loses-all': {
+    def: edhn132Def('Sorcery', 'Target creature becomes a 1/1 white Human creature and loses all abilities.'),
+    readings: [
+      'Target creature becomes a 1/1 white Human creature and loses all abilities.',
+      'Target creature loses all abilities and becomes a white Human creature with base power and toughness 1/1.',
+    ],
+    near: [
+      'Target creature becomes a 1/1 white Human creature.',
+      'Target creature loses all abilities and becomes a green Human creature with base power and toughness 1/1.',
+    ],
+  },
+  'revealed-card-that-card': {
+    def: edhn132Def('Creature', `${EDHN132_KEFNET}copy that card and you may cast the copy. That copy costs {2} less to cast.`, 2),
+    readings: [
+      'Whenever you reveal an instant or sorcery card this way, copy that card and you may cast the copy. That copy costs {2} less to cast.',
+      'Whenever you reveal an instant or sorcery card this way, copy it and you may cast the copy. That copy costs {2} less to cast.',
+    ],
+    near: [
+      'Whenever you reveal an instant or sorcery card this way, copy that card and you may cast the copy. That copy costs {1} less to cast.',
+      'Whenever you reveal an instant or sorcery card this way, copy that card and you may cast the copy.',
+    ],
+  },
+  'milled-cards-group-words': {
+    def: edhn132Def('Sorcery', 'Each player mills three cards. You may exile a creature card from among the cards milled this way.'),
+    readings: [
+      'Each player mills three cards. You may exile a creature card from among the cards milled this way.',
+      'Each player mills three cards. You may exile a creature card from among the milled cards.',
+    ],
+    near: [
+      'Each player mills two cards. You may exile a creature card from among the cards milled this way.',
+      'Each player mills three cards. You may exile an artifact card from among the milled cards.',
+    ],
+  },
+});
+
+describe('edh-next-132 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['or-player-either-order', 'token-kinds-and-or', 'x-is-exiled-card-mana-value', 'becomes-sized-colored-loses-all', 'revealed-card-that-card', 'milled-cards-group-words']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-140 (must-finish round, group mana-costs): its two families
+Object.assign(EXAMPLES, {
+  'next-spell-reduce-for-each': {
+    def: spell([
+      { op: 'removeCounters', from: t('t0'), kind: 'any', count: 'all', as: 'removed' } as EffectStep,
+      { op: 'nextSpell', who: you, filter: { stackKind: 'spell', zone: 'stack' }, rider: 'reduce', amount: { q: 'countersRemoved', step: 'removed' } } as EffectStep,
+    ], [objTarget('t0', {})]),
+    readings: [
+      'Remove all counters from target permanent. The next spell you cast this turn costs {1} less to cast for each counter removed this way.',
+      'Remove all counters from target permanent. The next spell you cast this turn costs {X} less to cast, where X is the number of counters removed this way as this ability resolves.',
+    ],
+    near: [
+      'Remove all counters from target permanent. The next spell you cast this turn costs {2} less to cast for each counter removed this way.',
+      'Remove all counters from target permanent. The next spell you cast this turn costs {1} more to cast for each counter removed this way.',
+    ],
+  },
+  'spend-type-as-any-color-own-abilities': {
+    def: statics([{ s: 'permit', who: you, action: 'spendMana', asThough: 'any color', of: { self: true }, abilities: true, spentType: 'U' }]),
+    ctx: creature,
+    readings: ["You may spend blue mana as though it were mana of any color to pay the activation costs of this creature's abilities.", 'You may spend blue mana as though it were mana of any color to activate abilities of it.'],
+    near: ["You may spend red mana as though it were mana of any color to pay the activation costs of this creature's abilities.", "You may spend mana as though it were mana of any color to pay the activation costs of this creature's abilities."],
+  },
+});
+
+describe('edh-next-140 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['next-spell-reduce-for-each', 'spend-type-as-any-color-own-abilities']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-147 (CR 601.2i, 603.2; Sentinel Tower): a cast by any player of a spell of a description is also said in the passive
+Object.assign(EXAMPLES, {
+  'spell-is-cast': {
+    def: gy2Def('Whenever a player casts an artifact spell, you gain 1 life.'),
+    readings: ['Whenever a player casts an artifact spell, you gain 1 life.', 'Whenever an artifact spell is cast, you gain 1 life.'],
+    near: ['Whenever an artifact spell is countered, you gain 1 life.', 'Whenever you cast an artifact spell, you gain 1 life.', 'Whenever an artifact is cast, you gain 1 life.'],
+  },
+});
+
+describe('edh-next-147 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['spell-is-cast']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-102 (must-finish round, graveyard-exile-cast; CR 205.2a, 715.1): the list of kinds with the verb said again (render/np.ts#thatAreForm)
+Object.assign(EXAMPLES, {
+  'that-are-kinds-are-again': {
+    def: spell([
+      { op: 'gainLife', who: you, amount: { q: 'count', of: { ref: 'each', filter: { zone: 'graveyard', owner: 'you', anyOf: [{ types: ['Instant'] }, { types: ['Sorcery'] }, { adventure: true }], isCard: true } } } } as unknown as EffectStep,
+    ]),
+    readings: [
+      'You gain X life, where X is the number of cards in your graveyard that are instant cards, are sorcery cards, and/or have an Adventure.',
+      'You gain X life, where X is the number of cards in your graveyard that are instant cards, sorcery cards, and/or have an Adventure.',
+    ],
+    near: [
+      'You gain X life, where X is the number of cards in your graveyard that are instant cards, are creature cards, and/or have an Adventure.',
+      'You gain X life, where X is the number of cards in your graveyard that are instant cards, are sorcery cards, and/or are artifact cards.',
+    ],
+  },
+});
+
+Object.assign(EXAMPLES, {
+  'cycled-or-discarded-this-turn': {
+    def: spell([
+      { op: 'move', what: { ref: 'each', filter: { zone: 'graveyard', owner: 'you', isCard: true, putThereThisTurn: true, putThereFrom: 'discard' } }, to: { zone: 'hand' } } as unknown as EffectStep,
+    ]),
+    readings: [
+      'Return to your hand all cards in your graveyard that you cycled or discarded this turn.',
+      'Return to your hand all cards in your graveyard that you discarded this turn.',
+    ],
+    near: [
+      'Return to your hand all cards in your graveyard that you cycled this turn.',
+      'Return to your hand all cards in your graveyard that were milled this turn.',
+    ],
+  },
+});
+
+describe('edh-d-102 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['that-are-kinds-are-again', 'cycled-or-discarded-this-turn']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-97 (Commander coordinator D, band 5,001-10,000, graveyard-exile-cast part 2; CR 406.2, 400.7): "exile your hand" (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'any-opponent-have-you-put': {
+    def: edhd43Def('Creature — Devil', 'At the beginning of your end step, reveal the top card of your library. Any opponent may have you put that card into your graveyard. If no one does, you gain 2 life.'),
+    readings: ['At the beginning of your end step, reveal the top card of your library. Any opponent may have you put that card into your graveyard. If no one does, you gain 2 life.', 'At the beginning of your end step, reveal the top card of your library. Any opponent may put it into your graveyard. If no one does, you gain 2 life.'],
+    near: ['At the beginning of your end step, reveal the top card of your library. Each opponent may have you put that card into your graveyard. If no one does, you gain 2 life.', 'At the beginning of your end step, reveal the top card of your library. Any opponent may have you put that card into your hand. If no one does, you gain 2 life.'],
+  },
+  'target-put-into-your-graveyard': {
+    def: edhd43Def('Sorcery', 'Target creature gains deathtouch until end of turn. When that creature is put into your graveyard this turn, draw a card.'),
+    readings: ['Target creature gains deathtouch until end of turn. When that creature is put into your graveyard this turn, draw a card.', 'Target creature gains deathtouch until end of turn. When that creature is put into your graveyard from the battlefield this turn, draw a card.'],
+    near: ['Target creature gains deathtouch until end of turn. When that creature is put into an opponent\'s graveyard this turn, draw a card.', 'Target creature gains deathtouch until end of turn. When that creature is put into your graveyard, draw a card.'],
+  },
+  'exile-cast-another-spell': {
+    def: edhd43Def('Sorcery', "You may cast this card from exile as long as you've cast another spell this turn."),
+    readings: ["You may cast this card from exile as long as you've cast another spell this turn.", 'As long as you have cast one or more spells this turn, you may cast this card from exile.'],
+    near: ["You may cast this card from exile as long as you've cast two other spells this turn.", "You may cast this card from your graveyard as long as you've cast another spell this turn."],
+  },
+  'cast-colorless-any-color': {
+    def: edhd43Def('Instant', 'Exile target nonland permanent. You may cast that card for as long as it remains exiled, and you may spend colorless mana as though it were mana of any color to cast that spell.'),
+    readings: ['Exile target nonland permanent. You may cast that card for as long as it remains exiled, and you may spend colorless mana as though it were mana of any color to cast that spell.', 'Exile target nonland permanent. You may cast that card for as long as it remains exiled and you may spend colorless mana as though it were mana of any color to cast it.'],
+    near: ['Exile target nonland permanent. You may cast that card for as long as it remains exiled, and you may spend black mana as though it were mana of any color to cast that spell.', 'Exile target nonland permanent. You may cast that card for as long as it remains exiled, and you may spend colorless mana as though it were mana of any type to cast that spell.'],
+  },
+  'exile-your-hand': {
+    def: spell([{ op: 'move', what: { ref: 'each', filter: { zone: 'hand', owner: 'you', isCard: true } }, to: { zone: 'exile' } } as EffectStep]),
+    readings: ['Exile all cards from your hand.', 'Exile your hand.'],
+    near: ['Exile your graveyard.', 'Exile your library.'],
+  },
+});
+
+describe('edh-d-97 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['exile-your-hand', 'any-opponent-have-you-put', 'target-put-into-your-graveyard', 'exile-cast-another-spell', 'cast-colorless-any-color']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-89 (Commander coordinator D, band 5,001-10,000, group combat; CR 712.14a, 701.28a checked against the 2026-09-25 text): "converted" is "transformed" for a card put onto the battlefield
+Object.assign(EXAMPLES, {
+  'transformed-or-converted': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 4 }] }, effect: { targets: [], steps: [
+      { op: 'move', what: self, to: { zone: 'exile' }, as: 'gone' } as EffectStep,
+      { op: 'move', what: bound('gone'), to: { zone: 'battlefield', controller: 'owner', transformed: true } } as EffectStep,
+    ] } } as AbilityDef,
+    ctx: creature,
+    readings: ["{4}: Exile ~, then return it to the battlefield transformed under its owner's control.", "{4}: Exile ~, then return it to the battlefield converted under its owner's control."],
+    near: ["{4}: Exile ~, then return it to the battlefield converted under your control.", "{4}: Exile ~, then return it to the battlefield under its owner's control.", "{4}: Exile ~, then return it to the battlefield face down under its owner's control."],
+  },
+});
+
+describe('edh-d-89 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['transformed-or-converted']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-88 (Commander coordinator D, must-finish band 5,001-10,000, group combat): three families (invented wordings, design 6.10; CR cites checked against the 2026-09-25 text)
+Object.assign(EXAMPLES, {
+  'energy-amount-you-have': {
+    def: edhd43Def('Creature — Rhino', 'Whenever this creature attacks, it gets +X/+X until end of turn, where X is the amount of {E} you have.'),
+    readings: [
+      'Whenever ~ attacks, it gets +X/+X until end of turn, where X is the amount of {E} you have.',
+      'Whenever ~ attacks, it gets +X/+X until end of turn, where X is the number of energy counters you have.',
+    ],
+    near: [
+      'Whenever ~ attacks, it gets +X/+X until end of turn, where X is the number of poison counters you have.',
+      'Whenever ~ attacks, it gets +X/+0 until end of turn, where X is the amount of {E} you have.',
+    ],
+  },
+  'pay-mana-or-energy': {
+    def: edhd43Def('Artifact Creature — Equipment Rhino', 'Reconfigure—Pay {3} or {E}{E}.'),
+    readings: ['Reconfigure -- Pay {3} or {E}{E}.', 'Reconfigure -- Pay {3} or pay {E}{E}.'],
+    near: ['Reconfigure -- Pay {3} or {E}{E}{E}.', 'Reconfigure -- Pay {2} or {E}{E}.'],
+  },
+  'reselect-self-named': {
+    def: edhd43Def('Creature — Goat', '{1}: Put a +1/+1 counter on this creature, then you may reselect which player this creature is attacking. Only the player this creature is attacking may activate this ability.'),
+    readings: [
+      '{1}: Put a +1/+1 counter on ~, then you may reselect which player ~ is attacking. Only the player ~ is attacking may activate this ability.',
+      '{1}: Put a +1/+1 counter on ~. You may reselect which player it is attacking. Only the player ~ is attacking may activate this ability.',
+    ],
+    near: ['{1}: Put a +1/+1 counter on ~, then you may reselect which player or permanent ~ is attacking. Only the player ~ is attacking may activate this ability.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-88 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['energy-amount-you-have', 'pay-mana-or-energy', 'reselect-self-named']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-72 (concept lane chosen-qualities): the families chosen-creature-type-words and static-condition-they (invented wordings, design 6.10)
+Object.assign(EXAMPLES, {
+  'chosen-creature-type-words': {
+    def: statics([{ s: 'continuous', affects: { ref: 'self' }, mods: [{ layer: 4, subtypes: { chosen: 'type', chosenSets: true } }] } as unknown as StaticEffect]),
+    readings: ['Test Card is the chosen type.', 'Test Card is the chosen creature type.'],
+    near: ['Test Card is the chosen basic land type.', 'Test Card is the chosen type in addition to its other types.', 'Test Card is the chosen color.'],
+  },
+  'static-condition-they': {
+    def: { kind: 'static', text: '', condition: { cond: 'designation', who: { ref: 'you' }, what: 'citysBlessing' }, effects: [{ s: 'continuous', affects: { ref: 'each', filter: { types: ['Creature'], controller: 'you' } }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'vigilance', text: 'vigilance' }] }] }] } as unknown as AbilityDef,
+    readings: ["As long as you have the city's blessing, creatures you control have vigilance.", "As long as you have the city's blessing, they also have vigilance."],
+    near: ["As long as you have the city's blessing, they have vigilance.", "As long as you have the city's blessing, they also have flying.", "As long as you have the city's blessing, they also have vigilance and flying."],
+  },
+} satisfies Record<string, Example>);
+
+// edh-d-74 (lane pay-or-else): one family (invented wordings, design 6.10; CR cites from memory, unverified)
+Object.assign(EXAMPLES, {
+  'opponent-gains-life-cost-wording': {
+    def: edhd43Def('Enchantment', 'Cumulative upkeep--An opponent gains 1 life.'),
+    readings: ['Cumulative upkeep--An opponent gains 1 life.', 'Cumulative upkeep--Have an opponent gain 1 life.'],
+    near: ['Cumulative upkeep--An opponent gains 2 life.', 'Cumulative upkeep--You gain 1 life.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-74 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['opponent-gains-life-cost-wording']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+Object.assign(EXAMPLES, {
+  // edh-next-107: a status and a color of one object are said with one verb and in either order (cond.ts; Nature's Chosen)
+  'cond-status-and-color': {
+    def: spell([{ op: 'destroy', what: t('c') } as EffectStep, { op: 'if', cond: { cond: 'matches', object: t('c'), filter: { colors: ['W'], tapped: false } }, then: [draw()] } as EffectStep], [objTarget('c')]),
+    readings: ["Destroy target creature. If it's white and untapped, draw a card.", "Destroy target creature. If it's untapped and white, draw a card.", "Destroy target creature. If it's untapped and is white, draw a card."],
+    near: ["Destroy target creature. If it's white and tapped, draw a card.", "Destroy target creature. If it's red and untapped, draw a card.", "Destroy target creature. If it's white or untapped, draw a card."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-107 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['cond-status-and-color']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-117 (third pass top-rank-t5): three new alt sites
+Object.assign(EXAMPLES, {
+  'no-cards-of-kind-in-hand': {
+    def: spell([{ op: 'if', cond: { cond: 'not', of: { cond: 'exists', of: { ref: 'each', filter: { types: ['Land'], zone: 'hand', owner: 'you', isCard: true } } } }, then: [{ op: 'draw', who: you, count: 1 }] } as EffectStep]),
+    readings: ['If you have no land cards in hand, draw a card.', 'If you have no land cards in your hand, draw a card.', 'If there are no land cards in your hand, draw a card.'],
+    near: ['If you have no creature cards in hand, draw a card.', 'If you have a land card in hand, draw a card.', 'If you have no land cards in your graveyard, draw a card.'],
+  },
+  'owner-puts-it-possessive': {
+    def: spell([
+      { op: 'chooseValue', who: { ref: 'ownerOf', object: t('c') }, what: 'option', options: ['second from the top', 'bottom'], as: 'libraryPlace', link: 'libraryPlace' } as EffectStep,
+      { op: 'if', cond: { cond: 'chosen', link: 'libraryPlace', equals: 'second from the top' }, then: [{ op: 'move', what: t('c'), to: { zone: 'library', position: { nth: 2 } } }] } as EffectStep,
+      { op: 'if', cond: { cond: 'chosen', link: 'libraryPlace', equals: 'bottom' }, then: [{ op: 'move', what: t('c'), to: { zone: 'library', position: 'bottom' } }] } as EffectStep,
+    ], [objTarget('c')]),
+    readings: [
+      "Target creature's owner puts it into their library second from the top or on the bottom.",
+      'The owner of target creature puts it into their library second from the top or on the bottom.',
+    ],
+    near: ["Target creature's controller puts it into their library second from the top or on the bottom.", "Target creature's owner puts it into their library second from the top."],
+  },
+  'different-names-each-mana-value': {
+    def: spell([
+      { op: 'search', who: you, zone: 'library', filter: { anyOf: [{ types: ['Creature'] }], manaValue: { op: '==', value: { q: 'X' } } }, min: 0, max: { q: 'X' }, differentNames: true, reveal: true, as: 'search' } as unknown as EffectStep,
+      { op: 'move', what: { ref: 'bound', name: 'search' }, to: { zone: 'hand' } } as EffectStep,
+      { op: 'shuffle', who: you } as EffectStep,
+    ]),
+    readings: [
+      'Search your library for up to X creature cards with different names that each have mana value X, reveal them, put them into your hand, then shuffle.',
+    ],
+    near: ['Search your library for up to X creature cards with different names that each have mana value 2, reveal them, put them into your hand, then shuffle.', 'Search your library for up to X creature cards that each have mana value X, reveal them, put them into your hand, then shuffle.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-117 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['no-cards-of-kind-in-hand', 'owner-puts-it-possessive', 'different-names-each-mana-value']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-118 (third pass 6): the family of render/equivalence.ts it added
+Object.assign(EXAMPLES, {
+  'each-of-them-subject-chosen': {
+    def: xp2Def('Instant', 'Choose any number of creatures with different powers. Each of them gets +1/+1 and gains vigilance until end of turn.'),
+    readings: ['Choose any number of creatures with different powers. Each of them gets +1/+1 and gains vigilance until end of turn.', 'Choose any number of creatures with different powers. Those creatures get +1/+1 and gain vigilance until end of turn.'],
+    near: ['Choose any number of creatures with different powers. Each of them gets +2/+2 and gains vigilance until end of turn.', 'Choose any number of creatures with different powers. Each of them gets +1/+1 and gains haste until end of turn.', 'Choose any number of creatures with different powers. Each of them gets +1/+1 and gains vigilance.'],
+  },
+} satisfies Record<string, Example>);
+describe('edh-next-118 (G6): the readings of its family are accepted and the near misses are not', () => {
+  it('each-of-them-subject-chosen: every reading is accepted and a near miss is not', () => {
+    const ex = (EXAMPLES as Record<string, Example>)['each-of-them-subject-chosen']!;
+    for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+    for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+  });
+});
+
+// edh-d-96 (MUST-FINISH round, graveyard, exile and cast part 1; CR 608.2g, 304.1, 307.1, 607.2a, 609.4b): the bare instant and sorcery spells of Epic Experiment, and the two-sentence
+// any-color rider of Intellect Devourer
+Object.assign(EXAMPLES, {
+  'instant-sorcery-spells-bare': {
+    def: spell([
+      { op: 'move', what: { ref: 'topCards', player: you, count: 5 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { types: ['Instant', 'Sorcery'], is: bound('them'), zone: 'exile', manaValue: { op: '<=', value: 2 } } }, min: 0, max: 'any', as: 'cast' } as EffectStep,
+      { op: 'cast', who: you, what: bound('cast'), free: true } as EffectStep,
+    ]),
+    readings: [
+      'Exile the top five cards of your library. You may cast any number of instant and/or sorcery spells with mana value 2 or less from among them without paying their mana costs.',
+      'Exile the top five cards of your library. You may cast instant and sorcery spells with mana value 2 or less from among them without paying their mana costs.',
+    ],
+    near: [
+      'Exile the top five cards of your library. You may cast instant and sorcery spells with mana value 2 or less from among them.',
+      'Exile the top five cards of your library. You may cast creature and sorcery spells with mana value 2 or less from among them without paying their mana costs.',
+      'Exile the top five cards of your library. You may cast an instant and sorcery spell with mana value 2 or less from among them without paying its mana cost.',
+    ],
+  },
+  'play-linked-any-color-rider': {
+    def: { kind: 'static', text: '', effects: [{ s: 'permit', who: you, action: 'play', of: { is: { ref: 'linked', link: 'exiled' } }, anyManaColor: true }] } as AbilityDef,
+    ctx: creature,
+    readings: [
+      'You may play cards exiled with Test Card, and you may spend mana as though it were mana of any color to cast those spells.',
+      'You may play lands and cast spells from among cards exiled with Test Card. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it.',
+      'You may play cards exiled with Test Card. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it.',
+    ],
+    near: [
+      'You may play lands and cast spells from among cards exiled with Test Card. If you cast a spell this way, you may spend mana as though it were mana of any type to cast it.',
+      'You may cast spells from among cards exiled with Test Card. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it.',
+      'During your turn, you may play lands and cast spells from among cards exiled with Test Card. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it.',
+    ],
+  },
+});
+
+describe('edh-d-96 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['instant-sorcery-spells-bare', 'play-linked-any-color-rider']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-85 (Commander coordinator D, ranks 5,001-10,000, group combat; CR 614.1a, 614.6, 122.1): an exiled card with one counter, said "with" or "and put"
+Object.assign(EXAMPLES, {
+  'exile-it-and-put-counter': {
+    def: statics([{ s: 'replace', replaces: { ev: 'zoneChange', subject: { types: ['Creature'], controller: 'opponent' }, from: 'battlefield', to: 'graveyard' }, body: { b: 'modify', destination: { zone: 'exile' }, then: { as: 'exiledCard', do: [{ op: 'putCounters', on: { ref: 'bound', name: 'exiledCard' }, kind: 'time', count: 1 }] } } } as unknown as StaticEffect]),
+    readings: ['If a creature an opponent controls would die, instead exile it and put a time counter on it.', 'If a creature an opponent controls would die, instead exile it with a time counter on it.'],
+    near: ['If a creature an opponent controls would die, instead exile it and put a stun counter on it.', 'If a creature you control would die, instead exile it and put a time counter on it.'],
+  },  'they-own-in-exile': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'player', min: 1, max: 1, text: 'target player', players: { who: 'any' } }], steps: [{ op: 'loseLife', who: { ref: 'target', id: 't0' }, amount: { q: 'count', of: { ref: 'each', filter: { owner: { ref: 'target', id: 't0' }, zone: 'exile', isCard: true } } } }] } } as unknown as AbilityDef,
+    readings: ['Target player loses 1 life for each card they own in exile.', 'Target player loses 1 life for each card that player owns in exile.'],
+    near: ['Target player loses 1 life for each card you own in exile.', 'Target player loses 1 life for each card they own in their graveyard.'],
+  },
+  'requirement-unless': {
+    def: { kind: 'static', text: '', effects: [{ s: 'restrict', subject: { ref: 'self' }, mode: 'mustIfAble', action: 'attack' }], condition: { cond: 'not', of: { cond: 'exists', of: { ref: 'each', filter: { types: ['Creature'], subtypes: ['Wizard'], controller: 'you' } } } } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Creature'] },
+    readings: ['~ attacks each combat if able unless you control a Wizard creature.', 'As long as you control no Wizard creatures, ~ attacks each combat if able.'],
+    near: ['~ attacks each combat if able unless you control a Goblin creature.', '~ attacks each combat if able if you control a Wizard creature.'],
+  },
+  'lead-grant-and-it-cant-be-blocked': {
+    def: { kind: 'spell', text: '', effect: { targets: [{ id: 't0', kind: 'object', min: 1, max: 1, filter: { types: ['Creature'] } }], steps: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'continuous', affects: { ref: 'target', id: 't0' }, mods: [{ layer: 6, add: [{ kind: 'keyword', keyword: 'flying' }] }] }, { s: 'restrict', subject: { ref: 'target', id: 't0' }, mode: 'cant', action: 'beBlocked' }] }] } } as unknown as AbilityDef,
+    readings: ["Until end of turn, target creature gains flying and it can't be blocked this turn.", "Target creature gains flying until end of turn and can't be blocked this turn."],
+    near: ["Until end of turn, target creature gains trample and it can't be blocked this turn.", "Until end of turn, target creature gains flying and it can't block this turn."],
+  },
+});
+
+describe('edh-d-85 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['exile-it-and-put-counter', 'they-own-in-exile', 'lead-grant-and-it-cant-be-blocked', 'requirement-unless']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-87 (Commander coordinator D, band 5,001-10,000, group combat; invented wordings, design 6.10; CR cites checked against the 2026-09-25 text): four families
+Object.assign(EXAMPLES, {
+  'player-exiles-from-top': {
+    def: edhd43Def('Sorcery', 'Target opponent exiles two cards from the top of their library.'),
+    readings: ['Target opponent exiles two cards from the top of their library.', 'Target opponent exiles the top two cards of their library.'],
+    near: ['Target opponent exiles three cards from the top of their library.', 'Target opponent mills two cards.'],
+  },
+  'your-opponents-dealt-damage-by': {
+    def: edhd43Def('Enchantment', 'Whenever your opponents are dealt combat damage, if any of that damage was dealt by a Warrior, you draw a card.'),
+    readings: ['Whenever your opponents are dealt combat damage, if any of that damage was dealt by a Warrior, you draw a card.', 'Whenever one or more Warriors deal combat damage to your opponents, you draw a card.'],
+    near: ['Whenever your opponents are dealt combat damage, if any of that damage was dealt by a Knight, you draw a card.', 'Whenever one or more Warriors deal combat damage to a player, you draw a card.'],
+  },
+  'look-and-play-any-color': {
+    def: { kind: 'spell', text: '', effect: { targets: [], steps: [
+      { op: 'move', what: { ref: 'topCards', player: you, count: 1 }, to: { zone: 'exile', faceDown: true }, as: 'them' },
+      { op: 'look', who: you, at: bound('them') },
+      { op: 'effect', duration: { d: 'remainsExiled' }, effects: [{ s: 'permit', who: you, action: 'play', of: { is: bound('them') }, anyManaColor: true }] },
+    ] } } as unknown as AbilityDef,
+    readings: [
+      'Exile the top card of your library face down. You may look at and play that card for as long as it remains exiled, and you may spend mana as though it were mana of any color to cast that spell.',
+      'Exile the top card of your library face down. You may look at and play that card for as long as it remains exiled, and you may spend mana as though it were mana of any color to cast it.',
+    ],
+    near: [
+      'Exile the top card of your library face down. You may look at and play that card for as long as it remains exiled.',
+      'Exile the top card of your library face down. You may look at and play that card this turn, and you may spend mana as though it were mana of any color to cast that spell.',
+    ],
+  },
+  'player-puts-the-revealed-cards': {
+    def: edhd43Def('Sorcery', 'Target opponent reveals cards from the top of their library until they reveal a land card. That player puts the revealed cards into their graveyard.'),
+    readings: [
+      'Target opponent reveals cards from the top of their library until they reveal a land card. That player puts the revealed cards into their graveyard.',
+      'Target opponent reveals cards from the top of their library until they reveal a land card. That player puts all cards revealed this way into their graveyard.',
+    ],
+    near: [
+      'Target opponent reveals cards from the top of their library until they reveal a creature card. That player puts the revealed cards into their graveyard.',
+      'Target opponent reveals cards from the top of their library until they reveal a land card. That player puts the revealed cards into their hand.',
+    ],
+  },
+});
+
+describe('edh-d-87 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['player-exiles-from-top', 'your-opponents-dealt-damage-by', 'look-and-play-any-color', 'player-puts-the-revealed-cards']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-90 (Commander coordinator D, band 5,001-10,000, group combat): the families of its renderer changes
+Object.assign(EXAMPLES, {
+  'mana-ability-of-resolves': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'activate', source: { self: true }, manaAbility: true }] }, effect: { targets: [], steps: [{ op: 'gainLife', who: you, amount: 1 } as EffectStep] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Grower'], selfTypes: ['Creature'] },
+    readings: ['Whenever a mana ability of Test Grower resolves, you gain 1 life.'],
+    near: ['Whenever a mana ability of Test Grower is activated, you gain 1 life.', 'Whenever an ability of Test Grower resolves, you gain 1 life.', 'Whenever a mana ability of a creature you control resolves, you gain 1 life.'],
+  },
+  'amount-of-mana-self-produced': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'activate', source: { self: true }, manaAbility: true }] }, effect: { targets: [], steps: [{ op: 'gainLife', who: you, amount: { q: 'manaProduced' } } as EffectStep] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Grower'], selfTypes: ['Creature'] },
+    readings: ['Whenever a mana ability of Test Grower resolves, you gain life equal to the amount of mana Test Grower produced.'],
+    near: ['Whenever a mana ability of Test Grower resolves, you gain life equal to the amount of mana spent to cast Test Grower.', 'Whenever a mana ability of Test Grower resolves, you gain life equal to the amount of mana you produced.'],
+  },
+  'one-of-those-chosen': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'blocks', blocker: { self: true }, attacker: { types: ['Creature'] } }, { ev: 'becomesBlocked', attacker: { self: true }, by: { types: ['Creature'] } }], batch: true }, effect: { targets: [], steps: [{ op: 'may', who: you, do: [
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { is: { ref: 'event', role: 'object' } } }, min: 1, max: 1, as: 'exiled' }, { op: 'move', what: { ref: 'bound', name: 'exiled' }, to: { zone: 'exile' } }] } as EffectStep] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Grower'], selfTypes: ['Creature'] },
+    readings: ['Whenever Test Grower blocks or becomes blocked by one or more creatures, you may exile one of those creatures.'],
+    near: ['Whenever Test Grower blocks or becomes blocked by one or more creatures, you may exile two of those creatures.', 'Whenever Test Grower blocks or becomes blocked by one or more creatures, you may exile one of those permanents.', 'Whenever Test Grower blocks or becomes blocked by one or more creatures, exile one of those creatures.'],
+  },
+  'choose-how-those-block': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 3 }] }, effect: { targets: [], steps: [
+      { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'restrict', subject: { ref: 'each', filter: { types: ['Creature'], controller: 'opponent' } }, mode: 'mustIfAble', action: 'block' }] } as EffectStep,
+      { op: 'controlBlocks', who: you, turn: true } as EffectStep] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Grower'], selfTypes: ['Creature'] },
+    readings: ['{3}: Creatures your opponents control block this turn if able, and you choose how those creatures block.'],
+    near: ['{3}: Creatures your opponents control block this turn if able, and you choose how those creatures attack.', '{3}: Creatures your opponents control block this turn if able, and they choose how those creatures block.'],
+  },
+  'other-spell-cast-this-turn': {
+    def: { kind: 'static', text: '', zone: ['stack'], effects: [{ s: 'costMod', applies: { self: true, caster: 'you' }, change: { kind: 'reduce', generic: { q: 'math', op: '*', args: [3, { q: 'happenedCount', event: { ev: 'cast', spell: { not: { self: true } } }, scope: 'turn' }] }, floor: 'zero' } }] } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Grower'], selfTypes: ['Creature'] },
+    readings: ['Test Grower costs {3} less to cast for each other spell cast this turn.'],
+    near: ['Test Grower costs {3} less to cast for each spell cast this turn.', 'Test Grower costs {3} less to cast for each other spell you cast this turn.'],
+  },
+  'one-of-group-free': {
+    def: { kind: 'activated', text: '', cost: { mana: [{ kind: 'generic', amount: 6 }] }, effect: { targets: [], steps: [
+      { op: 'move', what: { ref: 'topCards', player: { ref: 'each', who: 'opponent' }, count: 1 }, to: { zone: 'exile' }, as: 'them' } as EffectStep,
+      { op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'permit', who: you, action: 'play', of: { is: { ref: 'bound', name: 'them' } }, single: true, costChange: { kind: 'set', cost: {} } }] } as EffectStep] } } as unknown as AbilityDef,
+    ctx: { selfNames: ['Test Grower'], selfTypes: ['Creature'] },
+    readings: ["{6}: Exile the top card of each opponent's library. Until end of turn, you may play one of those cards without paying its mana cost."],
+    near: ["{6}: Exile the top card of each opponent's library. Until end of turn, you may play those cards without paying its mana cost.", "{6}: Exile the top card of each opponent's library. Until end of turn, you may play one of those cards."],
+  },
+} satisfies Record<string, Example>);
+describe('edh-d-90 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['mana-ability-of-resolves', 'amount-of-mana-self-produced', 'one-of-those-chosen', 'choose-how-those-block', 'other-spell-cast-this-turn', 'one-of-group-free']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-146 (must-finish round, group other; CR 508.1, 603.4): a player attacked this turn by a described creature you controlled, in the passive
+Object.assign(EXAMPLES, {
+  'attacked-by-passive': {
+    def: trig([{ ev: 'loseGame', player: 'any' } as EventPattern], [{ op: 'winGame', who: you } as EffectStep], {
+      interveningIf: { cond: 'happened', event: { ev: 'attacks', attacker: { subtypes: ['Rogue'], controller: 'you' }, defender: { ref: 'event', role: 'player' } }, scope: 'turn' },
+    }),
+    readings: [
+      'Whenever a player loses the game, if they were attacked this turn by a Rogue you controlled, you win the game.',
+      'Whenever a player loses the game, if that player was attacked this turn by a Rogue you controlled, you win the game.',
+    ],
+    near: [
+      'Whenever a player loses the game, if they were attacked this turn by a Rogue, you win the game.',
+      'Whenever a player loses the game, if they were attacked this turn by a Rogue an opponent controlled, you win the game.',
+      'Whenever a player loses the game, if they were blocked this turn by a Rogue you controlled, you win the game.',
+    ],
+    ctx: creature,
+  },
+});
+Object.assign(EXAMPLES, {
+  'fight-each-other-group': {
+    def: { kind: 'activated', text: '', cost: { tap: true }, effect: { targets: [
+      { id: 't0', kind: 'object', min: 1, max: 1, text: 'target creature you control', filter: { types: ['Creature'], controller: 'you' } },
+      { id: 't1', kind: 'object', min: 1, max: 1, text: 'target creature an opponent controls', filter: { types: ['Creature'], controller: 'opponent' } },
+    ], steps: [
+      { op: 'untap', what: { ref: 'union', of: [{ ref: 'target', id: 't0' }, { ref: 'target', id: 't1' }] } } as EffectStep,
+      { op: 'fight', a: { ref: 'target', id: 't0' }, b: { ref: 'target', id: 't1' } } as EffectStep,
+    ] } } as AbilityDef,
+    readings: [
+      '{T}: Untap target creature you control and target creature an opponent controls. Those creatures fight each other.',
+    ],
+    near: [
+      '{T}: Untap target creature you control and target creature an opponent controls. Those creatures fight.',
+      '{T}: Untap target creature you control and target creature an opponent controls. Those lands fight each other.',
+    ],
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Land'] },
+  },
+});
+describe('edh-next-146 (G6): the readings of its family are accepted and the near misses are not', () => {
+  for (const id of ['attacked-by-passive', 'fight-each-other-group']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-86 (band 5,001-10,000, group combat; invented wordings, design 6.10): the readings of its three families
+Object.assign(EXAMPLES, {
+  'play-land-or-cast-permanent-order': {
+    def: edhd43Def('Creature — Elf', 'Once during each of your turns, you may play a land or cast a permanent spell from among cards in your graveyard that were put there from your library this turn.'),
+    ctx: creature,
+    readings: [
+      'Once during each of your turns, you may play a land or cast a permanent spell from among cards in your graveyard that were put there from your library this turn.',
+      'Once during each of your turns, you may cast a permanent spell or play a land from among cards in your graveyard that were put there from your library this turn.',
+    ],
+    near: [
+      'Once during each of your turns, you may play a land or cast a creature spell from among cards in your graveyard that were put there from your library this turn.',
+      'Once during each of your turns, you may play a land and cast a permanent spell from among cards in your graveyard that were put there from your library this turn.',
+    ],
+  },
+  'enters-and-whenever-play-card': {
+    def: edhd43Def('Creature — Scarecrow', 'When ~ enters and whenever you play a card with two or more card types, draw a card.'),
+    ctx: creature,
+    readings: [
+      'When ~ enters and whenever you play a card with two or more card types, draw a card.',
+      'Whenever ~ enters or you play a permanent with two or more card types or cast a nontoken spell with two or more card types, draw a card.', // the three events said one by one (a land played is a permanent, a card cast is no token)
+    ],
+    near: [
+      'When ~ enters and whenever you play a card with three or more card types, draw a card.',
+      'When ~ enters and whenever you cast a spell with two or more card types, draw a card.',
+    ],
+  },
+  'put-card-then-shuffle-rest': {
+    def: edhd43Def('Sorcery', 'Reveal cards from the top of your library until you reveal an artifact card. Put that card onto the battlefield, then shuffle the rest into your library.'),
+    readings: [
+      'Reveal cards from the top of your library until you reveal an artifact card. Put that card onto the battlefield, then shuffle the rest into your library.',
+      'Reveal cards from the top of your library until you reveal an artifact card. Put that card onto the battlefield and shuffle the rest into your library.',
+    ],
+    near: [
+      'Reveal cards from the top of your library until you reveal an artifact card. Put that card onto the battlefield, then put the rest into your library.',
+      'Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand, then shuffle the rest into your library.',
+    ],
+  },
+} satisfies Record<string, Example>);
+
+describe('edh-d-86 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['play-land-or-cast-permanent-order', 'enters-and-whenever-play-card', 'put-card-then-shuffle-rest']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-next-140 (ported by edh-d-100 with e0bef601's engine parts; CR 609.4b): spend one type of mana as any color for the object's own abilities
+// edh-d-100 (CR 603.2, 608.2c, 607.2a): Share the Spoils' "When they do", the library of the player who played the card
+Object.assign(EXAMPLES, {
+  'spend-type-as-any-color-own-abilities': {
+    def: statics([{ s: 'permit', who: you, action: 'spendMana', asThough: 'any color', of: { self: true }, abilities: true, spentType: 'U' } as never]),
+    ctx: creature,
+    readings: ["You may spend blue mana as though it were mana of any color to pay the activation costs of this creature's abilities.", 'You may spend blue mana as though it were mana of any color to activate abilities of it.'],
+    near: ["You may spend red mana as though it were mana of any color to pay the activation costs of this creature's abilities.", "You may spend mana as though it were mana of any color to pay the activation costs of this creature's abilities."],
+  },
+  'when-they-do-their-library': {
+    def: statics([{ s: 'permit', who: { ref: 'active' }, action: 'play', of: { is: { ref: 'linked', link: 'exiled' } }, anyManaColor: true, oncePerTurn: true, onUse: { steps: [{ op: 'move', what: { ref: 'topCards', player: { ref: 'event', role: 'player' }, count: 1 }, to: { zone: 'exile' }, link: 'exiled' }] } } as never]),
+    ctx: { selfNames: ['Test Card'], selfTypes: ['Enchantment'] },
+    readings: [
+      "During each player's turn, that player may play a land or cast a spell from among cards exiled with Test Card, and they may spend mana as though it were mana of any color to cast that spell. When they do, exile the top card of their library.",
+      "During each player's turn, that player may play a land or cast a spell from among cards exiled with Test Card, and they may spend mana as though it were mana of any color to cast that spell. When they do, exile the top card of that player's library.",
+    ],
+    near: [
+      "During each player's turn, that player may play a land or cast a spell from among cards exiled with Test Card, and they may spend mana as though it were mana of any color to cast that spell. When they do, exile the top card of your library.",
+      "During each player's turn, that player may play a land or cast a spell from among cards exiled with Test Card, and they may spend mana as though it were mana of any color to cast that spell. When they do, draw a card.",
+    ],
+  },
+});
+
+describe('edh-d-100 (G6): the readings of its families (and of the ported edh-next-140 one) are accepted and the near misses are not', () => {
+  for (const id of ['spend-type-as-any-color-own-abilities', 'when-they-do-their-library']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});
+
+// edh-d-101 (CR 603.2d, 611.3a, 400.7, 608.2c): Sanctum of All's "triggers while C" and Primordial Mist's "that card" of a permanent a cost exiled
+Object.assign(EXAMPLES, {
+  'trigger-mod-while': {
+    def: { kind: 'static', text: '', condition: { cond: 'exists', of: { ref: 'each', filter: { subtypes: ['Wizard'], controller: 'you' } }, atLeast: 4 }, effects: [{ s: 'triggerMod', abilitiesOf: { subtypes: ['Wizard'], controller: 'you', other: true }, additional: 1 }] } as unknown as AbilityDef,
+    readings: [
+      'If a triggered ability of another Wizard you control triggers while you control four or more Wizards, that ability triggers an additional time.',
+      'As long as you control four or more Wizards, if a triggered ability of another Wizard you control triggers, that ability triggers an additional time.',
+    ],
+    near: [
+      'If a triggered ability of another Wizard you control triggers while you control three or more Wizards, that ability triggers an additional time.',
+      'If a triggered ability of another Wizard you control triggers, that ability triggers an additional time.',
+    ],
+  },
+  'cost-exiled-that-card': {
+    def: { kind: 'activated', text: '', cost: { other: [{ kind: 'exileFrom', zone: 'battlefield', count: 1, filter: { faceDown: true, controller: 'you' }, faceUp: true }] }, effect: { targets: [], steps: [{ op: 'effect', duration: { d: 'endOfTurn' }, effects: [{ s: 'permit', who: you, action: 'play', of: { is: { ref: 'costExiled' } } }] } as unknown as EffectStep] } } as unknown as AbilityDef,
+    readings: [
+      'Exile a face-down permanent you control face up: You may play that card this turn.',
+      'Exile a face-down permanent you control face up: You may play the exiled permanent this turn.',
+    ],
+    near: [
+      'Exile a face-down permanent you control face up: You may play that creature this turn.',
+      'Exile a face-down permanent you control: You may play that card this turn.',
+    ],
+  },
+});
+
+Object.assign(EXAMPLES, {
+  'choose-mana-value-where-x': {
+    def: spell([
+      { op: 'chooseObjects', who: you, from: { ref: 'each', filter: { types: ['Creature'], manaValue: { op: '<=', value: { q: 'snowSpent' } }, zone: 'graveyard', owner: 'you', isCard: true } }, min: 1, max: 1, as: 'returned' } as unknown as EffectStep,
+      { op: 'move', what: { ref: 'bound', name: 'returned' }, to: { zone: 'battlefield', controller: you } } as unknown as EffectStep,
+    ]),
+    readings: [
+      'Return a creature card with mana value X or less from your graveyard to the battlefield, where X is the amount of {S} spent to cast this spell.',
+      'Put a creature card from your graveyard with mana value less than or equal to the amount of {S} spent to cast this spell onto the battlefield under your control.',
+    ],
+    near: [
+      'Return a creature card with mana value X or greater from your graveyard to the battlefield, where X is the amount of {S} spent to cast this spell.',
+      'Return a creature card with mana value X or less from your graveyard to your hand, where X is the amount of {S} spent to cast this spell.',
+    ],
+  },
+  'then-after-modes': {
+    def: { kind: 'spell', text: '', effect: { targets: [], modes: { min: 1, max: 1, options: [{ text: '', program: { targets: [], steps: [{ op: 'destroy', what: { ref: 'each', filter: { types: ['Creature'] } } } as unknown as EffectStep] } }, { text: '', program: { targets: [], steps: [{ op: 'destroy', what: { ref: 'each', filter: { types: ['Artifact'] } } } as unknown as EffectStep] } }] }, steps: [{ op: 'draw', who: you, count: 1 } as EffectStep] } } as unknown as AbilityDef,
+    readings: [
+      'Choose one --\n• Destroy all creatures.\n• Destroy all artifacts.\nThen draw a card.',
+      'Choose one --\n• Destroy all creatures.\n• Destroy all artifacts.\nDraw a card.',
+    ],
+    near: [
+      'Choose one --\n• Destroy all creatures.\n• Destroy all artifacts.\nThen draw two cards.',
+      'Choose one --\n• Destroy all creatures.\n• Destroy all artifacts.\nThen you may draw a card.',
+    ],
+  },
+});
+
+Object.assign(EXAMPLES, {
+  'spell-exiled-owners-graveyard': {
+    def: { kind: 'triggered', text: '', trigger: { on: [{ ev: 'cast', player: 'you', spell: { types: ['Instant'] } }] }, effect: { targets: [], steps: [{ op: 'effect', duration: { d: 'permanent' }, effects: [{ s: 'replace', replaces: { ev: 'zoneChange', subject: { is: { ref: 'event', role: 'spell' } }, from: 'stack', to: 'graveyard', cause: 'resolve' }, body: { b: 'modify', destination: { zone: 'exile' } }, optional: true }] } as unknown as EffectStep] } } as unknown as AbilityDef,
+    readings: [
+      "Whenever you cast an instant spell, you may exile that spell instead of putting it into its owner's graveyard as it resolves.",
+      'Whenever you cast an instant spell, you may exile that spell instead of putting it into your graveyard as it resolves.',
+    ],
+    near: [
+      "Whenever you cast an instant spell, exile that spell instead of putting it into its owner's graveyard as it resolves.",
+      "Whenever you cast an instant spell, you may exile that spell instead of putting it into its owner's hand as it resolves.",
+    ],
+  },
+});
+describe('edh-d-101 (G6): the readings of its families are accepted and the near misses are not', () => {
+  for (const id of ['trigger-mod-while', 'cost-exiled-that-card', 'choose-mana-value-where-x', 'then-after-modes', 'spell-exiled-owners-graveyard']) {
+    it(`${id}: every reading is accepted and a near miss is not`, () => {
+      const ex = (EXAMPLES as Record<string, Example>)[id]!;
+      for (const r of ex.readings) accepts(ex.def, r, ex.ctx);
+      for (const n of ex.near) rejects(ex.def, n, ex.ctx);
+    });
+  }
+});

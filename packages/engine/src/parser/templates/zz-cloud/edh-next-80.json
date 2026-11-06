@@ -1,0 +1,508 @@
+[
+  {
+    "id": "eff.edhn80.return.anyNumber.totalMv.fromGraveyard.bf",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 202.3",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "return any number of {f:Filter} cards with total mana value {m:Qty} or less from your graveyard to the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "return",
+        "groupLimit": {
+          "stat": "manaValue",
+          "cmp": {
+            "op": "<=",
+            "value": "$m"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "return"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "needs": [
+      "op:chooseObjects.groupLimit"
+    ],
+    "examples": [
+      {
+        "text": "Return any number of creature cards with total mana value 5 or less from your graveyard to the battlefield."
+      },
+      {
+        "text": "Return any number of artifact creature cards with total mana value 6 or less from your graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Return any number of creature cards with total mana value 5 or less from your graveyard to your hand.",
+      "Return any number of target creature cards with total mana value 5 or less from your graveyard to the battlefield.",
+      "Return any number of creature cards with total power 5 or less from your graveyard to the battlefield."
+    ],
+    "status": "stable",
+    "since": 9
+  },
+  {
+    "id": "eff.edhn80.return.anyNumber.totalPower.fromGraveyard.bf",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 208.1",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "return any number of {f:Filter} cards with total power {m:Qty} or less from your graveyard to the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "return",
+        "groupLimit": {
+          "stat": "power",
+          "cmp": {
+            "op": "<=",
+            "value": "$m"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "return"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "needs": [
+      "op:chooseObjects.groupLimit"
+    ],
+    "examples": [
+      {
+        "text": "Return any number of creature cards with total power 5 or less from your graveyard to the battlefield."
+      },
+      {
+        "text": "When this creature dies, return any number of other creature cards with total power 3 or less from your graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Return any number of creature cards with total power 5 or less from your graveyard to your hand.",
+      "Return any number of target creature cards with total power 5 or less from your graveyard to the battlefield.",
+      "Return any number of creature cards with total mana value 5 or less from your graveyard to the battlefield."
+    ],
+    "status": "stable",
+    "since": 9
+  },
+  {
+    "id": "eff.edhn80.cast.anyNumber.free.fromYourGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 608.2d",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 404.1"
+    ],
+    "pattern": "cast any number of {f:Filter} cards from your graveyard without paying their mana costs",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+        }
+      },
+      "free": true,
+      "select": {}
+    },
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Cast any number of red instant and/or sorcery cards from your graveyard without paying their mana costs."
+      },
+      {
+        "text": "Cast any number of creature cards from your graveyard without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Cast any number of red instant and/or sorcery cards from your hand without paying their mana costs.",
+      "Cast any number of red instant and/or sorcery cards from your graveyard.",
+      "Cast target instant card from your graveyard without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhn80.return.anyNumber.differentMv.fromGraveyard.hand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 202.3",
+      "CR 404.1"
+    ],
+    "pattern": "return any number of cards with different mana values from your graveyard to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "return",
+        "distinct": "manaValue"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "return"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "different"
+    ],
+    "examples": [
+      {
+        "text": "Return any number of cards with different mana values from your graveyard to your hand."
+      },
+      {
+        "text": "Mill two cards. Return any number of cards with different mana values from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Return any number of cards with different mana values from your graveyard to the battlefield.",
+      "Return any number of cards with different names from your graveyard to your hand.",
+      "Return any number of target cards with different mana values from your graveyard to your hand.",
+      "Return any number of cards with different mana values from your hand to your hand."
+    ],
+    "needs": [
+      "op:chooseObjects.distinct"
+    ]
+  },
+  {
+    "id": "eff.edhn80.return.bf.thenAnother.hand.fromGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 404.1",
+      "CR 400.7"
+    ],
+    "pattern": "return a {f:Filter} card from your graveyard to the battlefield , then return another {g:Filter} card from your graveyard to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$g"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true,
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "returned"
+              }
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returnedHand"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returnedHand"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "another",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Return a creature card from your graveyard to the battlefield, then return another creature card from your graveyard to your hand."
+      },
+      {
+        "text": "Mill two cards. Return a creature card from your graveyard to the battlefield, then return another creature card from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Return a creature card from your graveyard to the battlefield, then return a creature card from your graveyard to your hand.",
+      "Return a creature card from your graveyard to the battlefield, then return another creature card from your graveyard to the battlefield.",
+      "Return a creature card from your hand to the battlefield, then return another creature card from your graveyard to your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn80.return.selfAnd.bf",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 113.6m",
+      "CR 400.7",
+      "CR 608.2b",
+      "CR 110.2"
+    ],
+    "pattern": "return ~ and {o:Obj} to the battlefield",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "self"
+          },
+          "$o"
+        ]
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}{B}{R}{G}: Return this card and up to one target creature card from your graveyard to the battlefield. Activate only as a sorcery."
+      },
+      {
+        "text": "{2}{B}{B}: Return this card and target creature card from your graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "{4}{G}: Return this card and target land card from your graveyard to the battlefield tapped.",
+      "{4}{G}: Return this card and target land card from your graveyard to your hand.",
+      "{4}{G}: Return target land card from your graveyard to the battlefield."
+    ]
+  },
+  {
+    "id": "sta.edhn80.graveyard.grant",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 113.6",
+      "CR 113.6m",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as ~ is in your graveyard , {f:Filter} have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is in your graveyard, lands you control have \"{T}: Add {G} or {W}.\""
+      },
+      {
+        "text": "As long as ~ is in your graveyard, creatures you control have haste."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is on the battlefield, lands you control have \"{T}: Add {G} or {W}.\"",
+      "As long as ~ is in your graveyard and you control a Mountain, creatures you control have haste.",
+      "As long as ~ is in your graveyard, creatures you control get +1/+1."
+    ]
+  },
+  {
+    "id": "eff.edhn80.return.self.gy.bf.faceUpOrDown",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 708.2",
+      "CR 708.3",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "return ~ from your graveyard to the battlefield face up or face down",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "faceUpOrDown": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever a permanent you control is turned face up, you may return this card from your graveyard to the battlefield face up or face down."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may return ~ from your graveyard to the battlefield face up or face down."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a permanent you control is turned face up, you may return this card from your graveyard to the battlefield face down.",
+      "Whenever a permanent you control is turned face up, you may return this card from your graveyard to the battlefield.",
+      "Whenever a permanent you control is turned face up, you may return this card from your graveyard to your hand face up or face down."
+    ],
+    "needs": [
+      "op:move.faceUpOrDown"
+    ]
+  }
+]

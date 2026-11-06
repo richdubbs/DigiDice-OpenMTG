@@ -1,0 +1,509 @@
+[
+  {
+    "id": "eff.edhv59.changeTarget.eventSpell.to",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "consumes": [
+      "if",
+      "if able"
+    ],
+    "cr": [
+      "CR 115.7b",
+      "CR 115.1",
+      "CR 603.2",
+      "CR 608.2b"
+    ],
+    "pattern": "change the target to {o:Obj} if able",
+    "build": {
+      "op": "changeTarget",
+      "who": {
+        "ref": "you"
+      },
+      "what": {
+        "ref": "event",
+        "role": "spell"
+      },
+      "to": "$o"
+    },
+    "examples": [
+      {
+        "text": "Whenever a player casts a spell, if it has a single target, change the target to enchanted creature if able."
+      },
+      {
+        "text": "Whenever you cast a spell, if it has a single target, change the target to enchanted creature if able."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player casts a spell, if it has a single target, change the target to enchanted creature.",
+      "Whenever a player casts a spell, if it has a single target, change the target to enchanted creature unless you pay {1}.",
+      "Whenever a player casts a spell, if it has a single target, change the target of it to enchanted creature if able."
+    ]
+  },
+  {
+    "id": "cm.edhv59.ability.less.drewN",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7a",
+      "CR 121.2"
+    ],
+    "pattern": "this ability costs {m:ManaCost} less to activate if you've drawn {n:Qty} or more cards this turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "math",
+                  "op": "floorDiv",
+                  "args": [
+                    {
+                      "q": "cardsDrawnThisTurn"
+                    },
+                    "$n"
+                  ]
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "needs": [
+      "feature:costMod.times"
+    ],
+    "examples": [
+      {
+        "text": "{4}{B}: Each opponent loses 2 life and you gain 2 life. This ability costs {4}{B} less to activate if you've drawn three or more cards this turn."
+      },
+      {
+        "text": "{5}, {T}: Create a 1/1 white Spirit creature token. This ability costs {3} less to activate if you've drawn two or more cards this turn."
+      }
+    ],
+    "counterExamples": [
+      "{4}{B}: Each opponent loses 2 life and you gain 2 life. This ability costs {4}{B} more to activate if you've drawn three or more cards this turn.",
+      "{4}{B}: Each opponent loses 2 life and you gain 2 life. This ability costs {4}{B} less to activate if an opponent has drawn three or more cards this turn.",
+      "{4}{B}: Each opponent loses 2 life and you gain 2 life. This ability costs {4}{B} less to activate if you've drawn three cards this turn."
+    ]
+  },
+  {
+    "id": "sta.edhv59.self.equipAbility.costLess.ifTargets",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.6a",
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 602.2b"
+    ],
+    "pattern": "~'s equip ability costs {m:ManaCost} less to activate if it targets ( a | an ) {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "keyword": "equip",
+              "kind": "activated",
+              "source": {
+                "self": true
+              }
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "spellTargetCount",
+                  "filter": "$f"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "needs": [
+      "keyword:equip",
+      "feature:costMod.times",
+      "feature:spellTargetCount.filter"
+    ],
+    "examples": [
+      {
+        "text": "Equip {8}\n~'s equip ability costs {4} less to activate if it targets a red creature."
+      },
+      {
+        "text": "Equip {9}\n~'s equip ability costs {3} less to activate if it targets an artifact creature."
+      }
+    ],
+    "counterExamples": [
+      "Equip {8}\n~'s equip ability costs {4} more to activate if it targets a red creature.",
+      "Equip {8}\n~'s equip ability costs {4} less to activate unless it targets a red creature.",
+      "Equip {8}\n~'s crew ability costs {4} less to activate if it targets a red creature.",
+      "Equip {8}\n~'s equip ability costs {4} less to activate."
+    ]
+  },
+  {
+    "id": "cm.edhv59.self.less.ifControlShareCreatureType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 604.5",
+      "CR 118.7a",
+      "CR 205.3m",
+      "CR 702.73a"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast if you control at least {n:Qty} creatures that share a creature type",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "math",
+                  "op": "floorDiv",
+                  "args": [
+                    {
+                      "q": "mostSharingCreatureType",
+                      "among": {
+                        "ref": "each",
+                        "filter": {
+                          "types": [
+                            "Creature"
+                          ],
+                          "controller": "you"
+                        }
+                      }
+                    },
+                    "$n"
+                  ]
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "at least"
+    ],
+    "needs": [
+      "feature:costMod.times",
+      "q:mostSharingCreatureType"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {3} less to cast if you control at least three creatures that share a creature type."
+      },
+      {
+        "text": "~ costs {1} less to cast if you control at least two creatures that share a creature type."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {3} more to cast if you control at least three creatures that share a creature type.",
+      "~ costs {3} less to cast if an opponent controls at least three creatures that share a creature type.",
+      "~ costs {3} less to cast if you control at least three creatures that share a color."
+    ]
+  },
+  {
+    "id": "sta.edhv59.group.protectionFromOwnColors",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16a",
+      "CR 105.1",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "each {f:Filter} has protection from each of its colors",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "protectionFromColorsOf": {
+                "ref": "subject"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "needs": [
+      "feature:layer6.protectionFromOwnColors"
+    ],
+    "examples": [
+      {
+        "text": "Each artifact creature has protection from each of its colors."
+      },
+      {
+        "text": "Each Elf you control has protection from each of its colors."
+      }
+    ],
+    "counterExamples": [
+      "Each artifact creature has protection from each of its colors until end of turn.",
+      "Each artifact creature has protection from each of your colors.",
+      "Each artifact creature has protection from its colors.",
+      "Each artifact creature has hexproof from each of its colors."
+    ]
+  },
+  {
+    "id": "trg.edhv59.self.dies.duringCombat",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 700.4",
+      "CR 506.1"
+    ],
+    "pattern": "when ~ dies during combat",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "self": true
+          },
+          "from": "battlefield",
+          "to": "graveyard"
+        }
+      ],
+      "while": {
+        "cond": "turnOf",
+        "whose": "any",
+        "step": [
+          "beginCombat",
+          "declareAttackers",
+          "declareBlockers",
+          "combatDamage",
+          "endCombat"
+        ]
+      }
+    },
+    "consumes": [
+      "when",
+      "during"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies during combat, draw a card."
+      },
+      {
+        "text": "When ~ dies during combat, create a 1/1 white Soldier creature token."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies during your turn, draw a card.",
+      "Whenever a creature you control dies during combat, draw a card.",
+      "When ~ dies while attacking, draw a card.",
+      "When ~ dies during combat, each opponent loses 1 life unless you pay {1}."
+    ]
+  },
+  {
+    "id": "eff.edhv59.sacrifice.you.ifNotControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 603.4"
+    ],
+    "pattern": "sacrifice {n:Qty} {f:Filter} if you don't control ( a | an ) {g:Filter}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "not",
+        "of": {
+          "cond": "exists",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "types": "$g.types",
+              "allTypes": "$g.allTypes",
+              "notTypes": "$g.notTypes",
+              "subtypes": "$g.subtypes",
+              "notSubtypes": "$g.notSubtypes",
+              "supertypes": "$g.supertypes",
+              "notSupertypes": "$g.notSupertypes",
+              "colors": "$g.colors",
+              "notColors": "$g.notColors",
+              "colorless": "$g.colorless",
+              "keyword": "$g.keyword",
+              "notKeyword": "$g.notKeyword",
+              "manaValue": "$g.manaValue",
+              "power": "$g.power",
+              "toughness": "$g.toughness",
+              "counters": "$g.counters",
+              "token": "$g.token",
+              "controller": "you"
+            }
+          }
+        }
+      },
+      "then": [
+        {
+          "op": "sacrificeChoice",
+          "who": {
+            "ref": "you"
+          },
+          "filter": "$f",
+          "count": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, sacrifice a land if you don't control a Dragon."
+      },
+      {
+        "text": "At the beginning of your upkeep, sacrifice a creature if you don't control a Dragon."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, sacrifice a creature if you control a Dragon.",
+      "At the beginning of your upkeep, sacrifice a creature if an opponent doesn't control a Dragon.",
+      "At the beginning of your upkeep, sacrifice a creature if you don't control a Dragon or a land."
+    ]
+  },
+  {
+    "id": "eff.edhv59.discard.anyNumber.atRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "experimental",
+    "subject": "none",
+    "cr": [
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 608.2d",
+      "CR 107.1"
+    ],
+    "pattern": "discard any number of cards at random",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "number",
+        "as": "n0",
+        "link": "discardCount",
+        "min": 0,
+        "max": {
+          "q": "zoneSize",
+          "zone": "hand",
+          "of": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "chosenNumber",
+          "link": "discardCount"
+        },
+        "mode": "random"
+      }
+    ],
+    "consumes": [
+      "any number",
+      "random"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "Discard any number of cards at random. You gain 2 life for each card discarded this way."
+      },
+      {
+        "text": "Discard any number of cards at random. You draw a card for each card discarded this way."
+      }
+    ],
+    "counterExamples": [
+      "Discard any number of cards. You gain 2 life for each card discarded this way.",
+      "Discard two cards at random. You gain 2 life for each card discarded this way.",
+      "Target player discards any number of cards at random. You gain 2 life for each card discarded this way."
+    ]
+  }
+]

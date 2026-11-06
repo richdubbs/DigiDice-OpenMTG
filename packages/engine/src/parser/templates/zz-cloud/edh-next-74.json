@@ -1,0 +1,491 @@
+[
+  {
+    "id": "eff.edhn74.copy.forEachOther.permanentOrPlayer",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 115.1",
+      "CR 601.2c"
+    ],
+    "pattern": "copy {o:Obj} for each other permanent or player ( the spell | that spell | the spell or ability | that spell or ability ) could target",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "retargetAll": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each other",
+      "other",
+      "could"
+    ],
+    "examples": [
+      {
+        "text": "Choose target sorcery spell that targets only a single permanent or player. Copy that spell for each other permanent or player the spell could target. Each copy targets a different one of those permanents and players."
+      },
+      {
+        "text": "Choose target spell that targets only a single permanent or player. Copy that spell for each other permanent or player the spell could target. Each copy targets a different one of those permanents and players."
+      }
+    ],
+    "counterExamples": [
+      "Choose target sorcery spell that targets only a single permanent or player. Copy that spell for each other permanent or player the spell could target.",
+      "Choose target sorcery spell that targets only a single permanent or player. Copy that spell for each permanent or player the spell could target. Each copy targets a different one of those permanents and players."
+    ]
+  },
+  {
+    "id": "rid.edhn74.eachCopyTargetsDifferent.permanentsAndPlayers",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.10c",
+      "CR 115.1",
+      "CR 601.2c"
+    ],
+    "pattern": "each copy targets a different one of those permanents and players",
+    "build": {
+      "$patchPrevious": {
+        "different": true,
+        "@require": {
+          "retargetAll": true,
+          "different": null
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "each",
+      "different"
+    ],
+    "examples": [
+      {
+        "text": "Choose target sorcery spell that targets only a single permanent or player. Copy that spell for each other permanent or player the spell could target. Each copy targets a different one of those permanents and players."
+      },
+      {
+        "text": "Choose target spell that targets only a single permanent or player. Copy that spell for each other permanent or player the spell could target. Each copy targets a different one of those permanents and players."
+      }
+    ],
+    "counterExamples": [
+      "Choose target instant or sorcery spell that targets only a single permanent or player. Copy that spell for each other permanent or player the spell could target. Each copy targets one of those permanents and players.",
+      "Copy target instant spell. Each copy targets a different one of those permanents and players."
+    ]
+  },
+  {
+    "id": "eff.edhn74.next.castOrActivateX.copy",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.10",
+      "CR 602.2",
+      "CR 107.3"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} or activate an ability with {x} in its activation cost this turn , copy that spell or ability",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        },
+        "or": [
+          {
+            "ev": "activate",
+            "player": "you",
+            "xInCost": true
+          }
+        ]
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "When you next cast a spell with {X} in its mana cost or activate an ability with {X} in its activation cost this turn, copy that spell or ability."
+      },
+      {
+        "text": "When you next cast a creature spell with {X} in its mana cost or activate an ability with {X} in its activation cost this turn, copy that spell or ability."
+      }
+    ],
+    "counterExamples": [
+      "When you next cast a spell with {X} in its mana cost this turn, copy that spell or ability.",
+      "When you next cast a spell with {X} in its mana cost or activate an ability with {X} in its activation cost, copy that spell or ability."
+    ]
+  },
+  {
+    "id": "eff.edhn74.next.castTwoOrLoyalty.copy.twice",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.10",
+      "CR 606.3"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} , cast ( a | an ) {g:CastSpell} , or activate a loyalty ability this turn , copy that spell or ability twice",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        },
+        "or": [
+          {
+            "ev": "cast",
+            "player": "you",
+            "spell": "$g"
+          },
+          {
+            "ev": "activate",
+            "player": "you",
+            "ability": "loyalty"
+          }
+        ]
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          },
+          "count": 2
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "twice"
+    ],
+    "examples": [
+      {
+        "text": "When you next cast an instant spell, cast a sorcery spell, or activate a loyalty ability this turn, copy that spell or ability twice."
+      },
+      {
+        "text": "When you next cast a creature spell, cast an artifact spell, or activate a loyalty ability this turn, copy that spell or ability twice."
+      }
+    ],
+    "counterExamples": [
+      "When you next cast an instant spell, cast a sorcery spell, or activate a loyalty ability, copy that spell or ability twice.",
+      "When you next cast an instant spell, cast a sorcery spell, or activate a loyalty ability this turn, copy that spell or ability three times."
+    ]
+  },
+  {
+    "id": "trg.edhn74.you.activate.nonMana.ifLifePaid",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 602.2",
+      "CR 602.2b",
+      "CR 605.1a",
+      "CR 603.4",
+      "CR 118.3"
+    ],
+    "pattern": "whenever you activate an ability that isn't a mana ability , if life was paid to activate it",
+    "build": {
+      "on": [
+        {
+          "ev": "activate",
+          "player": "you",
+          "manaAbility": false,
+          "lifePaid": true
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you activate an ability that isn't a mana ability, if life was paid to activate it, draw a card."
+      },
+      {
+        "text": "Whenever you activate an ability that isn't a mana ability, if life was paid to activate it, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you activate an ability that isn't a mana ability, draw a card.",
+      "Whenever an opponent activates an ability that isn't a mana ability, if life was paid to activate it, draw a card.",
+      "Whenever you activate an ability that isn't a mana ability, if mana was paid to activate it, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhn74.maypay.thatMuchLife.again",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.3",
+      "CR 119.4",
+      "CR 608.2d",
+      "CR 117.3"
+    ],
+    "pattern": "{p:Player} may pay {n:Qty} life again",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "other": [
+          {
+            "kind": "payLife",
+            "amount": "$n"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "again"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you activate an ability that isn't a mana ability, if life was paid to activate it, you may pay that much life again. If you do, draw a card."
+      },
+      {
+        "text": "Whenever you activate an ability that isn't a mana ability, if life was paid to activate it, you may pay that much life again. If you do, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you activate an ability that isn't a mana ability, if life was paid to activate it, you may pay that much life. If you do, draw a card.",
+      "Whenever you activate an ability that isn't a mana ability, if life was paid to activate it, you may pay that much life again twice. If you do, draw a card."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhn74.doubleX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 107.3",
+      "CR 601.2b",
+      "CR 603.2"
+    ],
+    "pattern": "double the value of x",
+    "build": {
+      "op": "doubleX",
+      "what": {
+        "ref": "event",
+        "role": "spell"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever you cast a creature spell with a mana cost that contains {X}, double the value of X."
+      },
+      {
+        "text": "Whenever you cast a creature spell with {X} in its mana cost, double the value of X."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a creature spell with {X} in its mana cost, double the value of Y.",
+      "Whenever you cast a creature spell with {X} in its mana cost, double the value of X again."
+    ],
+    "consumes": [
+      "double"
+    ]
+  },
+  {
+    "id": "trg.edhn74.you.castOrActivate.ifXInCost",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 107.3",
+      "CR 601.2i",
+      "CR 602.2",
+      "CR 603.4"
+    ],
+    "pattern": "whenever you cast an instant or sorcery spell or activate an ability , if that spell 's mana cost or that ability 's activation cost contains {x}",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+            "types": [
+              "Instant",
+              "Sorcery"
+            ],
+            "manaCostHasX": true
+          }
+        },
+        {
+          "ev": "activate",
+          "player": "you",
+          "xInCost": true
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast an instant or sorcery spell or activate an ability, if that spell's mana cost or that ability's activation cost contains {X}, copy that spell or ability."
+      },
+      {
+        "text": "Whenever you cast an instant or sorcery spell or activate an ability, if that spell's mana cost or that ability's activation cost contains {X}, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant or sorcery spell or activate an ability, copy that spell or ability.",
+      "Whenever you cast a creature spell or activate an ability, if that spell's mana cost or that ability's activation cost contains {X}, draw a card."
+    ]
+  },
+  {
+    "id": "trg.edhn74.selfOrSameName.combatDamage.player",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 510.2",
+      "CR 603.2",
+      "CR 201.2"
+    ],
+    "pattern": "whenever ~ or another creature with the same name deals combat damage to a player",
+    "build": {
+      "on": [
+        {
+          "ev": "damage",
+          "source": {
+            "self": true
+          },
+          "combat": true,
+          "recipient": {
+            "player": "any"
+          }
+        },
+        {
+          "ev": "damage",
+          "source": {
+            "types": [
+              "Creature"
+            ],
+            "other": true,
+            "sharesWith": {
+              "with": {
+                "ref": "self"
+              },
+              "quality": "name"
+            }
+          },
+          "combat": true,
+          "recipient": {
+            "player": "any"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "another",
+      "same",
+      "name"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ or another creature with the same name deals combat damage to a player, you draw a card."
+      },
+      {
+        "text": "Whenever ~ or another creature with the same name deals combat damage to a player, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ or another creature with the same name deals damage to a player, you draw a card.",
+      "Whenever ~ or another creature with the same name deals combat damage to a creature, you draw a card."
+    ]
+  },
+  {
+    "id": "trg.edhn74.opponentCreatureEntering.causesTrigger",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 603.3b",
+      "CR 603.6a"
+    ],
+    "pattern": "whenever a creature entering under an opponent 's control causes a triggered ability of that creature to trigger",
+    "build": {
+      "on": [
+        {
+          "ev": "abilityTriggered",
+          "of": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "opponent"
+          },
+          "causedBy": "entering"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature entering under an opponent's control causes a triggered ability of that creature to trigger, you gain 1 life."
+      },
+      {
+        "text": "Whenever a creature entering under an opponent's control causes a triggered ability of that creature to trigger, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature entering under your control causes a triggered ability of that creature to trigger, you gain 1 life.",
+      "Whenever a creature entering under an opponent's control causes a triggered ability of a creature to trigger, you gain 1 life."
+    ]
+  }
+]

@@ -1,0 +1,298 @@
+[
+  {
+    "id": "sta.edhv23.duringYourTurn.youAndSelf.hexproof",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.11b",
+      "CR 702.11c",
+      "CR 115.1",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "( during your turn , you and ~ have hexproof | you and ~ have hexproof during your turn )",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "controller": "opponent"
+          }
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "hexproof",
+                  "text": "hexproof"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "You and ~ have hexproof during your turn."
+      },
+      {
+        "text": "Reach, vigilance, defender\nYou and ~ have hexproof during your turn."
+      }
+    ],
+    "counterExamples": [
+      "You and ~ have shroud during your turn.",
+      "You and ~ have hexproof during each opponent's turn.",
+      "You and creatures you control have hexproof during your turn.",
+      "~ has hexproof during your turn."
+    ]
+  },
+  {
+    "id": "sta.edhv23.attached.pt.warriorInstead",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} . if it's ( a | an ) {f:Filter} , it gets {pt2:PT} instead",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "attachedTo"
+        },
+        "filter": "$f"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt2.p",
+              "toughness": "$pt2.t"
+            }
+          ]
+        }
+      ],
+      "otherwise": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +2/+0. If it's a Warrior, it gets +3/+1 instead."
+      },
+      {
+        "text": "Enchanted creature gets +1/+1. If it's a Human, it gets +3/+3 instead."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+1. If it's a Warrior, it gets +2/+1.",
+      "Equipped creature gets +1/+1. If it's a Warrior, it gains flying instead.",
+      "Equipped creature gets +1/+1. If it's legendary, it gets +2/+1 instead."
+    ]
+  },
+  {
+    "id": "eff.edhv23.draw.equalDiscardedThisTurn.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 701.9a",
+      "CR 608.2h"
+    ],
+    "pattern": "draw cards equal to the number of cards {p:Player} discarded this turn",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "action",
+          "verb": "discard",
+          "actor": "$p"
+        },
+        "scope": "turn"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw cards equal to the number of cards target player discarded this turn."
+      },
+      {
+        "text": "When ~ enters, draw cards equal to the number of cards target opponent discarded this turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw cards equal to the number of cards target opponent discarded.",
+      "Draw cards equal to the number of cards target opponent discarded this game.",
+      "Draw cards equal to the number of cards you discarded this turn."
+    ]
+  },
+  {
+    "id": "eff.edhv23.put.lib.top.anyorder.theirLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 701.20",
+      "CR 608.2c"
+    ],
+    "pattern": "put {o:Objs} on top of their library in any order",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "position": "top",
+        "order": "chosen",
+        "arrangedBy": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "any order"
+    ],
+    "examples": [
+      {
+        "text": "Put up to two target cards from an opponent's graveyard on top of their library in any order."
+      },
+      {
+        "text": "Put up to four target cards from an opponent's graveyard on top of their library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Put up to three target cards from an opponent's graveyard on top of your library in any order.",
+      "Put up to three target cards from an opponent's graveyard on top of their library.",
+      "Put up to three target cards from an opponent's graveyard on the bottom of their library in any order."
+    ]
+  },
+  {
+    "id": "sta.edhv23.damageToSelf.whileCounter.prevent.removeFromIt",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 614.1a",
+      "CR 122.1"
+    ],
+    "pattern": "if damage would be dealt to ~ while it has a {k:CounterKind} counter on it , prevent that damage and remove a {j:CounterKind} counter from it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "condition": {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "counters": {
+                "kind": "$k"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "removeCounters",
+                "from": {
+                  "ref": "self"
+                },
+                "kind": "$j",
+                "count": 1
+              }
+            ],
+            "oncePerBatch": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent",
+      "while"
+    ],
+    "examples": [
+      {
+        "text": "If damage would be dealt to ~ while it has a charge counter on it, prevent that damage and remove a charge counter from it."
+      },
+      {
+        "text": "If damage would be dealt to ~ while it has a time counter on it, prevent that damage and remove a shield counter from it."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to ~ while it has a charge counter on it, prevent that damage or remove a charge counter from it.",
+      "If damage would be dealt to ~ while it has a charge counter on it, prevent that damage and remove two charge counters from it.",
+      "If damage would be dealt by ~ while it has a charge counter on it, prevent that damage and remove a charge counter from it."
+    ]
+  }
+]

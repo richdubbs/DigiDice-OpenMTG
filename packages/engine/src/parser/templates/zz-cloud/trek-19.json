@@ -1,0 +1,182 @@
+[
+  {
+    "id": "sta.trek19.attached.pump.cantBlock.isType",
+    "kind": "static",
+    "cr": [
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.4c",
+      "CR 509.1b"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} , can't block , and is ( a | an ) {st:Subtypes}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchant creature\nEnchanted creature gets -3/-0, can't block, and is a Frog."
+      },
+      {
+        "text": "Equipped creature gets +2/+1, can't block, and is an Elk."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets -3/-0, can't block, and is a Frog in addition to its other types.",
+      "Enchanted creature gets -3/-0, can't attack, and is a Frog.",
+      "Enchanted creature gets -3/-0, can't block, and is a Frog until end of turn.",
+      "Enchanted creature gets -3/-0 and is a Frog."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "trg.trek19.opponent.casts.orActivates.chosenName",
+    "kind": "trigger",
+    "cr": [
+      "CR 603.2",
+      "CR 601.2",
+      "CR 602.2",
+      "CR 605.3b",
+      "CR 607.2d",
+      "CR 201.2"
+    ],
+    "pattern": "whenever an opponent casts a spell with the chosen name or activates an ability of a source with the chosen name",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "opponent",
+          "spell": {
+            "chosen": {
+              "link": "cardName",
+              "quality": "cardName"
+            },
+            "stackKind": "spell"
+          }
+        },
+        {
+          "ev": "activate",
+          "player": "opponent",
+          "source": {
+            "zone": "any",
+            "chosen": {
+              "link": "cardName",
+              "quality": "cardName"
+            }
+          },
+          "manaAbility": false
+        },
+        {
+          "ev": "activate",
+          "player": "opponent",
+          "source": {
+            "zone": "any",
+            "chosen": {
+              "link": "cardName",
+              "quality": "cardName"
+            }
+          },
+          "manaAbility": true
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As this creature enters, choose a nonland card name.\nWhenever an opponent casts a spell with the chosen name or activates an ability of a source with the chosen name, that player gains 2 life."
+      },
+      {
+        "text": "As this creature enters, choose a nonland card name.\nWhenever an opponent casts a spell with the chosen name or activates an ability of a source with the chosen name, you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "As this creature enters, choose a nonland card name.\nWhenever you cast a spell with the chosen name or activate an ability of a source with the chosen name, that player gains 2 life.",
+      "As this creature enters, choose a nonland card name.\nWhenever an opponent casts a spell with the chosen name, that player gains 2 life.",
+      "As this creature enters, choose a nonland card name.\nWhenever an opponent casts a spell with the chosen name or activates an ability of a source with the chosen name that isn't a mana ability, that player gains 2 life."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "fl.trek19.forEach.opponent.youCreate",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2f",
+      "CR 101.4",
+      "CR 111.2"
+    ],
+    "pattern": "for each opponent , you create {n:Qty} {t:TokenDesc}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n",
+          "token": "$t"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "For each opponent, you create a 1/1 green Frog creature token."
+      },
+      {
+        "text": "For each opponent, you create two 2/2 blue Elk creature tokens with flying."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent, that player creates a 1/1 green Frog creature token.",
+      "For each opponent, you create a 1/1 green Frog creature token unless it is blue.",
+      "For each opponent, target player creates a 1/1 green Frog creature token."
+    ],
+    "status": "stable",
+    "since": 8
+  }
+]

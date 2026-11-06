@@ -1,0 +1,1 @@
+{"name":"refused_05","before":{"a":{"b":[1,2]},"s":"x"},"ops":[{"op":"set","path":["s","x"],"value":1}],"error":"[\"s\"] is not an object or a list."}

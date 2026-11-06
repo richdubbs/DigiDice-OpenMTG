@@ -1,0 +1,235 @@
+[
+  {
+    "id": "eff.edhd34.extraPhase.combat.afterThisCombatPhase",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.8",
+      "CR 505.1a"
+    ],
+    "pattern": "after this combat phase , there is an additional combat phase",
+    "build": {
+      "op": "extraPhase",
+      "phase": "combat"
+    },
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, untap all attacking creatures. After this combat phase, there is an additional combat phase."
+      },
+      {
+        "text": "Untap all creatures you control. After this combat phase, there is an additional combat phase."
+      }
+    ],
+    "counterExamples": [
+      "Untap all creatures you control. After this combat phase, there is an additional main phase.",
+      "Untap all creatures you control. After this combat phase, there are two additional combat phases.",
+      "Untap all creatures you control. After this turn, there is an additional combat phase."
+    ]
+  },
+  {
+    "id": "eff.edhd34.extraPhase.combat.afterThisMainPhase",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.8",
+      "CR 505.1a"
+    ],
+    "pattern": "after this main phase , there is an additional combat phase",
+    "build": {
+      "op": "extraPhase",
+      "phase": "combat",
+      "after": "main1"
+    },
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Untap all creatures you control. After this main phase, there is an additional combat phase."
+      },
+      {
+        "text": "Draw a card. After this main phase, there is an additional combat phase."
+      }
+    ],
+    "counterExamples": [
+      "Untap all creatures you control. After this main phase, there is an additional main phase.",
+      "Untap all creatures you control. After this main phase, there are two additional combat phases.",
+      "Untap all creatures you control. After this combat phase, there is an additional main phase."
+    ]
+  },
+  {
+    "id": "eff.edhd34.extraPhase.combat.afterThisMainPhase.onlyChosen",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.8",
+      "CR 505.1a",
+      "CR 508.1"
+    ],
+    "pattern": "after this main phase , there is an additional combat phase . only {o:Objs} can attack during that combat phase",
+    "build": {
+      "op": "extraPhase",
+      "phase": "combat",
+      "after": "main1",
+      "onlyThese": "$o"
+    },
+    "consumes": [
+      "additional",
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Choose two target creatures. Untap them. After this main phase, there is an additional combat phase. Only the chosen creatures can attack during that combat phase."
+      }
+    ],
+    "counterExamples": [
+      "Choose two target creatures. Untap them. After this main phase, there is an additional combat phase. Only the chosen creatures can block during that combat phase.",
+      "Choose two target creatures. Untap them. After this main phase, there is an additional combat phase. Only the chosen creatures can attack during that turn."
+    ]
+  },
+  {
+    "id": "rst.edhd34.cast.self.yourTurn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 102.1"
+    ],
+    "pattern": "cast ~ only during your turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Cast Example Subject only during your turn.\nYou gain 4 life and draw two cards."
+      },
+      {
+        "text": "Cast Example Subject only during your turn.\nTarget creature you control gets +3/+1 and gains trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Cast Example Subject only during an opponent's turn.\nYou gain 4 life and draw two cards.",
+      "Cast Example Subject only during combat on your turn.\nYou gain 4 life and draw two cards."
+    ]
+  },
+  {
+    "id": "eff.edhd34.extraTurn.you.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.7",
+      "CR 608.2c"
+    ],
+    "pattern": "take an extra turn after this one if {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "extraTurn",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1
+        }
+      ]
+    },
+    "consumes": [
+      "extra",
+      "if"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card. Take an extra turn after this one if an opponent cast a blue spell this turn."
+      },
+      {
+        "text": "Take an extra turn after this one if you control seven or more lands."
+      }
+    ],
+    "counterExamples": [
+      "Take two extra turns after this one if you control seven or more lands.",
+      "Take an extra turn after this one if you control seven or more lands, then draw a card.",
+      "Take an extra turn if you control seven or more lands."
+    ]
+  },
+  {
+    "id": "eff.edhd34.extraTurn.you.forEachFiveRemoved",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.7",
+      "CR 107.1c",
+      "CR 608.2h"
+    ],
+    "pattern": "for each five counters removed this way , take an extra turn after this one",
+    "build": {
+      "op": "extraTurn",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "math",
+        "op": "floorDiv",
+        "args": [
+          {
+            "q": "X"
+          },
+          5
+        ]
+      }
+    },
+    "consumes": [
+      "extra",
+      "each",
+      "removed",
+      "this way"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Remove all charge counters from this creature: For each five counters removed this way, take an extra turn after this one."
+      },
+      {
+        "text": "Remove all lore counters from this artifact: For each five counters removed this way, take an extra turn after this one."
+      }
+    ],
+    "counterExamples": [
+      "Remove all charge counters from this creature: For each six counters removed this way, take an extra turn after this one.",
+      "Remove all charge counters from this creature: For each five counters removed this way, take two extra turns after this one.",
+      "Remove all charge counters from this creature: For each five counters removed this way, draw a card."
+    ]
+  }
+]

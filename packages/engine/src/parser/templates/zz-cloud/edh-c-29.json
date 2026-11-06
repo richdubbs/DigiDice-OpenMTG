@@ -1,0 +1,388 @@
+[
+  {
+    "id": "sta.edhv29.obj.has.loses.keyword",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "{o:Obj} has {a:Abilities} and loses {k:Keyword}",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 6,
+          "remove": [
+            "$k.keyword"
+          ],
+          "add": "$a"
+        }
+      ]
+    },
+    "consumes": [
+      "loses"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature has vigilance and loses reach."
+      },
+      {
+        "text": "Equipped creature has trample and loses defender."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature has defender and loses flying until end of turn.",
+      "Enchanted creature has defender and gains flying.",
+      "Enchanted creature has defender and loses all abilities."
+    ]
+  },
+  {
+    "id": "eff.edhv29.eachPlayer.returnAll.graveyard.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2c",
+      "CR 400.3"
+    ],
+    "pattern": "each player returns all {f:Filter} cards from their graveyard to their hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "zone": "graveyard",
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Each player returns all artifact cards from their graveyard to their hand."
+      },
+      {
+        "text": "Each player returns all land cards from their graveyard to their hand."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent returns all artifact cards from their graveyard to their hand.",
+      "Each player returns all Sliver cards from their graveyard to the battlefield.",
+      "Each player returns all artifact cards from your graveyard to their hand."
+    ]
+  },
+  {
+    "id": "eff.edhv29.eachPlayer.draw.discard.loseLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 701.9a",
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "each player draws {n:Qty} card[s] , then discards {m:Qty} card[s] , then loses {l:Qty} life",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "count": "$n"
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "count": "$m"
+      },
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "amount": "$l"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player draws a card, then discards two cards, then loses 3 life."
+      },
+      {
+        "text": "Each player draws three cards, then discards a card, then loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent draws two cards, then discards three cards, then loses 4 life.",
+      "Each player draws two cards, then discards three cards.",
+      "Each player draws two cards, then discards three cards, then you lose 4 life."
+    ]
+  },
+  {
+    "id": "eff.edhv29.anyPlayer.mayHaveSelfDealDamage",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 120.3",
+      "CR 608.2c"
+    ],
+    "pattern": "any player may have ~ deal {n:Qty} damage to them",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "anyOne": true,
+      "do": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": {
+            "ref": "iterating"
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Any player may have ~ deal 3 damage to them. If a player does, you draw a card."
+      },
+      {
+        "text": "Any player may have ~ deal 5 damage to them. If no one does, you gain 4 life."
+      }
+    ],
+    "counterExamples": [
+      "Each player may have ~ deal 6 damage to them. If no one does, target player mills six cards.",
+      "Any opponent may have ~ deal 6 damage to them. If no one does, target player mills six cards.",
+      "Any player may have ~ deal 6 damage to you. If no one does, target player mills six cards."
+    ]
+  },
+  {
+    "id": "eff.edhv29.player.putsCounters.onOneTheyControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} put[s] {n:Qty} {k:CounterKind} counter[s] on ( a | an ) {f:Filter} they control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "countersOn"
+      },
+      {
+        "op": "putCounters",
+        "by": "$p",
+        "on": {
+          "ref": "bound",
+          "name": "countersOn"
+        },
+        "kind": "$k",
+        "count": "$n"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "a"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, target opponent puts two flying counters on a land they control."
+      },
+      {
+        "text": "Target player puts a -1/-1 counter on an artifact they control."
+      }
+    ],
+    "counterExamples": [
+      "Target player puts a +1/+1 counter on each creature they control.",
+      "Target player puts a +1/+1 counter on a creature you control.",
+      "Each player may put a +1/+1 counter on a creature they control."
+    ]
+  },
+  {
+    "id": "eff.edhv29.obj.hasBasePowerZero.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.4b",
+      "CR 208.1"
+    ],
+    "pattern": "{o:Obj} has base power 0 {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": 0
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Target creature with haste has base power 0 until end of turn."
+      },
+      {
+        "text": "Target creature has base power 0 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target creature with flying has base power 0.",
+      "{T}: Target creature with flying has base power 1 until end of turn.",
+      "{T}: Target creature with flying has base toughness 0 until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhv29.damage.prevent.n.toYouOrFilter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 120.3"
+    ],
+    "pattern": "if a source would deal damage to you or {f:Filter} , prevent {n:Qty} of that damage",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "recipient": {
+          "player": "you",
+          "object": "$f"
+        }
+      },
+      "body": {
+        "b": "prevent",
+        "amount": "$n"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to you or a Goblin you control, prevent 3 of that damage."
+      },
+      {
+        "text": "If a source would deal damage to you or a planeswalker you control, prevent 2 of that damage."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to you or a creature you control, prevent all but 1 of that damage.",
+      "If a source would deal damage to you or a creature you control, prevent that damage.",
+      "If a source would deal damage to a creature you control, prevent 1 of that damage."
+    ]
+  },
+  {
+    "id": "trg.edhv29.life.gain.firstEachTurn.when",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.2c",
+      "CR 119.9"
+    ],
+    "pattern": "when you gain life for the first time each turn",
+    "build": {
+      "on": [
+        {
+          "ev": "life",
+          "change": "gain",
+          "player": "you"
+        }
+      ],
+      "first": "turn"
+    },
+    "consumes": [
+      "when",
+      "first",
+      "each"
+    ],
+    "needs": [
+      "feature:trigger.first"
+    ],
+    "examples": [
+      {
+        "text": "When you gain life for the first time each turn, scry 2."
+      },
+      {
+        "text": "When you gain life for the first time each turn, return target creature card from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "When you gain life for the second time each turn, draw a card.",
+      "When you lose life for the first time each turn, draw a card.",
+      "When an opponent gains life for the first time each turn, draw a card."
+    ]
+  }
+]

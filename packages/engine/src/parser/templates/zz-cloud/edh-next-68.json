@@ -1,0 +1,577 @@
+[
+  {
+    "id": "cm.edhn68.alt.fromGraveyard.mana.exile",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 601.3",
+      "CR 404.1"
+    ],
+    "pattern": "you may cast ~ from your graveyard by paying {m:ManaCost} and exiling {n:Qty} other cards from your graveyard rather than paying its mana cost",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": {
+            "mana": "$m",
+            "other": [
+              {
+                "kind": "exileFrom",
+                "zone": "graveyard",
+                "count": "$n",
+                "filter": {
+                  "other": true
+                }
+              }
+            ]
+          },
+          "from": "graveyard",
+          "name": "alternative"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "other",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard by paying {3}{R} and exiling four other cards from your graveyard rather than paying its mana cost."
+      },
+      {
+        "text": "You may cast ~ from your graveyard by paying {1}{B} and exiling two other cards from your graveyard rather than paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand by paying {3}{R} and exiling four other cards from your graveyard rather than paying its mana cost.",
+      "You may cast ~ from your graveyard by paying {3}{R} and exiling four other cards from your graveyard in addition to paying its mana cost."
+    ]
+  },
+  {
+    "id": "cm.edhn68.alt.fromGraveyard.mana.sacrifice",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 601.3",
+      "CR 404.1"
+    ],
+    "pattern": "you may cast ~ from your graveyard by paying {m:ManaCost} and sacrificing {n:Qty} {f:Filter} rather than paying its mana cost",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": {
+            "mana": "$m",
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": "$f",
+                "count": "$n"
+              }
+            ]
+          },
+          "from": "graveyard",
+          "name": "alternative"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard by paying {B}{B} and sacrificing two creatures rather than paying its mana cost."
+      },
+      {
+        "text": "You may cast ~ from your graveyard by paying {1}{G} and sacrificing three lands rather than paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your graveyard by paying {B}{B} and sacrificing two creatures in addition to paying its mana cost.",
+      "You may cast ~ from your hand by paying {B}{B} and sacrificing two creatures rather than paying its mana cost."
+    ]
+  },
+  {
+    "id": "sta.edhn68.self.gy.exileN.addCost",
+    "kind": "static",
+    "since": 9,
+    "status": "experimental",
+    "cr": [
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 601.3",
+      "CR 118.8",
+      "CR 404.1"
+    ],
+    "pattern": "you may cast ~ from your graveyard by exiling {n:Qty} {f:Filter} from your graveyard in addition to paying its other costs",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard",
+          "addCost": {
+            "other": [
+              {
+                "kind": "exileFrom",
+                "zone": "graveyard",
+                "count": "$n",
+                "filter": "$f"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "other",
+      "in addition"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard by exiling four instant and/or sorcery cards from your graveyard in addition to paying its other costs."
+      },
+      {
+        "text": "You may cast ~ from your graveyard by exiling two creature cards from your graveyard in addition to paying its other costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand by exiling four instant and/or sorcery cards from your graveyard in addition to paying its other costs.",
+      "You may cast ~ from your graveyard by exiling four instant and/or sorcery cards from your graveyard rather than paying its mana cost."
+    ]
+  },
+  {
+    "id": "sta.edhn68.self.gy.exileAnother.addCost",
+    "kind": "static",
+    "since": 9,
+    "status": "experimental",
+    "cr": [
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 601.3",
+      "CR 118.8",
+      "CR 404.1"
+    ],
+    "pattern": "you may cast ~ from your graveyard by exiling another {f:Filter} from your graveyard in addition to paying its other costs",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard",
+          "addCost": {
+            "other": [
+              {
+                "kind": "exileFrom",
+                "zone": "graveyard",
+                "count": 1,
+                "filter": {
+                  "$merge": [
+                    "$f",
+                    {
+                      "other": true
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "other",
+      "another",
+      "in addition"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard by exiling another creature card from your graveyard in addition to paying its other costs."
+      },
+      {
+        "text": "You may cast ~ from your graveyard by exiling another artifact card from your graveyard in addition to paying its other costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand by exiling another creature card from your graveyard in addition to paying its other costs.",
+      "You may cast ~ from your graveyard by exiling another creature card from your graveyard rather than paying its mana cost."
+    ]
+  },
+  {
+    "id": "cm.edhn68.alt.fromGraveyard.mana.asLongAs.graveyardInstead",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.3",
+      "CR 404.1",
+      "CR 614.1a"
+    ],
+    "pattern": "as long as {c:Cond} , you may cast ~ from your graveyard by paying {m:ManaCost} rather than paying its mana cost . if you cast ~ this way and it would be put into your graveyard , exile it instead",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": {
+            "mana": "$m"
+          },
+          "from": "graveyard",
+          "name": "alternative",
+          "when": "$c",
+          "graveyardInstead": true
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "may",
+      "rather than",
+      "if",
+      "instead",
+      "would",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Giant, you may cast ~ from your graveyard by paying {U} rather than paying its mana cost. If you cast ~ this way and it would be put into your graveyard, exile it instead."
+      },
+      {
+        "text": "As long as you control a Goblin, you may cast ~ from your graveyard by paying {R} rather than paying its mana cost. If you cast ~ this way and it would be put into your graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Giant, you may cast ~ from your hand by paying {U} rather than paying its mana cost. If you cast ~ this way and it would be put into your graveyard, exile it instead.",
+      "As long as you control a Giant, you may cast ~ from your graveyard by paying {U} rather than paying its mana cost. If you cast ~ this way and it would be put into your graveyard, put it on the bottom of your library instead."
+    ]
+  },
+  {
+    "id": "eff.edhn68.return.bf.tapped.first",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 110.2",
+      "CR 614.1c",
+      "CR 404.1"
+    ],
+    "pattern": "return to the battlefield tapped {o:Objs}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true
+      }
+    },
+    "consumes": [
+      "tapped"
+    ],
+    "examples": [
+      {
+        "text": "Return to the battlefield tapped all creature cards in your graveyard."
+      },
+      {
+        "text": "Return to the battlefield tapped all artifact and land cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Return all creature cards in your graveyard to the battlefield.",
+      "Return to the battlefield all creature cards in your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhn68.cast.obj.fromGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2",
+      "CR 404.1",
+      "CR 400.7"
+    ],
+    "pattern": "you may cast {o:Obj} from your graveyard",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "optional": true,
+      "from": "graveyard"
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you discard a nonland card, you may cast it from your graveyard."
+      },
+      {
+        "text": "Whenever you discard a creature card, you may cast it from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you discard a nonland card, you may cast it from your hand.",
+      "Whenever you discard a nonland card, you may cast it."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.edhn68.castWith.graveyard.mutate",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 113.6f",
+      "CR 702.140a"
+    ],
+    "pattern": "you may cast ~ from your graveyard using its mutate ability",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "castWith",
+          "method": "mutate",
+          "from": "graveyard"
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard using its mutate ability."
+      },
+      {
+        "text": "You may cast this card from your graveyard using its mutate ability."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your hand using its mutate ability.",
+      "You may cast ~ from your graveyard using its flashback ability."
+    ]
+  },
+  {
+    "id": "sta.edhn68.castSelf.onlyFromGraveyard",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 113.6b",
+      "CR 101.2",
+      "CR 404.1"
+    ],
+    "pattern": "you may cast ~ from your graveyard , but not from anywhere else",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand",
+        "graveyard",
+        "library",
+        "exile",
+        "command"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "self": true
+          },
+          "from": "graveyard"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "castFromZone",
+          "fromZones": [
+            "hand",
+            "library",
+            "exile",
+            "command"
+          ],
+          "other": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "but",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "You may cast ~ from your graveyard, but not from anywhere else."
+      },
+      {
+        "text": "You may cast this card from your graveyard, but not from anywhere else."
+      }
+    ],
+    "counterExamples": [
+      "You may cast ~ from your graveyard.",
+      "You may cast ~ from your hand, but not from anywhere else."
+    ]
+  },
+  {
+    "id": "sta.edhn68.asLongAs.cast.gy",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 404.1",
+      "CR 604.1"
+    ],
+    "pattern": "as long as {c:Cond} , you may cast {f:Filter} from your graveyard",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is on the battlefield, you may cast Knight spells from your graveyard."
+      },
+      {
+        "text": "As long as you control a Giant, you may cast Zombie spells from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "You may cast Knight spells from your graveyard.",
+      "As long as you control a Giant, you may cast Zombie spells from your hand."
+    ]
+  },
+  {
+    "id": "sta.edhn68.once.cast.gy.entersTapped",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 614.1c",
+      "CR 404.1",
+      "CR 611.3a"
+    ],
+    "pattern": "once during each of your turns , you may cast {f:Filter} from your graveyard . if you cast a spell this way , that ( artifact | creature | permanent ) enters tapped",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "oncePerTurn": true,
+          "entersTapped": true
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "each",
+      "may",
+      "this way",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast an artifact spell from your graveyard. If you cast a spell this way, that artifact enters tapped."
+      },
+      {
+        "text": "Once during each of your turns, you may cast a creature spell from your graveyard. If you cast a spell this way, that creature enters tapped."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast an artifact spell from your graveyard. If you cast a spell this way, that artifact enters untapped.",
+      "Once during each of your turns, you may cast an artifact spell from your hand. If you cast a spell this way, that artifact enters tapped."
+    ]
+  }
+]

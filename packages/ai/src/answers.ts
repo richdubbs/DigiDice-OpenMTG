@@ -3,9 +3,9 @@
  */
 import type {
   ChooseColorDecision, ChooseNameDecision, ChooseNumberDecision, ChooseObjectsDecision, ChooseOptionDecision, ChooseTargetsDecision, Decision,
-  DecisionAnswer, ManaType, ObjectId, PlayerId, TargetChoice, YesNoDecision,
+  DecisionAnswer, ManaType, ObjectId, PlayerId, ShortcutDecision, TargetChoice, YesNoDecision,
 } from '@openmtg/engine';
-import { chooseObjectsLimitHolds, obeyRequirements } from '@openmtg/engine';
+import { chooseObjectsLimitHolds, chooseObjectsTypesHold, isByHandKind, listLegalActions, obeyRequirements } from '@openmtg/engine';
 import { assignCombatDamage, divide } from './assign';
 import { chooseAttacks } from './attack';
 import { chooseBlocks } from './block';
@@ -19,8 +19,22 @@ import { chooseProliferate, isProliferate } from './proliferate';
 import { bestPick, sweepNet } from './score';
 import { chosenTargets, stackAbility, stackSummary } from './source';
 import { chooseFrom, type Want } from './targets';
+import { scoreAction } from './plays';
 import { value } from './value';
 import { wordVote } from './votes';
+import { windowOf } from './windows';
+
+/**
+ * Shortcuts (engine docs/design/shortcuts.md 6): whether the bot has a play it would make right now, scored as its priority decision scores them
+ * (priority.ts#rankedPlays). The bot does not hold priority while the shortcut decision is pending, so `legalActions` would list nothing: the actions it
+ * would have with priority are read with `listLegalActions` instead. As at priority, the bot's own spell or ability on top of the stack is left to resolve.
+ */
+function wantsPriority(ctx: Ctx, d: ShortcutDecision): boolean {
+  const top = stackTop(ctx);
+  if (top !== null && controller(ctx, top) === ctx.me) return false;
+  const w = windowOf(ctx);
+  return listLegalActions(ctx.state, d.player).some((la) => la.kind !== 'pass' && !la.isMana && !isByHandKind(la.kind) && scoreAction(ctx, la, w) > 0);
+}
 
 export function answer(ctx: Ctx, d: Exclude<Decision, { kind: 'priority' }>): DecisionAnswer | null {
   switch (d.kind) {
@@ -51,6 +65,8 @@ export function answer(ctx: Ctx, d: Exclude<Decision, { kind: 'priority' }>): De
     // whether it can pay, and a declaration it couldn't pay would only be rejected
     // ... and keeps within the limits of a whole declaration ("No more than one creature can attack each combat", CR 508.1c, 509.1b): the first ones it chose stay
     case 'declareAttackers': {
+      // edh-d-89 (CR 508.1b, 723.1; Master Warcraft): another player chose the attacking creatures; the bot keeps the targets they declared (a legal choice, `obeying`)
+      if (d.allAttack === true) return { kind: 'declareAttackers', attacks: d.obeying ?? d.candidates.map((c) => ({ attacker: c.id, defender: c.defenders[0]! })) };
       // M12 gaps: with several opponents only the attacks on a taxed defender are dropped (`taxedDefenders`, CR 508.1h): the others stay free
       const untaxed = (c: (typeof d.candidates)[number]): typeof c | null => {
         if (!c.taxed) return c;
@@ -88,6 +104,9 @@ export function answer(ctx: Ctx, d: Exclude<Decision, { kind: 'priority' }>): De
     case 'commanderZone': return { kind: 'commanderZone', command: true };
     // The engine did not understand this text. The bot does not adjust the game by hand (it could only guess, and a guess could cheat): it records that.
     case 'manualResolve': return { kind: 'manualResolve', ops: [{ op: 'note', text: `The AI resolves nothing by hand for ${d.sourceName}: "${d.text}" was left undone.` }] };
+    // Shortcuts (engine docs/design/shortcuts.md 3, 6; CR 727.2b): the bot lets a proposed shortcut run, unless it has a play it would make right now: then
+    // it takes priority at pass 1 after the proposer's last step, and plays.
+    case 'shortcut': return wantsPriority(ctx, d) ? { kind: 'shortcut', stop: { pass: 1, step: d.steps.length } } : { kind: 'shortcut' };
   }
 }
 
@@ -141,8 +160,15 @@ function chooseObjects(ctx: Ctx, d: ChooseObjectsDecision): ObjectId[] {
   const good = sorted.filter((id) => score(id) > 0).length;
   const n = Math.max(d.min, Math.min(d.max, harmful ? Math.min(good, d.min) : good));
   const picked = sorted.slice(0, Math.min(n, sorted.length));
+  // edh-next-147: a limit of at least a total ("sacrifice creatures with total power 12 or more") adds the next choices, in the order above, until it holds
+  if (d.limit !== undefined && (d.limit.op === '>=' || d.limit.op === '>')) {
+    for (const id of sorted) { if (chooseObjectsLimitHolds(d, picked) || picked.length >= d.max) break; if (!picked.includes(id)) picked.push(id); }
+    return picked;
+  }
   // FAST5 T66: a decision with a total limit ("total mana value 4 or less") drops the lowest-valued choices until the limit holds
   while (picked.length > 0 && !chooseObjectsLimitHolds(d, picked)) picked.pop();
+  // edh-d-85: a set that must hold N card types among them: the chosen ones if they do, else every option if they do and that many may be chosen, else none
+  if (!chooseObjectsTypesHold(d, picked)) return d.options.length <= d.max && chooseObjectsTypesHold(d, d.options) && chooseObjectsLimitHolds(d, d.options) ? [...d.options] : d.min === 0 ? [] : picked;
   return picked;
 }
 
@@ -204,7 +230,9 @@ function chooseOption(ctx: Ctx, d: ChooseOptionDecision): string[] {
     const scores = modeScores(ctx, usable.map((o) => Number(o.id)));
     const ranked = usable.map((o, i) => ({ id: o.id, s: scores[i]! })).sort((a, b) => b.s - a.s);
     if (d.allowRepeat) return Array.from({ length: Math.max(d.min, ranked[0]!.s > 0 ? Math.min(d.max, 5) : d.min) }, () => ranked[0]!.id);
-    const n = Math.max(d.min, Math.min(d.max, ranked.filter((r) => r.s > 0).length));
+    const good = ranked.filter((r) => r.s > 0).length;
+    // edh-players-19 (CR 700.2, 603.3c): "you may choose two": no mode, or all `max` of them
+    const n = d.noneOrAll === true ? (good >= d.max ? d.max : 0) : Math.max(d.min, Math.min(d.max, good));
     return ranked.slice(0, n).map((r) => r.id);
   }
   const multiplayer = multiplayerChoice(ctx, d, usable.map((o) => o.id));
@@ -318,16 +346,18 @@ function chooseName(ctx: Ctx, d: ChooseNameDecision): string {
     const c = ctx.chars(o.id)!;
     const theirs = o.owner !== ctx.me;
     // std-rx28 (CR 201.3): a land or nonland card name only, when the decision says which
-    const kindOk = d.cardKind === undefined || c.types.includes('Land') === (d.cardKind === 'land');
+    // edh-next-146 (CR 201.3): a creature card name only (Psychic Paper)
+    const kindOk = d.cardKind === undefined || (d.cardKind === 'creature' ? c.types.includes('Creature') : c.types.includes('Land') === (d.cardKind === 'land'));
     if (d.what === 'cardName' && theirs && o.kind === 'card' && kindOk) add(c.name, value(ctx, o.id));
     if (d.what === 'creatureType' && !theirs) for (const t of c.subtypes) if (c.types.includes('Creature')) add(t);
     if (d.what === 'cardType' && theirs) for (const t of c.types) add(t);
     if (d.what === 'landType' && theirs) for (const t of c.subtypes) if (c.types.includes('Land')) add(t);
+    if (d.what === 'planeswalkerType' && !theirs) for (const t of c.subtypes) if (c.types.includes('Planeswalker')) add(t); // edh-d-94: the planeswalker types of its own planeswalkers (Deification)
   }
   const top = [...tally].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0];
   if (top) return top;
   if (d.options && d.options.length > 0) return d.options[0]!;
-  const nameable = Object.values(ctx.view.defs).find((x) => !x.isToken && (d.cardKind === undefined || x.faces.some((f) => f.types.includes('Land') === (d.cardKind === 'land'))));
-  const fallback = { cardName: nameable?.name ?? (d.cardKind === 'nonland' ? 'Lightning Bolt' : undefined), creatureType: 'Human', cardType: 'Creature', landType: 'Forest' }[d.what];
+  const nameable = Object.values(ctx.view.defs).find((x) => !x.isToken && (d.cardKind === undefined || x.faces.some((f) => (d.cardKind === 'creature' ? f.types.includes('Creature') : f.types.includes('Land') === (d.cardKind === 'land')))));
+  const fallback = { cardName: nameable?.name ?? (d.cardKind === 'nonland' ? 'Lightning Bolt' : d.cardKind === 'creature' ? 'Grizzly Bears' : undefined), creatureType: 'Human', cardType: 'Creature', landType: 'Forest', planeswalkerType: 'Jace' }[d.what];
   return fallback ?? 'Forest';
 }

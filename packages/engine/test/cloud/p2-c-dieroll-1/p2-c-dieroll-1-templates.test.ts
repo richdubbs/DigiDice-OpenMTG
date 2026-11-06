@@ -12,6 +12,7 @@
  *   holes/event.ts, render/evt.ts                        "whenever you roll one or more dice": `dieRoll` with `batch`, one occurrence per roll instruction
  *   types/ability.ts, statics/hooks.ts, core/dice.ts     rule `diceAdvantage` (CR 706.6, 614.1a)
  */
+import edhTop14Review from '../../m5/golden/cards/edh-top-14-review.json';
 import { describe, expect, it } from 'vitest';
 import { compileCard, type OracleCard } from '../../../src/index';
 import type { Template } from '../../../src/parser/types';
@@ -69,8 +70,9 @@ describe('p2-c-dieroll-1 template file (design 6.3, 6.9; CONTRIBUTING "Adding a 
       expect(['stable', 'experimental'], t.id).toContain(t.status);
       expect(t.since, t.id).toBe(8);
     }
-    // "roll a d6" has no golden card: experimental (design 6.9); "roll a six-sided die" was promoted by p2-c-dieroll-2 on four golden cards
-    expect(P2CDR1.filter((t) => t.status === 'experimental').map((t) => t.id)).toEqual(['eff.p2cdr1.rollDie.d6']);
+    // "roll a d6" was promoted by edh-top-14 on one golden card (Maddening Hex, design 6.9 narrow wording); "roll a six-sided die" by p2-c-dieroll-2 on four
+    expect(P2CDR1.filter((t) => t.status === 'experimental').map((t) => t.id)).toEqual([]);
+    expect(JSON.stringify(edhTop14Review).includes('eff.p2cdr1.rollDie.d6'), 'the d6 roll needs its golden card (Maddening Hex, edh-top-14-review.json)').toBe(true);
   });
   it('design 6.9 (narrow wordings): a stable template has its hand-verified golden card(s); the review pins every card as full', () => {
     const golden = review as { card: string; verified: string; expect?: string }[];
@@ -169,22 +171,23 @@ describe('p2-c-dieroll-1 parser, lowering and renderer support', () => {
       'Roll a d20.\n1—9 | Draw a card.\n11—20 | Draw two cards.',
       'Roll a d20.\n1—10 | Draw a card.\n10—20 | Draw two cards.',
       'Roll a d20.\n1—9 | Draw a card.\n10—19 | Draw two cards.',
-      'Roll a d20.\n1—14 | Draw a card.\n15+ | Draw two cards.',
+      'Roll a d20.\n1—14 | Draw a card.\n21+ | Draw two cards.', // (edh-next-55: "15+" on a d20 is a valid last row now)
       'Draw a card.\n1—9 | Draw a card.\n10—20 | Draw two cards.',
       'Roll a d20. Draw a card.\n1—9 | Draw a card.\n10—20 | Draw two cards.',
-      'Roll a d20.\n1—9 | Create a 1/1 red Goblin creature token.\n10—20 | Create two of those tokens.',
+      'Roll a d20.\n1—9 | Draw a card.\n10—20 | Create two of those tokens.', // (edh-next-55: "of those tokens" after a row that makes tokens is read now; here no row does)
     ]) expect(fullyAutomated(face('Sorcery', text)), text).toBe(false);
   });
   it('design 6.4: a row\'s pronoun reads the target before the table, not another row\'s token ("its controller" in every row is the exiled creature\'s)', () => {
     const j = json('Instant', 'Exile target creature, then roll a d20.\n1—10 | Its controller creates a 3/3 green Elk creature token.\n11—20 | Its controller creates a 1/1 white Bird creature token.');
     expect(j.match(/"who":\{"ref":"controllerOf","object":\{"ref":"target","id":"t0"\}\}/g)).toHaveLength(2);
   });
-  it('CR 603.2c: "whenever you roll one or more dice" is a dieRoll batch; "whenever you roll a die" stays one trigger per die; a result read of a batch is no reading', () => {
+  it('CR 603.2c: "whenever you roll one or more dice" is a dieRoll batch; "whenever you roll a die" stays one trigger per die; a result read of a batch is the total of the dice of one roll (edh-mana-keywords-9)', () => {
     expect(json('Creature — Elf', 'Whenever you roll one or more dice, draw a card.')).toContain('"trigger":{"on":[{"ev":"dieRoll","player":"you"}],"batch":true}');
     expect(json('Creature — Elf', 'Whenever you roll a die, draw a card.')).toContain('"trigger":{"on":[{"ev":"dieRoll","player":"you"}]}');
     const result = compileCard(card('Example Brute', 'Creature — Elf', 'Whenever you roll one or more dice, draw cards equal to the result.', { power: '1', toughness: '1' }));
-    expect(result.automation.level).not.toBe('full');
-    expect(JSON.stringify(result.automation)).toContain('feature:dieResult.batch');
+    // edh-mana-keywords-9 (Vexing Puzzlebox ruling 2022-06-10; CR 706.2): the result of a roll of several dice is their total, so the batch's amount is a reading
+    expect(result.automation.level).toBe('full');
+    expect(JSON.stringify(result.automation)).not.toContain('feature:dieResult.batch');
   });
   it('rule `diceAdvantage` is advertised (statics/hooks.ts) and the advantage of another player is no reading', () => {
     expect(ENGINE_CAPABILITIES.has('rulemod:diceAdvantage')).toBe(true);

@@ -1,0 +1,41 @@
+[
+  {
+    "id": "sta.edhn45.rule.tappedLandManaOnlyBlack",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.12",
+      "CR 614.1a",
+      "CR 106.1b"
+    ],
+    "pattern": "if a land is tapped for mana , it produces {b} instead of any other type",
+    "build": {
+      "s": "rule",
+      "rule": "tappedLandManaOnlyType",
+      "manaType": "B",
+      "player": {
+        "ref": "each",
+        "who": "player"
+      }
+    },
+    "consumes": [
+      "if",
+      "instead",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "If a land is tapped for mana, it produces {B} instead of any other type. Creatures you control get +1/+1."
+      },
+      {
+        "text": "If a land is tapped for mana, it produces {B} instead of any other type. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "If a land you control is tapped for mana, it produces {B} instead of any other type.",
+      "If a land is tapped for mana, it produces {G} instead of any other type.",
+      "If a land is tapped for two or more mana, it produces {B} instead of any other type."
+    ]
+  }
+]

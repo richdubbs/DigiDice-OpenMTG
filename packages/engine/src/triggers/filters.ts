@@ -12,6 +12,7 @@ import { attachedPlayer } from '../statics/attached-player';
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { EventContext, GameObject, GameState } from '../types/state';
 import { matchesFilter } from '../rules/filter';
+import { controllerOf } from '../rules/characteristics';
 import { filterCtxOutside, filterEnvOutside } from '../rules/filter-env';
 
 /** Who the pattern is relative to. */
@@ -57,9 +58,22 @@ function refPlayers(s: GameState, ref: PlayerRef, cx: FilterCx): PlayerId[] {
     }
     // M12-1 (m12 design E25): players who left the game are not "each player" / "each opponent" any more (CR 800.4a, 102.3)
     case 'each': return s.players.filter((p) => !p.hasLost && (ref.who === 'player' || p.id !== cx.controller)).map((p) => p.id);
+    // edh-players-15 (CR 109.4, 102.2, 702.26b; Wedding Ring): "an opponent who controls an artifact named X", judged on the battlefield as the event happens: the players still in the game (the controller's
+    // opponents with `opponents`) who control at least one such permanent that is not phased out
+    case 'controlsAny': {
+      const holders = new Map<PlayerId, number>();
+      for (const o of Object.values(s.objects)) {
+        if (o.zone === 'battlefield' && !o.phasedOut && objectMatches(s, { ...ref.filter, controller: undefined }, o, [o.id], cx)) holders.set(controllerOf(s, o), (holders.get(controllerOf(s, o)) ?? 0) + 1);
+      }
+      const holds = (p: PlayerId): boolean => (holders.get(p) ?? 0) >= (ref.atLeast ?? 1); // edh-d-88 (Owlbear Cub): at least `atLeast` of them
+      return s.players.filter((p) => !p.hasLost && holds(p.id) !== (ref.none === true) && (ref.opponents !== true || p.id !== cx.controller)).map((p) => p.id); // edh-d-4: `none`
+    }
+    case 'monarch': return s.designations.monarch !== undefined ? [s.designations.monarch] : []; // edh-d-10 (CR 725.1)
+    case 'initiative': return s.designations.initiative !== undefined ? [s.designations.initiative] : []; // edh-next-82 (CR 726.1)
     case 'enchantedPlayer': return attachedPlayer(s, lookupObject(s, cx.source)); // std-rr (CR 303.4, 702.5a): the player the source Aura is attached to
     case 'seat': { // M12-1 (m12 design D6): the next / previous player in turn order still in the game (CR 101.4, 103.1), from `of` (you by default)
       const from = ref.of !== undefined ? refPlayers(s, ref.of, cx) : [cx.controller];
+      if (ref.chosen !== undefined) return []; // edhd63: a chosen direction is not read here (fail closed)
       return [...new Set(from.flatMap((p) => { const n = seatNeighbor(s, p, ref.side); return n !== undefined ? [n] : []; }))];
     }
     // WP15 INTERFACE CHANGE: the players a resolved effect, a delayed trigger or an `until` duration fixed when it was created ("that player", "target
@@ -87,11 +101,14 @@ export function cmpMatches(c: { op: '<=' | '>=' | '==' | '!=' | '<' | '>'; value
 
 const stackKindMatches = (o: GameObject, kind: NonNullable<ObjectFilter['stackKind']>): boolean => {
   switch (kind) {
-    case 'spell': return o.kind === 'card' || o.kind === 'spellCopy';
+    // coordinator A, 2026-10-31 (CR 112.1, 112.1a): a spell is a card on the stack, or a copy of one; a card on the battlefield (a creature's combat, fight or
+    // ability damage) is not a spell. A spell that has left is read from its last known information, which is on the stack.
+    case 'spell': return (o.kind === 'card' && o.zone === 'stack') || o.kind === 'spellCopy';
     case 'copy': return o.kind === 'spellCopy';
     case 'ability': return o.kind === 'ability';
     case 'activatedAbility': return o.kind === 'ability' && o.stack?.kind === 'activated';
     case 'triggeredAbility': return o.kind === 'ability' && o.stack?.kind === 'triggered';
+    case 'finalChapterAbility': return o.kind === 'ability' && o.stack?.kind === 'triggered' && o.stack.finalChapter === true; // edhn78 (CR 714.2d)
   }
 };
 

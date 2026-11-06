@@ -1,0 +1,11 @@
+# edh-c-47 (Commander lane edh-c, EDHREC 16,001-16,500, later pass): remove-all counters as X, "you incubate", domain ability cost, investigate twice for each, extra blockers granted, different mana costs, a character's pronouns, free cast of a noncreature or subtype spell. After editing: npm run cards -- fixtures
+Catti-brie of Mithral Hall
+Vish Kal, Blood Arbiter
+Assimilate Essence
+Jodah's Codex
+Tamiyo Meets the Story Circle
+Embodiment of Agonies
+Wolverine, Claws Out
+Vision, Spectral Synthezoid
+Llanowar Greenwidow
+Radha's Firebrand

@@ -1,0 +1,12 @@
+# edh-next-10 (Commander lane edh-next, EDHREC ranks 12,501-15,000, third pass): damage replaced by counters (instead), prevention with a counter or an exile per 1 damage prevented, prevention with life gained, a pump with a chosen keyword or color, non-Human sources, an instead with two instructions, an enchanted creature that loses all other abilities. After editing: npm run cards -- fixtures
+Phyrexian Hydra
+Phytohydra
+Soul-Scar Mage
+Chant of Vitu-Ghazi
+Immortal Coil
+Alchemist's Gift
+Wild Mongrel
+Repel the Abominable
+Anticognition
+Ichthyomorphosis
+Stasis Field

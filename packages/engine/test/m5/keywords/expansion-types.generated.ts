@@ -93,7 +93,8 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
             "to": {
               "ref": "target",
               "id": "t0"
-            }
+            },
+            "asCreature": true
           }
         ]
       },
@@ -469,6 +470,7 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
           },
           {
             "op": "pay",
+            "cumulativeUpkeep": true,
             "who": {
               "ref": "you"
             },
@@ -693,6 +695,50 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
       }
     }
   ],
+  "gravestorm": [
+    {
+      "kind": "triggered",
+      "text": "When you cast this spell, copy it for each permanent that was put into a graveyard from the battlefield this turn. If the spell has any targets, you may choose new targets for any of the copies.",
+      "zone": [
+        "stack"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "cast",
+            "player": "you",
+            "spell": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "copy",
+            "what": {
+              "ref": "self"
+            },
+            "result": "spell",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "permanentsToGraveyardThisTurn"
+            },
+            "newTargets": "may"
+          }
+        ]
+      },
+      "prov": {
+        "by": "keyword",
+        "id": "gravestorm",
+        "reviewed": true
+      }
+    }
+  ],
   "affinity for artifacts": [
     {
       "kind": "static",
@@ -761,6 +807,83 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
       "prov": {
         "by": "keyword",
         "id": "entwine",
+        "reviewed": true
+      }
+    }
+  ],
+  "absorb 1": [
+    {
+      "kind": "static",
+      "text": "Absorb 1",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": {
+                  "ref": "self"
+                }
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": 1
+          }
+        }
+      ],
+      "prov": {
+        "by": "keyword",
+        "id": "absorb",
+        "reviewed": true
+      }
+    }
+  ],
+  "frenzy 1": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ attacks and isn't blocked, it gets +1/+0 until end of turn.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "attacksUnblocked",
+            "attacker": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "effect",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": 1,
+                    "toughness": 0
+                  }
+                ]
+              }
+            ],
+            "duration": {
+              "d": "endOfTurn"
+            }
+          }
+        ]
+      },
+      "prov": {
+        "by": "keyword",
+        "id": "frenzy",
         "reviewed": true
       }
     }
@@ -2007,6 +2130,42 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
       }
     }
   ],
+  "living metal": [
+    {
+      "kind": "static",
+      "text": "Living metal",
+      "zone": [
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "prov": {
+        "by": "keyword",
+        "id": "living metal",
+        "reviewed": true
+      }
+    }
+  ],
   "crew 2": [
     {
       "kind": "activated",
@@ -2053,6 +2212,16 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
             ],
             "duration": {
               "d": "endOfTurn"
+            }
+          },
+          {
+            "op": "reportAction",
+            "who": {
+              "ref": "you"
+            },
+            "verb": "crew",
+            "object": {
+              "ref": "self"
             }
           }
         ]
@@ -2813,6 +2982,121 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
       }
     }
   ],
+  "recover {1}{w}": [
+    {
+      "kind": "triggered",
+      "text": "When a creature is put into your graveyard from the battlefield, you may pay {1}{W}. If you do, return ~ to your hand. Otherwise, exile ~.",
+      "zone": [
+        "graveyard"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "types": [
+                "Creature"
+              ],
+              "owner": "you"
+            },
+            "from": "battlefield",
+            "to": "graveyard"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "pay",
+            "who": {
+              "ref": "you"
+            },
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 1
+                },
+                {
+                  "kind": "colored",
+                  "color": "W"
+                }
+              ]
+            },
+            "then": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "self"
+                },
+                "to": {
+                  "zone": "hand"
+                }
+              }
+            ],
+            "else": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "self"
+                },
+                "to": {
+                  "zone": "exile"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "prov": {
+        "by": "keyword",
+        "id": "recover",
+        "reviewed": true
+      }
+    }
+  ],
+  "amplify 1": [
+    {
+      "kind": "static",
+      "text": "Amplify 1",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "revealHand": {
+              "filter": {
+                "sharesWith": {
+                  "with": {
+                    "ref": "self"
+                  },
+                  "quality": "creatureType"
+                }
+              },
+              "times": 1
+            }
+          }
+        }
+      ],
+      "prov": {
+        "by": "keyword",
+        "id": "amplify",
+        "reviewed": true
+      }
+    }
+  ],
   "devour 2": [
     {
       "kind": "static",
@@ -2839,7 +3123,8 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
                   "Creature"
                 ]
               },
-              "times": 2
+              "times": 2,
+              "link": "devoured"
             }
           }
         }
@@ -2877,7 +3162,8 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
                   "Land"
                 ]
               },
-              "times": 3
+              "times": 3,
+              "link": "devoured"
             }
           }
         }
@@ -2944,6 +3230,40 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
       "prov": {
         "by": "keyword",
         "id": "mentor",
+        "reviewed": true
+      }
+    }
+  ],
+  "tribute 2": [
+    {
+      "kind": "static",
+      "text": "Tribute 2",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tribute": {
+              "count": 2,
+              "link": "tribute"
+            }
+          }
+        }
+      ],
+      "prov": {
+        "by": "keyword",
+        "id": "tribute",
         "reviewed": true
       }
     }
@@ -3388,7 +3708,8 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
                 }
               }
             ],
-            "noManaCost": true
+            "noManaCost": true,
+            "embalmed": true
           }
         ]
       },
@@ -5027,6 +5348,45 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
       }
     }
   ],
+  "poisonous 1": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ deals combat damage to a player, that player gets 1 poison counters.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "damage",
+            "source": {
+              "self": true
+            },
+            "combat": true,
+            "recipient": {
+              "player": "any"
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "event",
+              "role": "recipient"
+            },
+            "kind": "poison",
+            "count": 1
+          }
+        ]
+      },
+      "prov": {
+        "by": "keyword",
+        "id": "poisonous",
+        "reviewed": true
+      }
+    }
+  ],
   "soulshift 3": [
     {
       "kind": "triggered",
@@ -5807,7 +6167,8 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
               "ref": "self"
             },
             "kind": "+1/+1",
-            "count": 1
+            "count": 1,
+            "evolve": true
           }
         ]
       },
@@ -6033,6 +6394,93 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
       "prov": {
         "by": "keyword",
         "id": "transmute",
+        "reviewed": true
+      }
+    }
+  ],
+  "transfigure {1}{B}{B}": [
+    {
+      "kind": "activated",
+      "text": "{1}{B}{B}, Sacrifice ~: Search your library for a creature card with the same mana value as ~, put that card onto the battlefield, then shuffle. Activate only as a sorcery.",
+      "zone": [
+        "battlefield"
+      ],
+      "sorcerySpeed": true,
+      "cost": {
+        "mana": [
+          {
+            "kind": "generic",
+            "amount": 1
+          },
+          {
+            "kind": "colored",
+            "color": "B"
+          },
+          {
+            "kind": "colored",
+            "color": "B"
+          }
+        ],
+        "other": [
+          {
+            "kind": "sacrifice",
+            "self": true,
+            "count": 1,
+            "filter": {}
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "search",
+            "who": {
+              "ref": "you"
+            },
+            "zone": "library",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "manaValue": {
+                "op": "==",
+                "value": {
+                  "q": "stat",
+                  "stat": "manaValue",
+                  "of": {
+                    "ref": "self"
+                  }
+                }
+              }
+            },
+            "max": 1,
+            "as": "found"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "found"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              }
+            }
+          },
+          {
+            "op": "shuffle",
+            "who": {
+              "ref": "you"
+            }
+          }
+        ]
+      },
+      "prov": {
+        "by": "keyword",
+        "id": "transfigure",
         "reviewed": true
       }
     }
@@ -6882,6 +7330,62 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
       }
     }
   ],
+  "prowl {1}{B}": [
+    {
+      "kind": "static",
+      "text": "Prowl {1}{B}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": {
+            "mana": [
+              {
+                "kind": "generic",
+                "amount": 1
+              },
+              {
+                "kind": "colored",
+                "color": "B"
+              }
+            ]
+          },
+          "name": "prowl",
+          "when": {
+            "cond": "happened",
+            "event": {
+              "ev": "damage",
+              "combat": true,
+              "source": {
+                "sharesWith": {
+                  "with": {
+                    "ref": "self"
+                  },
+                  "quality": "creatureType"
+                },
+                "controller": "you"
+              },
+              "recipient": {
+                "player": "any"
+              }
+            },
+            "scope": "turn"
+          }
+        }
+      ],
+      "prov": {
+        "by": "keyword",
+        "id": "prowl",
+        "reviewed": true
+      }
+    }
+  ],
   "umbra armor": [
     {
       "kind": "static",
@@ -7547,6 +8051,757 @@ export const EXPANSIONS: Record<string, AbilityDef[]> = {
       "prov": {
         "by": "keyword",
         "id": "overload",
+        "reviewed": true
+      }
+    }
+  ],
+  "cleave {1}{U}{U}": [
+    {
+      "kind": "static",
+      "text": "Cleave {1}{U}{U}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": {
+            "mana": [
+              {
+                "kind": "generic",
+                "amount": 1
+              },
+              {
+                "kind": "colored",
+                "color": "U"
+              },
+              {
+                "kind": "colored",
+                "color": "U"
+              }
+            ]
+          },
+          "name": "cleave"
+        }
+      ],
+      "prov": {
+        "by": "keyword",
+        "id": "cleave",
+        "reviewed": true
+      }
+    }
+  ],
+  "reconfigure {2}": [
+    {
+      "kind": "activated",
+      "text": "Reconfigure {2}",
+      "cost": {
+        "mana": [
+          {
+            "kind": "generic",
+            "amount": 2
+          }
+        ]
+      },
+      "sorcerySpeed": true,
+      "effect": {
+        "targets": [
+          {
+            "id": "t0",
+            "kind": "object",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you",
+              "other": true
+            },
+            "min": 1,
+            "max": 1,
+            "text": "another target creature you control"
+          }
+        ],
+        "steps": [
+          {
+            "op": "attach",
+            "what": {
+              "ref": "self"
+            },
+            "to": {
+              "ref": "target",
+              "id": "t0"
+            }
+          }
+        ]
+      },
+      "prov": {
+        "by": "keyword",
+        "id": "reconfigure",
+        "reviewed": true
+      }
+    },
+    {
+      "kind": "activated",
+      "text": "Reconfigure {2}",
+      "cost": {
+        "mana": [
+          {
+            "kind": "generic",
+            "amount": 2
+          }
+        ]
+      },
+      "sorcerySpeed": true,
+      "onlyIf": {
+        "cond": "exists",
+        "of": {
+          "ref": "attachedTo"
+        }
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "attach",
+            "what": {
+              "ref": "self"
+            },
+            "to": null
+          }
+        ]
+      },
+      "prov": {
+        "by": "keyword",
+        "id": "reconfigure",
+        "reviewed": true
+      }
+    },
+    {
+      "kind": "static",
+      "text": "While attached, this permanent isn't a creature.",
+      "condition": {
+        "cond": "exists",
+        "of": {
+          "ref": "attachedTo"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "remove": [
+                  "Creature"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "prov": {
+        "by": "keyword",
+        "id": "reconfigure",
+        "reviewed": true
+      }
+    }
+  ],
+  "backup 1 with flying below": [
+    {
+      "kind": "triggered",
+      "text": "When this creature enters, put 1 +1/+1 counters on target creature. If that's another creature, it also gains the non-backup abilities of this creature printed below this one until end of turn.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [
+          {
+            "id": "t0",
+            "kind": "object",
+            "min": 1,
+            "max": 1,
+            "text": "target creature",
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            }
+          }
+        ],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "target",
+              "id": "t0"
+            },
+            "kind": "+1/+1",
+            "count": 1
+          },
+          {
+            "op": "if",
+            "cond": {
+              "cond": "matches",
+              "object": {
+                "ref": "target",
+                "id": "t0"
+              },
+              "filter": {
+                "other": true
+              }
+            },
+            "then": [
+              {
+                "op": "effect",
+                "duration": {
+                  "d": "endOfTurn"
+                },
+                "effects": [
+                  {
+                    "s": "continuous",
+                    "affects": {
+                      "ref": "target",
+                      "id": "t0"
+                    },
+                    "mods": [
+                      {
+                        "layer": 6,
+                        "add": [
+                          {
+                            "kind": "keyword",
+                            "keyword": "flying",
+                            "text": "Flying"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "prov": {
+        "by": "keyword",
+        "id": "backup",
+        "reviewed": true
+      }
+    }
+  ],
+  "demonstrate": [
+    {
+      "kind": "triggered",
+      "text": "When you cast this spell, you may copy it and you may choose new targets for the copy. If you copy the spell, choose an opponent. That player copies the spell and may choose new targets for that copy.",
+      "zone": [
+        "stack"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "cast",
+            "player": "you",
+            "spell": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "copy",
+                "what": {
+                  "ref": "event",
+                  "role": "spell"
+                },
+                "result": "spell",
+                "who": {
+                  "ref": "you"
+                },
+                "newTargets": "may"
+              }
+            ],
+            "as": "did"
+          },
+          {
+            "op": "if",
+            "cond": {
+              "cond": "did",
+              "step": "did"
+            },
+            "then": [
+              {
+                "op": "chooseValue",
+                "who": {
+                  "ref": "you"
+                },
+                "what": "opponent",
+                "as": "chosenPlayer"
+              },
+              {
+                "op": "copy",
+                "what": {
+                  "ref": "event",
+                  "role": "spell"
+                },
+                "result": "spell",
+                "who": {
+                  "ref": "bound",
+                  "name": "chosenPlayer"
+                },
+                "newTargets": "may"
+              }
+            ]
+          }
+        ]
+      },
+      "prov": {
+        "by": "keyword",
+        "id": "demonstrate",
+        "reviewed": true
+      }
+    }
+  ],
+  "soulbond": [
+    {
+      "kind": "triggered",
+      "text": "When ~ enters, if you control both ~ and another creature and both are unpaired, you may pair ~ with another unpaired creature you control.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "paired": false
+            }
+          },
+          {
+            "cond": "exists",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "you",
+                "other": true,
+                "paired": false
+              }
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "you"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "you",
+                "other": true,
+                "paired": false
+              }
+            },
+            "min": 0,
+            "max": 1,
+            "as": "soulmate"
+          },
+          {
+            "op": "pair",
+            "what": {
+              "ref": "self"
+            },
+            "with": {
+              "ref": "bound",
+              "name": "soulmate"
+            }
+          }
+        ]
+      },
+      "prov": {
+        "by": "keyword",
+        "id": "soulbond",
+        "reviewed": true
+      }
+    },
+    {
+      "kind": "triggered",
+      "text": "Whenever another creature you control enters, if you control both that creature and ~ and both are unpaired, you may pair that creature with ~.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you",
+              "other": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "paired": false
+            }
+          },
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "event",
+              "role": "subject"
+            },
+            "filter": {
+              "paired": false
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "pair",
+                "what": {
+                  "ref": "self"
+                },
+                "with": {
+                  "ref": "event",
+                  "role": "subject"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "prov": {
+        "by": "keyword",
+        "id": "soulbond",
+        "reviewed": true
+      }
+    }
+  ],
+  "cipher": [
+    {
+      "kind": "static",
+      "text": "For as long as this card is encoded on a creature, that creature has \"Whenever this creature deals combat damage to a player, you may copy the encoded card and you may cast the copy without paying its mana cost.\"",
+      "zone": [
+        "exile"
+      ],
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "linked",
+            "link": "encoded"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "triggered",
+                  "text": "Whenever this creature deals combat damage to a player, you may copy the encoded card and you may cast the copy without paying its mana cost.",
+                  "trigger": {
+                    "on": [
+                      {
+                        "ev": "damage",
+                        "source": {
+                          "self": true
+                        },
+                        "combat": true,
+                        "recipient": {
+                          "player": "any"
+                        }
+                      }
+                    ]
+                  },
+                  "effect": {
+                    "targets": [],
+                    "steps": [
+                      {
+                        "op": "cast",
+                        "who": {
+                          "ref": "you"
+                        },
+                        "what": {
+                          "ref": "grantor"
+                        },
+                        "free": true,
+                        "optional": true,
+                        "copyIn": "exile"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "prov": {
+        "by": "keyword",
+        "id": "cipher",
+        "reviewed": true
+      }
+    }
+  ],
+  "ripple 4": [
+    {
+      "kind": "triggered",
+      "text": "When you cast this spell, you may reveal the top N cards of your library, where N is its ripple number. You may cast spells with the same name as this spell from among the revealed cards without paying their mana costs. Put the rest on the bottom of your library in any order.",
+      "zone": [
+        "stack"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "cast",
+            "player": "you",
+            "spell": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "reveal",
+                "who": {
+                  "ref": "you"
+                },
+                "what": {
+                  "ref": "topCards",
+                  "player": {
+                    "ref": "you"
+                  },
+                  "count": 4
+                },
+                "as": "rippled"
+              },
+              {
+                "op": "cast",
+                "who": {
+                  "ref": "you"
+                },
+                "what": {
+                  "ref": "each",
+                  "filter": {
+                    "is": {
+                      "ref": "bound",
+                      "name": "rippled"
+                    },
+                    "zone": "library",
+                    "sharesWith": {
+                      "with": {
+                        "ref": "self"
+                      },
+                      "quality": "name"
+                    }
+                  }
+                },
+                "free": true,
+                "select": {}
+              },
+              {
+                "op": "move",
+                "what": {
+                  "ref": "each",
+                  "filter": {
+                    "is": {
+                      "ref": "bound",
+                      "name": "rippled"
+                    },
+                    "zone": "library"
+                  }
+                },
+                "to": {
+                  "zone": "library",
+                  "position": "bottom",
+                  "order": "chosen"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "prov": {
+        "by": "keyword",
+        "id": "ripple",
+        "reviewed": true
+      }
+    }
+  ],
+  "artifact offering {4}{R}{R}": [
+    {
+      "kind": "static",
+      "text": "Artifact offering",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "name": "offering",
+          "cost": {
+            "mana": [
+              {
+                "kind": "generic",
+                "amount": 4
+              },
+              {
+                "kind": "colored",
+                "color": "R"
+              },
+              {
+                "kind": "colored",
+                "color": "R"
+              }
+            ],
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": {
+                  "types": [
+                    "Artifact"
+                  ],
+                  "controller": "you"
+                },
+                "count": 1
+              }
+            ]
+          },
+          "instantSpeed": true
+        }
+      ],
+      "prov": {
+        "by": "keyword",
+        "id": "offering",
+        "reviewed": true
+      }
+    }
+  ],
+  "emerge {5}{B}{B}": [
+    {
+      "kind": "static",
+      "text": "Emerge {5}{B}{B}",
+      "zone": [
+        "hand",
+        "graveyard",
+        "exile",
+        "command",
+        "library"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "name": "emerge",
+          "cost": {
+            "mana": [
+              {
+                "kind": "generic",
+                "amount": 5
+              },
+              {
+                "kind": "colored",
+                "color": "B"
+              },
+              {
+                "kind": "colored",
+                "color": "B"
+              }
+            ],
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you"
+                },
+                "count": 1
+              }
+            ]
+          }
+        }
+      ],
+      "prov": {
+        "by": "keyword",
+        "id": "emerge",
         "reviewed": true
       }
     }

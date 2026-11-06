@@ -213,7 +213,7 @@ describe.skipIf(!SLOW || !index)(slowTitle('the whole local Oracle index (corpus
   });
 });
 
-describe('tokenize is total on real text', () => {
+describe('tokenize is total on real text', { timeout: 60_000 }, () => {
   it('a sample of tokens covers every non-space character exactly once', () => {
     const cards = Object.values(loadFixtureCards());
     for (const card of cards) {

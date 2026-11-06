@@ -1,0 +1,122 @@
+[
+  {
+    "id": "eff.edhv77.dig.revealUpTo.revealed.hand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4"
+    ],
+    "pattern": "you may reveal up to {n:Qty} {f:CardsDesc} from among {g:Seen} and put the revealed cards into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "may",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, look at the top six cards of your library. You may reveal up to two artifact cards from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may reveal up to three land cards from among them and put the revealed cards into your hand. Put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, look at the top six cards of your library. You may reveal up to two artifact cards from among them and put the revealed cards onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "When ~ enters, look at the top six cards of your library. You may reveal two artifact cards from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhv77.damage.equal.recipientAndEach",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 115.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage equal to {n:Qty} to {to:Recipient} and each {f:Filter}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{2}{R}, {T}: ~ deals damage equal to the number of cards in your hand to target opponent and each creature that player controls."
+      },
+      {
+        "text": "{2}{R}, {T}: ~ deals damage equal to your life total to target player and each artifact creature they control."
+      }
+    ],
+    "counterExamples": [
+      "{2}{R}, {T}: ~ deals damage equal to the number of cards in your hand to target opponent and target creature that player controls.",
+      "{2}{R}, {T}: ~ deals damage equal to the number of cards in your hand to target opponent or each creature that player controls.",
+      "{2}{R}, {T}: ~ deals damage equal to the number of cards in your hand to each creature that player controls and target opponent."
+    ],
+    "weak": 1
+  }
+]

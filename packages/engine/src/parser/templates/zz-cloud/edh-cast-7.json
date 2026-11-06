@@ -1,0 +1,331 @@
+[
+ {
+  "id": "eff.edhc7.copy.commaAnd.newTargets",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 707.10",
+   "CR 707.10c",
+   "CR 115.7"
+  ],
+  "pattern": "copy {o:Obj} , and you may choose new targets for the copy",
+  "build": {
+   "op": "copy",
+   "what": "$o",
+   "result": "spell",
+   "who": {
+    "ref": "you"
+   },
+   "newTargets": "may"
+  },
+  "subject": "none",
+  "consumes": [
+   "may"
+  ],
+  "examples": [
+   {
+    "text": "Flip a coin. If you win the flip, copy target instant spell, and you may choose new targets for the copy."
+   },
+   {
+    "text": "Copy target sorcery spell, and you may choose new targets for the copy."
+   }
+  ],
+  "counterExamples": [
+   "Copy target instant spell, and you may choose new targets for the copies.",
+   "Copy target instant spell, and choose new targets for the copy.",
+   "Copy target instant spell, and you may not choose new targets for the copy."
+  ]
+ },
+ {
+  "id": "eff.edhc7.players.cantCast.filter.dur",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 611.2a",
+   "CR 601.3",
+   "CR 101.2"
+  ],
+  "pattern": "players can't cast {f:Filter} {d:Dur}",
+  "build": {
+   "op": "effect",
+   "duration": "$d",
+   "effects": [
+    {
+     "s": "restrict",
+     "subject": {
+      "ref": "each",
+      "who": "player"
+     },
+     "mode": "cant",
+     "action": "cast",
+     "other": "$f"
+    }
+   ]
+  },
+  "subject": "none",
+  "consumes": [
+   "can't"
+  ],
+  "examples": [
+   {
+    "text": "Players can't cast artifact spells until the end of your next turn."
+   },
+   {
+    "text": "Players can't cast creature or enchantment spells this turn."
+   }
+  ],
+  "counterExamples": [
+   "Players can cast artifact spells this turn.",
+   "Players can't cast artifact spells.",
+   "Players can't activate abilities of artifacts this turn."
+  ],
+  "weak": 1
+ },
+ {
+  "id": "rst.edhc7.cast.self.beforeCombatDamage",
+  "kind": "static",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 601.3",
+   "CR 101.2",
+   "CR 510.4",
+   "CR 506.1"
+  ],
+  "pattern": "cast ~ only before the combat damage step",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "stack"
+   ],
+   "effects": [
+    {
+     "s": "restrict",
+     "subject": {
+      "ref": "self"
+     },
+     "mode": "onlyIf",
+     "action": "cast",
+     "when": {
+      "cond": "turnOf",
+      "whose": "any",
+      "step": [
+       "untap",
+       "upkeep",
+       "draw",
+       "main1",
+       "beginCombat",
+       "declareAttackers",
+       "declareBlockers"
+      ]
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "only"
+  ],
+  "examples": [
+   {
+    "text": "Cast Example Subject only before the combat damage step."
+   },
+   {
+    "text": "Cast Example Subject only before the combat damage step.\nExample Subject has hexproof from green."
+   }
+  ],
+  "counterExamples": [
+   "Cast Example Subject only during the combat damage step.",
+   "Cast Example Subject only before the declare blockers step.",
+   "Cast Example Subject only after the combat damage step."
+  ]
+ },
+ {
+  "id": "rid.edhc7.castThisWay.anyManaType.passive",
+  "kind": "rider",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 609.4b",
+   "CR 601.2g",
+   "CR 611.2a",
+   "CR 608.2c"
+  ],
+  "pattern": "if you cast a spell this way , mana of any type can be spent to cast it",
+  "build": {
+   "$patchPrevious": {
+    "@require": {
+     "effects.0.s": "permit",
+     "effects.1": null
+    },
+    "effects": [
+     {
+      "anyManaType": {
+       "@new": true
+      }
+     }
+    ]
+   }
+  },
+  "attachTo": "effect",
+  "consumes": [
+   "if",
+   "this way"
+  ],
+  "examples": [
+   {
+    "text": "Target opponent exiles the top two cards of their library. Until end of turn, you may play those cards. If you cast a spell this way, mana of any type can be spent to cast it."
+   },
+   {
+    "text": "Exile the top card of target opponent's library. You may play it this turn. If you cast a spell this way, mana of any type can be spent to cast it."
+   }
+  ],
+  "counterExamples": [
+   "Exile the top card of target opponent's library. You may play it this turn. If you cast a spell this way, mana of any color can be spent to cast it.",
+   "Exile the top card of target opponent's library. You may play it this turn. If you cast a spell this way, you gain 2 life.",
+   "Exile the top card of target opponent's library. You draw a card. If you cast a spell this way, mana of any type can be spent to cast it."
+  ]
+ },
+ {
+  "id": "cm.edhc7.self.less.lifeDifference",
+  "kind": "static",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 601.2f",
+   "CR 118.7",
+   "CR 604.5",
+   "CR 119.1",
+   "CR 107.3",
+   "CR 103.4"
+  ],
+  "pattern": "if your life total is less than your starting life total , ~ costs {x} less to cast , where x is the difference",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "stack"
+   ],
+   "condition": {
+    "cond": "compare",
+    "left": {
+     "q": "life",
+     "of": {
+      "ref": "you"
+     }
+    },
+    "op": "<",
+    "right": {
+     "q": "startingLife"
+    }
+   },
+   "effects": [
+    {
+     "s": "costMod",
+     "applies": {
+      "self": true,
+      "caster": "you"
+     },
+     "change": {
+      "kind": "reduce",
+      "generic": {
+       "q": "math",
+       "op": "-",
+       "args": [
+        {
+         "q": "startingLife"
+        },
+        {
+         "q": "life",
+         "of": {
+          "ref": "you"
+         }
+        }
+       ]
+      },
+      "floor": "zero"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "if"
+  ],
+  "examples": [
+   {
+    "text": "If your life total is less than your starting life total, Example Subject costs {X} less to cast, where X is the difference."
+   },
+   {
+    "text": "If your life total is less than your starting life total, Example Subject costs {X} less to cast, where X is the difference.\nExample Subject has hexproof from green."
+   }
+  ],
+  "counterExamples": [
+   "If your life total is greater than your starting life total, Example Subject costs {X} less to cast, where X is the difference.",
+   "If your life total is less than your starting life total, Example Subject costs {X} more to cast, where X is the difference.",
+   "If your life total is less than your starting life total, Example Subject costs {X} less to cast, where X is the sum.",
+   "If your life total is less than your starting life total, Example Subject costs {1} less to cast, where X is the difference."
+  ]
+ },
+ {
+  "id": "eff.edhc7.cast.yourCommander.free",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 903.3",
+   "CR 702.124e",
+   "CR 903.8",
+   "CR 601.2",
+   "CR 118.9d"
+  ],
+  "pattern": "you may cast your commander from the command zone without paying its mana cost",
+  "build": [
+   {
+    "op": "chooseObjects",
+    "who": {
+     "ref": "you"
+    },
+    "from": {
+     "ref": "each",
+     "filter": {
+      "commander": true,
+      "owner": "you",
+      "zone": "command"
+     }
+    },
+    "min": 0,
+    "max": 1,
+    "as": "cast"
+   },
+   {
+    "op": "cast",
+    "who": {
+     "ref": "you"
+    },
+    "what": {
+     "ref": "bound",
+     "name": "cast"
+    },
+    "free": true
+   }
+  ],
+  "subject": "none",
+  "consumes": [
+   "may",
+   "without"
+  ],
+  "examples": [
+   {
+    "text": "Whenever this creature deals combat damage to a player, you may cast your commander from the command zone without paying its mana cost."
+   },
+   {
+    "text": "When this creature enters, you may cast your commander from the command zone without paying its mana cost."
+   }
+  ],
+  "counterExamples": [
+   "When this creature enters, you may cast your commander from the command zone.",
+   "When this creature enters, you may cast your commander from your graveyard without paying its mana cost.",
+   "When this creature enters, you may cast your commander from the command zone without paying its mana cost twice."
+  ]
+ }
+]

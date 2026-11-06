@@ -37,7 +37,7 @@ function hash(text: string): string {
 function inCommandZone(a: AbilityDef): AbilityDef {
   switch (a.kind) {
     case 'static': case 'triggered': case 'activated': case 'manual':
-      return a.zone ? a : { ...a, zone: ['command'] };
+      return { ...a, zone: ['command'] }; // edh-next-100 (CR 114.4, 113.6p): an emblem's ability functions in the command zone only, whatever zone its wording gave it (Saheeli's "Artifact spells you cast cost {1} less" was read for the battlefield)
     default:
       return a;
   }
@@ -84,8 +84,8 @@ export function emblemDef(abilities: AbilityDef[], label: string): CardDef {
  * the choices of the resolution that creates it which its abilities read ("Choose a creature type. You get an emblem with \"Creatures you control of the
  * chosen type ...\""): they are the emblem's own links (core/zones.ts#createEmblemObject), the source its abilities read links from (statics/match.ts#hasChosen).
  */
-export function createEmblem(g: Game, player: PlayerId, abilities: AbilityDef[], sourceName: string, links: Readonly<Record<string, LinkValue>> = {}): ObjectId {
-  const id = createEmblemObject(g, emblemDef(abilities, `Emblem (${sourceName})`), player, links);
+export function createEmblem(g: Game, player: PlayerId, abilities: AbilityDef[], sourceName: string, links: Readonly<Record<string, LinkValue>> = {}, linksFrom?: ObjectId): ObjectId {
+  const id = createEmblemObject(g, emblemDef(abilities, `Emblem (${sourceName})`), player, links, linksFrom); // edh-next-137 (CR 607.2a): `linksFrom`, the emblem reads that permanent's links (effects/refs.ts#linkValue)
   g.log(`${g.player(player).name} gets an emblem with ${abilities.map((a) => `"${a.text}"`).join(' and ')}.`, { rules: ['CR 114.2'], level: 'action' });
   return id;
 }

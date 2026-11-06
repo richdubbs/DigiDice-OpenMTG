@@ -98,8 +98,12 @@ describe('LOOK3 design 6.4: what the condition does not settle stays manual, nev
   it('an instruction between the move and the condition: the instruction right before is not the move', () => {
     expect(understood(`Whenever this creature attacks, ${LOOK} If it's a land card, you may put it onto the battlefield. You gain 1 life. If you don't put the card onto the battlefield, put it into your hand.`, type)).toBe(false);
   });
-  it('a bare "If you don\'t" after "If C, you may X" stays unresolved (the words do not say whether not being offered counts, T3); "Otherwise" stays the `else` of C (LOOK1)', () => {
-    expect(understood(`Whenever this creature attacks, ${LOOK} If it's a land card, you may put it onto the battlefield. If you don't, put it into your hand.`, type)).toBe(false);
+  it('a bare "If you don\'t" after "If C, you may put it onto the battlefield" is read on both paths since edh-d-85 (Fishing Gear ruling); "Otherwise" stays the `else` of C (LOOK1)', () => {
+    // combined copy: edh-d-85 (Fishing Gear, ruling 2025-10-02) reads this one shape ("If it's a <kind> card, you may put it onto the battlefield. If you don't, Z"): Z when the card was not put
+    // there, declined or not of that kind (lower/conditions.ts); any other "If C, you may X. If you don't" stays unresolved (T3)
+    const gear = json(`Whenever this creature attacks, ${LOOK} If it's a land card, you may put it onto the battlefield. If you don't, put it into your hand.`, type);
+    expect(understood(`Whenever this creature attacks, ${LOOK} If it's a land card, you may put it onto the battlefield. If you don't, put it into your hand.`, type)).toBe(true);
+    expect(gear).toContain('"else":[{"op":"move","what":{"ref":"bound","name":"seen"},"to":{"zone":"hand"}}]');
     const otherwise = json(`Whenever this creature attacks, ${LOOK} If it's a land card, you may put it onto the battlefield. Otherwise, put it into your hand.`, type);
     expect(otherwise).toContain('"else":[');
     expect(otherwise).not.toContain('"cond":"did"');

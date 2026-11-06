@@ -7,7 +7,7 @@
  * Its owner may look at it (CR 406.3, `revealedTo`). A replacement effect that sends the card elsewhere leaves nothing foretold (only a card in exile is).
  */
 import type { Game } from '../../core/game';
-import { FORETELL_ACTION_COST, FORETOLD_KEY, installForetell } from '../../core/special/foretell';
+import { FORETELL_ACTION_COST, FORETELL_LESS_KEY, FORETOLD_KEY, grantedForetellLess, installForetell } from '../../core/special/foretell';
 import type { ObjectId, PlayerId } from '../../types/ids';
 import { planDenial, planFromCostDef, type CostPlan } from '../../rules/cost';
 import { resolveAnyCounts } from '../../rules/pay';
@@ -16,11 +16,12 @@ import { performExiledSeers } from '../perform-direct';
 import { proposeResult } from '../propose';
 
 /** The plan of {2}: mana for this special action (not a spell or an ability, CR 116.2h; the card is the source, as for plot), CR 106.6. */
-const planOf = (id: ObjectId): CostPlan => ({ ...planFromCostDef(FORETELL_ACTION_COST, 0), spend: { kind: 'special', id } });
+const planOf = (id: ObjectId): CostPlan => ({ ...planFromCostDef(FORETELL_ACTION_COST, 0), spend: { kind: 'foretell', id } });
 
 function performForetell(g: Game, player: PlayerId, id: ObjectId): void {
   const name = g.nameOf(id);
   const what = 'foretelling a card'; // CR 406.3, 400.2: the card stays hidden from the other players (the payment's prompts and log lines are public)
+  const less = g.s.objects[id] === undefined ? undefined : grantedForetellLess(g.s, g.s.objects[id]!); // edh-d-73: read BEFORE the payment (the Devourer may be sacrificed to pay for it) while the card is in the hand and has the granted foretell
   performEffectPayment(g, player, id, resolveAnyCounts(g, player, id, planOf(id), what), what); // CR 702.143a: pay {2}
   // CR 702.143a: exile this card from your hand face down, as a proposed zone change (design 8.5; a replacement effect applies, CR 614)
   const from = g.s.objects[id]?.zone;
@@ -29,8 +30,9 @@ function performForetell(g: Game, player: PlayerId, id: ObjectId): void {
   const o = n !== undefined ? g.s.objects[n] : undefined;
   const foretold = o !== undefined && o.zone === 'exile' && o.faceDown;
   if (foretold) {
-    o.chosen = { ...(o.chosen ?? {}), [FORETOLD_KEY]: g.s.turn.number };
+    o.chosen = { ...(o.chosen ?? {}), [FORETOLD_KEY]: g.s.turn.number, ...(less !== undefined ? { [FORETELL_LESS_KEY]: less } : {}) };
     performExiledSeers(g, [o.id], [o.owner]); // CR 406.3: its owner may look at it
+    g.emit({ type: 'actionPerformed', verb: 'foretell', actor: player, objectId: o.id }); // edh-d-73 (CR 702.143a): "whenever you foretell a card"
   }
   g.log(foretold
     ? `${g.player(player).name} foretells a card: it is exiled face down and may be cast for its foretell cost on a later turn.`

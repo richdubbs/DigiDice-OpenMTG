@@ -1,0 +1,140 @@
+[
+  {
+    "id": "eff.edhn41.seen.cast.filtered.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from among {g:Seen} without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, look at the top five cards of your library. You may cast an instant or sorcery spell with mana value 3 or less from among them without paying its mana cost. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "{4}, {T}: Look at the top four cards of your library. You may cast a creature spell from among them without paying its mana cost. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "{4}, {T}: Look at the top four cards of your library. You may cast a creature spell from among them. Put the rest on the bottom of your library in a random order.",
+      "{4}, {T}: Look at the top four cards of your library. You may cast two creature spells from among them without paying their mana costs. Put the rest on the bottom of your library in a random order.",
+      "{4}, {T}: You may cast a creature spell from among them without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhn41.seenInHand.cast.filtered.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.20e",
+      "CR 402.3",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from among {g:SeenInHand} without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "hand"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent reveals their hand. You may cast a sorcery spell from among those cards without paying its mana cost."
+      },
+      {
+        "text": "{2}, {T}: Look at target player's hand. You may cast a creature spell with mana value 3 or less from among those cards without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent reveals their hand. You may cast an instant or sorcery spell from among those cards.",
+      "When ~ enters, target opponent reveals their hand. You may cast two instant spells from among those cards without paying their mana costs.",
+      "When ~ enters, look at the top three cards of your library. You may cast a creature spell from among those cards without paying its mana cost."
+    ]
+  }
+]

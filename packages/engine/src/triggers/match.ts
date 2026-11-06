@@ -14,9 +14,11 @@ import type { MatchContext, MatchEvent } from './api';
 import { cmpMatches, lookupObject, objectMatches, playerMatches, type FilterCx } from './filters';
 import { EVENT_FORMS_PARTS, SUPPORTED as SUPPORTED_EVENT_FORMS } from './forms';
 import { lookBackApplies } from './lookback';
-import { factsMatchFilter } from '../rules/history';
+import { factsMatchFilter, formerIds } from '../rules/history';
 import { MANA_SOURCE } from './normalize';
 import { contextOf } from './context';
+import { readLink } from '../statics/links';
+import { colorFromWord } from '../statics/match';
 import { boardBefore } from './lookback-board';
 
 /** M6-0: the event kinds milestone 6 added to `EventPattern` (m6 design 2.1); until a package lists one in its `EMITS`, no engine code emits it. */
@@ -36,7 +38,7 @@ const M6_EVENT_KINDS: readonly EventPattern['ev'][] = ['phase', 'dayNight'];
 // (triggers/normalize.ts) and the history entry's `via` fact (triggers/history.ts, rules/history.ts)
 // FAST5X E18: 'ev.cast.nthMatching', "their first noncreature spell each turn": the Nth of the caster's spells this turn that match the pattern's `spell` (history)
 // FAST5X E16: 'ev.damage.excess', "is dealt excess damage" (CR 120.10): the `excess` data of the damage event (rules/damage.ts computes it, normalize.ts carries it)
-export const FEATURES: readonly string[] = ['trigger.batch', 'trigger.batch.whole' /* CLOUD std-misc */, 'delay.batch', 'delay.targets' /* std-tdm: delayed.ts#delayedAbility, CR 603.7, 603.3d */, 'trigger.limit', 'trigger.mana', 'trigger.while', 'trigger.first', 'wasCast.by', 'wasCast.spent', 'wasCast.object' /* std-tdm: effects/eval.ts#castRecordOf */, 'wasCast.fromOwner' /* Standard round 4, r4-trig: effects/eval.ts#wasCast, CR 400.3 */, 'ev.cast.via', 'ev.cast.notFrom' /* Standard round 5, r5-trig: the `from` of the cast event and history entry (CR 601.2a) */, 'ev.cast.nthMin' /* r5-trig: the cast event's `nth` (CR 601.2i) */, 'ev.cast.nthMatching', 'ev.damage.excess', 'ev.damage.amountIsToughness' /* std-rx28: CR 120.1, 208.1 */, 'ev.damage.toSourceTarget' /* std-rx28: CR 115.9b */, 'ev.activate.activated' /* std-rx28: CR 602.2 */, 'did.which', 'did.which.move' /* FAST5 T75 */, 'ev.counters.by', 'trigger.limit.action' /* FAST5X E21 */, 'delayed.step.anyMain' /* r5-fxb: delayed.ts#fires, CR 505.1 */, 'lookback.attachments' /* r5-fxb: LastKnown.attached, CR 603.10a */, 'trigger.tappedForMana' /* std-mana-1: rules/mana.ts#addMana `tapped`, CR 106.12 */, ...SUPPORTED_EVENT_FORMS];
+export const FEATURES: readonly string[] = ['trigger.producedChosen' /* edh-mana-keywords-5 */, 'trigger.batch', 'trigger.batch.whole' /* CLOUD std-misc */, 'delay.batch', 'delay.batch.whole' /* edh-players-13: delayed.ts, CR 603.2c */, 'delay.targets' /* std-tdm: delayed.ts#delayedAbility, CR 603.7, 603.3d */, 'trigger.limit', 'trigger.mana', 'trigger.while', 'trigger.first', 'wasCast.by', 'wasCast.spent', 'wasCast.object' /* std-tdm: effects/eval.ts#castRecordOf */, 'wasCast.fromOwner' /* Standard round 4, r4-trig: effects/eval.ts#wasCast, CR 400.3 */, 'ev.cast.via', 'ev.cast.notFrom' /* Standard round 5, r5-trig: the `from` of the cast event and history entry (CR 601.2a) */, 'ev.cast.nthMin' /* r5-trig: the cast event's `nth` (CR 601.2i) */, 'ev.cast.nthMatching', 'ev.damage.excess', 'ev.damage.amountIsToughness' /* std-rx28: CR 120.1, 208.1 */, 'ev.damage.toSourceTarget' /* std-rx28: CR 115.9b */, 'ev.activate.activated' /* std-rx28: CR 602.2 */, 'did.which', 'did.which.move' /* FAST5 T75 */, 'ev.counters.by', 'ev.counters.byController' /* edhn63 */, 'trigger.limit.action' /* FAST5X E21 */, 'delayed.step.anyMain' /* r5-fxb: delayed.ts#fires, CR 505.1 */, 'lookback.attachments' /* r5-fxb: LastKnown.attached, CR 603.10a */, 'trigger.tappedForMana' /* std-mana-1: rules/mana.ts#addMana `tapped`, CR 106.12 */, 'ev.life.fromDamage' /* edh-players-3: CR 120.3a */, ...SUPPORTED_EVENT_FORMS, 'delayed.step.addedPhase' /* edh-combat-5 */, 'ev.damage.sourcePermanent', 'ev.damage.toOtherThanSourceController' /* edhd63 */ /* edh-zones-19: CR 109.2 */, 'trigger.resolvesIfIllegal' /* edh-top-9: effects/run.ts, CR 608.2b */, 'ev.activate.targetsYourCreature' /* edh-next-67: CR 115.1, 602.2b */, 'ev.abilityTriggered.entering' /* edh-next-74: CR 603.6a */, 'trigger.activateLifePaid' /* edh-next-74: CR 602.2b */, 'trigger.activateXInCost' /* edh-next-74: CR 107.3a */, 'delayed.event.or' /* edh-next-74: CR 603.7 */, 'trigger.activateManaSpent' /* edh-d-50 */, 'ev.cast.nthAnyCaster' /* edh-next-91: CR 601.2i */];
 
 /**
  * Event kinds that CANNOT occur in this build because no engine code emits the `GameEvent` they are derived from (none since WP15's `rollDie` emits `dieRolled`). Their matchers
@@ -54,6 +56,20 @@ type Matcher<K extends EventPattern['ev']> = (p: Extract<EventPattern, { ev: K }
 
 const filterCx = (cx: MatchContext): FilterCx => ({ source: cx.source, controller: cx.controller });
 
+/**
+ * The recipient of a damage event (or of damage that was prevented) matches the pattern's `recipient`.
+ * PUSH1 T2 (INTERFACE CHANGE): a recipient with both an object and a player part is either of them ("any target", "a player or planeswalker";
+ * CR 115.4, 120.1): damage to a player is judged by the player part, damage to an object by the object part. Before, it could never match.
+ */
+function recipientMatches(r: { object?: ObjectFilter; player?: PlayerPred } | undefined, e: SemEvent, cx: MatchContext): boolean {
+  if (!r) return true;
+  const toPlayer = e.data['toPlayer'] === true;
+  if (r.object !== undefined && r.player !== undefined) return toPlayer ? pm(cx, r.player, playerOf(e, 'recipient')) : roleMatches(cx, e, 'object', r.object, false);
+  if (r.object !== undefined && (toPlayer || !roleMatches(cx, e, 'object', r.object, false))) return false;
+  if (r.player !== undefined && (!toPlayer || !pm(cx, r.player, playerOf(e, 'recipient')))) return false;
+  return true;
+}
+
 /** The first object of a role, with every id it had (a zone change: the old and the new) and the form it is judged in (live or last known). */
 function roleObject(cx: MatchContext, e: SemEvent, role: EventRole, snapshot: boolean): { o: GameObject; ids: ObjectId[] } | undefined {
   const v = e.roles[role];
@@ -70,6 +86,17 @@ function roleObject(cx: MatchContext, e: SemEvent, role: EventRole, snapshot: bo
   return o ? { o, ids } : undefined;
 }
 
+/**
+ * edh-mana-keywords-5 (CR 301.5, 303.4; Illusionist's Bracers, Battlemage's Bracers rulings 2013-01-24): "an ability of equipped creature is activated" needs the object
+ * attached as the ability is activated: a creature sacrificed to pay for it has left the battlefield and is no longer equipped, whatever last known information says.
+ */
+function stillAttached(cx: MatchContext, e: SemEvent, f: ObjectFilter | undefined): boolean {
+  if (f?.attachedToSource !== true) return true;
+  const v = e.roles['source'];
+  const id = v && 'objects' in v ? v.objects[0]?.id : undefined;
+  return id !== undefined && cx.g.s.objects[id]?.zone === 'battlefield';
+}
+
 /** Does the role's object satisfy the filter? A role the event does not have fails a filter that was written, and passes when there is none. */
 function roleMatches(cx: MatchContext, e: SemEvent, role: EventRole, f: ObjectFilter | undefined, snapshot: boolean, withEvent = false): boolean {
   if (f === undefined) return true;
@@ -79,6 +106,18 @@ function roleMatches(cx: MatchContext, e: SemEvent, role: EventRole, f: ObjectFi
   const { zone: _zone, ...rest } = f;
   // std-combat-1 (CR 603.2): a description that names another object of the same event reads it from this event (`withEvent`, the attach event only)
   return objectMatches(cx.g.s, rest, r.o, r.ids, withEvent ? { ...filterCx(cx), event: contextOf([e]) } : filterCx(cx));
+}
+
+/**
+ * edh-players-5 (CR 109.2, 602.2; Runic Armasaur, Harsh Mentor): "an ability of a creature" is an ability of a permanent: a type or subtype in the description names a permanent on
+ * the battlefield, so an ability activated from a hand (cycling) or a graveyard (unearth, embalm) is not one of a creature or a land, even for a creature or land card, and "a permanent"
+ * (the description {}) is a permanent on the battlefield. A description of the source itself, of a card or a spell, one that names a zone, and an activation of unknown origin are not judged here.
+ */
+function activatedOnBattlefield(source: ObjectFilter | undefined, e: SemEvent): boolean {
+  // "an ability of a permanent" is the description {} (Wizened Mentor): a permanent too; a card or a spell is described as such
+  if (source === undefined || source.zone !== undefined || source.self === true || source.isCard === true || source.stackKind !== undefined) return true;
+  const from = e.data['fromZone'];
+  return from === undefined || from === 'battlefield';
 }
 
 /** std-combat-3: does a description compare with a quantity that is not a number (CR 603.10a: read on the battlefield as it was)? */
@@ -101,18 +140,14 @@ const playerOf = (e: SemEvent, role: EventRole = 'player'): PlayerId | undefined
 };
 
 const pm = (cx: MatchContext, pred: PlayerPred | undefined, player: PlayerId | undefined): boolean => playerMatches(cx.g.s, pred, player, filterCx(cx));
-
-/** std-copy-4 (CR 400.7): the ids `id` had before, newest first, by the `newId` links of last known information (a spell that became this permanent, ...). */
-function formerIds(s: GameState, id: ObjectId): ObjectId[] {
-  const out: ObjectId[] = [];
-  let cur = id;
-  for (let guard = 0; guard < 8; guard++) {
-    const prev = Object.entries(s.lki).find(([k, l]) => l.newId === cur && k !== cur)?.[0];
-    if (prev === undefined || out.includes(prev)) break;
-    out.push(prev);
-    cur = prev;
-  }
-  return out;
+/**
+ * edh-mana-keywords-5 (CR 106.4, 605.1b, 607.2d; Caged Sun, Gauntlet of Power): the mana an activation produced includes mana of the color the trigger's own object chose
+ * as it entered (its link `color`, the words of rep.enters.choose.color); no choice made, or the object gone, matches nothing.
+ */
+function producedChosen(cx: MatchContext, e: SemEvent): boolean {
+  const words = readLink(cx.g.s.objects[cx.source], 'color')?.values;
+  const chosen = typeof words?.[0] === 'string' ? colorFromWord(words[0]) : undefined;
+  return chosen !== undefined && String(e.data['produced'] ?? '').includes(chosen);
 }
 
 /**
@@ -121,7 +156,7 @@ function formerIds(s: GameState, id: ObjectId): ObjectId[] {
  * including this spell's own entry (triggers/stack.ts writes a batch's history before collecting its triggers; an entry not written yet comes after every
  * written one). The facts are those the spell had as it was cast (triggers/history.ts). NaN when the event names no caster or spell.
  */
-function nthMatchingOf(cx: MatchContext, filter: ObjectFilter | undefined, e: SemEvent): number {
+function nthMatchingOf(cx: MatchContext, filter: ObjectFilter | undefined, e: SemEvent, anyCaster = false): number {
   const caster = playerOf(e);
   const spell = e.roles['spell'];
   const spellId = spell && 'objects' in spell ? spell.objects[0]?.id : undefined;
@@ -132,7 +167,7 @@ function nthMatchingOf(cx: MatchContext, filter: ObjectFilter | undefined, e: Se
   const env = { you: cx.controller, sourceId: cx.source, ...(was !== undefined ? { sourceWas: was } : {}) };
   let n = 0;
   for (const h of s.history) {
-    if (h.turn !== s.turn.number || h.ev !== 'cast' || h.actor !== caster || h.facts['copy'] === true) continue;
+    if (h.turn !== s.turn.number || h.ev !== 'cast' || (!anyCaster && h.actor !== caster) || h.facts['copy'] === true) continue; // edh-next-91: `anyCaster` counts every player's spells
     if (h.subject === spellId) return n + 1;
     if (filter === undefined || factsMatchFilter(h.facts, '', filter, env, h.subject)) n++;
   }
@@ -145,7 +180,11 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
   /** CR 603.6, 603.10a: enters, leaves, dies, is put into a graveyard/hand/library/exile. Judged as it was when the pattern looks back (`lookBackApplies`). */
   zoneChange: (p, e, cx) => {
     const from = e.data['from'];
-    if (!zoneIn(from, p.from) || !zoneIn(e.data['to'], p.to)) return false;
+    // edh-next-47 (CR 111.1, 603.6a; The Lost and the Damned): "enters from anywhere other than your hand" is every zone but the hand, and a created token came from no zone at all
+    // (never from a hand), so the list of the other zones (parser/holes/event.ts) also matches an event with no `from`
+    const elsewhere = Array.isArray(p.from) && !p.from.includes('hand') && ['library', 'graveyard', 'exile', 'command'].every((z) => (p.from as string[]).includes(z)) && (from === null || from === undefined);
+    if (!(elsewhere || zoneIn(from, p.from)) || !zoneIn(e.data['to'], p.to)) return false;
+    if (p.cause === 'unplayed' && (e.data['cause'] === 'play land' || e.data['to'] !== 'battlefield')) return false; // edh-zones-21 (CR 305.1, 603.6a): it entered, and not as a land play (actions/land.ts)
     if (p.cause === 'craft' && e.data['cause'] !== 'craft') return false; // Standard round 3, r3-trig (CR 702.167a): exiled as craft's material
     // std-control-1 (CR 400.7, 610.3): a FIXED object named in the zone it leaves ("until this card is cast from exile": the card as it was in exile) is the object before
     // the move: judged as it was there (the event's look-back snapshot), never as the new object it became
@@ -164,16 +203,17 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
     return roleMatches(cx, e, 'subject', p.subject, lookBack || fixedFrom);
   },
   /** std-copy-6 (CR 603.2, 603.3b): a triggered ability of the `subject` object triggered (triggers/collect.ts#metaEvents); `causedBy` attacking: that object attacking caused it. */
-  abilityTriggered: (p, e, cx) => (p.causedBy === undefined || (p.causedBy === 'attacking' && e.data['byAttacking'] === true)) && roleMatches(cx, e, 'subject', p.of, false),
+  abilityTriggered: (p, e, cx) => (p.causedBy === undefined || (p.causedBy === 'attacking' && e.data['byAttacking'] === true) || (p.causedBy === 'entering' && e.data['byEntering'] === true /* edh-next-74: CR 603.6a */)) && (p.finalChapter !== true || e.data['finalChapter'] === true) && roleMatches(cx, e, 'subject', p.of, false),
   /** CR 601.2i. A copy is not cast (CR 707.10): it matches only when the pattern says `orCopy`. */
   cast: (p, e, cx) => {
-    if (e.data['copy'] === true && p.orCopy !== true) return false;
+    if (e.data['copy'] === true && p.orCopy !== true && p.copyOnly !== true) return false;
+    if (p.copyOnly === true && e.data['copy'] !== true) return false; // edh-b-13 (CR 707.10): only the copy of a spell
     if (p.from !== undefined && e.data['from'] !== p.from) return false;
     if (p.notFrom !== undefined && (typeof e.data['from'] !== 'string' || e.data['from'] === p.notFrom)) return false; // Standard round 5, r5-trig (CR 601.2a)
     if (p.nthMin !== undefined && !((numberData(e, 'nth') ?? 0) >= p.nthMin)) return false; // Standard round 5, r5-trig (CR 601.2i): not the caster's first spell this turn
     if (p.nth !== undefined && p.nthMatching !== true && numberData(e, 'nth') !== p.nth) return false; // FAST1 T4: the Nth spell that player cast this turn
     // FAST5X E18 (CR 601.2i): the Nth spell of the caster this turn among those that match `spell` ("their first noncreature spell each turn")
-    if (p.nth !== undefined && p.nthMatching === true && nthMatchingOf(cx, p.spell, e) !== p.nth) return false;
+    if (p.nth !== undefined && p.nthMatching === true && nthMatchingOf(cx, p.spell, e, p.anyCaster === true) !== p.nth) return false;
     if (p.via !== undefined && !castVia(e.data['via'], p.via)) return false; // FAST5X E2: cast for its warp cost (CR 702.185c)
     if (p.modal === true && e.data['modal'] !== true) return false; // Standard round 3, r3-trig (CR 700.2): a modal spell (modes were chosen as it was cast)
     // std-exile-play-1-1 (CR 108.3, 601.2a): "a spell they don't own": its owner is not its caster (a spell with no caster or no object never matches)
@@ -193,13 +233,44 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
    * 702.177a; a loyalty ability is never a mana ability, CR 605.1a).
    */
   activate: (p, e, cx) =>
-    (p.ability !== undefined && p.manaAbility === undefined ? true : (e.data['mana'] === true) === (p.manaAbility === true)) && (p.ability === undefined || e.data[p.ability] === true) && pm(cx, p.player, playerOf(e)) && roleMatches(cx, e, 'source', p.source, false) && roleMatches(cx, e, 'spell', p.activated, false) && (p.tapped !== true || e.data['tapped'] === true) && (p.produced === undefined || String(e.data['produced'] ?? '').includes(p.produced)), // std-mana-1: `tapped`, `produced` (CR 106.12); std-rx28: `activated` (CR 602.2, 115.9b); FAST5X E20: `ability`, an exhaust (CR 702.177a) or loyalty (CR 606.3) ability
+    (p.ability !== undefined && p.manaAbility === undefined ? true : (e.data['mana'] === true) === (p.manaAbility === true)) && (p.ability === undefined || e.data[p.ability] === true) && (p.targetsYourCreature === undefined || e.data['targetsOwnCreature'] === true) && pm(cx, p.player, playerOf(e)) && roleMatches(cx, e, 'source', p.source, false) && activatedOnBattlefield(p.source, e) && stillAttached(cx, e, p.source) && roleMatches(cx, e, 'spell', p.activated, false) && (p.tapped !== true || e.data['tapped'] === true) && (p.lifePaid !== true || (typeof e.data['lifePaid'] === 'number' && e.data['lifePaid'] > 0)) && (p.xInCost !== true || e.data['xInCost'] === true) /* edh-next-74: CR 602.2b, 107.3a */ && (p.manaSpentAtLeast === undefined || (typeof e.data['manaSpent'] === 'number' && e.data['manaSpent'] >= p.manaSpentAtLeast)) /* edh-d-50: CR 602.2b, 106.3 */ && (p.produced === undefined || (p.produced === 'chosen' ? producedChosen(cx, e) : String(e.data['produced'] ?? '').includes(p.produced))), // std-mana-1: `tapped`, `produced` (CR 106.12); std-rx28: `activated` (CR 602.2, 115.9b); FAST5X E20: `ability`, an exhaust (CR 702.177a) or loyalty (CR 606.3) ability
   /** CR 508.1m, 508.3. `alone`: it is the only attacker declared; `count`: the number of attackers declared together. */
   attacks: (p, e, cx) => {
     if (p.alone !== undefined && e.data['alone'] !== p.alone) return false;
-    if (!cmpMatches(p.count, numberData(e, 'count'))) return false;
+    // edh-next-92 (CR 508.1, 603.2c; Path of Mettle): "whenever you attack with at least two creatures that have flying" counts the declared attackers that match the description, not all of
+    // the declaration's attackers (a described group; a bare "creatures" count stays the declaration's own number)
+    if (!cmpMatches(p.count, describedAttackerCount(p, e, cx) ?? numberData(e, 'count'))) return false;
     if (!cmpMatches(p.power, numberData(e, 'totalPower'))) return false; // Standard round 3, r3-trig (CR 508.1): the total power of the declaration's attackers
+    // edh-combat-5 (CR 508.1, 603.2c): "attack with ~ and another legendary creature": another creature declared in the same declaration matches the description (read now: the
+    // declaration has just been made; an event without the declared ids never matches)
+    if (p.withOther !== undefined) {
+      const me = roleObject(cx, e, 'attacker', false);
+      const declared = typeof e.data['declared'] === 'string' ? e.data['declared'].split('|').filter((x) => x !== '') : [];
+      const { zone: _zone, ...rest } = p.withOther;
+      const others = declared.filter((id) => id !== me?.o.id).map((id) => cx.g.s.objects[id]).filter((o): o is GameObject => o !== undefined && o.zone === 'battlefield');
+      if (!others.some((o) => objectMatches(cx.g.s, rest, o, [o.id], filterCx(cx)))) return false;
+    }
+    // edh-c-83 (CR 508.1, 603.2c; Mob Mentality): "all non-Wall creatures you control attack": every battlefield permanent of the description was declared in this declaration, and at
+    // least one exists (an event without the declared ids never matches)
+    if (p.allAttack !== undefined) {
+      const declared = typeof e.data['declared'] === 'string' ? new Set(e.data['declared'].split('|').filter((x) => x !== '')) : undefined;
+      if (declared === undefined) return false;
+      const { zone: _zone, ...rest } = p.allAttack;
+      const all = Object.values(cx.g.s.objects).filter((o): o is GameObject => o !== undefined && o.zone === 'battlefield' && !o.phasedOut && objectMatches(cx.g.s, rest, o, [o.id], filterCx(cx)));
+      if (all.length === 0 || !all.every((o) => declared.has(o.id))) return false;
+    }
+    // edh-players-20 (CR 506.2, 508.1b): "attacks another one of your opponents": the player attacked is not the attacker's own controller
+    if (p.otherThanAttacker === true) {
+      const me = roleObject(cx, e, 'attacker', false);
+      const d = playerOf(e, 'defender');
+      if (me === undefined || d === undefined || me.o.controller === d) return false;
+    }
     if (p.defender !== undefined && !(defenderMatches(p.defender, e, cx) || (p.orPlaneswalker === true && planeswalkerOf(p.defender, e, cx)))) return false;
+    // edh-combat-1 (CR 508.5, 603.4): "if you're the defending player": the defending player of the attack (a planeswalker's controller, a battle's protector) matches
+    if (p.defending !== undefined) {
+      const d = e.data['defendingPlayer'];
+      if (typeof d !== 'string' || !pm(cx, p.defending, d)) return false;
+    }
     return roleMatches(cx, e, 'attacker', p.attacker, false);
   },
   /** CR 509.3a: without `attacker` it triggers once per blocker (the flagged first pair); CR 509.3b: with `attacker`, once per attacker it blocks that satisfies it. */
@@ -218,6 +289,12 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
   },
   /** CR 509.3c: without `by` it triggers once per attacker (the flagged first pair), with `by` once per blocker that satisfies it. */
   becomesBlocked: (p, e, cx) => {
+    // edh-c-48 (CR 509.3e): "by two or more creatures" is one occurrence per attacker, the pair after which its blockers number at least that many for the first time
+    if (p.byAtLeast !== undefined) {
+      const before = e.data['blockCountBefore'], after = e.data['blockCount'];
+      if (typeof before !== 'number' || typeof after !== 'number' || before >= p.byAtLeast || after < p.byAtLeast) return false;
+      return roleMatches(cx, e, 'attacker', p.attacker, false);
+    }
     if (p.by === undefined && e.data['first'] !== true) return false;
     return roleMatches(cx, e, 'attacker', p.attacker, false) && roleMatches(cx, e, 'blocker', p.by, false);
   },
@@ -243,29 +320,34 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
       const amount = numberData(e, 'amount');
       if (amount === undefined || e.data['toPlayer'] === true || !roleMatches(cx, e, 'object', { toughness: { op: '==', value: amount } }, false)) return false;
     }
+    // edh-zones-19 (CR 109.2, 120.2; Dissipation Field): "a permanent deals damage": the source was on the battlefield as it dealt the damage (as it last was, once it has left)
+    if (p.sourcePermanent === true && roleObject(cx, e, 'source', true)?.o.zone !== 'battlefield') return false;
     if (!roleMatches(cx, e, 'source', p.source, false)) return false;
-    if (p.recipient) {
-      const toPlayer = e.data['toPlayer'] === true;
-      // PUSH1 T2 (INTERFACE CHANGE): a recipient with both an object and a player part is either of them ("any target", "a player or planeswalker";
-      // CR 115.4, 120.1): damage to a player is judged by the player part, damage to an object by the object part. Before, it could never match.
-      if (p.recipient.object !== undefined && p.recipient.player !== undefined) {
-        if (toPlayer ? !pm(cx, p.recipient.player, playerOf(e, 'recipient')) : !roleMatches(cx, e, 'object', p.recipient.object, false)) return false;
-      } else {
-        if (p.recipient.object !== undefined && (toPlayer || !roleMatches(cx, e, 'object', p.recipient.object, false))) return false;
-        if (p.recipient.player !== undefined && (!toPlayer || !pm(cx, p.recipient.player, playerOf(e, 'recipient')))) return false;
-      }
+    // edhd63 (CR 120.1, 109.4; Bitter Feud): the damaged player, or the controller of the damaged permanent, is not the controller of the source (the source as it last was); none known: no
+    if (p.toOtherThanSourceController === true) {
+      const by = roleObject(cx, e, 'source', true)?.o.controller;
+      const to = e.data['toPlayer'] === true ? playerOf(e, 'recipient') : roleObject(cx, e, 'object', false)?.o.controller;
+      if (by === undefined || to === undefined || by === to) return false;
     }
-    return true;
+    return recipientMatches(p.recipient, e, cx);
   },
+  /** edh-replace-3, CR 615.13: damage that would be dealt was prevented. The source and the recipient are judged like those of the damage (`damage` above). */
+  damagePrevented: (p, e, cx) => roleMatches(cx, e, 'source', p.source, false) && recipientMatches(p.recipient, e, cx),
   /**
    * CR 603.2b: at the beginning of a step; `whose` is the player whose turn it is. FAST5X E17: `nth`, "your second main phase", only the main phase that is
    * the Nth main phase of its turn (CR 505.1b; not an additional main phase after it, CR 505.1a).
    */
-  step: (p, e, cx) => e.data['step'] === p.step && pm(cx, p.whose, playerOf(e)) && (p.nth === undefined || numberData(e, 'mainPhase') === p.nth),
+  step: (p, e, cx) => e.data['step'] === p.step && pm(cx, p.whose, playerOf(e)) && (p.nth === undefined || numberData(e, p.step === 'endCombat' ? 'combatPhase' : p.step === 'upkeep' ? 'upkeepStep' : 'mainPhase') === p.nth), // edh-d-34: for the end of combat step `nth` is the number of the combat phase (CR 500.8)
   /** CR 119.9, 119.10: life gained or lost. */
-  life: (p, e, cx) => e.data['change'] === p.change && pm(cx, p.player, playerOf(e)) && cmpMatches(p.amount, numberData(e, 'amount')),
+  life: (p, e, cx) => e.data['change'] === p.change && pm(cx, p.player, playerOf(e)) && cmpMatches(p.amount, numberData(e, 'amount')) && (p.fromDamage !== true || e.data['fromDamage'] === true), // edh-players-3: fromDamage
   /** CR 121.2: `nth` is "the Nth card you draw each turn". */
   // edh-players-1 (CR 504.1): `exceptFirstInDrawStep`, not the first card the turn player drew in their own draw step (normalize.ts says which it was)
+  // edh-next-144 (CR 701.20a, 607.2): "Whenever you reveal a land card this way": a reveal by the trigger's OWN source (the linked rule), of a card the description fits
+  reveal: (p, e, cx) => {
+    const src = e.roles['source'];
+    return e.data['thisWay'] === true && p.thisWay === true && src !== undefined && 'objects' in src && src.objects.some((h) => h.id === cx.source) && pm(cx, p.player, playerOf(e))
+      && (p.card === undefined || roleMatches(cx, e, 'subject', p.card, false));
+  },
   draw: (p, e, cx) => pm(cx, p.player, playerOf(e)) && (p.nth === undefined || numberData(e, 'nth') === p.nth) && !(p.exceptFirstInDrawStep === true && e.data['firstInDrawStep'] === true),
   /** CR 603.2e: "becomes" happens at the time of the change only. `monstrous`, `renowned`, `saddled`, `crewed` come from the keyword actions' `actionPerformed` events (verbs in normalize.ts). */
   becomes: (p, e, cx) => {
@@ -274,6 +356,8 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
     // never on that ability's source: an ability is not a spell, and it is controlled by whoever activated it or controlled its source when it triggered
     // (CR 602.2a, 603.3a), not by whoever controls the source now (WP32).
     // Standard round 4, r4-trig (CR 115.1): with `player`, a player who becomes the target (the event's `player` role is the targeted player)
+    // edh-next-76 (CR 701.27e, 603.2): "transforms into a Phyrexian": the permanent, now showing the face it transformed into, also matches the description of `into`
+    if (p.into !== undefined && (p.what !== 'transformed' || !roleMatches(cx, e, 'subject', p.into, false))) return false;
     if (p.what === 'targeted' && p.player !== undefined) return e.data['targetIsPlayer'] === true && pm(cx, p.player, playerOf(e)) && roleMatches(cx, e, 'spell', p.by, false);
     // Standard round 4, r4-trig (CR 110.1, 115.1): an object target described as a permanent with `zone: 'battlefield'` said explicitly ("a player or permanent") is one on
     // the battlefield, never a spell or a card in another zone (roleMatches ignores a filter's zone; patterns without it read as before)
@@ -281,7 +365,8 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
     if (p.what === 'targeted') return e.data['targetIsPlayer'] !== true && roleMatches(cx, e, 'subject', p.object, false) && roleMatches(cx, e, 'spell', p.by, false);
     // Standard round 5, r5-trig (CR 702.122b, 702.171c): "~ crews a Vehicle": the creature tapped for the cost is the event's `source` role (normalize.ts)
     // Standard round 5, r5-trig (CR 502.3): "during your untap step": only an untap by the untap step (normalize.ts)
-    if (p.untapStep === true && (p.what !== 'untapped' || e.data['untapStep'] !== true)) return false;
+    if (p.untapStep === true && (p.what !== 'untapped' || e.data['untapStep'] !== true || e.data['ownUntapStep'] === false)) return false; // edh-d-71 (CR 502.3): "during YOUR untap step" is the untap step of the permanent's controller (Seedborn Muse untaps others' permanents in other players' untap steps)
+    if (p.notAsAttacker === true && (p.what !== 'tapped' || e.data['asAttacker'] === true)) return false; // edh-players-20 (CR 508.1f): Verity Circle
     if (p.what === 'crewCostPaid' || p.what === 'saddleCostPaid' || p.what === 'teamworkCostPaid') return p.by !== undefined && roleMatches(cx, e, 'subject', p.object, false) && roleMatches(cx, e, 'source', p.by, false);
     if (p.level !== undefined && e.data['level'] !== p.level) return false; // M6-0: "when this Class becomes level N" (CR 716.2a)
     // FAST5X E8 (CR 709.5h-i): "you unlock" / "you fully unlock": the player who unlocked it is the controller; "this door" is the half the ability is on
@@ -297,6 +382,9 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
     // std-combat-1 (CR 603.2, 202.3; Eriette, the Beguiler): each description may name the other object of the event ("with mana value less than or equal to that
     // Aura's mana value"), read as the event happens (the attach looks back at nothing, CR 603.10)
     if (p.what === 'attached' && p.by !== undefined) return roleMatches(cx, e, 'subject', p.object, false, true) && roleMatches(cx, e, 'object', p.by, false, true);
+    // edh-perms-10 (CR 701.3d, 603.10c; Grafted Exoskeleton): "becomes unattached from a permanent": `by` describes the permanent it left (the event's `object`, normalize.ts),
+    // as it was when it left (an unattach looks back, lookback.ts); an unattach that left no object behind (a player host cannot be: an Aura only) never matches
+    if (p.what === 'unattached' && p.by !== undefined) return roleMatches(cx, e, 'subject', p.object, true) && roleMatches(cx, e, 'object', p.by, true);
     return p.by === undefined && roleMatches(cx, e, 'subject', p.object, p.what === 'unattached');
   },
   /** CR 122.7 (the Nth counter), 701.x. `atLeast`: the total on the object reaches N with this event. */
@@ -305,6 +393,11 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
     if (p.kind !== undefined && e.data['kind'] !== p.kind) return false;
     // FAST5X E21 (CR 122.6, 122.6a): "whenever you put ... counters on ...": the player who put them (absent when no player is known: never matches)
     if (p.by !== undefined && !(typeof e.data['by'] === 'string' && pm(cx, p.by, e.data['by'] as PlayerId))) return false;
+    // edhn63 (CR 122.6; Bold Plagiarist): "an opponent puts one or more counters on a creature they control": the player who puts them controls what they go on
+    if (p.byController === true) {
+      const r = roleObject(cx, e, 'subject', false);
+      if (r === undefined || e.data['by'] !== r.o.controller) return false;
+    }
     if (p.atLeast !== undefined) {
       const total = numberData(e, 'total');
       const amount = numberData(e, 'amount');
@@ -315,11 +408,11 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
   },
   /** CR 701: sacrifice, discard, cycle, scry, search, ... `object` is judged as it was for the verbs that look back (sacrifice, counter). */
   // cloud std-spm (CR 305.1): `from`, the zone a land was played from; std-lci: `revealed`, whether an explore revealed a land card
-  action: (p, e, cx) => e.data['verb'] === p.verb && (p.won === undefined || e.data['won'] === p.won) /* p2-player-rules-3 (CR 701.30c) */ && expendMatches(p, e) && (p.from === undefined || e.data['from'] === p.from) && (p.notFrom === undefined || (typeof e.data['from'] === 'string' && e.data['from'] !== p.notFrom)) /* r4-trig (CR 305.1) */ && (p.searched === undefined || (e.data['zone'] === 'library' && e.data['zoneOwner'] === playerOf(e))) /* r4-trig (CR 701.23a) */ && (p.revealed === undefined || e.data['revealed'] === p.revealed) && pm(cx, p.actor, playerOf(e)) && roleMatches(cx, e, 'subject', p.object, lookBackApplies(p, e)) && roleMatches(cx, e, 'object', p.exploited, true) /* std-rx17: the exploited creature, as it last existed (CR 702.110b, 603.10a) */,
+  action: (p, e, cx) => e.data['verb'] === p.verb && (p.won === undefined || e.data['won'] === p.won) /* p2-player-rules-3 (CR 701.30c) */ && expendMatches(p, e) && (p.from === undefined || e.data['from'] === p.from) && (p.notFrom === undefined || (typeof e.data['from'] === 'string' && e.data['from'] !== p.notFrom)) /* r4-trig (CR 305.1) */ && (p.searched === undefined || (e.data['zone'] === 'library' && e.data['zoneOwner'] === playerOf(e))) /* r4-trig (CR 701.23a) */ && (p.revealed === undefined || e.data['revealed'] === p.revealed) && (p.atLeast === undefined || (p.verb === 'draw' && typeof e.data['amount'] === 'number' && e.data['amount'] >= p.atLeast)) /* edh-players-18 (CR 121.2) */ && pm(cx, p.actor, playerOf(e)) && (p.by === undefined || ((p.verb === 'destroy' || p.verb === 'discard' /* edh-next-132 (CR 701.9a) */) && typeof e.data['by'] === 'string' && pm(cx, p.by, e.data['by'] as PlayerId))) /* edh-players-22 (CR 109.5): the destroying spell or ability's controller */ && roleMatches(cx, e, 'subject', p.object, lookBackApplies(p, e)) && roleMatches(cx, e, 'object', p.exploited, true) /* std-rx17: the exploited creature, as it last existed (CR 702.110b, 603.10a) */,
   /** CR 111. */
   createToken: (p, e, cx) => pm(cx, p.player, playerOf(e)) && roleMatches(cx, e, 'newObject', p.token, false),
   /** CR 706. */
-  dieRoll: (p, e, cx) => pm(cx, p.player, playerOf(e)) && cmpMatches(p.result, numberData(e, 'result')),
+  dieRoll: (p, e, cx) => pm(cx, p.player, playerOf(e)) && cmpMatches(p.result, numberData(e, 'result')) && (p.natural === undefined || (numberData(e, 'natural') !== undefined && numberData(e, 'natural') === p.natural)) && (p.highest !== true || (numberData(e, 'natural') !== undefined && numberData(e, 'natural') === numberData(e, 'sides'))), // edh-next-55: a die's highest natural result
   /** Cloud r3-mech, CR 705.2: a called coin flip, won or lost. */
   coinFlip: (p, e, cx) => pm(cx, p.player, playerOf(e)) && (p.won === undefined || e.data['won'] === p.won),
   /** M12-3, CR 603.9: a player lost or left the game (not as the result of a draw: triggers/normalize.ts emits nothing then). */
@@ -352,6 +445,13 @@ const MATCHERS: { [K in EventPattern['ev']]?: Matcher<K> } = {
   phase: (p, e, cx) => e.data['phase'] === p.phase && pm(cx, p.whose, playerOf(e)),
   /** M6-0, CR 731.1a: day becomes night or night becomes day (emitted from M6-4). */
   dayNight: (p, e) => p.to === undefined || e.data['to'] === p.to,
+  /** edh-players-18, CR 725.3: a player became the monarch; "an opponent" is judged as for `loseGame`, a player other than the controller (CR 102.3). */
+  monarch: (p, e, cx) => {
+    const who = playerOf(e);
+    if (who === undefined) return false;
+    if (p.player === 'opponent') return who !== cx.controller;
+    return pm(cx, p.player, who);
+  },
 };
 
 /** M12-3 (CR 506.3, 508.1b): "or a planeswalker you control": the attack is on a planeswalker on the battlefield whose controller matches `want` (a player). */
@@ -396,3 +496,18 @@ export const matchEvent: MatchEvent = (pattern, e, cx) => {
   return m ? m(pattern as never, e, cx) : false;
 };
 
+
+/** edh-next-92 (CR 508.1, 603.2c): the declared attackers that match the pattern's described attacker group, when the pattern has a count AND a description beyond "creatures you control"; otherwise undefined. */
+function describedAttackerCount(p: Extract<EventPattern, { ev: 'attacks' }>, e: SemEvent, cx: MatchContext): number | undefined {
+  if (p.count === undefined || p.attacker === undefined) return undefined;
+  const rest: Record<string, unknown> = { ...p.attacker };
+  delete rest['controller'];
+  if (JSON.stringify(rest['types']) === '["Creature"]') delete rest['types'];
+  if (Object.values(rest).every((v) => v === undefined)) return undefined;
+  // only a class description counts the matching attackers; a filter naming one object ("~", "equipped creature", a reference) keeps the declaration's own count (Battalion: "~ and at least two other creatures attack")
+  const CLASS_KEYS = new Set(['keyword', 'notKeyword', 'subtypes', 'notSubtypes', 'supertypes', 'colors', 'token', 'types', 'notTypes']);
+  if (Object.entries(rest).some(([k, v]) => v !== undefined && !CLASS_KEYS.has(k))) return undefined;
+  const declared = typeof e.data['declared'] === 'string' ? e.data['declared'].split('|').filter((x) => x !== '') : undefined;
+  if (declared === undefined) return undefined;
+  return declared.map((id) => cx.g.s.objects[id]).filter((o): o is GameObject => o !== undefined && objectMatches(cx.g.s, p.attacker!, o, [o.id], filterCx(cx))).length;
+}

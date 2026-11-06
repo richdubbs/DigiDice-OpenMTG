@@ -58,6 +58,12 @@ export class Game {
    */
   leaving: Map<ObjectId, LastKnown['chars']> | null = null;
   /**
+   * edh-zones-7 (CR 614.1a, 616.1, 603.10a; the Dauthi Voidwalker / Rest in Peace rulings): the foreign replacement effects of the objects that leave in ONE event (`leaving`),
+   * taken just before the first of them moves: a replacement effect of a permanent that leaves at the same time as the cards it would replace still applies to them
+   * (effects/replacements.ts#foreignCandidates). Set by core/zones.ts#leavingTogether through the hook the pipeline installs. Transient like `leaving`.
+   */
+  leavingReplacements: readonly unknown[] | null = null;
+  /**
    * Cloud C3 (batch 3), CR 603.10a: with `leaving`, the players who goad each of those objects through a static ability just before the first of them moves
    * (`LastKnown.goadedBy`): the Aura or the goading creature may leave in the same event. Set by core/zones.ts#leavingTogether only when the game has a static
    * goad (statics/rule-sources.ts#staticGoadPresent). Transient, never in the state.
@@ -65,6 +71,8 @@ export class Game {
   leavingGoaded: Map<ObjectId, readonly PlayerId[]> | null = null;
   /** r5-fxb (CR 603.10a): what was attached to each object of a simultaneous leave (`LastKnown.attached`), before any of them moved. Transient, never in the state. */
   leavingAttached: Map<ObjectId, { equipped: boolean; modified: boolean; ids?: ObjectId[] }> | null = null;
+  /** edh-d-93 (CR 603.10a): the base power of each permanent leaving together, before the first of them moved (core/zones.ts#leavingTogether). */
+  leavingBasePower: Map<ObjectId, number | null> | null = null;
   /** std-combat-3 (CR 603.10a): the battlefield just before the first object of a simultaneous leave moved (`LastKnown.board`). Transient, never in the state. */
   leavingBoard: readonly ObjectId[] | null = null;
   /**
@@ -79,7 +87,18 @@ export class Game {
    * destroyed first). Set by effects/funnels.ts#proposeSimultaneous; read by rules/destroy.ts#isIndestructible. Transient, never in the state.
    */
   indestructibleAtProposal: ReadonlyMap<ObjectId, boolean> | null = null;
+  /** edh-next-49 (CR 510.2, 120.3b; Phyrexian Unlife ruling 2011-06-01): the players whose damage is dealt as though its source had infect, settled for the whole batch before the first part is dealt. */
+  infectAtProposal: ReadonlyMap<PlayerId, boolean> | null = null;
+  /**
+   * edh-d-86 (CR 510.2, 120.3a, 614.1a; Enduring Angel): while the damage of one simultaneous batch is dealt and a "your life total would be reduced to N or less" replacement exists, the
+   * life each player would lose from it, summed: the batch's loss is proposed once per player at its end (effects/funnels.ts#simultaneousFunnel), so the replacement sees the whole loss. Transient.
+   */
+  lossBatch: Map<PlayerId, { amount: number; cause: string }[]> | null = null;
+  /** edh-players-22 (CR 109.5, 701.8a): while a spell or ability's instruction destroys a permanent (rules/destroy.ts#destroy), the controller of that spell or ability; the `zoneChanged` event of the destruction carries it. */
+  destroyedBy: PlayerId | null = null;
   enterAttackingBy: ((ids: readonly ObjectId[]) => ObjectId[]) | null = null;
+  /** edh-next-137 (CR 727; Karn Liberated): a restart the resolving ability asked for, carried out once it has left the stack (core/turn.ts#allPassed, core/restart.ts). Transient. */
+  restartRequest: { controller: PlayerId; keep: ObjectId[]; toBattlefield: boolean } | null = null;
   /** Listeners invoked synchronously for every emitted event (trigger detection hooks in here). */
   private readonly listeners: ((g: Game, e: GameEvent) => void)[] = [];
 

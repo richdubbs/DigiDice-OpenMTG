@@ -36,15 +36,23 @@ export function returnRandomFromGraveyard(list: EffectStep[], i: number, st: Ren
   if (a.min === 'any') return null; // "any number of cards at random" is no reading of this fold
   let what: string;
   if (anyOf !== undefined) {
-    if (anyOf.length !== 1 || a.min !== 1) return null;
-    what = K.np({ ...anyOf[0]!, zone: 'graveyard' }, st, { det: 'a', noZone: true });
-    if (!/ card$/.test(what)) what = `${what} card`;
-    bind(st, a.as, { nouns: K.nounsOf(anyOf[0]!), plural: false, hand: toHand });
+    // edh-next-48 (CR 608.2d, 400.7; Moldgraf Monstrosity): and two or more of a description onto the battlefield, "return two creature cards at random from your graveyard to the battlefield"
+    const many = typeof a.min === 'number' && a.min >= 2 && a.min <= 9 && !toHand;
+    if (anyOf.length !== 1 || (a.min !== 1 && !many)) return null;
+    if (many) {
+      what = K.np({ ...anyOf[0]!, zone: 'graveyard' }, st, { det: 'none', plural: true, noZone: true, count: numWord(a.min as number) });
+      if (!/ cards$/.test(what)) what = `${what.replace(/ cards?$/, '')} cards`;
+    } else {
+      what = K.np({ ...anyOf[0]!, zone: 'graveyard' }, st, { det: 'a', noZone: true });
+      if (!/ card$/.test(what)) what = `${what} card`;
+    }
+    bind(st, a.as, { nouns: K.nounsOf(anyOf[0]!), plural: many, hand: toHand });
   } else {
-    if (a.min === 1) return null;
-    what = `${typeof a.min === 'number' ? numWord(a.min) : K.qty(a.min, st)} cards`;
+    // edh-mana-keywords-10 (CR 608.2d, 404.1; The Deck of Many Things): one card of any description, "return a card at random from your graveyard to your hand"
+    if (a.min === 1 && !toHand) return null;
+    what = a.min === 1 ? 'a card' : `${typeof a.min === 'number' ? numWord(a.min) : K.qty(a.min, st)} cards`;
     if (!toHand) return null; // "return two cards at random from your graveyard to the battlefield" is printed nowhere
-    bind(st, a.as, { nouns: ['card'], plural: true, hand: true });
+    bind(st, a.as, { nouns: ['card'], plural: a.min !== 1, hand: true });
   }
   const text = `return ${what} at random from your graveyard to ${toHand ? 'your hand' : 'the battlefield'}`;
   return { clauses: [acting('you', text, `you ${text}`)], consumed: 2 };

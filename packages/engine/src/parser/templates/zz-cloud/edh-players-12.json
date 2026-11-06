@@ -1,0 +1,43 @@
+[
+  {
+    "id": "eff.edhp12.if.player.alsoDiscard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.9a",
+      "CR 101.4"
+    ],
+    "pattern": "if {c:Cond} , {p:Player} also discard[s] {n:Qty} card[s]",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "discard",
+          "who": "$p",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent sacrifices a creature of their choice. If you control a Wizard, each opponent also discards a card."
+      },
+      {
+        "text": "Target player draws a card. If you control a Goblin, that player also discards two cards."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent sacrifices a creature of their choice. If you control a Wizard, each opponent also draws a card.",
+      "Each opponent sacrifices a creature of their choice. Each opponent also discards a card.",
+      "Each opponent sacrifices a creature of their choice. If you control a Wizard, each opponent also discards two cards at random."
+    ]
+  }
+]

@@ -1,0 +1,436 @@
+[
+  {
+    "id": "eff.edhv14.choose.opponentAtRandom",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 102.3"
+    ],
+    "pattern": "choose an opponent at random",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "opponent",
+      "as": "chosenPlayer",
+      "random": true
+    },
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Choose an opponent at random. That player gains control of target artifact you control."
+      },
+      {
+        "text": "At the beginning of combat on your turn, choose an opponent at random. That player gains control of target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Choose an opponent at random from among your opponents.",
+      "Choose a player at random.",
+      "Choose target opponent at random."
+    ]
+  },
+  {
+    "id": "eff.edhv14.obj.attacksPlayer.thisCombat",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 506.2",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} attacks {p:Player} this combat if able",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfCombat"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack",
+          "otherPlayer": "$p"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "if",
+      "if able",
+      "this combat"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Choose an opponent at random. ~ attacks that player this combat if able."
+      },
+      {
+        "text": "{2}: Choose an opponent at random. Target creature you control attacks that player this combat if able."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Choose an opponent at random. Target creature you control attacks that player each combat if able.",
+      "{2}: Choose an opponent at random. Target creature you control attacks that player this combat.",
+      "{2}: Choose an opponent at random. Target creature you control blocks that player this combat if able."
+    ]
+  },
+  {
+    "id": "eff.edhv14.player.loses.halfLife.roundedDown",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 107.1a",
+      "CR 119.1"
+    ],
+    "pattern": "{p:Player} lose[s] half their life , rounded down",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "floorDiv",
+        "args": [
+          {
+            "q": "life",
+            "of": "$p"
+          },
+          2
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player loses half their life, rounded down. Draw a card."
+      },
+      {
+        "text": "At the beginning of each opponent's upkeep, that player loses half their life, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, that player loses half their life, rounded up. Draw a card.",
+      "Whenever ~ deals combat damage to a player, that player loses half their life. Draw a card.",
+      "Whenever ~ deals combat damage to a player, that player loses half your life, rounded down. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhv14.search.andRevealThatCard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} card and reveal that card",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "max": 1,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "{2}{G}: Search your library for a creature card and reveal that card. Put it into your hand, then discard a card at random. Then shuffle."
+      },
+      {
+        "text": "{1}{U}: Search your library for an instant card and reveal that card. Put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}: Search your library for a creature card and reveal those cards. Put it into your hand, then shuffle.",
+      "{2}{G}: Search your library for a creature card and reveal that card to target opponent. Put it into your hand, then shuffle.",
+      "{2}{G}: Search your library for a creature card and reveal that card, then put it into your hand and shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhv14.search.upTo.revealPutOneOtherHand.noShuffle",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards , reveal ( them | those cards ) , and put one onto the battlefield tapped and the other into your hand",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "$n",
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "kept"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "kept"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "kept"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to two basic land cards, reveal those cards, and put one onto the battlefield tapped and the other into your hand. Shuffle, then scry 1."
+      },
+      {
+        "text": "Search your library for up to two basic Swamp cards, reveal them, and put one onto the battlefield tapped and the other into your hand. Shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two basic land cards, reveal those cards, and put one onto the battlefield and the other into your hand. Shuffle.",
+      "Search your library for up to two basic land cards, and put one onto the battlefield tapped and the other into your hand. Shuffle.",
+      "Search your library for up to two basic land cards, reveal those cards, and put one into your hand and the other onto the battlefield tapped. Shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhv14.draw.youAndAnotherTargetPlayer",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 115.1",
+      "CR 608.2c",
+      "CR 109.5"
+    ],
+    "pattern": "you and another target player each draw a card",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": 1
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "target",
+          "id": "",
+          "$target": {
+            "kind": "player",
+            "players": {
+              "who": "any",
+              "otherThan": {
+                "ref": "you"
+              }
+            },
+            "min": 1,
+            "max": 1,
+            "text": "another target player"
+          }
+        },
+        "count": 1
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "When ~ leaves the battlefield, you and another target player each draw a card."
+      },
+      {
+        "text": "Whenever ~ attacks, you and another target player each draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ leaves the battlefield, you and another target player each draw two cards.",
+      "When ~ leaves the battlefield, you and another target opponent each draw a card.",
+      "When ~ leaves the battlefield, you and another player each draw a card."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhv14.self.counter.thenItDealsPower",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 120.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "put a +1/+1 counter on ~ , then it deals damage equal to its power to {to:Recipient}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "self"
+        },
+        "kind": "+1/+1",
+        "count": 1
+      },
+      {
+        "op": "damage",
+        "source": {
+          "ref": "self"
+        },
+        "to": "$to",
+        "amount": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+            "ref": "self"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast your second spell each turn, put a +1/+1 counter on ~, then it deals damage equal to its power to any target."
+      },
+      {
+        "text": "Whenever ~ attacks, put a +1/+1 counter on ~, then it deals damage equal to its power to target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, put two +1/+1 counters on ~, then it deals damage equal to its power to any target.",
+      "Whenever ~ attacks, put a +1/+1 counter on target creature, then it deals damage equal to its power to any target.",
+      "Whenever ~ attacks, put a +1/+1 counter on ~, then it deals damage equal to its toughness to any target.",
+      "Whenever ~ attacks, put a -1/-1 counter on ~, then it deals damage equal to its power to any target."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhv14.return.choose.theirOwnersHand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.3",
+      "CR 400.7"
+    ],
+    "pattern": "return {n:Qty} {f:Filter} to their owner 's hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, return three lands you control to their owner's hand."
+      },
+      {
+        "text": "When ~ enters, return three artifacts you control to their owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, return two lands you control to their owners' hands.",
+      "When ~ enters, return two lands you control to their owner's library.",
+      "When ~ enters, return two lands you control to its owner's hand."
+    ]
+  }
+]

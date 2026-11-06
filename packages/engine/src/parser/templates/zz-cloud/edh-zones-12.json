@@ -1,0 +1,467 @@
+[
+  {
+    "id": "eff.edhz12.forEach.thisWay.copyMayCastFree",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 707.12",
+      "CR 118.9"
+    ],
+    "pattern": "for each {f:Filter} , copy it , and you may cast the copy without paying its mana cost",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "eachMoved",
+      "do": [
+        {
+          "op": "cast",
+          "who": {
+            "ref": "you"
+          },
+          "what": {
+            "ref": "bound",
+            "name": "eachMoved"
+          },
+          "copyIn": "exile",
+          "optional": true,
+          "free": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "and",
+      "each",
+      "may",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Exile target sorcery card from your graveyard. For each card exiled this way, copy it, and you may cast the copy without paying its mana cost."
+      },
+      {
+        "text": "Exile up to two target instant cards from your graveyard. For each card exiled this way, copy it, and you may cast the copy without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Exile target instant or sorcery card from your graveyard. For each card exiled this way, copy it, and cast the copy.",
+      "Exile target instant or sorcery card from your graveyard. For each card exiled this way, copy it, and you may cast it without paying its mana cost.",
+      "Exile target instant or sorcery card from your graveyard. For each card exiled this way, copy it."
+    ]
+  },
+  {
+    "id": "eff.edhz12.dig.reveal.hand.adjCard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 700.6"
+    ],
+    "pattern": "you may reveal {f:AdjCard} from among {g:Seen} and put ( it | that card ) into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "and",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may reveal a legendary card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may reveal a historic card from among them and put that card into your hand. Put the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. You may reveal a legendary card from among them and put it onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You must reveal a legendary card from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal two legendary cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. You may reveal a legendary creature card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhz12.linked.putOne.ownersGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 400.3"
+    ],
+    "pattern": "put a card exiled with ~ into its owner 's graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "linkedReturned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "linkedReturned"
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to two target cards from graveyards.\n{1}{W}, {T}: Put a card exiled with ~ into its owner's graveyard."
+      },
+      {
+        "text": "When ~ enters, exile the top three cards of your library.\nWhenever ~ attacks, put a card exiled with ~ into its owner's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to two target cards from graveyards.\n{1}{W}, {T}: Put a card exiled with ~ into its owner's hand.",
+      "When ~ enters, exile up to two target cards from graveyards.\n{1}{W}, {T}: Put each card exiled with ~ into its owner's graveyard.",
+      "When ~ enters, exile up to two target cards from graveyards.\n{1}{W}, {T}: Put a card exiled with ~ into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhz12.linked.returnOthers.graveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2c",
+      "CR 400.3",
+      "CR 109.2"
+    ],
+    "pattern": "return each other card exiled with ~ to its owner 's graveyard",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "any",
+          "not": {
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "object",
+                "number": "singular",
+                "text": "other"
+              }
+            }
+          }
+        }
+      },
+      "to": {
+        "zone": "graveyard"
+      }
+    },
+    "consumes": [
+      "each",
+      "other",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control dies, you may exile that card. If you do, return each other card exiled with ~ to its owner's graveyard."
+      },
+      {
+        "text": "Whenever a nontoken artifact dies, you may exile that card. If you do, return each other card exiled with ~ to its owner's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control dies, you may exile that card. If you do, return each other card exiled with ~ to its owner's hand.",
+      "Whenever a creature you control dies, you may exile that card. If you do, return each other card exiled with ~ to your graveyard.",
+      "Whenever a creature you control dies, you may exile that card. If you do, return each card exiled with ~ to its owner's graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhz12.linked.copyToken",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 707.2",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of a card exiled with ~",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "copied"
+      },
+      {
+        "op": "copy",
+        "what": {
+          "ref": "bound",
+          "name": "copied"
+        },
+        "result": "token",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target creature card from a graveyard.\n{2}: Create a token that's a copy of a card exiled with ~."
+      },
+      {
+        "text": "When ~ enters, exile up to two target artifact cards from your graveyard.\nAt the beginning of your upkeep, create a token that's a copy of a card exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target creature card from a graveyard.\n{2}: Create a token that's a copy of target creature card in a graveyard.",
+      "When ~ enters, exile target creature card from a graveyard.\n{2}: Create a token that's a copy of each card exiled with ~.",
+      "When ~ enters, exile target creature card from a graveyard.\n{2}: Create a token that's a copy of a card exiled with ~, except it isn't legendary and is a Spirit in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.edhz12.exile.filterCard.atRandom.fromGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 404.1",
+      "CR 400.7"
+    ],
+    "pattern": "exile ( a | an ) {f:Filter} card at random from your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, exile an instant card at random from your graveyard. You may play that card this turn."
+      },
+      {
+        "text": "{2}, {T}: Exile a sorcery card at random from your graveyard. You may play that card this turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Exile a sorcery card from your graveyard. You may play that card this turn.",
+      "{2}, {T}: Exile two sorcery cards at random from your graveyard. You may play those cards this turn.",
+      "{2}, {T}: Exile a sorcery card at random from target player's graveyard. You may play that card this turn."
+    ]
+  },
+  {
+    "id": "eff.edhz12.copy.eachLinked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 707.12",
+      "CR 608.2c"
+    ],
+    "pattern": "copy each card exiled with ~",
+    "build": {
+      "op": "copy",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "exile",
+          "isCard": true
+        }
+      },
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, exile a sorcery card at random from your graveyard. Then copy each card exiled with ~. You may cast any number of the copies without paying their mana costs."
+      },
+      {
+        "text": "{T}: Exile an instant card at random from your graveyard. Copy each card exiled with ~. You may cast any number of the copies without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile a sorcery card at random from your graveyard. Copy it. You may cast the copy without paying its mana cost.",
+      "{T}: Exile a sorcery card at random from your graveyard. Copy each card exiled with ~ twice. You may cast any number of the copies without paying their mana costs.",
+      "{T}: Exile a sorcery card at random from your graveyard. Copy a card exiled with ~. You may cast the copy without paying its mana cost."
+    ]
+  },
+  {
+    "id": "rid.edhz12.mayCastAnyNumberOfCopies.free",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.12",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9"
+    ],
+    "pattern": "you may cast any number of the copies without paying their mana costs",
+    "build": {
+      "$patchPrevious": {
+        "op": "cast",
+        "result": null,
+        "copyIn": "exile",
+        "optional": true,
+        "free": true,
+        "@require": {
+          "what.ref": "each",
+          "result": "spell",
+          "count": null,
+          "newTargets": null,
+          "except": null,
+          "as": null
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Exile a sorcery card at random from your graveyard. Copy each card exiled with ~. You may cast any number of the copies without paying their mana costs."
+      },
+      {
+        "text": "Whenever you cast a spell, exile an instant card at random from your graveyard. Then copy each card exiled with ~. You may cast any number of the copies without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell. You may cast any number of the copies without paying their mana costs.",
+      "{T}: Exile a sorcery card at random from your graveyard. Copy each card exiled with ~. You may cast one of the copies without paying their mana costs.",
+      "{T}: Exile a sorcery card at random from your graveyard. You may cast any number of the copies without paying their mana costs."
+    ]
+  }
+]

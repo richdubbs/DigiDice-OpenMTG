@@ -476,7 +476,7 @@
       "Enchant creature\nAt the beginning of the draw step of enchanted creature's controller, that player loses 3 life.",
       "Enchant creature\nAt the beginning of the next end step of enchanted creature's controller, that player loses 3 life."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 3
   }
 ]

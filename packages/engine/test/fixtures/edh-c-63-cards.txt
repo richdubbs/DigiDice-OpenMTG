@@ -1,0 +1,9 @@
+# edh-c-63 (Commander effort, coordinator C, EDHREC ranks 24,501 to 25,000). After editing: npm run cards -- fixtures
+Azorius Aethermage
+Warped Devotion
+Liability
+Territorial Gorger
+Mundungu
+Firefright Mage
+Ballroom Brawlers
+Expedition Lookout

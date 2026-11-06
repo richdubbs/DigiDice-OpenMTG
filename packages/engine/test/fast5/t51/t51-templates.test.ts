@@ -198,7 +198,7 @@ function nearMisses(text: string): string[] {
   return out;
 }
 
-describe('T51 guard G9 (design 6.8): near-miss mutations fail or differ', () => {
+describe('T51 guard G9 (design 6.8): near-miss mutations fail or differ', { timeout: 60_000 }, () => {
   for (const t of T51) {
     it(`${t.id}: an appended "unless/instead/at random/twice" or a swapped key word never gives the example's JSON`, () => {
       for (const e of t.examples) {
@@ -223,7 +223,7 @@ describe('T51 guard G9 (design 6.8): near-miss mutations fail or differ', () => 
   });
 });
 
-describe('T51 guard G2 (design 6.8): a nonsense word never leaves an automated ability', () => {
+describe('T51 guard G2 (design 6.8): a nonsense word never leaves an automated ability', { timeout: 60_000 }, () => {
   const nonsense = (type: string, text: string, check: (mutated: string) => boolean): void => {
     const lines = text.split('\n');
     const last = lines.pop()!;

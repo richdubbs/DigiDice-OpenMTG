@@ -99,8 +99,15 @@ export interface DicePrefix {
 }
 
 /** `1-9 | `, `20 | `, `15+ | ` (CR 706.2). */
-export function dicePrefix(parse: string, normalized: string, body: Range): DicePrefix | undefined {
-  const m = /^(\d+)(?:-(\d+)|(\+)| or less)?\s*\|\s*/.exec(parse.slice(body[0], body[1]));
+export function dicePrefix(parse: string, normalized: string, body: Range, afterRoll = false): DicePrefix | undefined {
+  const text = parse.slice(body[0], body[1]);
+  // edh-next-55 (CR 706.2; Six-Sided Die): Oracle also prints a row as `1 -- Destroy it.` (a dash for the bar, one result); only in the lines of a die roll (`afterRoll`: the line above
+  // is the roll or another row), never as a bar-less line of anything else
+  // edh-next-137 (CR 706.2, 706.3a; Comet, Stellar Pup): or two consecutive results, `1 or 2 -- ...` (a row of the two results)
+  const dash = afterRoll ? /^(\d+)(?: or (\d+))?\s*--\s*/.exec(text) : null;
+  if (dash !== null && dash[2] !== undefined && Number(dash[2]) !== Number(dash[1]) + 1) return undefined;
+  if (dash !== null) return { min: Number(dash[1]), max: Number(dash[2] ?? dash[1]), range: [body[0], prefixEnd(parse, normalized, body[0], body[0] + dash[0].length)] };
+  const m = /^(\d+)(?:-(\d+)|(\+)| or less)?\s*\|\s*/.exec(text);
   if (!m) return undefined;
   const lo = Number(m[1]);
   const range: Range = [body[0], prefixEnd(parse, normalized, body[0], body[0] + m[0].length)];

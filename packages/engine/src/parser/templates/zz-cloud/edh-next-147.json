@@ -1,0 +1,419 @@
+[
+  {
+    "id": "eff.edhn147.startingWithNextOpp.eachPlayerChooses",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 101.4",
+      "CR 102.2",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "starting with the next opponent in turn order , each player chooses ( a | an ) {f:Filter}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "startingWith": {
+        "ref": "seat",
+        "side": "left"
+      },
+      "from": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "consumes": [
+      "each",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Starting with the next opponent in turn order, each player chooses an artifact you don't control. Exile the chosen artifacts."
+      },
+      {
+        "text": "When ~ enters, starting with the next opponent in turn order, each player chooses a creature you don't control. Destroy the chosen creatures."
+      }
+    ],
+    "counterExamples": [
+      "Starting with the next opponent in turn order, each player may choose a creature you don't control. Destroy the chosen creatures.",
+      "Starting with the next opponent in turn order, each opponent chooses a creature you don't control. Destroy the chosen creatures.",
+      "Starting with the next opponent in turn order, each player chooses two creatures you don't control. Destroy the chosen creatures."
+    ]
+  },
+  {
+    "id": "eff.edhn147.putNameSticker",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 123.3",
+      "CR 123.3b",
+      "CR 123.6",
+      "CR 123.6b"
+    ],
+    "pattern": "put a name sticker on {o:Objs}",
+    "build": {
+      "op": "putSticker",
+      "who": {
+        "ref": "you"
+      },
+      "on": "$o",
+      "sticker": "name"
+    },
+    "examples": [
+      {
+        "text": "When ~ enters, you may put a name sticker on it. Draw a card."
+      },
+      {
+        "text": "{2}, {T}: Put a name sticker on target creature you own."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may put an art sticker on it.",
+      "When ~ enters, you may put a name sticker on each creature you control.",
+      "When ~ enters, you may put two name stickers on it."
+    ]
+  },
+  {
+    "id": "eff.edhn147.mana.forEachUniqueVowel",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 123.6e",
+      "CR 106.1",
+      "CR 106.4",
+      "CR 608.2h"
+    ],
+    "pattern": "add {t:ManaSym} for each unique vowel on that sticker",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "ofType",
+        "type": "$t",
+        "count": {
+          "q": "stickerVowels"
+        }
+      }
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may put a name sticker on it. Add {G} for each unique vowel on that sticker."
+      },
+      {
+        "text": "{T}: Put a name sticker on target creature you own. Add {C} for each unique vowel on that sticker."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may put a name sticker on it. Add {G} for each vowel on that sticker.",
+      "When ~ enters, you may put a name sticker on it. Add {G}{G} for each unique vowel on that sticker.",
+      "When ~ enters, you may put a name sticker on it. Add {G} for each unique vowel on that card."
+    ]
+  },
+  {
+    "id": "sta.edhn147.attached.has.ifEach.four",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature has {a:Abilities} if {c:Cond} , {b:Abilities} if {d:Cond} , {e:Abilities} if {f:Cond} , and {g:Abilities} if {h:Cond}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ],
+          "when": "$c"
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$b"
+            }
+          ],
+          "when": "$d"
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$e"
+            }
+          ],
+          "when": "$f"
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$g"
+            }
+          ],
+          "when": "$h"
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature has vigilance if you control a Knight, reach if you control an Elf, trample if you control a Beast, and menace if you control a Goblin."
+      },
+      {
+        "text": "Enchanted creature has flying if you control an artifact, first strike if you control an enchantment, hexproof if you control a planeswalker, and haste if you control a land."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has vigilance if you control a Knight, reach if you control an Elf, and trample if you control a Beast.",
+      "Equipped creature has vigilance if you control a Knight, reach if you control an Elf, trample if you control a Beast, and menace.",
+      "Each creature you control has vigilance if you control a Knight, reach if you control an Elf, trample if you control a Beast, and menace if you control a Goblin."
+    ]
+  },
+  {
+    "id": "sta.edhn147.attached.has.ifEach.three",
+    "kind": "static",
+    "since": 9,
+    "status": "experimental",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature has {a:Abilities} if {c:Cond} , {b:Abilities} if {d:Cond} , and {e:Abilities} if {f:Cond}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ],
+          "when": "$c"
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$b"
+            }
+          ],
+          "when": "$d"
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$e"
+            }
+          ],
+          "when": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature has vigilance if you control a Knight, reach if you control an Elf, and trample if you control a Beast."
+      },
+      {
+        "text": "Enchanted creature has flying if you control an artifact, first strike if you control an enchantment, and haste if you control a land."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has vigilance if you control a Knight, reach if you control an Elf, trample if you control a Beast, and menace if you control a Goblin.",
+      "Equipped creature has vigilance if you control a Knight, reach if you control an Elf, and trample.",
+      "Equipped creature has vigilance if you control a Knight and reach if you control an Elf."
+    ]
+  },
+  {
+    "id": "sta.edhn147.allAndAll.areCreaturesAndLands.inAddition",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3d",
+      "CR 305.6",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b",
+      "CR 604.1"
+    ],
+    "pattern": "all {f:Filter} and all {g:Filter} are {pt:BasePT} {c:Color} {st:Subtypes} creatures and {lt:Subtypes} lands in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f",
+            "$g"
+          ]
+        }
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Creature"
+            ]
+          },
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Land"
+            ]
+          },
+          "subtypes": {
+            "add": "$lt"
+          }
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": [
+              "$c"
+            ]
+          }
+        },
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "All Islands and all Fish are 2/2 blue Fish creatures and Island lands in addition to their other types."
+      },
+      {
+        "text": "All Mountains and all Goblins are 1/1 red Goblin creatures and Mountain lands in addition to their other types.\n{1}: You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "All Islands and all Fish are 2/2 blue Fish creatures in addition to their other types.",
+      "All Islands and all Fish are 2/2 blue Fish creatures and Island lands.",
+      "All Islands and all Fish are 2/2 blue Fish creatures and Island lands in addition to their other types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn147.eachPlayer.chooseParty.sacrificeRest",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 700.8",
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 701.21a",
+      "CR 101.4"
+    ],
+    "pattern": "each player chooses a party from among creatures they control , then sacrifices the rest",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "filter": {
+        "types": [
+          "Creature"
+        ]
+      },
+      "count": 1,
+      "mode": "keepParty"
+    },
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player chooses a party from among creatures they control, then sacrifices the rest. Draw a card."
+      },
+      {
+        "text": "When ~ enters, each player chooses a party from among creatures they control, then sacrifices the rest."
+      }
+    ],
+    "counterExamples": [
+      "Each player chooses a party from among creatures they control.",
+      "Each player chooses a creature they control, then sacrifices the rest of the party.",
+      "Each player chooses a party from among creatures you control, then sacrifices the rest."
+    ]
+  }
+]

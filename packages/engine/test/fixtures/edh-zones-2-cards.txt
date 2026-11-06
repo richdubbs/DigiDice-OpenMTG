@@ -1,0 +1,7 @@
+# edh-zones-2 (Commander effort, lane edh-zones; test/cloud/edh-zones-2, golden edh-zones-2-review.json): look at the top X and put up to one back, shuffle then exile the top card and play it free, X mana value search, milled card to hand, hand/bottom/exile of three
+Thassa's Oracle
+Eldritch Evolution
+Urza, Lord High Artificer
+Mind's Desire
+Ripples of Undeath
+Expressive Iteration

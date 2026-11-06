@@ -24,6 +24,7 @@ const W_IS = [P('is'), P('was')];
 const W_AT_LEAST_ONE = P('at least one');
 const W_ONE_OR_MORE = P('one or more');
 const W_YOU = P('you');
+const W_SACRIFICED = P('sacrificed'); // edh-d-53
 /** "you <verb> <np> <words>": the verb before the noun phrase, the words after it ("this way" included), the kind, and whether it is negated. */
 const ACTIVE: readonly (readonly [readonly string[], readonly string[], MovedKind, boolean])[] = [
   [P('exiled'), P('this way'), 'exiled', false],
@@ -31,6 +32,8 @@ const ACTIVE: readonly (readonly [readonly string[], readonly string[], MovedKin
   [P('discarded'), P('this way'), 'discarded', false],
   // Cloud r3-moved (CR 603.12, 608.2c): the present tense of a reflexive trigger, "When you discard a nonland card this way, ..." (lower/conditions.ts#lowerReflexive)
   [P('discard'), P('this way'), 'discarded', false],
+  // edh-next-56 (CR 603.12, 608.2c; Hidetsugu, Devouring Chaos, Cait Sith, Fortune Teller): "When you exile a nonland card this way, ...", the present tense of an exile
+  [P('exile'), P('this way'), 'exiled', false],
   [P('sacrifice'), P('this way'), 'sacrificed', false],
   [P('put'), P('onto the battlefield this way'), 'battlefield', false],
   [P("don't put"), P('onto the battlefield this way'), 'battlefield', true],
@@ -74,6 +77,18 @@ export function movedCondAt(ctx: HoleCtx, pos: number): Alt[] {
       }
     }
   }
+  // edh-d-53 (CR 602.2b, 608.2h; Lethal Throwdown): "If the modified creature was sacrificed, ...": the object the COST sacrificed, said with no "this way" and a definite article.
+  // `$costOnly`: lower/conditions.ts reads only the cost's mention (never an instruction of the sentences before), or the sentence stays manual
+  if (art === 'the') { 
+    for (const n of npAlts(ctx, pos + 1)) {
+      if (!plainNp(n)) continue;
+      for (const is of W_IS) {
+        const v = phraseAt(ctx, n.end, is);
+        const e = v < 0 ? -1 : phraseAt(ctx, v, W_SACRIFICED);
+        if (e >= 0) out.push({ end: e, value: { ...(movedCond(n.filter, 'sacrificed', false) as object), $costOnly: true } as unknown as Condition });
+      }
+    }
+  }
   // "you exiled a land card this way", "you put an artifact onto the battlefield this way", "you don't put a card onto the battlefield this way"
   const you = phraseAt(ctx, pos, W_YOU);
   if (you >= 0) {
@@ -114,12 +129,38 @@ export function movedCondAt(ctx: HoleCtx, pos: number): Alt[] {
       }
     }
   }
+  // edh-perms-22: "if you return four or more nontoken permanents you control this way" (COUNTED_RETURN)
+  if (you >= 0) {
+    for (const [verb, kind] of COUNTED_RETURN) {
+      const v = phraseAt(ctx, you, verb);
+      if (v < 0) continue;
+      for (const q of ctx.call('Qty', v)) {
+        if (typeof q.value !== 'number' || q.value < 2) continue;
+        const om = phraseAt(ctx, q.end, W_OR_MORE);
+        if (om < 0) continue;
+        for (const n of npAlts(ctx, om)) {
+          const f = n.filter as Record<string, unknown>;
+          if (n.number !== 'plural' || n.head !== 'permanent' || n.flags.some((x) => x !== 'zone-unstated') || f['owner'] !== undefined || f['zone'] !== undefined || f[MOVED_MARK] !== undefined) continue;
+          const e = phraseAt(ctx, n.end, W_THIS_WAY);
+          if (e < 0) continue;
+          const counted = { ref: 'each', filter: { ...n.filter, [MOVED_MARK]: kind, $attempted: true } };
+          out.push({ end: e, value: { cond: 'compare', left: { q: 'count', of: counted }, op: '>=', right: q.value } as unknown as Condition });
+        }
+      }
+    }
+  }
   return out;
 }
 
 const W_OR_MORE = P('or more');
 /** std-library-3: "you <verb> N or more cards this way": the verbs whose result is counted, and the kind of instruction they name. */
 const COUNTED: readonly (readonly [readonly string[], MovedKind])[] = [[P('exiled'), 'exiled'], [P('sacrificed'), 'sacrificed'], [P('discarded'), 'discarded']];
+/**
+ * edh-perms-22 (CR 608.2c, 608.2h, 400.7; Flood of Tears): "If you return four or more nontoken permanents you control this way, ...": the permanents of that description the
+ * ONE earlier move to a hand moved, as each last existed on the battlefield (its controller then), counted like `COUNTED`. The noun phrase may name its controller ("you
+ * control"): the move is "Return all nonland permanents to their owners' hands", of every player's.
+ */
+const COUNTED_RETURN: readonly (readonly [readonly string[], MovedKind])[] = [[P('return'), 'hand']];
 
 const W_THIS_WAY = P('this way');
 
@@ -135,7 +176,8 @@ export function notMoved(ctx: HoleCtx, pos: number): Alt[] {
     if (typeof q.value !== 'number' || q.value < 1) continue;
     for (const n of npAlts(ctx, q.end)) {
       const f = n.filter as Record<string, unknown>;
-      if (n.number !== 'plural' || n.head !== 'card' || n.flags.some((x) => x !== 'zone-unstated') || f['controller'] !== undefined || f['owner'] !== undefined || f['zone'] !== undefined || f[MOVED_MARK] !== undefined) continue;
+      // edh-players-14 (CR 701.9a; Kroxa): one card, "didn't discard a nonland card this way" (the singular noun after a count of one)
+      if ((n.number !== 'plural' && !(q.value === 1 && n.number === 'singular')) || n.head !== 'card' || n.flags.some((x) => x !== 'zone-unstated') || f['controller'] !== undefined || f['owner'] !== undefined || f['zone'] !== undefined || f[MOVED_MARK] !== undefined) continue;
       const e = phraseAt(ctx, n.end, W_THIS_WAY);
       if (e < 0) continue;
       const counted = { ref: 'each', filter: { anyOf: [n.filter], [MOVED_MARK]: 'discarded', owner: { ref: 'bound', name: 'each' } } };

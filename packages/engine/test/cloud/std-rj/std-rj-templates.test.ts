@@ -13,7 +13,7 @@
  *   parser/lower/quantities.ts#elseSameLifeAmount  "that much" in the otherwise branch of a life loss (CR 119.3, 608.2h)    render/steps-flow.ts   family lose-life-trailing-if
  *   render/fold.ts                         "mill that many cards ... any number of ... from among them", "put it onto the battlefield tapped and attacking and the rest ...",
  *                                          "create a token that's a copy of one of them", "cast up to two spells from among ..."
- *   render/steps-flow.ts                   family cast-free-spell-mv: "You may cast that card without paying its mana cost if the spell's mana value is less than N"
+ *   (edh-cast-9: the family cast-free-spell-mv of render/steps-flow.ts is gone; the cast is now limited by maxManaValue, render/steps-zones.ts#lessThanCap)
  */
 import { describe, expect, it } from 'vitest';
 import type { OracleCard } from '../../../src/index';

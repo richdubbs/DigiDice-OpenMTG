@@ -1,0 +1,181 @@
+[
+ {
+  "id": "cm.edhc3.spells.less.forEach.qty",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "priority": -1,
+  "cr": [
+   "CR 601.2f",
+   "CR 118.7a",
+   "CR 119.3",
+   "CR 604.1"
+  ],
+  "pattern": "{f:Filter} you cast cost {m:ManaCost} less to cast for each {n:Qty}",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "battlefield"
+   ],
+   "effects": [
+    {
+     "s": "costMod",
+     "applies": {
+      "spells": "$f",
+      "caster": "you"
+     },
+     "change": {
+      "kind": "reduce",
+      "generic": {
+       "q": "math",
+       "op": "*",
+       "args": [
+        "$m.0.amount",
+        "$n"
+       ]
+      },
+      "floor": "zero"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Instant spells you cast cost {2} less to cast for each 1 life your opponents have lost this turn."
+   },
+   {
+    "text": "Artifact spells you cast cost {1} less to cast for each 1 life your opponents have lost this turn."
+   }
+  ],
+  "counterExamples": [
+   "Creature spells you cast cost {1} more to cast for each 1 life your opponents have lost this turn.",
+   "Creature spells your opponents cast cost {1} less to cast for each 1 life your opponents have lost this turn.",
+   "Creature spells you cast cost {1} less to activate for each 1 life your opponents have lost this turn."
+  ]
+ },
+ {
+  "id": "rst.edhc3.player.cast.onlySorcerySpeed",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 117.1a",
+   "CR 307.1",
+   "CR 101.2",
+   "CR 604.1"
+  ],
+  "pattern": "{p:Player} can cast spells only any time ( they | you ) could cast a sorcery",
+  "build": {
+   "s": "restrict",
+   "subject": "$p",
+   "mode": "cant",
+   "action": "castAtInstantSpeed"
+  },
+  "consumes": [
+   "can",
+   "only"
+  ],
+  "examples": [
+   {
+    "text": "Your opponents can cast spells only any time they could cast a sorcery."
+   },
+   {
+    "text": "You can cast spells only any time you could cast a sorcery."
+   }
+  ],
+  "counterExamples": [
+   "Each opponent can cast spells only during combat.",
+   "Each opponent can't cast spells any time they could cast a sorcery.",
+   "Each opponent can activate abilities only any time they could cast a sorcery."
+  ]
+ },
+ {
+  "id": "eff.edhc3.flash.dur",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 601.3b",
+   "CR 702.8a",
+   "CR 611.2a",
+   "CR 611.2b"
+  ],
+  "pattern": "{d:Dur} , you may cast {f:Filter} as though they had flash",
+  "build": {
+   "op": "effect",
+   "duration": "$d",
+   "effects": [
+    {
+     "s": "permit",
+     "who": {
+      "ref": "you"
+     },
+     "action": "haveFlash",
+     "of": "$f"
+    }
+   ]
+  },
+  "subject": "none",
+  "consumes": [
+   "may",
+   "as though"
+  ],
+  "examples": [
+   {
+    "text": "Until your next turn, you may cast sorcery spells as though they had flash."
+   },
+   {
+    "text": "Until end of turn, you may cast creature spells as though they had flash."
+   }
+  ],
+  "counterExamples": [
+   "Until your next turn, you may cast sorcery spells as though they had haste.",
+   "Until your next turn, target player may cast sorcery spells as though they had flash.",
+   "You may cast sorcery spells as though they had flash until your next turn and draw a card."
+  ]
+ },
+ {
+  "id": "rst.edhc3.player.cant.cast.additionalKind",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 601.2i",
+   "CR 101.2",
+   "CR 604.1"
+  ],
+  "pattern": "each player who has cast ( a | an ) {a:Filter} this turn can't cast additional {f:Filter}",
+  "build": {
+   "s": "restrict",
+   "subject": {
+    "ref": "each",
+    "who": "player"
+   },
+   "mode": "cant",
+   "action": "cast",
+   "other": "$f",
+   "max": 1
+  },
+  "consumes": [
+   "each",
+   "can't",
+   "additional"
+  ],
+  "examples": [
+   {
+    "text": "Each player who has cast an artifact spell this turn can't cast additional artifact spells."
+   },
+   {
+    "text": "Each player who has cast a multicolored spell this turn can't cast additional multicolored spells."
+   }
+  ],
+  "counterExamples": [
+   "Each player who has cast an artifact spell this turn can cast additional artifact spells.",
+   "Each player who has cast an artifact spell this turn can't activate additional abilities.",
+   "Each player who has cast an artifact spell can't cast additional artifact spells."
+  ]
+ }
+]

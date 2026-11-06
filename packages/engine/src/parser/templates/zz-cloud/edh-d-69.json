@@ -1,0 +1,277 @@
+[
+  {
+    "id": "eff.edhd69.delay.objAttacksMonarch.thisTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 508.1b",
+      "CR 725.1"
+    ],
+    "pattern": "whenever {o:Obj} attacks the monarch this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "attacks",
+          "attacker": {
+            "is": "$o"
+          },
+          "defender": {
+            "ref": "monarch"
+          }
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "whenever",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/+0 until end of turn. Whenever that creature attacks the monarch this turn, you draw a card."
+      },
+      {
+        "text": "Target creature gets +1/+1 until end of turn. Whenever it attacks the monarch this turn, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+0 until end of turn. Whenever that creature attacks the monarch, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature attacks you this turn, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature blocks the monarch this turn, you draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhd69.copyToken.tappedAttacking.ptColorSubtype.with",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.9b",
+      "CR 707.2",
+      "CR 111.1",
+      "CR 613.4b",
+      "CR 508.4"
+    ],
+    "pattern": "create a tapped and attacking token that's a copy of {o:Obj} , except it's a {pt:BasePT} {c:Color} {st:Subtypes} with {a:Abilities}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "tapped": true,
+      "attacking": true,
+      "except": [
+        {
+          "layer": "7b",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": [
+              "$c"
+            ]
+          }
+        },
+        {
+          "layer": 4,
+          "subtypes": {
+            "set": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create a tapped and attacking token that's a copy of target creature you control, except it's a 2/2 white Spirit with flying."
+      },
+      {
+        "text": "Whenever ~ attacks, create a tapped and attacking token that's a copy of target creature card in your graveyard, except it's a 3/3 blue Illusion with vigilance."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create a tapped and attacking token that's a copy of target creature you control, except it's a 2/2 white Spirit.",
+      "Whenever ~ attacks, create a token that's a copy of target creature you control, except it's a 2/2 white Spirit with flying.",
+      "Whenever ~ attacks, create a tapped and attacking token that's a copy of target creature you control, except it's a 2/2 white Spirit in addition to its other types with flying."
+    ]
+  },
+  {
+    "id": "eff.edhd69.becomes.subtypes.with.permanent",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 611.2a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{3}: If ~ is a Shaman, it becomes an Elf Avatar with \"Whenever this creature attacks, you gain 1 life.\""
+      },
+      {
+        "text": "{4}: ~ becomes a Kor Monk with \"Whenever this creature deals combat damage to a player, draw a card.\""
+      }
+    ],
+    "counterExamples": [
+      "{3}: ~ becomes an Elf Avatar with \"Whenever this creature attacks, you gain 1 life.\" until end of turn.",
+      "{3}: ~ becomes an Elf Avatar.",
+      "{3}: ~ becomes an Elf Avatar with base power and toughness 6/6 and trample."
+    ]
+  },
+  {
+    "id": "eff.edhd69.player.loseGame.ringTemptedFour",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 104.3e",
+      "CR 701.54a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} lose[s] the game if the Ring has tempted you four or more times this game",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "happened",
+        "event": {
+          "ev": "action",
+          "verb": "ringTempts",
+          "actor": "you"
+        },
+        "scope": "game",
+        "times": {
+          "op": ">=",
+          "value": 4
+        }
+      },
+      "then": [
+        {
+          "op": "loseGame",
+          "who": "$p"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player loses the game if the Ring has tempted you four or more times this game."
+      },
+      {
+        "text": "At the beginning of your upkeep, you lose the game if the Ring has tempted you four or more times this game."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, that player loses the game if the Ring has tempted you three or more times this game.",
+      "Whenever ~ deals combat damage to a player, that player loses the game unless the Ring has tempted you four or more times this game.",
+      "Whenever ~ deals combat damage to a player, that player wins the game if the Ring has tempted you four or more times this game."
+    ]
+  },
+  {
+    "id": "eff.edhd69.forEachOpponent.unlessSacrifices.choice",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 118.3",
+      "CR 701.21a",
+      "CR 608.2d"
+    ],
+    "pattern": "for each opponent , {e:Effects} unless {p:Player} sacrifices ( a | an ) {f:Filter} of their choice",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "pay",
+          "who": "$p",
+          "cost": {
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": "$f",
+                "count": 1
+              }
+            ]
+          },
+          "else": "$e"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, for each opponent, you create a 1/1 white Soldier creature token unless that player sacrifices a land of their choice."
+      },
+      {
+        "text": "At the beginning of your upkeep, for each opponent, you gain 1 life unless that player sacrifices an artifact of their choice."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, for each opponent, you create a 1/1 white Soldier creature token unless that player sacrifices a land of your choice.",
+      "Whenever ~ attacks, for each opponent, you create a 1/1 white Soldier creature token unless that player sacrifices two lands of their choice.",
+      "Whenever ~ attacks, for each player, you create a 1/1 white Soldier creature token unless that player sacrifices a land of their choice."
+    ]
+  }
+]

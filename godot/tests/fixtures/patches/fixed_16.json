@@ -1,0 +1,1 @@
+{"name":"empty containers","before":{"a":{},"b":[]},"ops":[{"op":"set","path":["a","k"],"value":[]},{"op":"splice","path":["b"],"at":0,"del":0,"add":[{}]}],"after":{"a":{"k":[]},"b":[{}]}}

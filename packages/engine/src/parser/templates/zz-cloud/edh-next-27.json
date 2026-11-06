@@ -1,0 +1,171 @@
+[
+  {
+    "id": "eff.edhn27.each.exilesNFromHand.opponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 109.4"
+    ],
+    "pattern": "each opponent exiles {n:Qty} cards from their hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": {
+              "ref": "iterating"
+            }
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "perPlayer": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Each opponent exiles two cards from their hand."
+      },
+      {
+        "text": "Each opponent exiles three cards from their hand. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent exiles two cards from their graveyard.",
+      "Each opponent exiles two cards from your hand.",
+      "Each opponent exiles two lands from their hand."
+    ]
+  },
+  {
+    "id": "kw.edhn27.equip.subtypeList",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.6a",
+      "CR 702.6c",
+      "CR 205.3m"
+    ],
+    "pattern": "equip {a:Subtypes} , {b:Subtypes} , or {c:Subtypes} {m:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+        "mana": "$m"
+      },
+      "filter": {
+        "types": [
+          "Creature"
+        ],
+        "controller": "you",
+        "anyOf": [
+          {
+            "subtypes": "$a"
+          },
+          {
+            "subtypes": "$b"
+          },
+          {
+            "subtypes": "$c"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Equip Elf, Druid, or Scout {1}"
+      },
+      {
+        "text": "Equip Dwarf, Rogue, or Cleric {2}{W}"
+      }
+    ],
+    "counterExamples": [
+      "Equip Elf, Druid {1}",
+      "Equip Elf, Druid, or Scout",
+      "Equip Elf, Druid, or Scout creature {1}"
+    ]
+  },
+  {
+    "id": "eff.edhn27.counters.twoKindsTwoObjects",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1b",
+      "CR 608.2c"
+    ],
+    "pattern": "put ( a | an ) {k1:CounterKind} counter and ( a | an ) {j1:CounterKind} counter on {a:Obj} and ( a | an ) {k2:CounterKind} counter and ( a | an ) {j2:CounterKind} counter on {b:Obj}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$a",
+        "kind": "$k1",
+        "count": 1
+      },
+      {
+        "op": "putCounters",
+        "on": "$a",
+        "kind": "$j1",
+        "count": 1
+      },
+      {
+        "op": "putCounters",
+        "on": "$b",
+        "kind": "$k2",
+        "count": 1
+      },
+      {
+        "op": "putCounters",
+        "on": "$b",
+        "kind": "$j2",
+        "count": 1
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}: Put a +1/+1 counter and a flying counter on target creature and a +1/+1 counter and a flying counter on ~."
+      },
+      {
+        "text": "{G}, {T}: Put a +1/+1 counter and a deathtouch counter on target Elf you control and a +1/+1 counter and a deathtouch counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Put a +1/+1 counter and a flying counter on target creature or a +1/+1 counter and a flying counter on ~.",
+      "{2}: Put a +1/+1 counter and a flying counter on target creature and a +1/+1 counter on ~.",
+      "{2}: Put two +1/+1 counters and a flying counter on target creature and a +1/+1 counter and a flying counter on ~."
+    ]
+  }
+]

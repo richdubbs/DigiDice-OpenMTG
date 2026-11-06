@@ -1,0 +1,9 @@
+{
+  "id": "d41",
+  "player": "p1",
+  "prompt": "Alice: respond to Lightning Bolt or pass.",
+  "rules": [
+    "CR 117.1"
+  ],
+  "kind": "priority"
+}

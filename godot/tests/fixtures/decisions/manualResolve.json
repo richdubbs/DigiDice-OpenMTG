@@ -1,0 +1,23 @@
+{
+  "id": "d15",
+  "player": "p1",
+  "prompt": "Resolve by hand: Goblin Bushwhacker.",
+  "rules": [
+    "CR 608.2"
+  ],
+  "kind": "manualResolve",
+  "sourceName": "Goblin Bushwhacker",
+  "text": "When Goblin Bushwhacker enters, if it was kicked, creatures you control get +1/+0 and gain haste until end of turn.",
+  "resolvingId": "o50",
+  "reason": "The engine does not run this text yet.",
+  "done": [],
+  "bound": [
+    {
+      "name": "that creature",
+      "objects": [
+        "Grizzly Bears"
+      ]
+    }
+  ],
+  "cancellable": true
+}

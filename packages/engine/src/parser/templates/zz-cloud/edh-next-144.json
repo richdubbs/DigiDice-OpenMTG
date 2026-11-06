@@ -1,0 +1,1161 @@
+[
+  {
+    "id": "eff.edhn144.put.hand.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:Obj} into your hand if {c:Cond}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "hand"
+      },
+      "guard": "$c"
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, you may search your library for a creature card, reveal it, then shuffle. Put that card into your hand if you control a Wizard. Otherwise, put that card on top of your library."
+      },
+      {
+        "text": "When this creature enters, you may search your library for an enchantment card, reveal it, then shuffle. Put that card into your hand if you control a Knight. Otherwise, put that card on top of your library."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, you may search your library for a creature card, reveal it, then shuffle. Put that card into your hand unless you control a Wizard.",
+      "When this creature enters, you may search your library for a creature card, reveal it, then shuffle. Put that card into your graveyard if you control a Wizard.",
+      "When this creature enters, you may search your library for a creature card, reveal it, then shuffle. Put that card into your hand if you control a Wizard instead."
+    ]
+  },
+  {
+    "id": "eff.edhn144.reveal.chooseAndOr.handOrBattlefieldIfX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.20a",
+      "CR 107.3",
+      "CR 401.4"
+    ],
+    "pattern": "reveal the top {n:Qty} cards of your library . choose ( a | an ) {f:Filter} card and/or ( a | an ) {g:Filter} card from among them . put those cards into your hand and the rest on the bottom of your library in a random order . if x is {k:Qty} or more , instead put the chosen cards onto the battlefield or into your hand and the rest on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        "as": "edhn144Seen"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "edhn144Seen"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "edhn144First"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$g"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "edhn144Seen"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "edhn144First"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "edhn144Second"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "compare",
+          "left": {
+            "q": "X"
+          },
+          "op": ">=",
+          "right": "$k"
+        },
+        "then": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "each",
+                  "filter": {
+                    "anyOf": [
+                      {
+                        "is": {
+                          "ref": "bound",
+                          "name": "edhn144First"
+                        }
+                      },
+                      {
+                        "is": {
+                          "ref": "bound",
+                          "name": "edhn144Second"
+                        }
+                      }
+                    ],
+                    "zone": "library"
+                  }
+                },
+                "to": {
+                  "zone": "battlefield",
+                  "controller": {
+                    "ref": "you"
+                  }
+                }
+              }
+            ],
+            "otherwise": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "each",
+                  "filter": {
+                    "anyOf": [
+                      {
+                        "is": {
+                          "ref": "bound",
+                          "name": "edhn144First"
+                        }
+                      },
+                      {
+                        "is": {
+                          "ref": "bound",
+                          "name": "edhn144Second"
+                        }
+                      }
+                    ],
+                    "zone": "library"
+                  }
+                },
+                "to": {
+                  "zone": "hand"
+                }
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "each",
+              "filter": {
+                "anyOf": [
+                  {
+                    "is": {
+                      "ref": "bound",
+                      "name": "edhn144First"
+                    }
+                  },
+                  {
+                    "is": {
+                      "ref": "bound",
+                      "name": "edhn144Second"
+                    }
+                  }
+                ],
+                "zone": "library"
+              }
+            },
+            "to": {
+              "zone": "hand"
+            }
+          }
+        ]
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "edhn144Seen"
+            },
+            "not": {
+              "anyOf": [
+                {
+                  "is": {
+                    "ref": "bound",
+                    "name": "edhn144First"
+                  }
+                },
+                {
+                  "is": {
+                    "ref": "bound",
+                    "name": "edhn144Second"
+                  }
+                }
+              ]
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "consumes": [
+      "if",
+      "instead",
+      "and/or",
+      "rest",
+      "random",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top X plus one cards of your library. Choose a creature card and/or a land card from among them. Put those cards into your hand and the rest on the bottom of your library in a random order. If X is 5 or more, instead put the chosen cards onto the battlefield or into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Reveal the top X plus two cards of your library. Choose an artifact card and/or an enchantment card from among them. Put those cards into your hand and the rest on the bottom of your library in a random order. If X is 4 or more, instead put the chosen cards onto the battlefield or into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top X plus one cards of your library. Choose a creature card and/or a land card from among them. Put those cards into your hand and the rest on the bottom of your library in a random order.",
+      "Reveal the top X plus one cards of your library. Choose a creature card and/or a land card from among them. Put those cards into your hand and the rest into your graveyard. If X is 5 or more, instead put the chosen cards onto the battlefield or into your hand and the rest on the bottom of your library in a random order.",
+      "Reveal the top X plus one cards of your library. Choose a creature card and/or a land card from among them. Put those cards into your hand and the rest on the bottom of your library in a random order. If X is 5 or less, instead put the chosen cards onto the battlefield or into your hand and the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "rep.edhn144.enters.note.lifeTotal",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 119.1"
+    ],
+    "pattern": "as ~ enters , note your life total",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "lifeTotal",
+                "link": "notedLife"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "note"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, note your life total.\nAt the beginning of your end step, you gain 2 life if your life total is less than the last noted life total for ~."
+      },
+      {
+        "text": "As this enchantment enters, note your life total.\nAt the beginning of your upkeep, draw a card if your life total is greater than the last noted life total for ~."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, note an opponent's life total.",
+      "As ~ enters, note your hand size.",
+      "As ~ enters, choose your life total."
+    ]
+  },
+  {
+    "id": "eff.edhn144.note.lifeTotal",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 119.1",
+      "CR 607.2d"
+    ],
+    "pattern": "note your life total",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "lifeTotal",
+      "as": "notedLife",
+      "link": "notedLife"
+    },
+    "consumes": [
+      "note"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, note your life total.\nAt the beginning of your upkeep, draw a card if your life total is greater than or equal to the last noted life total for ~. Then note your life total."
+      },
+      {
+        "text": "As this enchantment enters, note your life total.\nAt the beginning of your end step, you gain 1 life if your life total is less than the last noted life total for ~. Then note your life total."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, draw a card. Then note an opponent's life total.",
+      "At the beginning of your upkeep, draw a card. Then note your hand size.",
+      "At the beginning of your upkeep, draw a card. Then note each player's life total."
+    ]
+  },
+  {
+    "id": "sta.edhn144.rule.revealFirstDraw.yourTurns",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 121.2",
+      "CR 607.2"
+    ],
+    "pattern": "reveal the first card you draw on each of your turns",
+    "build": {
+      "s": "rule",
+      "rule": "revealFirstDraw",
+      "onYourTurns": true
+    },
+    "examples": [
+      {
+        "text": "Reveal the first card you draw on each of your turns. Whenever you reveal an artifact card this way, you gain 2 life."
+      },
+      {
+        "text": "Reveal the first card you draw on each of your turns. Whenever you reveal a creature card this way, draw a card. Whenever you reveal a noncreature card this way, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the first card you draw on each opponent's turn. Whenever you reveal an artifact card this way, you gain 2 life.",
+      "Reveal the second card you draw on each of your turns. Whenever you reveal an artifact card this way, you gain 2 life.",
+      "Reveal the first card an opponent draws on each of your turns. Whenever you reveal an artifact card this way, you gain 2 life."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "sta.edhn144.rule.revealFirstDraw.eachTurn",
+    "kind": "static",
+    "since": 9,
+    "status": "experimental",
+    "cr": [
+      "CR 701.20a",
+      "CR 121.2",
+      "CR 607.2"
+    ],
+    "pattern": "reveal the first card you draw each turn",
+    "build": {
+      "s": "rule",
+      "rule": "revealFirstDraw"
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the first card you draw each turn. Whenever you reveal an artifact card this way, you gain 2 life."
+      },
+      {
+        "text": "Reveal the first card you draw each turn. Whenever you reveal an enchantment card this way, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the first card you draw each combat. Whenever you reveal an artifact card this way, you gain 2 life.",
+      "Reveal the last card you draw each turn. Whenever you reveal an artifact card this way, you gain 2 life.",
+      "Reveal the first card each opponent draws each turn. Whenever you reveal an artifact card this way, you gain 2 life."
+    ]
+  },
+  {
+    "id": "trg.edhn144.reveal.thisWay",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 607.2",
+      "CR 701.20a"
+    ],
+    "pattern": "whenever you reveal {f:Filter} this way",
+    "build": {
+      "on": [
+        {
+          "ev": "reveal",
+          "player": "you",
+          "card": "$f",
+          "thisWay": true
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the first card you draw on each of your turns. Whenever you reveal a land card this way, you gain 2 life."
+      },
+      {
+        "text": "Reveal the first card you draw each turn. Whenever you reveal a nonland card this way, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the first card you draw each turn. Whenever an opponent reveals a land card this way, you gain 2 life.",
+      "Reveal the first card you draw each turn. Whenever you reveal a land card, you gain 2 life.",
+      "Reveal the first card you draw each turn. Whenever you discard a land card this way, you gain 2 life."
+    ]
+  },
+  {
+    "id": "sta.edhn144.addCost.mayRevealOrChooseDragon",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 701.4a",
+      "CR 118.8"
+    ],
+    "pattern": "as an additional cost to cast ~ , you may reveal a dragon card from your hand or choose a dragon you control",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "behold",
+                "filter": {
+                  "subtypes": [
+                    "Dragon"
+                  ]
+                },
+                "count": 1
+              }
+            ]
+          },
+          "optional": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "or",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast this spell, you may reveal a Dragon card from your hand or choose a Dragon you control.\nThis spell deals 2 damage to any target."
+      },
+      {
+        "text": "As an additional cost to cast this spell, you may reveal a Dragon card from your hand or choose a Dragon you control.\nDraw a card."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast this spell, you may reveal a Dragon card from your graveyard or choose a Dragon you control.\nDraw a card.",
+      "As an additional cost to cast this spell, you may reveal a Dragon card from your hand or choose a Dragon an opponent controls.\nDraw a card.",
+      "As an additional cost to cast this spell, reveal a Dragon card from your hand and choose a Dragon you control.\nDraw a card."
+    ]
+  },
+  {
+    "id": "rid.edhn144.instead.damage.powerOfBeheld",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 614.15",
+      "CR 701.4a",
+      "CR 608.2h"
+    ],
+    "pattern": "if you revealed a dragon card or chose a dragon as you cast ~ , ~ deals damage equal to the power of that card or creature instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "@require": {
+          "source": {
+            "ref": "self"
+          }
+        },
+        "op": "if",
+        "cond": {
+          "cond": "beheld",
+          "quality": {
+            "subtypes": [
+              "Dragon"
+            ]
+          }
+        },
+        "then": [
+          {
+            "@previousWith": {
+              "amount": {
+                "q": "stat",
+                "stat": "power",
+                "of": {
+                  "ref": "costBeheld"
+                }
+              }
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "if",
+      "or",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast this spell, you may reveal a Dragon card from your hand or choose a Dragon you control.\n~ deals 3 damage to target creature or planeswalker. If you revealed a Dragon card or chose a Dragon as you cast ~, ~ deals damage equal to the power of that card or creature instead."
+      },
+      {
+        "text": "As an additional cost to cast this spell, you may reveal a Dragon card from your hand or choose a Dragon you control.\n~ deals 2 damage to any target. If you revealed a Dragon card or chose a Dragon as you cast ~, ~ deals damage equal to the power of that card or creature instead."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast this spell, you may reveal a Dragon card from your hand or choose a Dragon you control.\n~ deals 3 damage to target creature. If you revealed a Dragon card or chose a Dragon as you cast ~, ~ deals damage equal to the toughness of that card or creature instead.",
+      "As an additional cost to cast this spell, you may reveal a Dragon card from your hand or choose a Dragon you control.\n~ deals 3 damage to target creature. If you revealed a Dragon card or chose a Dragon as you cast ~, ~ deals damage equal to the power of that card or creature.",
+      "As an additional cost to cast this spell, you may reveal a Dragon card from your hand or choose a Dragon you control.\n~ deals 3 damage to target creature. If you revealed a Dragon card and chose a Dragon as you cast ~, ~ deals damage equal to the power of that card or creature instead."
+    ]
+  },
+  {
+    "id": "sta.edhn144.spell.cast.manaValue.has.blitz.manaCost",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.152a",
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 613.1f"
+    ],
+    "pattern": "each {f:Filter} you cast with mana value {n:Qty} or greater has blitz . the blitz cost is equal to its mana cost",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                {
+                  "$merge": [
+                    "$f",
+                    {
+                      "manaValue": {
+                        "op": ">=",
+                        "value": "$n"
+                      }
+                    }
+                  ]
+                }
+              ],
+              "controller": "you",
+              "not": {
+                "stackKind": "copy",
+                "zone": "stack"
+              },
+              "zone": "stack"
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "blitz",
+                  "text": "blitz",
+                  "costIsManaCost": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each creature spell you cast with mana value 5 or greater has blitz. The blitz cost is equal to its mana cost."
+      },
+      {
+        "text": "Each Goblin spell you cast with mana value 3 or greater has blitz. The blitz cost is equal to its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Each creature spell you cast with mana value 5 or greater has blitz. The blitz cost is equal to its mana value.",
+      "Each creature spell an opponent casts with mana value 5 or greater has blitz. The blitz cost is equal to its mana cost.",
+      "Each creature spell you cast with mana value 5 or less has blitz. The blitz cost is equal to its mana cost."
+    ]
+  },
+  {
+    "id": "cm.edhn144.blitz.you.less.forEachCommanderCast",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.152a",
+      "CR 601.2f",
+      "CR 903.8"
+    ],
+    "pattern": "blitz costs you pay cost {m:ManaCost} less for each time you've cast your commander from the command zone this game",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {},
+            "via": "blitz",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "commanderCasts"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Blitz costs you pay cost {1} less for each time you've cast your commander from the command zone this game."
+      },
+      {
+        "text": "Blitz costs you pay cost {2} less for each time you've cast your commander from the command zone this game.\nFlying"
+      }
+    ],
+    "counterExamples": [
+      "Blitz costs you pay cost {1} more for each time you've cast your commander from the command zone this game.",
+      "Blitz costs your opponents pay cost {1} less for each time you've cast your commander from the command zone this game.",
+      "Blitz costs you pay cost {1} less for each time you've cast a spell from your hand this game."
+    ],
+    "consumes": [
+      "each time",
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edhn144.cast.fromHand.free.mvEqual",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 608.2c"
+    ],
+    "pattern": "you may cast ( a | an ) {f:Filter} from your hand with mana value equal to {n:Qty} without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": "$f.types",
+                "allTypes": "$f.allTypes",
+                "notTypes": "$f.notTypes",
+                "subtypes": "$f.subtypes",
+                "notSubtypes": "$f.notSubtypes",
+                "supertypes": "$f.supertypes",
+                "notSupertypes": "$f.notSupertypes",
+                "colors": "$f.colors",
+                "notColors": "$f.notColors",
+                "colorless": "$f.colorless",
+                "multicolored": "$f.multicolored",
+                "keyword": "$f.keyword",
+                "notKeyword": "$f.notKeyword",
+                "name": "$f.name",
+                "notName": "$f.notName",
+                "power": "$f.power",
+                "toughness": "$f.toughness",
+                "manaValue": "$f.manaValue"
+              }
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "zone": "hand",
+            "owner": "you",
+            "isCard": true,
+            "manaValue": {
+              "op": "==",
+              "value": "$n"
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may cast a creature spell from your hand with mana value equal to 1 plus the number of artifacts you control without paying its mana cost. If you don't, scry 1."
+      },
+      {
+        "text": "At the beginning of your end step, you may cast an artifact spell from your hand with mana value equal to the number of cards in your hand without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you may cast a creature spell from your hand with mana value less than 3 without paying its mana cost.",
+      "At the beginning of your upkeep, you may cast a creature spell from your graveyard with mana value equal to 3 without paying its mana cost.",
+      "At the beginning of your upkeep, you may cast a creature spell from your hand with mana value equal to 3 by paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhn144.sacrifice.ifCant.repeatForTwoMore",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 119.3"
+    ],
+    "pattern": "{p:Player} sacrifices ( a | an ) {f:Filter} of their choice . if they can't , they lose {n:Qty} life and you draw a card . then repeat this process for ( a | an ) {g:Filter} and ( a | an ) {h:Filter}",
+    "build": [
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$f",
+        "count": 1,
+        "as": "edhn144Sac0"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "did",
+          "step": "edhn144Sac0",
+          "not": true
+        },
+        "then": [
+          {
+            "op": "loseLife",
+            "who": "$p",
+            "amount": "$n"
+          },
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$g",
+        "count": 1,
+        "as": "edhn144Sac1"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "did",
+          "step": "edhn144Sac1",
+          "not": true
+        },
+        "then": [
+          {
+            "op": "loseLife",
+            "who": "$p",
+            "amount": "$n"
+          },
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$h",
+        "count": 1,
+        "as": "edhn144Sac2"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "did",
+          "step": "edhn144Sac2",
+          "not": true
+        },
+        "then": [
+          {
+            "op": "loseLife",
+            "who": "$p",
+            "amount": "$n"
+          },
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "if",
+      "then",
+      "repeat",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent sacrifices a creature of their choice. If they can't, they lose 3 life and you draw a card. Then repeat this process for an artifact and a planeswalker."
+      },
+      {
+        "text": "Target opponent sacrifices an artifact of their choice. If they can't, they lose 2 life and you draw a card. Then repeat this process for an enchantment and a creature."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent sacrifices a creature of their choice. If they can't, they lose 2 life and you draw a card. Then repeat this process for an enchantment.",
+      "Target opponent sacrifices a creature of their choice. If they can't, they lose 2 life and you draw a card. Then repeat this process twice.",
+      "Target opponent sacrifices a creature of their choice. If they can't, they lose 2 life and you draw a card. Then repeat this process for an enchantment or a planeswalker."
+    ]
+  },
+  {
+    "id": "eff.edhn144.maySearch.curse.differentName.attachedToEnchantedPlayer",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.23a",
+      "CR 303.4f",
+      "CR 201.2",
+      "CR 608.2c"
+    ],
+    "pattern": "you may search your library for a {s:Subtypes} card that doesn't have the same name as a {s2:Subtypes} attached to enchanted player , put it onto the battlefield attached to that player , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "subtypes": "$s",
+            "not": {
+              "sharesWith": {
+                "with": {
+                  "ref": "each",
+                  "filter": {
+                    "subtypes": "$s2",
+                    "attachedToPlayer": {
+                      "ref": "enchantedPlayer"
+                    }
+                  }
+                },
+                "quality": "name"
+              }
+            }
+          },
+          "max": 1,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            },
+            "attachedToPlayer": {
+              "ref": "enchantedPlayer"
+            }
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "then",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "Enchant player\nAt the beginning of your upkeep, you may search your library for a Curse card that doesn't have the same name as a Curse attached to enchanted player, put it onto the battlefield attached to that player, then shuffle."
+      },
+      {
+        "text": "Enchant player\nAt the beginning of your end step, you may search your library for a Curse card that doesn't have the same name as a Curse attached to enchanted player, put it onto the battlefield attached to that player, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Enchant player\nAt the beginning of your upkeep, you may search your library for a Curse card that has the same name as a Curse attached to enchanted player, put it onto the battlefield attached to that player, then shuffle.",
+      "Enchant player\nAt the beginning of your upkeep, you may search your library for a Curse card that doesn't have the same name as a Curse attached to enchanted player, put it onto the battlefield, then shuffle.",
+      "Enchant player\nAt the beginning of your upkeep, you may search your graveyard for a Curse card that doesn't have the same name as a Curse attached to enchanted player, put it onto the battlefield attached to that player, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhn144.maySacrifice.revealUntil.lesserMv.rest",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.21a",
+      "CR 701.20a",
+      "CR 202.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "you may sacrifice another {f:Filter} . if you do , reveal cards from the top of your library until you reveal {g:DiscardDesc} with lesser mana value , put it onto the battlefield , then put the rest on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "pay",
+        "who": {
+          "ref": "you"
+        },
+        "cost": {
+          "other": [
+            {
+              "kind": "sacrifice",
+              "filter": {
+                "anyOf": [
+                  "$f"
+                ],
+                "not": {
+                  "self": true
+                }
+              },
+              "count": 1
+            }
+          ]
+        },
+        "then": [
+          {
+            "op": "revealUntil",
+            "who": {
+              "ref": "you"
+            },
+            "filter": {
+              "$merge": [
+                "$g",
+                {
+                  "manaValue": {
+                    "op": "<",
+                    "value": {
+                      "q": "stat",
+                      "stat": "manaValue",
+                      "of": {
+                        "ref": "costSacrificed"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "as": "hit",
+            "revealed": "revealed"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "hit"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              }
+            }
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "each",
+              "filter": {
+                "is": {
+                  "ref": "bound",
+                  "name": "revealed"
+                },
+                "not": {
+                  "is": {
+                    "ref": "bound",
+                    "name": "hit"
+                  }
+                },
+                "zone": "library"
+              }
+            },
+            "to": {
+              "zone": "library",
+              "position": "bottom",
+              "order": "random"
+            }
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "may",
+      "if",
+      "another",
+      "until",
+      "then",
+      "rest",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, you may sacrifice another creature. If you do, reveal cards from the top of your library until you reveal a creature card with lesser mana value, put it onto the battlefield, then put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may sacrifice another artifact. If you do, reveal cards from the top of your library until you reveal an artifact card with lesser mana value, put it onto the battlefield, then put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, you may sacrifice another creature. If you do, reveal cards from the top of your library until you reveal a creature card with greater mana value, put it onto the battlefield, then put the rest on the bottom of your library in a random order.",
+      "At the beginning of your end step, you may sacrifice another creature. If you do, reveal cards from the top of your library until you reveal a creature card with lesser mana value, put it into your hand, then put the rest on the bottom of your library in a random order.",
+      "At the beginning of your end step, sacrifice another creature. If you do, reveal cards from the top of your library until you reveal a creature card with lesser mana value, put it onto the battlefield, then put the rest on the bottom of your library in a random order."
+    ],
+    "priority": 1
+  }
+]

@@ -25,10 +25,12 @@ import { lowerDelayTail } from './delay-tail';
 import { lowerDurations } from './durations';
 import { lowerNormalize } from './normalize';
 import { lowerOptionality } from './optionality';
+import { lowerPhaseTapped } from './phase-tapped'; // edh-perms-22
 import { lowerLinks } from './links';
 import { lowerQuantities } from './quantities';
 import { lowerRiders } from './riders';
 import { lowerSameFor } from './same-for';
+import { lowerThatCombat } from './that-combat'; // edh-combat-5
 import { lowerScope } from './scope';
 import { lowerSequencing } from './sequencing';
 import { lowerTargets } from './targets';
@@ -50,6 +52,8 @@ export const DRAFT_PASSES = [
   ['optionality', lowerOptionality],
   ['sameFor', lowerSameFor], // std-combat-2
   ['delayTail', lowerDelayTail], // trek-8
+  ['thatCombat', lowerThatCombat], // edh-combat-5
+  ['phaseTapped', lowerPhaseTapped], // edh-perms-22
 ] as const;
 
 /** Run the ten passes. Pure. */

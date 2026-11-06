@@ -176,12 +176,16 @@ describe('pc-counters-1 lowering and holes: the readings that are no template of
     expect(JSON.stringify(bare.abilities)).not.toContain('"from":"battlefield","to":"exile"');
     expect(fully(parse('Whenever a creature is exiled from your hand, draw a card.', 'Enchantment'))).toBe(false);
   });
-  it('CR 700.4, 603.6c: "Whenever a permanent you control is put into a graveyard" is from the battlefield (a permanent is there); a creature, a card or a nonland permanent is no such reading', () => {
+  it('CR 700.4, 603.6c: "Whenever a permanent you control is put into a graveyard" is from the battlefield (a permanent is there); a card or a creature card is no such reading (a "creature you control" is a permanent too, CR 109.2: p2-trigger-events-1)', () => {
     const f = parse('Whenever a permanent you control is put into a graveyard, draw a card.', 'Enchantment');
     expect(fully(f), JSON.stringify(f.diagnostics)).toBe(true);
     expect(JSON.stringify(f.abilities)).toContain('"subject":{"controller":"you"},"from":"battlefield","to":"graveyard"');
     expect(fully(parse('Whenever another permanent is put into a graveyard, draw a card.', 'Enchantment'))).toBe(true);
-    for (const bad of ['Whenever a card is put into a graveyard, draw a card.', 'Whenever a creature you control is put into a graveyard, draw a card.', 'Whenever a nonland permanent you control is put into a graveyard, draw a card.', 'Whenever a permanent you control is put into a graveyard from your hand, draw a card.']) {
+    const creature = parse('Whenever a creature you control is put into a graveyard, draw a card.', 'Enchantment');
+    expect(fully(creature), JSON.stringify(creature.diagnostics)).toBe(true); // CR 109.2: a creature you control is a permanent on the battlefield, so it is put there from the battlefield
+    expect(JSON.stringify(creature.abilities)).toContain('"subject":{"types":["Creature"],"controller":"you"},"from":"battlefield","to":"graveyard"');
+    expect(fully(parse('Whenever a nonland permanent you control is put into a graveyard, draw a card.', 'Enchantment'))).toBe(true); // a nonland permanent is a permanent (CR 110.1, 109.2)
+    for (const bad of ['Whenever a card is put into a graveyard, draw a card.', 'Whenever a creature card you control is put into a graveyard, draw a card.', 'Whenever a creature spell you control is put into a graveyard, draw a card.', 'Whenever a permanent you control is put into a graveyard from your hand, draw a card.']) {
       expect(fully(parse(bad, 'Enchantment')), bad).toBe(false);
     }
   });

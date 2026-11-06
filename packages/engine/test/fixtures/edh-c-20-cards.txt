@@ -1,0 +1,10 @@
+# edh-c-20 (Commander effort, EDHREC ranks 18,126-18,750, third pass): see docs in the round record. After editing: npm run cards -- fixtures
+Gilt-Leaf Winnower
+Infiltrator's Magemark
+Agrus Kos, Wojek Veteran
+Soul Tithe
+Golgari Brownscale
+Dutiful Knowledge Seeker
+Bloodhusk Ritualist
+Hawkeye, Avenging Archer
+Spined Sliver

@@ -1,0 +1,583 @@
+[
+  {
+    "id": "eff.edhd9.dig.putUpTo.battlefieldTapped",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4"
+    ],
+    "pattern": "put up to {n:Qty} {f:CardsDesc} from among {g:Seen} onto the battlefield tapped",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "tapped"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. Put up to two land cards from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top five cards of your library. Put up to two artifact cards with mana value 2 or less from among them onto the battlefield tapped. Put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. Put up to two land cards from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. Put two land cards from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. Put up to two land cards from among them into your hand tapped."
+    ]
+  },
+  {
+    "id": "eff.edhd9.dig.putAny.hand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4"
+    ],
+    "pattern": "you may put any number of {f:CardsDesc} from among {g:Seen} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top six cards of your library. You may put any number of artifact cards from among them into your hand. Put the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top five cards of your library. You may put any number of snow land cards from among them into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top six cards of your library. You may put any number of artifact cards from among them onto the battlefield. Put the rest into your graveyard.",
+      "Reveal the top six cards of your library. You may put up to two artifact cards from among them into your hand. Put the rest into your graveyard.",
+      "Reveal the top six cards of your library. Put any number of artifact cards from among them into your hand. Put the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhd9.dig.reveal.or.bare",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4"
+    ],
+    "pattern": "you may reveal ( a | an ) {f:Filter} card or {h:Filter} card from among {g:Seen} and put ( it | that card ) into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f",
+              "$h"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. You may reveal a creature card or Wizard card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may reveal an artifact card or Swamp card from among them and put that card into your hand. Put the rest on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. You may reveal a creature card or Wizard card from among them and put it onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You may reveal a creature card or Wizard card from among them and put it into your graveyard. Put the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You must reveal a creature card or Wizard card from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhd9.dig.putAny.mvAtMost.battlefield",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 202.3",
+      "CR 401.4"
+    ],
+    "pattern": "put any number of {f:Filter} cards with mana value {n:Qty} or less from among {g:Seen} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            },
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top six cards of your library. You may put any number of Aura cards with mana value 3 or less from among them onto the battlefield. Put the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top five cards of your library. You may put any number of Equipment cards with mana value 2 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top six cards of your library. You may put any number of Aura cards with mana value 3 or less from among them onto the battlefield tapped. Put the rest into your graveyard.",
+      "Reveal the top six cards of your library. You may put any number of Aura cards with mana value 3 or more from among them onto the battlefield. Put the rest into your graveyard.",
+      "Reveal the top six cards of your library. You may put any number of Aura cards with mana value 3 or less from among them into your hand. Put the rest into your graveyard."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhd9.shufflesIntoLibrary.thenInvestigates",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 701.16a",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} shuffle[s] {o:Obj} into their library , then investigate[s]",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "library",
+          "owner": "$p"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      },
+      {
+        "op": "action",
+        "action": "investigate",
+        "who": "$p"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Target creature's owner shuffles it into their library, then investigates."
+      },
+      {
+        "text": "Choose target artifact. Its owner shuffles it into their library, then investigates."
+      }
+    ],
+    "counterExamples": [
+      "Target creature's owner shuffles it into their library, then investigate twice.",
+      "Target creature's owner shuffles it into their library, then draws a card.",
+      "Target creature's owner shuffles it into their library, then you investigate."
+    ]
+  },
+  {
+    "id": "eff.edhd9.notCreature.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 205.1a"
+    ],
+    "pattern": "{o:Obj} isn't a creature {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "remove": [
+                  "Creature"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "isn't"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a creature spell, this creature isn't a creature until end of turn."
+      },
+      {
+        "text": "Target creature you control isn't a creature until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control isn't a creature.",
+      "Target creature you control isn't a land until end of turn.",
+      "Target creature you control isn't an artifact until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhd9.may.tap.nOther.untapped",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.3",
+      "CR 701.26a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may tap {n:Qty} other untapped {f:Filter}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "tapUntapped",
+            "filter": "$f",
+            "count": "$n",
+            "other": true
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may tap two other untapped creatures you control. If you do, draw a card."
+      },
+      {
+        "text": "Whenever ~ attacks, you may tap three other untapped Elves you control. If you do, scry 2."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may tap two untapped creatures you control. If you do, draw a card.",
+      "When ~ enters, you must tap two other untapped creatures you control. If you do, draw a card.",
+      "When ~ enters, you may tap two other creatures you control. If you do, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhd9.counter.eachConvoker",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.51a",
+      "CR 702.51c",
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "put a +1/+1 counter on each creature that convoked it",
+    "build": {
+      "op": "putCounters",
+      "on": {
+        "ref": "convokers"
+      },
+      "kind": "+1/+1",
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, draw a card, then put a +1/+1 counter on each creature that convoked it."
+      },
+      {
+        "text": "When ~ enters, scry 1, then put a +1/+1 counter on each creature that convoked it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put two +1/+1 counters on each creature that convoked it.",
+      "When ~ enters, put a +1/+1 counter on each creature that tapped to cast it.",
+      "When ~ enters, put a +1/+1 counter on target creature that convoked it."
+    ]
+  },
+  {
+    "id": "eff.edhd9.return.anyCardPer.graveyardToHand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 404.1",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.9a"
+    ],
+    "pattern": "[ then ] return a card from your graveyard to your hand for each {g:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": {
+          "q": "count",
+          "of": {
+            "ref": "each",
+            "filter": "$g"
+          }
+        },
+        "max": {
+          "q": "count",
+          "of": {
+            "ref": "each",
+            "filter": "$g"
+          }
+        },
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Discard three cards, then return a card from your graveyard to your hand for each card discarded this way."
+      },
+      {
+        "text": "Discard two cards. Return a card from your graveyard to your hand for each card discarded this way."
+      }
+    ],
+    "counterExamples": [
+      "Discard three cards, then return a card from your graveyard to the battlefield for each card discarded this way.",
+      "Discard three cards, then return a card from your graveyard to your hand.",
+      "Discard three cards, then return two cards from your graveyard to your hand for each card discarded this way."
+    ]
+  },
+  {
+    "id": "eff.edhd9.you.skipNextTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.10",
+      "CR 500.7"
+    ],
+    "pattern": "skip your next turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "beginTurn",
+            "whose": {
+              "ref": "you"
+            }
+          },
+          "body": {
+            "b": "skip"
+          },
+          "shield": {
+            "uses": 1
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "{U}, {T}: Draw a card. Skip your next turn."
+      },
+      {
+        "text": "When ~ enters, skip your next turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, skip your next two turns.",
+      "When ~ enters, skip your next combat phase.",
+      "When ~ enters, skip your next draw step."
+    ]
+  }
+]

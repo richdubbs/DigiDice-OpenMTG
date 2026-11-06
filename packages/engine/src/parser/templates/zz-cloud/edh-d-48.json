@@ -1,0 +1,146 @@
+[
+ {
+  "id": "eff.edhd48.counter.eachConvoker.kind",
+  "kind": "effect",
+  "since": 48,
+  "status": "stable",
+  "weak": 1,
+  "cr": [
+   "CR 702.51a",
+   "CR 122.1b",
+   "CR 400.7d"
+  ],
+  "pattern": "put ( a | an ) {k:CounterKind} counter on each creature that convoked it",
+  "build": {
+   "op": "putCounters",
+   "on": {
+    "ref": "convokers"
+   },
+   "kind": "$k",
+   "count": 1
+  },
+  "subject": "none",
+  "examples": [
+   {
+    "text": "When ~ enters, scry 1, then put a flying counter on each creature that convoked it."
+   },
+   {
+    "text": "When ~ enters, draw a card, then put a lifelink counter on each creature that convoked it."
+   }
+  ],
+  "counterExamples": [
+   "When ~ enters, put two flying counters on each creature that convoked it.",
+   "When ~ enters, put a flying counter on target creature that convoked it.",
+   "When ~ enters, put a flying counter on each creature that tapped for it."
+  ],
+  "consumes": [
+   "each"
+  ]
+ },
+ {
+  "id": "eff.edhd48.manifest.numberEqual",
+  "kind": "effect",
+  "since": 48,
+  "status": "stable",
+  "cr": [
+   "CR 701.40a",
+   "CR 701.40e",
+   "CR 122.1"
+  ],
+  "pattern": "manifest a number of cards from the top of your library equal to {q:Qty}",
+  "build": {
+   "op": "action",
+   "action": "manifest",
+   "who": {
+    "ref": "you"
+   },
+   "n": "$q"
+  },
+  "subject": "none",
+  "examples": [
+   {
+    "text": "At the beginning of your upkeep, manifest a number of cards from the top of your library equal to the number of lands you control."
+   },
+   {
+    "text": "When ~ enters, manifest a number of cards from the top of your library equal to the number of creatures you control."
+   }
+  ],
+  "counterExamples": [
+   "When ~ dies, manifest a number of cards from the top of target player's library equal to the number of counters on it.",
+   "When ~ dies, manifest a number of cards from your hand equal to the number of counters on it.",
+   "When ~ dies, manifest the top card of your library."
+  ]
+ },
+ {
+  "id": "rep.edhd48.enters.counters.perConvoker",
+  "kind": "static",
+  "since": 48,
+  "status": "stable",
+  "cr": [
+   "CR 702.51a",
+   "CR 614.1c",
+   "CR 614.12",
+   "CR 122.6",
+   "CR 400.7d"
+  ],
+  "pattern": "~ enters with {m:Count} {k:CounterKind} counter[s] on it for each creature that convoked it",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "stack",
+    "battlefield"
+   ],
+   "effects": [
+    {
+     "s": "replace",
+     "replaces": {
+      "ev": "zoneChange",
+      "subject": {
+       "self": true
+      },
+      "to": "battlefield"
+     },
+     "body": {
+      "b": "enters",
+      "counters": [
+       {
+        "kind": "$k",
+        "count": {
+         "q": "math",
+         "op": "*",
+         "args": [
+          "$m",
+          {
+           "q": "count",
+           "of": {
+            "ref": "convokers"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "subject": "none",
+  "consumes": [
+   "for",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "~ enters with four +1/+1 counters on it for each creature that convoked it."
+   },
+   {
+    "text": "~ enters with three charge counters on it for each creature that convoked it."
+   }
+  ],
+  "counterExamples": [
+   "~ enters with two +1/+1 counters on it for each creature that tapped for it.",
+   "~ enters with two +1/+1 counters on it for each creature that convoked a spell.",
+   "~ enters with two +1/+1 counters on it for each creature that convoked it this turn."
+  ]
+ }
+]

@@ -16,10 +16,11 @@ import { watcherOf, vanilla } from './cards';
 /** The engine events each `ev` is derived from (normalize.ts). `state` is evaluated by triggers/state.ts, not derived from an event. */
 const SOURCES: Record<EventPattern['ev'], string[] | 'evaluated'> = {
   zoneChange: ['zoneChanged'], cast: ['spellCast'], activate: ['abilityActivated', 'manaAdded'], attacks: ['attackersDeclared'], blocks: ['blockersDeclared'],
-  becomesBlocked: ['blockersDeclared'], attacksUnblocked: ['blockersDeclared'] /* std-rx35 */, damage: ['damageDealt'], step: ['stepBegan'], life: ['lifeChanged'], draw: ['drew'], counters: ['countersChanged'],
+  becomesBlocked: ['blockersDeclared'], attacksUnblocked: ['blockersDeclared'] /* std-rx35 */, damage: ['damageDealt'], damagePrevented: ['damagePrevented'] /* edh-replace-3: CR 615.13 */, step: ['stepBegan'], life: ['lifeChanged'], draw: ['drew'], reveal: ['revealedThisWay'] /* edh-next-144 */, counters: ['countersChanged'],
   createToken: ['zoneChanged', 'tokenCreated'], dieRoll: ['dieRolled'], state: 'evaluated', beginTurn: ['turnBegan'], resolves: ['resolved'],
   phase: [], dayNight: ['dayNight'], // M6-0: phase is replacement-only (no GameEvent); dayNight is emitted from M6-4
   loseGame: ['playerLost'], // M12-3 (CR 603.9)
+  monarch: ['designationChanged'], // edh-players-18 (CR 725.3)
   coinFlip: ['coinFlipped'], // cloud r3-mech (CR 705.2)
   controlChange: ['controlChanged'], // Standard round 3, r3-trig (CR 108.4)
   abilityTriggered: 'evaluated', // std-copy-6: made by triggers/collect.ts#metaEvents from the triggers a batch caused (CR 603.2), not from a GameEvent
@@ -74,20 +75,21 @@ describe('design 5.2, D2: the finer event forms are named, and only the ones the
   const supported = ['feature:ev.action.sacrifice', 'feature:ev.action.discard', 'feature:ev.action.destroy', 'feature:ev.action.exile', 'feature:ev.action.playLand', 'feature:ev.action.shuffle', 'feature:ev.becomes.tapped', 'feature:ev.becomes.untapped',
     // WP14 added the emitters of these (effects/handlers/zones*.ts, tokens*.ts): test/m5/zones/events.test.ts
     'feature:ev.action.counter', 'feature:ev.becomes.attached', 'feature:ev.becomes.transformed', 'feature:ev.cast.orCopy',
+    // edh-perms-10 (CR 701.3d, 603.10c): the attach op, re-attaching, an attachment leaving the battlefield and the 704.5n-p state-based actions emit it (cloud/edh-perms-10)
+    'feature:ev.becomes.unattached',
     // WP32: triggered abilities emit becameTarget too (spells, activated abilities and copies already did): test/m5/triggers/wp32-ward.test.ts
     'feature:ev.becomes.targeted',
     // M6-3: turned face up / face down (rules/face-down.ts emits them; triggers/forms-face.ts)
     'feature:ev.becomes.turnedFaceUp', 'feature:ev.becomes.turnedFaceDown',
     // FAST5 T37: monstrosity and cycling emit them (effects/handlers/actions-native-counters.ts, actions/activate.ts)
     'feature:ev.becomes.monstrous', 'feature:ev.action.cycle',
+    'feature:ev.becomes.crewed', // edh-next-39 (CR 702.122e): the crew keyword reports it as the crew ability resolves
     // FAST5X E9: scry and surveil (effects/handlers/cards-library.ts emits them, CR 701.22d, 701.25d)
     'feature:ev.action.scry', 'feature:ev.action.surveil',
     'feature:ev.action.search', // Standard round 4, r4-trig (CR 701.23a): effects/handlers/cards-library.ts emits it for every zone searched
     'feature:ev.action.mill']; // p2-trigger-events-1 (CR 701.17a): triggers/normalize.ts reports each milled card as its owner's action
   const missing = [
-    // CR 701.3d: leaving the battlefield and the 704.5m-n state-based actions don't emit "unattached" yet (WP14 review)
-    'feature:ev.becomes.unattached',
-    'feature:ev.becomes.crewed', 'feature:ev.beginTurn.extra', 'feature:ev.becomes.by', 'feature:ev.cmp.quantity',
+    'feature:ev.beginTurn.extra', 'feature:ev.becomes.by', 'feature:ev.cmp.quantity',
   ];
 
   it('the verbs and changes with an emitter are capabilities', () => {

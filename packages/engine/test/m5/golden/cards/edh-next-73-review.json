@@ -1,0 +1,290 @@
+[
+ {
+  "card": "Evercoat Ursine",
+  "expect": "full",
+  "verified": "edh-next-73 review (EDHREC top 20,000, lane exile-play round 3), by hand against the Oracle text and the rules cited (eff.edhn73.play.oneOfLinked.free): trample; hideaway 3 twice (each a linked face-down exile, CR 702.75a, 607.2a: both cards are exiled with it); whenever it deals combat damage to a player, if there are cards exiled with it (intervening if, CR 603.4: the count of the link is at least 1), you may play one of them without paying its mana cost (a choice of 0 or 1 of the linked cards, played free: a land is played, not cast, CR 305.1, 118.9); ruling 2024-07-26: the card is chosen and played while the ability resolves; CR cites from memory, unverified (cloud session)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "trample",
+      "kind": "keyword"
+     },
+     {
+      "amount": 3,
+      "keyword": "hideaway",
+      "kind": "keyword"
+     },
+     {
+      "amount": 3,
+      "keyword": "hideaway",
+      "kind": "keyword"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "from": {
+          "filter": {
+           "is": {
+            "link": "exiled",
+            "ref": "linked"
+           },
+           "zone": "any"
+          },
+          "ref": "each"
+         },
+         "max": 1,
+         "min": 0,
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         }
+        },
+        {
+         "free": true,
+         "op": "cast",
+         "play": true,
+         "what": {
+          "name": "b0",
+          "ref": "bound"
+         },
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "interveningIf": {
+       "cond": "compare",
+       "left": {
+        "of": {
+         "link": "exiled",
+         "ref": "linked"
+        },
+        "q": "count"
+       },
+       "op": ">=",
+       "right": 1
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "combat": true,
+         "ev": "damage",
+         "recipient": {
+          "player": "any"
+         },
+         "source": {
+          "self": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Grolnok, the Omnivore",
+  "expect": "full",
+  "verified": "edh-next-73 review (EDHREC top 20,000, lane exile-play round 3), by hand against the Oracle text and the rules cited (sta.edhn73.play.exile.ownedWithCounters): whenever a Frog you control attacks, mill three; whenever a permanent card is put into your graveyard from your library, exile it with a croak counter on it (the earlier trigger); you may play lands and cast spells from among cards you own in exile with croak counters on them (static permit from exile of cards owned by you with a croak counter; CR 601.3, 305.1, 122.1; ruling 2021-11-19: any incarnation's cards count, as the permission reads the counters on the cards); CR cites from memory, unverified (cloud session)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "effect": {
+       "steps": [
+        {
+         "count": 3,
+         "op": "mill",
+         "who": {
+          "ref": "you"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "attacker": {
+          "controller": "you",
+          "subtypes": [
+           "Frog"
+          ]
+         },
+         "ev": "attacks"
+        }
+       ]
+      }
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "op": "move",
+         "to": {
+          "counters": [
+           {
+            "count": 1,
+            "kind": "croak"
+           }
+          ],
+          "zone": "exile"
+         },
+         "what": {
+          "ref": "event",
+          "role": "subject"
+         }
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "from": "library",
+         "subject": {
+          "isCard": true,
+          "owner": "you",
+          "types": [
+           "Artifact",
+           "Battle",
+           "Creature",
+           "Enchantment",
+           "Land",
+           "Planeswalker"
+          ]
+         },
+         "to": "graveyard"
+        }
+       ]
+      }
+     },
+     {
+      "effects": [
+       {
+        "action": "play",
+        "from": "exile",
+        "of": {
+         "counters": {
+          "kind": "croak"
+         },
+         "isCard": true,
+         "owner": "you"
+        },
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        }
+       }
+      ],
+      "kind": "static"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Thada Adel, Acquisitor",
+  "expect": "full",
+  "verified": "edh-next-73 review (EDHREC top 20,000, lane exile-play round 3), by hand against the Oracle text and the rules cited (anaphora.ts#impulseIdiom, the search idiom): islandwalk; whenever it deals combat damage to a player, you search that player's library for an artifact card and exile it (CR 701.23a: even if none is found), then that player shuffles, until end of turn you may play that card (the card found: a permission for that one object, CR 611.2a, 400.7, 601.3); ruling 2010-03-01: normal timing, still pays its cost; CR cites from memory, unverified (cloud session)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "keyword": "landwalk",
+      "kind": "keyword",
+      "quality": "island"
+     },
+     {
+      "effect": {
+       "steps": [
+        {
+         "as": "b0",
+         "filter": {
+          "types": [
+           "Artifact"
+          ]
+         },
+         "max": 1,
+         "op": "search",
+         "owner": {
+          "ref": "event",
+          "role": "recipient"
+         },
+         "who": {
+          "ref": "you"
+         },
+         "zone": "library"
+        },
+        {
+         "op": "move",
+         "to": {
+          "zone": "exile"
+         },
+         "what": {
+          "name": "b0",
+          "ref": "bound"
+         }
+        },
+        {
+         "op": "shuffle",
+         "who": {
+          "ref": "event",
+          "role": "recipient"
+         }
+        },
+        {
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "action": "play",
+           "of": {
+            "is": {
+             "name": "b0",
+             "ref": "bound"
+            }
+           },
+           "s": "permit",
+           "who": {
+            "ref": "you"
+           }
+          }
+         ],
+         "op": "effect"
+        }
+       ],
+       "targets": []
+      },
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "combat": true,
+         "ev": "damage",
+         "recipient": {
+          "player": "any"
+         },
+         "source": {
+          "self": true
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

@@ -95,6 +95,7 @@
     "pattern": "if the copy is a permanent spell , it gains {a:Abilities}",
     "build": {
       "$patchPrevious": {
+        "@into": true,
         "gains": {
           "@new": {
             "add": "$a",

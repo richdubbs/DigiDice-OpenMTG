@@ -1,0 +1,772 @@
+[
+  {
+    "id": "eff.edhn4.lead.becomes.pt.subtype.artifactCreature",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}: Until end of turn, ~ becomes a 3/4 Construct artifact creature."
+      },
+      {
+        "text": "{1}: Until end of turn, target artifact you control becomes a 4/4 Golem artifact creature."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Until end of turn, ~ becomes a 2/3 Construct artifact creature with flying.",
+      "{2}: ~ becomes a 2/3 Construct creature until end of turn.",
+      "{2}: Until end of turn, ~ becomes a Construct artifact creature."
+    ]
+  },
+  {
+    "id": "eff.edhn4.becomes.pl.creatures.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Objs} become {pt:BasePT} creatures {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "All lands become 2/2 creatures until end of turn."
+      },
+      {
+        "text": "Creatures you control become 1/1 creatures until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "All lands become 2/2 creatures.",
+      "All lands become 2/2 creatures with haste until end of turn.",
+      "All lands become creatures until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn4.lead.become.pl.creatures.stillLands",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} become {pt:BasePT} creatures that are still lands",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, lands you control become 2/2 creatures that are still lands."
+      },
+      {
+        "text": "Until end of turn, all lands become 3/3 creatures that are still lands."
+      }
+    ],
+    "counterExamples": [
+      "Lands you control become 2/2 creatures that are still lands.",
+      "Until end of turn, lands you control become 2/2 creatures that are still artifacts.",
+      "Until end of turn, lands you control become 2/2 creatures."
+    ],
+    "consumes": [
+      "still"
+    ]
+  },
+  {
+    "id": "eff.edhn4.becomes.subtype.basePT.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{T}: Target creature becomes a Wizard with base power and toughness 3/3 until end of turn."
+      },
+      {
+        "text": "{2}: Up to one target creature becomes a Bird with base power and toughness 1/1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target creature becomes a Wizard with base power and toughness 3/3.",
+      "{T}: Target creature becomes a Wizard with base power and toughness 3/3 and flying until end of turn.",
+      "{T}: Target creature becomes a Wizard until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn4.becomes.subtype.basePT.and.abilities.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT} and {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{T}: Target creature becomes a Bird with base power and toughness 1/1 and flying until end of turn."
+      },
+      {
+        "text": "{2}: Up to one target creature becomes a Wizard with base power and toughness 3/3 and haste until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target creature becomes a Bird with base power and toughness 1/1 and flying.",
+      "{T}: Target creature becomes a Bird with base power and toughness 1/1 with flying until end of turn.",
+      "{T}: Target creature becomes a Bird and flying until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn4.switch.theirPT.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4d"
+    ],
+    "pattern": "switch the power and toughness of {o:Objs} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7d",
+              "switchPT": true
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Switch the power and toughness of each of up to three target creatures until end of turn."
+      },
+      {
+        "text": "Switch the power and toughness of each of any number of target creatures until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Switch the power and toughness of each of up to three target creatures.",
+      "Switch the power and toughness of each of up to three target lands until end of turn.",
+      "Switch the power and toughness until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn4.prevent.combat.thatGroupWould.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.1",
+      "CR 120.2"
+    ],
+    "pattern": "prevent all combat damage that {g:Filter} would deal {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": "$g"
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that artifact creatures your opponents control would deal this turn."
+      },
+      {
+        "text": "Draw a card. Prevent all combat damage that creatures with power 5 or greater would deal this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that creatures with power 5 or greater would deal this turn.",
+      "Prevent all combat damage that creatures with power 5 or greater would be dealt this turn.",
+      "Prevent all noncombat damage that red creatures would deal this turn.",
+      "Prevent all combat damage that target red creature would deal this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn4.prevent.combat.byCreaturesOtherThan.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.1",
+      "CR 120.2",
+      "CR 608.2b"
+    ],
+    "pattern": "prevent all combat damage that would be dealt by creatures other than {o:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": {
+              "types": [
+                "Creature"
+              ],
+              "not": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt by creatures other than target Wizard this turn."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt by creatures other than target creature you control this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt by creatures other than target creature this turn.",
+      "Prevent all combat damage that would be dealt to creatures other than target creature this turn.",
+      "Prevent all combat damage that would be dealt by creatures other than target creature."
+    ]
+  },
+  {
+    "id": "eff.edhn4.player.mill.draw.lose",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 121.1",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} mill[s] {a:Qty} card[s] , draw[s] {b:Qty} card[s] , and lose[s] {c:Qty} life",
+    "build": [
+      {
+        "op": "mill",
+        "who": "$p",
+        "count": "$a"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$b"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$c"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player mills three cards, draws one card, and loses 4 life."
+      },
+      {
+        "text": "Each opponent mills three cards, draws one card, and loses 4 life."
+      }
+    ],
+    "counterExamples": [
+      "Target player mills two cards, draws two cards, and gains 2 life.",
+      "Target player mills two cards, draws two cards, and you lose 2 life.",
+      "Target player mills two cards and draws two cards."
+    ]
+  },
+  {
+    "id": "eff.edhn4.player.draw.lose.then.mill",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 121.1",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} draw[s] {a:Qty} card[s] , lose[s] {b:Qty} life , then mill[s] {c:Qty} card[s]",
+    "build": [
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$a"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$b"
+      },
+      {
+        "op": "mill",
+        "who": "$p",
+        "count": "$c"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "You draw three cards, lose 1 life, then mill one card."
+      },
+      {
+        "text": "Target player draws three cards, loses 1 life, then mills one card."
+      }
+    ],
+    "counterExamples": [
+      "You draw two cards, lose 2 life, and mill two cards.",
+      "You draw two cards, gain 2 life, then mill two cards.",
+      "You draw two cards, lose 2 life, then discard two cards."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.edhn4.player.draw.lose.get.poison",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 119.3",
+      "CR 122.1f",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} draw[s] {a:Qty} card[s] , lose[s] {b:Qty} life , and get[s] {c:Qty} poison counter[s]",
+    "build": [
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$a"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$b"
+      },
+      {
+        "op": "putCounters",
+        "on": "$p",
+        "kind": "poison",
+        "count": "$c"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player draws two cards, loses 1 life, and gets a poison counter."
+      },
+      {
+        "text": "Target opponent draws one card, loses 2 life, and gets a poison counter."
+      }
+    ],
+    "counterExamples": [
+      "Target player draws three cards, loses 3 life, and gets three experience counters.",
+      "Target player draws three cards, loses 3 life, and gets three poison counters for each creature you control.",
+      "Target player draws two cards and loses 3 life."
+    ]
+  },
+  {
+    "id": "eff.edhn4.player.lose.mill.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 701.17a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] x life and mill[s] x cards , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "loseLife",
+          "who": "$p",
+          "amount": {
+            "q": "X"
+          }
+        },
+        {
+          "op": "mill",
+          "who": "$p",
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player loses X life and mills X cards, where X is the number of Wizards you control."
+      },
+      {
+        "text": "Target opponent loses X life and mills X cards, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Target player loses X life and mills X cards.",
+      "Target player loses X life and mills X cards, where Y is the number of Zombies you control.",
+      "Target player loses X life and draws X cards, where X is the number of Zombies you control."
+    ]
+  },
+  {
+    "id": "sta.edhn4.paired.both.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.95",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "as long as ( ~ | this creature ) is paired with another creature , both creatures have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "paired": true
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "pair",
+            "both": true
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "another",
+      "each",
+      "both"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is paired with another creature, both creatures have shroud and haste."
+      },
+      {
+        "text": "As long as this creature is paired with another creature, both creatures have flying and vigilance."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is paired with another creature, both creatures get +1/+1.",
+      "As long as ~ is paired with another creature, each other creature has double strike.",
+      "As long as ~ is tapped, both creatures have double strike."
+    ]
+  },
+  {
+    "id": "sta.edhn4.paired.each.gets",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.95",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "as long as ( ~ | this creature ) is paired with another creature , each of those creatures gets {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "paired": true
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "pair"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "another",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is paired with another creature, each of those creatures gets +3/+1."
+      },
+      {
+        "text": "As long as this creature is paired with another creature, each of those creatures gets +1/+0."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is paired with another creature, each of those creatures has flying.",
+      "As long as ~ is paired with another creature, each other creature gets +2/+2.",
+      "As long as ~ is paired with another creature, each of those creatures gets +2/+2 until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhn4.cantDraw",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 121.1",
+      "CR 604.1",
+      "CR 614.17"
+    ],
+    "pattern": "players can't draw cards",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "mode": "cant",
+      "action": "draw"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Players can't draw cards. Players have no maximum hand size."
+      },
+      {
+        "text": "Players can't draw cards. Each other player can't draw more than one card each turn."
+      }
+    ],
+    "counterExamples": [
+      "Players can't draw cards this turn. Players have no maximum hand size.",
+      "Players can't draw more than one card each turn. Players have no maximum hand size.",
+      "Players can't cast spells. Players have no maximum hand size."
+    ]
+  }
+]

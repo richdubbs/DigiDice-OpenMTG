@@ -303,7 +303,7 @@
       "CR 611.2a",
       "CR 120.3"
     ],
-    "pattern": "prevent all damage that would be dealt to {o:Obj} {d:Dur}",
+    "pattern": "prevent all damage that would be dealt ( to {o:Obj} {d:Dur} | {d:Dur} to {o:Obj} )",
     "build": {
       "op": "effect",
       "duration": "$d",

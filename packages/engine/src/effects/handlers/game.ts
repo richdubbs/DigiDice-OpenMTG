@@ -22,13 +22,14 @@ import type { EffectStep, ObjRef } from '../../types/ability';
 import type { PlayerId } from '../../types/ids';
 import type { LinkValue } from '../../types/state';
 import type { ExecCtx, OpHandlers, StepResult } from '../api';
-import { DIE_RESULT_VAR, EXTRA_TURN_VAR, evalQty } from '../eval';
+import { DICE_COUNT_VAR, DICE_RESULT_PREFIX, DIE_OTHER_VAR, DIE_RESULT_VAR, EXTRA_TURN_VAR, evalQty } from '../eval';
 import { askManual } from '../manual';
 import { propose, proposeResult } from '../propose';
-import { resolveObjs, resolvePlayers, sourceObject } from '../refs';
+import { currentObjs, resolveObjs, resolvePlayers, sourceObject } from '../refs';
 import { runSteps } from '../run';
 import { NATIVE_ACTIONS } from './actions-native';
-import { diceAdvantage, firstCoinFlipsWon } from '../../statics/hooks';
+import { coinAdvantage, diceAdvantage, firstCoinFlipsWon } from '../../statics/hooks';
+import { rollHook } from '../roll-options';
 import { macroReplacedByManualText } from './manual-text';
 
 const NOTHING: StepResult = { performed: false, count: 0 };
@@ -78,7 +79,10 @@ const apnapPlayers = (cx: ExecCtx, ref: Parameters<typeof resolvePlayers>[1]): P
 const textOf = (step: EffectStep, fallback: string): string => step.span ?? fallback;
 
 /** p2-coinflip-1 (model/cap-walk.ts#stepForms): the value forms of these handlers. */
-export const OP_FORMS: readonly string[] = ['op:flipCoin.untilLose', 'op:flipCoin.called'];
+/** edh-next-121: a guard on "You may roll again." (a player who never declines); far above any real game. */
+const MAX_ROLL_AGAIN = 1000;
+
+export const OP_FORMS: readonly string[] = ['op:rollDie.countQty', 'op:rollDie.modifier', 'op:rollDie.chooseOne', 'op:rollDie.afterRoll' /* edh-mana-keywords-10 */, 'op:rollDie.highest' /* edh-top-16 */, 'op:rollDie.keepHighest' /* edh-d-49 */, 'op:rollDie.again' /* edh-next-121 */, 'op:flipCoin.untilLose', 'op:flipCoin.mayStop' /* edh-next-129 */, 'op:flipCoin.stakes' /* edh-next-129 */, 'op:flipCoin.called', 'op:flipCoin.onTails' /* edh-d-20 */, 'op:extraTurn.skipUntap' /* edh-next-46 */, 'op:controlPlayer.thenExtraTurn' /* edh-next-119 */, 'op:flipCoin.times' /* edh-next-128 */];
 
 /** The most flips "until you lose a flip" makes before it is handed to the player (a fair coin never gets there; a guard only). */
 const MAX_FLIPS_UNTIL_LOSE = 200;
@@ -93,20 +97,78 @@ function flipUntilLose(cx: Parameters<typeof askManual>[0], step: Extract<Effect
   const g = cx.g;
   const text = textOf(step, 'flip a coin until you lose a flip');
   if (players.length !== 1 || step.count !== undefined || step.onWin !== undefined || step.onLose !== undefined) return askManual(cx, text, 'a flip until a loss by one player only, without a count or win / lose instructions');
+  // edh-next-128 (CR 705.2, 608.2c; Squee's Revenge): "Flip a coin that many times or until you lose a flip, whichever comes first": `times` caps the flips (read as the flips begin;
+  // one that fails to determine: no flip)
+  const capped = step.times === undefined ? undefined : evalQty(cx, step.times);
+  const cap = step.times === undefined ? MAX_FLIPS_UNTIL_LOSE : capped === undefined || !Number.isFinite(capped) ? 0 : Math.max(0, Math.floor(capped));
+  if (cap > MAX_FLIPS_UNTIL_LOSE) return askManual(cx, text, `more than ${MAX_FLIPS_UNTIL_LOSE} flips: the rest is handed to the player`);
   const p = players[0]!;
   const stats = g.player(p).turnStats;
-  if ((stats.coinFlips ?? 0) === 0 && firstCoinFlipsWon(g.s, p)) return askManual(cx, text, 'the coins of this flip all come up heads and are won: the flips never end (CR 705.2, 104.4b)');
+  const rigged = (stats.coinFlips ?? 0) === 0 && firstCoinFlipsWon(g.s, p);
+  if (rigged && step.times === undefined) return askManual(cx, text, 'the coins of this flip all come up heads and are won: the flips never end (CR 705.2, 104.4b)');
+  if (cap === 0) return { performed: false, count: 0 }; // edh-next-128 (review): no coin flipped, so no "first time this turn" used up (CR 705.2)
   stats.coinFlips = (stats.coinFlips ?? 0) + 1;
   let won = 0;
-  for (let k = 0; k < MAX_FLIPS_UNTIL_LOSE; k++) {
+  // edh-next-128 (review; CR 705.2, 614.1a): a capped run flips one coin at a time, so only its FIRST flip is "the first time you flip one or more coins each turn": that flip comes up
+  // heads and is won, the others are flipped as usual
+  let first = rigged;
+  for (let k = 0; k < cap; k++) {
+    if (first) { first = false; flipCoin(g, p, undefined, true); won++; continue; }
     const call = g.choose({
       kind: 'chooseOption', player: p, prompt: 'Call the coin flip.', min: 1, max: 1,
       options: [{ id: 'heads', label: 'Heads' }, { id: 'tails', label: 'Tails' }], rules: ['CR 705.2'],
     }).ids[0] as 'heads' | 'tails';
-    if (flipCoin(g, p, call).won !== true) return { performed: true, count: won };
+    // edh-next-129 (CR 705.2; Fiery Gambit, rulings 2004-12-01): with `lostVoids`, "If you lose a flip, ~ has no effect": a lost flip counts no wins
+    if (flipCoin(g, p, call, false, 2 ** coinAdvantage(g.s, p) - 1).won !== true) return { performed: true, count: step.lostVoids === true ? 0 : won };
     won++;
+    // edh-next-129 (CR 705.2; Fiery Gambit: "After each flip, you choose whether to continue flipping."): "or choose to stop flipping"
+    if (step.mayStop === true) {
+      const more = g.choose({ kind: 'yesNo', player: p, prompt: `You have won ${won} flip${won === 1 ? '' : 's'} in a row. Flip again?`, yesLabel: 'Flip again', noLabel: 'Stop flipping', rules: ['CR 705.2'] }).yes;
+      if (!more) return { performed: true, count: won };
+    }
   }
+  if (step.times !== undefined) return { performed: cap > 0, count: won }; // edh-next-128: the cap came first
   return askManual(cx, text, `${MAX_FLIPS_UNTIL_LOSE} flips won in a row: the rest is handed to the player`);
+}
+
+const MAX_STAKES_FLIPS = 40;
+
+/**
+ * edh-next-129 (CR 705.1, 705.2, 119.3, 608.2c; Game of Chaos, ruling 2004-10-04: "To double the life stakes means to double the amount of life lost or gained"): one coin flipped and called by
+ * its one player; the branch of the result runs, then the player that side names (`winDecides` / `loseDecides`) decides whether to flip again; each flip after the first doubles the life
+ * amounts of the branches (`doubleLife`). Only branches of plain `gainLife` / `loseLife` steps with a fixed number are scaled; anything else, a flip under "the first time you flip coins each
+ * turn ... you win those flips" (an endless chain), a decider that can't be found, or a runaway chain is handed to the players (fail closed).
+ */
+function flipWithStakes(cx: ExecCtx, step: Extract<EffectStep, { op: 'flipCoin' }>, players: readonly PlayerId[]): StepResult {
+  const g = cx.g;
+  const text = textOf(step, 'flip a coin');
+  const st = step.stakes!;
+  const branches = [step.onWin ?? [], step.onLose ?? []];
+  const plainLife = (x: EffectStep): boolean => (x.op === 'gainLife' || x.op === 'loseLife') && typeof x.amount === 'number' && x.guard === undefined;
+  if (players.length !== 1 || step.count !== undefined || step.onTails !== undefined || step.called !== undefined || st.winDecides === undefined || st.loseDecides === undefined || (st.doubleLife === true && branches.some((b) => !b.every(plainLife)))) {
+    return askManual(cx, text, 'a flip with stakes other than one coin with life branches and a decider for each result');
+  }
+  const p = players[0]!;
+  const stats = g.player(p).turnStats;
+  if ((stats.coinFlips ?? 0) === 0 && firstCoinFlipsWon(g.s, p)) return askManual(cx, text, 'the coins of this flip all come up heads and are won: the flips could never be lost (CR 705.2, 104.4b)');
+  stats.coinFlips = (stats.coinFlips ?? 0) + 1;
+  const scaled = (b: EffectStep[], m: number): EffectStep[] => (m === 1 ? b : b.map((x) => ({ ...x, amount: (x as { amount: number }).amount * m }) as EffectStep));
+  let won = 0;
+  let stake = 1;
+  for (let k = 0; k < MAX_STAKES_FLIPS; k++) {
+    const call = g.choose({ kind: 'chooseOption', player: p, prompt: 'Call the coin flip.', min: 1, max: 1, options: [{ id: 'heads', label: 'Heads' }, { id: 'tails', label: 'Tails' }], rules: ['CR 705.2'] }).ids[0] as 'heads' | 'tails';
+    const wins = flipCoin(g, p, call, false, 2 ** coinAdvantage(g.s, p) - 1).won === true;
+    if (wins) won++;
+    const branch = wins ? step.onWin : step.onLose;
+    if (branch !== undefined && branch.length > 0) runSteps(cx, scaled(branch, stake));
+    const decider = resolvePlayers(cx, wins ? st.winDecides : st.loseDecides).find((q) => !g.player(q).hasLost);
+    if (decider === undefined || g.player(p).hasLost) return { performed: true, count: won };
+    const next = st.doubleLife === true ? stake * 2 : stake;
+    const again = g.choose({ kind: 'yesNo', player: decider, prompt: `Flip again?${st.doubleLife === true ? ` (the life stakes double to ${next})` : ''}`, yesLabel: 'Flip again', noLabel: 'Stop', rules: ['CR 705.2'] }).yes;
+    if (!again) return { performed: true, count: won };
+    stake = next;
+  }
+  return askManual(cx, text, `${MAX_STAKES_FLIPS} flips in a row: the rest is handed to the players`);
 }
 
 export const GAME_HANDLERS: OpHandlers = {
@@ -116,26 +178,32 @@ export const GAME_HANDLERS: OpHandlers = {
     if (n === undefined) return NOTHING; // CR 608.2b
     const k = Math.max(0, Math.floor(n));
     const players = apnapPlayers(cx, step.who);
-    const ids = players.flatMap((p) => addExtraTurns(cx.g, p, k));
+    const ids = players.flatMap((p) => addExtraTurns(cx.g, p, k, step.skipUntap === true));
     cx.vars.set(EXTRA_TURN_VAR, ids.length === 1 ? ids[0]! : -1); // audit-fix-2: "During that turn" names exactly one turn (CR 500.7, 611.2a)
     return { performed: k > 0 && players.length > 0, count: k * players.length };
   },
 
   /** std-control-3 (CR 723.1): the controller controls each of those players during their next turn or combat phase; a player can't be made to control themselves. */
   controlPlayer: (cx, step) => {
-    const players = apnapPlayers(cx, step.who).filter((p) => p !== cx.controller && cx.g.player(p).hasLost !== true);
-    for (const p of players) addPlayerControl(cx.g, cx.controller, p, step.during, nameOfSource(cx));
+    // edh-next-119 (CR 723.9, 500.7): with "After that turn, that player takes an extra turn." a player given control of themselves still gets the record (they decide as normal: core/player-control.ts
+    // ignores a record whose controller is its player), so the extra turn after their next turn still happens
+    const players = apnapPlayers(cx, step.who).filter((p) => (p !== cx.controller || step.thenExtraTurn === true) && cx.g.player(p).hasLost !== true);
+    for (const p of players) addPlayerControl(cx.g, cx.controller, p, step.during, nameOfSource(cx), step.thenExtraTurn === true && step.during === 'turn'); // edh-next-119: "After that turn, that player takes an extra turn."
     return { performed: players.length > 0, count: players.length };
   },
 
   /** CR 500.8: an additional phase directly after this phase (or after the phase `after` names). */
   extraPhase: (cx, step) => {
     // std-rq (CR 500.8, 508.1): "Only land creatures can attack during that combat phase" (read for this effect's controller and source)
+    // edh-d-34 (CR 500.8, 508.1): "Only the chosen creatures can attack during that combat phase": the objects the reference names now, read as the effect resolves
+    const onlyIds = step.onlyThese !== undefined && step.phase === 'combat' ? resolveObjs(cx, step.onlyThese) : undefined;
     const attackers = step.attackers !== undefined && step.phase === 'combat' ? { filter: step.attackers, controller: cx.controller, ...(cx.source ? { sourceId: cx.source.id } : {}) } : undefined;
-    addExtraPhase(cx.g, step.phase, step.after, attackers);
+    const phaseId = addExtraPhase(cx.g, step.phase, step.after, onlyIds !== undefined ? { filter: {}, controller: cx.controller, ...(cx.source ? { sourceId: cx.source.id } : {}), ids: onlyIds.map((h) => h.id) } : attackers);
+    if (phaseId === 0) return { performed: false, count: 0 }; // trek-20: "after the second main phase" when it is too late (World at War ruling 2010-06-15)
+    if (step.phase === 'combat') cx.vars.set('$addedPhase', phaseId); // edh-combat-5: "At the beginning of that combat" later in this ability waits for this phase (op delay, when.phase 'added')
     // r4-mech (CR 500.8): "... followed by an additional main phase": a main phase directly after the added combat phase (the latest added phase after a combat
     // phase is taken first as that combat phase ends, core/turn-effects.ts#takeExtraPhase)
-    if (step.followedBy === 'main' && step.phase === 'combat') addExtraPhase(cx.g, 'main', 'endCombat');
+    if (step.followedBy === 'main' && step.phase === 'combat') addExtraPhase(cx.g, 'main', 'endCombat', undefined, phaseId);
     return { performed: true, count: 1 };
   },
 
@@ -181,6 +249,16 @@ export const GAME_HANDLERS: OpHandlers = {
     return { performed: players.length > 0, count: players.length };
   },
 
+  /**
+   * edh-next-137 (CR 727.1, 727.4, 727.5; Karn Liberated): "Restart the game, leaving in exile ...": the request, with the cards `keep` names that are in exile now; the game is
+   * restarted once this ability has left the stack (core/turn.ts#allPassed, core/restart.ts), the controller of the ability the starting player.
+   */
+  restartGame: (cx, step) => {
+    const keep = currentObjs(cx, resolveObjs(cx, step.keep)).filter((h) => h.zone === 'exile').map((h) => h.id);
+    cx.g.restartRequest = { controller: cx.controller, keep, toBattlefield: step.toBattlefield === true };
+    return { performed: true, count: 1 };
+  },
+
   /** CR 114.2: the player gets an emblem with these abilities, in the command zone. */
   createEmblem: (cx, step) => {
     const players = apnapPlayers(cx, step.who);
@@ -197,19 +275,60 @@ export const GAME_HANDLERS: OpHandlers = {
    */
   rollDie: (cx, step) => {
     const sides = step.sides;
-    const n = step.count ?? 1;
+    // edh-mana-keywords-10 (CR 706.1, 107.3): "Roll X six-sided dice, where X is ...": the number is read once, as the roll begins
+    const n = step.count === undefined ? 1 : typeof step.count === 'number' ? step.count : evalQty(cx, step.count);
     const players = apnapPlayers(cx, step.who);
     const table = step.table ?? [];
-    if (!Number.isInteger(sides) || sides < 1 || !Number.isInteger(n) || n < 0 || (table.length > 0 && (players.length !== 1 || n !== 1))) {
+    const modifier = step.modifier === undefined ? 0 : evalQty(cx, step.modifier);
+    if (n === undefined || !Number.isInteger(sides) || sides < 1 || !Number.isInteger(n) || n < 0 || (table.length > 0 && (players.length !== 1 || (n !== 1 && step.keepHighest !== true)))
+      || (step.keepHighest === true && (players.length !== 1 || step.chooseOne === true || step.highest !== undefined || step.modifier !== undefined)) // edh-d-49: the dice of one roller, nothing else to choose or add
+      || modifier === undefined || !Number.isInteger(modifier) || (step.modifier !== undefined && (players.length !== 1 || n !== 1)) // a modifier is for the one die of one roller (CR 706.2)
+      || (step.chooseOne === true && (players.length !== 1 || n < 2))
+      || (step.highest !== undefined && (n !== 1 || table.length > 0 || step.chooseOne === true || step.modifier !== undefined))) { // edh-top-16: one die each, no table
       return askManual(cx, textOf(step, `roll d${sides}`), 'the engine rolls one die for one player with a results table, or dice without one');
     }
-    let total = 0;
-    // p2-c-dieroll-1 (CR 706.6, 614.1a, unverified): "instead roll that many dice plus one and ignore the lowest roll" (statics/hooks.ts#diceAdvantage); the kept rolls count
-    for (const p of players) for (const r of n > 0 ? rollDice(cx.g, p, sides, n, diceAdvantage(cx.g.s, p)) : []) total += r;
-    cx.vars.set(DIE_RESULT_VAR, players.length === 1 ? total : Number.NaN); // NaN: no single result (the evaluator reads it as undetermined)
-    const row = table.find((r) => total >= r.min && total <= r.max); // CR 706.3a
-    if (row) runSteps(cx, row.do);
-    return { performed: players.length > 0 && n > 0, count: players.length * n };
+    // edh-next-121 (CR 706.2, 706.3a, 608.2c; Delina, Wild Mage): a row that says "You may roll again." (`again`): after its instructions the roller chooses whether to roll the
+    // same die again; the new result picks its row the same way. The loop ends when a row without `again` happens, no row does, or the roller declines
+    let rolls = 0;
+    for (;;) {
+      rolls++;
+      let total = 0;
+      const results: number[] = [];
+      // p2-c-dieroll-1 (CR 706.6, 614.1a, unverified): "instead roll that many dice plus one and ignore the lowest roll" (statics/hooks.ts#diceAdvantage); the kept rolls count
+      const byPlayer = new Map<PlayerId, number>(); // edh-top-16 (CR 706.2): the result of each player, for "the highest result" (one die each)
+      // edh-d-49 (CR 706.2, 706.6; Iron Mastiff): roll `n` dice and ignore all but the highest (n - 1 more ignored beside the lowest of diceAdvantage): one kept roll
+      for (const p of players) for (const r of n > 0 ? (step.keepHighest === true ? rollDice(cx.g, p, sides, 1, n - 1 + diceAdvantage(cx.g.s, p), 0, rollHook(cx.g, p, sides)) : rollDice(cx.g, p, sides, n, diceAdvantage(cx.g.s, p), modifier, rollHook(cx.g, p, sides))) : []) { results.push(r.result); total += r.result; byPlayer.set(p, r.result); } // CR 706.2: the result is the natural result after the modifiers (and after the roller's own "after you roll" options, edh-d-49)
+      if (players.length === 1) { // edh-mana-keywords-10 (CR 706.2): every die's result, for "each even result" and "rolled 6 exactly seven times"
+        cx.vars.set(DICE_COUNT_VAR, results.length);
+        results.forEach((r, i) => cx.vars.set(`${DICE_RESULT_PREFIX}${i}`, r));
+      } else cx.vars.set(DICE_COUNT_VAR, Number.NaN);
+      let result = total;
+      cx.vars.delete(DIE_OTHER_VAR);
+      // edh-mana-keywords-10 (CR 706.2; Reckless Endeavor): "Roll two d12 and choose one result": the roller chooses a die; the other one is "the other result"
+      if (step.chooseOne === true && players.length === 1) {
+        const distinct = [...new Set(results)];
+        const picked = distinct.length === 1 ? distinct[0]! : Number(cx.g.choose({
+          kind: 'chooseOption', player: players[0]!, prompt: `Choose one result of ${results.length} d${sides}.`,
+          options: distinct.map((v) => ({ id: String(v), label: String(v) })), min: 1, max: 1, rules: ['CR 706.2'],
+        }).ids[0]);
+        result = picked;
+        cx.vars.set(DIE_OTHER_VAR, results.reduce((a, b) => a + b, 0) - picked);
+      }
+      cx.vars.set(DIE_RESULT_VAR, players.length === 1 ? result : Number.NaN); // NaN: no single result (the evaluator reads it as undetermined)
+      // edh-top-16 (CR 706.2, 608.2c; Chaos Dragon): the opponents of the controller whose roll was the highest of all the players' rolls ("If one or more opponents had the highest result")
+      if (step.highest !== undefined) {
+        const top = Math.max(...byPlayer.values());
+        cx.bindings.set(step.highest.as, { objects: [], players: [...byPlayer].filter(([p, r]) => r === top && p !== cx.controller).map(([p]) => p), snapshots: {} });
+      }
+      // edh-mana-keywords-10 (CR 706.3b): "If the result is 0 or less, discard your hand." between the roll and its table
+      if (step.afterRoll && step.afterRoll.length > 0) runSteps(cx, step.afterRoll);
+      const row = table.find((r) => result >= r.min && result <= r.max); // CR 706.3a: the result after the modifiers; none when it falls outside every row
+      if (row) runSteps(cx, row.do);
+      if (row?.again !== 'may' || players.length !== 1 || rolls >= MAX_ROLL_AGAIN) break;
+      const p = players[0]!;
+      if (!cx.g.choose({ kind: 'yesNo', player: p, prompt: `Roll the d${sides} again?`, yesLabel: 'Roll again', noLabel: "Don't roll", rules: ['CR 706.3a', 'CR 608.2d'] }).yes) break;
+    }
+    return { performed: players.length > 0 && n > 0, count: players.length * n * rolls };
   },
 
   /**
@@ -224,8 +343,15 @@ export const GAME_HANDLERS: OpHandlers = {
     // p2-coinflip-3 (CR 705.2): and a flip whose wins a later instruction counts ("for each flip you win", `called`)
     const cares = (step.onWin?.length ?? 0) > 0 || (step.onLose?.length ?? 0) > 0 || step.called === true || sourceWatchesFlips(cx);
     if (step.untilLose === true) return flipUntilLose(cx, step, players);
+    if (step.stakes !== undefined) return flipWithStakes(cx, step, players); // edh-next-129 (CR 705.2, 119.3): Game of Chaos
     // r4-mech (CR 705.1): "flip five coins": that many flips, one at a time; a branch belongs to a one-coin flip only (lint and the coin-flip fold)
-    const coins = step.count ?? 1;
+    // edh-next-128 (CR 705.1, 608.2c; Yusri, Fortune's Flame): "Flip that many coins": the number read as the flip begins (none or a number that fails to determine: no flip)
+    const times = step.times === undefined ? undefined : evalQty(cx, step.times);
+    if (step.times !== undefined && (step.count !== undefined || step.onWin !== undefined || step.onLose !== undefined || step.onTails !== undefined)) return askManual(cx, textOf(step, 'flip coins'), 'a number of coins as a quantity is flipped without instructions of its own');
+    const coins = step.times !== undefined ? (times === undefined || !Number.isFinite(times) ? 0 : Math.max(0, Math.floor(times))) : step.count ?? 1;
+    let flipped = 0; // edh-next-128: the called flips made (for the flips lost)
+    // edh-d-20 (CR 705.1-705.2): an uncalled flip with a tails branch: one coin, no win or lose branch, nobody calls it
+    if (step.onTails !== undefined && (coins !== 1 || step.onWin !== undefined || step.onLose !== undefined || step.called === true)) return askManual(cx, textOf(step, 'flip a coin'), 'a flip with a tails branch flips one uncalled coin');
     if ((step.onWin !== undefined || step.onLose !== undefined) && coins !== 1) return askManual(cx, textOf(step, 'flip coins'), 'a coin flip with win or lose instructions flips one coin');
     let won = 0;
     let heads = 0;
@@ -233,13 +359,20 @@ export const GAME_HANDLERS: OpHandlers = {
       // r4-mech (CR 705.1-705.2, 614.1a): the first instruction this turn by which p flips coins, under "those coins come up heads and you win those flips"
       const stats = g.player(p).turnStats;
       const rigged = (stats.coinFlips ?? 0) === 0 && firstCoinFlipsWon(g.s, p);
-      stats.coinFlips = (stats.coinFlips ?? 0) + 1;
+      if (coins > 0 || step.times === undefined) stats.coinFlips = (stats.coinFlips ?? 0) + 1; // edh-next-128 (review): "flip that many coins" for 0 flips no coin (CR 705.2)
       for (let k = 0; k < coins; k++) {
         if (rigged) {
           flipCoin(g, p, undefined, true);
           won++;
+          flipped++;
           heads++;
           if (step.onWin && step.onWin.length > 0) runSteps(cx, step.onWin);
+          continue;
+        }
+        if (step.onTails !== undefined) {
+          const side = flipCoin(g, p, undefined, false, 2 ** coinAdvantage(g.s, p) - 1).side; // (no call: nobody wins or loses it; Krark's Thumb still flips more coins and ignores one)
+          if (side === 'heads') heads++;
+          else runSteps(cx, step.onTails);
           continue;
         }
         const call = cares
@@ -248,9 +381,10 @@ export const GAME_HANDLERS: OpHandlers = {
             options: [{ id: 'heads', label: 'Heads' }, { id: 'tails', label: 'Tails' }], rules: ['CR 705.2'],
           }).ids[0] as 'heads' | 'tails'
           : undefined;
-        const flip = flipCoin(g, p, call); // core/dice.ts flips and emits
+        const flip = flipCoin(g, p, call, false, 2 ** coinAdvantage(g.s, p) - 1); // (n Thumbs: each flip of the one before is doubled again, ruling 2019-01-25, so 2^n coins; core/dice.ts flips and emits
         if (flip.side === 'heads') heads++;
         if (call === undefined) continue;
+        flipped++;
         const wins = flip.won === true;
         if (wins) won++;
         const branch = wins ? step.onWin : step.onLose;
@@ -259,7 +393,10 @@ export const GAME_HANDLERS: OpHandlers = {
         if (branch && branch.length > 0) runSteps(cx, branch);
       }
     }
-    return { performed: players.length > 0, count: cares ? won : heads };
+    // edh-d-28 (CR 705.1, 705.2; Two-Headed Giant): the step's count is the flips won only when the step's own instructions or a later count call them ("for each flip you win", `called`); a flip called only
+    // because the source watches flips ("whenever you win a coin flip") still reports the coins that came up heads
+    const countsWins = (step.onWin?.length ?? 0) > 0 || (step.onLose?.length ?? 0) > 0 || step.called === true;
+    return { performed: players.length > 0 && (step.times === undefined || coins > 0), count: countsWins ? won : heads, ...(step.called === true ? { lost: flipped - won } : {}) };
   },
 
   /**

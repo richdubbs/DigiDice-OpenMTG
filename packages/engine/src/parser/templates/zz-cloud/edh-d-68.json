@@ -1,0 +1,191 @@
+[
+  {
+    "id": "eff.edhd68.counters.put.forEach.and",
+    "kind": "effect",
+    "since": 12,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 122.1",
+      "CR 608.2h",
+      "CR 702.62b"
+    ],
+    "pattern": "put ( a | an ) {k:CounterKind} counter on {o:Objs} for each {f:Filter} and each {g:Filter}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": {
+        "q": "math",
+        "op": "+",
+        "args": [
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          },
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$g"
+            }
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature attacks, put a time counter on it for each suspended card you own and each other permanent you control with a time counter on it."
+      },
+      {
+        "text": "Whenever this creature attacks, put a time counter on it for each suspended card you own and each creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature attacks, put a time counter on it for each suspended card you own.",
+      "Whenever this creature attacks, put a time counter on it for each suspended card you own or each other permanent you control with a time counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhd68.choose.suspended.removeThatMany",
+    "kind": "effect",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 702.62b",
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 608.2h"
+    ],
+    "pattern": "choose a suspended card you own and remove that many time counters from it",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "exile",
+            "isCard": true,
+            "keyword": "suspend",
+            "counters": {
+              "kind": "time"
+            },
+            "owner": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "suspended"
+      },
+      {
+        "op": "removeCounters",
+        "from": {
+          "ref": "bound",
+          "name": "suspended"
+        },
+        "kind": "time",
+        "count": {
+          "q": "eventAmount"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever this creature deals combat damage to a player, choose a suspended card you own and remove that many time counters from it."
+      },
+      {
+        "text": "Whenever this creature deals combat damage to a player or planeswalker, choose a suspended card you own and remove that many time counters from it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature deals combat damage to a player, choose a suspended card an opponent owns and remove that many time counters from it.",
+      "Whenever this creature deals combat damage to a player, choose a suspended card you own and remove a time counter from it."
+    ],
+    "consumes": [
+      "that many"
+    ]
+  },
+  {
+    "id": "eff.edhd68.exile.fromHand.withCountersEqualMv",
+    "kind": "effect",
+    "since": 12,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2d",
+      "CR 122.1",
+      "CR 400.7",
+      "CR 702.62a"
+    ],
+    "pattern": "exile a card from your hand with a number of {k:CounterKind} counters on it equal to its mana value",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile",
+          "counters": [
+            {
+              "kind": "$k",
+              "count": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": {
+                  "ref": "bound",
+                  "name": "exiled"
+                }
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "equal to"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature attacks, draw a card, then exile a card from your hand with a number of time counters on it equal to its mana value."
+      },
+      {
+        "text": "Whenever this creature attacks, you may exile a card from your hand with a number of time counters on it equal to its mana value."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature attacks, draw a card, then exile a card from your graveyard with a number of time counters on it equal to its mana value.",
+      "Whenever this creature attacks, draw a card, then exile a card from your hand with three time counters on it."
+    ]
+  }
+]

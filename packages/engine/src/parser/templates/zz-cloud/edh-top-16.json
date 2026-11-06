@@ -1,0 +1,218 @@
+[
+  {
+    "id": "eff.edht16.rollDie.xSixSided",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.1a",
+      "CR 107.3m",
+      "CR 608.2h"
+    ],
+    "pattern": "roll x six-sided dice",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 6,
+      "count": {
+        "q": "X"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{X}, {T}: Roll X six-sided dice. For each odd result, create a Treasure token."
+      },
+      {
+        "text": "{X}, {T}: Roll X six-sided dice. For each even result, put a +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "{X}, {T}: Roll X four-sided dice.",
+      "{X}, {T}: Roll two six-sided dice.",
+      "{X}, {T}: Roll X six-sided dice, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.edht16.rollDie.eachPlayer.d20.highest",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2",
+      "CR 101.4"
+    ],
+    "pattern": "each player rolls a d20",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "sides": 20,
+      "highest": {
+        "as": "highestRoll"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your end step, each player rolls a d20. If one or more opponents had the highest result, ~ can't attack those players or planeswalkers they control this combat."
+      },
+      {
+        "text": "At the beginning of your upkeep, each player rolls a d20. If one or more opponents had the highest result, ~ can't attack those players or planeswalkers they control this combat."
+      }
+    ],
+    "counterExamples": [
+      "Each player rolls a d6.",
+      "Each opponent rolls a d20.",
+      "Each player rolls two d20."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edht16.self.cantAttackHighestRollers",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.2",
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 608.2c"
+    ],
+    "pattern": "if one or more opponents had the highest result , ~ can't attack those players or planeswalkers they control {d:Dur}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "bound",
+        "name": "highestRoll"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "restrict",
+              "subject": {
+                "ref": "self"
+              },
+              "mode": "cant",
+              "action": "attackPlayer",
+              "otherPlayer": {
+                "ref": "iterating"
+              }
+            },
+            {
+              "s": "restrict",
+              "subject": {
+                "ref": "self"
+              },
+              "mode": "cant",
+              "action": "attack",
+              "other": {
+                "types": [
+                  "Planeswalker"
+                ],
+                "controller": {
+                  "ref": "iterating"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "as": "restricted"
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, each player rolls a d20. If one or more opponents had the highest result, ~ can't attack those players or planeswalkers they control this combat."
+      },
+      {
+        "text": "At the beginning of your upkeep, each player rolls a d20. If one or more opponents had the highest result, ~ can't attack those players or planeswalkers they control this combat."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, each player rolls a d20. If one or more opponents had the highest result, ~ can't attack those players this combat.",
+      "At the beginning of your end step, each player rolls a d20. If one or more opponents had the lowest result, ~ can't attack those players or planeswalkers they control this combat.",
+      "At the beginning of your end step, each player rolls a d20. If one or more opponents had the highest result, ~ can't attack those players or planeswalkers they control."
+    ]
+  },
+  {
+    "id": "sta.edht16.spells.cast.have.prowl",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.76a",
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 118.9"
+    ],
+    "pattern": "{f:Filter} you cast have prowl {m:ManaCost}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "controller": "you",
+              "not": {
+                "stackKind": "copy",
+                "zone": "stack"
+              },
+              "zone": "stack"
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "prowl",
+                  "cost": {
+                    "mana": "$m"
+                  },
+                  "text": "prowl"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Pirate spells you cast have prowl {1}{B}."
+      },
+      {
+        "text": "Goblin spells you cast have prowl {R}."
+      }
+    ],
+    "counterExamples": [
+      "Pirate spells your opponents cast have prowl {1}{B}.",
+      "Pirate spells you cast have prowl.",
+      "Pirate spells you cast have flashback {1}{B}."
+    ]
+  }
+]

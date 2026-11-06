@@ -1,0 +1,6 @@
+# edh-zones-20 (Commander effort, lane edh-zones; test/cloud/edh-zones-20, golden edh-zones-20-review.json): the top card of the library as a static reference (Conspicuous Snoop), conditional "has all activated abilities of" (Necrotic Ooze), cards put into a graveyard this turn (Fraying Sanity), combat damage to a player who controls more lands (Cartographers Hawk), a discard an effect causes goes on top of the library (Library of Leng)
+Conspicuous Snoop
+Necrotic Ooze
+Fraying Sanity
+Cartographer's Hawk
+Library of Leng

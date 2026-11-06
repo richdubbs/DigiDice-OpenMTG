@@ -8,7 +8,7 @@ import type { Folded } from './fold';
 import { K } from './kernel';
 import type { RenderState } from './state';
 import { bind } from './steps-util';
-import { numWord } from './text';
+import { alt, numWord } from './text';
 
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const ITERATING = { ref: 'iterating' };
@@ -32,7 +32,9 @@ function eachChoosesDestroyRest(list: EffectStep[], i: number, st: RenderState):
   const n = a.min;
   const things = n === 1 ? K.np(kinds[0]!, st, { det: 'a' }) : `${numWord(n)} ${K.np(kinds[0]!, st, { det: 'none', plural: true })}`;
   bind(st, a.as, { nouns: K.nounsOf(kinds[0]!), plural: n !== 1 });
-  return { clauses: [plain(`each player chooses ${things} they control. destroy the rest`, { standalone: true })], consumed: 2 };
+  // edh-d-98 (CR 608.2d, 701.8a; Fall of the First Civilization; family chooses-destroy-all-other): "Destroy all other <kind>." is the same rest of that kind
+  const others = `destroy all other ${K.np(kinds[0]!, st, { det: 'none', plural: true })}`;
+  return { clauses: [plain(alt(`each player chooses ${things} they control. destroy the rest`, `each player chooses ${things} they control. ${others}`), { standalone: true })], consumed: 2 };
 }
 
 /** The folds of pc-players-1 (render/fold.ts#foldAt). */

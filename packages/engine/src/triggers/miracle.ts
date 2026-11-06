@@ -18,10 +18,18 @@ import type { Game } from '../core/game';
 import { installDrawHook, showCards } from '../core/zones';
 import type { CostDef, KeywordAbilityDef } from '../types/ability';
 import type { ObjectId, PlayerId } from '../types/ids';
-import { formatManaCost } from '../types/mana';
+import { formatManaCost, type ManaCost } from '../types/mana';
 import type { PendingTrigger } from '../types/state';
 import { charsOfObject } from '../rules/characteristics';
 import { reflexiveAbility } from './delayed';
+
+/** edh-d-102 (CR 601.2f, 107.4): `cost` with `less` generic mana taken off (only generic mana, never below none), as actions/cast-opt/foretell.ts#reducedManaCost (triggers import no actions module, design 5.4). */
+function reducedManaCost(cost: ManaCost, less: number): ManaCost {
+  const generic = cost.reduce((n, x) => n + (x.kind === 'generic' ? x.amount : 0), 0);
+  const rest = cost.filter((x) => x.kind !== 'generic');
+  const left = Math.max(0, generic - less);
+  return left > 0 ? [{ kind: 'generic', amount: left }, ...rest] : rest;
+}
 
 /** The miracle abilities of the card `id` in its owner's hand, as the characteristics there say (printed or granted, CR 613.1f). */
 function miracleCosts(g: Game, id: ObjectId): CostDef[] {
@@ -31,6 +39,17 @@ function miracleCosts(g: Game, id: ObjectId): CostDef[] {
   for (const a of charsOfObject(g.s, o).abilities) {
     const d = a.def as KeywordAbilityDef;
     if (d.kind === 'keyword' && d.keyword === 'miracle' && d.cost !== undefined) out.push(d.cost);
+    // edh-d-102 (CR 702.94a, 118.9; Aminatou, Veil Piercer, "Each enchantment card in your hand has miracle. Its miracle cost is equal to its mana cost reduced by {4}."):
+    // a granted miracle with no cost of its own costs the card's mana cost with that much generic mana taken off (only generic mana, never below none), worked out as
+    // the card is revealed (it is in the hand, where the grant applies). Hybrid and Phyrexian symbols are kept as they are (only generic mana is reduced, CR 601.2f). Fail closed
+    // (review): a card with several faces (a Room's or an Adventurer's cost is that of the half cast), {X}, or a {2/W} symbol (whose generic part a reduction may or may not take) is not offered
+    else if (d.kind === 'keyword' && d.keyword === 'miracle' && d.cost === undefined && typeof d.costIsManaCostLess === 'number') {
+      const def = g.s.defs[o.defId];
+      const mana = def?.faces[0]?.manaCost ?? null;
+      const plain = new Set(['generic', 'colored', 'colorless', 'snow', 'hybrid', 'colorlessHybrid', 'phyrexian', 'hybridPhyrexian']);
+      if (def === undefined || def.faces.length !== 1 || mana === null || !mana.every((x) => plain.has(x.kind))) continue;
+      out.push({ mana: reducedManaCost(mana, d.costIsManaCostLess) });
+    }
   }
   return out;
 }

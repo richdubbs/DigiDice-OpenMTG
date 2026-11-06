@@ -10,7 +10,7 @@
  *   CR 611.2c, 613.1f           "Each creature you control with power 4 or greater gets +1/+1 and gains trample until end of turn.": the set is fixed when the effect resolves
  *   CR 702.85a, 601.2           "Spells you cast with mana value 6 or greater have cascade."
  *   CR 101.2, 701.6a            "Creature spells you cast this turn can't be countered."
- *   CR 115.7, 115.7a            "Change a target of target spell or ability to ~." and the single-target form
+ *   CR 115.7b                   "Change a target of target spell or ability to ~." and the single-target form
  *   CR 707.10, 707.10c, 400.3   "Copy target instant or sorcery spell, then return it to its owner's hand. You may choose new targets for the copy."
  *   CR 707.12, 707.10a, 607.2a  "You may copy the exiled card. If you do, you may cast the copy without paying its mana cost."
  *   CR 115.9b, 701.6a           "Counter target spell or ability that targets you or a creature you control."
@@ -208,7 +208,7 @@ function castTargeting(s0: GameState, name: string, targets: (ObjectId | TargetC
   return s;
 }
 
-describe('CR 115.7, 115.7a: "Change a target of target spell or ability to ~." (Spellskite) and the single-target form (Hydroelectric Specimen)', () => {
+describe('CR 115.7b: "Change a target of target spell or ability to ~." (Spellskite) and the single-target form (Hydroelectric Specimen)', () => {
   const SKITE = card('Test Skite', 'Artifact Creature — Horror', '{U}: Change a target of target spell or ability to ~.', { pt: ['0', '4'] });
   const FLASH = card('Test Flash Reflector', 'Creature — Wizard', 'Flash\nWhen this creature enters, you may change the target of target instant or sorcery spell with a single target to this creature.', { pt: ['1', '1'] });
   const ZAP = card('Test Zap', 'Instant', 'Test Zap deals 3 damage to target creature.');
@@ -261,7 +261,7 @@ describe('CR 115.7, 115.7a: "Change a target of target spell or ability to ~." (
     expect(dmg(s, find(s, 'Test Victim', 'battlefield', 'p2'))).toBe(0);
     expect(dmg(s, find(s, 'Test Skite', 'battlefield', 'p2'))).toBe(1);
   });
-  it('a target tied to another ("another target creature") is not changed to the creature the first one already targets (CR 115.3, 115.7a)', () => {
+  it('a target tied to another ("another target creature") is not changed to the creature the first one already targets (CR 115.3, 115.7b)', () => {
     const CONE = card('Test Cone Zap', 'Instant', 'Test Cone Zap deals 1 damage to target creature and 3 damage to another target creature.');
     let s = scenario([], { p1: { hand: ['Test Cone Zap'], battlefield: ['Test Victim'] }, p2: { battlefield: ['Test Skite'] }, defs: [...defs, CONE] });
     const mine = find(s, 'Test Victim', 'battlefield', 'p1');

@@ -1,0 +1,8 @@
+# edh-c-17 (Commander effort, coordinator C, EDHREC ranks 15,626 to 16,250, third pass). After editing: npm run cards -- fixtures
+Earth Surge
+Give // Take
+Regna, the Redeemer
+Decimator Web
+Gibbering Descent
+Molten Rain
+Spectral Grasp

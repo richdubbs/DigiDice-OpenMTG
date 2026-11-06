@@ -1,0 +1,89 @@
+[
+  {
+    "id": "eff.edhn39.effects.whereX.asActivate",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 107.3",
+      "CR 602.2b",
+      "CR 601.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{e:Effects} , where x is {q:Qty} as you activate this ability",
+    "build": {
+      "lower": "whereX",
+      "announced": true,
+      "value": "$q",
+      "steps": "$e"
+    },
+    "examples": [
+      {
+        "text": "{3}, {T}: Up to X target creatures you control get +1/+0 until end of turn, where X is the number of Elves you control as you activate this ability."
+      },
+      {
+        "text": "{2}, {T}: Tap up to X target creatures, where X is the number of artifacts you control as you activate this ability."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Up to X target creatures you control get +1/+0 until end of turn, where X is the number of Elves you control as you cast this spell.",
+      "{3}, {T}: Draw X cards, where X is the number of Elves you control as you activate this ability.",
+      "{3}, {T}: Up to X target creatures you control get +X/+0 until end of turn, where X is the number of Elves you control as you activate this ability."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.edhn39.energy.twice",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 107.14",
+      "CR 122.1"
+    ],
+    "pattern": "if you would get one or more {e} , you get twice that many {e} instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "counters",
+            "change": "put",
+            "kind": "energy",
+            "on": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "modify",
+            "count": {
+              "mul": 2
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "twice",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would get one or more {E}, you get twice that many {E} instead.\nHaste"
+      },
+      {
+        "text": "If you would get one or more {E}, you get twice that many {E} instead.\nFlying"
+      }
+    ],
+    "counterExamples": [
+      "If you would get one or more {E}, you get three times that many {E} instead.",
+      "If an opponent would get one or more {E}, you get twice that many {E} instead.",
+      "If you would get one or more {E}, you get twice that many {E}."
+    ]
+  }
+]

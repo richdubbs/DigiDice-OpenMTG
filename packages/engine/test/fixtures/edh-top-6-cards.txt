@@ -1,0 +1,8 @@
+# edh-top-6 (Commander lane edh-top): a target for each opponent or player in a graveyard, they're Zombies in addition, join forces, each player searches for up to X lands, Pirates that gain haste, the top card of each damaged opponent's library. After editing: npm run cards -- fixtures
+Minds Aglow
+Collective Voyage
+Sepulchral Primordial
+Diluvian Primordial
+Afterlife from the Loam
+Coercive Recruiter
+Breeches, Brazen Plunderer

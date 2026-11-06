@@ -1,0 +1,242 @@
+[
+  {
+    "id": "eff.edhd26.eachFewerHand.drawDifference",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 402.1",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "each player with fewer cards in hand than the player with the most cards in hand draws cards equal to the difference",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "count": {
+        "q": "math",
+        "op": "-",
+        "args": [
+          {
+            "q": "zoneSize",
+            "zone": "hand",
+            "of": {
+              "ref": "each",
+              "who": "player"
+            },
+            "agg": "max"
+          },
+          {
+            "q": "zoneSize",
+            "zone": "hand",
+            "of": {
+              "ref": "iterating"
+            }
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player with fewer cards in hand than the player with the most cards in hand draws cards equal to the difference. You gain 2 life."
+      },
+      {
+        "text": "Each player with fewer cards in hand than the player with the most cards in hand draws cards equal to the difference. Scry 2."
+      }
+    ],
+    "counterExamples": [
+      "Each player with fewer cards in hand than the player with the most cards in hand draws a card.",
+      "Each player with fewer cards in hand than you draws cards equal to the difference.",
+      "Each player with more cards in hand than the player with the fewest cards in hand discards cards equal to the difference."
+    ]
+  },
+  {
+    "id": "eff.edhd26.reveal.chosen.bottom.thenDraw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 401.4",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} reveal[s] {o:ChosenCard} , put[s] {o2:ChosenCard} on the bottom of their library , then draw[s] {n:Qty} card[s]",
+    "build": [
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": "$o"
+      },
+      {
+        "op": "move",
+        "what": "$o2",
+        "to": {
+          "zone": "library",
+          "position": "bottom"
+        }
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Look at target player's hand. You may choose a nonland card from it. If you do, that player reveals the chosen card, puts it on the bottom of their library, then draws a card."
+      },
+      {
+        "text": "Target opponent reveals their hand. You choose a creature card from it. That player reveals that card, puts it on the bottom of their library, then draws two cards."
+      }
+    ],
+    "counterExamples": [
+      "Look at target player's hand. You may choose a nonland card from it. If you do, that player reveals the chosen card, puts it on top of their library, then draws a card.",
+      "Look at target player's hand. You may choose a nonland card from it. If you do, that player reveals the chosen card, puts it on the bottom of their library, then you draw a card.",
+      "Look at target player's hand. You may choose a nonland card from it. If you do, that player reveals the chosen card, puts it on the bottom of their library, then mills a card."
+    ]
+  },
+  {
+    "id": "eff.edhd26.eachOpponentNoHand.losesLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 402.1",
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "each opponent with no cards in hand loses {n:Qty} life",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "player",
+      "do": [
+        {
+          "op": "if",
+          "cond": {
+            "cond": "compare",
+            "left": {
+              "q": "zoneSize",
+              "zone": "hand",
+              "of": {
+                "ref": "bound",
+                "name": "player"
+              }
+            },
+            "op": "==",
+            "right": 0
+          },
+          "then": [
+            {
+              "op": "loseLife",
+              "who": {
+                "ref": "bound",
+                "name": "player"
+              },
+              "amount": "$n"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent with no cards in hand loses 3 life. You gain 3 life."
+      },
+      {
+        "text": "Each opponent with no cards in hand loses 10 life. Scry 1."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent with no cards in hand loses 3 life unless you pay {1}.",
+      "Each player with no cards in hand loses 3 life.",
+      "Each opponent with one or fewer cards in hand loses 3 life."
+    ]
+  },
+  {
+    "id": "eff.edhd26.chooseNInHand.discardRest",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 608.2d",
+      "CR 402.1",
+      "CR 107.3"
+    ],
+    "pattern": "choose {n:Qty} cards in your hand and discard the rest",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "kept"
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": "hand",
+        "filter": {
+          "not": {
+            "is": {
+              "ref": "bound",
+              "name": "kept"
+            }
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "rest"
+    ],
+    "examples": [
+      {
+        "text": "Draw three cards, then choose two cards in your hand and discard the rest."
+      },
+      {
+        "text": "Choose three cards in your hand and discard the rest. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Draw three cards, then choose two cards in your hand and exile the rest.",
+      "Draw three cards, then choose two cards in target player's hand and discard the rest.",
+      "Draw three cards, then choose two cards in your hand and discard them."
+    ]
+  }
+]

@@ -1,0 +1,37 @@
+[
+  {
+    "id": "sta.edhn69.cantCauseSacrifice.opponents",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 101.2",
+      "CR 109.5"
+    ],
+    "pattern": "spells and abilities ( your opponents control | each opponent controls ) can't cause you to sacrifice permanents",
+    "build": {
+      "s": "restrict",
+      "subject": { "ref": "you" },
+      "mode": "cant",
+      "action": "sacrifice",
+      "causedByOpponents": true
+    },
+    "consumes": [
+      "and",
+      "each",
+      "can't",
+      "your"
+    ],
+    "examples": [
+      { "text": "Spells and abilities each opponent controls can't cause you to sacrifice permanents." },
+      { "text": "Flash, reach\nSpells and abilities each opponent controls can't cause you to sacrifice permanents." }
+    ],
+    "counterExamples": [
+      "Spells and abilities your opponents control can't cause you to sacrifice creatures.",
+      "Spells and abilities you control can't cause you to sacrifice permanents.",
+      "Spells and abilities your opponents control can't cause you to discard permanents.",
+      "Spells and abilities your opponents control can't cause their controller to sacrifice permanents."
+    ]
+  }
+]

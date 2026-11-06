@@ -248,7 +248,7 @@
       "Target opponent chooses a nonland card name.",
       "Choose two nonland card names."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {

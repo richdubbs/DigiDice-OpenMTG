@@ -54,6 +54,7 @@ describe('cmd5 template file (design 6.3, 6.9; CONTRIBUTING "Adding a template")
   // its golden entry is the card's earlier one, FAST4 T21's (fast4-t21-review.json), pinned full
   const NARROW: Readonly<Record<string, string>> = {
     'sta.cmd5.spells.less.you.targetSelf': 'Elderwood Scion',
+    'sta.cmd5.player.cant.cast.combat': 'Marisi, Breaker of the Coil', // edh-misc-3: two golden cards (Marisi, Basandra); the third printing is a double-faced card outside the top 5,000 (6.9 deviation, named in its record)
   };
   it('design 6.9: a stable template has its evidence: at least three hand-verified golden cards that name it (the review file pins each card as full or names its pending sentence), or the one card that prints a narrow wording', () => {
     const golden = review as { card: string; verified: string; expect?: string }[];

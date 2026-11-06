@@ -18,16 +18,18 @@
  */
 import type { Count, EffectProgram, PlayerPred, PlayerRef, Quantity, TargetSpec } from '../types/ability';
 import type { ObjectId, PlayerId } from '../types/ids';
-import type { TargetChoice } from '../types/state';
+import type { StackTargetChoice, TargetChoice } from '../types/state';
 import { IllegalAction, IllegalAnswer, type Game } from '../core/game';
+import { controllerOf } from '../rules/characteristics';
 import { evalCount } from '../effects/eval';
 import { randomIndex } from '../core/manual';
-import { announcedPlayers, candidatesFor, differentControllersHold, sameControllerHolds, differentNamesHold, groupLimitHolds, perCardTypeHolds, perOpponentHolds, sameOwnerHolds, sharedCardTypeHolds, sharedCreatureTypeHolds, specsFeasibility, specsFeasible, targetRange, targetsById, type TargetOptions } from '../rules/targets';
+import { announcedPlayers, candidatesFor, differentControllersHold, sameControllerHolds, differentNamesHold, differentManaValuesHold, groupLimitHolds, perCardTypeHolds, perOpponentHolds, perPlayerKey, sameOwnerHolds, equalToughnessHolds, sharedCardTypeHolds, sharedCreatureTypeHolds, specsFeasibility, specsFeasible, targetRange, targetsById, type TargetOptions, type AnnouncedX } from '../rules/targets';
 import { announceCond, announceQty, type AnnounceEnv } from './announce-cond';
+import { filterEnvOutside } from '../rules/filter-env'; // edh-next-134
 
 export interface AnnouncedTargets {
   /** One list per spec of the effective programs, in order (empty for a spec that was skipped or has no target). */
-  targets: TargetChoice[][];
+  targets: StackTargetChoice[][]; // edh-d-83: per-player targets carry `for`
   /** The announced division per spec id (CR 601.2d). */
   division: Record<string, number[]>;
 }
@@ -47,9 +49,18 @@ export function specUnreadable(aenv: AnnounceEnv, spec: TargetSpec): boolean {
 }
 
 /** The player who chooses the targets or modes of a spec: the controller unless `chooser` names another player (CR 601.7... 700.2e). */
-export function chooserOf(g: Game, controller: PlayerId, ref: PlayerRef | undefined, sourceId: ObjectId, chosen: ReadonlyMap<string, readonly TargetChoice[]>): PlayerId {
+export function chooserOf(g: Game, controller: PlayerId, ref: PlayerRef | undefined, sourceId: ObjectId, chosen: ReadonlyMap<string, readonly TargetChoice[]>, stackId?: ObjectId, orElse?: 'anOpponent'): PlayerId {
   if (!ref) return controller;
-  const ps = announcedPlayers(g.s, ref, controller, sourceId, { chosen });
+  // edh-next-134 (CR 603.3d, 601.2c, 603.2; Confusion in the Ranks): "its controller chooses target permanent ...": the controller of the object the triggering event is about (the stack
+  // object's event, read as the trigger is put on the stack; a spell or an ability with no such event names nobody: no target can be chosen, fail closed)
+  // edh-d-87 (CR 601.7a, 603.3d; Bladegriff Prototype): through the same read of the trigger's event, also the event's player ("target ... of that player's choice": the player dealt the damage)
+  const eventSubjectController = ref.ref === 'controllerOf' && ref.object.ref === 'event' && ref.object.role === 'subject' && stackId !== undefined;
+  const eventPlayer = ref.ref === 'event' && (ref.role === 'recipient' || ref.role === 'player') && stackId !== undefined;
+  let ps = eventSubjectController || eventPlayer ? filterEnvOutside(g.s, { controller, sourceId, stackId }).refs(ref)?.players ?? null : announcedPlayers(g.s, ref, controller, sourceId, { chosen });
+  // edh-d-87 (CR 601.7a, 800.4a; Bladegriff Prototype, ruling 2020-11-10): the player who must choose has left the game: an opponent of the controller chooses instead (the controller
+  // decides which one below when there are several)
+  if (eventPlayer && ps !== null) ps = ps.filter((p) => g.s.players.some((x) => x.id === p && !x.hasLost));
+  if ((!ps || ps.length === 0) && orElse === 'anOpponent') ps = announcedPlayers(g.s, { ref: 'anOpponent' }, controller, sourceId, { chosen });
   if (!ps || ps.length === 0) throw new IllegalAction('The player who must choose is not available.', ['CR 601.2c']);
   if (ps.length === 1 || g.s.options.multiplayer === undefined) return ps[0]!; // a two-player game as before (D16)
   // M12-2 (m12 design D13): CR 601.7a, "If there is more than one opponent who could make such a choice, the spell's controller decides which of those
@@ -77,12 +88,12 @@ export function withFixedCounts(aenv: AnnounceEnv, spec: TargetSpec): TargetSpec
   if (!computed(spec.min) && !computed(spec.max) && total === null) return spec;
   const fix = (c: Count): Count => {
     if (!computed(c)) return c;
-    const n = announceQty(aenv, c);
+    const n = announceQty(typeof c === 'object' && c.q === 'math' ? withX(aenv) : aenv, c); // edh-next-104 (CR 601.2b-c): X is announced before the targets, so "twice X" targets reads it
     if (n === undefined) throw new IllegalAction(`This engine build can't read the number of targets of "${spec.text}" as it is announced.`, ['CR 601.2c', 'CR 107.3c']);
     return Math.max(0, n);
   };
   const fixedTotal = (q: Quantity): number => {
-    const n = announceQty(aenv, q);
+    const n = announceQty(withX(aenv), q); // edh-top-3: a total that reads the announced X ('X' alone never gets here), 0 before one is announced as every X-reading check does
     if (n === undefined) throw new IllegalAction(`This engine build can't read the amount divided among the targets of "${spec.text}" as it is announced.`, ['CR 601.2d', 'CR 107.3']);
     return Math.max(0, n); // CR 107.1b: a calculated amount below 0 is 0
   };
@@ -104,7 +115,7 @@ function refersTo(ref: PlayerPred | undefined, id: string): boolean {
 }
 
 /** Does `later` depend on what `spec` chooses ("another target", "target player who controls it")? Only those specs can make an earlier choice a dead end. */
-const dependsOn = (later: TargetSpec, id: string): boolean => (later.distinctFrom?.includes(id) ?? false) || refersTo(later.players?.who, id) || refersTo(later.chooser, id);
+const dependsOn = (later: TargetSpec, id: string): boolean => (later.distinctFrom?.includes(id) ?? false) || refersTo(later.players?.who, id) || refersTo(later.chooser, id) || refersTo(later.filter?.controller, id); // edh-c-85: and a controller named through an earlier target (Mutiny)
 
 /**
  * CR 601.2c: choose targets for every spec of the effective programs. See the file comment. `aenv.x` is the announced X (0 when there is none).
@@ -113,7 +124,9 @@ const dependsOn = (later: TargetSpec, id: string): boolean => (later.distinctFro
 export function announceTargets(g: Game, player: PlayerId, programs: EffectProgram[], sourceId: ObjectId, stackId: ObjectId, what: string, aenv: AnnounceEnv): AnnouncedTargets {
   const specs = programs.flatMap((p) => p.targets).map((sp) => withFixedCounts(aenv, sp));
   const x = aenv.x ?? 0;
-  const xs = aenv.x; // the filters read the announced X (rules/targets.ts#AnnouncedX); a caller without one reads X as the resolution will
+  // edh-d-97 (CR 107.3f, 603.3d; Relentless Dead): a triggered ability whose X its controller chooses as it resolves ("you may pay {X}. If you do, return another target Zombie creature
+  // card with mana value X") has no X yet as its targets are chosen: a comparison with X is relaxed (`'unannounced'`), so any card that some X allows can be chosen
+  const xs: AnnouncedX | undefined = aenv.xOnResolution === true ? 'unannounced' : aenv.x; // the filters read the announced X (rules/targets.ts#AnnouncedX); a caller without one reads X as the resolution will
   const chosen = new Map<string, TargetChoice[]>();
   const out: AnnouncedTargets = { targets: [], division: {} };
   const required = (r: TargetSpec): boolean => specRequired(aenv, r);
@@ -143,7 +156,21 @@ export function announceTargets(g: Game, player: PlayerId, programs: EffectProgr
     let range = targetRange(g.s, spec, opts, x);
     if (!range) throw new IllegalAction(`There is no legal target for "${spec.text}", so ${what} can't be put on the stack.`, ['CR 601.2c', 'CR 115.1']);
     if (range.max === 0) { out.targets.push([]); chosen.set(spec.id, []); continue; }
-    const chooser = chooserOf(g, player, spec.chooser, sourceId, chosen);
+    // edh-next-146 (CR 601.7, 601.7a; Arena): "target creature of an opponent's choice they control": the opponent who chooses is one who controls a candidate (the controller decides
+    // which when several could), and they choose among the objects they control
+    let chooser: PlayerId;
+    if (spec.chooserControls === true) {
+      const able = [...new Set(opts.objects.map((id) => controllerOf(g.s, id)))].filter((p) => p !== player);
+      const named = announcedPlayers(g.s, spec.chooser ?? { ref: 'you' }, player, sourceId, { chosen }) ?? [];
+      const eligible = named.filter((p) => able.includes(p));
+      if (eligible.length === 0) throw new IllegalAction(`There is no legal target for "${spec.text}", so ${what} can't be put on the stack.`, ['CR 601.2c', 'CR 601.7a']);
+      chooser = eligible.length === 1 ? eligible[0]! : g.choose({
+        kind: 'chooseOption', player, min: 1, max: 1, cancellable: true, rules: ['CR 601.7a'], prompt: 'Choose which of your opponents makes this choice.',
+        options: eligible.map((id) => ({ id, label: g.player(id).name })),
+      }).ids[0]! as PlayerId;
+      opts = { objects: opts.objects.filter((id) => controllerOf(g.s, id) === chooser), players: [] };
+      range = targetRange(g.s, spec, opts, x)!;
+    } else chooser = chooserOf(g, player, spec.chooser, sourceId, chosen, stackId, spec.chooserElse);
     if (spec.sameOwner === true) {
       // FAST3 T14 ("from a single graveyard", CR 115.1, 601.2c): whose cards are chosen first, among the owners with enough candidates, so every answer to the
       // targets decision keeps the restriction (no answer has to be rejected)
@@ -185,6 +212,9 @@ export function announceTargets(g: Game, player: PlayerId, programs: EffectProgr
     if (!differentNamesHold(g.s, spec, picked)) {
       reject(spec, rest, before, `The targets of "${spec.text}" must all have different names.`, ['CR 201.2', 'CR 115.1', 'CR 601.2c']);
     }
+    if (!differentManaValuesHold(g.s, spec, picked)) { // edh-top-3: "any number of target creature cards that each have a different mana value X or less"
+      reject(spec, rest, before, `The targets of "${spec.text}" must all have different mana values.`, ['CR 202.3', 'CR 115.1', 'CR 601.2c']);
+    }
     // FAST5 T66 (CR 115.1, 601.2c): "for each opponent, ... up to one target ... that player controls" and "two target nonland permanents that share a card type"
     if (!perOpponentHolds(g.s, spec, picked)) {
       reject(spec, rest, before, spec.perPlayer === true ? `The targets of "${spec.text}" must be controlled by different players (one for each player).` : `The targets of "${spec.text}" must be controlled by different opponents (one for each opponent).`, ['CR 115.1', 'CR 601.2c']);
@@ -194,6 +224,9 @@ export function announceTargets(g: Game, player: PlayerId, programs: EffectProgr
     }
     if (!sharedCreatureTypeHolds(g.s, spec, picked)) { // CLOUD std-ecl: "two target creature cards that share a creature type"
       reject(spec, rest, before, `The targets of "${spec.text}" must share a creature type.`, ['CR 205.3m', 'CR 702.73a', 'CR 115.1', 'CR 601.2c']);
+    }
+    if (!equalToughnessHolds(g.s, spec, picked)) { // edh-next-126: "any number of target creatures with equal toughness" (V.A.T.S.)
+      reject(spec, rest, before, `The targets of "${spec.text}" must all have the same toughness.`, ['CR 208.1', 'CR 115.1', 'CR 601.2c']);
     }
     // CLOUD std-tmt (CR 115.1, 601.2c): "two target creatures controlled by different players"
     if (!differentControllersHold(g.s, spec, picked)) {
@@ -210,8 +243,13 @@ export function announceTargets(g: Game, player: PlayerId, programs: EffectProgr
     if (!groupLimitHolds(g.s, spec, picked, x)) {
       reject(spec, rest, before, `Those targets break the limit of "${spec.text}" (${spec.groupLimit!.stat} ${spec.groupLimit!.cmp.op} ${evalCount(spec.groupLimit!.cmp.value, { x })} in total).`, ['CR 115.1', 'CR 601.2c']);
     }
-    chosen.set(spec.id, picked);
-    out.targets.push(picked);
+    // edh-d-83 (CR 115.1, 601.2c, 608.2b): each object of a per-player spec remembers the player it was chosen for (TargetChoice.for)
+    // edh-next-146 review (CR 601.7a, 608.2b; Evangelize ruling 2006-09-25): a target "of an opponent's choice they control" remembers the opponent who chose it; it is an illegal
+    // target as the ability resolves once that opponent no longer controls it (effects/ctx.ts#checkAll)
+    const stamped = spec.perPlayer === true || spec.perOpponent === true ? picked.map((t): StackTargetChoice => (t.kind === 'object' ? { kind: 'object', id: t.id, for: perPlayerKey(g.s, spec, t.id) } : t))
+      : spec.chooserControls === true ? picked.map((t): StackTargetChoice => (t.kind === 'object' ? { kind: 'object', id: t.id, for: chooser } : t)) : picked;
+    chosen.set(spec.id, stamped);
+    out.targets.push(stamped);
     // A later spec that has to differ from this one (CR 115.3) must still be able to find its targets (a set of several targets is checked here; single candidates were filtered above).
     if (rest.some((r) => dependsOn(r, spec.id)) && !specsFeasible(g.s, rest, required, player, sourceId, stackId, xs, chosen)) {
       reject(spec, rest, before, `With those targets there is no legal way to choose the rest of the targets of ${what} (each "another target" must differ).`, ['CR 115.3', 'CR 601.2c']);
@@ -237,7 +275,7 @@ function sameOwnerOptions(g: Game, opts: TargetOptions, min: number): { owner: P
 /** The candidates of `spec` that leave the later specs satisfiable when chosen alone (CR 601.2c): a target that can never be completed is not offered. */
 function offerable(
   g: Game, opts: TargetOptions, spec: TargetSpec, rest: readonly TargetSpec[], aenv: AnnounceEnv, player: PlayerId, sourceId: ObjectId, stackId: ObjectId,
-  chosen: ReadonlyMap<string, readonly TargetChoice[]>, x: number | undefined,
+  chosen: ReadonlyMap<string, readonly TargetChoice[]>, x: AnnouncedX | undefined,
 ): TargetOptions {
   const completes = (t: TargetChoice): boolean => specsFeasible(g.s, rest, (r) => specRequired(aenv, r), player, sourceId, stackId, x, new Map([...chosen, [spec.id, [t]]]));
   return {
@@ -264,13 +302,15 @@ export function chooseTargets(g: Game, player: PlayerId, programs: EffectProgram
 /** CR 601.2d: announce how damage or counters are divided among the targets of `spec`; each target gets at least one. */
 function announceDivision(g: Game, player: PlayerId, spec: TargetSpec, picked: readonly TargetChoice[], what: string, x: number): number[] {
   const total = evalCount(spec.divide!.total, { x });
-  if (picked.length === 1) return [total];
+  const upTo = spec.divide!.upTo === true; // edh-perms-22: "distribute up to that many" asks even for one target (any amount from 1 to the total)
+  if (picked.length === 1 && !upTo) return [total];
   const ans = g.choose({
     kind: 'chooseDivision',
     player,
-    prompt: `Divide ${total} ${spec.divide!.what} among ${picked.map((t) => labelOf(g, t)).join(', ')} for ${what}; each gets at least 1.`,
+    prompt: `Divide ${upTo ? 'up to ' : ''}${total} ${spec.divide!.what} among ${picked.map((t) => labelOf(g, t)).join(', ')} for ${what}; each gets at least 1.`,
     what: spec.divide!.what,
     total,
+    ...(upTo ? { upTo: true as const } : {}),
     targets: picked.map((t) => ({ id: t.id, label: labelOf(g, t) })),
     cancellable: true,
     rules: ['CR 601.2d'],

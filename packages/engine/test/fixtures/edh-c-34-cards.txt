@@ -1,0 +1,11 @@
+# edh-c-34 (Commander EDHREC ranks 25,001-25,500): group "all creatures lose <keyword> [and islandwalk]", "the player creates" after "that player", "that creature" after a dies trigger, "was blue or black", "discards a card if <cond>", "activated abilities of <filter> cost {N} more", "target creature this creature is blocking", "target player who lost life this turn", "each other <filter> gains <abilities>". After editing: npm run cards -- fixtures
+Gravity Sphere
+Mystic Decree
+Greener Pastures
+Elder Cathar
+Filigree Fracture
+Triumph of Cruelty
+Gloom
+Wall of Corpses
+Rix Maadi Guildmage
+Smogsteed Rider

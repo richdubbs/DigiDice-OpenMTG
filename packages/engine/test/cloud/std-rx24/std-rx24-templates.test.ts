@@ -167,7 +167,9 @@ describe('std-rx24 Cond (parser/holes/cond.ts#poisonCounters; CR 122.1f): poison
   it('fails closed: "or fewer", an exact number, "each opponent who ..." and a group of players are not read', () => {
     expect(level('Creature — Horror', 'As long as an opponent has two or fewer poison counters, this creature has deathtouch.')).not.toBe('full');
     expect(level('Creature — Horror', 'As long as each opponent has three or more poison counters, this creature has deathtouch.')).not.toBe('full');
-    expect(level('Sorcery', 'Each opponent who has three or more poison counters loses 2 life.')).not.toBe('full');
+    // edh-next-21 (eff.edhn21.eachOpponent.poisonAtLeast.loseLife, CR 122.1f, 119.3; Feed the Infection): "each opponent who has N or more poison counters loses N life" is read now, per opponent
+    expect(level('Sorcery', 'Each opponent who has three or more poison counters loses 2 life.')).toBe('full');
+    expect(level('Sorcery', 'Each opponent who has three or fewer poison counters loses 2 life.')).not.toBe('full');
     expect(level('Creature — Horror', 'As long as a player is poisoned, this creature has deathtouch.')).not.toBe('full');
   });
 });

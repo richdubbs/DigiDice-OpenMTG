@@ -1,0 +1,13 @@
+# edh-players-10 (Commander lane edh-players; test/cloud/edh-players-10, golden edh-players-10-review.json)
+# any number of target opponents and "those opponents"; for any number of opponents / for each opponent, a target for each (exile, parity of the mana value); colorless adamant; the life a player lost this turn; "they" at your own step; you and that player each draw / create; a second "Choose an opponent."; loses all creature types; duration-first "can't be blocked by"; a player loses all counters
+Call the Coppercoats
+Windgrace's Judgment
+The Balrog of Moria
+Desecrate Reality
+Astarion, the Decadent
+Children of Korlis
+Xyris, the Writhing Storm
+Sylvan Offering
+Amoeboid Changeling
+Rikku, Resourceful Guardian
+Final Act

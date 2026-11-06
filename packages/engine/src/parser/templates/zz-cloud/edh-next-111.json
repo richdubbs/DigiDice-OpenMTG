@@ -1,0 +1,108 @@
+[
+  {
+    "id": "eff.edhn111.milled.may.put.hand.orKinds",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card or {h:Filter} card from among {g:Milled} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f",
+              "$h"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Mill three cards. You may put an artifact creature card or Vehicle card from among the cards milled this way into your hand."
+      },
+      {
+        "text": "Mill four cards. You may put a land card or Vehicle card from among them into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill three cards. You may put an artifact creature card or Vehicle card from among the cards milled this way onto the battlefield.",
+      "Mill three cards. You must put an artifact creature card or Vehicle card from among the cards milled this way into your hand.",
+      "Look at the top four cards of your library. You may put a land card or Vehicle card from among them into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn111.cast.free.optional.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "weak": 1,
+    "cr": [
+      "CR 118.9",
+      "CR 601.2",
+      "CR 202.3",
+      "CR 608.2c"
+    ],
+    "pattern": "you may cast {o:Obj} without paying its mana cost if {c:Cond}",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "free": true,
+      "optional": true,
+      "guard": "$c"
+    },
+    "consumes": [
+      "may",
+      "if",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, reveal the top card of your library. You may cast it without paying its mana cost if its mana value is odd."
+      },
+      {
+        "text": "Whenever ~ attacks, reveal the top card of your library. You may cast it without paying its mana cost if its mana value is even."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, reveal the top card of your library. You may cast it without paying its mana cost unless its mana value is odd.",
+      "Whenever ~ attacks, reveal the top card of your library. You may cast it if its mana value is odd.",
+      "Whenever ~ attacks, reveal the top card of your library. You must cast it without paying its mana cost if its mana value is odd."
+    ]
+  }
+]

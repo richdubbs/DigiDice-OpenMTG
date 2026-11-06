@@ -1,0 +1,49 @@
+[
+  {
+    "id": "sta.edhm1.triggerMod.dying",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 603.10a",
+      "CR 700.4"
+    ],
+    "pattern": "if {f:Filter} dying causes a triggered ability of a permanent you control to trigger , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "from": "battlefield",
+            "to": "graveyard"
+          },
+          "abilitiesOf": {
+            "controller": "you"
+          },
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If an artifact creature dying causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+      },
+      {
+        "text": "If a Goblin dying causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "If an artifact creature entering causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+      "If an artifact creature dying causes a triggered ability of a permanent an opponent controls to trigger, that ability triggers an additional time.",
+      "If an artifact creature dying causes a triggered ability of a permanent you control to trigger, that ability triggers two additional times."
+    ]
+  }
+]

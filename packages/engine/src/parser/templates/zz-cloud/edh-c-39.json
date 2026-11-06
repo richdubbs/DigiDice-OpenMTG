@@ -1,0 +1,497 @@
+[
+  {
+    "id": "eff.edhv39.switch.itsPT.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.4d"
+    ],
+    "pattern": "switch {o:Its} power and toughness {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7d",
+              "switchPT": true
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ blocks, switch its power and toughness until end of turn."
+      },
+      {
+        "text": "Whenever ~ becomes tapped, switch its power and toughness until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, switch its power and toughness.",
+      "Whenever ~ attacks, switch its power and loyalty until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv39.prevent.next.obj.counterPerPrevented",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.5",
+      "CR 615.7",
+      "CR 122.1"
+    ],
+    "pattern": "prevent the next {n:Qty} damage that would be dealt to {o:Obj} {d:Dur} . for each 1 damage prevented this way , put a {k:CounterKind} counter on that creature",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "$n",
+            "then": [
+              {
+                "op": "putCounters",
+                "on": {
+                  "ref": "event",
+                  "role": "object"
+                },
+                "kind": "$k",
+                "count": {
+                  "q": "preventedAmount"
+                }
+              }
+            ]
+          },
+          "shield": {
+            "uses": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Prevent the next 2 damage that would be dealt to target creature this turn. For each 1 damage prevented this way, put a +1/+1 counter on that creature."
+      },
+      {
+        "text": "Prevent the next 5 damage that would be dealt to target creature this turn. For each 1 damage prevented this way, put a -1/-1 counter on that creature."
+      }
+    ],
+    "counterExamples": [
+      "Prevent the next 3 damage that would be dealt to target creature. For each 1 damage prevented this way, put a +1/+1 counter on that creature.",
+      "Prevent the next 3 damage that would be dealt to target creature this turn. For each 2 damage prevented this way, put a +1/+1 counter on that creature.",
+      "Prevent the next 3 damage that would be dealt to target creature this turn. For each 1 damage prevented this way, put a +1/+1 counter on target creature."
+    ],
+    "consumes": [
+      "prevent",
+      "next",
+      "would",
+      "each",
+      "this way"
+    ]
+  },
+  {
+    "id": "sta.edhv39.obj.pump.andBlocksEachCombat",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 509.1c"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} and blocks each combat if able",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "block"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "if",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +2/+3 and blocks each combat if able."
+      },
+      {
+        "text": "Enchanted creature gets +5/+0 and blocks each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +4/+1 and blocks each combat.",
+      "Enchanted creature gets +4/+1 until end of turn and blocks each combat if able.",
+      "Enchanted creature gets +4/+1 and attacks each combat if able."
+    ]
+  },
+  {
+    "id": "sta.edhv39.obj.pump.andCantAttackAlone",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 506.5",
+      "CR 508.1c"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} and can't attack alone",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "attack",
+          "alone": true
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "alone"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +1/+4 and can't attack alone."
+      },
+      {
+        "text": "Enchanted creature gets +2/+0 and can't attack alone."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +3/+2 and can't block alone.",
+      "Enchanted creature gets +3/+2 and can't attack alone unless it's tapped.",
+      "Enchanted creature gets +3/+2 and can attack alone."
+    ]
+  },
+  {
+    "id": "eff.edhv39.phaseOut.selfAnd",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.26b",
+      "CR 702.26g",
+      "CR 506.4"
+    ],
+    "pattern": "~ and {o:Obj} phase out",
+    "build": {
+      "op": "phaseOut",
+      "what": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "self"
+          },
+          "$o"
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, ~ and target creature phase out."
+      },
+      {
+        "text": "Whenever ~ becomes tapped, ~ and target creature phase out."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, ~ and target creature phase in.",
+      "Whenever ~ attacks, ~ and target creature phase out until end of turn.",
+      "Whenever ~ attacks, target creature phases out."
+    ]
+  },
+  {
+    "id": "eff.edhv39.put.gy.their",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 404.1",
+      "CR 401.2"
+    ],
+    "pattern": "put {o:Obj} into their graveyard",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "graveyard"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at the top card of target opponent's library. You may put that card into their graveyard."
+      },
+      {
+        "text": "Look at the top card of target player's library. You may put that card into their graveyard. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top card of target player's library. You may put that card into their hand.",
+      "Look at the top card of target player's library. You may put that card on top of their graveyard.",
+      "Look at the top card of target player's library. You may put that card into their graveyard. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhv39.look.libraryOf.topN.mayShuffle",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 401.2",
+      "CR 701.24a"
+    ],
+    "pattern": "look at the top {n:Qty} cards of {p:Player} 's library . you may then have that player shuffle that library",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": "$p",
+          "count": "$n"
+        }
+      },
+      {
+        "op": "may",
+        "who": {
+          "ref": "you"
+        },
+        "do": [
+          {
+            "op": "shuffle",
+            "who": "$p"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at the top three cards of target player's library. You may then have that player shuffle that library."
+      },
+      {
+        "text": "Look at the top four cards of target opponent's library. You may then have that player shuffle that library."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of target player's library. You may then shuffle that library.",
+      "Look at the top five cards of target player's library. You may then have that player shuffle their hand.",
+      "Look at the top five cards of your library. You may then have that player shuffle that library."
+    ],
+    "consumes": [
+      "may",
+      "then",
+      "that player"
+    ]
+  },
+  {
+    "id": "eff.edhv39.damage.recipient.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 603.4"
+    ],
+    "pattern": "~ deals {n:Qty} damage to {to:Recipient} if {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": "$to",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 3 damage to each creature with flying if there are five or more cards in your graveyard."
+      },
+      {
+        "text": "~ deals 2 damage to each creature if you control a Wizard."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 3 damage to each creature with flying unless there are five or more cards in your graveyard.",
+      "~ deals 3 damage to each creature with flying if you would draw a card.",
+      "~ deals 3 damage to each creature with flying instead if there are five or more cards in your graveyard."
+    ]
+  },
+  {
+    "id": "sta.edhv39.obj.cantBeTargetOfAuraSpells",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 115.1",
+      "CR 303.4"
+    ],
+    "pattern": "{o:Obj} can't be the target of Aura spells",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beTargeted",
+      "other": {
+        "stackKind": "spell",
+        "subtypes": [
+          "Aura"
+        ]
+      }
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature can't be the target of Aura spells."
+      },
+      {
+        "text": "Equipped creature can't be the target of Aura spells."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't be the target of Equipment spells.",
+      "Enchanted creature can't be the target of Aura spells or abilities.",
+      "Enchanted creature can't be the target of Aura spells your opponents control."
+    ]
+  },
+  {
+    "id": "eff.edhv39.look.defendingPlayer.topCard.mayBottom",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 401.2",
+      "CR 401.4",
+      "CR 400.3",
+      "CR 508.1"
+    ],
+    "pattern": "look at the top card of defending player 's library . you may put that card on the bottom of that player 's library",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "topCards",
+          "player": {
+            "ref": "defending"
+          },
+          "count": 1
+        },
+        "as": "seen"
+      },
+      {
+        "op": "may",
+        "who": {
+          "ref": "you"
+        },
+        "do": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "seen"
+            },
+            "to": {
+              "zone": "library",
+              "owner": {
+                "ref": "defending"
+              },
+              "position": "bottom"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "that card",
+      "that player"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, look at the top card of defending player's library. You may put that card on the bottom of that player's library."
+      },
+      {
+        "text": "Whenever ~ attacks alone, look at the top card of defending player's library. You may put that card on the bottom of that player's library."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, look at the top card of defending player's library. You may put that card on top of that player's library.",
+      "Whenever ~ attacks, look at the top card of your library. You may put that card on the bottom of that player's library.",
+      "Whenever ~ attacks, look at the top card of defending player's library. You may put that card on the bottom of that player's library. Draw a card."
+    ]
+  }
+]

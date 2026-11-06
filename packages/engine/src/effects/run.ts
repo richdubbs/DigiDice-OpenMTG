@@ -9,13 +9,15 @@
  * Steps run through `OP_HANDLERS`; a step without a handler is never skipped (guard G11): its players resolve it by hand. Every handler acts through the
  * proposal pipeline (WP11); this module itself only moves the finished object off the stack, as milestone 3 did.
  */
+import { withResolvingAbility } from '../statics/hooks'; // edh-next-122
+import { enterInstruction, leaveInstructions } from './entering-together'; // edh-next-122
 import type { Game } from '../core/game';
 import { countResolution } from '../rules/resolutions';
 import { EngineBug } from '../core/errors';
 import { modeInstances } from '../rules/mode-instances';
 import type { AbilityDef, Duration, EffectProgram, EffectStep } from '../types/ability';
 import type { PlayerId } from '../types/ids';
-import type { GameObject } from '../types/state';
+import type { GameObject, ZoneKind } from '../types/state';
 import { abilityDefOnStack } from '../rules/abilities';
 import { charsOfObject, isPermanentCard } from '../rules/characteristics';
 import { HISTORY_FILTER_FIELDS } from '../rules/history';
@@ -28,6 +30,7 @@ import { evalCond } from './eval';
 import { askManual, notesOf, startNotes } from './manual';
 import { performAbilityGone, performLink } from './perform';
 import { readLink } from '../statics/links';
+import { CLEAVE, effectFor } from './cleave';
 import { OVERLOAD, overloadProgram } from './overload';
 
 const NOTHING: StepResult = { performed: false, count: 0 };
@@ -60,7 +63,7 @@ export function mentionsHistory(x: unknown): boolean {
   if (Array.isArray(x)) return x.some(mentionsHistory);
   if (x === null || typeof x !== 'object') return false;
   const o = x as Record<string, unknown>;
-  if (o['cond'] === 'happened' || o['cond'] === 'firstTime' || o['cond'] === 'someMatch' /* r5-trig */ || o['cond'] === 'firstSpellCast' /* trek-2 */ || o['q'] === 'happenedCount' || o['q'] === 'happenedDistinct') return true; // CLOUD std-tmt: happenedDistinct
+  if (o['cond'] === 'happened' || o['cond'] === 'firstTime' || o['cond'] === 'putBySource' /* edh-perms-9 */ || o['cond'] === 'someMatch' /* r5-trig */ || o['cond'] === 'firstSpellCast' /* trek-2 */ || o['q'] === 'happenedCount' || o['q'] === 'happenedDistinct' || o['q'] === 'happenedPlayers') return true; // CLOUD std-tmt: happenedDistinct; edh-players-9: happenedPlayers
   for (const k of Object.keys(o)) if (HISTORY_KEYS.has(k) || mentionsHistory(o[k])) return true;
   return false;
 }
@@ -139,7 +142,8 @@ function spellPlan(g: Game, obj: GameObject): Plan {
   for (const a of ordered) {
     if (a.def.kind === 'spell') {
       // CR 702.96a-b: a spell cast for its overload cost has no targets and says "each" where it said "target" (actions/overload.ts; the cast refused it if it can't be rewritten)
-      const effect = obj.stack!.costsPaid.alternative === OVERLOAD ? overloadProgram(a.def.effect) ?? a.def.effect : a.def.effect;
+      const base = effectFor(a.def, obj.stack!.costsPaid.alternative === CLEAVE); // edh-next-100 (CR 702.148a): cast for its cleave cost the words in square brackets are removed
+      const effect = obj.stack!.costsPaid.alternative === OVERLOAD ? overloadProgram(base) ?? base : base;
       const p = flattenProgram(effect, obj.stack!.modes, a.def.text, origins);
       targets.push(...p.targets);
       steps.push(...p.steps);
@@ -150,6 +154,15 @@ function spellPlan(g: Game, obj: GameObject): Plan {
       steps.push(st);
       texts.push(a.def.text);
     }
+  }
+  // edh-next-69 (CR 702.47b): the text of the cards spliced onto the spell follows its own, in the order they were chosen; their targets follow the spell's (announced in this order)
+  for (const sp of obj.stack!.splice ?? []) {
+    for (const prog of sp.programs) {
+      const p = flattenProgram(prog, undefined, sp.text, origins);
+      targets.push(...p.targets);
+      steps.push(...p.steps);
+    }
+    texts.push(sp.text);
   }
   return { program: { targets, steps }, origins, sourceName: c.name, text: texts.join('\n') || c.name };
 }
@@ -230,6 +243,9 @@ function askUnhandled(cx: ExecCtx, group: EffectStep[]): StepResult {
  * Run steps in order (CR 608.2c): the guard of each step, its handler, its result under `as`. Steps without a handler are resolved by hand (consecutive ones
  * that stand for the same text in one prompt). Returns whether any step was carried out and the sum of their counts.
  */
+/** edh-next-122: the steps of the resolution in progress (resolveStackObject), so runSteps can tell its top-level steps (one instruction each, with their sentence). */
+let topSteps: EffectStep[] | undefined;
+
 export function runSteps(cx: ExecCtx, steps: EffectStep[]): StepResult {
   const notes = notesOf(cx);
   let performed = false;
@@ -238,9 +254,15 @@ export function runSteps(cx: ExecCtx, steps: EffectStep[]): StepResult {
   let lostBy: Map<PlayerId, number> | undefined; // cloud std-spm (CR 119.3): the life the steps made each player lose (`StepResult.lifeLostBy`)
   let removed: Map<string, number> | undefined; // std-rx14 (CR 122.1): the counters the steps removed (`StepResult.countersRemoved`)
   let putIn: Map<string, number> | undefined; // trek-6 (CR 122.6): the counters the steps put (`StepResult.countersPut`)
+  let searched: { owner: PlayerId; zone: ZoneKind }[] | undefined; // edh-zones-8 (CR 701.23a): the zones the steps searched (`StepResult.searched`)
   for (let i = 0; i < steps.length; i++) {
     if (controllerLeft(cx)) break; // M12-2: CR 800.4a, its controller left the game: the resolution stops at once (`resolveStackObject`)
     const st = steps[i]!;
+    // edh-next-122 (review, CR 608.2c): each top-level step of the resolution is one instruction (one batch window, effects/entering-together.ts), but a run of plain token creations by the
+    // same player ("Create a 1/1 Soldier token and a 2/2 Zombie token", lowered as two createToken steps; the steps keep no sentence at run time) is one instruction: the tokens enter together
+    const prev = steps === topSteps && i > 0 ? steps[i - 1] : undefined;
+    const sameCreation = prev !== undefined && st.op === 'createToken' && prev.op === 'createToken' && st.guard === undefined && prev.guard === undefined && JSON.stringify(st.who) === JSON.stringify(prev.who);
+    if (steps === topSteps && !sameCreation) enterInstruction(cx.g, undefined);
     spend(cx, 1);
     if (st.guard) {
       syncHistoryFor(cx.g, st.guard);
@@ -278,8 +300,9 @@ export function runSteps(cx: ExecCtx, steps: EffectStep[]): StepResult {
     if (res.lifeLostBy !== undefined) for (const [p, n] of res.lifeLostBy) (lostBy ??= new Map()).set(p, (lostBy.get(p) ?? 0) + n);
     if (res.countersRemoved !== undefined) for (const [k, n] of res.countersRemoved) (removed ??= new Map()).set(k, (removed.get(k) ?? 0) + n);
     if (res.countersPut !== undefined) for (const [k, n] of res.countersPut) (putIn ??= new Map()).set(k, (putIn.get(k) ?? 0) + n);
+    if (res.searched !== undefined) (searched ??= []).push(...res.searched);
   }
-  const hand = { ...(byHand ? { byHand: true as const } : {}), ...(removed !== undefined ? { countersRemoved: removed } : {}), ...(putIn !== undefined ? { countersPut: putIn } : {}) };
+  const hand = { ...(byHand ? { byHand: true as const } : {}), ...(searched !== undefined ? { searched } : {}), ...(removed !== undefined ? { countersRemoved: removed } : {}), ...(putIn !== undefined ? { countersPut: putIn } : {}) };
   if (lostBy === undefined) return { performed, count, ...hand };
   return { performed, count, lifeLost: [...lostBy.values()].reduce((a, b) => a + b, 0), lifeLostBy: lostBy, ...hand };
 }
@@ -346,14 +369,18 @@ function rememberTargets(cx: ExecCtx, program: EffectProgram): void {
  * triggers/collect.ts#applyLimit reads) and the name of its one `may` step, whose result says whether the player took the action.
  * Cloud std-spm: the `may` may be followed by steps that run only if the player took it ("If you do, draw a card", parser/lower/ability.ts#onceAction).
  */
-function limitedAction(g: Game, obj: GameObject, def: AbilityDef | undefined, program: EffectProgram): { key: string; name: string; max: number } | undefined {
+function limitedAction(g: Game, obj: GameObject, def: AbilityDef | undefined, program: EffectProgram): { key: string; name?: string; max: number } | undefined {
   if (def?.kind !== 'triggered' || def.limit?.action !== true || def.limit.per !== 'turn') return undefined;
   // std-rx27 (CR 603.2h): or the optional cast after looks ("look at the top card of your library. You may cast that card ...", parser/lower/ability.ts#onceCastAt)
   const last = program.steps[program.steps.length - 1];
-  const castAfterLooks = last?.op === 'cast' && last.optional === true && program.steps.length > 1 && program.steps.slice(0, -1).every((s) => s.op === 'look');
+  const castAfterLooks = last?.op === 'cast' && last.optional === true && program.steps.slice(0, -1).every((s) => s.op === 'look');
   const step = castAfterLooks ? last : program.steps[0];
   const key = obj.stack?.abilityRef?.key;
   const sourceId = obj.stack?.sourceId;
+  // edh-d-95 (CR 603.2h, 118.12; G'raha Tia, Scion Reborn): or the whole effect is one optional payment with its "if you do" branch (parser/lower/ability.ts#onePayment): the
+  // payment is the action, counted by the payment's own result (`name` undefined: the result of the one top-level step)
+  const payment = step?.op === 'pay' && program.steps.length === 1 && step.mandatory !== true && step.else === undefined;
+  if (payment && key !== undefined && sourceId !== undefined) return { key: `${sourceId}|trigger:${key}`, max: def.limit.max };
   if ((step?.op !== 'may' && !castAfterLooks) || step?.as === undefined || key === undefined || sourceId === undefined) return undefined;
   return { key: `${sourceId}|trigger:${key}`, name: step.as, max: def.limit.max };
 }
@@ -382,7 +409,8 @@ export const resolveStackObject: ResolveStackObject = (g, obj) => {
 
   // CR 608.2b: ONE check over the targets of every chosen mode; it does not resolve only if it has targets and all of them are illegal.
   const { legal, total } = recheckAll(cx);
-  if (total > 0 && legal === 0) {
+  // edh-top-9 (CR 608.2b; Gilded Drake): "This ability still resolves if its target becomes illegal": the ability resolves with no legal target (the instructions that name it do nothing)
+  if (total > 0 && legal === 0 && !(plan.def?.kind === 'triggered' && plan.def.resolvesIfIllegal === true)) {
     g.log(`${what} fizzles: all of its targets are illegal.`, { rules: ['CR 608.2b'], level: 'info' });
     finishSpell(g, obj, false);
     return;
@@ -406,7 +434,17 @@ export const resolveStackObject: ResolveStackObject = (g, obj) => {
   const outer = g.effectController;
   g.effectController = cx.controller;
   try {
-    runSteps(cx, plan.program.steps);
+    // edh-next-122 (CR 608.2, 113.3c): what is resolving, for "triggered abilities you control can't cause you to ..." (statics/hooks.ts#withResolvingAbility)
+    const outerTop = topSteps;
+    const outerInstruction = leaveInstructions(g); // edh-next-122 (review, CR 608.2c): the instructions of this resolution, one batch window each (effects/entering-together.ts)
+    topSteps = plan.program.steps;
+    try {
+      const top = withResolvingAbility({ kind: obj.stack.kind, controller: cx.controller }, () => runSteps(cx, plan.program.steps));
+      if (once !== undefined && once.name === undefined && top.performed) noteLimitedAction(g, once.key); // edh-d-95 (CR 603.2h): the one optional payment was made
+    } finally {
+      topSteps = outerTop;
+      leaveInstructions(g, outerInstruction);
+    }
   } catch (e) {
     if (!(e instanceof StepBudgetExceeded)) throw e;
     g.log(`${what} executed more than ${STEP_BUDGET} steps; the rest of it is resolved by hand.`, { rules: ['CR 608.2c'], level: 'warning' });
@@ -421,7 +459,7 @@ export const resolveStackObject: ResolveStackObject = (g, obj) => {
     return;
   }
 
-  if (once && cx.results.get(once.name)?.performed === true) noteLimitedAction(g, once.key); // CR 603.2h: the action was taken
+  if (once && once.name !== undefined && cx.results.get(once.name)?.performed === true) noteLimitedAction(g, once.key); // CR 603.2h: the action was taken
 
   g.emit({ type: 'resolved', objectId: obj.id });
   g.log(`${what} resolves.`, { rules: ['CR 608.2'], level: 'info' });

@@ -10,11 +10,12 @@
  * honored by milestone 5, so M6-0 registers them in the same commit as the walker names them (G10: no formerly full card is demoted).
  */
 import type { Game } from '../../core/game';
-import type { PlayerId } from '../../types/ids';
+import type { ObjectId, PlayerId } from '../../types/ids';
 import type { ObjHandle, SemEvent } from '../../types/state';
 import { controllerOf } from '../../rules/characteristics';
 import { playerRestricted } from '../../rules/restrictions';
 import { ruleDenial, type EnterFacts } from '../../statics/hooks';
+import { countersPutDenial } from '../../rules/counters';
 import type { RuleQuery } from '../../statics/api';
 import type { Proposed } from '../api';
 import {
@@ -41,6 +42,11 @@ const ofObject = (g: Game, h: ObjHandle): PlayerId => {
 
 /** The "can't" questions of an event (design 9.4) and the first denial among them, as a log line (CR 614.17). */
 type Asked = { q: RuleQuery; controller?: PlayerId } & EnterFacts;
+/** edh-fix-4 (CR 614.12): the first denial of putting counters on an object, not counting a restriction of an object that enters in the same event (rules/counters.ts#countersPutDenial). */
+function countersPutMessage(g: Game, id: ObjectId, counter: string): string | null {
+  const d = countersPutDenial(g, id, g.s, counter);
+  return d ? `That can't happen (haveCountersPut): ${d.message}` : null;
+}
 function firstDenial(g: Game, asked: Asked[]): string | null {
   for (const { q, ...opts } of asked) {
     const d = ruleDenial(g.s, q, opts);
@@ -71,7 +77,7 @@ export const DAMAGE_KIND: ProposalKind<Ev<'damage'>> = {
 export const LIFE_KIND: ProposalKind<Ev<'life'>> = {
   ev: 'life',
   capabilities: ['feature:replace.on.life'],
-  semOf: (_g, e) => ({ ...base, ev: 'life', roles: { player: { players: [e.player] } }, data: { change: e.change, amount: e.amount } }),
+  semOf: (_g, e) => ({ ...base, ev: 'life', roles: { player: { players: [e.player] } }, data: { change: e.change, amount: e.amount, fromDamage: e.fromDamage === true } }), // edh-players-3: fromDamage
   affectedPlayer: (_g, e) => e.player,
   forbidden: (g, e) => {
     if (playerRestricted(g.s, e.player, e.change === 'gain' ? 'cantGainLife' : 'cantLoseLife')) {
@@ -140,7 +146,7 @@ export const COUNTERS_KIND: ProposalKind<Ev<'counters'>> = {
     return { ...base, ev: 'counters', roles: { subject: { objects: [e.on] } }, data: { change: e.change, kind: e.kind, amount: e.count, total: e.change === 'put' ? have + e.count : Math.max(0, have - e.count), ...(by !== undefined ? { by } : {}) } };
   },
   affectedPlayer: (g, e) => (typeof e.on === 'string' ? e.on : ofObject(g, e.on)),
-  forbidden: (g, e) => (e.change === 'put' ? firstDenial(g, [{ q: { action: 'haveCountersPut', subject: typeof e.on === 'string' ? e.on : e.on.id } }]) : null),
+  forbidden: (g, e) => (e.change === 'put' ? (typeof e.on === 'string' ? firstDenial(g, [{ q: { action: 'haveCountersPut', subject: e.on, counter: e.kind } }]) : countersPutMessage(g, e.on.id, e.kind)) : e.kind === 'stun' && typeof e.on !== 'string' ? firstDenial(g, [{ q: { action: 'haveStunCountersRemoved', subject: e.on.id } }]) : null), // edh-players-22 (CR 122.1d, 614.17)
   perform: (g, e) => performCountersEvent(g, e),
 };
 

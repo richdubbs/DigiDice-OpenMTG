@@ -1,0 +1,395 @@
+[
+  {
+    "id": "eff.edhz16.choose.landOrNonland",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 205.2a",
+      "CR 607.2d"
+    ],
+    "pattern": "choose land or nonland",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "landOrNonland",
+      "as": "chosenKind",
+      "link": "chosenKind"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose land or nonland. Reveal cards from the top of your library until you reveal a card of the chosen kind. Put that card onto the battlefield and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "When ~ enters, choose land or nonland. Reveal cards from the top of your library until you reveal a card of the chosen kind. Put that card into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent chooses land or nonland. Reveal cards from the top of your library until you reveal a card of the chosen kind.",
+      "Choose a color. Reveal cards from the top of your library until you reveal a card of the chosen kind.",
+      "Choose land or creature. Reveal cards from the top of your library until you reveal a card of the chosen kind."
+    ]
+  },
+  {
+    "id": "rep.edhz16.draw.mayInstead.chooseKind.revealUntil",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 121.1",
+      "CR 701.20a",
+      "CR 205.2a",
+      "CR 401.4"
+    ],
+    "pattern": "if you would draw a card , you may instead choose land or nonland and reveal cards from the top of your library until you reveal {f:DiscardDesc} . put {o:Obj} into your hand and put {r:Rest} on the bottom of your library in any order",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "draw",
+            "player": "you"
+          },
+          "optional": true,
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "chooseValue",
+                "who": {
+                  "ref": "you"
+                },
+                "what": "landOrNonland",
+                "as": "chosenKind",
+                "link": "chosenKind"
+              },
+              {
+                "op": "revealUntil",
+                "who": {
+                  "ref": "you"
+                },
+                "filter": "$f",
+                "as": "hit",
+                "revealed": "revealed"
+              },
+              {
+                "op": "move",
+                "what": "$o",
+                "to": {
+                  "zone": "hand"
+                }
+              },
+              {
+                "op": "move",
+                "what": "$r",
+                "to": {
+                  "zone": "library",
+                  "position": "bottom",
+                  "order": "chosen"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "may",
+      "instead",
+      "until",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "If you would draw a card, you may instead choose land or nonland and reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and put all other cards revealed this way on the bottom of your library in any order."
+      },
+      {
+        "text": "If you would draw a card, you may instead choose land or nonland and reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and put all other cards revealed this way on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "If an opponent would draw a card, you may instead choose land or nonland and reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and put all other cards revealed this way on the bottom of your library in any order.",
+      "If you would draw a card, instead choose land or nonland and reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and put all other cards revealed this way on the bottom of your library in any order.",
+      "If you would draw a card, you may instead choose land or nonland and reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and put all other cards revealed this way on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhz16.objPlayer.revealUntil",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 401.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:ObjPlayer} reveals cards from the top of their library until they reveal {f:DiscardDesc}",
+    "build": {
+      "op": "revealUntil",
+      "who": "$p",
+      "filter": "$f",
+      "as": "hit",
+      "revealed": "revealed"
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target creature. Its controller reveals cards from the top of their library until they reveal a creature card. They put that card onto the battlefield and the rest on the bottom of their library in a random order."
+      },
+      {
+        "text": "Exile target artifact. Its owner reveals cards from the top of their library until they reveal an artifact card. They put that card onto the battlefield and the rest on the bottom of their library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent reveals cards from the top of their library until they reveal a creature card.",
+      "Destroy target creature. Its controller reveals cards from the top of their library until they reveal two creature cards.",
+      "Destroy target creature. Its controller exiles cards from the top of their library until they exile a creature card."
+    ]
+  },
+  {
+    "id": "eff.edhz16.player.putThat.battlefield.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 110.2a"
+    ],
+    "pattern": "{p:Player} put[s] {o:Obj} onto the battlefield and {r:Rest} on the bottom of their library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": "$p"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target creature. Its controller reveals cards from the top of their library until they reveal a creature card. They put that card onto the battlefield and the rest on the bottom of their library in a random order."
+      },
+      {
+        "text": "Destroy target land. Its controller reveals cards from the top of their library until they reveal a land card. They put that card onto the battlefield and the rest on the bottom of their library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target creature. Its controller reveals cards from the top of their library until they reveal a creature card. They put that card onto the battlefield and the rest on the bottom of their library in any order.",
+      "Destroy target creature. Its controller reveals cards from the top of their library until they reveal a creature card. They put that card into their hand and the rest on the bottom of their library in a random order."
+    ]
+  },
+  {
+    "id": "sta.edhz16.xMax.spell",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 107.3",
+      "CR 601.2b",
+      "CR 107.3a"
+    ],
+    "pattern": "x can't be greater than {q:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {},
+          "xMax": "$q"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "X can't be greater than the number of lands you control.\nYou gain 3 life and draw a card."
+      },
+      {
+        "text": "X can't be greater than the number of creatures you control.\nYou gain 2 life and draw a card."
+      }
+    ],
+    "counterExamples": [
+      "X can't be less than the number of creatures you control.\nYou gain 2 life and draw a card.",
+      "Y can't be greater than the number of creatures you control.\nYou gain 2 life and draw a card.",
+      "As an additional cost to cast this spell, blight X. X can't be greater than the number of cards in your hand.\nYou gain 2 life and draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhz16.revealUntil.x.spellX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 401.1",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "reveal cards from the top of your library until you reveal x {f:CardsDesc}",
+    "build": {
+      "op": "revealUntil",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "count": {
+        "q": "X"
+      },
+      "as": "hit",
+      "revealed": "revealed"
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal X creature cards. Put those creature cards onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Reveal cards from the top of your library until you reveal X artifact cards. Put those artifact cards onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal Y land cards.",
+      "Reveal cards from the top of target player's library until they reveal X land cards.",
+      "Exile cards from the top of your library until you exile X land cards."
+    ]
+  },
+  {
+    "id": "eff.edhz16.forEach.controllerSearchesBasic.thenPutTapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 608.2c",
+      "CR 608.2f",
+      "CR 110.2a",
+      "CR 701.24a"
+    ],
+    "pattern": "for each {f:Filter} , its controller searches their library for a basic land card . those players put those cards onto the battlefield tapped , then shuffle",
+    "build": [
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "as": "searcher",
+        "gather": "found",
+        "do": [
+          {
+            "op": "search",
+            "who": {
+              "ref": "controllerOf",
+              "object": {
+                "ref": "bound",
+                "name": "searcher"
+              }
+            },
+            "zone": "library",
+            "filter": {
+              "supertypes": [
+                "Basic"
+              ],
+              "types": [
+                "Land"
+              ]
+            },
+            "max": 1,
+            "as": "found"
+          }
+        ]
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "found"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner",
+          "tapped": true
+        }
+      },
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "as": "shuffler",
+        "do": [
+          {
+            "op": "shuffle",
+            "who": {
+              "ref": "controllerOf",
+              "object": {
+                "ref": "bound",
+                "name": "shuffler"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "their",
+      "those",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Exile target enchantment you don't control. For each enchantment exiled this way, its controller searches their library for a basic land card. Those players put those cards onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Exile target artifact. For each artifact exiled this way, its controller searches their library for a basic land card. Those players put those cards onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Exile target artifact. For each artifact exiled this way, its controller may search their library for a basic land card. Those players put those cards onto the battlefield tapped, then shuffle.",
+      "Exile target artifact. For each artifact exiled this way, its controller searches their library for a basic land card. Those players put those cards onto the battlefield, then shuffle.",
+      "Exile target artifact. For each artifact exiled this way, its controller searches their library for a basic land card."
+    ]
+  }
+]

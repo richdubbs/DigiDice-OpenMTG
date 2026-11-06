@@ -1,0 +1,9 @@
+# edh-players-8 (Commander lane edh-players; test/cloud/edh-players-8, golden edh-players-8-review.json)
+# an opponent chooses up to N permanents and sacrifices the rest at their end step; a card returns at its owner's next end step; hexproof from, and unblockable by, the color just chosen; the player with the most life chosen; a graveyard with twenty cards; an opponent's attack, second draw or second spell triggers one ability; phase out and "until your next turn" in one sentence
+Archfiend of Depravity
+The Eternal Wanderer
+Skrelv, Defector Mite
+The Black Gate
+Visions of Beyond
+Perch Protection
+Trouble in Pairs

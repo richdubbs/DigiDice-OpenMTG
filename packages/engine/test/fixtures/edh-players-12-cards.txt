@@ -1,0 +1,8 @@
+# edh-players-12 (Commander lane edh-players; test/cloud/edh-players-12, golden edh-players-12-review.json)
+# a player pronoun in the amount of a group step (attacking them, that player has drawn this turn); each of that player's opponents may draw; "also discards" after an "if"; "each other creature that's attacking one of your opponents"; an artifact put into an opponent's graveyard
+Within Range
+Molten Psyche
+Heartwood Storyteller
+Liliana's Triumph
+Martial Impetus
+Viridian Revel

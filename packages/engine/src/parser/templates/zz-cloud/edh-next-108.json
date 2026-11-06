@@ -1,0 +1,51 @@
+[
+  {
+    "id": "eff.edhn108.sacrifice.tenth.theirChoice.up",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 107.1a",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} sacrifice[s] a tenth of the {f:Filter} of their choice , rounded up",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": "$f",
+      "count": {
+        "q": "math",
+        "op": "ceilDiv",
+        "args": [
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          },
+          10
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "tenth"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent sacrifices a tenth of the artifacts they control of their choice, rounded up."
+      },
+      {
+        "text": "Each player sacrifices a tenth of the lands they control of their choice, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent sacrifices a tenth of the artifacts they control of their choice, rounded down.",
+      "Target opponent sacrifices a tenth of the artifacts they control of their choice.",
+      "Target opponent sacrifices a tenth of the artifacts you control of their choice, rounded up.",
+      "Target opponent sacrifices a fifth of the artifacts they control of their choice, rounded up."
+    ]
+  }
+]

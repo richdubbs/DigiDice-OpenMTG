@@ -1,0 +1,265 @@
+[
+  {
+    "id": "eff.edhd71.extraStep.upkeep.youGet",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.9",
+      "CR 503.1"
+    ],
+    "pattern": "you get an additional upkeep step after this step",
+    "build": {
+      "op": "extraStep",
+      "step": "upkeep"
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ becomes untapped during your untap step, you get an additional upkeep step after this step."
+      },
+      {
+        "text": "At the beginning of your end step, draw a card. You get an additional upkeep step after this step."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you get an additional upkeep step after this phase.",
+      "Whenever ~ attacks, you get two additional upkeep steps after this step.",
+      "Whenever ~ attacks, you get an additional draw step after this step.",
+      "Whenever ~ attacks, you get an additional end step after this step."
+    ]
+  },
+  {
+    "id": "eff.edhd71.extraStep.upkeep.thatPlayerGets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.9",
+      "CR 503.1"
+    ],
+    "pattern": "that player gets an additional upkeep step after this step",
+    "build": {
+      "op": "extraStep",
+      "step": "upkeep"
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of enchanted player's first upkeep each turn, draw a card. That player gets an additional upkeep step after this step."
+      },
+      {
+        "text": "At the beginning of enchanted player's end step, that player gets an additional upkeep step after this step."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of enchanted player's first upkeep each turn, draw a card. That player gets an additional upkeep step after this phase.",
+      "At the beginning of enchanted player's first upkeep each turn, draw a card. That player gets two additional upkeep steps after this step.",
+      "At the beginning of enchanted player's first upkeep each turn, draw a card. That player gets an additional draw step after this step."
+    ]
+  },
+  {
+    "id": "eff.edhd71.anyPlayerMay.payHalfLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 119.4",
+      "CR 101.4",
+      "CR 608.2c"
+    ],
+    "pattern": "any player may pay half their life , rounded up . if a player does , {e:Effects}",
+    "build": {
+      "op": "pay",
+      "everyPlayer": true,
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "payLife",
+            "amount": {
+              "q": "math",
+              "op": "ceilDiv",
+              "args": [
+                {
+                  "q": "life",
+                  "of": {
+                    "ref": "iterating"
+                  }
+                },
+                2
+              ]
+            }
+          }
+        ]
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "any player",
+      "may",
+      "if",
+      "half",
+      "their"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, any player may pay half their life, rounded up. If a player does, draw a card."
+      },
+      {
+        "text": "Whenever ~ attacks, any player may pay half their life, rounded up. If a player does, ~ gets +2/+2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, each player may pay half their life, rounded up. If a player does, draw a card.",
+      "Whenever ~ attacks, any player may pay half their life, rounded down. If a player does, draw a card.",
+      "Whenever ~ attacks, any player may pay half their life. If a player does, draw a card.",
+      "Whenever ~ attacks, any player may pay half their life, rounded up. If you do, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhd71.youAndWalkers.protectionFromPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16a",
+      "CR 702.16b",
+      "CR 702.16e",
+      "CR 611.2a",
+      "CR 115.1",
+      "CR 303.4"
+    ],
+    "pattern": "{d:Dur} , you and planeswalkers you control gain protection from {p:Player}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "controller": "$p"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beEnchanted",
+          "other": {
+            "controller": "$p"
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you"
+            },
+            "source": {
+              "controller": "$p"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Planeswalker"
+              ],
+              "controller": "you"
+            }
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "controller": "$p"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Planeswalker"
+              ],
+              "controller": "you"
+            }
+          },
+          "mode": "cant",
+          "action": "beEnchanted",
+          "other": {
+            "controller": "$p"
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "types": [
+                  "Planeswalker"
+                ],
+                "controller": "you"
+              }
+            },
+            "source": {
+              "controller": "$p"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "protection",
+      "planeswalkers"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent takes an extra turn after this one. Until your next turn, you and planeswalkers you control gain protection from that player."
+      },
+      {
+        "text": "Whenever ~ attacks, until end of turn, you and planeswalkers you control gain protection from target opponent."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, until your next turn, you and creatures you control gain protection from target opponent.",
+      "Whenever ~ attacks, until your next turn, you and planeswalkers you control gain protection from each opponent.",
+      "Whenever ~ attacks, until your next turn, you gain protection from target opponent.",
+      "Whenever ~ attacks, you and planeswalkers you control gain protection from target opponent."
+    ]
+  }
+]

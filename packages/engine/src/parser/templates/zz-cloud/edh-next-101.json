@@ -1,0 +1,504 @@
+[
+  {
+    "id": "eff.edhn101.addMana.forEach.drawThatManyPlus",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "add {t:ManaSym} for each {f:Filter} , then draw that many cards plus {n:Qty}",
+    "build": [
+      {
+        "op": "addMana",
+        "who": {
+          "ref": "you"
+        },
+        "dynamic": {
+          "kind": "ofType",
+          "type": "$t",
+          "count": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        }
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "math",
+          "op": "+",
+          "args": [
+            {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": "$f"
+              }
+            },
+            "$n"
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "Discard all the cards in your hand. Add {G} for each card discarded this way, then draw that many cards plus two."
+      },
+      {
+        "text": "Discard all the cards in your hand. Add {U} for each card discarded this way, then draw that many cards plus three."
+      }
+    ],
+    "counterExamples": [
+      "Discard all the cards in your hand. Add {R} for each card discarded this way, then draw that many cards.",
+      "Discard all the cards in your hand. Add {R} for each card discarded this way, then draw that many cards minus one.",
+      "Discard all the cards in your hand. Add {R}{R} for each card discarded this way, then draw that many cards plus one."
+    ]
+  },
+  {
+    "id": "eff.edhn101.itIs.artifact.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:ItIs} an artifact in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put target creature card from a graveyard onto the battlefield under your control. It's an artifact in addition to its other types."
+      },
+      {
+        "text": "Put target creature card from your graveyard onto the battlefield. It's an artifact in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Put target creature card from a graveyard onto the battlefield under your control. It's an artifact until end of turn in addition to its other types.",
+      "Put target creature card from a graveyard onto the battlefield under your control. It's an artifact.",
+      "Put target creature card from a graveyard onto the battlefield under your control. It's a land in addition to its other types."
+    ],
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhn101.manifest.top.player.subject",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.40a",
+      "CR 701.40e",
+      "CR 110.2",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} manifest[s] the top card of {l:Player} 's library",
+    "build": {
+      "op": "action",
+      "action": "manifest",
+      "who": "$p",
+      "subject": {
+        "ref": "topCards",
+        "player": "$l",
+        "count": 1
+      }
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "At the beginning of each opponent's upkeep, you manifest the top card of that player's library."
+      },
+      {
+        "text": "When ~ enters, you may pay {2}. If you do, you manifest the top card of target opponent's library."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each opponent's upkeep, you manifest the top two cards of that player's library.",
+      "At the beginning of each opponent's upkeep, each opponent manifests the top card of that player's library.",
+      "At the beginning of each opponent's upkeep, you cloak the top card of that player's library."
+    ]
+  },
+  {
+    "id": "eff.edhn101.manifestDread.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.62a",
+      "CR 701.40a",
+      "CR 608.2c"
+    ],
+    "pattern": "^ manifest dread if {c:Cond}",
+    "build": {
+      "op": "action",
+      "action": "manifestDread",
+      "who": {
+        "ref": "you"
+      },
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "needs": [
+      "action:manifestDread"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a land you control enters, manifest dread if this is the first time this ability has resolved this turn."
+      },
+      {
+        "text": "When ~ enters, manifest dread if you control a creature."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a land you control enters, manifest dread unless this is the first time this ability has resolved this turn.",
+      "Whenever a land you control enters, manifest if this is the first time this ability has resolved this turn.",
+      "Whenever a land you control enters, manifest dread."
+    ]
+  },
+  {
+    "id": "eff.edhn101.manifest.top.attachSelf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.40a",
+      "CR 701.3a",
+      "CR 303.4",
+      "CR 608.2c"
+    ],
+    "pattern": "manifest the top card of your library and attach ~ to it",
+    "build": [
+      {
+        "op": "action",
+        "action": "manifest",
+        "who": {
+          "ref": "you"
+        },
+        "as": "manifested"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "ref": "bound",
+          "name": "manifested"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "and"
+    ],
+    "needs": [
+      "action:manifest"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, manifest the top card of your library and attach ~ to it."
+      },
+      {
+        "text": "{4}: Manifest the top card of your library and attach ~ to it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, manifest the top card of your library and attach ~ to target creature.",
+      "When ~ enters, cloak the top card of your library and attach ~ to it.",
+      "When ~ enters, manifest the top card of your library and attach it to ~."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhn101.becomesAura.enchantCreature",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 303.4",
+      "CR 702.5a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes an aura with enchant creature",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": [
+                  "Aura"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "enchant",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  },
+                  "text": "Enchant creature"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "becomes"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, it becomes an Aura with enchant creature."
+      },
+      {
+        "text": "{2}: ~ becomes an Aura with enchant creature."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it becomes an Aura with enchant artifact.",
+      "When ~ enters, it becomes an Aura until end of turn.",
+      "When ~ enters, it becomes a Saga with enchant creature."
+    ]
+  },
+  {
+    "id": "eff.edhn101.revealUntil.aCard.forEachVote",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.38a",
+      "CR 608.2c"
+    ],
+    "pattern": "reveal cards from the top of your library until you reveal ( a | an ) {f:Filter} card for each {n:VoteCount}",
+    "build": {
+      "op": "revealUntil",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "count": "$n",
+      "as": "hit",
+      "revealed": "revealed"
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player votes for wild or free. Reveal cards from the top of your library until you reveal a creature card for each wild vote."
+      },
+      {
+        "text": "Starting with you, each player votes for wild or free. Reveal cards from the top of your library until you reveal a land card for each free vote."
+      }
+    ],
+    "counterExamples": [
+      "Starting with you, each player votes for wild or free. Reveal cards from the top of your library until you reveal a creature card for each other vote.",
+      "Starting with you, each player votes for wild or free. Reveal cards from the top of your library until you reveal two creature cards for each wild vote.",
+      "Starting with you, each player votes for wild or free. Reveal cards from the top of your library until you reveal a creature card."
+    ]
+  },
+  {
+    "id": "eff.edhn101.put.bf.thenShuffleRest",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 401.3"
+    ],
+    "pattern": "put {o:TypedThose} onto the battlefield , then shuffle the rest into your library",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "not": {
+              "is": "$o"
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "rest"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal two creature cards. Put those creature cards onto the battlefield, then shuffle the rest into your library."
+      },
+      {
+        "text": "Reveal cards from the top of your library until you reveal two artifact cards. Put those artifact cards onto the battlefield, then shuffle the rest into your library."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal two creature cards. Put those creature cards onto the battlefield, then shuffle the rest on the bottom of your library.",
+      "Reveal cards from the top of your library until you reveal two creature cards. Put those creature cards onto the battlefield, then shuffle the rest into target player's library.",
+      "Reveal cards from the top of your library until you reveal two creature cards. Put those creature cards into your hand, then shuffle the rest into your library."
+    ]
+  },
+  {
+    "id": "eff.edhn101.may.putFromHand.bf.forEachVote",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 608.2c",
+      "CR 110.2a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card from your hand onto the battlefield for each {n:VoteCount}",
+    "build": {
+      "op": "repeat",
+      "times": "$n",
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "zone": "hand",
+              "owner": "you",
+              "isCard": true
+            }
+          },
+          "min": 0,
+          "max": 1,
+          "as": "put"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "put"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player votes for wild or free. You may put a permanent card from your hand onto the battlefield for each free vote."
+      },
+      {
+        "text": "Starting with you, each player votes for wild or free. You may put a land card from your hand onto the battlefield for each wild vote."
+      }
+    ],
+    "counterExamples": [
+      "Starting with you, each player votes for wild or free. You may put a permanent card from your hand onto the battlefield.",
+      "Starting with you, each player votes for wild or free. You may put a permanent card from your graveyard onto the battlefield for each free vote.",
+      "Starting with you, each player votes for wild or free. You may put a permanent card from your hand onto the battlefield tapped for each free vote."
+    ]
+  }
+]

@@ -14,6 +14,8 @@ import type { ReplacementBody } from '../types/ability';
 import type { Proposed } from './api';
 import { BODY_KINDS, DESTINATION_PARTS, ENTERS_PARTS, type BodyKind } from './registries';
 import { setShieldLeft } from './perform-events';
+import { BATCH_SHIELDS, currentInstruction, ENTERING_TOGETHER } from './entering-together';
+import { shieldHeldInBatch, shieldUsedInBatch } from './damage-batch';
 import type { Candidate } from './replacements';
 
 export { shieldBudgetLeft } from './bodies/m5';
@@ -44,7 +46,24 @@ export function applyBody(g: Game, e: Proposed, c: Candidate, shares?: ReadonlyM
   if (c.recId !== undefined && out !== e && b.b !== 'prevent' && !(b.b === 'redirect' && b.amount !== undefined)) {
     const rec = g.s.continuousEffects.find((r) => r.id === c.recId);
     const uses = rec?.effect.s === 'replace' ? rec.effect.shield?.uses : undefined;
-    if (rec && typeof uses === 'number') setShieldLeft(g, rec.id, (rec.usesLeft ?? uses) - 1);
+    // edh-next-122 (CR 614.1c, 616.1; Mystic Reflection): "the next time one or more ... enter": a batch shield applies to every object of the group entering together (one instruction of a resolution, or one move or creation; it is used up when
+    // the group has entered, effects/entering-together.ts#closeEnteringGroup); an object entering alone uses it up now
+    const group = rec?.effect.s === 'replace' && rec.effect.shield?.batch === true && e.ev === 'zoneChange' && e.to === 'battlefield' ? currentInstruction() ?? ENTERING_TOGETHER.get(g) : undefined;
+    if (rec && group !== undefined) {
+      const ids = BATCH_SHIELDS.get(group) ?? new Set<string>();
+      ids.add(rec.id);
+      BATCH_SHIELDS.set(group, ids);
+    } else if (rec && typeof uses === 'number') {
+      const left = (rec.usesLeft ?? uses) - 1;
+      // edhd67 review (CR 615.8, 510.2, 614.5; Impulsive Maneuvers, Desperate Gambit): "the next time that source would deal damage ... it deals double that damage instead" is used up by ONE time: all the
+      // damage the source deals at the same moment (trample, two blockers, "each opponent") is that time, so the shield changes all of it (as effects/bodies/m5.ts#applyPrevent does for prevention)
+      const rp = rec.effect.s === 'replace' ? (rec.effect.replaces as { ev?: string; source?: { is?: unknown } }) : undefined;
+      if (b.b === 'modify' && rp?.ev === 'damage' && rp.source?.is !== undefined) {
+        if (!shieldUsedInBatch(g, rec.id, left <= 0, `own:${rec.id}`)) {
+          if (left > 0 || !shieldHeldInBatch(g, rec.id)) setShieldLeft(g, rec.id, left);
+        }
+      } else setShieldLeft(g, rec.id, left);
+    }
   }
   // M6-0: the parts of the M6 fields, applied to the event as the body left it (choices first, CR 614.12a; empty in M6-0)
   if (b.b === 'enters' && out && out.ev === 'zoneChange' && out.to === 'battlefield' && e.ev === 'zoneChange') {

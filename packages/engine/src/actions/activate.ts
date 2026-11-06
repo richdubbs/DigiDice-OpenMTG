@@ -13,7 +13,7 @@ import type { PlayerId } from '../types/ids';
 import type { GameObject, GameState, TargetChoice } from '../types/state';
 import { holdStill } from '../statics/stable-scope';
 import { reduceManaBy } from '../statics/costmods';
-import { enteredThisTurn, happenedCountOf } from '../rules/history';
+import { enteredThisTurn, happenedCountOf, opponentsAttackedCount } from '../rules/history';
 import type { ObjectId } from '../types/ids';
 import { IllegalAction, type Game } from '../core/game';
 import { canSee } from '../core/view';
@@ -21,15 +21,17 @@ import { applyManualOps, chooseManualSteps } from '../core/manual';
 import { freshObject, moveObject } from '../core/zones';
 import { activationZones, findAbility, type ActivatedInfo } from '../rules/abilities';
 import { charsOfObject } from '../rules/characteristics';
-import { addPlans, costFilterHasX, costHasX, payableXs, planDenial, planFromCostDef, planFromCostDefs, type CostPlan, type CostX } from '../rules/cost';
-import { programFiltersMentionX } from '../rules/targets';
+import { addPlans, applyOnlyX, countX, costFilterHasX, costHasX, hasOneOf, oneOfPlans, payableXs, planDenial, planFromCostDef, planFromCostDefs, type CostPlan, type CostX, type PlanPart } from '../rules/cost';
+import { pickCandidates } from '../rules/cost-pick';
+import { groupStat, programFiltersMentionX } from '../rules/targets';
 import { deny, assertAllowed, type Denial } from '../rules/denial';
 import { gameOf, hookpoints } from '../rules/hookpoints';
 import { activateManaAbility, addManaByActivation, installManaRestrictionReader, manaAbilityDenial, manaText } from '../rules/mana';
 import { costUseDenial } from '../rules/cant';
 import { abilityCostModsFor, modifyMana, type CostModHit } from '../statics/costmods';
+import { beginTypedActivation, endTypedActivation } from '../rules/typed-activations';
 import { charsViewOf } from '../statics/rule-sources';
-import { staticAnyColorForAbility } from '../statics/play-permits';
+import { staticAnyColorForAbility, staticAnyColorWithForAbility } from '../statics/play-permits';
 import { evalCondition, evalQuantity } from '../statics/match';
 import { payPlan, resolveAnyCounts, type Paid } from '../rules/pay';
 import { applyOptions, payableWith, tapForManaOption } from '../rules/payment-options';
@@ -38,6 +40,7 @@ import { activatedForms } from '../model/forms';
 import { abilityTiming, isSummoningSickToActivate, splitSecondDenial } from '../rules/timing';
 import { readLink, setLink } from '../statics/links';
 import { activationOutcome, announceCond, type AnnounceEnv } from './announce-cond';
+import { manaSpentTriggers } from './cast';
 import { announceTargets, chooseModes, chooseX, describeTargets, effectivePrograms, emitBecameTarget, modeCosts, modesDenial, programsDenial, supportsForm } from './announce';
 
 /** The mana of an ability's cost is for that ability: restricted mana pays only if its source matches (CR 106.6). */
@@ -54,16 +57,22 @@ const samePrinted = (a: unknown, b: unknown): boolean => a === b || (b !== undef
  */
 function abilityPlan(s: GameState, def: ActivatedAbilityDef, x: CostX, source: ObjectId): CostPlan {
   // FAST5X E23 (CR 106.6, 702.6a): the keyword the ability is the expansion of ("an equip ability") is part of what the mana pays for
-  const keyword = def.prov?.by === 'keyword' && typeof def.prov.id === 'string' ? def.prov.id : undefined;
+  // edh-c-110 (CR 702.193a, 106.6; Quinjet Technician): a power-up ability is written out in the card's text, so its wrapper keyword (`def.keyword`) names it
+  const keyword = def.prov?.by === 'keyword' && typeof def.prov.id === 'string' ? def.prov.id : typeof def.keyword === 'string' && def.keyword !== '' ? def.keyword : undefined;
   // std-rx32 (CR 609.4b): "you may spend mana as though it were mana of any color to activate abilities of creatures you control" (its controller activates it, CR 602.2)
   const controller = s.objects[source]?.controller;
   const anyColor = controller !== undefined && staticAnyColorForAbility(s, controller, source);
+  const anyColorWith = controller !== undefined && !anyColor ? staticAnyColorWithForAbility(s, controller, source) : undefined; // edh-next-140 (CR 609.4b; Quicksilver Elemental)
   // pc-statics-2 (CR 118.3, 602.2b, 903.4): a life payment of a computed amount ("Pay life equal to the number of colors in your commanders' color identity") is
   // worked out as the total cost is determined; an amount that cannot be read stays computed, and the plan then holds a manual part, so the ability is not offered
   const cost = def.cost?.other?.some((p) => p.kind === 'payLife' && typeof p.amount === 'object') && controller !== undefined
-    ? { ...def.cost, other: def.cost.other.map((p) => { if (p.kind !== 'payLife' || typeof p.amount !== 'object') return p; const v = evalQuantity({ s, all: charsViewOf(s), source, controller }, p.amount); return v === undefined ? p : { ...p, amount: v }; }) }
+    ? { ...def.cost, other: def.cost.other.map((p) => { if (p.kind !== 'payLife' || typeof p.amount !== 'object') return p; const v = evalQuantity({ s, all: charsViewOf(s), source, controller }, p.amount); return v === undefined ? p : { ...p, amount: Math.max(0, v) /* edh-c-41 (CR 107.1b; Lurking Evil ruling 2004-10-04): half of zero or negative life is zero, it costs nothing */ }; }) }
     : def.cost;
-  const plan: CostPlan = { ...planFromCostDef(cost, x), spend: { kind: 'ability', id: source, ...(keyword !== undefined ? { keyword } : {}), ...(anyColor ? { anyColor: true as const } : {}) } };
+  const basePlan: CostPlan = { ...planFromCostDef(cost, x), spend: { kind: 'ability', id: source, ...(def.spendOnlyX !== undefined && typeof x === 'number' ? { onlyX: def.spendOnlyX, x } : {}) /* edh-next-85 (CR 107.3a): "Spend only black mana on X", applied by rules/cost.ts#applyOnlyX */, ...(def.isMana === true ? { mana: true as const } : {}) /* edh-d-3 (CR 605.1a) */, ...(keyword !== undefined ? { keyword } : {}), ...(anyColor ? { anyColor: true as const } : {}), ...(anyColorWith !== undefined ? { anyColorWith } : {}), ...(countX(def.cost?.mana) > 0 ? { xCost: true as const } : {}) } };
+  const plan = basePlan;
+  // edh-next-141 (CR 609.4b; Grell Philosopher): an ability a resolved "gains all activated abilities of" effect copied with "You may spend blue mana as though it were mana of any color to activate
+  // those abilities" (ActivatedAbilityDef.spendColorAsAny): mana of that color pays its colored symbols too (the solver's anyColorWith, edh-next-140)
+  if (def.spendColorAsAny !== undefined && plan.spend?.kind === 'ability' && plan.spend.anyColor !== true) plan.spend = { ...plan.spend, anyColorWith: def.spendColorAsAny };
   if (def.reducedByManaCost !== true || plan.mana.length === 0 || !enteredThisTurn(s, source)) return plan;
   const src = s.objects[source];
   const printed = src ? charsOfObject(s, src).manaCost : null;
@@ -90,6 +99,36 @@ installManaRestrictionReader((s, player, source, info) => {
 });
 
 /**
+ * edh-mana-keywords-8 (CR 106.6, 602.2b, 106.1b, 607.2d; Throne of Eldraine): "Spend only mana of the chosen color to activate this ability." Every mana the activation spends is of
+ * the color the source chose, so each generic mana of the cost is a mana of that color; a cost with any other colored mana (a symbol of another color, a hybrid, a snow or colorless
+ * symbol) cannot be paid with only that color and is not offered, as is an ability whose source has chosen no color (never a payment that breaks the restriction).
+ */
+function onlyChosenColor(s: GameState, plan: CostPlan, source: ObjectId, link: string): CostPlan {
+  const v = readLink(s.objects[source], link)?.values?.[0];
+  const color = v === undefined ? undefined : (CHOSEN_COLORS[v.toLowerCase()] ?? v.toUpperCase());
+  const unpayable: CostPlan = { ...plan, other: [...plan.other, { kind: 'manual', text: 'Spend only mana of the chosen color, which this permanent has not chosen' }] };
+  if (color === undefined || !(['W', 'U', 'B', 'R', 'G'] as const).includes(color as 'W')) return unpayable;
+  const paid = color as 'W' | 'U' | 'B' | 'R' | 'G';
+  const mana: CostPlan['mana'] = [];
+  for (const sym of plan.mana) {
+    if (sym.kind === 'generic') for (let i = 0; i < sym.amount; i++) mana.push({ kind: 'colored', color: paid });
+    else if (sym.kind === 'colored' && sym.color === paid) mana.push(sym);
+    else return unpayable;
+  }
+  return { ...plan, mana };
+}
+/**
+ * edh-mana-keywords-8 (CR 601.2f-h, 106.6; review fix): "Spend only mana of the chosen color" covers the TOTAL cost, so it is applied after the cost changes of other objects
+ * (a {1} more is mana of the chosen color too; a {2} less leaves the rest) and the costs of the chosen modes.
+ */
+function spendOnlyAfter(cc: Exclude<CostChange, { denial: Denial }>, s: GameState, def: ActivatedAbilityDef, source: ObjectId): Exclude<CostChange, { denial: Denial }> {
+  const link = def.spendOnlyChosen;
+  if (link === undefined) return def.spendOnlyX === undefined ? cc : { apply: (plan) => applyOnlyX(cc.apply(plan)), log: cc.log };
+  return { apply: (plan) => applyOnlyX(onlyChosenColor(s, cc.apply(plan), source, link)), log: cc.log };
+}
+const CHOSEN_COLORS: Readonly<Record<string, string>> = { white: 'W', blue: 'U', black: 'B', red: 'R', green: 'G' };
+
+/**
  * T38, CR 601.2f, 602.2b, 118.7: the ability's own cost change ("This ability costs {1} less to activate for each Equipment you control"; `ActivatedAbilityDef.costChange`)
  * applied to a TOTAL cost plan (the mana cost with X, plus the costs of the chosen modes). It is read as a spell's own cost modifier is (statics/costmods.ts#modifyMana:
  * reductions never take the cost below {0}, generic reductions touch only the generic part), with the activating player as "you". The result is a function, or
@@ -103,9 +142,13 @@ function costChangeOf(s: GameState, player: PlayerId, source: GameObject, def: A
   const announced = targets ?? (() => undefined);
   const outside = abilityCostModsFor(s, player, source, def).map((h) => ({ ...h, targets: announced }));
   if (change === undefined && outside.length === 0) return { apply: (p) => p, log: () => null };
-  // FAST5X E27 (CR 601.2b, 601.2f): a choice between costs is made before the total cost is locked in; this build applies the cost change to the plan before the
-  // choice is resolved, so such an ability is not offered rather than charged a wrong amount (merged with T60: any cost change, its own or another object's)
-  if (JSON.stringify(def.cost).includes('"oneOf"')) return { denial: deny("This engine build can't apply this ability's cost change to a choice between costs, so it is not offered.", 'CR 601.2f', 'CR 602.2b') };
+  // FAST5X E27 (CR 601.2b, 601.2f): a choice between costs is made before the total cost is locked in. edh-next-147 (Crystal Shard under a cost change): the change is
+  // applied to the total each option stands for (the rest of the cost plus that option), so whichever cost is chosen is changed as CR 601.2f says (below). A choice
+  // nested in a choice is not offered rather than charged a wrong amount.
+  // A spending restriction (spendOnlyAfter below) reads the plan's own mana only, which the distribution moves into the options: such an ability keeps the older refusal too.
+  // edh-d-88 (Razorfield Ripper's "Reconfigure--Pay {2} or {E}{E}{E}", Ward costs, e27's Equip) made the same change: one implementation, this one.
+  const choices = (JSON.stringify(def.cost).match(/"oneOf"/g) ?? []).length;
+  if (choices > 1 || (choices === 1 && (def.spendOnlyChosen !== undefined || def.spendOnlyX !== undefined))) return { denial: deny("This engine build can't apply this ability's cost change to a choice between costs, so it is not offered.", 'CR 601.2f', 'CR 602.2b') };
   // r4-cost (CR 601.2f, 602.2b): a cost change of its own that applies only while its condition holds ("during your turn"), read as the cost is determined
   const ownApplies = change !== undefined && (def.costChangeIf === undefined || evalCondition({ s, all: charsViewOf(s), source: source.id, controller: player }, def.costChangeIf));
   const own: CostModHit[] = !ownApplies ? [] : [{
@@ -113,23 +156,56 @@ function costChangeOf(s: GameState, player: PlayerId, source: GameObject, def: A
     source: source.id, controller: player, name: charsOfObject(s, source).name, text: def.text,
     cx: { s, all: charsViewOf(s), source: source.id, controller: player }, targets: announced,
   }];
-  const hits = [...own, ...outside];
+  // edh-next-107 (CR 601.2c, 601.2f; Bladegraft Aspirant): a modifier of "abilities that target ~" applies when the announced targets include its source, read each time the cost is worked
+  // out (the thunk answers after the targets are announced); before that a reduction counts (the cheapest the targets could make it, as for spells: statics/costmods.ts#spellTargetsSource)
+  // and an increase does not
+  const hitsNow = (): CostModHit[] => [...own, ...outside.filter((h) => {
+    if (h.abilityTargetsSelf !== true) return true;
+    const t = announced();
+    return t === undefined ? h.def.change.kind === 'reduce' : t.flat().some((x) => x.kind === 'object' && x.id === h.source);
+  })];
   // FAST5 T63 INTERFACE CHANGE (additive; CR 601.2f, 602.2b): the history count of "if you attacked with a Spacecraft this turn" (`happenedCount`, evaluated here because statics may not read
   // rules/history.ts, design 5.4), as actions/cast.ts#modifiedPlan supplies it for a spell's cost modifiers
+  // trek-15 (CR 506.3, 601.2f): and "for each opponent you attacked this turn", as actions/cast.ts#modifiedPlan reads it
   const history = (q: Quantity, h: CostModHit): number | undefined =>
-    typeof q !== 'number' && q.q === 'happenedCount' ? happenedCountOf(s, q, { you: h.controller, ...(h.source !== null ? { sourceId: h.source } : {}) }) : undefined;
-  const run = (plan: CostPlan) => modifyMana(plan.mana, hits, history);
+    typeof q === 'number' ? undefined
+    : q.q === 'happenedCount' ? happenedCountOf(s, q, { you: h.controller, ...(h.source !== null ? { sourceId: h.source } : {}) })
+    : q.q === 'opponentsAttacked' && q.scope === 'turn' ? opponentsAttackedCount(s, h.controller, null)
+    : undefined;
+  const run = (plan: CostPlan) => modifyMana(plan.mana, hitsNow(), history);
   if ('unknown' in run({ mana: [], tap: false, untap: false, other: [] })) {
     return { denial: deny(`The engine can't work out the cost change of this ability ("${def.text}"), so its total cost is unknown.`, 'CR 601.2f', 'CR 602.2b') };
   }
+  // edh-next-142 (CR 606.4, 601.2f, 118.8; Carth the Lion, rulings 2021-06-18): "loyalty abilities you activate cost an additional [+1] to activate": the loyalty cost is that much more, once for each
+  // modifier, as the total cost is determined (before any counter is put or removed: a [−3] removes two counters at once); only an ability with a loyalty cost has one to change
+  // (combined copy: the modifiers are read when the plan is, as edh-next-107's hitsNow does for the mana, so a modifier that counts only once targets are announced counts here too)
+  const withLoyalty = (plan: CostPlan): CostPlan => {
+    const extraLoyalty = hitsNow().reduce((n, h) => n + (h.def.change.kind === 'increase' && typeof h.def.change.loyalty === 'number' ? h.def.change.loyalty : 0), 0);
+    return extraLoyalty === 0 || plan.loyalty === undefined ? plan : { ...plan, loyalty: plan.loyalty + extraLoyalty };
+  };
+  const applyTo = (plan: CostPlan): CostPlan => {
+    const r = run(plan);
+    return 'unknown' in r ? plan : { ...plan, mana: r.mana };
+  };
   return {
+    // edh-next-147 (CR 601.2b, 601.2f): with a choice between costs, each option carries the whole changed mana of the total it stands for (the rest's mana moves into
+    // every option), so rules/pay.ts#resolveOneOf offers and charges each total as changed
     apply: (plan) => {
-      const r = run(plan);
-      return 'unknown' in r ? plan : { ...plan, mana: r.mana };
+      if (!hasOneOf(plan)) {
+        const out = applyTo(plan);
+        return out === plan ? plan : withLoyalty(out); // edh-next-142 (Carth the Lion): an additional loyalty cost rides on an applied change
+      }
+      const i = plan.other.findIndex((p) => p.kind === 'oneOf');
+      const part = plan.other[i] as Extract<CostPlan['other'][number], { kind: 'oneOf' }>;
+      const options = part.options.map((o) => ({ ...o, mana: applyTo({ ...o, mana: [...plan.mana, ...o.mana] }).mana }));
+      return withLoyalty({ ...plan, mana: [], other: plan.other.map((p, j) => (j === i ? { kind: 'oneOf' as const, options } : p)) });
     },
     log: (plan) => {
-      const r = run(plan);
-      return 'unknown' in r || r.applied.length === 0 ? null : r.applied.join('; ');
+      // edh-d-88: the changes applied to any option of a choice between costs (each option's total, as apply charges it)
+      const k = plan.other.findIndex((p) => p.kind === 'oneOf');
+      const options = k < 0 ? [plan] : (plan.other[k] as Extract<CostPlan['other'][number], { kind: 'oneOf' }>).options.map((o) => ({ ...o, mana: [...plan.mana, ...o.mana] }));
+      const said = options.flatMap((o) => { const r = run(o); return 'unknown' in r ? [] : r.applied; });
+      return said.length === 0 ? null : [...new Set(said)].join('; ');
     },
   };
 }
@@ -149,7 +225,18 @@ function activationDenialIn(s: GameState, player: PlayerId, source: GameObject, 
   const holder = source.zone === 'battlefield' ? source.controller : source.owner;
   // MX5: "Any player may activate this ability" (CR 602.2: unless the object says otherwise); the activating player controls it (CR 602.2a, below)
   const anyone = def.anyPlayer === true && source.zone === 'battlefield' && supportsForm('feature:activate.anyPlayer');
-  if (holder !== player && !anyone) return deny('You can only activate abilities of objects you control.', 'CR 602.2');
+  // edh-c-103 (CR 602.2): "Only your opponents may activate this ability" (Detention Vortex): an opponent of the controller, never the controller
+  const opponentOnly = def.opponentsOnly === true && source.zone === 'battlefield' && supportsForm('feature:activate.opponentsOnly');
+  // edh-d-88 (CR 602.2, 506.2; Capricopian): "Only the player this creature is attacking may activate this ability": the PLAYER the source attacks (not a planeswalker's or battle's player), nobody else
+  const attackedOnly = def.attackedPlayerOnly === true && source.zone === 'battlefield' && supportsForm('feature:activate.attackedPlayerOnly');
+  if (attackedOnly) {
+    const att = s.combat?.attackers.find((a) => a.id === source.id);
+    if (att === undefined || att.defender !== player) return deny('Only the player this creature is attacking may activate this ability.', 'CR 602.2');
+    if (s.players.find((p) => p.id === player)?.hasLost !== false) return deny('Only a player still in the game may activate this ability.', 'CR 602.2');
+  } else if (opponentOnly) {
+    if (holder === player) return deny('Only the opponents of its controller may activate this ability.', 'CR 602.2');
+    if (s.players.find((p) => p.id === player)?.hasLost !== false) return deny('Only a player still in the game may activate this ability.', 'CR 602.2');
+  } else if (holder !== player && !anyone) return deny('You can only activate abilities of objects you control.', 'CR 602.2');
   if (source.phasedOut) return deny('That permanent is phased out.', 'CR 702.26b');
   const unread = activatedForms(def).filter((c) => !supportsForm(c)); // fields of the ability this build doesn't read yet: not offered, never played with them ignored
   if (unread.length > 0) return deny(`This engine build can't check part of this ability yet (${unread.join(', ')}), so it is not offered.`, 'CR 602.5', 'CR 602.5b');
@@ -169,16 +256,35 @@ function activationDenialIn(s: GameState, player: PlayerId, source: GameObject, 
   }
   // CR 601.2c, 601.2h: a target filter that reads X needs SOME X the player can pay for to have a target (the bound is what the activation cost allows; an
   // ability with no X to announce has X = 0).
-  const cc = costChangeOf(s, player, source, def); // T38: CR 601.2f
-  if ('denial' in cc) return cc.denial;
+  const cc0 = costChangeOf(s, player, source, def); // T38: CR 601.2f
+  if ('denial' in cc0) return cc0.denial;
+  const cc = spendOnlyAfter(cc0, s, def, source.id);
   if (programFiltersMentionX(def.effect)) {
     const xs = costHasX(def.cost) ? payableXs((n) => planDenial(s, player, source.id, cc.apply(abilityPlan(s, def, n, source.id))) === null, costFilterHasX(def.cost)) : [0];
     aenv.xMax = xs.length ? xs[xs.length - 1]! : 0;
+  }
+  // edh-next-132 (CR 107.3c, 602.2b; Prototype Portal, ruling 2011-01-01): an X the text defines must be defined (a card exiled with the source) and payable
+  if (def.xIs !== undefined) {
+    const dx = definedX(s, def, source.id);
+    if (dx === undefined) return deny('The value of X this ability defines is undefined (no card is exiled with it), so it can\'t be paid.', 'CR 107.3c', 'CR 602.2b');
+    if (planDenial(s, player, source.id, cc.apply(abilityPlan(s, def, dx, source.id))) !== null) return deny(`You can't pay for that ability with X = ${dx}.`, 'CR 107.3c', 'CR 601.2h');
   }
   // std-rx12 (CR 107.3a, 602.2b): "X can't be 0." (`xMin`): some X at least that must be payable; with no X in the cost it never is
   if (def.xMin !== undefined && def.xMin > 0) {
     const xs = costHasX(def.cost) ? payableXs((n) => planDenial(s, player, source.id, cc.apply(abilityPlan(s, def, n, source.id))) === null, costFilterHasX(def.cost)) : [0];
     if (!xs.some((n) => n >= def.xMin!)) return deny("You can't pay for that ability with any value of X it allows (X can't be 0).", 'CR 107.3a', 'CR 602.2b');
+  }
+  // edh-next-141 (CR 601.2b, 601.2d, 701.3d): an effect that reads what the unattach cost will unattach is playable when SOME permanent the cost could unattach makes it so (the player
+  // chooses it as the ability is announced, chooseUnattachedAhead)
+  if (readsCostUnattached(def)) {
+    const plan0 = cc.apply(abilityPlan(s, def, 'unannounced', source.id));
+    const part = plan0.other.find((p): p is Extract<PlanPart, { kind: 'unattach' }> => p.kind === 'unattach' && p.self !== true);
+    const cands = part !== undefined ? pickCandidates(s, player, source.id, plan0, part) : [];
+    const noTarget = deny('That ability needs a target but there is no legal one.', 'CR 601.2c', 'CR 602.2b');
+    const ok = cands.find((id) => programsDenial(s, [def.effect], player, source.id, noTarget, undefined, { ...aenv, costsPaid: { ...aenv.costsPaid, unattached: [id] } }) === null);
+    if (cands.length === 0) return deny("Nothing that ability's cost could unattach is attached, so the cost can't be paid.", 'CR 701.3d', 'CR 118.3');
+    if (ok === undefined) return noTarget;
+    aenv.costsPaid = { ...aenv.costsPaid, unattached: [ok] };
   }
   const unplayable = programsDenial(s, [def.effect], player, source.id, deny('That ability needs a target but there is no legal one.', 'CR 601.2c', 'CR 602.2b'), undefined, aenv);
   if (unplayable) return unplayable;
@@ -214,7 +320,7 @@ export function manualManaDenial(s: GameState, player: PlayerId, source: GameObj
     if (source.tapped) return deny(`${c.name} is already tapped.`, 'CR 118.3', 'CR 602.2');
     if (isSummoningSickToActivate(s, source, c)) return deny(`${c.name} came under your control this turn, so you can't use its {T} abilities yet (summoning sickness).`, 'CR 302.6', 'CR 602.5a');
   }
-  const cant = manualManaCost(def).sacrificeSelf ? costUseDenial(s, player, source.id, 'sacrifice') : null; // WP31: CR 701.21a, 614.17b
+  const cant = manualManaCost(def).sacrificeSelf ? costUseDenial(s, player, source.id, 'sacrifice', undefined, true) : null; // edh-next-18: a cost of activating; WP31: CR 701.21a, 614.17b
   if (cant) return deny(`${c.name} can't be sacrificed, so this mana ability can't be activated. ${cant.message}`, 'CR 701.21a', 'CR 614.17b');
   return null;
 }
@@ -235,6 +341,7 @@ function activateManualMana(g: Game, player: PlayerId, source: GameObject, def: 
   const name = chars.name;
   const snowSource = chars.supertypes.includes('Snow');
   const sourceId = source.id;
+  endTypedActivation(g.s, beginTypedActivation(g.s, player, source)); // edh-next-124 (CR 602.2, 605.1a): a mana ability activated by hand counts too (rules/typed-activations.ts); its cost has no mana
   if (cost.tap) {
     source.tapped = true;
     g.emit({ type: 'tapped', objectId: sourceId });
@@ -305,6 +412,7 @@ export function activateAbility(g: Game, action: Extract<Action, { type: 'activa
   assertAllowed(activationDenial(g.s, player, source, act));
   const def: ActivatedAbilityDef = act.def;
   const sourceName = charsOfObject(g.s, source).name;
+  const sourceZone = source.zone; // edh-players-5 (CR 602.2, 109.2): where the ability is activated from, for the `abilityActivated` event
 
   if (def.isMana) {
     // CR 605.3b: a mana ability doesn't use the stack; it resolves immediately.
@@ -316,6 +424,7 @@ export function activateAbility(g: Game, action: Extract<Action, { type: 'activa
   const obj = freshObject(g, { kind: 'ability', defId: source.defId, owner: player, controller: player }, 'stack');
   obj.stack = {
     kind: 'activated',
+    ...(def.isLoyalty || def.cost.loyalty !== undefined || def.cost.loyaltyX === true ? { loyalty: true as const } : {}), // edhd36 (CR 606.2)
     sourceId: source.id,
     sourceName,
     abilityRef: { source: act.origin, face: act.face, index: act.index, key: act.key },
@@ -345,8 +454,13 @@ export function activateAbility(g: Game, action: Extract<Action, { type: 'activa
   const cost0 = abilityPlan(g.s, def, 'unannounced', source.id);
   // r4-cost (CR 601.2c, 601.2f): the cost is determined after the targets are announced; a cost change may read them (none yet before announceTargets)
   let announcedTargets: TargetChoice[][] | undefined;
-  const cc = costChangeOf(g.s, player, source, def, () => announcedTargets); // T38: CR 601.2f (the denial was checked above, so the amount is known)
-  if ('denial' in cc) throw new IllegalAction(cc.denial.message, cc.denial.rules);
+  // edh-next-124 (CR 602.2, 601.2f; Tezzeret, Betrayer of Flesh, ruling 2022-02-18): this activation begins: it may be the first of an artifact's abilities this turn (rules/typed-activations.ts);
+  // its cost change is worked out now, so a mana ability activated to pay for it is counted after it
+  const typedMarks = beginTypedActivation(g.s, player, source);
+  const cc0 = costChangeOf(g.s, player, source, def, () => announcedTargets); // T38: CR 601.2f (the denial was checked above, so the amount is known)
+  endTypedActivation(g.s, typedMarks);
+  if ('denial' in cc0) throw new IllegalAction(cc0.denial.message, cc0.denial.rules);
+  const cc = spendOnlyAfter(cc0, g.s, def, source.id);
   const modes = chooseModes(g, player, [def.effect], source.id, obj.id, what, aenv, (costs: CostDef[]) => planDenial(g.s, player, source.id, cc.apply(addPlans(cost0, planFromCostDefs(costs, 'unannounced')))) === null);
   if (modes) obj.stack.modes = modes;
   const programs = effectivePrograms([def.effect], modes);
@@ -360,18 +474,25 @@ export function activateAbility(g: Game, action: Extract<Action, { type: 'activa
     const xs = payableXs((n) => planDenial(g.s, player, source.id, planAt(n)) === null, costFilterHasX(def.cost) || modeCostDefs.some(costFilterHasX)).filter((n) => n >= (def.xMin ?? 0));
     if (xs.length === 0) throw new IllegalAction(`You can't pay for ${what} with any value of X.`, ['CR 601.2h', 'CR 107.3a']);
     // p2-counters-move-2 (CR 118.3, 107.3a): "Remove all charge counters from ~" is X with no choice: the number of those counters on ~ now
-    const fixed = fixedCounterX(g.s, def, source.id);
+    // edh-next-132 (CR 107.3c): the X the text defines is no choice either
+    const defined = def.xIs !== undefined ? definedX(g.s, def, source.id) : undefined;
+    if (def.xIs !== undefined && (defined === undefined || !xs.includes(defined))) throw new IllegalAction(`You can't pay for ${what}.`, ['CR 107.3c', 'CR 601.2h']);
+    const fixed = defined ?? fixedCounterX(g.s, def, source.id);
     if (fixed !== undefined && !xs.includes(fixed)) throw new IllegalAction(`You can't pay for ${what}.`, ['CR 601.2h', 'CR 118.3']);
     x = fixed ?? chooseX(g, player, xs[xs.length - 1]!, what, xs);
     obj.stack.x = x;
   }
   else if (def.xMin !== undefined && def.xMin > 0) throw new IllegalAction(`${what} has no X to announce, and X can't be 0.`, ['CR 107.3a', 'CR 602.2b']); // std-rx12: fail closed
   aenv.x = x;
+  // edh-next-141 (CR 601.2b, 601.2d, 701.3d; Captain America, First Avenger): an effect that reads the permanent the unattach cost will unattach ("damage equal to that Equipment's mana value divided as you
+  // choose ...") defines its amount by a choice made later, as the cost is paid: that choice is made now, before targets and division are announced; the cost then unattaches that permanent
+  const unattachAhead = readsCostUnattached(def) ? chooseUnattachedAhead(g, player, source.id, planAt(x), what) : undefined;
+  if (unattachAhead !== undefined) { aenv.costsPaid = { ...aenv.costsPaid, unattached: [unattachAhead] }; obj.stack.costsPaid.unattached = [unattachAhead]; }
   const announced = announceTargets(g, player, programs, source.id, obj.id, what, aenv);
   obj.stack.targets = announced.targets;
   announcedTargets = announced.targets;
   if (Object.keys(announced.division).length > 0) obj.stack.division = announced.division;
-  const total: CostPlan = planAt(x);
+  const total: CostPlan = withUnattachAhead(planAt(x), unattachAhead);
   const changed = def.costChange !== undefined ? cc.log(addPlans(abilityPlan(g.s, def, x, source.id), planFromCostDefs(modeCostDefs, x))) : null;
   if (changed !== null) g.log(`${sourceName}'s ability costs less to activate: ${changed}.`, { rules: ['CR 601.2f', 'CR 118.7'], level: 'info' });
   // std-rx27 (CR 601.2f-h, 602.2b): after the total cost is determined, the permanents the player taps rather than pay mana (`tapForMana`)
@@ -380,9 +501,11 @@ export function activateAbility(g: Game, action: Extract<Action, { type: 'activa
   const paid = payPlan(g, player, source.id, optioned, what, { announcedX });
   obj.stack.costsPaid.manaSpent = paid.manaSpent;
   if (paid.lifePaid) obj.stack.costsPaid.lifePaid = paid.lifePaid;
+  if (paid.rolled !== undefined) obj.stack.costsPaid.rolled = paid.rolled; // edh-d-49 (CR 706.2, 602.2b): Clay Golem's "Roll a d8: Monstrosity X, where X is the result"
   if (paid.costObjects.length) obj.stack.costsPaid.costObjects = paid.costObjects;
   if (paid.sacrificed?.length) obj.stack.costsPaid.sacrificed = paid.sacrificed; // FAST3 T18: "the sacrificed creature" (CR 608.2h)
   if (paid.tapped?.length) obj.stack.costsPaid.tapped = paid.tapped; // T35: "the tapped creature" (station, CR 702.184a)
+  if (paid.unattached?.length) obj.stack.costsPaid.unattached = paid.unattached; // edh-next-141: "that Equipment" a cost unattached (CR 701.3d)
   if (paid.exiled) obj.stack.costsPaid.exiled = paid.exiled; // FAST5X E13: craft returns the exiled source; its materials (CR 702.167a, 702.167c)
   if (paid.discarded?.length) obj.stack.costsPaid.discarded = paid.discarded; // CLOUD C8: "the discarded card" (CR 602.2b, 400.7j)
   if (paid.returned?.length) obj.stack.costsPaid.returned = paid.returned; // std-typechange-1: ninjutsu's returned attacker (CR 702.49c, 608.2h)
@@ -396,11 +519,14 @@ export function activateAbility(g: Game, action: Extract<Action, { type: 'activa
   }
   recordSaddlers(g, source.id, paid.tappedAs, player);
   recordCrew(g, source.id, paid.tappedAs); // r5-fxb (CR 702.122)
+  // edh-d-89 (CR 702.122c, 702.122e): the creatures this activation was crewed by, for its own "becomes crewed" event (not every crewer of the turn)
+  const crewers = (paid.tappedAs ?? []).filter((t) => t.as === 'crew').flatMap((t) => t.ids);
+  if (crewers.length > 0) obj.stack.costsPaid.crewers = crewers;
 
   // CR 602.5b / 606.3: remember the activation for "once each turn" and loyalty abilities.
   const k = `${source.id}|${act.key}`;
   g.s.turnActivations[k] = (g.s.turnActivations[k] ?? 0) + 1;
-  if (def.isLoyalty || def.cost.loyalty !== undefined) g.s.turnActivations[`${source.id}|loyalty`] = 1;
+  if (def.isLoyalty || def.cost.loyalty !== undefined) g.s.turnActivations[`${source.id}|loyalty`] = (g.s.turnActivations[`${source.id}|loyalty`] ?? 0) + 1; // edh-players-6: a count (CR 606.3 allows one each turn unless a rule allows more)
   // std-rx27 (CR 602.2b): an ability with a wrapper keyword ("equip") activated by the player this turn: "the first equip ability you activate each turn"
   const kw = def.keyword ?? (def.prov?.by === 'keyword' ? def.prov.id : undefined);
   if (kw !== undefined) g.s.turnActivations[`kw:${player}:${kw}`] = (g.s.turnActivations[`kw:${player}:${kw}`] ?? 0) + 1;
@@ -411,16 +537,40 @@ export function activateAbility(g: Game, action: Extract<Action, { type: 'activa
   // FAST5X E20: what kind of ability was activated: an exhaust ability (CR 702.177a) or a loyalty ability (CR 606.3)
   // Standard round 3, r3-trig (CR 606.4): the loyalty counters the cost removed ("if you removed two or more loyalty counters to activate it"), after X and cost changes
   const loyaltyRemoved = total.loyalty !== undefined && total.loyalty < 0 ? -total.loyalty : undefined;
-  g.emit({ type: 'abilityActivated', objectId: obj.id, sourceId: source.id, player, ...(def.keyword === 'exhaust' ? { exhaust: true as const } : {}), ...(def.isLoyalty || def.cost.loyalty !== undefined ? { loyalty: true as const } : {}), ...(loyaltyRemoved !== undefined ? { loyaltyRemoved } : {}) });
+  g.emit({ type: 'abilityActivated', objectId: obj.id, sourceId: source.id, player, ...(def.keyword === 'exhaust' ? { exhaust: true as const } : {}), ...(kw === 'ninjutsu' ? { ninjutsu: true as const } : {}), ...(kw === 'boast' ? { boast: true as const } : {}) /* edh-c-104: CR 702.142a */, /* edh-zones-19: CR 702.49a */ ...(def.isLoyalty || def.cost.loyalty !== undefined ? { loyalty: true as const } : {}), ...(loyaltyRemoved !== undefined ? { loyaltyRemoved } : {}), ...(paid.lifePaid ? { lifePaid: paid.lifePaid } : {}), ...(paid.manaSpent.length > 0 ? { manaSpent: paid.manaSpent.length } : {}) /* edh-d-50 (CR 602.2b, 106.3) */, ...(countX(def.cost.mana) > 0 || modeCostDefs.some((c) => countX(c.mana) > 0) ? { xInCost: true as const } : {}) /* edh-next-74: the mana symbol {X} only, not "pay X life" or loyalty -X (CR 107.3a, 602.2b; Unbound Flourishing ruling 2019-06-14) */, fromZone: sourceZone });
   // FAST5 T37 (CR 702.29a, 702.29d-e, 701.9): activating a cycling or typecycling ability is cycling the card: "when you cycle ~" / "whenever you cycle a card"
   // trigger as the cost (the discard) is paid. The subject is the card as it is now, in the graveyard (it may be elsewhere if a replacement moved it: then the
   // event names that object).
   const cycled = def.prov?.by === 'keyword' && def.prov.id === 'cycling' ? paid.costObjects.find((id) => g.maybeObj(id)?.cardId !== undefined && g.maybeObj(id)!.cardId === source.cardId) : undefined;
   // CLOUD std-dft (CR 107.3a): the X announced for a cycling cost with X ("Cycling {X}{G}{G}") goes with the event: "when you cycle ~, ... X" reads it
   if (cycled !== undefined) g.emit({ type: 'actionPerformed', verb: 'cycle', actor: player, objectId: cycled, ...(announcedX ? { x } : {}) });
+  manaSpentTriggers(g, obj.id, player, paid.manaSpent, 'ability'); // edh-cast-15: "When you spend this mana to cast a spell or activate an ability" (CR 106.6, 603.2)
   emitBecameTarget(g, obj.id, player, obj.stack.targets);
   emitCrime(g, obj.id, player, obj.stack.targets); // FAST5X E20: CR 700.13
   g.log(`${g.player(player).name} activates ${sourceName}: ${def.text}${x > 0 ? ` (X = ${x})` : ''}${describeTargets(g, obj.stack.targets)}`, { rules: ['CR 602.2'], level: 'action' });
+}
+
+/** edh-next-141: the effect reads what the ability's unattach cost unattached (ObjRef costUnattached). */
+function readsCostUnattached(def: ActivatedAbilityDef): boolean {
+  return JSON.stringify(def.effect).includes('"ref":"costUnattached"') && (def.cost.other ?? []).some((p) => p.kind === 'unattach' && p.self !== true);
+}
+
+/**
+ * edh-next-141 (CR 601.2b, 701.3d, 118.3): the permanent the plan's one unattach part (of another permanent than the source) will unattach, chosen by the player now; none attached refuses the
+ * activation (the cost can't be paid, CR 601.2h). Cancellable (CR 733.1).
+ */
+function chooseUnattachedAhead(g: Game, player: PlayerId, sourceId: ObjectId, plan: CostPlan, label: string): ObjectId {
+  const parts = plan.other.filter((p): p is Extract<PlanPart, { kind: 'unattach' }> => p.kind === 'unattach' && p.self !== true);
+  if (parts.length !== 1) throw new IllegalAction(`This engine build can't announce ${label}.`, ['CR 601.2b']);
+  const options = pickCandidates(g.s, player, sourceId, plan, parts[0]!);
+  if (options.length === 0) throw new IllegalAction(`You can't pay the unattach cost of ${label}.`, ['CR 701.3d', 'CR 118.3']);
+  if (options.length === 1) return options[0]!;
+  return g.choose({ kind: 'chooseObjects', player, prompt: `Choose the permanent to unattach to pay for ${label}.`, options, min: 1, max: 1, cancellable: true, rules: ['CR 601.2b', 'CR 701.3d'] }).ids[0]!;
+}
+
+/** edh-next-141: the plan's unattach part takes only the permanent chosen as the ability was announced. */
+function withUnattachAhead(plan: CostPlan, id: ObjectId | undefined): CostPlan {
+  return id === undefined ? plan : { ...plan, other: plan.other.map((p) => (p.kind === 'unattach' && p.self !== true ? { ...p, chosen: [id] } : p)) };
 }
 
 /**
@@ -428,6 +578,18 @@ export function activateAbility(g: Game, action: Extract<Action, { type: 'activa
  * number of counters of that kind on the source as the ability is announced (none is a legal number: removing all of none removes nothing). Undefined for a cost
  * without such a part. A cost with any other X beside it (an {X} or another X part) is refused: its X could not be both.
  */
+/**
+ * edh-next-132 (CR 107.3c, 607.2a, 202.3; Prototype Portal, Soul Foundry): the X of the activation cost the ability's text defines (`xIs`): the mana value of the one card linked to the source
+ * that is still in exile (an {X} in that card's mana cost is 0 there, CR 107.3g), or undefined when there is no such card (ruling 2011-01-01: the ability can't be activated).
+ */
+export function definedX(s: GameState, def: ActivatedAbilityDef, sourceId: ObjectId): number | undefined {
+  const q = def.xIs;
+  if (q === undefined) return undefined;
+  const here = (readLink(s.objects[sourceId], q.of.link)?.objects ?? []).filter((h) => h.zone === 'exile' && s.objects[h.id]?.zone === 'exile');
+  if (here.length !== 1) return undefined;
+  return groupStat(s, { kind: 'object', id: here[0]!.id }, 'manaValue');
+}
+
 export function fixedCounterX(s: GameState, def: ActivatedAbilityDef, sourceId: ObjectId): number | undefined {
   const parts = (def.cost.other ?? []).filter((p) => p.kind === 'removeCounters' && p.all === true);
   if (parts.length === 0) return undefined;

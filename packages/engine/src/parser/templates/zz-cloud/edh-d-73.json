@@ -1,0 +1,627 @@
+[
+  {
+    "id": "eff.edhd73.put.objs.bf.faceDown.yourControl",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 708.2a",
+      "CR 708.3",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:Objs} onto the battlefield face down under your control",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "faceDown": true,
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "face down"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, put all creature cards from your graveyard onto the battlefield face down under your control."
+      },
+      {
+        "text": "When ~ enters, put the top two cards of each opponent's library onto the battlefield face down under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put all creature cards from your graveyard onto the battlefield under your control.",
+      "When ~ enters, put all creature cards from your graveyard onto the battlefield face up under your control.",
+      "When ~ enters, put all creature cards from your graveyard onto your battlefield face down under your control."
+    ]
+  },
+  {
+    "id": "eff.edhd73.return.obj.bf.faceDown.tapped.yourControl",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 708.2a",
+      "CR 708.3",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "return {o:Obj} to the battlefield under your control face down and tapped",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "faceDown": true,
+        "tapped": true,
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "face down"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another creature dies, return it to the battlefield under your control face down and tapped."
+      },
+      {
+        "text": "Whenever another nonartifact creature you control dies, you may return it to the battlefield under your control face down and tapped."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another creature dies, return it to the battlefield under your control face down.",
+      "Whenever another creature dies, return it to the battlefield under your control tapped.",
+      "Whenever another creature dies, return it to the battlefield under your control face up and tapped."
+    ]
+  },
+  {
+    "id": "rid.edhd73.they.faceDown.cyberman",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 708.2a",
+      "CR 708.4",
+      "CR 613.2b"
+    ],
+    "pattern": "( they're | they are ) 2/2 Cyberman artifact creatures",
+    "attachTo": "move",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to.zone": "battlefield",
+          "to.faceDown": true
+        },
+        "to": {
+          "faceDownAs": {
+            "@new": "set:Artifact,Creature|Cyberman|2/2"
+          }
+        }
+      }
+    },
+    "consumes": [
+      "they're"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, put all creature cards from your graveyard onto the battlefield face down under your control. They're 2/2 Cyberman artifact creatures."
+      },
+      {
+        "text": "When ~ enters, put the top two cards of each opponent's library onto the battlefield face down under your control. They are 2/2 Cyberman artifact creatures."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put all creature cards from your graveyard onto the battlefield face down under your control. They're 2/2 Cyberman creatures.",
+      "When ~ enters, put all creature cards from your graveyard onto the battlefield face down under your control. They're 3/3 Cyberman artifact creatures.",
+      "When ~ enters, put all creature cards from your graveyard onto the battlefield under your control. They're 2/2 Cyberman artifact creatures."
+    ]
+  },
+  {
+    "id": "rid.edhd73.they.turnedFaceDown.horror",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 708.2a",
+      "CR 708.4",
+      "CR 613.2b"
+    ],
+    "pattern": "( they're | they are ) 2/2 Horror creatures",
+    "attachTo": "changeFace",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to": "faceDown"
+        },
+        "faceDownAs": {
+          "@new": "set:Creature|Horror|2/2"
+        }
+      }
+    },
+    "consumes": [
+      "they're"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, turn any number of target tapped nontoken creatures face down. They're 2/2 Horror creatures."
+      },
+      {
+        "text": "When ~ enters, turn up to two target creatures face down. They are 2/2 Horror creatures."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, turn any number of target tapped nontoken creatures face down. They're 3/3 Horror creatures.",
+      "When ~ enters, turn any number of target tapped nontoken creatures face down. They're 2/2 Horror artifact creatures.",
+      "When ~ enters, turn any number of target tapped nontoken creatures face up. They're 2/2 Horror creatures."
+    ]
+  },
+  {
+    "id": "eff.edhd73.linked.putAll.bf.faceDown",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 708.3",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "put all {f:Filter} cards exiled with ~ onto the battlefield face down under your control",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "any",
+          "isCard": true,
+          "anyOf": [
+            "$f"
+          ]
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "faceDown": true,
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "face down"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to two target creature cards from a graveyard.\nAt the beginning of your upkeep, put all creature cards exiled with ~ onto the battlefield face down under your control."
+      },
+      {
+        "text": "When ~ enters, exile up to two target artifact cards from a graveyard.\nAt the beginning of your end step, put all artifact cards exiled with ~ onto the battlefield face down under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to two target creature cards from a graveyard.\nAt the beginning of your upkeep, put all creature cards exiled with ~ onto the battlefield under your control.",
+      "When ~ enters, exile up to two target creature cards from a graveyard.\nAt the beginning of your upkeep, put all creature cards exiled with ~ onto the battlefield face down under their owners' control.",
+      "At the beginning of your upkeep, put all creature cards exiled with ~ onto the battlefield face down under your control."
+    ]
+  },
+  {
+    "id": "eff.edhd73.put.allMilled.bf.faceDown",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 708.3",
+      "CR 110.2a"
+    ],
+    "pattern": "put all {f:Filter} cards {g:MilledThisWay} onto the battlefield face down under your control",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "is": "$g",
+          "zone": "any"
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "faceDown": true,
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "this way",
+      "face down"
+    ],
+    "examples": [
+      {
+        "text": "Mill three cards. Put all creature cards milled this way onto the battlefield face down under your control."
+      },
+      {
+        "text": "Each opponent mills four cards. Put all artifact cards milled this way onto the battlefield face down under your control."
+      }
+    ],
+    "counterExamples": [
+      "Mill three cards. Put all creature cards milled this way onto the battlefield under your control.",
+      "Mill three cards. Put all creature cards milled this way into your hand.",
+      "Put all creature cards milled this way onto the battlefield face down under your control."
+    ]
+  },
+  {
+    "id": "eff.edhd73.player.mills.thenExilesGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 406.1",
+      "CR 404.1"
+    ],
+    "pattern": "{p:Player} mill[s] {n:Qty} cards , then exile[s] their graveyard",
+    "build": [
+      {
+        "op": "mill",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "$p"
+          }
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Target player mills two cards, then exiles their graveyard."
+      },
+      {
+        "text": "Each opponent mills three cards, then exiles their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Target player mills two cards, then exiles your graveyard.",
+      "Target player mills two cards, then puts their graveyard into their hand.",
+      "Target player mills two cards, then exiles their hand."
+    ]
+  },
+  {
+    "id": "eff.edhd73.untap.next.theirControllers.plural",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "^ {o:They} don't untap during their controllers' next untap steps",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "not",
+      "next",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Tap X target lands. They don't untap during their controllers' next untap steps."
+      },
+      {
+        "text": "Tap two target artifacts. They don't untap during their controllers' next untap steps."
+      }
+    ],
+    "counterExamples": [
+      "Tap X target lands. They don't untap during their controllers' untap steps.",
+      "Tap X target lands. They untap during their controllers' next untap steps.",
+      "Tap X target lands. They don't untap during their controllers' next end steps."
+    ]
+  },
+  {
+    "id": "rep.edhd73.enters.turnAllFaceDown",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.12a",
+      "CR 708.2",
+      "CR 708.2a"
+    ],
+    "pattern": "as ~ enters , turn all {f:Filter} face down",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "turnFaceDown": {
+              "filter": "$f"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, turn all other nontoken creatures you control face down."
+      },
+      {
+        "text": "As ~ enters, turn all artifacts face down."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, turn all other nontoken creatures you control face up.",
+      "As ~ enters, turn up to one other nontoken creature you control face down.",
+      "When ~ enters, turn all other nontoken creatures you control face down. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhd73.villainousChoice.eachOpponent.orDrawAndChaos",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 2,
+    "cr": [
+      "CR 701.55",
+      "CR 608.2d",
+      "CR 608.2f",
+      "CR 311.7"
+    ],
+    "pattern": "each opponent faces a villainous choice -- {a:Effects} , or you draw a card and chaos ensues",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "do": "$a",
+          "otherwise": [
+            {
+              "op": "draw",
+              "who": {
+                "ref": "you"
+              },
+              "count": 1
+            },
+            {
+              "op": "action",
+              "action": "chaosEnsues",
+              "who": {
+                "ref": "you"
+              }
+            }
+          ],
+          "villainous": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent faces a villainous choice -- That player discards a card, or you draw a card and chaos ensues."
+      },
+      {
+        "text": "Each opponent faces a villainous choice -- That player loses 3 life, or you draw a card and chaos ensues."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent faces a villainous choice -- That player discards a card, or you draw a card.",
+      "Each opponent faces a villainous choice -- That player discards a card, or you draw two cards and chaos ensues.",
+      "Each opponent faces a villainous choice -- That player discards a card, or you draw a card. Chaos ensues."
+    ]
+  },
+  {
+    "id": "sta.edhd73.turnedFaceUp.mayAttachIt",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1e",
+      "CR 708.11",
+      "CR 303.4f",
+      "CR 701.3a"
+    ],
+    "pattern": "as ~ is turned face up , you may attach it to ( a | an ) {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "becomes",
+            "what": "turnedFaceUp",
+            "object": {
+              "self": true
+            }
+          },
+          "body": {
+            "b": "during",
+            "do": [
+              {
+                "op": "may",
+                "who": {
+                  "ref": "you"
+                },
+                "do": [
+                  {
+                    "op": "chooseObjects",
+                    "who": {
+                      "ref": "you"
+                    },
+                    "from": {
+                      "ref": "each",
+                      "filter": "$f"
+                    },
+                    "min": 1,
+                    "max": 1,
+                    "as": "attachHost"
+                  },
+                  {
+                    "op": "attach",
+                    "what": {
+                      "ref": "self"
+                    },
+                    "to": {
+                      "ref": "bound",
+                      "name": "attachHost"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "needs": [
+      "body:during",
+      "feature:replace.on.turnFaceUp"
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "As ~ is turned face up, you may attach it to a land."
+      },
+      {
+        "text": "As ~ is turned face up, you may attach it to an artifact."
+      }
+    ],
+    "counterExamples": [
+      "As ~ is turned face up, attach it to a land.",
+      "As ~ is turned face up, you may attach it to target land.",
+      "When ~ is turned face up, you may attach it to a land."
+    ]
+  },
+  {
+    "id": "sta.edhd73.each.has.foretell.manaCostLess",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.143a",
+      "CR 118.9",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "each {f:Filter} has foretell . its foretell cost is equal to its mana cost reduced by {2}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "foretell",
+                  "text": "foretell",
+                  "costIsManaCostLess": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "Each creature card in your hand without foretell has foretell. Its foretell cost is equal to its mana cost reduced by {2}."
+      },
+      {
+        "text": "Each artifact card in your hand without foretell has foretell. Its foretell cost is equal to its mana cost reduced by {2}."
+      }
+    ],
+    "counterExamples": [
+      "Each creature card in your hand without foretell has foretell. Its foretell cost is equal to its mana cost reduced by {3}.",
+      "Each creature card in your hand without foretell has foretell. Its foretell cost is equal to its power.",
+      "Each creature card in your hand without foretell has flashback. Its foretell cost is equal to its mana cost reduced by {2}."
+    ]
+  }
+]

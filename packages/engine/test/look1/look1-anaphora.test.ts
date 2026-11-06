@@ -91,8 +91,12 @@ describe('LOOK1: the same card in the same sentence (the look idiom) and in an "
 });
 
 describe('LOOK1: what the focus does not decide stays with the unique-candidate rule (design 6.4): manual, never a guess', () => {
-  it('an instruction between the look and the pronoun ends the focus: "it" has two candidates (the attacking creature and the card)', () => {
-    const text = "Whenever this creature attacks, look at the top card of your library. You gain 1 life. If it's a land card, you may put it onto the battlefield.";
+  it('an instruction between the look and the pronoun ends the focus (your own life change does not, edh-d-87): "it" has two candidates (the attacking creature and the card)', () => {
+    // combined copy: edh-d-87 (Sapling of Colfenor): your own life change keeps the focus (it names no object), so "You gain 1 life." between them leaves "it" the card
+    const kept = faceOf("Whenever this creature attacks, look at the top card of your library. You gain 1 life. If it's a land card, you may put it onto the battlefield.", 'Creature — Human Scout');
+    expect(fullyAutomated(kept)).toBe(true);
+    expect(JSON.stringify(kept.abilities)).toContain('"object":{"ref":"bound","name":"seen"}');
+    const text = "Whenever this creature attacks, look at the top card of your library. Each opponent loses 1 life. If it's a land card, you may put it onto the battlefield.";
     const f = faceOf(text, 'Creature — Human Scout');
     expect(fullyAutomated(f)).toBe(false);
     expect(JSON.stringify(f.abilities)).not.toContain('"ref":"event"');

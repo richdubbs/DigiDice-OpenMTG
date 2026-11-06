@@ -106,11 +106,11 @@ const transform: ChangeFaceOp = (cx, _st, id) => void turnOver(cx.g, id, false);
 const convert: ChangeFaceOp = (cx, _st, id) => {
   const g = cx.g;
   const o = g.s.objects[id];
-  if (!o || o.zone !== 'battlefield') return;
+  if (!o || o.zone !== 'battlefield') return false; // edh-next-76: "If you do" / "When you do" after a convert see only a convert that happened (CR 608.2c)
   const why = whyCantTurnOver(g.s, o) ?? (cantDo(g.s, 'transform', id) ? 'a "can\'t transform" effect applies (CR 701.28f)' : null);
-  if (why) return void g.log(`${g.nameOf(id)} doesn't convert: ${why}.`, { rules: ['CR 701.28c', 'CR 701.28d'], level: 'info' });
-  if (alreadyTurnedOver(cx, o)) return void g.log(`${g.nameOf(id)} doesn't convert: it has transformed or converted since (CR 701.28e).`, { rules: ['CR 701.28e'], level: 'info' });
-  turnOver(g, id, true);
+  if (why) { g.log(`${g.nameOf(id)} doesn't convert: ${why}.`, { rules: ['CR 701.28c', 'CR 701.28d'], level: 'info' }); return false; }
+  if (alreadyTurnedOver(cx, o)) { g.log(`${g.nameOf(id)} doesn't convert: it has transformed or converted since (CR 701.28e).`, { rules: ['CR 701.28e'], level: 'info' }); return false; }
+  return turnOver(g, id, true);
 };
 
 /** CR 701.27f: a delayed triggered ability of the permanent transforms it only if it hasn't transformed or converted since the delayed ability was created. */
@@ -184,7 +184,9 @@ const meldAction: StepHandler<ActionStep> = (cx, st) => {
   const [a, b] = objects as [GameObject, GameObject];
   const result = g.s.defs[a.defId]!.meld!.result!;
   if (!g.s.defs[result]) return byHand(cx, st, `the definition of the meld result ${result} is not loaded in this game (m6 design E18): put the two cards onto the battlefield as one permanent by hand`);
-  const moved = withMeld(g, { from: a.id, partner: b.id, result }, () => proposeMove(cx, { id: a.id, zone: a.zone }, 'battlefield', { controller: player, cause: 'meld' }));
+  // edh-d-89 (CR 508.4; Mishra, Claimed by Gix): "It enters tapped and attacking": its controller chooses what it attacks (perform-events.ts#applyEnterFacts); outside combat it only enters tapped
+  const attacking = st.entersAttacking === true ? { tapped: true, ...(g.s.combat !== null ? { attacking: true } : {}) } : {};
+  const moved = withMeld(g, { from: a.id, partner: b.id, result }, () => proposeMove(cx, { id: a.id, zone: a.zone }, 'battlefield', { controller: player, cause: 'meld', ...attacking }));
   const melded = moved.to !== null ? g.s.objects[moved.to.id] : undefined;
   if (!melded || melded.components === undefined) {
     g.log('The meld did not happen: the first card did not enter the battlefield.', { rules: ['CR 701.42c'], level: 'info' });

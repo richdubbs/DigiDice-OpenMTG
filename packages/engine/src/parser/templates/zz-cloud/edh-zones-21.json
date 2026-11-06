@@ -1,0 +1,43 @@
+[
+  {
+    "id": "eff.edhz21.forEach.ownerTopOrBottom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "for each {f:Filter} , its owner puts it on their choice of the top or bottom of their library",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "to": {
+        "zone": "library",
+        "ownerChoosesEnd": true
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "For each tapped creature, its owner puts it on their choice of the top or bottom of their library."
+      },
+      {
+        "text": "For each artifact your opponents control, its owner puts it on their choice of the top or bottom of their library. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "For each tapped creature, its owner puts it on the top or bottom of their library.",
+      "For each tapped creature, its controller puts it on their choice of the top or bottom of their library.",
+      "For each tapped creature, its owner puts it on their choice of the top or bottom of your library."
+    ]
+  }
+]

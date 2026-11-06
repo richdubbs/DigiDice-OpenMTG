@@ -87,6 +87,8 @@ function walk(node: unknown, key: string | undefined, out: Set<string>): void {
     if (node['byOpponent'] === true) out.add(key === 'replaces' ? 'feature:replace.byOpponent' : 'feature:ev.byOpponent'); // FAST5 T36, CR 701.9a
     if (key === 'replaces' && node['ev'] === 'createToken' && node['token'] !== undefined) out.add('feature:replace.createToken.token'); // Cloud r3-repl, CR 111.1
     if (node['ev'] === 'draw' && node['exceptFirstInDrawStep'] !== undefined) out.add(key === 'replaces' ? 'feature:replace.draw.exceptFirstInDrawStep' : 'feature:ev.draw.exceptFirstInDrawStep'); // Cloud r5-repl, CR 504.1
+    if (node['ev'] === 'draw' && node['firstEachTurn'] !== undefined) out.add(key === 'replaces' ? 'feature:replace.draw.firstEachTurn' : 'feature:ev.draw.firstEachTurn.unsupported'); // edh-d-98, CR 614.1a
+    if (node['ev'] === 'life' && node['byController'] !== undefined) out.add(key === 'replaces' ? 'feature:replace.life.byController' : 'feature:ev.life.byController'); // edh-d-54, CR 614.1a
   }
   if (typeof node['cond'] === 'string') out.add(`cond:${node['cond']}`);
   if (typeof node['q'] === 'string') out.add(`q:${node['q']}`);
@@ -179,6 +181,8 @@ export function expansionNeeds(data: KeywordDefData): string[] {
       walk(m.onlyIf, undefined, out);
     } else if (m.kind === 'grant') {
       walk(m.while, undefined, out); // FAST5X-4 (CR 702.178a): the condition the granted ability is had under
+    } else if (m.kind === 'escalate') {
+      out.add('feature:modes.escalate'); // edh-mana-keywords-2 (CR 702.120a)
     } else {
       out.add('feature:modes.override');
       walk(m.chooseAll.when, undefined, out);

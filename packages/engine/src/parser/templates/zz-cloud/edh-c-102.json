@@ -1,0 +1,277 @@
+[
+  {
+    "id": "eff.edhv102.linked.return.graveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 607.1",
+      "CR 400.7",
+      "CR 400.3"
+    ],
+    "pattern": "return the exiled cards to their owner 's graveyard",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "graveyard"
+      }
+    },
+    "subject": "none",
+    "priority": 5,
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to three target cards from a single graveyard.\nWhen ~ dies, return the exiled cards to their owner's graveyard."
+      },
+      {
+        "text": "When ~ enters, exile target creature card from a graveyard.\nWhen ~ dies, return the exiled cards to their owner's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to three target cards from a single graveyard.\nWhen ~ dies, return the exiled cards to your graveyard.",
+      "When ~ dies, return the exiled cards to their owner's graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhv102.linked.putAll.hand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 607.1",
+      "CR 400.7",
+      "CR 400.3"
+    ],
+    "pattern": "put all cards exiled with ~ into their owner 's hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "{1}: Exile the top card of your library face down.\n{3}, {T}: Put all cards exiled with ~ into their owner's hand."
+      },
+      {
+        "text": "When ~ enters, exile target creature card from a graveyard.\n{2}, {T}: Put all cards exiled with ~ into their owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "{1}: Exile the top card of your library face down.\n{3}, {T}: Put all cards exiled with ~ into your hand.",
+      "{3}, {T}: Put all cards exiled with ~ into their owner's hand."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "eff.edhv102.linked.eachReturns.hand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 607.1",
+      "CR 400.7",
+      "CR 400.3"
+    ],
+    "pattern": "each player returns to their hand all cards they own exiled with ( it | ~ )",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "{1}, {T}: Target opponent exiles a card from their hand.\nWhen ~ leaves the battlefield, each player returns to their hand all cards they own exiled with ~."
+      },
+      {
+        "text": "{T}: Target opponent exiles a card from their hand.\nWhen ~ dies, each player returns to their hand all cards they own exiled with it."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Target opponent exiles a card from their hand.\nWhen ~ dies, each player returns to the battlefield all cards they own exiled with ~.",
+      "When ~ dies, each player returns to their hand all cards they own exiled with ~."
+    ],
+    "consumes": [
+      "each",
+      "all"
+    ]
+  },
+  {
+    "id": "eff.edhv102.countPermanents.lifeBecomes",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.5",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "count the number of permanents you control . your life total becomes that number",
+    "build": {
+      "op": "setLife",
+      "who": {
+        "ref": "you"
+      },
+      "value": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "controller": "you"
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "that number"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, count the number of permanents you control. Your life total becomes that number."
+      },
+      {
+        "text": "Count the number of permanents you control. Your life total becomes that number. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Count the number of permanents you control. Target player's life total becomes that number.",
+      "Count the number of creatures you control. Your life total becomes that number.",
+      "Count the number of permanents you control. You gain that much life."
+    ]
+  },
+  {
+    "id": "eff.edhv102.exileAll.controllersDraw",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 701.13a",
+      "CR 121.1",
+      "CR 400.7"
+    ],
+    "pattern": "exile all {f:Filter} . for each creature exiled this way , its controller draws a card",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "exile"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "count": {
+          "q": "resultCount",
+          "step": "exile",
+          "which": {
+            "types": [
+              "Creature"
+            ],
+            "controller": {
+              "ref": "iterating"
+            }
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Exile all red creatures. For each creature exiled this way, its controller draws a card."
+      },
+      {
+        "text": "Exile all creatures with flying. For each creature exiled this way, its controller draws a card."
+      }
+    ],
+    "counterExamples": [
+      "Exile all red creatures. For each creature exiled this way, you draw a card.",
+      "Exile all red creatures. For each creature exiled this way, its owner draws a card.",
+      "Destroy all red creatures. For each creature exiled this way, its controller draws a card."
+    ]
+  },
+  {
+    "id": "eff.edhv102.zombieToken.ptOfCard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.4",
+      "CR 208.3",
+      "CR 608.2h"
+    ],
+    "pattern": "create a black zombie creature token . its power is equal to {p:Qty} and its toughness is equal to {q:Qty}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": {
+        "colors": [
+          "B"
+        ],
+        "types": [
+          "Creature"
+        ],
+        "subtypes": [
+          "Zombie"
+        ],
+        "power": "$p",
+        "toughness": "$q"
+      }
+    },
+    "subject": "none",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Exile target Goblin card from your graveyard. Create a black Zombie creature token. Its power is equal to that card's power and its toughness is equal to that card's toughness."
+      },
+      {
+        "text": "Exile target artifact creature card from your graveyard. Create a black Zombie creature token. Its power is equal to that card's power and its toughness is equal to that card's toughness."
+      }
+    ],
+    "counterExamples": [
+      "Exile target Goblin card from your graveyard. Create a black Zombie creature token. Its power is equal to that card's power and its toughness is equal to 1.",
+      "Exile target Goblin card from your graveyard. Create a red Zombie creature token. Its power is equal to that card's power and its toughness is equal to that card's toughness.",
+      "Create a black Zombie creature token. Its power is equal to that card's power and its toughness is equal to that card's toughness."
+    ]
+  }
+]

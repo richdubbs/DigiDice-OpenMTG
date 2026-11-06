@@ -92,6 +92,25 @@ Rules for engine code that follow from this:
 A run ends "settled" when some player has priority (`pending.kind === 'priority'`, `suspended ===
 null`) or the game is over.
 
+## Shortcuts (CR 727)
+
+A player who repeats a loop says "I do this X times", as at a real table. The design is
+[docs/design/shortcuts.md](design/shortcuts.md); the code is `core/shortcut.ts` (pure) and `core/shortcut-run.ts` (the runner).
+
+- **What is recorded.** `GameState.turnActions`: each settled priority action or pass of this turn, with every answer it took
+  (and who gave it), newest last, at most 64; cleared when a turn begins. It is never in a view: the view derives the viewer's
+  `repeatable` steps in words and `loop` (the engine noticed the last n steps done twice in a row), with no object id in either.
+- **The action.** `{ type: 'shortcut', player, steps, times }` (CR 727.2a): repeat the proposer's last `steps` actions, with the
+  other players' passes in between, `times` times. Legal only with priority and within the caps; another player's action in the span is refused.
+- **The consent.** It runs through `run` like any priority action, so the consent is the ordinary decision model: each other player in turn
+  order gets a `shortcut` decision (CR 727.2b) and lets it run or names a pass and step where they take priority.
+- **The inner runner.** The passes are really played: each recorded step is applied with its recorded answers by a lenient runner on a clone.
+  Recorded object ids are rebound first (the same id, else the same card by `cardId`, else the last known information's new id, else a token of
+  the same definition). A step that throws, asks a question its answers do not cover or leaves answers over is not applied (CR 733.1) and ends
+  the shortcut; a stop point ends it with that player holding priority.
+- **The log.** Pass 1 is logged in full; later passes that went the same way have their lines cut and their events dropped, and one line sums
+  them up. The state (history, counters, life) keeps every pass.
+
 ## Game flow
 
 `core/turn.ts#advance` loops: SBAs (CR 704) -> put pending triggers on the stack (CR 603.3) ->

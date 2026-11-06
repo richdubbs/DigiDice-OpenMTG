@@ -1,0 +1,284 @@
+[
+  {
+    "id": "eff.edhn110.choosePlayers.three",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 102.1",
+      "CR 122.1",
+      "CR 122.6",
+      "CR 121.1",
+      "CR 111.1",
+      "CR 111.2"
+    ],
+    "pattern": "choose a player . {p:Player} put[s] {n:Qty} +1/+1 counter[s] on ( a | an ) {f:Filter} they control . choose a second player to draw a card . then choose a third player to create {m:Qty} {t:TokenDesc}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "player",
+        "as": "chosenPlayer"
+      },
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "countersOn"
+      },
+      {
+        "op": "putCounters",
+        "by": "$p",
+        "on": {
+          "ref": "bound",
+          "name": "countersOn"
+        },
+        "kind": "+1/+1",
+        "count": "$n"
+      },
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "player",
+        "as": "chosenPlayer2",
+        "exclude": [
+          {
+            "bound": "chosenPlayer"
+          }
+        ]
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "bound",
+          "name": "chosenPlayer2"
+        },
+        "count": 1
+      },
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "player",
+        "as": "chosenPlayer3",
+        "exclude": [
+          {
+            "bound": "chosenPlayer"
+          },
+          {
+            "bound": "chosenPlayer2"
+          }
+        ]
+      },
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "bound",
+          "name": "chosenPlayer3"
+        },
+        "count": "$m",
+        "token": "$t"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, choose a player. They put three +1/+1 counters on a creature they control. Choose a second player to draw a card. Then choose a third player to create three Treasure tokens."
+      },
+      {
+        "text": "When this creature enters, choose a player. They put a +1/+1 counter on a creature they control. Choose a second player to draw a card. Then choose a third player to create a Food token."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, choose a player. They put three +1/+1 counters on a creature they control. Choose a second player to draw two cards. Then choose a third player to create three Treasure tokens.",
+      "At the beginning of your end step, choose a player. They put three +1/+1 counters on a creature they control. Choose a player to draw a card. Then choose a third player to create three Treasure tokens.",
+      "At the beginning of your end step, choose a player. They put three +1/+1 counters on a creature they control. Choose a second player to draw a card."
+    ]
+  },
+  {
+    "id": "rid.edhn110.namedToken.ragavan.entersTappedAttacking",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.4",
+      "CR 508.4",
+      "CR 508.4a",
+      "CR 110.5b"
+    ],
+    "pattern": "ragavan enters tapped and attacking",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "token.name": "Ragavan"
+        },
+        "tapped": {
+          "@new": true
+        },
+        "attacking": {
+          "@new": true
+        }
+      }
+    },
+    "attachTo": "createToken",
+    "consumes": [
+      "tapped",
+      "attacking"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create Ragavan, a legendary 2/1 red Monkey creature token. Ragavan enters tapped and attacking."
+      },
+      {
+        "text": "Whenever ~ attacks, create Ragavan, a legendary 3/1 red Monkey creature token. Ragavan enters tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create Ragavan, a legendary 2/1 red Monkey creature token. Ragavan enters tapped.",
+      "Whenever ~ attacks, create Rowan, a legendary 2/1 red Monkey creature token. Ragavan enters tapped and attacking.",
+      "Whenever ~ attacks, draw a card. Ragavan enters tapped and attacking."
+    ]
+  },
+  {
+    "id": "eff.edhn110.dur.lead.pump.gainsIf.gainsIf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 105.2"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} get[s] {pt:PT} , gain[s] {a:Abilities} if {c:Cond} , and gain[s] {b:Abilities} if {e:Cond}",
+    "build": [
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": "7c",
+                "power": "$pt.p",
+                "toughness": "$pt.t"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 6,
+                "add": "$a"
+              }
+            ]
+          }
+        ],
+        "guard": "$c"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 6,
+                "add": "$b"
+              }
+            ]
+          }
+        ],
+        "guard": "$e"
+      }
+    ],
+    "subject": "object",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of combat on your turn, choose up to one target creature you control. Until end of turn, that creature gets +1/+1, gains flying if it's blue, and gains lifelink if it's black."
+      },
+      {
+        "text": "At the beginning of combat on your turn, choose up to one target creature you control. Until end of turn, that creature gets +3/+0, gains haste if it's green, and gains deathtouch if it's red."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of combat on your turn, choose up to one target creature you control. Until end of turn, that creature gets +1/+1, gains flying if it's blue.",
+      "At the beginning of combat on your turn, choose up to one target creature you control. Until end of turn, that creature gets +1/+1, gains flying if it's blue, and loses lifelink if it's black.",
+      "At the beginning of combat on your turn, choose up to one target creature you control. Until end of turn, that creature gets +1/+1, gains flying, and gains lifelink if it's black."
+    ]
+  },
+  {
+    "id": "eff.edhn110.adaptsAsThoughNoCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.46a",
+      "CR 701.46",
+      "CR 608.2c"
+    ],
+    "pattern": "the next time {o:Obj} adapts this turn , it adapts as though it had no +1/+1 counters on it",
+    "build": {
+      "op": "reportAction",
+      "who": {
+        "ref": "you"
+      },
+      "verb": "adaptAsNoCounters",
+      "object": "$o"
+    },
+    "subject": "object",
+    "consumes": [
+      "next",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "{1}: The next time target creature adapts this turn, it adapts as though it had no +1/+1 counters on it."
+      },
+      {
+        "text": "{2}: The next time target creature you control adapts this turn, it adapts as though it had no +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: The next time target creature adapts this turn, it adapts as though it had no -1/-1 counters on it.",
+      "{T}: The next time target creature adapts this turn, it adapts twice.",
+      "{T}: Target creature adapts as though it had no +1/+1 counters on it."
+    ]
+  }
+]

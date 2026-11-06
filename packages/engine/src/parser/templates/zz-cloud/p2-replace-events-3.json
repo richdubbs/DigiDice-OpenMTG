@@ -45,7 +45,7 @@
     "id": "rep.p2re3.extraTurn.skip.opponent",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 614.1a",
       "CR 614.10",

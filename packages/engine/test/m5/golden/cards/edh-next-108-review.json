@@ -1,0 +1,306 @@
+[
+{
+"card": "Gisa's Favorite Shovel",
+"expect": "full",
+"faces": [
+{
+"abilities": [
+{
+"kind": "static",
+"effects": [
+{
+"s": "continuous",
+"affects": {
+"ref": "attachedTo"
+},
+"mods": [
+{
+"layer": 6,
+"add": [
+{
+"kind": "keyword",
+"keyword": "menace"
+}
+]
+},
+{
+"layer": "7c",
+"power": 2,
+"toughness": 0
+}
+]
+}
+]
+},
+{
+"kind": "triggered",
+"effect": {
+"steps": [
+{
+"op": "sacrificeChoice",
+"as": "did",
+"count": 1,
+"filter": {
+"types": [
+"Creature"
+]
+},
+"who": {
+"ref": "defending"
+}
+},
+{
+"op": "if",
+"cond": {
+"cond": "did",
+"step": "did"
+},
+"then": [
+{
+"op": "createToken",
+"count": 1,
+"token": {
+"predefined": "Walker"
+},
+"who": {
+"ref": "you"
+}
+}
+]
+}
+],
+"targets": []
+},
+"trigger": {
+"on": [
+{
+"ev": "attacks",
+"attacker": {
+"attachedToSource": true,
+"types": [
+"Creature"
+]
+}
+}
+]
+}
+},
+{
+"kind": "keyword",
+"cost": {
+"mana": [
+{
+"kind": "generic",
+"amount": 4
+}
+]
+},
+"keyword": "equip"
+}
+]
+}
+],
+"verified": "edh-next-108 review (concept lane sac-random), by hand against the Oracle text and CR 701.21a, 608.2c: the defending player sacrifices a creature of their choice; only if they did, you (the Equipment's controller) create a Walker token; 'they' is the defending player (parser/lower/anaphora.ts, the attack event names the player in two roles); render/steps-zones.ts binds the sacrificing player as the actor of the later 'If they do'; templates eff.t6.sacrifice.theirChoice, cond.if."
+},
+{
+"card": "Hellcarver Demon",
+"expect": "full",
+"faces": [
+{
+"abilities": [
+{
+"kind": "keyword",
+"keyword": "flying"
+},
+{
+"kind": "triggered",
+"effect": {
+"steps": [
+{
+"op": "sacrifice",
+"what": {
+"ref": "each",
+"filter": {
+"anyOf": [
+{
+"other": true
+}
+],
+"controller": "you"
+}
+}
+},
+{
+"op": "discard",
+"count": "hand",
+"who": {
+"ref": "you"
+}
+},
+{
+"op": "move",
+"as": "them",
+"to": {
+"zone": "exile"
+},
+"what": {
+"ref": "topCards",
+"count": 6,
+"player": {
+"ref": "you"
+}
+}
+},
+{
+"op": "chooseObjects",
+"as": "cast",
+"from": {
+"ref": "each",
+"filter": {
+"is": {
+"ref": "bound",
+"name": "them"
+},
+"notTypes": [
+"Land"
+],
+"zone": "exile"
+}
+},
+"max": "any",
+"min": 0,
+"who": {
+"ref": "you"
+}
+},
+{
+"op": "cast",
+"free": true,
+"what": {
+"ref": "bound",
+"name": "cast"
+},
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"trigger": {
+"on": [
+{
+"ev": "damage",
+"combat": true,
+"recipient": {
+"player": "any"
+},
+"source": {
+"self": true
+}
+}
+]
+}
+}
+]
+}
+],
+"verified": "edh-next-108 review (concept lane sac-random; top 20,000 list), by hand against the Oracle text and CR 701.21a (sacrifice all other permanents you control), 701.9a (discard your hand), 406.1/701.13a (exile the top six), 601.2/118.9 (cast any number of the nonland exiled cards without paying): the group the last sentence names is the cards the exile moved (parser/holes/edhn108.ts, render alt family cards-exiled-this-way-bare); templates eff.fxz.sacrifice.all.youControl, eff.r3cost.cast.anyNumber.free.fromAmong."
+},
+{
+"card": "Legate Lanius, Caesar's Ace",
+"expect": "full",
+"faces": [
+{
+"abilities": [
+{
+"kind": "triggered",
+"effect": {
+"steps": [
+{
+"op": "sacrificeChoice",
+"count": {
+"op": "ceilDiv",
+"q": "math",
+"args": [
+{
+"q": "count",
+"of": {
+"ref": "each",
+"filter": {
+"controller": {
+"ref": "iterating"
+},
+"types": [
+"Creature"
+]
+}
+}
+},
+10
+]
+},
+"filter": {
+"controller": {
+"ref": "iterating"
+},
+"types": [
+"Creature"
+]
+},
+"who": {
+"ref": "each",
+"who": "opponent"
+}
+}
+],
+"targets": []
+},
+"trigger": {
+"on": [
+{
+"ev": "zoneChange",
+"subject": {
+"self": true
+},
+"to": "battlefield"
+}
+]
+}
+},
+{
+"kind": "triggered",
+"effect": {
+"steps": [
+{
+"kind": "+1/+1",
+"op": "putCounters",
+"count": 1,
+"on": {
+"ref": "self"
+}
+}
+],
+"targets": []
+},
+"trigger": {
+"on": [
+{
+"ev": "action",
+"actor": "opponent",
+"object": {
+"types": [
+"Creature"
+]
+},
+"verb": "sacrifice"
+}
+]
+}
+}
+]
+}
+],
+"verified": "edh-next-108 review (concept lane sac-random), by hand against the Oracle text and CR 701.21a, 107.1a, 608.2d: each opponent sacrifices ceil(tenth) of THEIR OWN creatures, of their choice (count read per iterating opponent); (eff.edhn108.sacrifice.tenth.theirChoice.up). The second ability reads the existing opponent-sacrifice trigger."
+}
+]

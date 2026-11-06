@@ -1,0 +1,11 @@
+# edh-next-142 (must-finish EDHREC 5,001-10,000: library, draw and search; Omnath, Locus of All is already in fast5x-e19-cards.txt)
+Pendant of Prosperity
+Carth the Lion
+Fatespinner
+Homing Sliver
+Roshan, Hidden Magister
+Rootweaver Druid
+Mastermind's Acquisition
+Niv-Mizzet Reborn
+Dream Cache
+Bounty of Skemfar

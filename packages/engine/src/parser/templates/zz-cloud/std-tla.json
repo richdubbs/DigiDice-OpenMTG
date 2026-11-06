@@ -270,7 +270,7 @@
       "CR 118.9",
       "CR 500.1"
     ],
-    "pattern": "during your turn , each {f:Filter} has flashback . the flashback cost is equal to ( its | that card 's ) mana cost",
+    "pattern": "during your turn , each {f:Filter} has flashback . ( the | its ) flashback cost is equal to ( its | that card 's ) mana cost",
     "build": {
       "kind": "static",
       "condition": {

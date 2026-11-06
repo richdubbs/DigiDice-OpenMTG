@@ -172,8 +172,12 @@ describe('std-rp Cond (CR 601.2a, 603.4, 608.3): "if you cast it from your hand"
     expect(isFull(f), JSON.stringify(f.diagnostics)).toBe(true);
     expect(abilityOf(f, 'triggered')['interveningIf']).toEqual({ cond: 'wasCast', from: 'hand' });
   });
-  it('another creature\'s enters trigger ("it" is not the object itself) and another player\'s hand are not read', () => {
-    expect(isFull(enchantment('Whenever a creature enters, if you cast it from your hand, draw a card.'))).toBe(false);
+  it('another creature\'s enters trigger reads the entering creature\'s cast record, not the object\'s own, and another player\'s hand is not read', () => {
+    // edh-players-7 (CR 601.2a, 603.4) reads "it" of "Whenever a creature enters, if you cast it from your hand" as the creature that entered (event subject, cast by you):
+    // std-rp pinned it manual because it only read the object's own cast record; the newer reading is the correct one.
+    const other = enchantment('Whenever a creature enters, if you cast it from your hand, draw a card.');
+    expect(isFull(other)).toBe(true);
+    expect(abilityOf(other, 'triggered')['interveningIf']).toEqual({ cond: 'wasCast', from: 'hand', by: 'you', object: { ref: 'event', role: 'subject' } });
     expect(isFull(creature("When this creature enters, if you cast it from an opponent's hand, draw a card."))).toBe(false);
   });
 });

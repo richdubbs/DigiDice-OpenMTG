@@ -1,0 +1,132 @@
+[
+  {
+    "id": "eff.edhv85.emptyManaPool",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.4",
+      "CR 500.5",
+      "CR 614.1"
+    ],
+    "pattern": "{p:Player} lose[s] all unspent mana",
+    "build": {
+      "op": "emptyManaPool",
+      "who": "$p"
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Tap all creatures target player controls and that player loses all unspent mana."
+      },
+      {
+        "text": "Target player loses all unspent mana."
+      },
+      {
+        "text": "Each opponent loses all unspent mana."
+      }
+    ],
+    "counterExamples": [
+      "Target player loses all mana.",
+      "Target player loses all unspent mana and draws a card.",
+      "Target player doesn't lose unspent mana."
+    ]
+  },
+  {
+    "id": "eff.edhv85.damage.power.toSameController",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 109.4",
+      "CR 120.3"
+    ],
+    "pattern": "target {a:Filter} an opponent controls deal[s] damage equal to its power to another target {b:Filter} that player controls",
+    "build": {
+      "op": "damage",
+      "source": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "object",
+          "filter": {
+            "$merge": [
+              "$a",
+              {
+                "controller": "opponent"
+              }
+            ]
+          },
+          "min": 1,
+          "max": 1,
+          "text": "target creature an opponent controls",
+          "locate": "an opponent controls"
+        }
+      },
+      "to": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "object",
+          "filter": "$b",
+          "min": 1,
+          "max": 1,
+          "another": true,
+          "controllerOfEarlierController": true,
+          "text": "another target creature that player controls",
+          "locate": "that player controls"
+        }
+      },
+      "amount": {
+        "q": "stat",
+        "stat": "power",
+        "of": {
+          "ref": "target",
+          "id": "",
+          "$target": {
+            "kind": "object",
+            "filter": {
+              "$merge": [
+                "$a",
+                {
+                  "controller": "opponent"
+                }
+              ]
+            },
+            "min": 1,
+            "max": 1,
+            "text": "target creature an opponent controls",
+            "locate": "an opponent controls"
+          }
+        }
+      }
+    },
+    "subject": "object",
+    "consumes": [
+      "that player",
+      "that",
+      "player",
+      "another",
+      "its"
+    ],
+    "examples": [
+      {
+        "text": "Target Giant an opponent controls deals damage equal to its power to another target Giant that player controls."
+      },
+      {
+        "text": "Target artifact creature an opponent controls deals damage equal to its power to another target artifact creature that player controls."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control deals damage equal to its power to another target creature that player controls.",
+      "Target creature an opponent controls deals damage equal to its power to target creature that player controls.",
+      "Target creature an opponent controls deals damage equal to its toughness to another target creature that player controls."
+    ],
+    "priority": 1
+  }
+]

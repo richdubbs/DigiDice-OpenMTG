@@ -1,0 +1,6 @@
+# edh-combat-4 (Commander lane edh-combat): the golden cards of the round (test/m5/golden/cards/edh-combat-4-review.json)
+Ghalta and Mavren
+Brimaz, King of Oreskos
+Avatar Roku, Firebender
+Elturel Survivors
+Combat Calligrapher

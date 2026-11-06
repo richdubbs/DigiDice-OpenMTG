@@ -41,7 +41,7 @@ export const ACCEPTANCE: Readonly<Record<string, Pin>> = {
   'Voice of All': { level: 'full', package: 'M6-2, MX2 (protection from the chosen color: quality chosen:color, CR 702.16a, 607.2d)' },
   'Spark Double': { level: 'full', package: 'M6-10 (zz-m6/gate.json)' },
   'Altered Ego': { level: 'full', package: 'M6-10 (zz-m6/gate.json)' },
-  'Moritte of the Frost': { level: 'partial', package: 'M6-2', cause: 'its copy sentence (legendary and snow in addition, CR 707.9f "if it\'s a creature" counters and changeling) has no template' },
+  'Moritte of the Frost': { level: 'full', package: 'edh-next-65 (rep.edhn65.enters.copy.legendarySnow.counters; was partial, outdated by the standing rule 2026-10-27)' },
   'Quicksilver Gargantuan': { level: 'full', package: 'M6-10 (zz-m6/gate.json)' },
   Tarmogoyf: { level: 'full', package: 'M6-2' },
   'Vesuvan Doppelganger': { level: 'full', package: 'M6-2, MX2 (the retained color and the self-referencing "it has this ability", CR 707.9a, 707.9c)' },
@@ -50,11 +50,12 @@ export const ACCEPTANCE: Readonly<Record<string, Pin>> = {
   Cytoshape: { level: 'manual', package: 'M6-2', cause: '"Choose a nonlegendary creature on the battlefield. Target creature becomes a copy of that creature until end of turn." has no template' },
   // r4-fxz: the back face's "Target player draws X cards, where X is the number of cards in your hand" reads with eff.fxz.draw.whereX (CR 107.3, 121.1)
   'Jushi Apprentice // Tomoya the Revealer': { level: 'full', package: 'M6-2, M6-4, r4-fxz' },
-  'Nezumi Shortfang // Stabwhisker the Odious': { level: 'partial', package: 'M6-2, M6-4', cause: '"Then if that player has no cards in hand, flip ~." and the back face\'s "loses 1 life for each card fewer than three in their hand" have no template' },
+  // edh-c-49: the back face's "loses 1 life for each card fewer than three in their hand" reads with eff.edhv49.player.loseLife.perCardFewerThanThreeInHand (CR 119.3, 402.1)
+  'Nezumi Shortfang // Stabwhisker the Odious': { level: 'full', package: 'M6-2, M6-4, edh-c-49' },
   'Essence of the Wild': { level: 'full', package: 'M6-10 (zz-m6/gate.json)' },
   'Rusted Sentinel': { level: 'full', package: 'M6-2' },
   'Sacred Cat': { level: 'full', package: 'M6-12 (embalm)' },
-  Fork: { level: 'manual', package: 'M6-2', cause: '"Copy target instant or sorcery spell, except that the copy is red" has no template, and a spell copy with exceptions is resolved by hand (effects/handlers/tokens-copy.ts, CR 707.10, 707.9b)' },
+  Fork: { level: 'full', package: 'edh-next-65 (eff.edhn65.copy.spell.exceptColor; was manual, outdated by the standing rule 2026-10-27)' },
   Twincast: { level: 'full', package: 'M6-2' },
   'Kavu Titan': { level: 'full', package: 'M6-5' },
   // M6-3: face-down
@@ -66,7 +67,7 @@ export const ACCEPTANCE: Readonly<Record<string, Pin>> = {
   'Branchsnap Lorian': { level: 'full', package: 'M6-3' },
   'Wandering Ones': { level: 'full', package: 'M6-3' },
   'Alley Assailant': { level: 'full', package: 'M6-3' },
-  'Whisperwood Elemental': { level: 'partial', package: 'M6-3', cause: 'manifest at the end step is full; "Until end of turn, face-up nontoken creatures you control gain \'When ~ dies, manifest the top card of your library.\'" has no template' },
+  'Whisperwood Elemental': { level: 'full', package: 'M6-3, edh-next-22 (render order "face-up nontoken")' },
   'Cryptic Coat': { level: 'full', package: 'M6-3, FAST5X E25 (the cloak-then-attach sentence), r4-fxb (sta.pump.cantbeblocked promoted, design 6.9)' },
   'Abhorrent Oculus': { level: 'full', package: 'M6-3' },
   // M6-5: costs
@@ -83,8 +84,8 @@ export const ACCEPTANCE: Readonly<Record<string, Pin>> = {
   'Prized Unicorn': { level: 'full', package: 'M6-7' },
   'Hunt Down': { level: 'full', package: 'M6-7' },
   // M6-4: double-faced cards, flip, day and night, meld
-  'Delver of Secrets // Insectile Aberration': { level: 'partial', package: 'M6-4', cause: '"look at the top card of your library. You may reveal that card. If an instant or sorcery card is revealed this way, transform ~." has no template' },
-  'Huntmaster of the Fells // Ravager of the Fells': { level: 'partial', package: 'M6-4', cause: 'the werewolf transforms are full; the back face\'s "2 damage to target opponent or planeswalker and 2 damage to up to one target creature that player or that planeswalker\'s controller controls" has no template' },
+  'Delver of Secrets // Insectile Aberration': { level: 'full', package: 'M6-4; edh-next-76 (look, may reveal, "revealed this way" after a reveal of the looked-at card)' },
+  'Huntmaster of the Fells // Ravager of the Fells': { level: 'full', package: 'M6-4; edh-d-61 (the player of a self "becomes" event is not "that player": render/refs.ts)' },
   'Instigator Gang // Wildblood Pack': { level: 'full', package: 'M6-4' },
   'Kruin Outlaw // Terror of Kruin Pass': { level: 'full', package: 'M6-4' },
   'Elite Vanguard': { level: 'full', package: 'M6-4' },
@@ -98,13 +99,16 @@ export const ACCEPTANCE: Readonly<Record<string, Pin>> = {
   'Graf Rats': { level: 'full', package: 'M6-4, MX2 (the intervening "if you both own and control" and action meldPair, CR 603.4, 701.42a)' },
   'Midnight Scavengers': { level: 'full', package: 'M6-4' },
   'Chittering Host': { level: 'full', package: 'M6-4' },
-  'Wheel of Sun and Moon': { level: 'partial', package: 'M6-4', cause: '"If a card would be put into enchanted player\'s graveyard from anywhere, instead that card is revealed and put on the bottom of that player\'s library." has no template' },
+  // edh-next-34 (CR 614.1a, 303.4, 701.20a): the enchanted player's replacement is a template now (sta.edhn34.graveyard.enchantedPlayer.revealBottom), so the card is full
+  'Wheel of Sun and Moon': { level: 'full', package: 'M6-4, edh-next-34' },
   // M6-6: layouts
   'History of Benalia': { level: 'full', package: 'M6-6' },
   // merge wave 8 (audit D2, CR 701.9a, 608.2c): chapter II "Discard any number of cards, then draw that many cards." reads "that many" as the cards discarded (the
   // discard acts on the chosen cards, lower/quantities.ts#unitSources), so the card is full
   'The Elder Dragon War': { level: 'full', package: 'M6-6, merge wave 8 (audit D2)' },
-  'Bard Class': { level: 'partial', package: 'M6-6', cause: 'the class levels are full structure; level 1 "Legendary creatures you control enter with an additional +1/+1 counter on them", level 2\'s colored-only cost reduction and level 3\'s "You may play them this turn" have no template' },
+  // the class levels are full structure; level 1 by rep.cmd1.others.enter.additionalCounter.plural (edh-misc-3), level 2's colored-only reduction by
+  // cm.edhc4.spells.less.you.colored.only (edh-cast-4, CR 601.2f), level 3's "You may play them this turn" by eff.t70.permit.play.thisTurn.group
+  'Bard Class': { level: 'full', package: 'M6-6, Commander combined copy (edh-cast-4 + edh-misc-3)' },
   'Student of Warfare': { level: 'full', package: 'M6-6' },
   'Case of the Locked Hothouse': { level: 'full', package: 'M6-6, FAST5X E14 (the solved ability: sta.e14.top.look.lands.cast, CR 401.5, 601.3, 305.1)' },
   'Phyrexian Fleshgorger': { level: 'full', package: 'M6-6, FAST5X E27 ("Ward—Pay life equal to this creature\'s power", CR 702.21a, 608.2h)' },
@@ -136,7 +140,7 @@ describe('m6 design 6, E22: the game-path level of every acceptance card', () =>
 
   it('the gate count: how many acceptance cards are full (the gate needs all of them, E22)', () => {
     const levels = Object.values(ACCEPTANCE).map((p) => p.level);
-    expect([levels.length, levels.filter((l) => l === 'full').length]).toEqual([94, 84]); // std-rx21: + Brisela, Voice of Nightmares; std-re: + Bruna, the Fading Light; merge wave 8 (audit D2): + The Elder Dragon War; r4-fxz: + Jushi Apprentice; r4-fxb: + Cryptic Coat, Willbender, Hooded Hydra; r4-cost: + Everflowing Chalice; FAST5X E27: + Phyrexian Fleshgorger; FAST4 MX1: + Leyline of the Void, Brutal Cathar; MX2: + Oko, Voice of All, Gisela, Graf Rats, Vesuvan Doppelganger; FAST5X E14: + Case of the Locked Hothouse
+    expect([levels.length, levels.filter((l) => l === 'full').length]).toEqual([94, 92]); // edh-d-61: + Huntmaster of the Fells (the player of a self "becomes" event); edh-next-76: + Delver of Secrets; edh-next-65: + Fork, Moritte of the Frost; edh-next-34: + Wheel of Sun and Moon (sta.edhn34.graveyard.enchantedPlayer.revealBottom); edh-next-22: + Whisperwood Elemental; Commander combined copy (edh-cast-4 + edh-misc-3): + Bard Class; std-rx21: + Brisela, Voice of Nightmares; std-re: + Bruna, the Fading Light; merge wave 8 (audit D2): + The Elder Dragon War; r4-fxz: + Jushi Apprentice; r4-fxb: + Cryptic Coat, Willbender, Hooded Hydra; r4-cost: + Everflowing Chalice; FAST5X E27: + Phyrexian Fleshgorger; FAST4 MX1: + Leyline of the Void, Brutal Cathar; MX2: + Oko, Voice of All, Gisela, Graf Rats, Vesuvan Doppelganger; FAST5X E14: + Case of the Locked Hothouse
   });
 });
 

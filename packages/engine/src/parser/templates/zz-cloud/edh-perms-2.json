@@ -1,0 +1,110 @@
+[
+  {
+    "id": "sta.edhpm2.youAndTwoGroups.hexproof",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.11b",
+      "CR 702.11d",
+      "CR 613.1f"
+    ],
+    "pattern": "you , {f:Filter} , and {g:Filter} have hexproof",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "controller": "opponent"
+          }
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f",
+                "$g"
+              ],
+              "zone": "any"
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "hexproof",
+                  "text": "hexproof"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "You, Elves you control, and other artifacts you control have hexproof."
+      },
+      {
+        "text": "You, planeswalkers you control, and Goblins you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "You, Elves you control, and other artifacts you control have shroud.",
+      "You, Elves you control, and other artifacts you control have hexproof until end of turn.",
+      "You, Elves you control, or other artifacts you control have hexproof."
+    ]
+  },
+  {
+    "id": "eff.edhpm2.player.mayDraw.if",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 121.1"
+    ],
+    "pattern": "{p:Player} may draw {n:Qty} card[s] if {c:Cond}",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "guard": "$c",
+      "do": [
+        {
+          "op": "draw",
+          "who": "$p",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another creature enters, its controller may draw a card if its power is 4 or greater."
+      },
+      {
+        "text": "Whenever another creature dies, you may draw two cards if you control an artifact."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another creature enters, its controller may draw a card unless its power is 4 or greater.",
+      "Whenever another creature enters, its controller may discard a card if its power is 4 or greater.",
+      "Whenever another creature enters, its controller draws a card if its power is 4 or greater."
+    ]
+  }
+]

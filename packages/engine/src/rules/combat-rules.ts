@@ -41,7 +41,12 @@ function attackOptions(s: GameState, o: GameObject, c: Chars, defenders: readonl
     else allowed.push(defender);
   }
   if (allowed.length === 0 && veto) return { denial: veto, defenders: [] };
-  if (isSummoningSick(s, o, c)) return { denial: deny(`${nm(c)} came under your control this turn and has no haste.`, 'CR 508.1a', 'CR 302.6'), defenders: [] };
+  if (isSummoningSick(s, o, c)) {
+    // edh-b-14 (CR 302.6, 508.1a, 609.4; Frenzied Saddlebrute): "can attack ... as though it had haste" for some defenders only
+    const hasty = allowed.filter((defender) => hookpoints.attacksAsThoughHaste(g, o.id, defender));
+    if (hasty.length === 0) return { denial: deny(`${nm(c)} came under your control this turn and has no haste.`, 'CR 508.1a', 'CR 302.6'), defenders: [] };
+    return { denial: null, defenders: hasty };
+  }
   return { denial: null, defenders: allowed };
 }
 
@@ -106,7 +111,8 @@ function attackCandidatesIn(s: GameState, player: PlayerId): DeclareAttackersDec
 export function blockDenial(s: GameState, blocker: GameObject, bc: Chars, attacker: GameObject, _ac: Chars, _defending: PlayerId): Denial | null {
   if (blocker.zone !== 'battlefield' || !bc.types.includes('Creature')) return deny('Only creatures can block.', 'CR 506.3');
   if (bc.types.includes('Battle')) return deny("A battle can't block.", 'CR 509.1a');
-  if (blocker.tapped) return deny('A tapped creature cannot block.', 'CR 509.1a');
+  // edh-d-25 (CR 509.1a, 609.4; Masako the Humorless): "tapped creatures you control can block as though they were untapped"
+  if (blocker.tapped && !hookpoints.blocksAsThoughUntapped(gameOf(s), blocker.id, attacker.id)) return deny('A tapped creature cannot block.', 'CR 509.1a');
   if (blocker.phasedOut) return deny("A phased-out permanent can't block.", 'CR 702.26b');
   return hookpoints.canBlock(gameOf(s), blocker.id, attacker.id);
 }
@@ -194,6 +200,37 @@ export function blocksDenial(s: GameState, defending: PlayerId, blocks: { blocke
   for (const attacker of perAttacker.keys()) {
     const d = hookpoints.blockSetValid(g, attacker, blocks.filter((x) => x.attacker === attacker).map((x) => x.blocker)); // CR 702.111b: menace
     if (d) return d;
+  }
+  return null;
+}
+
+/** edhv31 (CR 702.22a): does this creature have banding now? */
+export const hasBanding = (s: GameState, id: ObjectId): boolean => {
+  const o = s.objects[id];
+  return o !== undefined && charsOfObject(s, o).keywords.some((k) => k.keyword === 'banding');
+};
+
+/**
+ * edhv31 (CR 702.22c-d): why a declaration of attacking bands is illegal, or null. Each band has two or more creatures that attack, all of them the same
+ * player, planeswalker or battle; one or more of them have banding and at most one has not; a creature is in one band only. ("Bands with other",
+ * CR 702.22c's second form, is not implemented: its creatures are not offered a band.)
+ */
+export function bandsDenial(s: GameState, attacks: readonly { attacker: ObjectId; defender: PlayerId | ObjectId }[], bands: readonly (readonly ObjectId[])[]): Denial | null {
+  const seen = new Set<ObjectId>();
+  for (const band of bands) {
+    if (!Array.isArray(band) || band.length < 2) return deny('A band is two or more attacking creatures.', 'CR 702.22c');
+    let withBanding = 0;
+    let defender: PlayerId | ObjectId | undefined;
+    for (const id of band) {
+      const at = attacks.find((a) => a.attacker === id);
+      if (at === undefined) return deny('Only attacking creatures can be in a band.', 'CR 702.22c');
+      if (seen.has(id)) return deny('A creature can be a member of only one band.', 'CR 702.22c');
+      seen.add(id);
+      if (defender !== undefined && defender !== at.defender) return deny('All creatures in an attacking band must attack the same player, planeswalker, or battle.', 'CR 702.22d');
+      defender = at.defender;
+      if (hasBanding(s, id)) withBanding++;
+    }
+    if (withBanding === 0 || band.length - withBanding > 1) return deny('A band is creatures with banding and up to one attacking creature without banding.', 'CR 702.22c');
   }
   return null;
 }

@@ -1,0 +1,216 @@
+[
+  {
+    "id": "rid.edhn53.instead.search.two",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 701.23a"
+    ],
+    "pattern": "if {c:Cond} , instead search your library for {n:Qty} cards and put those cards into your hand",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "search",
+            "who": {
+              "ref": "you"
+            },
+            "zone": "library",
+            "filter": {},
+            "min": "$n",
+            "max": "$n",
+            "as": "search"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "to": {
+              "zone": "hand"
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "if",
+      "instead",
+      "those cards"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for a card and put that card into your hand. If ~ was kicked, instead search your library for two cards and put those cards into your hand. Then shuffle."
+      },
+      {
+        "text": "Search your library for a card and put that card into your hand. If you control an Elf, instead search your library for three cards and put those cards into your hand. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a card and put that card into your hand. If ~ was kicked, search your library for two cards and put those cards into your hand. Then shuffle.",
+      "Draw a card. If ~ was kicked, instead search your library for two cards and put those cards into your hand."
+    ]
+  },
+  {
+    "id": "rid.edhn53.instead.mill.twice",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 701.17a"
+    ],
+    "pattern": "if {c:Cond} , {p:Player} mill[s] twice that many cards instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "@require": {
+          "who": "$p"
+        },
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "@previousWith": {
+              "count": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  2,
+                  "@previous.count"
+                ]
+              }
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "mill",
+    "consumes": [
+      "if",
+      "twice",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Target player mills three cards. If ~ was kicked, that player mills twice that many cards instead."
+      },
+      {
+        "text": "Target opponent mills four cards. If you control an Elf, that player mills twice that many cards instead."
+      }
+    ],
+    "counterExamples": [
+      "Target player mills three cards. If ~ was kicked, that player mills three times that many cards instead.",
+      "Target player mills three cards. If ~ was kicked, that player mills twice that many cards.",
+      "Target player mills three cards. If ~ was kicked, you mill twice that many cards instead."
+    ]
+  },
+  {
+    "id": "eff.edhn53.damage.equalTo.andThatMuch",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 120.2b",
+      "CR 115.3",
+      "CR 601.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage equal to {n:Qty} to {to:Recipient} and that much damage to {r:Targets}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": "$r",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "that much"
+    ],
+    "examples": [
+      {
+        "text": "{2}, Sacrifice this artifact: It deals damage equal to the number of charge counters on it to target player and that much damage to up to one target creature."
+      },
+      {
+        "text": "When ~ enters, it deals damage equal to the number of creatures you control to target player and that much damage to up to one other target creature."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it deals damage equal to the number of creatures you control to target player and that much damage to each creature.",
+      "When ~ enters, it deals damage equal to the number of creatures you control to target player and twice that much damage to up to one target creature.",
+      "When ~ enters, it deals damage equal to the number of creatures you control to target player or that much damage to up to one target creature."
+    ]
+  },
+  {
+    "id": "trg.edhn53.discard.batch.cards.firstEachTurn",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 603.2c",
+      "CR 701.9a"
+    ],
+    "pattern": "whenever you discard one or more {f:Filter} for the first time each turn",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "discard",
+          "actor": "you",
+          "object": "$f"
+        }
+      ],
+      "batch": true,
+      "first": "turn"
+    },
+    "consumes": [
+      "whenever",
+      "first",
+      "each",
+      "one or more"
+    ],
+    "needs": [
+      "feature:trigger.first"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you discard one or more nonland cards for the first time each turn, you gain 2 life."
+      },
+      {
+        "text": "Whenever you discard one or more creature cards for the first time each turn, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you discard one or more nonland cards, create a Junk token.",
+      "Whenever you discard a nonland card for the first time each turn, create a Junk token.",
+      "Whenever you sacrifice one or more nonland cards for the first time each turn, create a Junk token."
+    ],
+    "weak": 1
+  }
+]

@@ -17,7 +17,7 @@ import type { DestinationFacts, ExecCtx, StepResult } from '../api';
 import { evalQty } from '../eval';
 import { askManual } from '../manual';
 import { performLink } from '../perform';
-import { performEnterAttacking, performEntersAttackingAsReturned, performExiledWith, performWithEnterAttacking } from '../perform-direct';
+import { performEnterAttacking, performEnterBlocking, performEntersAttackingAsReturned, performExiledWith, performWithEnterAttacking } from '../perform-direct';
 import { propose } from '../propose';
 import { alsoBecameHandles, isCurrent, readInfo, rebase, resolveObjs, resolvePlayers } from '../refs';
 
@@ -143,13 +143,15 @@ export function proposeMove(cx: ExecCtx, held: ObjHandle, to: ZoneKind, destinat
  * The binding a step that moved objects leaves under `as` ("exile it ... return it", "the exiled card"): the new objects in public zones, read through the last
  * known information of what they were (CR 608.2h) except on the battlefield and the stack, where the object has current information of its own (CR 400.7j).
  */
-export function bindMoved(cx: ExecCtx, as: Name | undefined, moved: Moved[]): void {
+export function bindMoved(cx: ExecCtx, as: Name | undefined, moved: Moved[], dest?: ZoneKind): void {
   if (!as) return;
   const objects: ObjHandle[] = [];
   const snapshots: Record<ObjectId, LastKnown> = {};
   for (const m of moved) {
     for (const to of movedHandles(m)) { // CR 712.21c: each card a melded permanent became
       if (!PUBLIC_ZONES.includes(to.zone)) continue;
+      // edh-d-21 (CR 400.7, 608.2c): "return ... to the battlefield. It's a 1/1 Spirit...": "it" is what was put onto the battlefield; a card a replacement effect exiled instead (Containment Priest) is not
+      if (dest === 'battlefield' && to.zone !== 'battlefield') continue;
       objects.push(to);
       if (m.before && to.zone !== 'battlefield' && to.zone !== 'stack') snapshots[to.id] = m.before;
     }
@@ -204,6 +206,11 @@ export function enterAttacking(cx: ExecCtx, ids: readonly ObjectId[], how: boole
   }
   // M6-12: "attacking that player or a planeswalker they control" (myriad, CR 702.116a): the named player's planeswalkers, no battle
   return performEnterAttacking(g, ids, named, typeof how === 'object' && how.orPlaneswalkers === true); // trek-8: rules/status.ts#enterAttackingChoosing
+}
+
+/** edh-combat-4 (CR 506.3e, 509.3a): the creatures just put onto the battlefield become blocking creatures, blocking `attackerId` (rules/status.ts#enterBlocking). */
+export function enterBlocking(cx: ExecCtx, ids: readonly ObjectId[], attackerId: ObjectId): ObjectId[] {
+  return performEnterBlocking(cx.g, ids, attackerId);
 }
 
 /**

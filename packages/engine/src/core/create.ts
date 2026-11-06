@@ -34,6 +34,13 @@ export interface PlayerConfig {
    * game is created, like the commander rules.
    */
   companion?: DefId;
+  /**
+   * edh-next-147 INTERFACE CHANGE (additive, optional): the sticker sheets this player plays with (CR 123.2), each with its name and the words of each of its name stickers.
+   * As the game begins, three of them are chosen at random when there are more (CR 123.2a: constructed play reveals ten or more and chooses three at random); three or
+   * fewer are all used (CR 123.2b, limited play). The chosen sheets' name stickers are the player's (`PlayerState.stickers`, CR 123.2c). How many sheets a deck brings is
+   * deck construction, checked before the game is created. Absent or empty: the player plays without stickers.
+   */
+  stickerSheets?: { name: string; nameStickers: string[] }[];
 }
 
 export interface GameConfig {
@@ -186,6 +193,15 @@ export function initialState(config: GameConfig): GameState {
       if (pc.companion !== undefined) players[i]!.companion = { defId: pc.companion }; // CR 702.139a: revealed (public)
     });
   }
+  // edh-next-147 (CR 123.2a-c, 103.2): the sticker sheets each player plays with, three chosen at random when there are more (a stream of their own, so the game's RNG
+  // and every game without stickers are untouched); the chosen sheets' name stickers are the player's, each one distinct (CR 123.3a), and they stay revealed (public)
+  config.players.forEach((pc, i) => {
+    const sheets = pc.stickerSheets ?? [];
+    if (sheets.length === 0) return;
+    const chosen = [...sheets];
+    if (chosen.length > 3) shuffleInPlace(seedRng(`${config.seed}:sticker-sheets:${players[i]!.id}`), chosen);
+    players[i]!.stickers = chosen.slice(0, 3).flatMap((sh, j) => sh.nameStickers.map((text, k) => ({ id: `${j + 1}.${k + 1} ${sh.name}`, text })));
+  });
   if (commander) setUpCommanders(s, config);
   return s;
 }

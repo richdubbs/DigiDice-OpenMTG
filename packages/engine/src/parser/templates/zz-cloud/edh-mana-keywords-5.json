@@ -1,0 +1,413 @@
+[
+  {
+    "id": "trg.edhmk5.you.activate.ifNotMana",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 602.2",
+      "CR 605.1a",
+      "CR 603.4"
+    ],
+    "pattern": "whenever you activate an ability , if it isn't a mana ability",
+    "build": {
+      "on": [
+        {
+          "ev": "activate",
+          "player": "you",
+          "manaAbility": false
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you activate an ability, if it isn't a mana ability, draw two cards."
+      },
+      {
+        "text": "Whenever you activate an ability, if it isn't a mana ability, target player draws three cards."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you activate an ability, draw two cards.",
+      "Whenever you activate an ability, if it is a mana ability, draw two cards.",
+      "Whenever an opponent activates an ability, if it isn't a mana ability, draw two cards."
+    ]
+  },
+  {
+    "id": "trg.edhmk5.abilityOf.equipped.activated.ifNotMana",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 602.2",
+      "CR 605.1a",
+      "CR 603.4",
+      "CR 301.5"
+    ],
+    "pattern": "whenever an ability of equipped creature is activated , if it isn't a mana ability",
+    "build": {
+      "on": [
+        {
+          "ev": "activate",
+          "player": "any",
+          "source": {
+            "types": [
+              "Creature"
+            ],
+            "attachedToSource": true
+          },
+          "manaAbility": false
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an ability of equipped creature is activated, if it isn't a mana ability, draw a card."
+      },
+      {
+        "text": "Whenever an ability of equipped creature is activated, if it isn't a mana ability, target player loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an ability of equipped creature is activated, draw a card.",
+      "Whenever an ability of enchanted creature is activated, if it isn't a mana ability, draw a card.",
+      "Whenever an ability of equipped creature is activated, if it is a mana ability, draw a card."
+    ]
+  },
+  {
+    "id": "rid.edhmk5.mana.youSpend.gain",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 603.2",
+      "CR 601.2h"
+    ],
+    "pattern": "when you spend this mana to cast ( a | an ) {f:CastSpell} , you gain {n:Qty} life",
+    "build": {
+      "$patchPrevious": {
+        "whenSpent": {
+          "@new": {
+            "spells": "$f",
+            "do": [
+              {
+                "op": "gainLife",
+                "who": {
+                  "ref": "you"
+                },
+                "amount": "$n"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "when",
+      "spend"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {G}. When you spend this mana to cast a Dragon spell, you gain 3 life."
+      },
+      {
+        "text": "{1}, {T}: Add {R}. When you spend this mana to cast an instant spell, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Draw a card. When you spend this mana to cast a Dragon spell, you gain 3 life.",
+      "{T}: Add {G}. If you spend this mana to cast a Dragon spell, you gain 3 life.",
+      "{T}: Add {G}. When you spend this mana to cast a Dragon spell, each opponent gains 3 life."
+    ]
+  },
+  {
+    "id": "rid.edhmk5.mana.youSpend.scry",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 603.2",
+      "CR 601.2h"
+    ],
+    "pattern": "when you spend this mana to cast ( a | an ) {f:CastSpell} , scry {n:Qty}",
+    "build": {
+      "$patchPrevious": {
+        "whenSpent": {
+          "@new": {
+            "spells": "$f",
+            "do": [
+              {
+                "op": "scry",
+                "who": {
+                  "ref": "you"
+                },
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "when",
+      "spend"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {G}. When you spend this mana to cast a Dragon spell, scry 3."
+      },
+      {
+        "text": "{1}, {T}: Add {R}. When you spend this mana to cast an instant spell, scry 1."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Draw a card. When you spend this mana to cast a Dragon spell, scry 3.",
+      "{T}: Add {G}. If you spend this mana to cast a Dragon spell, scry 3.",
+      "{T}: Add {G}. When you spend this mana to cast a Dragon spell, each opponent scries 3."
+    ]
+  },
+  {
+    "id": "eff.edhmk5.forEach.thisWay.controllerCreates",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 701.8a",
+      "CR 111.2"
+    ],
+    "pattern": "for each {f:Filter} , its controller creates ( a | an ) {t:TokenDesc}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "eachMoved",
+      "do": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "bound",
+              "name": "eachMoved"
+            }
+          },
+          "count": 1,
+          "token": "$t"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all creatures. For each creature destroyed this way, its controller creates a 2/2 green Wolf creature token."
+      },
+      {
+        "text": "Exile up to two target creatures. For each creature exiled this way, its controller creates a 1/1 white Spirit creature token with flying."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all creatures. For each creature destroyed this way, you create a 2/2 green Wolf creature token.",
+      "Destroy all creatures. For each creature destroyed this way, its owner creates a 2/2 green Wolf creature token.",
+      "Destroy all creatures. For each creature destroyed this way, its controller creates two 2/2 green Wolf creature tokens."
+    ]
+  },
+  {
+    "id": "trg.edhmk5.landAbility.addsChosenColor",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 605.1b",
+      "CR 106.4",
+      "CR 607.2d",
+      "CR 603.2"
+    ],
+    "pattern": "whenever a land 's ability causes you to add one or more mana of the chosen color",
+    "build": {
+      "on": [
+        {
+          "ev": "activate",
+          "player": "you",
+          "source": {
+            "types": [
+              "Land"
+            ]
+          },
+          "manaAbility": true,
+          "produced": "chosen"
+        }
+      ]
+    },
+    "needs": [
+      "feature:trigger.producedChosen"
+    ],
+    "consumes": [
+      "whenever",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a land's ability causes you to add one or more mana of the chosen color, you gain 1 life."
+      },
+      {
+        "text": "Whenever a land's ability causes you to add one or more mana of the chosen color, add an additional one mana of that color. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a land's ability causes you to add one or more mana of any color, add an additional one mana of that color.",
+      "Whenever an artifact's ability causes you to add one or more mana of the chosen color, you gain 1 life.",
+      "Whenever a land's ability causes an opponent to add one or more mana of the chosen color, you gain 1 life."
+    ]
+  },
+  {
+    "id": "trg.edhmk5.tappedForChosenColor",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.12",
+      "CR 605.1b",
+      "CR 106.4",
+      "CR 607.2d",
+      "CR 603.2"
+    ],
+    "pattern": "whenever {f:Filter} is tapped for mana of the chosen color",
+    "build": {
+      "on": [
+        {
+          "ev": "activate",
+          "player": "any",
+          "source": "$f",
+          "manaAbility": true,
+          "tapped": true,
+          "produced": "chosen"
+        }
+      ]
+    },
+    "needs": [
+      "feature:trigger.producedChosen"
+    ],
+    "consumes": [
+      "whenever",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a basic land is tapped for mana of the chosen color, you gain 1 life."
+      },
+      {
+        "text": "Whenever a land is tapped for mana of the chosen color, target player loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a basic land is tapped for mana of any color, you gain 1 life.",
+      "Whenever a basic land is tapped for mana, you gain 1 life.",
+      "Whenever a basic land you control is tapped for mana of the chosen color or colorless, you gain 1 life."
+    ]
+  },
+  {
+    "id": "eff.edhmk5.mana.additional.thatColor",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 605.1b",
+      "CR 106.4",
+      "CR 607.2d"
+    ],
+    "pattern": "add an additional one mana of that color",
+    "build": {
+      "op": "addMana",
+      "dynamic": {
+        "kind": "chosen",
+        "link": "color",
+        "count": 1
+      },
+      "who": {
+        "ref": "you"
+      }
+    },
+    "needs": [],
+    "examples": [
+      {
+        "text": "Whenever a land's ability causes you to add one or more mana of the chosen color, add an additional one mana of that color. You gain 1 life."
+      },
+      {
+        "text": "Whenever a basic land is tapped for mana of the chosen color, add an additional one mana of that color."
+      }
+    ],
+    "counterExamples": [
+      "Add an additional one mana of any color.",
+      "Add one mana of that color.",
+      "Add an additional two mana of that color."
+    ],
+    "consumes": [
+      "additional"
+    ]
+  },
+  {
+    "id": "eff.edhmk5.mana.itsController.additional.thatColor",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 605.1b",
+      "CR 106.4",
+      "CR 607.2d",
+      "CR 109.5"
+    ],
+    "pattern": "its controller adds an additional one mana of that color",
+    "build": {
+      "op": "addMana",
+      "dynamic": {
+        "kind": "chosen",
+        "link": "color",
+        "count": 1
+      },
+      "who": {
+        "ref": "controllerOf",
+        "object": {
+          "ref": "event",
+          "role": "source"
+        }
+      }
+    },
+    "needs": [],
+    "examples": [
+      {
+        "text": "Whenever a land is tapped for mana of the chosen color, its controller adds an additional one mana of that color."
+      },
+      {
+        "text": "Whenever a basic land is tapped for mana of the chosen color, its controller adds an additional one mana of that color. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Its owner adds an additional one mana of that color.",
+      "Its controller adds an additional one mana of any color.",
+      "Its controller adds an additional two mana of that color."
+    ],
+    "consumes": [
+      "additional"
+    ]
+  }
+]

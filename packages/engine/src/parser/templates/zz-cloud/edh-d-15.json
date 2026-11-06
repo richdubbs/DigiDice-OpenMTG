@@ -1,0 +1,347 @@
+[
+  {
+    "id": "sta.edhd15.abilities.more.exceptMana",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 605.1a",
+      "CR 118.7"
+    ],
+    "pattern": "activated abilities cost {m:ManaCost} more to activate unless they're mana abilities",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "exceptMana": true
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Activated abilities cost {1} more to activate unless they're mana abilities."
+      },
+      {
+        "text": "Activated abilities cost {3} more to activate unless they're mana abilities."
+      }
+    ],
+    "counterExamples": [
+      "Activated abilities cost {2} less to activate unless they're mana abilities.",
+      "Activated abilities cost {2} more to activate.",
+      "Activated abilities of artifacts cost {2} more to activate unless they're mana abilities."
+    ]
+  },
+  {
+    "id": "eff.edhd15.unless.anyPlayerPays",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "unless any player pays {m:ManaCost} , {e:Effects}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "cost": {
+        "mana": "$m"
+      },
+      "else": "$e"
+    },
+    "consumes": [
+      "unless",
+      "any player"
+    ],
+    "examples": [
+      {
+        "text": "Unless any player pays {2}, draw a card."
+      },
+      {
+        "text": "Unless any player pays {1}{U}, search your library for a card, put that card into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Unless each player pays {2}, draw a card.",
+      "Unless any opponent pays {2}, draw a card.",
+      "Unless any player pays {2} draw a card.",
+      "Unless any player pays {2}, you may draw a card."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "rst.edhd15.players.castActivate.ownTurns",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 602.5",
+      "CR 101.2",
+      "CR 102.1",
+      "CR 605.1a"
+    ],
+    "pattern": "players can cast spells and activate abilities only during their own turns",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "each",
+          "who": "player"
+        },
+        "mode": "onlyIf",
+        "relativeToSubject": true,
+        "when": {
+          "cond": "turnOf",
+          "whose": "you"
+        },
+        "action": "cast"
+      },
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "each",
+          "who": "player"
+        },
+        "mode": "onlyIf",
+        "relativeToSubject": true,
+        "when": {
+          "cond": "turnOf",
+          "whose": "you"
+        },
+        "action": "activate"
+      }
+    ],
+    "consumes": [
+      "can",
+      "only",
+      "own",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Players can cast spells and activate abilities only during their own turns. Creatures you control get +1/+1."
+      },
+      {
+        "text": "Players can cast spells and activate abilities only during their own turns. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "Players can cast spells and activate abilities only during your turn.",
+      "Players can cast spells and activate abilities only during their own turns and can cast no more than two spells each turn.",
+      "Players can cast creature spells and activate abilities only during their own turns.",
+      "Players can cast spells only during their own turns. Creatures you control get +1/+1."
+    ]
+  },
+  {
+    "id": "eff.edhd15.eachWhoCant.loseHalfLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.3",
+      "CR 608.2c",
+      "CR 119.3",
+      "CR 107.1a",
+      "CR 119.1"
+    ],
+    "pattern": "each {p:WhoCant} lose[s] half their life , rounded up",
+    "build": {
+      "op": "forEach",
+      "over": "$p",
+      "as": "each",
+      "do": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "iterating"
+          },
+          "amount": {
+            "q": "math",
+            "op": "ceilDiv",
+            "args": [
+              {
+                "q": "life",
+                "of": {
+                  "ref": "iterating"
+                }
+              },
+              2
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "half",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent sacrifices an artifact of their choice. Each opponent who can't loses half their life, rounded up."
+      },
+      {
+        "text": "Each opponent discards a card. Each opponent who can't loses half their life, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent who can't loses half their life, rounded up.",
+      "Each opponent sacrifices an artifact of their choice. Each opponent who can't loses half their life, rounded down.",
+      "Each opponent sacrifices an artifact of their choice. Each opponent who can't loses half their life.",
+      "Each opponent sacrifices an artifact of their choice. Each opponent loses half their life, rounded up."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "rid.edhd15.otherwise.createOneOfThoseTokens",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 111.1",
+      "CR 111.5"
+    ],
+    "pattern": "otherwise , create one of those tokens",
+    "build": {
+      "$patchPrevious": {
+        "else": {
+          "@new": [
+            {
+              "op": "createToken",
+              "who": "@previous.then.0.who",
+              "count": 1,
+              "token": "@previous.then.0.token"
+            }
+          ]
+        }
+      }
+    },
+    "attachTo": "if",
+    "consumes": [
+      "otherwise"
+    ],
+    "examples": [
+      {
+        "text": "If you control an Elf, create three 1/1 green Elf creature tokens. Otherwise, create one of those tokens."
+      },
+      {
+        "text": "If it's your turn, create two 1/1 white Soldier creature tokens. Otherwise, create one of those tokens."
+      }
+    ],
+    "counterExamples": [
+      "Otherwise, create one of those tokens.",
+      "Create two 1/1 white Soldier creature tokens. Otherwise, create one of those tokens.",
+      "If it's your turn, create two 1/1 white Soldier creature tokens. Otherwise, create two of those tokens.",
+      "If it's your turn, draw two cards. Otherwise, create one of those tokens."
+    ]
+  },
+  {
+    "id": "eff.edhd15.eachPlayer.revealTop.loseMv.putHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 400.7"
+    ],
+    "pattern": "each player reveals the top card of their library , loses life equal to that card 's mana value , then puts it into their hand",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "p",
+      "do": [
+        {
+          "op": "reveal",
+          "who": {
+            "ref": "iterating"
+          },
+          "what": {
+            "ref": "topCards",
+            "player": {
+              "ref": "iterating"
+            },
+            "count": 1
+          },
+          "as": "c"
+        },
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "iterating"
+          },
+          "amount": {
+            "q": "stat",
+            "stat": "manaValue",
+            "of": {
+              "ref": "bound",
+              "name": "c"
+            }
+          }
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "c"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each player reveals the top card of their library, loses life equal to that card's mana value, then puts it into their hand. You gain 1 life."
+      },
+      {
+        "text": "At the beginning of each end step, each player reveals the top card of their library, loses life equal to that card's mana value, then puts it into their hand."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, each opponent reveals the top card of their library, loses life equal to that card's mana value, then puts it into their hand.",
+      "At the beginning of your upkeep, each player reveals the top card of their library, loses life equal to that card's power, then puts it into their hand.",
+      "At the beginning of your upkeep, each player reveals the top card of their library, loses life equal to that card's mana value, then puts it into their graveyard.",
+      "At the beginning of your upkeep, each player reveals the top card of their library, then loses life equal to that card's mana value."
+    ]
+  }
+]

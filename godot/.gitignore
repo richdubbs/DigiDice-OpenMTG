@@ -1,0 +1,11 @@
+.godot/
+release/
+*.import
+.import/
+export_presets.cfg.local
+node_modules/
+*.log
+/bin/
+addons/gdUnit4/
+reports/
+installer/signing.local.json

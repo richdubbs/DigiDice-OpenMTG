@@ -1,0 +1,160 @@
+[
+  {
+    "id": "sta.edhx5.triggerMod.enterLeave",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 603.6a",
+      "CR 603.10a"
+    ],
+    "pattern": "if {f:Filter} or {g:Filter} entering or leaving the battlefield causes a triggered ability of a permanent you control to trigger , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "zoneChange",
+            "subject": {
+              "anyOf": [
+                "$f",
+                "$g"
+              ]
+            },
+            "to": "battlefield"
+          },
+          "orLeaves": true,
+          "abilitiesOf": {
+            "controller": "you"
+          },
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If a Goblin or an artifact entering or leaving the battlefield causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+      },
+      {
+        "text": "If a legendary creature or an enchantment entering or leaving the battlefield causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "If a Goblin or an artifact entering the battlefield causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+      "If a Goblin or an artifact entering or leaving the battlefield causes a triggered ability of a permanent an opponent controls to trigger, that ability triggers an additional time.",
+      "If a Goblin or an artifact entering or leaving the battlefield causes a triggered ability of a permanent you control to trigger, that ability triggers two additional times.",
+      "If a Goblin or an artifact entering or dying causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+    ]
+  },
+  {
+    "id": "eff.edhx5.manifest.fromHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.40a",
+      "CR 701.40e",
+      "CR 400.2",
+      "CR 708.2a"
+    ],
+    "pattern": "manifest a card from your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "manifested"
+      },
+      {
+        "op": "action",
+        "action": "manifest",
+        "who": {
+          "ref": "you"
+        },
+        "subject": {
+          "ref": "bound",
+          "name": "manifested"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Manifest a card from your hand."
+      },
+      {
+        "text": "{T}: Manifest a card from your hand."
+      }
+    ],
+    "counterExamples": [
+      "Manifest a card from your graveyard.",
+      "Manifest two cards from your hand.",
+      "Manifest the top card of your library."
+    ]
+  },
+  {
+    "id": "eff.edhx5.extraBeginningPhase",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.8",
+      "CR 500.10",
+      "CR 501.1",
+      "CR 500.9"
+    ],
+    "pattern": "there is an additional beginning phase after this phase",
+    "build": [
+      {
+        "op": "extraStep",
+        "step": "draw",
+        "afterPhase": true
+      },
+      {
+        "op": "extraStep",
+        "step": "upkeep",
+        "afterPhase": true
+      },
+      {
+        "op": "extraStep",
+        "step": "untap",
+        "afterPhase": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each of your postcombat main phases, there is an additional beginning phase after this phase."
+      },
+      {
+        "text": "At the beginning of your end step, there is an additional beginning phase after this phase."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each of your postcombat main phases, there is an additional combat phase after this phase.",
+      "At the beginning of each of your postcombat main phases, there are two additional beginning phases after this phase.",
+      "At the beginning of each of your postcombat main phases, there is an additional beginning phase after this step."
+    ]
+  }
+]

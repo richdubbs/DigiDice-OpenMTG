@@ -1,0 +1,555 @@
+[
+  {
+    "id": "sta.edhn123.notCreature.unless",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d"
+    ],
+    "pattern": "~ isn't a creature unless {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "not",
+        "of": "$c"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "remove": [
+                  "Creature"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "isn't",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "~ isn't a creature unless you control four or more permanents you don't own."
+      },
+      {
+        "text": "~ isn't a creature unless you control four or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "~ isn't a creature unless.",
+      "~ isn't a creature until end of turn unless you control four or more artifacts.",
+      "~ isn't a land unless you control four or more artifacts."
+    ]
+  },
+  {
+    "id": "eff.edhn123.lookAndCastPermanents.remainExiled.anyColor",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 611.2b",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 609.4b",
+      "CR 400.7"
+    ],
+    "pattern": "for as long as {g:Them} remain exiled , you may look at them , you may cast permanent spells from among them , and you may spend mana as though it were mana of any color to cast those spells",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "remainsExiled"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "lookAt",
+          "of": {
+            "is": "$g"
+          }
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$g"
+          },
+          "onlyTypes": [
+            "Artifact",
+            "Battle",
+            "Creature",
+            "Enchantment",
+            "Planeswalker"
+          ],
+          "anyManaColor": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, exile the bottom card of each opponent's library face down. For as long as those cards remain exiled, you may look at them, you may cast permanent spells from among them, and you may spend mana as though it were mana of any color to cast those spells."
+      },
+      {
+        "text": "{T}: Exile the top two cards of target opponent's library face down. For as long as those cards remain exiled, you may look at them, you may cast permanent spells from among them, and you may spend mana as though it were mana of any color to cast those spells."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile the top two cards of target opponent's library face down. For as long as those cards remain exiled, you may look at them, you may cast spells from among them, and you may spend mana as though it were mana of any color to cast those spells.",
+      "{T}: Exile the top two cards of target opponent's library face down. For as long as those cards remain exiled, you may look at them, you may cast permanent spells from among them, and you may spend mana as though it were mana of any type to cast those spells.",
+      "{T}: Exile the top two cards of target opponent's library face down. Until end of turn, you may look at them, you may cast permanent spells from among them, and you may spend mana as though it were mana of any color to cast those spells."
+    ]
+  },
+  {
+    "id": "eff.edhn123.villainous.exileUntilCastOrTopDamage",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.55a",
+      "CR 701.55b",
+      "CR 101.4",
+      "CR 608.2c",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 120.3"
+    ],
+    "pattern": "each opponent faces a villainous choice -- they exile cards from the top of their library until they exile a nonland card , then you may cast that card without paying its mana cost , or that player exiles the top {n:Qty} cards of their library and ~ deals damage equal to the total mana value of those exiled cards to that player",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "villainous": true,
+          "do": [
+            {
+              "op": "exileUntil",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "filter": {
+                "notTypes": [
+                  "Land"
+                ]
+              },
+              "as": "villainHit"
+            },
+            {
+              "op": "cast",
+              "who": {
+                "ref": "you"
+              },
+              "what": {
+                "ref": "bound",
+                "name": "villainHit"
+              },
+              "free": true,
+              "optional": true
+            }
+          ],
+          "otherwise": [
+            {
+              "op": "move",
+              "what": {
+                "ref": "topCards",
+                "player": {
+                  "ref": "bound",
+                  "name": "each"
+                },
+                "count": "$n"
+              },
+              "to": {
+                "zone": "exile"
+              },
+              "as": "villainTop"
+            },
+            {
+              "op": "damage",
+              "source": {
+                "ref": "self"
+              },
+              "to": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "amount": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": {
+                  "ref": "bound",
+                  "name": "villainTop"
+                },
+                "sum": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "until",
+      "without",
+      "or",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent faces a villainous choice — They exile cards from the top of their library until they exile a nonland card, then you may cast that card without paying its mana cost, or that player exiles the top five cards of their library and ~ deals damage equal to the total mana value of those exiled cards to that player."
+      },
+      {
+        "text": "Each opponent faces a villainous choice — They exile cards from the top of their library until they exile a nonland card, then you may cast that card without paying its mana cost, or that player exiles the top three cards of their library and ~ deals damage equal to the total mana value of those exiled cards to that player."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent faces a villainous choice — They exile cards from the top of their library until they exile a nonland card, then you may cast that card, or that player exiles the top four cards of their library and ~ deals damage equal to the total mana value of those exiled cards to that player.",
+      "Each opponent faces a villainous choice — They exile cards from the top of their library until they exile a land card, then you may cast that card without paying its mana cost, or that player exiles the top four cards of their library and ~ deals damage equal to the total mana value of those exiled cards to that player.",
+      "Each opponent faces a villainous choice — They exile cards from the top of their library until they exile a nonland card, then you may cast that card without paying its mana cost, or that player exiles the top four cards of their library and ~ deals damage equal to the total mana value of those exiled cards to you."
+    ]
+  },
+  {
+    "id": "eff.edhn123.exileSpell.exileUntilSharesType.castFree.exiledBottom",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 400.7",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 401.1",
+      "CR 400.3"
+    ],
+    "pattern": "that player exiles it , then exiles cards from the top of their library until they exile a card that shares a card type with it . that player may cast that card without paying its mana cost . then they put all cards exiled with ~ on the bottom of their library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "event",
+          "role": "spell"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "stormSpell"
+      },
+      {
+        "op": "exileUntil",
+        "who": {
+          "ref": "event",
+          "role": "player"
+        },
+        "filter": {
+          "sharesWith": {
+            "with": {
+              "ref": "event",
+              "role": "spell"
+            },
+            "quality": "cardType"
+          }
+        },
+        "as": "stormHit",
+        "exiled": "stormExiled"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "event",
+          "role": "player"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "stormHit"
+        },
+        "free": true,
+        "optional": true
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "union",
+              "of": [
+                {
+                  "ref": "bound",
+                  "name": "stormSpell"
+                },
+                {
+                  "ref": "bound",
+                  "name": "stormExiled"
+                }
+              ]
+            },
+            "zone": "exile"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "until",
+      "may",
+      "without",
+      "all",
+      "random",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player casts a creature spell from their hand, that player exiles it, then exiles cards from the top of their library until they exile a card that shares a card type with it. That player may cast that card without paying its mana cost. Then they put all cards exiled with ~ on the bottom of their library in a random order."
+      },
+      {
+        "text": "Whenever an opponent casts a spell from their hand, that player exiles it, then exiles cards from the top of their library until they exile a card that shares a card type with it. That player may cast that card without paying its mana cost. Then they put all cards exiled with ~ on the bottom of their library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player casts a spell from their hand, that player exiles it, then exiles cards from the top of their library until they exile a card that shares a card type with it. That player may cast that card. Then they put all cards exiled with ~ on the bottom of their library in a random order.",
+      "Whenever a player casts a spell from their hand, that player exiles it, then exiles cards from the top of their library until they exile a card that shares a color with it. That player may cast that card without paying its mana cost. Then they put all cards exiled with ~ on the bottom of their library in a random order.",
+      "Whenever a player casts a spell from their hand, that player exiles it, then exiles cards from the top of their library until they exile a card that shares a card type with it. That player may cast that card without paying its mana cost. Then they put all cards exiled with ~ on the top of their library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhn123.cast.fromExile.anyWithCounters.free",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2",
+      "CR 601.3",
+      "CR 118.9",
+      "CR 122.1",
+      "CR 608.2g"
+    ],
+    "pattern": "you may cast a spell from among cards in exile with {k:CounterKind} counters on them without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "counters": {
+              "kind": "$k"
+            },
+            "zone": "exile"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: You may cast a spell from among cards in exile with page counters on them without paying its mana cost."
+      },
+      {
+        "text": "{2}, {T}: You may cast a spell from among cards in exile with lore counters on them without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: You may cast a spell from among cards in exile with lore counters on them.",
+      "{2}, {T}: You may cast a spell from among cards in your graveyard with lore counters on them without paying its mana cost.",
+      "{2}, {T}: You may cast two spells from among cards in exile with lore counters on them without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.edhn123.ownersShuffle.exileUntilNonland.eachCastsFree",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 401.1",
+      "CR 400.3",
+      "CR 701.24a",
+      "CR 406.1",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 101.4",
+      "CR 601.2",
+      "CR 118.9"
+    ],
+    "pattern": "those permanents' owners shuffle {o:Them} into their libraries . each player who controlled one of those permanents exiles cards from the top of their library until they exile a nonland card , then puts the rest on the bottom of their library in a random order . each player may cast the nonland card they exiled without paying its mana cost",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "ownerOf",
+            "object": "$o"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": "$o"
+        }
+      },
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "controllerOf",
+          "object": "$o"
+        },
+        "as": "guffPlayer",
+        "gather": "guffHit",
+        "do": [
+          {
+            "op": "exileUntil",
+            "who": {
+              "ref": "bound",
+              "name": "guffPlayer"
+            },
+            "filter": {
+              "notTypes": [
+                "Land"
+              ]
+            },
+            "as": "guffHit",
+            "exiled": "guffExiled"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "each",
+              "filter": {
+                "is": {
+                  "ref": "bound",
+                  "name": "guffExiled"
+                },
+                "not": {
+                  "is": {
+                    "ref": "bound",
+                    "name": "guffHit"
+                  }
+                },
+                "zone": "exile"
+              }
+            },
+            "to": {
+              "zone": "library",
+              "position": "bottom",
+              "order": "random"
+            }
+          }
+        ]
+      },
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "bound",
+          "name": "guffHit"
+        },
+        "as": "guffCard",
+        "do": [
+          {
+            "op": "cast",
+            "who": {
+              "ref": "ownerOf",
+              "object": {
+                "ref": "bound",
+                "name": "guffCard"
+              }
+            },
+            "what": {
+              "ref": "bound",
+              "name": "guffCard"
+            },
+            "free": true,
+            "optional": true
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "until",
+      "may",
+      "without",
+      "random",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "For each player, choose target nonland permanent that player controls. Those permanents' owners shuffle them into their libraries. Each player who controlled one of those permanents exiles cards from the top of their library until they exile a nonland card, then puts the rest on the bottom of their library in a random order. Each player may cast the nonland card they exiled without paying its mana cost."
+      },
+      {
+        "text": "For each player, choose target creature that player controls. Those permanents' owners shuffle them into their libraries. Each player who controlled one of those permanents exiles cards from the top of their library until they exile a nonland card, then puts the rest on the bottom of their library in a random order. Each player may cast the nonland card they exiled without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "For each player, choose target creature that player controls. Those permanents' owners shuffle them into their libraries. Each player who controlled one of those permanents exiles cards from the top of their library until they exile a nonland card, then puts the rest on the bottom of their library in a random order. Each player may cast the nonland card they exiled.",
+      "For each player, choose target creature that player controls. Those permanents' owners shuffle them into their libraries. Each player who controlled one of those permanents exiles cards from the top of their library until they exile a creature card, then puts the rest on the bottom of their library in a random order. Each player may cast the nonland card they exiled without paying its mana cost.",
+      "For each player, choose target creature that player controls. Those permanents' owners shuffle them into their libraries. Each player who controlled one of those permanents exiles cards from the top of their library until they exile a nonland card, then puts the rest into their graveyard. Each player may cast the nonland card they exiled without paying its mana cost."
+    ]
+  }
+]

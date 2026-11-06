@@ -49,7 +49,7 @@
     "id": "eff.stdrx26.nextSpell.has.convoke",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 601.2a",
       "CR 601.2f",
@@ -93,7 +93,7 @@
     "id": "eff.stdrx26.nextSpell.has.improvise",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 601.2a",
       "CR 601.2f",

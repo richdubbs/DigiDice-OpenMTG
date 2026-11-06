@@ -20,4 +20,4 @@ export interface PromptProps<K extends DecisionKind = DecisionKind> {
  * match the query (each face's name, CR 201.4b-f), and whether that is all of them. It rejects when the search is not available.
  */
 /** std-rx28: `kind`, only land or only nonland card names (ChooseNameDecision.cardKind, CR 201.3). */
-export type CardNameSearch = (query: string, signal: AbortSignal, kind?: 'land' | 'nonland') => Promise<{ names: string[]; complete: boolean }>;
+export type CardNameSearch = (query: string, signal: AbortSignal, kind?: 'land' | 'nonland' | 'creature') => Promise<{ names: string[]; complete: boolean }>;

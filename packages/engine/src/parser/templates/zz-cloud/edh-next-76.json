@@ -1,0 +1,145 @@
+[
+  {
+    "id": "trg.edhn76.selfAndAtLeastOneF.attack",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1",
+      "CR 508.3a",
+      "CR 603.2"
+    ],
+    "pattern": "whenever ~ and at least one {f:Filter} attack",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "self": true
+          },
+          "withOther": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "at least"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ and at least one Warrior attack, you gain 2 life."
+      },
+      {
+        "text": "Whenever ~ and at least one Goblin attack, ~ gets +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ and at least two Warriors attack, you gain 2 life.",
+      "Whenever ~ and at least one Warrior block, you gain 2 life.",
+      "Whenever ~ attacks, you gain 7 life."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhn76.delay.eoc.exile.returnTransformed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 511.1",
+      "CR 712.14a",
+      "CR 400.7",
+      "CR 608.2c"
+    ],
+    "pattern": "exile {o:Obj} at end of combat , then return it to the battlefield transformed under your control",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "endOfCombat"
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "exile"
+          },
+          "as": "selfExiled"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "selfExiled"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            },
+            "transformed": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile it at end of combat, then return it to the battlefield transformed under your control."
+      },
+      {
+        "text": "Whenever ~ attacks, exile it at end of combat, then return it to the battlefield transformed under your control. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile it at end of combat, then return it to the battlefield under your control.",
+      "Whenever ~ attacks, exile it at end of combat, then return it to the battlefield transformed under its owner's control.",
+      "Whenever ~ attacks, exile it at the beginning of the next end step, then return it to the battlefield transformed under your control."
+    ],
+    "priority": 1,
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.edhn76.put.self.gy.bf.transformed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 113.6m",
+      "CR 712.14a",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "put ~ from your graveyard onto the battlefield transformed",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "transformed": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{4}{B}{B}: Put ~ from your graveyard onto the battlefield transformed. Activate only as a sorcery."
+      },
+      {
+        "text": "{6}{R}: Put ~ from your graveyard onto the battlefield transformed."
+      }
+    ],
+    "counterExamples": [
+      "{4}{B}{B}: Put ~ from your graveyard onto the battlefield.",
+      "{4}{B}{B}: Put ~ from your graveyard onto the battlefield tapped.",
+      "{4}{B}{B}: Put ~ from your graveyard into your hand transformed."
+    ]
+  }
+]

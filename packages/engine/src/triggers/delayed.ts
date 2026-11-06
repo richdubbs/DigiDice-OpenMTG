@@ -45,6 +45,8 @@ export interface DelayedArgs {
   once?: boolean;
   /** FAST5 T50 (CR 603.2c): "one or more ..." / "whenever you attack": all the events of a batch that fit are one occurrence. */
   batch?: boolean;
+  /** edh-players-13 (CR 603.2c): with `batch`, the whole batch is one occurrence, whoever it was dealt to (`delay.wholeBatch`). */
+  wholeBatch?: true;
   /** std-tdm (CR 603.7, 603.3d): its own targets, chosen when it is put on the stack after it triggers (`delay.targets`). */
   targets?: TargetSpec[];
 }
@@ -63,6 +65,7 @@ export function createDelayedTrigger(g: Game, a: DelayedArgs): DelayedTriggerRec
     ...(a.duration ? { duration: a.duration } : {}),
     ...(a.once === true ? { once: true } : {}),
     ...(a.batch === true ? { batch: true } : {}),
+    ...(a.wholeBatch === true && a.batch === true ? { wholeBatch: true as const } : {}),
     ...(a.targets !== undefined && a.targets.length > 0 ? { targets: a.targets } : {}),
     firedCount: 0,
     createdAt: g.s.counters.timestamp, // M6-4, CR 701.27f: the next timestamp; a permanent that transforms later gets one at least this large
@@ -132,7 +135,7 @@ function fires(g: Game, rec: DelayedTriggerRec, e: SemEvent): boolean {
   const w = rec.when;
   if (w.at === 'event') {
     const cx = { g, source: rec.source.id, controller: rec.controller, lookBack: false };
-    return matchEvent(w.event, e, cx);
+    return matchEvent(w.event, e, cx) || (w.or ?? []).some((p) => matchEvent(p, e, cx)); // edh-next-74: `or` (CR 603.7)
   }
   if (e.ev !== 'step') return false;
   const step = w.at === 'step' ? w.step : 'endCombat';
@@ -143,6 +146,8 @@ function fires(g: Game, rec: DelayedTriggerRec, e: SemEvent): boolean {
   if (!playerMatches(g.s, whose, who, { source: rec.source.id, controller: rec.controller })) return false;
   const turn = typeof e.data['turn'] === 'number' ? e.data['turn'] : g.s.turn.number;
   const created = rec.vars['$step'] ?? -1;
+  // edh-combat-5 (CR 500.8, 603.7a): "at the beginning of that combat": the beginning of the phase an effect of this resolution added, this turn only (ids restart each turn)
+  if (w.at === 'step' && w.phase === 'added') return turn === rec.createdTurn && rec.vars['$phase'] !== undefined && e.data['addedPhase'] === rec.vars['$phase'];
   if (w.at === 'step' && w.turn === 'next') return turn === rec.createdTurn + 1; // FAST5 T36: the turn after this one (CR 500.7, 603.7a)
   if (w.at === 'step' && w.turn === 'later') return turn > rec.createdTurn; // r4-fxz: "the end step on your next turn", a later turn only (CR 603.7a)
   return turn > rec.createdTurn || (turn === rec.createdTurn && stepIndex(e) > created);
@@ -168,7 +173,7 @@ export function collectDelayed(g: Game, batch: readonly SemEvent[], mode: 'stack
     const single = !rec.duration || rec.once === true; // FAST5 T45: "when you next cast ... this turn" waits up to the duration but triggers once (CR 603.7b)
     // FAST5 T50 (CR 603.2c): a batch event ("one or more ...", "whenever you attack") is one occurrence for all the events of the batch that fit
     const used = !single
-      ? (rec.when.at === 'event' ? (rec.batch === true ? batchOccurrences([rec.when.event], hits) : occurrences([rec.when.event], hits)) : hits.map((e) => [e]))
+      ? (rec.when.at === 'event' ? (rec.wholeBatch === true ? [hits] /* edh-players-13 */ : rec.batch === true ? batchOccurrences([rec.when.event, ...(rec.when.or ?? [])], hits) : occurrences([rec.when.event, ...(rec.when.or ?? [])], hits)) : hits.map((e) => [e]))
       : rec.batch === true ? [hits] : [[hits[0]!]];
     const src = lookupObject(g.s, rec.source.id);
     const name = src ? g.nameOf(src.id) : 'a delayed triggered ability';
@@ -181,7 +186,7 @@ export function collectDelayed(g: Game, batch: readonly SemEvent[], mode: 'stack
         controller: rec.controller,
         // M6-4, CR 701.27f: `index` carries the record's creation time (the record itself is gone once a one-shot fires), read by effects/handlers/dfc-ops.ts
         abilityRef: { source: 'delayed', face: 0, index: rec.createdAt ?? 0, key: rec.id },
-        context: contextOf(group, {}, (e) => rec.when.at === 'event' && lookBackApplies(rec.when.event, e)), // AF2: CR 603.10a, as the pattern decides
+        context: contextOf(group, {}, (e) => rec.when.at === 'event' && (lookBackApplies(rec.when.event, e) || (rec.when.or ?? []).some((p) => lookBackApplies(p, e)))), // AF2: CR 603.10a, as the pattern decides
         inline: delayedAbility(rec, name),
       });
       g.log(`A delayed triggered ability of ${name} triggers.`, { rules: ['CR 603.7'], level: 'info' });

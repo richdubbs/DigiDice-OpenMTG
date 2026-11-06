@@ -36,7 +36,7 @@ function searchError(e: unknown): string {
   return 'The OpenMTG server could not be reached.';
 }
 
-function useCardSearch(query: string, enabled: boolean, kind?: 'land' | 'nonland'): SearchResult {
+function useCardSearch(query: string, enabled: boolean, kind?: 'land' | 'nonland' | 'creature'): SearchResult {
   const search = useContext(CardNameSearchContext);
   const [result, setResult] = useState<SearchResult>({ state: 'idle', names: [], complete: true });
   useEffect(() => {

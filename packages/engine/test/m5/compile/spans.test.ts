@@ -18,23 +18,21 @@ describe('spansOf (design 10.5)', { timeout: 60_000 }, () => {
     expect(spansOf(def, 0)[0]).toMatchObject({ abilityIndex: 0, range: [0, 39] });
   });
 
-  it('CR 207.2a: reminder text is its own span; a manual keyword is manual with the capability it needs (Aven Warhawk: amplify; std-ry8 implements enlist)', () => {
+  it('CR 207.2a: reminder text is its own span; a manual keyword is manual with the capability it needs (Aven Warhawk: amplify is automated since edh-c-42; std-ry8 implements enlist)', () => {
     // FAST5X E28: Kitchen Finks's persist is automated now (keywords/data/persist.json): its keyword line is painted auto
     const finks = show(compiledDef('Kitchen Finks'));
     expect(finks.slice(0, 2)).toEqual([['auto', 'When this creature enters, you gain 2 life.'], ['auto', 'Persist']]);
     expect(finks.some(([status, text]) => status === 'reminder' && text.startsWith('(When this creature dies'))).toBe(true);
     const def = compiledDef('Aven Warhawk');
     const spans = show(def);
-    expect(spans.some(([status, text]) => status === 'manual' && text === 'Amplify 1')).toBe(true);
+    expect(spans.some(([status, text]) => status === 'auto' && text === 'Amplify 1')).toBe(true);
     expect(spans.some(([status, text]) => status === 'reminder' && text.startsWith('(As this creature enters'))).toBe(true);
-    const amplify = spansOf(def, 0).find((s) => s.status === 'manual' && def.faces[0]!.oracleText.slice(s.range[0], s.range[1]) === 'Amplify 1')!;
-    expect(amplify.reason).toContain('keyword:amplify');
   });
 
-  // W3 integration: ward is implemented since WP32 (keyword:ward), so the unimplemented keyword here was rampage (CR 702.23); CMD3 implements rampage, so it is absorb (CR 702.64).
-  it('a keyword list with one manual item paints only that item manual ("Flying, absorb 2")', () => {
-    const def = compileCard(creature('Flying, absorb 2'));
-    expect(show(def)).toEqual([['auto', 'Flying,'], ['manual', 'absorb 2']]);
+  // W3 integration: ward is implemented since WP32 (keyword:ward), so the unimplemented keyword here was rampage (CR 702.23); CMD3 implements rampage, so it is absorb (CR 702.64); edh-c-54 implements absorb, so it was amplify (CR 702.38); edh-c-42 implements amplify, so (edh-c-114 implements frenzy) it is gravestorm (CR 702.69); was frenzy (CR 702.68, as m4/keywords).
+  it('a keyword list with one manual item paints only that item manual ("Flying, epic")', () => {
+    const def = compileCard(creature('Flying, epic'));
+    expect(show(def)).toEqual([['auto', 'Flying,'], ['manual', 'epic']]);
   });
 
   it('CR 207.2c: an ability word is a label span; ranges are in the original text (an em dash is one character there)', () => {
@@ -88,5 +86,5 @@ describe('spansOf (design 10.5)', { timeout: 60_000 }, () => {
         for (let i = 0; i < text.length; i++) if (!/\s/.test(text[i]!)) expect(covered[i], `${name}/${f}: character ${i} "${text[i]}" of ${JSON.stringify(text)}`).toBe(true);
       });
     }
-  }, 120_000); // every fixture card is compiled and spanned: the set grows with every package, so the default 5 s is not enough on a busy machine
+  }, 1_800_000); // every fixture card is compiled and spanned: the set grows with every package (about 100 s alone at 3,300 cards in 2026-10), so 120 s timed out in whole-engine runs (raised to 30 min 2026-11-05: about 320-420 s alone, more in whole-engine runs, at 6,610 fixture cards after the 60th merge's rounds)
 });

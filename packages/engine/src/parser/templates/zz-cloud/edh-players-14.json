@@ -1,0 +1,218 @@
+[
+  {
+    "id": "eff.edhp14.eachOpponentDiscards.thenWhoDidntLoses",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 608.2c",
+      "CR 608.2e",
+      "CR 119.3"
+    ],
+    "pattern": "each opponent discard[s] {n:Qty} card[s] , then each opponent who didn't discard {c:NotMoved} lose[s] {l:Qty} life",
+    "build": [
+      {
+        "op": "discard",
+        "who": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "count": "$n"
+      },
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "as": "each",
+        "do": [
+          {
+            "op": "if",
+            "cond": "$c",
+            "then": [
+              {
+                "op": "loseLife",
+                "who": {
+                  "ref": "bound",
+                  "name": "each"
+                },
+                "amount": "$l"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent discards a card, then each opponent who didn't discard a creature card this way loses 2 life."
+      },
+      {
+        "text": "Each opponent discards a card, then each opponent who didn't discard a land card this way loses 5 life."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent discards a card, then each opponent who didn't discard a creature card this turn loses 2 life.",
+      "Each opponent discards a card, then each player who didn't discard a creature card this way loses 2 life.",
+      "Each player discards a card, then each opponent who didn't discard a creature card this way loses 2 life.",
+      "Each opponent discards a card, then each opponent who didn't sacrifice a creature card this way loses 2 life."
+    ]
+  },
+  {
+    "id": "eff.edhp14.player.getsNumberOfCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1i",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} get[s] a number of {k:CounterKind} counters equal to {n:Qty}",
+    "build": {
+      "op": "putCounters",
+      "on": "$p",
+      "kind": "$k",
+      "count": "$n"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Each opponent gets a number of poison counters equal to the number of creatures you control."
+      },
+      {
+        "text": "Target player gets a number of experience counters equal to the greatest power among creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent gets three poison counters.",
+      "Each opponent gets a number of poison counters for each creature you control.",
+      "Each opponent gets a number of +1/+1 counters equal to the number of creatures you control.",
+      "Each opponent loses a number of poison counters equal to the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.edhp14.grant.itAndGroup",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:Obj} and {f:Filter} gain {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              "$o",
+              {
+                "ref": "each",
+                "filter": "$f"
+              }
+            ]
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, it and Goblins you control gain trample until end of turn."
+      },
+      {
+        "text": "Whenever ~ attacks, it and artifacts you control gain vigilance and lifelink until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, it and Goblins you control gain trample.",
+      "Whenever ~ attacks, it and Goblins you control lose trample until end of turn.",
+      "Whenever ~ attacks, it and target Goblin gain trample until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhp14.drawUnless.sacrificeOrPayLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 608.2c",
+      "CR 701.21a",
+      "CR 119.4"
+    ],
+    "pattern": "draw a card unless {p:Player} sacrifice[s] ( a | an ) {f:Filter} of their choice or pay[s] {n:Qty} life",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": "$f",
+            "count": 1
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "pay",
+          "who": "$p",
+          "cost": {
+            "other": [
+              {
+                "kind": "payLife",
+                "amount": "$n"
+              }
+            ]
+          },
+          "else": [
+            {
+              "op": "draw",
+              "who": {
+                "ref": "you"
+              },
+              "count": 1
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, draw a card unless target opponent sacrifices a creature of their choice or pays 3 life."
+      },
+      {
+        "text": "When this creature enters, draw a card unless target opponent sacrifices a land of their choice or pays 2 life."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, draw a card unless target opponent sacrifices a creature of their choice and pays 3 life.",
+      "When this creature enters, draw a card if target opponent sacrifices a creature of their choice or pays 3 life.",
+      "When this creature enters, draw two cards unless target opponent sacrifices a creature of their choice or pays 3 life."
+    ]
+  }
+]

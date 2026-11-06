@@ -17,6 +17,7 @@ const LONE_ZONES: [string[], ZoneName][] = [
 const W_A = [P('a'), P('an')];
 const W_ANY = P('any');
 const W_ALL = P('all');
+const W_EACH = P('each'); // edh-mana-keywords-2
 const W_GRAVEYARDS = P('graveyards');
 
 export interface ZoneValue { zone: ZoneName; owner?: PlayerPred }
@@ -39,6 +40,15 @@ export const zone: HoleFn = (ctx, pos) => {
       if (p < 0) continue;
       const e = phraseAt(ctx, p, ws);
       if (e >= 0 && z !== 'hand') out.push({ end: e, value: { zone: z } satisfies ZoneValue });
+    }
+    // edh-mana-keywords-2 (CR 404.1): "for each card named Rite of Flame in each graveyard" (Rite of Flame): the cards of every player's graveyard, the set "all graveyards"
+    // names; render/np.ts#zonePhrase says "in each graveyard" only for a counted or plural set, where it is the same set (a card "from each graveyard" is not)
+    if (z === 'graveyard') {
+      // only after a "for each ..." count: "two target cards in each graveyard" means two from each, which this zone cannot say
+      const forEach = ctx.toks.slice(Math.max(0, pos - 12), pos).some((t, i, a) => t.norm === 'for' && a[i + 1]?.norm === 'each') && !ctx.toks.slice(Math.max(0, pos - 12), pos).some((t) => t.norm === 'target');
+      const p = forEach ? phraseAt(ctx, pos, W_EACH) : -1;
+      const e = p < 0 ? -1 : phraseAt(ctx, p, ws);
+      if (e >= 0 && ctx.toks[pos + 1]?.norm === 'graveyard') out.push({ end: e, value: { zone: z } satisfies ZoneValue });
     }
   }
   // FAST3 T14: "graveyards" with no determiner ("up to three target cards from graveyards"): the zone kind of every player, no owner (CR 404.1), the same as

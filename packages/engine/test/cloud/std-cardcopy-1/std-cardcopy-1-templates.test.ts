@@ -182,10 +182,11 @@ describe('std-cardcopy-1 lowering: "repeat this process" with no count (CR 608.2
     expect(rep).toMatchObject({ op: 'repeat', process: true, again: true });
     expect(JSON.stringify(rep.do)).toBe(JSON.stringify([steps[0], { ...steps[1], then: [steps[1]!.then![0], { op: 'repeat', times: 1, do: [], process: true, again: true }] }]));
   });
-  it('is manual with no condition, with a sentence after it, with nothing before it, or not as the last instruction of its condition', () => {
+  // edh-d-101 (CR 608.2c; Demonlord Belzenlok): a sentence after the marker is read now: it is no part of "this process" and runs once, after the last run (its "this way" counts
+  // every run); the case moved to edh-d-101's tests, which play it
+  it('is manual with no condition, with nothing before it, or not as the last instruction of its condition', () => {
     for (const text of [
       'Mill two cards. Repeat this process.',
-      'Mill two cards. If two cards that share a card type were milled this way, draw a card and repeat this process. Draw a card.',
       'If you control a creature, draw a card and repeat this process.',
       'Mill two cards. If two cards that share a card type were milled this way, repeat this process and draw a card.',
     ]) expect(fullyAutomated(sorcery(text)), text).toBe(false);

@@ -1,0 +1,577 @@
+[
+  {
+    "id": "eff.edhd35.revealUntil.countQty",
+    "kind": "effect",
+    "since": 35,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 401.1",
+      "CR 608.2c"
+    ],
+    "pattern": "reveal cards from the top of your library until you reveal {n:Qty} {f:Filter} cards",
+    "build": {
+      "op": "revealUntil",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "count": "$n",
+      "as": "hit",
+      "revealed": "revealed"
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Exile all creatures you control, then reveal cards from the top of your library until you reveal that many creature cards. Put those cards onto the battlefield and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Exile all artifacts you control, then reveal cards from the top of your library until you reveal that many artifact cards. Put those cards onto the battlefield and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Exile all creatures you control, then reveal cards from the top of your library until you reveal that many creature cards, then draw a card.",
+      "Exile all creatures you control, then reveal cards from the top of target player's library until you reveal that many creature cards."
+    ]
+  },
+  {
+    "id": "eff.edhd35.revealUntil.numberEqual",
+    "kind": "effect",
+    "since": 35,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 401.1",
+      "CR 608.2c",
+      "CR 107.3"
+    ],
+    "pattern": "reveal cards from the top of your library until you reveal a number of {f:Filter} cards equal to {n:Qty}",
+    "build": {
+      "op": "revealUntil",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "count": "$n",
+      "as": "hit",
+      "revealed": "revealed"
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Sacrifice two Zombies, then reveal cards from the top of your library until you reveal a number of Zombie creature cards equal to the number of Zombies sacrificed this way. Put those cards onto the battlefield and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Sacrifice two Elves, then reveal cards from the top of your library until you reveal a number of Elf creature cards equal to the number of Elves sacrificed this way. Put those cards onto the battlefield and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Sacrifice two Zombies, then reveal cards from the top of your library until you reveal a number of Zombie creature cards.",
+      "Sacrifice two Zombies, then reveal cards from the top of target player's library until you reveal a number of Zombie creature cards equal to the number of Zombies sacrificed this way."
+    ]
+  },
+  {
+    "id": "eff.edhd35.put.objs.bf.restBottomRandom",
+    "weak": 1,
+    "kind": "effect",
+    "since": 35,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:Objs} onto the battlefield and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal two land cards. Put those cards onto the battlefield and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Reveal cards from the top of your library until you reveal two artifact cards. Put those cards onto the battlefield and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal two land cards. Put those cards onto the battlefield and the rest on the bottom of your library in any order.",
+      "Reveal cards from the top of your library until you reveal two land cards. Put those cards onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhd35.putAll.revealed.bf.thenShuffleRest",
+    "kind": "effect",
+    "since": 35,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 701.24a"
+    ],
+    "pattern": "put all {f:Filter} cards {g:RevealedThisWay} onto the battlefield , then shuffle the rest of the revealed cards into your library",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal two creature cards. Put all creature cards revealed this way onto the battlefield, then shuffle the rest of the revealed cards into your library."
+      },
+      {
+        "text": "Reveal cards from the top of your library until you reveal two artifact cards. Put all artifact cards revealed this way onto the battlefield, then shuffle the rest of the revealed cards into your library."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal two creature cards. Put all creature cards revealed this way onto the battlefield, then shuffle the rest of the revealed cards into your graveyard.",
+      "Reveal cards from the top of your library until you reveal two creature cards. Put all creature cards revealed this way into your hand, then shuffle the rest of the revealed cards into your library."
+    ]
+  },
+  {
+    "id": "eff.edhd35.forEachOf.controllerRevealsUntil.putsBf.shufflesRest",
+    "kind": "effect",
+    "since": 35,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2f",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 110.2a",
+      "CR 400.3"
+    ],
+    "pattern": "for each of {o:Objs} , its controller reveals cards from the top of their library until they reveal {d:DiscardDesc} , puts that card onto the battlefield , then shuffles the rest into their library",
+    "build": [
+      {
+        "op": "forEach",
+        "over": "$o",
+        "as": "subject",
+        "do": [
+          {
+            "op": "revealUntil",
+            "who": {
+              "ref": "controllerOf",
+              "object": {
+                "ref": "bound",
+                "name": "subject"
+              }
+            },
+            "filter": "$d",
+            "as": "hit",
+            "revealed": "revealed"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "hit"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": "owner"
+            }
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "each",
+              "filter": {
+                "is": {
+                  "ref": "bound",
+                  "name": "revealed"
+                },
+                "not": {
+                  "is": {
+                    "ref": "bound",
+                    "name": "hit"
+                  }
+                },
+                "zone": "library"
+              }
+            },
+            "to": {
+              "zone": "library"
+            }
+          },
+          {
+            "op": "shuffle",
+            "who": {
+              "ref": "controllerOf",
+              "object": {
+                "ref": "bound",
+                "name": "subject"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "this way",
+      "their",
+      "until",
+      "then",
+      "of"
+    ],
+    "examples": [
+      {
+        "text": "Exile two target artifacts. For each of those artifacts, its controller reveals cards from the top of their library until they reveal an artifact card, puts that card onto the battlefield, then shuffles the rest into their library."
+      },
+      {
+        "text": "Exile two target enchantments. For each of those enchantments, its controller reveals cards from the top of their library until they reveal an enchantment card, puts that card onto the battlefield, then shuffles the rest into their library."
+      }
+    ],
+    "counterExamples": [
+      "Exile two target artifacts. For each of those artifacts, its controller reveals cards from the top of their library until they reveal an artifact card, puts that card into their hand, then shuffles the rest into their library.",
+      "Exile two target artifacts. For each of those artifacts, its controller reveals cards from the top of their library until they reveal an artifact card, puts that card onto the battlefield, then puts the rest into their graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhd35.forEach.controllerRevealsUntil.putsBf.restBottomRandom",
+    "kind": "effect",
+    "since": 35,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2f",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 110.2a",
+      "CR 400.3"
+    ],
+    "pattern": "for each {f:Filter} , its controller reveals cards from the top of their library until they reveal {d:DiscardDesc} , puts that card onto the battlefield , then puts the rest on the bottom of their library in a random order",
+    "build": [
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "as": "subject",
+        "do": [
+          {
+            "op": "revealUntil",
+            "who": {
+              "ref": "controllerOf",
+              "object": {
+                "ref": "bound",
+                "name": "subject"
+              }
+            },
+            "filter": "$d",
+            "as": "hit",
+            "revealed": "revealed"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "hit"
+            },
+            "to": {
+              "zone": "battlefield",
+              "controller": "owner"
+            }
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "each",
+              "filter": {
+                "is": {
+                  "ref": "bound",
+                  "name": "revealed"
+                },
+                "not": {
+                  "is": {
+                    "ref": "bound",
+                    "name": "hit"
+                  }
+                },
+                "zone": "library"
+              }
+            },
+            "to": {
+              "zone": "library",
+              "position": "bottom",
+              "order": "random"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "this way",
+      "their",
+      "until",
+      "then",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Exile two target creatures. For each creature exiled this way, its controller reveals cards from the top of their library until they reveal a creature card, puts that card onto the battlefield, then puts the rest on the bottom of their library in a random order."
+      },
+      {
+        "text": "Exile two target artifacts. For each artifact exiled this way, its controller reveals cards from the top of their library until they reveal an artifact card, puts that card onto the battlefield, then puts the rest on the bottom of their library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Exile two target creatures. For each creature exiled this way, its controller reveals cards from the top of their library until they reveal a creature card, puts that card onto the battlefield, then puts the rest on the bottom of their library in any order.",
+      "Exile two target creatures. For each creature exiled this way, its controller reveals cards from the top of their library until they reveal a creature card, puts that card into their hand, then puts the rest on the bottom of their library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhd35.dig.putAnyNumber.hand.restGraveyard",
+    "kind": "effect",
+    "since": 35,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 404.1",
+      "CR 401.4"
+    ],
+    "pattern": "you may put any number of {g:Seen} into your hand and the rest into your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        },
+        "as": "intoHand"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. You may put any number of them into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may put any number of those cards into your hand and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. You may put any number of them onto the battlefield and the rest into your graveyard.",
+      "Look at the top five cards of your library. You may put any number of them into your hand and the rest on the bottom of your library.",
+      "Look at the top five cards of your library. You may put any number of them into target player's hand and the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhd35.loselife.3.foreach",
+    "kind": "effect",
+    "since": 35,
+    "status": "stable",
+    "cr": [
+      "CR 119.1",
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] 3 life for each {f:Filter}",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          3,
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. You may put any number of them into your hand and the rest into your graveyard. You lose 3 life for each card you put into your hand this way."
+      },
+      {
+        "text": "Discard two cards. You lose 3 life for each card discarded this way."
+      }
+    ],
+    "counterExamples": [
+      "Discard two cards. You lose 2 life for each card discarded this way.",
+      "Discard two cards. You gain 3 life for each card discarded this way."
+    ]
+  },
+  {
+    "id": "eff.edhd35.tap.anyNumber",
+    "kind": "effect",
+    "since": 35,
+    "status": "stable",
+    "cr": [
+      "CR 701.26a",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "tap any number of {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "any",
+        "as": "tapChoice"
+      },
+      {
+        "op": "tap",
+        "what": {
+          "ref": "bound",
+          "name": "tapChoice"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Untap each creature you control, then tap any number of creatures you control."
+      },
+      {
+        "text": "Tap any number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Tap any number of target creatures you control.",
+      "Untap any number of creatures you control."
+    ],
+    "weak": 1
+  }
+]

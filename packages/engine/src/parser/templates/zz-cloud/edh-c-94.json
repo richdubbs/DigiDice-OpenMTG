@@ -1,0 +1,634 @@
+[
+  {
+    "id": "eff.edhv94.player.exilesFromHand.andLosesLife",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "player",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2d",
+      "CR 119.3",
+      "CR 400.7"
+    ],
+    "pattern": "{p:Player} exiles {n:Qty} cards from their hand and loses {m:Qty} life",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$m"
+      }
+    ],
+    "examples": [
+      {
+        "text": "Target opponent exiles two cards from their hand and loses 3 life."
+      },
+      {
+        "text": "Target player exiles three cards from their hand and loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles two cards from their hand and gains 3 life.",
+      "Target opponent exiles two cards from their graveyard and loses 3 life.",
+      "Target opponent exiles two cards from their hand and you lose 3 life.",
+      "Each opponent exiles two cards from their hand and loses 3 life."
+    ]
+  },
+  {
+    "id": "eff.edhv94.thatPlayer.sacrifices.thatObject",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.21a",
+      "CR 109.4",
+      "CR 303.4",
+      "CR 608.2c"
+    ],
+    "pattern": "that player sacrifices {o:Obj}",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "event",
+        "role": "player"
+      },
+      "filter": {
+        "is": "$o"
+      },
+      "count": 1
+    },
+    "consumes": [
+      "sacrifices"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of the upkeep of enchanted creature's controller, that player sacrifices that creature."
+      },
+      {
+        "text": "At the beginning of the end step of enchanted creature's controller, that player sacrifices it."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of the end step of enchanted creature's controller, that player sacrifices a creature.",
+      "At the beginning of the end step of enchanted creature's controller, that player discards that creature.",
+      "At the beginning of the end step of enchanted creature's controller, that player sacrifices that creature unless they pay {2}."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.edhv94.aslong.lure",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 509.1c"
+    ],
+    "pattern": "as long as {c:Cond} , all creatures able to block {o:Obj} do so",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            }
+          },
+          "mode": "mustIfAble",
+          "action": "block",
+          "other": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "all",
+      "able",
+      "do so"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control an artifact, all creatures able to block ~ do so."
+      },
+      {
+        "text": "As long as there are seven or more cards in your graveyard, all creatures able to block ~ do so."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control an artifact, all creatures able to attack ~ do so.",
+      "As long as you control an artifact, all creatures able to block ~ can do so.",
+      "As long as you control an artifact, all creatures able to block ~ do so this turn."
+    ]
+  },
+  {
+    "id": "eff.edhv94.grp.getsAdditional.andGain",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:Objs} get an additional {pt:PT} and gain {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Creatures you control get +2/+2 until end of turn. Goblins you control get an additional +1/+1 and gain first strike until end of turn."
+      },
+      {
+        "text": "Elves target player controls get an additional +2/+0 and gain trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Goblins you control get an additional +1/+1 and lose first strike until end of turn.",
+      "Goblins you control get an additional +1/+1 until end of turn.",
+      "Goblins you control get an additional +1/+1 and gain first strike."
+    ],
+    "consumes": [
+      "additional"
+    ]
+  },
+  {
+    "id": "rep.edhv94.enters.counter.adamantSameColor",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2h",
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 106.1",
+      "CR 400.7d"
+    ],
+    "pattern": "if at least {n:Qty} mana of the same color was spent to cast ~ , ~ enters with a +1/+1 counter on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "any",
+        "of": [
+          {
+            "cond": "wasCast",
+            "spent": {
+              "color": "W",
+              "atLeast": "$n"
+            }
+          },
+          {
+            "cond": "wasCast",
+            "spent": {
+              "color": "U",
+              "atLeast": "$n"
+            }
+          },
+          {
+            "cond": "wasCast",
+            "spent": {
+              "color": "B",
+              "atLeast": "$n"
+            }
+          },
+          {
+            "cond": "wasCast",
+            "spent": {
+              "color": "R",
+              "atLeast": "$n"
+            }
+          },
+          {
+            "cond": "wasCast",
+            "spent": {
+              "color": "G",
+              "atLeast": "$n"
+            }
+          }
+        ]
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "+1/+1",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "at least",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "If at least three mana of the same color was spent to cast ~, ~ enters with a +1/+1 counter on it."
+      },
+      {
+        "text": "If at least two mana of the same color was spent to cast ~, ~ enters with a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "If at least three mana of the same color was spent to cast ~, ~ enters with two +1/+1 counters on it.",
+      "If at least three mana of different colors was spent to cast ~, ~ enters with a +1/+1 counter on it.",
+      "If at least three mana of the same color was spent to cast ~, ~ enters tapped.",
+      "If at least three mana of the same color was spent to cast ~, ~ enters with a -1/-1 counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhv94.has.basePower.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4b",
+      "CR 208.1"
+    ],
+    "pattern": "{o:Obj} has base power {n:Qty} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "power": "$n"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Target creature has base power 5 until end of turn."
+      },
+      {
+        "text": "Target Golem has base power 7 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature has base power and toughness 5/5 until end of turn.",
+      "Target creature has base toughness 5 until end of turn.",
+      "Target creature gets base power 5 until end of turn."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "trg.edhv94.sourceNoncombatDamage.oneOrMoreOpponents.yourTurn",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 603.2c",
+      "CR 120.1",
+      "CR 120.2",
+      "CR 500.1"
+    ],
+    "pattern": "whenever a source you control deals noncombat damage to one or more of your opponents during your turn",
+    "build": {
+      "on": [
+        {
+          "ev": "damage",
+          "source": {
+            "controller": "you"
+          },
+          "combat": false,
+          "recipient": {
+            "player": "opponent"
+          }
+        }
+      ],
+      "batch": true,
+      "wholeBatch": true,
+      "while": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "whenever",
+      "one or more",
+      "during"
+    ],
+    "needs": [
+      "feature:trigger.while",
+      "feature:trigger.batch",
+      "feature:trigger.batch.whole"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a source you control deals noncombat damage to one or more of your opponents during your turn, draw a card."
+      },
+      {
+        "text": "Whenever a source you control deals noncombat damage to one or more of your opponents during your turn, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a source you control deals combat damage to one or more of your opponents during your turn, draw a card.",
+      "Whenever a source you control deals noncombat damage to one or more of your opponents, draw a card.",
+      "Whenever a source you control deals noncombat damage to one or more creatures during your turn, draw a card."
+    ]
+  },
+  {
+    "id": "sta.edhv94.self.extraBlock.forEach",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 509.1b",
+      "CR 604.2",
+      "CR 107.3"
+    ],
+    "pattern": "~ can block an additional creature each combat for each {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "extraBlockers",
+          "value": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          },
+          "of": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ can block an additional creature each combat for each Aura attached to ~."
+      },
+      {
+        "text": "~ can block an additional creature each combat for each Fortification attached to ~."
+      }
+    ],
+    "counterExamples": [
+      "~ can block an additional creature each combat for each Aura you control.",
+      "~ can block an additional creature each combat for each Aura attached to ~ or an Equipment attached to ~.",
+      "~ can block two additional creatures each combat for each Aura attached to ~."
+    ]
+  },
+  {
+    "id": "sta.edhv94.self.cantAttackAlone.unlessHasCounter",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 506.5",
+      "CR 508.1c",
+      "CR 604.1",
+      "CR 122.1"
+    ],
+    "pattern": "~ can't attack alone unless ~ has a +1/+1 counter on ~",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "attack",
+          "alone": true,
+          "when": {
+            "cond": "not",
+            "of": {
+              "cond": "matches",
+              "object": {
+                "ref": "self"
+              },
+              "filter": {
+                "counters": {
+                  "kind": "+1/+1"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "alone",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "~ can't attack alone unless ~ has a +1/+1 counter on ~."
+      },
+      {
+        "text": "Example Plan can't attack alone unless Example Plan has a +1/+1 counter on Example Plan."
+      }
+    ],
+    "counterExamples": [
+      "~ can't attack alone unless ~ has a -1/-1 counter on ~.",
+      "~ can't attack alone unless ~ has two +1/+1 counters on ~.",
+      "~ can't attack or block alone unless ~ has a +1/+1 counter on ~."
+    ]
+  },
+  {
+    "id": "sta.edhv94.attached.getsAsLongAsAttacking.otherwiseGets",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 506.2"
+    ],
+    "pattern": "enchanted creature gets {pt:PT} as long as it's attacking . otherwise , it gets {qt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "attachedTo"
+        },
+        "filter": {
+          "attacking": true
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ],
+      "otherwise": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$qt.p",
+              "toughness": "$qt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "otherwise"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +2/+0 as long as it's attacking. Otherwise, it gets -1/-2."
+      },
+      {
+        "text": "Enchanted creature gets +1/+1 as long as it's attacking. Otherwise, it gets -3/-0."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +2/+0 as long as it's blocking. Otherwise, it gets -1/-2.",
+      "Enchanted creature gets +2/+0 as long as it's attacking. Otherwise, it can't attack or block.",
+      "Enchanted creature gets +2/+0 as long as it's attacking."
+    ]
+  },
+  {
+    "id": "eff.edhv94.payelse.lifeEqualTo",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 119.4",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{e:Effects} unless {p:Player} pay[s] life equal to {n:Qty}",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "other": [
+          {
+            "kind": "payLife",
+            "amount": "$n"
+          }
+        ]
+      },
+      "else": "$e"
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target creature unless its controller pays life equal to its toughness."
+      },
+      {
+        "text": "Destroy target artifact unless its controller pays life equal to the number of lands you control."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target creature unless its controller pays life equal to its toughness plus 1.",
+      "Destroy target creature if its controller pays life equal to its toughness.",
+      "Destroy target creature unless its controller gains life equal to its toughness."
+    ]
+  }
+]

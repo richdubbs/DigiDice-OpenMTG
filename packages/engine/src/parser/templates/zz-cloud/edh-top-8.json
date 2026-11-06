@@ -1,0 +1,463 @@
+[
+  {
+    "id": "eff.edht8.play.landsSpells.group.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.1",
+      "CR 601.3",
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 406.1",
+      "CR 400.7"
+    ],
+    "pattern": "you may play lands and cast spells from among {o:Them} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of your library. You may play lands and cast spells from among those cards this turn."
+      },
+      {
+        "text": "Exile the top three cards of your library. You may play lands and cast spells from among them for as long as they remain exiled."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top two cards of your library. You may play lands and cast spells from among those cards.",
+      "Exile the top two cards of your library. You may play lands from among those cards this turn.",
+      "Exile the top two cards of your library. You may play lands and cast spells from among those cards this turn without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.edht8.play.landsSpells.group.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 305.1",
+      "CR 305.2a",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 406.1"
+    ],
+    "pattern": "you may play lands and cast spells from among {g:Group} without paying their mana costs",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": "$g",
+          "zone": "exile"
+        }
+      },
+      "free": true,
+      "optional": true,
+      "play": true
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top three cards of target opponent's library. You may play lands and cast spells from among those cards without paying their mana costs."
+      },
+      {
+        "text": "Exile the top four cards of target opponent's library. You may play lands and cast spells from among cards exiled this way without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top three cards of target opponent's library. You may play lands and cast spells from among those cards.",
+      "Exile the top three cards of target opponent's library. You may play lands from among those cards without paying their mana costs.",
+      "Exile the top three cards of target opponent's library. You may cast spells from among those cards without paying their mana costs."
+    ]
+  },
+  {
+    "id": "sta.edht8.yourTurn.asLongAs.play.linked",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 604.1",
+      "CR 305.1",
+      "CR 601.3",
+      "CR 611.3a",
+      "CR 500.1"
+    ],
+    "pattern": "during your turn , as long as {c:Cond} , you may play cards exiled with ~",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "turnOf",
+            "whose": "you"
+          },
+          "$c"
+        ]
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "during",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ becomes tapped, exile the top card of your library.\nDuring your turn, as long as you gained life this turn, you may play cards exiled with ~."
+      },
+      {
+        "text": "At the beginning of your end step, exile the top two cards of your library.\nDuring your turn, as long as a creature died this turn, you may play cards exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes tapped, exile the top card of your library.\nDuring each opponent's turn, as long as you gained life this turn, you may play cards exiled with ~.",
+      "Whenever ~ becomes tapped, exile the top card of your library.\nDuring your turn, as long as you gained life this turn, you may play lands from among cards exiled with ~.",
+      "Whenever ~ becomes tapped, exile the top card of your library.\nDuring your turn, as long as you gained life this turn, you may play cards in exile."
+    ]
+  },
+  {
+    "id": "eff.edht8.opponent.chooses.nonland.exiledThisWay",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 101.4"
+    ],
+    "pattern": "an opponent chooses a nonland card exiled this way",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "anOpponent"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "notTypes": [
+            "Land"
+          ],
+          "is": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "set",
+              "number": "plural",
+              "head": "exiled-all",
+              "text": "the cards exiled this way"
+            }
+          },
+          "zone": "exile"
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Each player exiles cards from the top of their library until they exile a nonland card. An opponent chooses a nonland card exiled this way."
+      },
+      {
+        "text": "Each opponent exiles cards from the top of their library until they exile a nonland card. An opponent chooses a nonland card exiled this way."
+      },
+      {
+        "text": "Each player exiles cards from the top of their library until they exile a creature card. An opponent chooses a nonland card exiled this way."
+      },
+      {
+        "text": "Target opponent exiles cards from the top of their library until they exile a creature card. An opponent chooses a nonland card exiled this way."
+      }
+    ],
+    "counterExamples": [
+      "Each player exiles cards from the top of their library until they exile a nonland card. An opponent chooses a land card exiled this way.",
+      "Each player exiles cards from the top of their library until they exile a nonland card. Each opponent chooses a nonland card exiled this way.",
+      "Each player exiles cards from the top of their library until they exile a nonland card. You choose a nonland card exiled this way."
+    ]
+  },
+  {
+    "id": "eff.edht8.cast.upTo.free.fromOthers",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 406.1"
+    ],
+    "pattern": "you may cast up to {n:Qty} spells from among {r:Rest} without paying their mana costs",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$r",
+            "zone": "exile"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "up to",
+      "without",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Each player exiles cards from the top of their library until they exile a nonland card. An opponent chooses a nonland card exiled this way. You may cast up to two spells from among the other cards exiled this way without paying their mana costs."
+      },
+      {
+        "text": "Each opponent exiles cards from the top of their library until they exile a nonland card. An opponent chooses a nonland card exiled this way. You may cast up to three spells from among the other cards exiled this way without paying their mana costs."
+      },
+      {
+        "text": "Target opponent exiles cards from the top of their library until they exile a creature card. An opponent chooses a nonland card exiled this way. You may cast up to two spells from among the other cards exiled this way without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Each player exiles cards from the top of their library until they exile a nonland card. An opponent chooses a nonland card exiled this way. You may cast up to two spells from among the other cards exiled this way.",
+      "Each player exiles cards from the top of their library until they exile a nonland card. An opponent chooses a nonland card exiled this way. You may cast any number of spells from among the other cards exiled this way without paying their mana costs.",
+      "Each player exiles cards from the top of their library until they exile a nonland card. You may cast up to two spells from among the other cards exiled this way without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.edht8.piles.separatePermanents",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 700.3",
+      "CR 700.3a",
+      "CR 700.3d",
+      "CR 608.2d"
+    ],
+    "pattern": "separate all permanents {p:Player} control[s] into two piles",
+    "build": {
+      "op": "piles",
+      "cards": {
+        "ref": "each",
+        "filter": {
+          "controller": "$p"
+        }
+      },
+      "separator": {
+        "ref": "you"
+      },
+      "chooser": "$p",
+      "chosen": "chosenPile",
+      "other": "otherPile"
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Separate all permanents target player controls into two piles. That player sacrifices all permanents in the pile of their choice."
+      },
+      {
+        "text": "Separate all permanents target opponent controls into two piles. That player sacrifices all permanents in the pile of their choice."
+      }
+    ],
+    "counterExamples": [
+      "Separate all creatures target player controls into two piles. That player sacrifices all permanents in the pile of their choice.",
+      "Separate all permanents target player controls into three piles. That player sacrifices all permanents in the pile of their choice.",
+      "Separate all permanents you control into two piles. That player sacrifices all permanents in the pile of their choice."
+    ]
+  },
+  {
+    "id": "eff.edht8.piles.thatPlayerSacrificesChosen",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 700.3",
+      "CR 608.2d",
+      "CR 701.21a"
+    ],
+    "pattern": "{p:Player} sacrifices all permanents in the pile of their choice",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": {
+        "is": {
+          "ref": "bound",
+          "name": "chosenPile"
+        }
+      },
+      "count": 1,
+      "mode": "all"
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Separate all permanents target player controls into two piles. That player sacrifices all permanents in the pile of their choice."
+      },
+      {
+        "text": "Separate all permanents target opponent controls into two piles. That player sacrifices all permanents in the pile of their choice."
+      }
+    ],
+    "counterExamples": [
+      "Separate all permanents target player controls into two piles. That player sacrifices all creatures in the pile of their choice.",
+      "Separate all permanents target player controls into two piles. That player sacrifices a permanent in the pile of their choice.",
+      "Separate all permanents target player controls into two piles. You sacrifice all permanents in the pile of your choice."
+    ]
+  },
+  {
+    "id": "eff.edht8.cast.spellsFromGroup.dur.anyType",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 601.3",
+      "CR 609.4b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 406.1",
+      "CR 400.7"
+    ],
+    "pattern": "you may cast spells from among {o:Group} {d:Dur} , and mana of any type can be spent to cast ( them | those spells )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaType": true
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile all opponents' graveyards. You may cast spells from among those cards this turn, and mana of any type can be spent to cast them."
+      },
+      {
+        "text": "Exile the top two cards of each opponent's library. You may cast spells from among those cards until your next end step, and mana of any type can be spent to cast those spells."
+      }
+    ],
+    "counterExamples": [
+      "Exile all opponents' graveyards. You may cast spells from among those cards this turn.",
+      "Exile all opponents' graveyards. You may cast spells from among those cards this turn, and you may spend mana as though it were mana of any color to cast them.",
+      "Exile all opponents' graveyards. You may cast creature spells from among those cards this turn, and mana of any type can be spent to cast them."
+    ]
+  },
+  {
+    "id": "eff.edht8.return.group.toOwnersGraveyards",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 400.3",
+      "CR 400.7",
+      "CR 404.1"
+    ],
+    "pattern": "return {o:Objs} to their owners' graveyards",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "graveyard"
+      }
+    },
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Exile all opponents' graveyards. Return those cards to their owners' graveyards."
+      },
+      {
+        "text": "Exile all graveyards. Return them to their owners' graveyards."
+      }
+    ],
+    "counterExamples": [
+      "Exile all opponents' graveyards. Return those cards to their owners' hands.",
+      "Exile all opponents' graveyards. Return those cards to your graveyard.",
+      "Exile all opponents' graveyards. Return those cards to the battlefield under their owners' control."
+    ]
+  }
+]

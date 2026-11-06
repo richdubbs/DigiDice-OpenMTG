@@ -28,9 +28,15 @@ describe('WP17 pass 1, scope: the trigger seeds the discourse model (design 6.4,
     // merge wave 8 (audit D2, CR 603.2c, 608.2c): the object itself moving is one event about one object, whose amount is always 1: no number for "that many"
     expect(d.mentions.some((m) => m.sort === 'number')).toBe(false);
     // another object's zone change exposes its player ("Whenever a creature dies, that player ...": its controller)
-    const other = lowerScope(freeze(draft([], { trigger: { on: [{ ...zc, subject: { types: ['Creature'] } }] }, selfHeads: ['creature', 'elf'] })));
+    const other = lowerScope(freeze(draft([], { trigger: { on: [{ ...zc, subject: { types: ['Creature'], controller: 'opponent' } }] }, selfHeads: ['creature', 'elf'] })));
     expect(other.mentions.some((m) => m.sort === 'player' && (m.ref as { role?: string }).role === 'player')).toBe(true);
     expect(other.mentions.some((m) => m.sort === 'number')).toBe(true); // ... and an amount (CR 603.6)
+    // edh-c-63 (CR 400.3, 404.1; Liability): a permanent of no stated controller or owner put into a graveyard from the battlefield (or into a hand): the only player the clause can mean
+    // ("a player's graveyard") is its OWNER, a candidate only when nothing else of the ability is a player (soleOnly); the event's own `player` role is not offered then
+    const ownerOnly = lowerScope(freeze(draft([], { trigger: { on: [{ ...zc, subject: { types: ['Creature'] } }] }, selfHeads: ['creature', 'elf'] })));
+    const owner = ownerOnly.mentions.filter((m) => m.sort === 'player');
+    expect(owner.map((m) => m.ref)).toEqual([{ ref: 'ownerOf', object: { ref: 'event', role: 'subject' } }]);
+    expect(owner[0]).toMatchObject({ soleOnly: true });
   });
   it('CR 603.2: a disjunction of events exposes only the roles every pattern exposes', () => {
     const d = lowerScope(draft([], { trigger: { on: [zc, { ev: 'cast', player: 'you' }] } }));

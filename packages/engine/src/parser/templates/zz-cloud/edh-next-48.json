@@ -1,0 +1,297 @@
+[
+ {
+  "id": "eff.edhn48.damage.unlessThatPlayerSacrifices",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 118.12a",
+   "CR 118.3",
+   "CR 120.3",
+   "CR 701.21a"
+  ],
+  "pattern": "{src:Obj} deal[s] {n:Qty} damage to {p:Player} unless that player sacrifices ( a | an ) {f:Filter} [of their choice]",
+  "build": {
+   "op": "pay",
+   "who": "$p",
+   "cost": {
+    "other": [
+     {
+      "kind": "sacrifice",
+      "filter": "$f",
+      "count": 1
+     }
+    ]
+   },
+   "else": [
+    {
+     "op": "damage",
+     "source": "$src",
+     "to": "$p",
+     "amount": "$n"
+    }
+   ]
+  },
+  "subject": "object",
+  "consumes": [
+   "unless"
+  ],
+  "examples": [
+   {
+    "text": "When ~ enters, it deals 4 damage to target opponent unless that player sacrifices a creature of their choice."
+   },
+   {
+    "text": "{2}, {T}: ~ deals 2 damage to target player unless that player sacrifices a nonland permanent."
+   }
+  ],
+  "counterExamples": [
+   "When ~ enters, it deals 5 damage to target opponent unless you sacrifice a creature.",
+   "When ~ enters, it deals 5 damage to target opponent if that player sacrifices a creature.",
+   "When ~ enters, it deals 5 damage to target creature unless that player sacrifices a creature of their choice."
+  ]
+ },
+ {
+  "id": "eff.edhn48.mayPay.anyAmountOfEnergy",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 107.14",
+   "CR 118.12",
+   "CR 608.2d"
+  ],
+  "pattern": "you may pay any amount of {e}",
+  "build": {
+   "op": "pay",
+   "who": {
+    "ref": "you"
+   },
+   "cost": {
+    "other": [
+     {
+      "kind": "payEnergy",
+      "amount": 1
+     }
+    ]
+   },
+   "anyAmount": true
+  },
+  "consumes": [
+   "may",
+   "any"
+  ],
+  "examples": [
+   {
+    "text": "At the beginning of your upkeep, you may pay any amount of {E}. If you do, draw that many cards."
+   },
+   {
+    "text": "When this creature dies, you may pay any amount of {E}. When you do, it deals that much damage to target creature."
+   }
+  ],
+  "counterExamples": [
+   "At the beginning of your upkeep, you may pay any amount of {R}. If you do, draw that many cards.",
+   "At the beginning of your upkeep, you may pay any amount of {E}{E}. If you do, draw that many cards.",
+   "At the beginning of your upkeep, pay any amount of {E}. If you do, draw that many cards."
+  ]
+ },
+ {
+  "id": "eff.edhn48.counter.unlessPaysPerEnergyPaid",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 701.6a",
+   "CR 107.14",
+   "CR 118.12a",
+   "CR 608.2c"
+  ],
+  "pattern": "counter {o:Obj} unless its controller pays {m:ManaCost} for each {n:Qty}",
+  "build": {
+   "op": "pay",
+   "who": {
+    "ref": "controllerOf",
+    "object": "$o"
+   },
+   "cost": {
+    "mana": "$m"
+   },
+   "times": "$n",
+   "else": [
+    {
+     "op": "counter",
+     "what": "$o"
+    }
+   ]
+  },
+  "consumes": [
+   "unless",
+   "each"
+  ],
+  "subject": "none",
+  "examples": [
+   {
+    "text": "You get {E}{E}, then you may pay any amount of {E}. Counter target spell unless its controller pays {1} for each {E} paid this way."
+   },
+   {
+    "text": "You may pay any amount of {E}. Counter target spell an opponent controls unless its controller pays {2} for each {E} paid this way."
+   }
+  ],
+  "counterExamples": [
+   "Counter target spell unless its controller pays {1} for each {E} paid this way.",
+   "You may pay any amount of {E}. Counter target spell unless you pay {1} for each {E} paid this way.",
+   "You may pay any amount of {E}. Counter target spell if its controller pays {1} for each {E} paid this way."
+  ]
+ },
+ {
+  "id": "eff.edhn48.return.two.filterCards.randomFromGraveyard.battlefield",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 608.2d",
+   "CR 404.1",
+   "CR 400.7",
+   "CR 110.2"
+  ],
+  "pattern": "return two {f:Filter} cards at random from your graveyard to the battlefield",
+  "build": [
+   {
+    "op": "chooseObjects",
+    "who": {
+     "ref": "you"
+    },
+    "from": {
+     "ref": "each",
+     "filter": {
+      "anyOf": [
+       "$f"
+      ],
+      "zone": "graveyard",
+      "owner": "you",
+      "isCard": true
+     }
+    },
+    "min": 2,
+    "max": 2,
+    "random": true,
+    "as": "chosen"
+   },
+   {
+    "op": "move",
+    "what": {
+     "ref": "bound",
+     "name": "chosen"
+    },
+    "to": {
+     "zone": "battlefield",
+     "controller": {
+      "ref": "you"
+     }
+    }
+   }
+  ],
+  "subject": "none",
+  "consumes": [
+   "random"
+  ],
+  "examples": [
+   {
+    "text": "When ~ dies, exile it, then return two Spirit creature cards at random from your graveyard to the battlefield."
+   },
+   {
+    "text": "{3}, {T}: Return two Spirit creature cards at random from your graveyard to the battlefield."
+   }
+  ],
+  "counterExamples": [
+   "When ~ dies, return two creature cards from your graveyard to the battlefield.",
+   "When ~ dies, return two creature cards at random from your graveyard to your hand.",
+   "When ~ dies, return two creature cards at random from target player's graveyard to the battlefield."
+  ]
+ },
+ {
+  "id": "kw.edhn48.flashback.lessWhereX",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 702.34a",
+   "CR 601.2f",
+   "CR 118.9",
+   "CR 107.3"
+  ],
+  "pattern": "flashback {c:Cost} . ~ costs {x} less to cast this way , where x is {q:Qty}",
+  "build": {
+   "kind": "keyword",
+   "keyword": "flashback",
+   "cost": "$c",
+   "costChange": {
+    "kind": "reduce",
+    "generic": "$q",
+    "floor": "zero"
+   }
+  },
+  "needs": [
+   "keyword:flashback"
+  ],
+  "consumes": [
+   "this way"
+  ],
+  "examples": [
+   {
+    "text": "Flashback {7}{G}{G}. This spell costs {X} less to cast this way, where X is the greatest mana value of a commander you own on the battlefield or in the command zone."
+   },
+   {
+    "text": "Flashback {6}{R}. This spell costs {X} less to cast this way, where X is the greatest mana value of a commander you own on the battlefield or in the command zone."
+   }
+  ],
+  "counterExamples": [
+   "Flashback {7}{G}{G}. This spell costs {X} less to cast, where X is the greatest mana value of a commander you own on the battlefield or in the command zone.",
+   "Flashback {7}{G}{G}. This spell costs {X} more to cast this way, where X is the greatest mana value of a commander you own on the battlefield or in the command zone.",
+   "Escape {7}{G}{G}. This spell costs {X} less to cast this way, where X is the greatest mana value of a commander you own on the battlefield or in the command zone."
+  ]
+ },
+ {
+  "id": "eff.edhn48.token.forEach.lead.youCreate",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 111.1",
+   "CR 111.2",
+   "CR 701.7a",
+   "CR 608.2h"
+  ],
+  "pattern": "for each {f:Filter} , you create ( a | an ) {t:TokenDesc}",
+  "build": {
+   "op": "createToken",
+   "who": {
+    "ref": "you"
+   },
+   "count": {
+    "q": "count",
+    "of": {
+     "ref": "each",
+     "filter": "$f"
+    }
+   },
+   "token": "$t"
+  },
+  "subject": "none",
+  "consumes": [
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "For each Forest you control, you create a 1/1 green Squirrel creature token."
+   },
+   {
+    "text": "Each opponent sacrifices a creature. For each creature sacrificed this way, you create a Clue token."
+   }
+  ],
+  "counterExamples": [
+   "For each Forest you control, you create two 1/1 green Squirrel creature tokens.",
+   "For each Forest you control, target opponent creates a 1/1 green Squirrel creature token.",
+   "For each Forest you control, an opponent creates a 1/1 green Squirrel creature token."
+  ]
+ }
+]

@@ -1,0 +1,244 @@
+[
+  {
+    "id": "eff.edhd47.self.targetPlayerNotOwner.gainControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 108.3",
+      "CR 613.1b",
+      "CR 611.2a"
+    ],
+    "pattern": "target player other than ~ 's owner gains control of it",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "target",
+                "id": "",
+                "$target": {
+                  "kind": "player",
+                  "players": {
+                    "who": "any",
+                    "otherThan": {
+                      "ref": "ownerOf",
+                      "object": {
+                        "ref": "self"
+                      }
+                    }
+                  },
+                  "min": 1,
+                  "max": 1,
+                  "text": "target player"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}, {T}: Target player other than ~'s owner gains control of it."
+      },
+      {
+        "text": "At the beginning of your upkeep, target player other than ~'s owner gains control of it."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Target player other than ~'s owner gains control of it until end of turn.",
+      "{1}, {T}: Target opponent other than ~'s owner gains control of it."
+    ],
+    "consumes": [
+      "other"
+    ]
+  },
+  {
+    "id": "eff.edhd47.player.gainControl.putCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 108.4",
+      "CR 613.1b",
+      "CR 611.2a",
+      "CR 122.1"
+    ],
+    "pattern": "{p:Player} gains control of {o:Obj} and puts {n:Qty} {k:CounterKind} counter[s] on it",
+    "build": [
+      {
+        "op": "effect",
+        "duration": {
+          "d": "permanent"
+        },
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 2,
+                "controller": "$p"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k",
+        "count": "$n",
+        "by": "$p"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your end step, target opponent gains control of ~ and puts a bounty counter on it."
+      },
+      {
+        "text": "At the beginning of each player's upkeep, that player gains control of ~ and puts two bounty counters on it."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, target opponent gains control of ~ and puts a bounty counter on that creature.",
+      "At the beginning of your end step, target opponent gains control of ~ until end of turn and puts a bounty counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhd47.player.untaps.andGainsControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.26b",
+      "CR 108.4",
+      "CR 613.1b",
+      "CR 611.2a"
+    ],
+    "pattern": "{p:Player} untaps {o:Obj} and gains control of it",
+    "build": [
+      {
+        "op": "untap",
+        "what": "$o"
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "permanent"
+        },
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 2,
+                "controller": "$p"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of each player's upkeep, that player untaps ~ and gains control of it."
+      },
+      {
+        "text": "At the beginning of your upkeep, target opponent untaps ~ and gains control of it."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each player's upkeep, that player taps ~ and gains control of it.",
+      "At the beginning of each player's upkeep, that player untaps ~ and gains control of it until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhd47.dur.gainControl.loseAllCantAttackBlock",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 613.1b",
+      "CR 613.1f",
+      "CR 508.1c",
+      "CR 509.1b"
+    ],
+    "pattern": "{d:Dur} , gain control of {o:Obj} , it loses all abilities , and it can't attack or block",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, choose target creature an opponent controls. For as long as ~ remains on the battlefield, gain control of that creature, it loses all abilities, and it can't attack or block."
+      },
+      {
+        "text": "When ~ enters, choose target artifact. Until end of turn, gain control of that artifact, it loses all abilities, and it can't attack or block."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose target creature. For as long as ~ remains on the battlefield, gain control of that creature, it loses all abilities, and it can attack or block.",
+      "When ~ enters, choose target creature. For as long as ~ remains on the battlefield, gain control of that creature, it loses flying, and it can't attack or block."
+    ],
+    "consumes": [
+      "can't",
+      "all"
+    ]
+  }
+]

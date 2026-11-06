@@ -1,0 +1,394 @@
+[
+  {
+    "id": "sta.edhv57.asLongAs.damageDouble",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 120.3",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , if {f:Filter} would deal damage to a permanent or player , it deals double that damage [ to that permanent or player ] instead",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$f"
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "mul": 2
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "if",
+      "would",
+      "instead",
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Knight, if a Goblin you control would deal damage to a permanent or player, it deals double that damage to that permanent or player instead."
+      },
+      {
+        "text": "As long as you have no cards in hand, if a creature you control would deal damage to a permanent or player, it deals double that damage instead."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Knight, if a Goblin you control would deal damage to a permanent or player, it deals triple that damage instead.",
+      "As long as you control a Knight, if a Goblin you control would deal damage to a creature, it deals double that damage instead.",
+      "If a Goblin you control would deal damage to a permanent or player, it deals double that damage instead as long as you control a Knight."
+    ]
+  },
+  {
+    "id": "sta.edhv57.asLongAs.preventNCombatToYou",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 120.3",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , if ( a | an ) {f:Filter} would deal combat damage to you , prevent {n:Qty} of that damage",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$f",
+            "recipient": {
+              "player": "you"
+            },
+            "combat": true
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "$n"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "if",
+      "would",
+      "prevent",
+      "combat"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is untapped, if a creature would deal combat damage to you, prevent 2 of that damage."
+      },
+      {
+        "text": "As long as you control a Knight, if a creature with flying would deal combat damage to you, prevent 2 of that damage."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is untapped, if a creature would deal combat damage to you, prevent all of that damage.",
+      "As long as ~ is untapped, if a creature would deal damage to you, prevent 1 of that damage.",
+      "As long as ~ is untapped, if a creature would deal combat damage to an opponent, prevent 1 of that damage."
+    ]
+  },
+  {
+    "id": "eff.edhv57.anyPlayerMayExileFromGraveyard.ifPlayerDoes",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 406.3"
+    ],
+    "pattern": "any player may exile a card from their graveyard . if a player does , {e:Effects}",
+    "build": {
+      "op": "pay",
+      "everyPlayer": true,
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "exileFrom",
+            "zone": "graveyard",
+            "count": 1
+          }
+        ]
+      },
+      "then": "$e"
+    },
+    "consumes": [
+      "any player",
+      "may",
+      "if",
+      "their"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, any player may exile a card from their graveyard. If a player does, ~ gets +2/+2 until end of turn."
+      },
+      {
+        "text": "When ~ enters, any player may exile a card from their graveyard. If a player does, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each player may exile a card from their graveyard. If a player does, draw a card.",
+      "When ~ enters, any player may exile a card from their graveyard. If you do, draw a card.",
+      "When ~ enters, any opponent may exile a card from their graveyard. If a player does, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhv57.anyPlayerMaySacrificeLand.ifPlayerDoes",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 701.21a"
+    ],
+    "pattern": "any player may sacrifice a land of their choice . if a player does , {e:Effects}",
+    "build": {
+      "op": "pay",
+      "everyPlayer": true,
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": {
+              "types": [
+                "Land"
+              ]
+            },
+            "count": 1
+          }
+        ]
+      },
+      "then": "$e"
+    },
+    "consumes": [
+      "any player",
+      "may",
+      "if",
+      "their"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, any player may sacrifice a land of their choice. If a player does, draw a card."
+      },
+      {
+        "text": "Whenever ~ attacks, any player may sacrifice a land of their choice. If a player does, ~ gets +2/+2 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each player may sacrifice a land of their choice. If a player does, draw a card.",
+      "When ~ enters, any player may sacrifice a land of their choice. If you do, draw a card.",
+      "When ~ enters, any opponent may sacrifice a land of their choice. If a player does, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhv57.returnSelf.unlessRemoveCountersFromIt",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 118.3",
+      "CR 122.1",
+      "CR 400.7"
+    ],
+    "pattern": "return ~ to its owner 's hand unless you remove {n:Qty} {k:CounterKind} counters from it",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "removeCounters",
+            "counter": "$k",
+            "count": "$n",
+            "self": true
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "self"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "unless",
+      "its",
+      "it"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, return ~ to its owner's hand unless you remove two fuse counters from it."
+      },
+      {
+        "text": "At the beginning of your upkeep, return ~ to its owner's hand unless you remove three time counters from it."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, return ~ to its owner's hand unless you remove two fuse counters from target creature.",
+      "At the beginning of your end step, return ~ to its owner's hand if you remove two fuse counters from it.",
+      "At the beginning of your end step, sacrifice ~ unless you remove two fuse counters from it."
+    ]
+  },
+  {
+    "id": "sta.edhv57.self.has.aslongFewerCounters.otherwise.has",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 122.1"
+    ],
+    "pattern": "~ has {a:Abilities} as long as it has {n:Qty} or fewer {k:CounterKind} counters on it . otherwise , it has {b:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "counters": {
+            "kind": "$k",
+            "cmp": {
+              "op": "<=",
+              "value": "$n"
+            }
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ],
+      "otherwise": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$b"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "otherwise",
+      "or fewer"
+    ],
+    "examples": [
+      {
+        "text": "~ has trample as long as it has two or fewer fuse counters on it. Otherwise, it has hexproof."
+      },
+      {
+        "text": "~ has flying as long as it has three or fewer time counters on it. Otherwise, it has defender."
+      }
+    ],
+    "counterExamples": [
+      "~ has trample as long as it has two or fewer fuse counters on it. Then, it has hexproof.",
+      "~ has trample as long as it has two or fewer fuse counters on it. Otherwise, it gets +1/+1.",
+      "~ has trample as long as it has two or more fuse counters on it. Otherwise, it has hexproof."
+    ]
+  },
+  {
+    "id": "sta.edhv57.enchantedWall.attackNoDefender",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 609.4",
+      "CR 702.3b",
+      "CR 508.1b",
+      "CR 604.1"
+    ],
+    "pattern": "enchanted wall can attack as though it didn't have defender",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "controllerOf",
+        "object": {
+          "ref": "attachedTo"
+        }
+      },
+      "action": "attackAsThoughNoDefender",
+      "of": {
+        "attachedToSource": true
+      }
+    },
+    "consumes": [
+      "enchanted",
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted Wall can attack as though it didn't have defender. Enchanted creature gets +1/+1."
+      },
+      {
+        "text": "Enchanted Wall can attack as though it didn't have defender. Enchanted creature has flying."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted Wall can block as though it didn't have defender. Enchanted creature has flying.",
+      "Enchanted Wall can attack as though it didn't have flying. Enchanted creature has flying.",
+      "Equipped Wall can attack as though it didn't have defender. Enchanted creature has flying."
+    ]
+  }
+]

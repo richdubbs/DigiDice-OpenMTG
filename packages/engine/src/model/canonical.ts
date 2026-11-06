@@ -32,7 +32,7 @@ const BATTLEFIELD_DEFAULT: ReadonlySet<string> = new Set(['ActivatedAbilityDef',
 
 /** Optional flags whose absence means `false`, by the model type that owns them. */
 const FALSE_IS_ABSENT: Readonly<Record<string, readonly string[]>> = {
-  ActivatedAbilityDef: ['isMana', 'isLoyalty', 'sorcerySpeed'],
+  ActivatedAbilityDef: ['isMana', 'isLoyalty', 'sorcerySpeed', 'instantSpeed'],
   EffectStep: ['unpreventable', 'random', 'reveal', 'tapped', 'attacking', 'manifest', 'free', 'optional', 'mandatory'],
   CostPart: ['random', 'self', 'hand', 'other'],
   ModeSpec: ['allowRepeat'],

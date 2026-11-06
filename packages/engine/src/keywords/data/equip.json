@@ -57,6 +57,10 @@
             "to": {
               "ref": "target",
               "id": "t0"
+            },
+            "asCreature": {
+              "$ifParam": "filter",
+              "then": true
             }
           }
         ]

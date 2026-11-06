@@ -1,0 +1,527 @@
+[
+  {
+    "id": "eff.edhp11.eachPlayerMayDraw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 121.1",
+      "CR 608.2d"
+    ],
+    "pattern": "each player may draw {n:Qty} card[s]",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "do": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Each player may draw a card."
+      },
+      {
+        "text": "Each player may draw two cards. Each player who drew a card this way gains 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Each player draws a card.",
+      "Each opponent may draw a card.",
+      "Each player may draw a card for each creature.",
+      "You may draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhp11.player.cantAttackYouOrPermanents.theirNextTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 506.3",
+      "CR 611.2a",
+      "CR 110.1"
+    ],
+    "pattern": "{p:Player} can't attack you or permanents you control during their next turn",
+    "build": {
+      "op": "forEach",
+      "over": "$p",
+      "as": "restricted",
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "endOfNextTurn",
+            "whose": {
+              "ref": "iterating"
+            }
+          },
+          "effects": [
+            {
+              "s": "restrict",
+              "subject": {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": {
+                    "ref": "iterating"
+                  }
+                }
+              },
+              "mode": "cant",
+              "action": "attackPlayer",
+              "otherPlayer": {
+                "ref": "you"
+              }
+            },
+            {
+              "s": "restrict",
+              "subject": {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": {
+                    "ref": "iterating"
+                  }
+                }
+              },
+              "mode": "cant",
+              "action": "attack",
+              "other": {
+                "controller": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "can't",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent can't attack you or permanents you control during their next turn."
+      },
+      {
+        "text": "Each opponent can't attack you or permanents you control during their next turn. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent can't attack you or permanents you control.",
+      "Target opponent can't attack you or planeswalkers you control during their next turn.",
+      "Target opponent can't attack you or permanents you control during your next turn.",
+      "Target opponent can't block you or permanents you control during their next turn."
+    ]
+  },
+  {
+    "id": "eff.edhp11.ifPlayerDoes.creaturesCantAttackYou",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 506.3",
+      "CR 608.2c",
+      "CR 611.2a"
+    ],
+    "pattern": "if a player does , creatures that player controls can't attack you or planeswalkers you control {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": {
+                "ref": "bound",
+                "name": "",
+                "$anaphor": {
+                  "sort": "player",
+                  "number": "plural",
+                  "head": "player",
+                  "participle": "did",
+                  "text": "a player who does"
+                }
+              }
+            }
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": {
+                "ref": "bound",
+                "name": "",
+                "$anaphor": {
+                  "sort": "player",
+                  "number": "plural",
+                  "head": "player",
+                  "participle": "did",
+                  "text": "a player who does"
+                }
+              }
+            }
+          },
+          "mode": "cant",
+          "action": "attack",
+          "other": {
+            "types": [
+              "Planeswalker"
+            ],
+            "controller": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Each player may draw a card. If a player does, creatures that player controls can't attack you or planeswalkers you control until your next turn."
+      },
+      {
+        "text": "Each player may put a +1/+1 counter on a creature they control. If a player does, creatures that player controls can't attack you or planeswalkers you control until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Each player may draw a card. If a player does, creatures that player controls can't attack you or planeswalkers you control.",
+      "Each player may draw a card. If a player does, creatures that player controls can't block you or planeswalkers you control until your next turn.",
+      "Each player may draw a card. If a player does, creatures an opponent controls can't attack you or planeswalkers you control until your next turn."
+    ]
+  },
+  {
+    "id": "eff.edhp11.eachPlayerMayPutCounters.onCreatureTheyControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "each player may put {n:Qty} {k:CounterKind} counter[s] on ( a | an ) {f:Filter} they control",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "iterating"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "controller": {
+                "ref": "iterating"
+              }
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "countersOn"
+        },
+        {
+          "op": "putCounters",
+          "on": {
+            "ref": "bound",
+            "name": "countersOn"
+          },
+          "kind": "$k",
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Each player may put two +1/+1 counters on a creature they control."
+      },
+      {
+        "text": "Each player may put a +1/+1 counter on a Forest they control. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each player puts two +1/+1 counters on a creature they control.",
+      "Each opponent may put two +1/+1 counters on a creature they control.",
+      "Each player may put two +1/+1 counters on each creature they control.",
+      "Each player may put two +1/+1 counters on a creature you control."
+    ]
+  },
+  {
+    "id": "eff.edhp11.dig.putAll.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 608.2c",
+      "CR 400.7j",
+      "CR 110.2a"
+    ],
+    "pattern": "put all {f:Filter} cards from among {g:ExiledTop} onto the battlefield",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "is": "$g",
+          "zone": "any"
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top ten cards of your library. Put all artifact cards from among them onto the battlefield."
+      },
+      {
+        "text": "Exile the top five cards of your library. Put all land cards from among them onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top ten cards of your library. Put all artifact cards from among them into your hand.",
+      "Exile the top ten cards of your library. Put up to two artifact cards from among them onto the battlefield.",
+      "Exile the top ten cards of your library. Put all artifact cards from among them onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.edhp11.pump.xOrMinusX.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 613.4c",
+      "CR 107.3",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} gets +x/+x or -x/-x {d:Dur} , where x is {q:Qty}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "options": [
+          "+X/+X",
+          "-X/-X"
+        ],
+        "as": "ptChoice",
+        "link": "ptChoice"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "ptChoice",
+          "equals": "+X/+X"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": "$q",
+                    "toughness": "$q"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "ptChoice",
+          "equals": "-X/-X"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": {
+                      "q": "math",
+                      "op": "*",
+                      "args": [
+                        -1,
+                        "$q"
+                      ]
+                    },
+                    "toughness": {
+                      "q": "math",
+                      "op": "*",
+                      "args": [
+                        -1,
+                        "$q"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "or",
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "{2}{B}: Target creature gets +X/+X or -X/-X until end of turn, where X is the number of Swamps you control."
+      },
+      {
+        "text": "Target creature gets +X/+X or -X/-X until end of turn, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +X/+X until end of turn, where X is the number of Swamps you control.",
+      "Target creature gets +X/+X or -X/-X, where X is the number of Swamps you control.",
+      "Target creature gets +X/+0 or -X/-0 until end of turn, where X is the number of Swamps you control.",
+      "Target creature gets +X/+X or -X/-X until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhp11.forEachOpponent.token.attacking.thatPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 608.2f",
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a",
+      "CR 508.4",
+      "CR 702.116a"
+    ],
+    "pattern": "for each opponent , create {n:Qty} {t:TokenDesc} ( that's | that are ) tapped and attacking that player",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n",
+          "token": "$t",
+          "tapped": true,
+          "attacking": {
+            "defender": {
+              "ref": "bound",
+              "name": "each"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "needs": [
+      "feature:createToken.attackingWhom"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, for each opponent, create a 1/1 red Goblin creature token that's tapped and attacking that player."
+      },
+      {
+        "text": "When ~ enters, for each opponent, create two 2/2 black Zombie creature tokens that are tapped and attacking that player."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, for each opponent, create a 1/1 red Goblin creature token that's tapped and attacking that player or a planeswalker they control.",
+      "Whenever ~ attacks, for each player, create a 1/1 red Goblin creature token that's tapped and attacking that player.",
+      "Whenever ~ attacks, for each opponent, create a 1/1 red Goblin creature token that's tapped and attacking you."
+    ]
+  }
+]

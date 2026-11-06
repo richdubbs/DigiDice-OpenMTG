@@ -1,0 +1,8 @@
+# edh-c-87 (Commander EDHREC ranks 26,001-26,500, third pass): all creatures attacking you get -1/-0 as long as untapped, damage already dealt to it this turn, target nonland permanent with the lowest mana value, you may have ~ become a creature in addition to its other types, gain control of target creature if its power is ..., discard a Spirit card or a card with disturb, you gain control of that land until end of turn, a permanent named A or a permanent named B. After editing: npm run cards -- fixtures
+Whipkeeper
+Culling Scales
+Riddleform
+Exert Influence
+Shipwreck Sifters
+Wellspring
+Liu Bei, Lord of Shu

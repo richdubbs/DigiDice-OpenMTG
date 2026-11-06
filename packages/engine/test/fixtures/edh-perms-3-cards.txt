@@ -1,0 +1,7 @@
+# edh-perms-3 (Commander lane edh-perms; test/cloud/edh-perms-3, golden edh-perms-3-review.json)
+# group type change (becomes a ... in addition to its other types), size-first type change with a duration, a static ability of every zone but the battlefield,
+# enter as a copy of another creature you control with ~'s other abilities, a choice for each player then put those cards onto the battlefield
+Allosaurus Shepherd
+Breach the Multiverse
+Grist, the Hunger Tide
+Sakashima of a Thousand Faces

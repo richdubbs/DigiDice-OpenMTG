@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- A neutral placeholder: a card on a neon grid. Not a DigiDice brand asset. -->
+  <rect x="4" y="4" width="120" height="120" rx="20" fill="#070d1c"/>
+  <g stroke="#3a4a7a" stroke-width="1.5" fill="none" opacity="0.8">
+    <path d="M8 96 H120 M8 108 H120 M64 84 L64 120 M64 84 L30 120 M64 84 L98 120 M64 84 L8 112 M64 84 L120 112"/>
+  </g>
+  <rect x="40" y="18" width="48" height="66" rx="6" fill="#0c1630" stroke="#5ad1ff" stroke-width="3"/>
+  <rect x="46" y="26" width="36" height="24" rx="2" fill="#16305a"/>
+  <path d="M46 58 H82 M46 66 H74" stroke="#c46bff" stroke-width="3" stroke-linecap="round"/>
+</svg>

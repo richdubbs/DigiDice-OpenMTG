@@ -95,7 +95,7 @@
     "id": "sta.stdrd.players.cantCast.chosen",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 601.3",
       "CR 607.2d",

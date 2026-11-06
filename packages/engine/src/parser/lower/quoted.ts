@@ -12,8 +12,11 @@ import type { Tok } from '../holes/tok';
 import { spanText } from '../holes/tok';
 import { applyTaint } from '../taint';
 import { activationLimits, activationZone, requiresSelfExiled } from './activation';
-import { costMentionsOf, interveningIfReads, triggerLimitOf } from './ability';
+import { costMentionsOf, exiledSelfIt, exiledSelfItApplies, interveningIfReads, triggerLimitOf } from './ability';
 import { lowerProgram } from './index';
+import { resolveStaticIt } from './static-anaphora';
+import { movesLibraryCards } from './library-moves';
+import { offBattlefield } from './trigger-zone'; // edh-zones-5
 import type { Draft, Mention, Unit } from './types';
 import type { UnitEnv } from './units';
 import { parseEffectUnit, parseWhole } from './units';
@@ -82,6 +85,8 @@ function program(pieces: Tok[][], ue: UnitEnv, selfHeads: string[], used: Used, 
  */
 function quotedText(tokens: readonly Tok[], normalized: string | undefined): string {
   const shown = tokens.map((t) => {
+    // edh-zones-6: a quote inside the quote ("... token with 'This token gets +1/+1 ...'") shows its own self reference the same way
+    if (t.kind === 'QUOTE' && t.sub !== undefined && t.sub.some((x) => x.norm === '~' && x.text.trim() !== x.text) && t.text.length > 1 && t.text[0] === t.text[t.text.length - 1]) return { ...t, text: `${t.text[0]}${quotedText(t.sub, normalized)}${t.text[0]}` };
     if (t.norm !== '~' || t.text.trim() === t.text) return t;
     const words = normalized !== undefined && t.end <= normalized.length ? normalized.slice(t.start, t.end).trim() : '';
     return { ...t, text: words !== '' && !words.includes('"') ? words : t.text.trim() };
@@ -93,6 +98,7 @@ const PERMANENT_HEADS = ['creature', 'artifact', 'enchantment', 'land', 'planesw
 const GRANTEE_NOUNS: Readonly<Record<string, readonly string[]>> = {
   creature: ['creature'], artifact: ['artifact'], enchantment: ['enchantment'], land: ['land'], planeswalker: ['planeswalker'], battle: ['battle'],
   vehicle: ['artifact', 'vehicle'], equipment: ['artifact', 'equipment'], aura: ['enchantment', 'aura'], permanent: PERMANENT_HEADS,
+  token: [...PERMANENT_HEADS, 'token'], // edh-c-86 (CR 111.1, 201.5a; Rite of Belzenlok): "this token" of a quoted ability is a permanent of any type, so "another creature" may be other than it
 };
 
 /**
@@ -145,6 +151,21 @@ export function parseQuoted(tokens: readonly Tok[], ue: UnitEnv, printedHeads: s
     record(used, kw.d.templatesUsed, kw.d.experimental);
     return done([{ ...(kw.value as AbilityDef), text }]);
   }
+  // edht4 (CR 702.1, 113.1a, 702.85a; Zhulodok, Void Gorger: 'have "Cascade, cascade."'): a quoted line of keywords separated by commas, each keyword an ability of its own as on a printed line
+  // (every piece must be a keyword; a piece that is not one makes the whole quote not understood here)
+  if (sentences.length === 1 && tokens.some((t) => t.kind === 'PUNCT' && t.norm === ',')) {
+    const body = sentences[0]![sentences[0]!.length - 1]?.norm === '.' ? sentences[0]!.slice(0, -1) : sentences[0]!;
+    const pieces: Tok[][] = [[]];
+    for (const t of body) {
+      if (t.kind === 'PUNCT' && t.norm === ',') pieces.push([]);
+      else pieces[pieces.length - 1]!.push(t);
+    }
+    const parsed = pieces.map((p) => (p.length === 0 ? null : parseWhole(p, 'ability', ue)));
+    if (pieces.length > 1 && parsed.every((r) => r !== null && r.ok && (r.value as { kind?: string }).kind === 'keyword')) {
+      for (const r of parsed) record(used, r!.ok ? r!.d.templatesUsed : [], r!.ok ? r!.d.experimental : []);
+      return done(parsed.map((r, k) => ({ ...((r as { value: AbilityDef }).value), text: spanText(pieces[k]!, 0, pieces[k]!.length) }) as AbilityDef));
+    }
+  }
   const first = sentences[0]!;
   // "[cost]: [effect]" (CR 602.1)
   const colon = first.findIndex((t) => t.kind === 'PUNCT' && t.norm === ':');
@@ -165,7 +186,7 @@ export function parseQuoted(tokens: readonly Tok[], ue: UnitEnv, printedHeads: s
     if (effect === null) return null;
     let mana = false;
     visit(effect, (n) => { if (n['op'] === 'addMana') mana = true; });
-    if (lim.fields.sorcerySpeed === true && mana) return null; // FAST5X E20, CR 605.1a: a mana ability with a timing restriction is not read here
+    if ((lim.fields.sorcerySpeed === true || lim.fields.instantSpeed === true) && mana) return null; // FAST5X E20, CR 605.1a: a mana ability with a timing restriction is not read here
     if (lim.extras.costChange !== undefined && mana) return null; // T38: not on a mana ability
     record(used, lim.extras.templates, lim.extras.experimental);
     // FAST5 T68 (CR 605.1a, 606.1): a loyalty ability ("[+1]: Add {R}.") is never a mana ability, whatever it does; it is a loyalty ability (activated once per turn at sorcery speed, CR 606.3)
@@ -179,7 +200,7 @@ export function parseQuoted(tokens: readonly Tok[], ue: UnitEnv, printedHeads: s
       if ('manual' in where) return null;
       zone = where;
     }
-    return done([{ kind: 'activated', text, cost, effect, ...lim.fields, ...change, ...zone, ...(mana && effect.targets.length === 0 && !loyalty ? { isMana: true } : {}), ...(loyalty ? { isLoyalty: true } : {}) }]);
+    return done([{ kind: 'activated', text, cost, effect, ...lim.fields, ...change, ...zone, ...(mana && effect.targets.length === 0 && !loyalty && !movesLibraryCards(cost, effect) /* edh-fix-5: CR 605.1a */ ? { isMana: true } : {}), ...(loyalty ? { isLoyalty: true } : {}) }]);
   }
   // "[When/Whenever/At] [event], [effect]" (CR 603.1), read as the ability driver reads a printed trigger (lower/ability.ts): every comma is tried, two
   // readings are ambiguous (guard G5). cmd1: an "if" right after the trigger clause is an intervening "if" (CR 603.4), read as lower/ability.ts#triggered
@@ -204,6 +225,10 @@ export function parseQuoted(tokens: readonly Tok[], ue: UnitEnv, printedHeads: s
     }
     if (found.size !== 1) return null;
     const t = [...found.values()][0]!;
+    // edh-zones-5 (CR 113.6k, 113.1c, 400.7; pre-existing fault found by edh-zones-3): a quoted trigger the object that gets it cannot trigger from the battlefield ("When this creature is
+    // put into a graveyard from anywhere", "When you cycle this card", "When you cast this spell") would have no zone and never fire: the engine collects a granted ability from
+    // the permanent it was granted to, and the object that arrived in the graveyard is a new object the grant does not reach. It stays manual (a sentence not understood)
+    if (offBattlefield(t.trigger, '') !== null) return null;
     let limit: TriggeredAbilityDef['limit'];
     const later: Tok[][] = [];
     for (const p of sentences.slice(1)) {
@@ -222,10 +247,15 @@ export function parseQuoted(tokens: readonly Tok[], ue: UnitEnv, printedHeads: s
       interveningIf = JSON.parse(JSON.stringify(r.value)) as Condition;
       body = body.slice(r.at + 1);
     }
-    const effect = program([body, ...later], ue, selfHeads, used, t.trigger, [], interveningIf);
+    let pieces = [body, ...later];
+    // edh-d-87 (CR 113.6m, 603.4, 611.2c; Cosima, God of the Voyage): a quoted trigger whose intervening "if" is "~ is exiled" works in exile, where the card that gains it is
+    // (the grant reaches a card in exile, triggers/collect.ts#grantedAway); its bare "it" is that card, as for a printed one (lower/ability.ts#exiledSelfItApplies)
+    const exiled = exiledSelfItApplies(pieces, ['exile'], interveningIf);
+    if (exiled) pieces = pieces.map(exiledSelfIt);
+    const effect = program(pieces, ue, selfHeads, used, t.trigger, [], interveningIf);
     if (effect === null) return null;
     record(used, t.templates, t.experimental);
-    return done([{ kind: 'triggered', text, trigger: t.trigger, ...(interveningIf !== undefined ? { interveningIf } : {}), effect, ...(limit ? { limit } : {}) }]);
+    return done([{ kind: 'triggered', text, trigger: t.trigger, ...(interveningIf !== undefined ? { interveningIf } : {}), effect, ...(limit ? { limit } : {}), ...(exiled ? { zone: ['exile' as ZoneName] } : {}) }]);
   }
   // a static ability (CR 604). WP22 review (INTERFACE CHANGE): an ability-level template's value carries the condition and zones of the whole ability
   // (lower/util.ts#abilityLevel), read here as lower/ability.ts reads a printed one: tried first over all the sentences, and in a single sentence only
@@ -243,7 +273,11 @@ export function parseQuoted(tokens: readonly Tok[], ue: UnitEnv, printedHeads: s
     const r0 = parseWhole(s, 'static', ue);
     // std-rx9 (CR 607.2d, 608.2c): "the chosen type" of a quoted static ability is no choice of the object that has it; it keeps a placeholder of its own, which
     // only the ability that creates an emblem with it resolves (lower/links.ts#resolveEmblemChoices), so anywhere else the sentence stays manual
-    const r = r0.ok ? { ...r0, value: quoteChosen(r0.value) } : r0;
+    const r1 = r0.ok ? { ...r0, value: quoteChosen(r0.value) } : r0;
+    // edh-next-13 (CR 604.1, 611.3a; Giant's Amulet: `has "This creature has hexproof as long as it's untapped."`): a plain "it" of a quoted static ability is the one object the sentence
+    // names (the same rule as a printed static ability, lower/static-anaphora.ts), here the object that has the quoted ability
+    const itResolved = r1.ok && leftoverMarker(withoutQuotedLinks(r1.value)) === '$anaphor' ? resolveStaticIt(r1.value) : null;
+    const r = r1.ok && itResolved !== null ? { ...r1, value: itResolved } : r1;
     if (!r.ok || leftoverMarker(withoutQuotedLinks(r.value)) !== null) return null;
     record(used, r.d.templatesUsed, r.d.experimental);
     const lv = abilityLevel(r.value);

@@ -64,7 +64,8 @@
                 }
               }
             ],
-            "noManaCost": true
+            "noManaCost": true,
+            "embalmed": true
           }
         ]
       }

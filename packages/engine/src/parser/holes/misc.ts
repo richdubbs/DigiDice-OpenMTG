@@ -8,7 +8,7 @@ import type { CostDef, Quantity } from '../../types/ability';
 import { parseManaSymbol } from '../../types/mana';
 import type { ManaCost, ManaType } from '../../types/mana';
 import type { Alt, HoleCtx, HoleFn } from './core';
-import { P, anyPhraseAt, dedupe, multiAt, numberAt, phraseAt, spanOf } from './core';
+import { P, THAT_COLOR_QUALITY, anyPhraseAt, dedupe, multiAt, numberAt, phraseAt, spanOf } from './core';
 import { isSignedPair } from './tok';
 import type { Tok } from './tok';
 import type { KeywordEntry } from './vocab';
@@ -146,6 +146,14 @@ function ptSide(sign: string, body: string): Quantity {
 /** `+2/+2`, `-1/-1`, `+X/+X`, `+1/-1`, `+0/+3`: both halves signed, as a power/toughness modification `{p, t}`. */
 export const pt: HoleFn = (ctx, pos) => {
   const t = ctx.toks[pos];
+  // edh-players-5 (CR 107.1, 613.4c; Nuclear Fallout): "twice -X/-X" is each half twice what it says; weak (design 6.3 rule 2), a template that spells the words out keeps its sentence
+  if (t?.kind === 'WORD' && t.norm === 'twice') {
+    const n = ctx.toks[pos + 1];
+    const m = n !== undefined && isSignedPair(n) ? PT_RE.exec(n.norm) : null;
+    if (m === null || m[1] === '' || m[3] === '') return [];
+    const twice = (q: Quantity): Quantity => (typeof q === 'number' ? q * 2 : { q: 'math', op: '*', args: [2, q] });
+    return [{ end: pos + 2, value: { p: twice(ptSide(m[1]!, m[2]!)), t: twice(ptSide(m[3]!, m[4]!)) }, weak: 1 }];
+  }
   if (t === undefined || !isSignedPair(t)) return [];
   const m = PT_RE.exec(t.norm);
   if (m === null || m[1] === '' || m[3] === '') return [];
@@ -234,6 +242,33 @@ export const typeChoices: HoleFn = (ctx, pos) => {
 // ---- Name ------------------------------------------------------------------
 
 /**
+ * edh-d-85 (CR 201.2, 201.5; Galactus, Devourer of Worlds): a card name that contains the name of the card that prints it, which preprocessing has turned into "~"
+ * ("a creature named Silver Surfer, Galactus's Herald" on Galactus): the one index name that the words spell with any run of capitalized words at the "~" (and
+ * "'s" right after it). Only one name of the index may fit, the name must contain a comma (a full card name with an epithet) and the "~" must not be its first word.
+ */
+function nameWithSelf(ctx: HoleCtx, pos: number, names: ReadonlySet<string>): Alt[] {
+  const out: Alt[] = [];
+  if (ctx.toks[pos]?.kind === 'SELF') return out;
+  const esc = (x: string): string => x.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  let re = '';
+  let self = false;
+  for (let p = pos; p < Math.min(ctx.toks.length, pos + 8); p++) {
+    const n = ctx.toks[p]!;
+    if (n.kind === 'SELF') { re = `${re} [A-Z][^,]*?`; self = true; }
+    else if (n.norm === ',') re = `${re},`;
+    else if (n.text === "'s" && ctx.toks[p - 1]?.kind === 'SELF') re = `${re}'s`;
+    else if (n.kind === 'WORD' && /^[A-Z]/.test(n.text)) re = `${re} ${esc(n.text)}`;
+    else break;
+    if (!self || !re.includes(',')) continue;
+    const r = new RegExp(`^${re.trim()}$`);
+    const hits: string[] = [];
+    for (const nm of names) if (r.test(nm)) { hits.push(nm); if (hits.length > 1) break; }
+    if (hits.length === 1) out.push({ end: p + 1, value: hits[0]!, weak: 1 });
+  }
+  return out;
+}
+
+/**
  * A card name (after "named"). With the card-name index: only names in it (a single name token, or a run of words that spells one). Without the index:
  * every run of capitalized words, all prefixes (the chart's whole-unit rule picks), each weak.
  */
@@ -250,6 +285,7 @@ export const name: HoleFn = (ctx, pos) => {
       s = n.norm === ',' ? `${s},` : `${s} ${n.text}`;
       if (names.has(s)) out.push({ end: p + 1, value: s, weak: 1 });
     }
+    out.push(...nameWithSelf(ctx, pos, names));
     return out;
   }
   let s = '';
@@ -315,7 +351,13 @@ export const choiceKind: HoleFn = (ctx, pos) => {
 
 const DASH = P('--');
 const W_THE_CHOSEN_COLOR = P('the chosen color'); // MX2
+const W_THE_CHOSEN_CARD_TYPE = P('the chosen card type'); // edht4
+const W_THE_CHOSEN_PLAYER = P('the chosen player'); // edh-d-11
+const W_OF_THE_CHOSEN_TYPE = P('of the chosen type'); // edh-d-72
+const W_CREATURES_OF_THE_CHOSEN_TYPE = P('creatures of the chosen type'); // edh-d-12
+const W_THAT_COLOR = P('that color'); // edh-players-8
 const W_EACH_OF_YOUR_OPPONENTS_Q = P('each of your opponents'); // std-rx15
+const W_COLORS_OUTSIDE_IDENTITY = P("each color that's not in your commander 's color identity"); // edh-perms-2
 
 /** std-rg: the quality "each of its colors" of hexproof (rules/protection.ts#canBeTargeted). */
 const OWN_COLORS = 'ownColors';
@@ -338,6 +380,26 @@ export function qualityAt(ctx: HoleCtx, pos: number): { end: number; quality: st
   // granting effect's source when they grant the keyword (statics/mods.ts); a resolved effect stores the color itself (effects/handlers/lasting-fix.ts#fixChosen)
   const chosen = phraseAt(ctx, pos, W_THE_CHOSEN_COLOR);
   if (chosen >= 0) out.push({ end: chosen, quality: 'chosen:color' });
+  // edht4 (CR 702.16a, 607.2d; Serra's Emissary): "the chosen card type", the card type chosen by the linked "choose a card type" ability (link `cardType`); read like the color
+  const chosenType = phraseAt(ctx, pos, W_THE_CHOSEN_CARD_TYPE);
+  if (chosenType >= 0) out.push({ end: chosenType, quality: 'chosen:cardType' });
+  // edh-d-11 (CR 702.16j-k, 607.2d; True-Name Nemesis): "protection from the chosen player", the player chosen by the linked "As ~ enters, choose a player" (link `opponent`,
+  // parser/parse.ts#CHOSEN_OPPONENT_LINK): the layers turn the quality into `player:<id>` when they grant the keyword (statics/mods.ts#withChosenQualities); rules/protection.ts
+  // reads the controller of the source
+  const chosenPlayer = phraseAt(ctx, pos, W_THE_CHOSEN_PLAYER);
+  if (chosenPlayer >= 0) out.push({ end: chosenPlayer, quality: 'chosen:player' });
+  // edh-d-12 (CR 702.16a, 607.2d, 205.3m; Riders of Gavony): "creatures of the chosen type", the creature type chosen by the linked "choose a creature type" ability (link `creatureType`):
+  // protection from creatures that have it, read like the chosen color (statics/mods.ts#withChosenQualities)
+  const chosenCreatureType = phraseAt(ctx, pos, W_CREATURES_OF_THE_CHOSEN_TYPE);
+  if (chosenCreatureType >= 0) out.push({ end: chosenCreatureType, quality: 'chosen:creatureType' });
+  // edh-players-8 (CR 607.2d, 608.2c; Skrelv): "hexproof from that color", the color an earlier "Choose a color." of the same ability chose: the placeholder is replaced by the
+  // chosen quality of that one choice (parser/lower/links.ts) or stays and makes the sentence manual
+  const thatColor = phraseAt(ctx, pos, W_THAT_COLOR);
+  if (thatColor >= 0) out.push({ end: thatColor, quality: THAT_COLOR_QUALITY });
+  // edh-perms-2 (CR 702.16a, 903.4, 105.1; Commander's Plate): "each color that's not in your commander's color identity": the colors outside the identity of the
+  // granting effect's controller's commander(s), worked out when the layers grant the keyword (statics/mods.ts#withChosenQualities, quality `identity:outside`)
+  const outside = phraseAt(ctx, pos, W_COLORS_OUTSIDE_IDENTITY);
+  if (outside >= 0) out.push({ end: outside, quality: 'identity:outside' });
   // std-rx15 (CR 702.16b-f, protection from a player; unverified 702.16k): "protection from each of your opponents": from everything the protected permanent's
   // controller's opponents control (rules/protection.ts#protectedFromPlayers reads the controllers)
   const opps = phraseAt(ctx, pos, W_EACH_OF_YOUR_OPPONENTS_Q);
@@ -350,10 +412,41 @@ export function qualityAt(ctx: HoleCtx, pos: number): { end: number; quality: st
     if (w === 'less') out.push({ end: mvEnd + 3, quality: `mv:le:${mvN.norm}` });
     else if (w === 'greater') out.push({ end: mvEnd + 3, quality: `mv:ge:${mvN.norm}` });
   }
+  // edh-mana-keywords-10 (CR 702.16a, 111.1, 601.2a; Emrakul, the World Anew): "protection from spells and from permanents that were cast this turn": sources that are spells,
+  // and permanents whose cast was this turn (rules/quality.ts `spell`, `castThisTurn`; statics/layers.ts#withObjectFlags)
+  if (t.norm === 'spells') out.push({ end: pos + 1, quality: 'spell' });
+  // edh-c-54 (CR 702.16a, 111.1, 205.2; Devoted Caretaker): "protection from instant spells": sources that are spells with that card type (rules/quality.ts, the composite `spell&type:X`)
+  const spellTy = ctx.vocab.types.get(t.norm);
+  if (spellTy !== undefined && !spellTy.plural && ctx.toks[pos + 1]?.norm === 'spells') out.push({ end: pos + 2, quality: `spell&type:${spellTy.name}` });
+  // edh-replace-6 (CR 701.54e, 702.16a; Lord of the Nazgûl): "protection from Ring-bearers": sources that are a player's Ring-bearer (rules/quality.ts `ringBearer`)
+  if (t.norm === 'ring-bearers') out.push({ end: pos + 1, quality: 'ringBearer' });
+  // edh-top-9 (CR 702.11d, 113.1; Volatile Stormdrake): "hexproof from activated and triggered abilities": sources that are abilities (rules/quality.ts `ability`)
+  const abilities = phraseAt(ctx, pos, P('activated and triggered abilities'));
+  if (abilities >= 0) out.push({ end: abilities, quality: 'ability' });
+  const castTurn = phraseAt(ctx, pos, P('permanents that were cast this turn'));
+  if (castTurn >= 0) out.push({ end: castTurn, quality: 'castThisTurn' });
+  // edh-next-88 (CR 122.1, 702.16a; Geyadrone Dihada): "protection from permanents with corruption counters on them": sources that have a counter of that kind on them now (rules/quality.ts `counter:<kind>`)
+  const withPerm = phraseAt(ctx, pos, P('permanents with'));
+  if (withPerm >= 0) for (const k of ctx.call('CounterKind', withPerm)) { const on = phraseAt(ctx, k.end, P('counters on them')); if (on >= 0 && typeof k.value === 'string' && /^[a-z]+$/.test(k.value)) out.push({ end: on, quality: `counter:${k.value}` }); }
   const ty = ctx.vocab.types.get(t.norm);
   if (ty !== undefined && ty.plural) out.push({ end: pos + 1, quality: `type:${ty.name}` });
+  // edh-c-49 (CR 702.16a, 108.4; Crypsis): "protection from creatures your opponents control": sources of that type controlled by an opponent of the protected permanent's controller (rules/protection.ts, quality `opp:type:Creature`)
+  if (ty !== undefined && ty.plural) {
+    const oppEnd = phraseAt(ctx, pos + 1, P('your opponents control'));
+    if (oppEnd >= 0) out.push({ end: oppEnd, quality: `opp:type:${ty.name}` });
+  }
   const st = ctx.vocab.supertypes.get(t.norm);
   if (st !== undefined) out.push({ end: pos + 1, quality: `supertype:${st.name}` });
+  // edhv31 (CR 702.16a; Tsabo Tavoc, Harbinger of Spring): "protection from legendary creatures", "protection from non-Spirit creatures" (rules/quality.ts, `A&!B`)
+  if (t.norm === 'legendary' && ctx.toks[pos + 1]?.norm === 'creatures') out.push({ end: pos + 2, quality: 'type:Creature&supertype:Legendary' });
+  const nonSub = /^non-([a-z]+)$/.exec(t.norm);
+  if (nonSub !== null && ctx.toks[pos + 1]?.norm === 'creatures' && ctx.vocab.subtypes.has(`${nonSub[1]}s`)) out.push({ end: pos + 2, quality: `type:Creature&!subtype:${nonSub[1]}s` });
+  // edh-d-5 (CR 702.16a, 205.3m; Sigrid, God-Favored): "protection from God creatures": a creature that has the creature type (rules/quality.ts, `type:Creature&subtype:gods`)
+  for (const s of multiAt(ctx, pos, ctx.vocab.subtypes)) {
+    if (s.entry.plural || ctx.toks[s.end]?.norm !== 'creatures') continue;
+    const one = ctx.toks.slice(pos, s.end).map((x) => x.norm).join(' ');
+    if (one === s.entry.name.toLowerCase() && /^[a-z]+$/.test(one) && ctx.vocab.subtypes.has(`${one}s`)) out.push({ end: s.end + 1, quality: `type:Creature&subtype:${one}s` });
+  }
   for (const s of multiAt(ctx, pos, ctx.vocab.subtypes)) {
     if (!s.entry.plural && !s.entry.both) continue;
     const printed = ctx.toks.slice(pos, s.end).map((x) => x.norm).join(' ');
@@ -421,15 +514,54 @@ function amountAt(ctx: HoleCtx, pos: number): { end: number; amount: Quantity }[
   return n === undefined ? [] : [{ end: pos + 1, amount: n }];
 }
 
-function costAt(ctx: HoleCtx, pos: number, choice = false): { end: number; cost: CostDef }[] {
+function costAt(ctx: HoleCtx, pos: number, choice = false, keyword = ''): { end: number; cost: CostDef }[] {
   const out: { end: number; cost: CostDef }[] = [];
   for (const m of ctx.call('ManaCost', pos)) out.push({ end: m.end, cost: { mana: m.value as ManaCost } });
   const d = phraseAt(ctx, pos, DASH);
   if (d >= 0) {
     for (const c of ctx.call('Cost', d)) out.push({ end: c.end, cost: c.value as CostDef });
     if (choice) out.push(...choiceCosts(ctx, d));
+    if (keyword === 'cumulative upkeep') out.push(...addManaCost(ctx, d), ...drawCost(ctx, d), ...opponentGainsLifeCost(ctx, d));
   }
   return out;
+}
+
+const W_ADD = P('add');
+/**
+ * edh-mana-keywords-12 (CR 702.24a, 106.4, 118.1; Braid of Fire): the cost of a cumulative upkeep may be adding mana, "Cumulative upkeep--Add {R}.": the player adds that mana to
+ * their pool once for each age counter. Only here (a cumulative upkeep's cost): an activated ability's cost never reads "add", so no other sentence gets a second reading. Plain
+ * symbols of colors and {C}, in a row.
+ */
+function addManaCost(ctx: HoleCtx, pos: number): { end: number; cost: CostDef }[] {
+  const a = phraseAt(ctx, pos, W_ADD);
+  if (a < 0) return [];
+  const run = unitRun(ctx, a);
+  return run === null ? [] : [{ end: run.end, cost: { other: [{ kind: 'addMana', mana: run.types }] } }];
+}
+
+const W_AN_OPPONENT_GAINS = P('an opponent gains');
+/**
+ * edh-d-74 (CR 702.24a, 118.3, 119.3; Wall of Shards): the cost of a cumulative upkeep may be "An opponent gains 1 life.": the cost part `opponentGainsLife` (edh-cast-14: the payer chooses an
+ * opponent who gains the life; ruling 2006-07-15: a different opponent for each age counter). Only here (a cumulative upkeep's cost): an activated ability's cost never reads it, so
+ * no other sentence gets a second reading. A fixed number of life.
+ */
+function opponentGainsLifeCost(ctx: HoleCtx, pos: number): { end: number; cost: CostDef }[] {
+  const a = phraseAt(ctx, pos, W_AN_OPPONENT_GAINS);
+  if (a < 0) return [];
+  const n = numberAt(ctx, a);
+  if (typeof n !== 'number' || n < 1) return [];
+  const e = phraseAt(ctx, a + 1, P('life'));
+  return e < 0 ? [] : [{ end: e, cost: { other: [{ kind: 'opponentGainsLife', amount: n }] } }];
+}
+
+const W_DRAW_A_CARD = P('draw a card');
+/**
+ * edh-c-48 (CR 702.24a, 121.2; Psychic Vortex): the cost of a cumulative upkeep may be drawing a card, "Cumulative upkeep--Draw a card.": the player draws that many cards, one for each age
+ * counter. Only here (a cumulative upkeep's cost): an activated ability's cost never reads "draw", so no other sentence gets a second reading.
+ */
+function drawCost(ctx: HoleCtx, pos: number): { end: number; cost: CostDef }[] {
+  const e = phraseAt(ctx, pos, W_DRAW_A_CARD);
+  return e < 0 ? [] : [{ end: e, cost: { other: [{ kind: 'draw', count: 1 }] } }];
 }
 
 const W_PAY = P('pay');
@@ -440,10 +572,11 @@ const W_PAY = P('pay');
  * keeps its forms, so no other sentence gets a second reading). Each option is one cost of the Cost hole or "pay {M}".
  */
 function choiceCosts(ctx: HoleCtx, pos: number): { end: number; cost: CostDef }[] {
+  const paid = new Set<CostDef>(); // edh-d-88: the options written "pay {M}"
   const options = (p: number): { end: number; cost: CostDef }[] => {
     const o: { end: number; cost: CostDef }[] = ctx.call('Cost', p).map((c) => ({ end: c.end, cost: c.value as CostDef }));
     const pay = phraseAt(ctx, p, W_PAY);
-    if (pay >= 0) for (const m of ctx.call('ManaCost', pay)) o.push({ end: m.end, cost: { mana: m.value as ManaCost } });
+    if (pay >= 0) for (const m of ctx.call('ManaCost', pay)) { const cost: CostDef = { mana: m.value as ManaCost }; paid.add(cost); o.push({ end: m.end, cost }); }
     return o;
   };
   const out: { end: number; cost: CostDef }[] = [];
@@ -451,6 +584,13 @@ function choiceCosts(ctx: HoleCtx, pos: number): { end: number; cost: CostDef }[
     const or = phraseAt(ctx, a.end, W_OR);
     if (or < 0) continue;
     for (const b of options(or)) out.push({ end: b.end, cost: { other: [{ kind: 'oneOf', options: [a.cost, b.cost] }] } });
+    // edh-d-88 (CR 107.14, 702.151a, 118.12a; Razorfield Ripper, "Reconfigure--Pay {2} or {E}{E}{E}"): after "pay {M} or", a bare run of energy symbols is the second option, paid
+    // with the same verb ("pay {E}{E}{E}"); only after a first option that says "pay"
+    if (paid.has(a.cost) && ctx.toks[or]?.norm === '{e}') {
+      let e = or;
+      while (ctx.toks[e]?.norm === '{e}') e++;
+      out.push({ end: e, cost: { other: [{ kind: 'oneOf', options: [a.cost, { other: [{ kind: 'payEnergy', amount: e - or }] }] }] } });
+    }
   }
   return out;
 }
@@ -462,6 +602,8 @@ function choiceCosts(ctx: HoleCtx, pos: number): { end: number; cost: CostDef }[
  * ("Equip {2}") is read by the keyword templates, as before.
  */
 const OPTIONAL_PARAMS: Readonly<Record<string, readonly string[]>> = { equip: ['filter'] };
+/** edh-next-127 (CR 702.54b, 120.3): the X of "Bloodthirst X", the total damage dealt to the controller's opponents this turn (the history's damage entries, added up). */
+export const BLOODTHIRST_X = { q: 'happenedCount', event: { ev: 'damage', recipient: { player: 'opponent' } }, scope: 'turn', sum: 'amount' } as const;
 /** std-rx15 (CR 702.82b): parameters a keyword may leave out wherever it stands: "Devour 1" has no filter ("Devour land 3", "Devour Food 3" have one). */
 const LEADING_OPTIONAL_PARAMS: Readonly<Record<string, readonly string[]>> = { devour: ['filter'] };
 
@@ -476,7 +618,9 @@ const GRANT_ONLY_PARAMS: Readonly<Record<string, readonly string[]>> = { 'beam m
  * resolves the choice). A cost paid while casting or activating has its cost changes applied to the total before the choice could be made, so no other keyword
  * reads one (equip's "Pay {3} or discard a card" is a template of its own, zz-fast5x/e27.json, with no cost change to apply).
  */
-const CHOICE_COST_KEYWORDS: ReadonlySet<string> = new Set(['ward']);
+// edh-d-88 (CR 702.151a, 602.2b, 118.12a; Razorfield Ripper, "Reconfigure--Pay {2} or {E}{E}{E}"): and reconfigure, whose two activated abilities take the cost as it is; an activation whose
+// cost is a choice is not offered at all while any cost change applies to it (actions/activate.ts#costChangeOf, FAST5X E27), so no wrong amount is charged
+const CHOICE_COST_KEYWORDS: ReadonlySet<string> = new Set(['ward', 'reconfigure']);
 
 /**
  * Parameter parses of a keyword, in the order of `params`; every param must parse (all or nothing), except those `OPTIONAL_PARAMS` lists for the keyword when
@@ -489,17 +633,31 @@ function paramParses(ctx: HoleCtx, pos: number, params: string[], keyword = '', 
     for (const s of states) {
       if (GRANT_ONLY_PARAMS[keyword]?.includes(prm)) { next.push(s); continue; }
       const dashSkip = phraseAt(ctx, s.end, DASH);
+      // edh-next-127 (CR 702.54b; Indoraptor, the Perfect Hybrid): "Bloodthirst X" means "enters with X +1/+1 counters on it, where X is the total damage your opponents have been dealt this turn":
+      // the keyword's expansion (keywords/data/bloodthirst.json) with that total as its amount (its condition, an opponent was dealt damage, holds whenever the total is above 0)
+      if (prm === 'amount' && keyword === 'bloodthirst') {
+        for (const a of amountAt(ctx, s.end)) next.push({ end: a.end, fields: { ...s.fields, amount: JSON.stringify(a.amount) === '{"q":"X"}' ? BLOODTHIRST_X : a.amount } });
+        continue;
+      }
       if (prm === 'amount') for (const a of amountAt(ctx, s.end)) next.push({ end: a.end, fields: { ...s.fields, amount: a.amount } });
       else if (prm === 'cost') {
         const choice = CHOICE_COST_KEYWORDS.has(keyword);
-        for (const c of costAt(ctx, s.end, choice)) next.push({ end: c.end, fields: { ...s.fields, cost: c.cost } });
-        if (dashSkip >= 0) for (const c of costAt(ctx, dashSkip, choice)) next.push({ end: c.end, fields: { ...s.fields, cost: c.cost } });
+        for (const c of costAt(ctx, s.end, choice, keyword)) next.push({ end: c.end, fields: { ...s.fields, cost: c.cost } });
+        if (dashSkip >= 0) for (const c of costAt(ctx, dashSkip, choice, keyword)) next.push({ end: c.end, fields: { ...s.fields, cost: c.cost } });
       } else if (prm === 'quality') {
         const f = phraseAt(ctx, s.end, P('from'));
+        // edh-next-127 (CR 702.119a-b; Crabomination): "Emerge {cost}" has no quality; "Emerge from artifact {cost}" (the variant "emerge from [quality]") names the kind of permanent to
+        // sacrifice with a singular card type: only "artifact" (keywords/data/emerge.json has its branch; any other quality is no reading, so the line stays manual)
+        if (keyword === 'emerge') {
+          if (f < 0) next.push(s);
+          else if (ctx.toks[f]?.norm === 'artifact') next.push({ end: f + 1, fields: { ...s.fields, quality: 'type:Artifact' } });
+          continue;
+        }
         if (f >= 0) for (const q of qualityAt(ctx, f)) if (q.quality !== OWN_COLORS || keyword === 'hexproof') next.push({ end: q.end, fields: { ...s.fields, quality: q.quality } });
       } else if (prm === 'filter') {
         if ((inList && OPTIONAL_PARAMS[keyword]?.includes(prm)) || LEADING_OPTIONAL_PARAMS[keyword]?.includes(prm)) next.push(s);
-        const lead = phraseAt(ctx, s.end, P('for'));
+        // edh-next-69 (CR 702.47a): "Splice onto Arcane {1}{R}": the filter after "onto"
+        const lead = keyword === 'splice' ? phraseAt(ctx, s.end, P('onto')) : phraseAt(ctx, s.end, P('for'));
         const at = lead >= 0 ? lead : s.end;
         for (const f of ctx.call('Filter', at)) next.push({ end: f.end, fields: { ...s.fields, filter: f.value } });
         const pl = ctx.toks[at]?.norm;
@@ -511,6 +669,19 @@ function paramParses(ctx: HoleCtx, pos: number, params: string[], keyword = '', 
     if (states.length === 0) break;
   }
   return states;
+}
+
+/**
+ * trek-20 (CR 702.14a, 608.2c; Concerted Effort): is the position inside the list of "The same is true for fear, first strike, ..., landwalk, protection, ..." (no sentence end
+ * between "the same is true for" and here)? Only there a bare "landwalk" is read: every landwalk the creatures have, not a landwalk the engine can test alone.
+ */
+function inSameIsTrueFor(ctx: HoleCtx, pos: number): boolean {
+  for (let i = pos - 1; i >= 3; i--) {
+    const t = ctx.toks[i]!;
+    if (t.kind === 'PUNCT' && t.norm === '.') return false;
+    if (t.norm === 'for' && ctx.toks[i - 1]?.norm === 'true' && ctx.toks[i - 2]?.norm === 'is' && ctx.toks[i - 3]?.norm === 'same') return true;
+  }
+  return false;
 }
 
 function keywordAlts(ctx: HoleCtx, pos: number, inList = false): KwAlt[] {
@@ -535,11 +706,45 @@ function keywordAlts(ctx: HoleCtx, pos: number, inList = false): KwAlt[] {
     }
     // a keyword without its parameters (hexproof; or a parameter the registry lists but the text does not give): only when no parameter parse exists,
     // and never for a keyword that is nothing without it (WP22 review, INTERFACE CHANGE)
-    if (PARAMETER_REQUIRED.has(entry.name)) continue;
+    if (PARAMETER_REQUIRED.has(entry.name) && !(entry.name === 'landwalk' && (inSameIsTrueFor(ctx, pos) || (ctx.toks[pos - 2]?.norm === 'loses' && ctx.toks[pos - 1]?.norm === 'all' && ctx.toks[m.end]?.norm === 'abilities')))) continue; /* edh-next-24 (CR 702.14c; Hammerheim): "loses all landwalk abilities" */ // trek-20: "The same is true for ..., landwalk, ..." names the family (every landwalk the creatures have)
     if (entry.params.length === 0 || !out.some((o) => o.entry === entry && o.end > m.end)) out.push({ end: m.end, entry, ability: { ...base, text: spanOf(ctx, pos, m.end) } });
   }
   if (inList) out.push(...landwalkAlts(ctx, pos)); // keyword lines read landwalk with the kw.walk.* templates and cards/keywords.ts
+  if (inList && pos > 0) out.push(...typecyclingAlts(ctx, pos)); // edh-next-142: keyword lines read typecycling with the kw.typecycling.* templates
+  if (inList) out.push(...equipSubtypeAlts(ctx, pos));
   return out;
+}
+
+/**
+ * edh-next-139 (CR 702.6a, 702.6c; Gemcutter Buccaneer): "equip Pirate {1}" in a list of abilities (only there: `inList`): the equip with a quality, its filter a creature of
+ * those subtypes you control, as the keyword line's template kw.t7.equip.subtype reads it ("Equip Dwarf {2}"; a keyword line of its own is read by that template, as before).
+ */
+function equipSubtypeAlts(ctx: HoleCtx, pos: number): KwAlt[] {
+  if (ctx.toks[pos]?.kind !== 'WORD' || ctx.toks[pos]!.norm !== 'equip') return [];
+  const entry = ctx.vocab.keywords.get('equip');
+  if (entry === undefined) return [];
+  const out: KwAlt[] = [];
+  for (const s of ctx.call('Subtypes', pos + 1)) {
+    for (const m of ctx.call('ManaCost', s.end)) {
+      const filter = { types: ['Creature'], subtypes: s.value as string[], controller: 'you' };
+      out.push({ end: m.end, entry, ability: { kind: 'keyword', keyword: entry.name, cost: { mana: m.value as ManaCost }, filter, text: spanOf(ctx, pos, m.end) } });
+    }
+  }
+  return out;
+}
+
+/**
+ * edh-next-142 (CR 702.29a, 702.29e; Homing Sliver): a typecycling in a list of abilities a static ability grants ("Each Sliver card in each player's hand has slivercycling {3}"): the one word
+ * "<subtype>cycling" (a subtype the vocabulary knows, singular) and its mana cost, read as the keyword line's kw.typecycling.* templates read it (a library card of that subtype). Only inside
+ * a list (`inList`, never a keyword line of its own), and never "landcycling" (a card type, with words of its own before it).
+ */
+function typecyclingAlts(ctx: HoleCtx, pos: number): KwAlt[] {
+  const t = ctx.toks[pos];
+  const m = t?.kind === 'WORD' ? /^([a-z]+)cycling$/.exec(t.norm) : null;
+  const sub = m !== null && m[1] !== 'land' ? ctx.vocab.subtypes.get(m[1]!) : undefined;
+  const entry = ctx.vocab.keywords.get('typecycling');
+  if (sub === undefined || sub.plural || entry === undefined) return [];
+  return manaCost(ctx, pos + 1).map((c) => ({ end: c.end, entry, ability: { kind: 'keyword', keyword: entry.name, cost: { mana: c.value }, filter: { zone: 'library', subtypes: [sub.name] }, text: spanOf(ctx, pos, c.end) } }));
 }
 
 /** Cloud C3 (CR 702.14a): the land words a landwalk can have (the keyword line's cards/keywords.ts#parseLandwalk, which the parser may not import). */
@@ -553,6 +758,15 @@ const WALK_QUALIFIERS: ReadonlySet<string> = new Set(['snow', 'legendary', 'basi
  */
 function landwalkAlts(ctx: HoleCtx, pos: number): KwAlt[] {
   const out: KwAlt[] = [];
+  // edh-d-72 (CR 702.14a, 702.14c, 607.2d; Traveler's Cloak): "landwalk of the chosen type", the land type the linked "As ~ enters, choose a land type." chose (quality `chosen:landType`,
+  // read where the layers grant the keyword: statics/mods.ts#withChosenQualities)
+  if (ctx.toks[pos]?.norm === 'landwalk') {
+    const e = phraseAt(ctx, pos + 1, W_OF_THE_CHOSEN_TYPE);
+    if (e >= 0) {
+      const entry = ctx.vocab.keywords.get('landwalk') ?? { name: 'landwalk', params: ['quality'] };
+      out.push({ end: e, entry, ability: { kind: 'keyword', keyword: entry.name, quality: 'chosen:landType', text: spanOf(ctx, pos, e) } });
+    }
+  }
   const words: string[] = [];
   for (let p = pos; p < pos + 3 && p < ctx.toks.length; p++) {
     const t = ctx.toks[p]!;
@@ -594,15 +808,24 @@ export function abilitiesFor(ctx: HoleCtx, pos: number, selfName?: string, renam
   const walk = (p: number, acc: unknown[], depth: number, weak = 0): void => {
     if (depth > 12) return; // std-combat-2: Super-Adaptoid lists ten keywords (was 8)
     const t = ctx.toks[p];
-    const elems: { end: number; items: unknown[]; weak?: number }[] = [];
+    const elems: { end: number; items: unknown[]; weak?: number; glued?: true }[] = [];
     for (const k of keywordAlts(ctx, p, true)) elems.push({ end: k.end, items: [k.ability], ...(k.weak ? { weak: k.weak } : {}) }); // Cloud C3: a landwalk's weakness carries to the list
     if (t?.kind === 'QUOTE' && t.sub !== undefined && ctx.subParser !== undefined) {
       // FAST5 T41: in a list of three or more, the comma that follows a quoted ability goes inside its closing quote (`reach, "A," and "B."`): it separates, it is no part of the ability
       const closing = t.sub[t.sub.length - 1];
-      const listComma = closing?.kind === 'PUNCT' && closing.norm === ',' && ctx.toks[p + 1]?.kind === 'WORD' && ctx.toks[p + 1]!.norm === 'and';
-      const inside = listComma ? t.sub.slice(0, -1) : t.sub;
-      const sub = ctx.subParser(selfName !== undefined && rename !== undefined ? rename(inside, selfName) : inside);
-      if (sub !== null && sub.length > 0) elems.push({ end: p + 1, items: sub });
+      // edh-next-139 (Gemcutter Buccaneer): the same comma when the list goes on with a keyword (`have "A," equip Pirate {1}, and equip {3}`): the quote is glued to the next item
+      const commaInside = closing?.kind === 'PUNCT' && closing.norm === ',' && ctx.toks[p + 1]?.kind === 'WORD';
+      const listComma = commaInside && ctx.toks[p + 1]!.norm === 'and';
+      const glued = commaInside && !listComma && keywordAlts(ctx, p + 1, true).length > 0;
+      const inside = listComma || glued ? t.sub.slice(0, -1) : t.sub;
+      let sub = ctx.subParser(selfName !== undefined && rename !== undefined ? rename(inside, selfName) : inside);
+      // edh-next-130 (Shelob, Child of Ungoliant: `with "{2}, {T}, Sacrifice this token: You gain 3 life," and it loses ...`): the comma stands where the ability's own period would be;
+      // when the ability reads only with its period, read it so (tried only after the reading without it found nothing)
+      if ((sub === null || sub.length === 0) && listComma) {
+        const dotted = [...inside, { ...closing!, norm: '.', text: '.' }];
+        sub = ctx.subParser(selfName !== undefined && rename !== undefined ? rename(dotted, selfName) : dotted);
+      }
+      if (sub !== null && sub.length > 0) elems.push({ end: p + 1, items: sub, ...(glued ? { glued: true } : {}) });
     }
     // "from <quality>" continuing the previous quality keyword: "protection from red and from blue"
     const prev = acc[acc.length - 1] as Record<string, unknown> | undefined;
@@ -612,6 +835,8 @@ export function abilitiesFor(ctx: HoleCtx, pos: number, selfName?: string, renam
     for (const e of elems) {
       const items = [...acc, ...e.items];
       const w = weak + (e.weak ?? 0);
+      // edh-next-139: a glued quote ends no list (its comma separates it from the next item, which must follow)
+      if (e.glued) { walk(e.end, items, depth + 1, w); continue; }
       out.push({ end: e.end, value: items, ...(w > 0 ? { weak: w } : {}) });
       const sep = anyPhraseAt(ctx, e.end, SEPARATORS);
       if (sep >= 0) walk(sep, items, depth + 1, w);

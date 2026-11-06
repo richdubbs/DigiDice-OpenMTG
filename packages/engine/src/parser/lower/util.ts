@@ -2,6 +2,7 @@
  * Small JSON helpers of the lowering passes (design 6.5). Owner: WP17. Pure: nothing here edits its input.
  */
 import type { Condition, StaticAbilityDef } from '../../types/ability';
+import { THAT_COLOR_QUALITY } from '../holes/core';
 import type { Draft, Rec, Unit } from './types';
 
 export const isRec = (v: unknown): v is Rec => v !== null && typeof v === 'object' && !Array.isArray(v);
@@ -98,6 +99,7 @@ export function leftoverMarker(value: unknown): string | null {
     // std-rx9: "the chosen ..." inside a quoted ability, left for the ability that creates the emblem (lower/links.ts#resolveEmblemChoices)
     if (v === QUOTED_LINK) { found = QUOTED_LINK; return; }
     if (v === MANA_COLOR_MARKER) { found = MANA_COLOR_MARKER; return; } // std-mana-12: "that color" with no mana before it (lower/links.ts#resolveManaColor)
+    if (v === THAT_COLOR_QUALITY) { found = THAT_COLOR_QUALITY; return; } // edh-players-8: "hexproof from that color" with no color choice before it (lower/links.ts)
     if (Array.isArray(v)) { v.forEach(walk); return; }
     if (!isRec(v)) return;
     for (const [k, x] of Object.entries(v)) {

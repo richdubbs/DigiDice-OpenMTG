@@ -20,6 +20,10 @@ export interface LinkUse {
   what?: string;
   /** Consumer: the qualities that can read it (a chosen type is read as a card type or a creature type, ...). */
   reads?: readonly string[];
+  /** edh-players-13: Producer: the words a choice among options offers ("fame", "fortune"). */
+  options?: readonly string[];
+  /** edh-players-13: Consumer: the word a `chose` reference asks for ("each player who chose fame"): one of the producer's options. */
+  value?: string;
 }
 
 /**
@@ -41,7 +45,7 @@ export function collectLinks(def: AbilityDef, base: string, producers: LinkUse[]
     };
     switch (n.def) {
       case 'EffectStep':
-        add(producers, v['link'], v['op'] === 'chooseValue' && typeof v['what'] === 'string' ? { what: v['what'] } : {});
+        add(producers, v['link'], v['op'] === 'chooseValue' && typeof v['what'] === 'string' ? { what: v['what'], ...(Array.isArray(v['options']) ? { options: v['options'].map(String) } : {}) } : {});
         break;
       case 'ReplacementBody.choose':
         add(producers, v['link'], typeof v['what'] === 'string' ? { what: v['what'] } : {});
@@ -50,6 +54,8 @@ export function collectLinks(def: AbilityDef, base: string, producers: LinkUse[]
         if (v['b'] === 'modify') add(producers, v['link']);
         // std-cardcopy-3 (CR 614.12a, 607.2a): "As ~ enters, exile up to X creature cards from your graveyard" keeps the cards it exiled (effects/bodies/m5.ts#exileAsEnters)
         if (v['b'] === 'enters' && typeof v['exileCards'] === 'object' && v['exileCards'] !== null) add(producers, (v['exileCards'] as Record<string, unknown>)['link']);
+        // edh-next-146 (CR 614.12a, 607.2d): "As ~ enters, choose another creature you control." keeps the object it chose
+        if (v['b'] === 'enters' && typeof v['chooseObject'] === 'object' && v['chooseObject'] !== null) add(producers, (v['chooseObject'] as Record<string, unknown>)['link']);
         break;
       case 'TargetSpec': // LNK1: the targets an ability affected (CR 607.1, "that player" of another ability)
         add(producers, v['link']);
@@ -66,22 +72,35 @@ export function collectLinks(def: AbilityDef, base: string, producers: LinkUse[]
       case 'ObjRef':
       case 'PlayerRef':
         if (v['ref'] === 'linked') add(consumers, v['link']);
+        else if (v['ref'] === 'chose') add(consumers, v['link'], { reads: ['option'], ...(typeof v['value'] === 'string' ? { value: v['value'] } : {}) }); // edh-players-13: "each player who chose fame" reads a choice among the words
+        else if (v['ref'] === 'choseNumber') add(consumers, v['link'], { reads: ['number'] }); // edh-next-120: "each player who chose that number" reads several players' numbers
         break;
       case 'ObjectFilter.chosen':
-        add(consumers, v['link'], typeof v['quality'] === 'string' ? { reads: [v['quality']] } : {});
+        // edh-d-95 (CR 208.1, 607.2d): "with power of the chosen quality" (`oddEvenPower`) reads an "odd or even" choice
+        add(consumers, v['link'], typeof v['quality'] === 'string' ? { reads: [v['quality'] === 'oddEvenPower' ? 'oddEven' : v['quality']] } : {});
         break;
       case 'Condition':
         if (v['cond'] === 'chosen') add(consumers, v['link']);
+        if (v['cond'] === 'allChose') add(consumers, v['link'], { reads: ['option'], ...(typeof v['equals'] === 'string' ? { value: v['equals'] } : {}) }); // edh-next-120: "if each opponent chose silence"
         break;
       case 'ManaProduction':
-        if (v['kind'] === 'chosen') add(consumers, v['link'], { reads: ['color'] });
+        if (v['kind'] === 'chosen') add(consumers, v['link'], { reads: v['noted'] === true ? ['manaTypeSpent'] : ['color'] }); // edh-mana-keywords-12: a NOTED type is read from a note of the mana spent, never from a chosen color
+        break;
+      case 'ActivatedAbilityDef': // edh-mana-keywords-8 (CR 607.2d): "Spend only mana of the chosen color to activate this ability." reads the color the face chose
+        if (typeof v['spendOnlyChosen'] === 'string') add(consumers, v['spendOnlyChosen'], { reads: ['color'] });
         break;
       case 'Modification.colors':
         add(consumers, v['chosen'], { reads: ['color'] });
         break;
+      case 'RuleModDef': // edh-next-146 (CR 607.2d): "As this Equipment becomes attached to a creature, choose ..." keeps each choice under its link
+        if (v['rule'] === 'chooseAsAttached' && Array.isArray(v['asAttached'])) for (const c of v['asAttached'] as unknown[]) if (c !== null && typeof c === 'object') add(producers, (c as Record<string, unknown>)['link'], { what: String((c as Record<string, unknown>)['what']) });
+        break;
+      case 'Modification': // edh-next-146 (CR 612.8): "its name is the last chosen name" reads a card name
+        if (v['layer'] === 4) add(consumers, v['namedChosen'], { reads: ['cardName'] });
+        break;
       case 'TypeChange':
         // the slot says which class of type is set: card types, creature or land types (subtypes), supertypes (never chosen)
-        add(consumers, v['chosen'], { reads: n.slot === 'types' ? ['cardType'] : n.slot === 'subtypes' ? ['creatureType', 'landType'] : [] });
+        add(consumers, v['chosen'], { reads: n.slot === 'types' ? ['cardType'] : n.slot === 'subtypes' ? ['creatureType', 'landType', 'planeswalkerType' /* edh-d-94 */] : [] });
         break;
       default:
     }
@@ -97,14 +116,19 @@ export function collectLinks(def: AbilityDef, base: string, producers: LinkUse[]
 function costReferenceIssues(abilities: readonly AbilityDef[], fi: number, issues: Issue[]): void {
   const parts = abilities.flatMap((a) => (a.kind === 'static' ? a.effects.flatMap((e) => (e.s === 'additionalCost' ? e.cost.other ?? [] : [])) : []));
   const pays = (kind: string): boolean => parts.some((p) => p.kind === kind && !('self' in p && p.self === true));
-  const READS: Readonly<Record<string, string>> = { costDiscarded: 'discard', costExiled: 'exileFrom', costBeheld: 'behold' /* std-rx28 */, costChosenObject: 'chooseObject' /* std-costs-2 */, costRevealed: 'reveal' /* p2-refs-1 */ };
+  const READS: Readonly<Record<string, string>> = { costDiscarded: 'discard', costExiled: 'exileFrom', costBeheld: 'behold' /* std-rx28 */, costChosenObject: 'chooseObject' /* std-costs-2 */, costRevealed: 'reveal' /* p2-refs-1 */, costTapped: 'tapUntapped' /* edh-next-104 */ };
   // std-rx28 (CR 702.188a, 702.190b): "the returned creature" of a face whose web-slinging or sneak cost returns a creature, in any ability of that face
-  const returns = abilities.some((a) => a.kind === 'keyword' && (a.keyword === 'web-slinging' || a.keyword === 'sneak'));
+  // edh-d-46 (CR 118.3, 608.2h; Wonderscape Sage): or an activated ability whose cost returns a permanent that is not the source ("Return a land you control to its owner's hand")
+  const returns = abilities.some((a) => (a.kind === 'keyword' && (a.keyword === 'web-slinging' || a.keyword === 'sneak')) || (a.kind === 'activated' && (a.cost.other ?? []).some((p) => p.kind === 'returnToHand' && !('self' in p && p.self === true))));
   abilities.forEach((a, ai) => {
     walkAbility(a, (n) => {
       if (n.parent !== null && ABILITY_DEFS.has(n.def)) return false;
       if (n.def === 'ObjRef' && n.value['ref'] === 'costReturned' && !returns) {
         issues.push({ path: n.path, code: 'executable-gap', severity: 'error', message: `{ref:'costReturned'} needs web-slinging or sneak on that face (CR 702.188a, 702.190b)` });
+      }
+      // edh-next-141 (CR 701.3d, 602.2b): what an unattach cost unattached is known only to the activated ability whose own cost unattaches a permanent other than the source
+      if (n.def === 'ObjRef' && n.value['ref'] === 'costUnattached' && !(a.kind === 'activated' && (a.cost.other ?? []).some((p) => p.kind === 'unattach' && p.self !== true))) {
+        issues.push({ path: n.path, code: 'executable-gap', severity: 'error', message: `{ref:'costUnattached'} needs an activated ability whose cost unattaches another permanent (CR 701.3d, 602.2b)` });
       }
       return undefined;
     }, { path: `/faces/${fi}/abilities/${ai}` });
@@ -116,7 +140,7 @@ function costReferenceIssues(abilities: readonly AbilityDef[], fi: number, issue
       const r = n.def === 'ObjRef' ? n.value['ref'] : undefined;
       const kind = typeof r === 'string' ? READS[r] : undefined;
       if (kind !== undefined && n.value['self'] !== true && !pays(kind)) {
-        issues.push({ path: n.path, code: 'executable-gap', severity: 'error', message: `{ref:'${String(r)}'} in a spell needs an additional cost of that face that ${kind === 'discard' ? 'discards' : kind === 'behold' ? 'beholds' : kind === 'reveal' ? 'reveals' : 'exiles'} a card (CR 601.2b, 400.7j, 701.4a)` });
+        issues.push({ path: n.path, code: 'executable-gap', severity: 'error', message: `{ref:'${String(r)}'} in a spell needs an additional cost of that face that ${kind === 'discard' ? 'discards' : kind === 'behold' ? 'beholds' : kind === 'reveal' ? 'reveals' : kind === 'tapUntapped' ? 'taps' : 'exiles'} a card (CR 601.2b, 400.7j, 701.4a)` });
       }
       return undefined;
     }, { path: `/faces/${fi}/abilities/${ai}` });
@@ -162,6 +186,11 @@ export function lintCard(faces: { abilities: AbilityDef[] }[]): Issue[] {
     const kinds = producers.filter((p) => p.link === c.link).map((p) => p.what);
     if (c.reads !== undefined && kinds.every((k) => k !== undefined) && !kinds.some((k) => c.reads!.includes(k!))) {
       issues.push({ path: c.path, code: 'unlinked', severity: 'error', message: `link "${c.link}" holds ${[...new Set(kinds)].join(' / ')}, which cannot be read as ${c.reads.join(' / ') || 'this'} (CR 607.2d)` });
+    }
+    // edh-players-13 (CR 608.2d): "each player who chose fame" names a word the choice offered; a word it never offered is nobody (a silent no-op, never a guess)
+    const offered = producers.filter((p) => p.link === c.link && p.options !== undefined);
+    if (c.value !== undefined && offered.length > 0 && !offered.some((p) => p.options!.includes(c.value!))) {
+      issues.push({ path: c.path, code: 'unlinked', severity: 'error', message: `link "${c.link}" offers ${[...new Set(offered.flatMap((p) => p.options!))].join(' / ')}, never "${c.value}" (CR 608.2d)` });
     }
   }
   for (const p of producers) {

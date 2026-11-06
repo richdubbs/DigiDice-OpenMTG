@@ -1,0 +1,244 @@
+[
+  {
+    "id": "eff.edhv33.tap.anyNumber.creatures.may",
+    "kind": "effect",
+    "since": 33,
+    "status": "stable",
+    "cr": [
+      "CR 701.26a",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may tap any number of untapped creatures you control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you",
+            "tapped": false
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "tapCandidates"
+      },
+      {
+        "op": "tap",
+        "what": {
+          "ref": "bound",
+          "name": "tapCandidates"
+        },
+        "as": "tappedThisWay"
+      }
+    ],
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "may",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may tap any number of untapped creatures you control. ~ gets +2/+0 until end of turn for each creature tapped this way."
+      },
+      {
+        "text": "You may tap any number of untapped creatures you control. ~ gets +0/+3 until end of turn for each creature tapped this way."
+      }
+    ],
+    "counterExamples": [
+      "You may tap any number of creatures you control.",
+      "You may tap any number of untapped artifacts you control.",
+      "You may tap any number of untapped creatures you control with total power 3 or greater."
+    ]
+  },
+  {
+    "id": "eff.edhv33.gain.perTappedThisWay",
+    "kind": "effect",
+    "since": 33,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 119.3",
+      "CR 701.26a"
+    ],
+    "pattern": "you gain {n:Qty} life for each creature tapped this way",
+    "build": {
+      "op": "gainLife",
+      "who": {
+        "ref": "you"
+      },
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$n",
+          {
+            "q": "resultCount",
+            "step": "tappedThisWay"
+          }
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Tap any number of untapped creatures you control. You gain 3 life for each creature tapped this way."
+      },
+      {
+        "text": "Whenever ~ attacks, tap any number of untapped creatures you control. You gain 2 life for each creature tapped this way."
+      }
+    ],
+    "counterExamples": [
+      "Tap any number of untapped creatures you control. You gain 3 life for each artifact tapped this way.",
+      "Tap any number of untapped creatures you control. Target player gains 3 life for each creature tapped this way.",
+      "Tap any number of untapped creatures you control. You gain 3 life for each creature."
+    ]
+  },
+  {
+    "id": "eff.edhv33.return.upTo.theirOwnersHand",
+    "kind": "effect",
+    "since": 33,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.3",
+      "CR 400.7"
+    ],
+    "pattern": "return up to {n:Qty} {f:Filter} to their owner 's hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, return up to three lands you control to their owner's hand."
+      },
+      {
+        "text": "When ~ enters, return up to four artifacts you control to their owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, return up to two lands you control to their owners' hands.",
+      "When ~ enters, return up to two lands you control to their owner's library.",
+      "When ~ enters, return up to two lands you control to its owner's hand."
+    ]
+  },
+  {
+    "id": "eff.edhv33.put.opponentGraveyard.bottomTheirLibrary",
+    "kind": "effect",
+    "since": 33,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put {o:Obj} on the bottom of their library",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "library",
+          "position": "bottom"
+        }
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "When ~ enters, put target artifact card from an opponent's graveyard on the bottom of their library."
+      },
+      {
+        "text": "When ~ enters, put target creature card from an opponent's graveyard on the bottom of their library."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put target card from your graveyard on the bottom of their library.",
+      "When ~ enters, put target card from an opponent's graveyard on top of their library.",
+      "When ~ enters, put target card from an opponent's graveyard into their library."
+    ]
+  },
+  {
+    "id": "sta.edhv33.aslong.self.extrablock",
+    "kind": "static",
+    "since": 33,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 509.1b",
+      "CR 611.3a",
+      "CR 604.2"
+    ],
+    "pattern": "as long as {c:Cond} , ( ~ | it ) can block an additional creature each combat",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "extraBlockers",
+          "value": 1,
+          "of": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Swamp, ~ can block an additional creature each combat."
+      },
+      {
+        "text": "As long as ~ is an artifact, it can block an additional creature each combat."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is a creature, it can block two additional creatures each combat.",
+      "As long as ~ is a creature, it can't block an additional creature each combat.",
+      "As long as ~ is a creature, it can't be blocked."
+    ]
+  }
+]

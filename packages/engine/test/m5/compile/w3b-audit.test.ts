@@ -113,11 +113,11 @@ describe('W3b audit 2, CR 701.27g: a transformed permanent is any double-faced p
   const whelp = compileCard(creature('As long as you control a transformed permanent, this creature has flying.', { name: 'Test Whelp', power: '1', toughness: '1' }));
   const delver = 'Delver of Secrets // Insectile Aberration';
 
-  it('Mutagen Connoisseur (synthetic wording): a transforming card and a modal card played as its back face both count; front faces do not', () => {
+  it('Mutagen Connoisseur (synthetic wording): only the transforming card counts; a modal card played as its back face does not (edh-d-55: Scryfall rulings 2023-04-14 of Corruption of Towashi / Invasion of Pyrulea); front faces do not', () => {
     expect(counter.automation.level).toBe('full');
     const s = scenario([delver], { p1: { battlefield: ['Test Connoisseur', { name: delver, face: 1 }, { name: delver }, { name: modal.name, face: 1 }] }, defs: [counter, modal] });
     const id = find(s, 'Test Connoisseur', 'battlefield');
-    expect(getChars(s, id).power).toBe('3'); // Insectile Aberration and Test Rockfall Pass
+    expect(getChars(s, id).power).toBe('2'); // Insectile Aberration only
     const front = scenario([delver], { p1: { battlefield: ['Test Connoisseur', { name: modal.name, face: 0 }] }, defs: [counter, modal] });
     expect(getChars(front, find(front, 'Test Connoisseur', 'battlefield')).power).toBe('1');
   });
@@ -128,18 +128,18 @@ describe('W3b audit 2, CR 701.27g: a transformed permanent is any double-faced p
     expect(getChars(s, find(s, 'Test Connoisseur', 'battlefield')).power).toBe('1');
   });
 
-  it('Oculus Whelp (synthetic wording): "as long as you control a transformed permanent" is true with a modal back face', () => {
+  it('Oculus Whelp (synthetic wording): "as long as you control a transformed permanent" is not true with a modal back face (edh-d-55)', () => {
     const s = scenario([], { p1: { battlefield: ['Test Whelp', { name: modal.name, face: 1 }] }, defs: [whelp, modal] });
-    expect(getChars(s, find(s, 'Test Whelp', 'battlefield')).keywords.map((k) => k.keyword)).toContain('flying');
+    expect(getChars(s, find(s, 'Test Whelp', 'battlefield')).keywords.map((k) => k.keyword)).not.toContain('flying');
     const f = scenario([], { p1: { battlefield: ['Test Whelp', { name: modal.name, face: 0 }] }, defs: [whelp, modal] });
     expect(getChars(f, find(f, 'Test Whelp', 'battlefield')).keywords.map((k) => k.keyword)).not.toContain('flying');
   });
 
-  it.skipIf(real('Mutagen Connoisseur') === undefined)('Mutagen Connoisseur: counts a modal double-faced permanent with its back face up', () => {
+  it.skipIf(real('Mutagen Connoisseur') === undefined)('Mutagen Connoisseur: does not count a modal double-faced permanent with its back face up (edh-d-55)', () => {
     const def = compileCard(real('Mutagen Connoisseur')!);
     const s = scenario([delver], { p1: { battlefield: [def.name, { name: delver, face: 1 }, { name: modal.name, face: 1 }] }, defs: [def, modal] });
     const id = find(s, def.name, 'battlefield');
-    expect(Number(getChars(s, id).power)).toBe(Number(def.faces[0]!.power) + 2);
+    expect(Number(getChars(s, id).power)).toBe(Number(def.faces[0]!.power) + 1);
   });
 });
 

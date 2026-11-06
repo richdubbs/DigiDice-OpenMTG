@@ -1,0 +1,249 @@
+[
+  {
+    "id": "sta.edhv17.each.pump.aslongCreature",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 205.1"
+    ],
+    "pattern": "each {f:Filter} gets {pt:PT} as long as it's a creature",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "$merge": [
+                "$f",
+                {
+                  "allTypes": [
+                    "Creature"
+                  ]
+                }
+              ]
+            }
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each artifact gets +1/+1 as long as it's a creature."
+      },
+      {
+        "text": "Each enchantment gets +3/+3 as long as it's a creature."
+      }
+    ],
+    "counterExamples": [
+      "Each land gets +2/+2 as long as it's a creature until end of turn.",
+      "Each land gets +2/+2 as long as it's an artifact.",
+      "Each land gets +2/+2 as long as you control a creature."
+    ]
+  },
+  {
+    "id": "eff.edhv17.player.lose.poison.mill",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 122.1f",
+      "CR 701.17a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} lose[s] {a:Qty} life , get[s] {b:Qty} poison counter[s] , then mill[s] {c:Qty} card[s]",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$a"
+      },
+      {
+        "op": "putCounters",
+        "on": "$p",
+        "kind": "poison",
+        "count": "$b"
+      },
+      {
+        "op": "mill",
+        "who": "$p",
+        "count": "$c"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent loses 2 life, gets a poison counter, then mills six cards."
+      },
+      {
+        "text": "Each opponent loses 1 life, gets two poison counters, then mills three cards."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent loses 2 life, gets a poison counter, and mills six cards.",
+      "Target opponent loses 2 life, gets an experience counter, then mills six cards.",
+      "Target opponent loses 2 life, then mills six cards."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.edhv17.player.lose.discard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life and discard[s] {m:Qty} card[s]",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$n"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent loses 1 life and discards a card."
+      },
+      {
+        "text": "Each opponent loses 2 life and discards two cards."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent loses 1 life and discards a card at random.",
+      "Target opponent discards a card and loses 1 life.",
+      "Target opponent loses 1 life and you discard a card."
+    ]
+  },
+  {
+    "id": "rep.edhv17.skip.upkeep.if",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 503.1",
+      "CR 402.1"
+    ],
+    "pattern": "skip your upkeep step if {c:Cond}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "step",
+            "step": "upkeep",
+            "whose": "you"
+          },
+          "condition": "$c",
+          "body": {
+            "b": "skip"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "skip",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Skip your upkeep step if you have no cards in hand."
+      },
+      {
+        "text": "Skip your upkeep step if you control no creatures."
+      }
+    ],
+    "counterExamples": [
+      "Skip your upkeep step.",
+      "Skip your draw step if you have no cards in hand.",
+      "Skip your next upkeep step if you have no cards in hand."
+    ]
+  },
+  {
+    "id": "sta.edhv17.attached.cantAttack.you",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature can't attack you or planeswalkers you control",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attack",
+          "other": {
+            "types": [
+              "Planeswalker"
+            ],
+            "controller": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature can't attack you or planeswalkers you control."
+      },
+      {
+        "text": "enchanted creature can't attack you or planeswalkers you control."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't attack you.",
+      "Enchanted creature can't attack you or planeswalkers you control unless its controller pays {1}.",
+      "Creatures can't attack you or planeswalkers you control."
+    ]
+  }
+]

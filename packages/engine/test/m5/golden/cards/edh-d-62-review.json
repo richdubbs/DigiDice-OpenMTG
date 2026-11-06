@@ -1,0 +1,865 @@
+[
+{
+"card": "Ginger, Queen of Sweets",
+"expect": "full",
+"verified": "edh-d-62 review (Commander lane commander, third pass, round edhd62), by hand against the Oracle text, the card Gingerbrute (Scryfall ruling 2026-08-21: the token is a copy of the card Gingerbrute) and the Comprehensive Rules of 2026-09-25 (CR 111.4, 202.3, 701.7a, 702.10 checked): when Ginger enters its controller becomes the monarch; {2},{T}, sacrifice: gain 6 life; at the beginning of each upkeep, if you're the monarch (intervening if, checked as the trigger fires and resolves), a Gingerbrute token is made (eff.edhd62.token.gingerbrute): {1} 1/1 colorless Food Golem artifact creature, haste, '{1}: can't be blocked this turn except by creatures with haste' (a restriction until end of turn on the token itself), '{2},{T}, sacrifice it: you gain 3 life'. The first two abilities and the trigger were already templates.",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"op": "designate",
+"what": "monarch",
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "zoneChange",
+"subject": {
+"self": true
+},
+"to": "battlefield"
+}
+]
+}
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 2,
+"kind": "generic"
+}
+],
+"other": [
+{
+"count": 1,
+"filter": {
+"self": true
+},
+"kind": "sacrifice",
+"self": true
+}
+],
+"tap": true
+},
+"effect": {
+"steps": [
+{
+"amount": 6,
+"op": "gainLife",
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"kind": "activated"
+},
+{
+"effect": {
+"steps": [
+{
+"count": 1,
+"op": "createToken",
+"token": {
+"abilities": [
+{
+"keyword": "haste",
+"kind": "keyword"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 1,
+"kind": "generic"
+}
+]
+},
+"effect": {
+"steps": [
+{
+"duration": {
+"d": "endOfTurn"
+},
+"effects": [
+{
+"action": "beBlockedBy",
+"mode": "cant",
+"other": {
+"not": {
+"keyword": "haste",
+"types": [
+"Creature"
+]
+}
+},
+"s": "restrict",
+"subject": {
+"ref": "self"
+}
+}
+],
+"op": "effect"
+}
+],
+"targets": []
+},
+"kind": "activated"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 2,
+"kind": "generic"
+}
+],
+"other": [
+{
+"count": 1,
+"filter": {
+"self": true
+},
+"kind": "sacrifice",
+"self": true
+}
+],
+"tap": true
+},
+"effect": {
+"steps": [
+{
+"amount": 3,
+"op": "gainLife",
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"kind": "activated"
+}
+],
+"manaCost": [
+{
+"amount": 1,
+"kind": "generic"
+}
+],
+"name": "Gingerbrute",
+"power": 1,
+"subtypes": [
+"Food",
+"Golem"
+],
+"toughness": 1,
+"types": [
+"Artifact",
+"Creature"
+]
+},
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"interveningIf": {
+"cond": "designation",
+"what": "monarch",
+"who": {
+"ref": "you"
+}
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "step",
+"step": "upkeep"
+}
+]
+}
+}
+]
+}
+]
+},
+{
+"card": "Rowan Kenrith",
+"expect": "full",
+"verified": "edh-d-62 review (Commander lane commander, third pass, round edhd62), by hand against the Oracle text, Scryfall rulings (2018-06-08: a creature that can't attack doesn't; the requirement binds creatures that come under the player's control that turn) and the Comprehensive Rules of 2026-09-25 (CR 508.1d, 611.2a, 500.1 checked): +2 targets one player (any); a lasting attack requirement 'attacks if able' on every creature that player controls, dormant until that player's next turn begins and then lasting that turn only (duringNextTurn with whose = the target, eff.edhd62.player.nextTurn.eachCreatureMustAttack, played in cloud/edh-d-62: refused empty declaration, expires, activator unaffected); -2: 3 damage to each tapped creature that player controls; -8: the emblem copies activated abilities that aren't mana abilities (older templates); partner with Will Kenrith; can be your commander.",
+"faces": [
+{
+"abilities": [
+{
+"cost": {
+"loyalty": 2
+},
+"effect": {
+"steps": [
+{
+"duration": {
+"d": "duringNextTurn",
+"whose": {
+"id": "t0",
+"ref": "target"
+}
+},
+"effects": [
+{
+"action": "attack",
+"mode": "mustIfAble",
+"s": "restrict",
+"subject": {
+"filter": {
+"controller": {
+"id": "t0",
+"ref": "target"
+},
+"types": [
+"Creature"
+]
+},
+"ref": "each"
+}
+}
+],
+"op": "effect"
+}
+],
+"targets": [
+{
+"id": "t0",
+"kind": "player",
+"max": 1,
+"min": 1
+}
+]
+},
+"isLoyalty": true,
+"kind": "activated"
+},
+{
+"cost": {
+"loyalty": -2
+},
+"effect": {
+"steps": [
+{
+"amount": 3,
+"op": "damage",
+"source": {
+"ref": "self"
+},
+"to": {
+"filter": {
+"controller": {
+"id": "t0",
+"ref": "target"
+},
+"tapped": true,
+"types": [
+"Creature"
+]
+},
+"ref": "each"
+}
+}
+],
+"targets": [
+{
+"id": "t0",
+"kind": "player",
+"max": 1,
+"min": 1
+}
+]
+},
+"isLoyalty": true,
+"kind": "activated"
+},
+{
+"cost": {
+"loyalty": -8
+},
+"effect": {
+"steps": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"newTargets": "may",
+"op": "copy",
+"result": "spell",
+"what": {
+"ref": "event",
+"role": "spell"
+},
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "activate",
+"manaAbility": false,
+"player": "you"
+}
+]
+}
+}
+],
+"op": "createEmblem",
+"who": {
+"id": "t0",
+"ref": "target"
+}
+}
+],
+"targets": [
+{
+"id": "t0",
+"kind": "player",
+"max": 1,
+"min": 1
+}
+]
+},
+"isLoyalty": true,
+"kind": "activated"
+},
+{
+"filter": {
+"name": "Will Kenrith"
+},
+"keyword": "partner with",
+"kind": "keyword"
+},
+{
+"effects": [
+{
+"rule": "canBeCommander",
+"s": "deckConstruction"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Jared Carthalion",
+"expect": "full",
+"verified": "edh-d-62 review (Commander lane commander, third pass, round edhd62), by hand against the Oracle text and the Comprehensive Rules of 2026-09-25 (CR 608.2d, 122.1, 105.2, 105.2b checked): +1: a 3/3 Kavu token with trample that's all five colors; -3: up to two target creatures, each one gets a number of +1/+1 counters equal to the number of colors it is (forEach over the targets, distinct colors among the bound creature, eff.edhd62.forEachOfThem.counters.colorsItIs, played with a two-color, a colorless and a three-color creature); -6: target multicolored card from your graveyard returns to your hand, then if that card was all colors (five colors, a comparison of the distinct colors among the target with 5, eff.edhd62.if.thatCard.wasAllColors, played with a five-color and a four-color card) you draw a card and create two Treasure tokens; can be your commander.",
+"faces": [
+{
+"abilities": [
+{
+"cost": {
+"loyalty": 1
+},
+"effect": {
+"steps": [
+{
+"count": 1,
+"op": "createToken",
+"token": {
+"colors": [
+"W",
+"U",
+"B",
+"R",
+"G"
+],
+"keywords": [
+"trample"
+],
+"power": 3,
+"subtypes": [
+"Kavu"
+],
+"toughness": 3,
+"types": [
+"Creature"
+]
+},
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"isLoyalty": true,
+"kind": "activated"
+},
+{
+"cost": {
+"loyalty": -3
+},
+"effect": {
+"steps": [
+{
+"as": "b0",
+"do": [
+{
+"count": {
+"among": {
+"name": "b0",
+"ref": "bound"
+},
+"q": "distinct",
+"what": "colors"
+},
+"kind": "+1/+1",
+"on": {
+"name": "b0",
+"ref": "bound"
+},
+"op": "putCounters"
+}
+],
+"op": "forEach",
+"over": {
+"id": "t0",
+"ref": "target"
+}
+}
+],
+"targets": [
+{
+"filter": {
+"types": [
+"Creature"
+]
+},
+"id": "t0",
+"kind": "object",
+"max": 2,
+"min": 0
+}
+]
+},
+"isLoyalty": true,
+"kind": "activated"
+},
+{
+"cost": {
+"loyalty": -6
+},
+"effect": {
+"steps": [
+{
+"op": "move",
+"to": {
+"zone": "hand"
+},
+"what": {
+"id": "t0",
+"ref": "target"
+}
+},
+{
+"cond": {
+"cond": "compare",
+"left": {
+"among": {
+"id": "t0",
+"ref": "target"
+},
+"q": "distinct",
+"what": "colors"
+},
+"op": ">=",
+"right": 5
+},
+"op": "if",
+"then": [
+{
+"count": 1,
+"op": "draw",
+"who": {
+"ref": "you"
+}
+},
+{
+"count": 2,
+"op": "createToken",
+"token": {
+"predefined": "Treasure"
+},
+"who": {
+"ref": "you"
+}
+}
+]
+}
+],
+"targets": [
+{
+"filter": {
+"isCard": true,
+"multicolored": true,
+"owner": "you",
+"zone": "graveyard"
+},
+"id": "t0",
+"kind": "object",
+"max": 1,
+"min": 1
+}
+]
+},
+"isLoyalty": true,
+"kind": "activated"
+},
+{
+"effects": [
+{
+"rule": "canBeCommander",
+"s": "deckConstruction"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Will Kenrith",
+"expect": "full",
+"verified": "edh-d-62 review (Commander lane commander, third pass, round edhd62), by hand against the Oracle text, Scryfall rulings (2018-06-08: the base power and toughness overwrite earlier effects, an ability gained later is kept, effects that raise or lower apply whenever they began) and the Comprehensive Rules of 2026-09-25 (CR 611.2a, 613.1f, 613.4b, 601.2f, 118.7 checked): +2: up to two target creatures, until your next turn, lose all abilities (layer 6) and have base power and toughness 0/3 (layer 7b), ending as the activator's next turn begins (eff.edhd62.dur.objs.each.basept.loseAll, played); -2: the target player draws two cards, and until your next turn instant, sorcery and planeswalker spells THAT player casts cost {2} less (a cost reduction whose caster is the target, eff.edhd62.dur.spells.thatPlayerCasts.less, played: cheaper for that player only, creature spells unchanged, gone when the activator's next turn begins); -8 emblem copying instant and sorcery spells; partner with Rowan Kenrith; can be your commander.",
+"faces": [
+{
+"abilities": [
+{
+"cost": {
+"loyalty": 2
+},
+"effect": {
+"steps": [
+{
+"duration": {
+"d": "untilNextTurn",
+"whose": {
+"ref": "you"
+}
+},
+"effects": [
+{
+"affects": {
+"id": "t0",
+"ref": "target"
+},
+"mods": [
+{
+"layer": 6,
+"removeAll": true
+},
+{
+"layer": "7b",
+"power": 0,
+"toughness": 3
+}
+],
+"s": "continuous"
+}
+],
+"op": "effect"
+}
+],
+"targets": [
+{
+"filter": {
+"types": [
+"Creature"
+]
+},
+"id": "t0",
+"kind": "object",
+"max": 2,
+"min": 0
+}
+]
+},
+"isLoyalty": true,
+"kind": "activated"
+},
+{
+"cost": {
+"loyalty": -2
+},
+"effect": {
+"steps": [
+{
+"count": 2,
+"op": "draw",
+"who": {
+"id": "t0",
+"ref": "target"
+}
+},
+{
+"duration": {
+"d": "untilNextTurn",
+"whose": {
+"ref": "you"
+}
+},
+"effects": [
+{
+"applies": {
+"caster": {
+"id": "t0",
+"ref": "target"
+},
+"spells": {
+"types": [
+"Instant",
+"Planeswalker",
+"Sorcery"
+],
+"zone": "stack"
+}
+},
+"change": {
+"floor": "zero",
+"generic": 2,
+"kind": "reduce"
+},
+"s": "costMod"
+}
+],
+"op": "effect"
+}
+],
+"targets": [
+{
+"id": "t0",
+"kind": "player",
+"max": 1,
+"min": 1
+}
+]
+},
+"isLoyalty": true,
+"kind": "activated"
+},
+{
+"cost": {
+"loyalty": -8
+},
+"effect": {
+"steps": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"newTargets": "may",
+"op": "copy",
+"result": "spell",
+"what": {
+"ref": "event",
+"role": "spell"
+},
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "cast",
+"player": "you",
+"spell": {
+"types": [
+"Instant",
+"Sorcery"
+]
+}
+}
+]
+}
+}
+],
+"op": "createEmblem",
+"who": {
+"id": "t0",
+"ref": "target"
+}
+}
+],
+"targets": [
+{
+"id": "t0",
+"kind": "player",
+"max": 1,
+"min": 1
+}
+]
+},
+"isLoyalty": true,
+"kind": "activated"
+},
+{
+"filter": {
+"name": "Rowan Kenrith"
+},
+"keyword": "partner with",
+"kind": "keyword"
+},
+{
+"effects": [
+{
+"rule": "canBeCommander",
+"s": "deckConstruction"
+}
+],
+"kind": "static"
+}
+]
+}
+]
+},
+{
+"card": "Visions of Dread",
+"expect": "full",
+"verified": "edh-d-62 review (Commander lane commander, third pass, round edhd62), by hand against the Oracle text, Scryfall rulings 2021-09-24 and the Comprehensive Rules of 2026-09-25 (CR 608.2d, 110.2, 108.3 checked): the targeted opponent (not you) chooses a creature card from THEIR graveyard (the chooser is the target, the owner filter is the target) and it enters under your control (eff.edhd62.player.putsCardOfTheirChoice.fromTheirGraveyard.underYourControl, played: the choice is p2's, only p2's creature cards are offered, owner stays p2, nothing happens with no creature card); flashback {8}{B}{B} with the cost reduced by the greatest mana value of a commander you own on the battlefield or in the command zone (an older template, unchanged).",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"as": "b0",
+"from": {
+"filter": {
+"anyOf": [
+{
+"types": [
+"Creature"
+]
+}
+],
+"isCard": true,
+"owner": {
+"id": "t0",
+"ref": "target"
+},
+"zone": "graveyard"
+},
+"ref": "each"
+},
+"max": 1,
+"min": 1,
+"op": "chooseObjects",
+"who": {
+"id": "t0",
+"ref": "target"
+}
+},
+{
+"op": "move",
+"to": {
+"controller": {
+"ref": "you"
+},
+"zone": "battlefield"
+},
+"what": {
+"name": "b0",
+"ref": "bound"
+}
+}
+],
+"targets": [
+{
+"id": "t0",
+"kind": "player",
+"max": 1,
+"min": 1,
+"players": {
+"who": "opponent"
+}
+}
+]
+},
+"kind": "spell"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 8,
+"kind": "generic"
+},
+{
+"color": "B",
+"kind": "colored"
+},
+{
+"color": "B",
+"kind": "colored"
+}
+]
+},
+"costChange": {
+"floor": "zero",
+"generic": {
+"agg": "max",
+"of": {
+"filter": {
+"commander": true,
+"owner": "you",
+"zone": [
+"battlefield",
+"command"
+]
+},
+"ref": "each"
+},
+"q": "stat",
+"stat": "manaValue"
+},
+"kind": "reduce"
+},
+"keyword": "flashback",
+"kind": "keyword"
+}
+]
+}
+]
+},
+{"card":"Sivriss, Nightmare Speaker","expect":"full","verified":"edh-d-62 review (Commander lane commander, third pass, round edhd62), by hand against the Oracle text, Scryfall ruling 2022-06-10 (mill for the first opponent in turn order, that player chooses whether to pay 3 life, the card returns to your hand unless they paid, then the next opponent) and the Comprehensive Rules of 2026-09-25 (CR 701.17a, 118.12, 119.4 checked): {T}, sacrifice another creature or an artifact; for each opponent in turn: you mill a card, then that opponent may pay 3 life (the payment is the opponent's, so a player with less than 3 life cannot pay), otherwise the milled card returns from your graveyard to your hand (eff.edhd62.forEachOpp.mill.returnUnlessPays, played: pays / declines / 2 life); choose a Background. Review fix: the card returns only while it is in your graveyard (a replacement that exiles the milled card, Rest in Peace or Dauthi Voidwalker, leaves it in exile).","faces":[{"abilities":[{"cost":{"other":[{"count":1,"filter":{"anyOf":[{"other":true,"types":["Creature"]},{"types":["Artifact"]}]},"kind":"sacrifice"}],"tap":true},"effect":{"steps":[{"as":"b0","do":[{"as":"b1","count":1,"op":"mill","who":{"ref":"you"}},{"cost":{"other":[{"amount":3,"kind":"payLife"}]},"else":[{"op":"move","to":{"zone":"hand"},"what":{"filter":{"is":{"name":"b1","ref":"bound"},"owner":"you","zone":"graveyard"},"ref":"each"}}],"op":"pay","who":{"ref":"iterating"}}],"op":"forEach","over":{"ref":"each","who":"opponent"}}],"targets":[]},"kind":"activated"},{"keyword":"choose a background","kind":"keyword"}]}]}
+]

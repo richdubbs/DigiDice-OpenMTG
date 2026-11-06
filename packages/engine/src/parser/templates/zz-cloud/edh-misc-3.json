@@ -1,0 +1,47 @@
+[
+  {
+    "id": "eff.edhx3.return.hand.allExceptFor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 608.2b",
+      "CR 205.3m"
+    ],
+    "pattern": "return all {f:Filter} to their owners' hands except for {x:Filter}",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "not": "$x"
+        }
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Return all creatures to their owners' hands except for Elves, Goblins, and Wizards."
+      },
+      {
+        "text": "Return all permanents to their owners' hands except for lands you control."
+      }
+    ],
+    "counterExamples": [
+      "Return all creatures to their owners' hands except Elves, Goblins, and Wizards.",
+      "Return target creature to its owner's hand except for Elves, Goblins, and Wizards.",
+      "Return all creatures to their owners' hands except for Elves, Goblins, and Wizards unless you pay {2}."
+    ]
+  }
+]

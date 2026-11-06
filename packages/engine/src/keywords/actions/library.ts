@@ -1,5 +1,5 @@
 /** CR 701 actions that look at or draw from the library: explore (701.44), connive (701.50). Pure macros over primitive ops. Owner: WP3. */
-import type { EffectStep } from '../../types/ability';
+import type { EffectStep, ObjRef } from '../../types/ability';
 import type { ActionMacro } from '../types';
 import { carry, countOf, subjectOf } from './common';
 
@@ -59,6 +59,11 @@ export const CONNIVE: ActionMacro = {
         as: '_conniveCard',
         do: [{ op: 'if', cond: { cond: 'matches', object: each, filter: { notTypes: ['Land'] } }, then: [{ op: 'putCounters', on: me, kind: '+1/+1', count: 1 }] }],
       },
+      // edh-next-33 (CR 701.50a, 603.2): "whenever a creature you control connives" (Iron Monger) sees the creature after the whole process
+      // a computed N of 0 is a connive 0, which does nothing (CR 701.50e): no report then
+      computed
+        ? { op: 'if', cond: { cond: 'compare', left: count, op: '>', right: 0 }, then: [{ op: 'reportAction', who: step.who, verb: 'connive', object: me as ObjRef }] }
+        : { op: 'reportAction', who: step.who, verb: 'connive', object: me as ObjRef },
     ]);
   },
 };

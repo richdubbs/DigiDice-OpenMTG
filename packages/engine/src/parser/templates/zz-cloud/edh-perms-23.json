@@ -1,0 +1,64 @@
+[
+  {
+    "id": "eff.edhpm23.eachOther.becomeCopy.noDur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9",
+      "CR 611.2a",
+      "CR 613.1a",
+      "CR 611.2c"
+    ],
+    "pattern": "each other {g:Filter} becomes a copy of {p:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$g"
+              ],
+              "not": {
+                "is": "$p"
+              }
+            }
+          },
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each other",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you control gets +1/+1 until end of turn. Each other creature you control becomes a copy of it."
+      },
+      {
+        "text": "Choose a Goblin you control. Each other Goblin you control becomes a copy of that Goblin."
+      }
+    ],
+    "counterExamples": [
+      "Choose a Goblin you control. Each other Goblin you control becomes a copy of that Goblin until end of turn.",
+      "Choose a Goblin you control. Each Goblin you control becomes a copy of that Goblin.",
+      "Choose a Goblin you control. Each other Goblin you control becomes a copy of that Goblin, except it is blue."
+    ],
+    "priority": 1
+  }
+]

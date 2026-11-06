@@ -741,15 +741,31 @@
     "pattern": "if a spell cast this way would be put into a graveyard , exile it instead",
     "build": {
       "$patchPrevious": {
-        "@require": {
-          "over.ref": "each",
-          "over.who": "opponent",
-          "do.1.op": "cast",
-          "do.1.free": true
-        },
-        "do": [
-          {},
-          {
+        "@byOp": {
+          "forEach": {
+            "@require": {
+              "over.ref": "each",
+              "over.who": "opponent",
+              "do.1.op": "cast",
+              "do.1.free": true
+            },
+            "do": [
+              {},
+              {
+                "graveyardInstead": {
+                  "@new": {
+                    "to": {
+                      "zone": "exile"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "cast": {
+            "@require": {
+              "free": true
+            },
             "graveyardInstead": {
               "@new": {
                 "to": {
@@ -757,11 +773,31 @@
                 }
               }
             }
+          },
+          "effect": {
+            "@require": {
+              "effects.0.s": "permit",
+              "effects.0.action": "cast",
+              "effects.0.from": "graveyard",
+              "effects.0.anyGraveyard": true,
+              "effects.1": null
+            },
+            "effects": [
+              {
+                "graveyardInstead": {
+                  "@new": {
+                    "to": {
+                      "zone": "exile"
+                    }
+                  }
+                }
+              }
+            ]
           }
-        ]
+        }
       }
     },
-    "attachTo": "forEach",
+    "attachTo": "forEach|cast|effect",
     "consumes": [
       "if",
       "would",
@@ -774,12 +810,23 @@
       },
       {
         "text": "Draw a card, then you may cast a spell from each opponent's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it instead."
+      },
+      {
+        "text": "When ~ enters, for each opponent, you may cast up to one target instant card from that player's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it instead."
+      },
+      {
+        "text": "When ~ attacks, for each opponent, you may cast up to one target sorcery card from that player's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it instead."
+      },
+      {
+        "text": "Until end of turn, you may cast creature spells from any graveyard. If a spell cast this way would be put into a graveyard, exile it instead."
       }
     ],
     "counterExamples": [
       "Each opponent mills four cards. You may cast a spell from each opponent's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it.",
       "Each opponent mills four cards. You may cast a spell from each opponent's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, return it to its owner's hand instead.",
-      "Each opponent mills four cards. Destroy target artifact. If a spell cast this way would be put into a graveyard, exile it instead."
+      "Each opponent mills four cards. Destroy target artifact. If a spell cast this way would be put into a graveyard, exile it instead.",
+      "When ~ enters, for each opponent, you may cast up to one target instant card from that player's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it.",
+      "When ~ enters, destroy target artifact. If a spell cast this way would be put into a graveyard, exile it instead."
     ]
   },
   {

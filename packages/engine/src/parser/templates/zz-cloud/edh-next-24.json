@@ -1,0 +1,312 @@
+[
+  {
+    "id": "sta.edhn24.attached.grant.pumpWhereX",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 107.3",
+      "CR 301.5a"
+    ],
+    "pattern": "( enchanted | equipped ) creature has {a:Abilities} and gets +x/+0 , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7c",
+              "power": "$q",
+              "toughness": 0
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature has first strike and gets +X/+0, where X is the number of artifact cards in your graveyard."
+      },
+      {
+        "text": "Enchanted creature has vigilance and gets +X/+0, where X is the number of lands you control."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has first strike and gets +2/+0, where X is the number of lands you control.",
+      "Equipped creature has first strike and gets +X/+X, where X is the number of lands you control.",
+      "Equipped creature has first strike and gets +X/+0 until end of turn, where X is the number of lands you control.",
+      "Equipped creature has first strike and gets -X/-0, where X is the number of lands you control."
+    ]
+  },
+  {
+    "id": "cm.edhn24.self.less.ifAPlayerLifeHalfStarting",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5",
+      "CR 103.4",
+      "CR 119.1"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast if a player 's life total is less than or equal to half their starting life total",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "life",
+          "of": {
+            "ref": "each",
+            "who": "player"
+          },
+          "agg": "min"
+        },
+        "op": "<=",
+        "right": {
+          "q": "math",
+          "op": "floorDiv",
+          "args": [
+            {
+              "q": "startingLife"
+            },
+            2
+          ]
+        }
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {3} less to cast if a player's life total is less than or equal to half their starting life total."
+      },
+      {
+        "text": "~ costs {1} less to cast if a player's life total is less than or equal to half their starting life total."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {2} more to cast if a player's life total is less than or equal to half their starting life total.",
+      "~ costs {2} less to cast if a player's life total is less than half their starting life total.",
+      "~ costs {2} less to cast if your life total is less than or equal to half your starting life total.",
+      "~ costs {2} less to cast if an opponent's life total is less than or equal to half their starting life total."
+    ]
+  },
+  {
+    "id": "eff.edhn24.rollDie.d20.add",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2",
+      "CR 706.3b",
+      "CR 608.2h"
+    ],
+    "pattern": "roll a d20 and add {n:Qty}",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 20,
+      "modifier": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "add"
+    ],
+    "examples": [
+      {
+        "text": "Roll a d20 and add the number of creatures you control.\n1\u201414 | You lose 2 life.\n15\u201420 | You gain 2 life."
+      },
+      {
+        "text": "{T}: Roll a d20 and add the number of cards in your hand.\n1\u201410 | Draw a card.\n11\u201420 | Draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "Roll a d20 and subtract the number of cards in your hand.\n1\u201410 | You lose 1 life.\n11\u201420 | You gain 1 life.",
+      "Roll a d6 and add the number of cards in your hand.\n1\u20143 | You lose 1 life.\n4\u20146 | You gain 1 life.",
+      "Roll two d20 and add the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "sta.edhn24.combatDamageToSelfBy.prevent.then",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 614.1a",
+      "CR 120.2a"
+    ],
+    "pattern": "if ( a | an ) {f:Filter} would deal combat damage to ~ , prevent that damage and {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": "$f",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If a creature would deal combat damage to ~, prevent that damage and you gain 1 life."
+      },
+      {
+        "text": "If a red creature would deal combat damage to ~, prevent that damage and draw a card."
+      }
+    ],
+    "counterExamples": [
+      "If a creature would deal damage to ~, prevent that damage and you gain 1 life.",
+      "If a creature would deal combat damage to ~, prevent that damage and you gain 1 life this turn.",
+      "If a creature would deal combat damage to ~, prevent that damage or you gain 1 life.",
+      "If a creature would deal combat damage to you, prevent that damage and you gain 1 life."
+    ]
+  },
+  {
+    "id": "eff.edhn24.lose.allLandwalk",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.14c"
+    ],
+    "pattern": "{o:Obj} loses all {k:Keyword} abilities {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "remove": [
+                "$k.keyword"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Target creature loses all landwalk abilities until end of turn."
+      },
+      {
+        "text": "{1}: ~ loses all landwalk abilities until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature loses all landwalk abilities.",
+      "Target creature gains all landwalk abilities until end of turn.",
+      "Target creature loses all abilities until end of turn.",
+      "Target creature loses all flying abilities until end of turn."
+    ]
+  },
+  {
+    "id": "trg.edhn24.castSelfAndWhenDies",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 113.6k",
+      "CR 700.4"
+    ],
+    "pattern": "when {e:Event} and when {f:Event}",
+    "build": {
+      "on": {
+        "$concat": [
+          "$e",
+          "$f"
+        ]
+      }
+    },
+    "consumes": [
+      "when",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "When you cast ~ and when ~ dies, you gain 2 life."
+      },
+      {
+        "text": "When you cast ~ and when ~ dies, target creature gets +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "When you cast ~ and when you gain life, you gain 2 life.",
+      "When you cast ~ and when ~ dies, you gain 2 life unless you pay {1}.",
+      "When you cast ~ and when ~ attacks, you gain 2 life."
+    ]
+  }
+]

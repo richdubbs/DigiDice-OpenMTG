@@ -6,7 +6,7 @@ import { faceViews, splitSentences } from '../../src/llm/face-lines';
 import { PROMPT_VERSION, loadSchemaText, nearestExamples, repairPrompt, systemPrompt, userPrompt } from '../../src/llm/prompt';
 import { cardWork } from '../../src/llm/work';
 import { defaultCompileSources } from '@openmtg/engine';
-import { bareSources, fixture, synth } from './support';
+import { bareSources, synth } from './support';
 
 describe('prompt (design 11.2)', () => {
   const ex = buildExamples(fixtureCards());
@@ -40,10 +40,11 @@ describe('prompt (design 11.2)', () => {
     expect(u).not.toContain('Test Pinger'); // the card is named by oracle_id; "~" stands for its name
   });
   it('the USER message carries the parser\'s own "stuck at ... expected ..." diagnostic (design 11.1 repair mode, 11.2)', () => {
-    const card = fixture('Liliana of the Veil');
+    // an invented card (design 6.10): Liliana of the Veil served here until edh-players-21 made it full
+    const card = synth('bbbb-0002', 'Test Stumbler', 'Creature — Ogre', 'Haste\n{1}: Target creature gets +2/+2 until the end of turn.');
     const work = cardWork(card, defaultCompileSources())!;
     const u = userPrompt(work, faceViews(card, defaultCompileSources().parse), []);
-    expect(u).toMatch(/Parser diagnostics for \[2\]: .*stuck at "Separate", expected: "<Dur>", /);
+    expect(u).toMatch(/Parser diagnostics for \[1\]: .*stuck at "the", expected: "end"/);
   });
   it('the SYSTEM glossary lists the event roles of design 3.5 (CR 603)', () => {
     const s = systemPrompt('{}', []);

@@ -1,0 +1,277 @@
+[
+  {
+    "id": "rep.trek21.draw.chooseKind.random",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 121.1",
+      "CR 701.20a",
+      "CR 205.2a",
+      "CR 401.4"
+    ],
+    "pattern": "if you would draw a card , you may instead choose land or nonland and reveal cards from the top of your library until you reveal {f:DiscardDesc} . put {o:Obj} into your hand and put {r:Rest} on the bottom of your library in a random order",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "draw",
+            "player": "you"
+          },
+          "optional": true,
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "chooseValue",
+                "who": {
+                  "ref": "you"
+                },
+                "what": "landOrNonland",
+                "as": "chosenKind",
+                "link": "chosenKind"
+              },
+              {
+                "op": "revealUntil",
+                "who": {
+                  "ref": "you"
+                },
+                "filter": "$f",
+                "as": "hit",
+                "revealed": "revealed"
+              },
+              {
+                "op": "move",
+                "what": "$o",
+                "to": {
+                  "zone": "hand"
+                }
+              },
+              {
+                "op": "move",
+                "what": "$r",
+                "to": {
+                  "zone": "library",
+                  "position": "bottom",
+                  "order": "random"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "may",
+      "instead",
+      "until",
+      "and",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "If you would draw a card, you may instead choose land or nonland and reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and put all other cards revealed this way on the bottom of your library in a random order."
+      },
+      {
+        "text": "If you would draw a card, you may instead choose land or nonland and reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand and put all other cards revealed this way on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "If an opponent would draw a card, you may instead choose land or nonland and reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and put all other cards revealed this way on the bottom of your library in a random order.",
+      "If you would draw a card, instead choose land or nonland and reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and put all other cards revealed this way on the bottom of your library in a random order.",
+      "If you would draw a card, you may instead choose land or nonland and reveal cards from the top of your library until you reveal a creature card. Put that card into your hand and put all other cards revealed this way on the bottom of your library in any order."
+    ]
+  },
+  {
+    "id": "rid.trek21.entersWith.xCreatureSpacecraft",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 608.2c",
+      "CR 122.6",
+      "CR 400.7"
+    ],
+    "pattern": "it enters with X additional {k1:CounterKind} counters on it if it's a creature and X additional {k2:CounterKind} counters on it if it's a spacecraft , where X is {q:Qty}",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to.zone": "battlefield"
+        },
+        "to": {
+          "countersIf": {
+            "@new": [
+              {
+                "if": {
+                  "types": [
+                    "Creature"
+                  ]
+                },
+                "counters": [
+                  {
+                    "kind": "$k1",
+                    "count": "$q"
+                  }
+                ]
+              },
+              {
+                "if": {
+                  "subtypes": [
+                    "Spacecraft"
+                  ]
+                },
+                "counters": [
+                  {
+                    "kind": "$k2",
+                    "count": "$q"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "if",
+      "additional",
+      "and",
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "You may put a creature or Vehicle card from your hand onto the battlefield. It enters with X additional +1/+1 counters on it if it's a creature and X additional charge counters on it if it's a spacecraft, where X is the number of lands you control."
+      },
+      {
+        "text": "Return target permanent card from your graveyard to the battlefield. It enters with X additional +1/+1 counters on it if it's a creature and X additional charge counters on it if it's a spacecraft, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "You may put a creature or Vehicle card from your hand onto the battlefield. It enters with X additional +1/+1 counters on it if it's a creature and X additional charge counters on it if it's an artifact, where X is the number of lands you control.",
+      "You may put a creature or Vehicle card from your hand onto the battlefield. It enters with X +1/+1 counters on it if it's a creature and X charge counters on it if it's a spacecraft, where X is the number of lands you control.",
+      "You may put a creature or Vehicle card from your hand into your hand. It enters with X additional +1/+1 counters on it if it's a creature and X additional charge counters on it if it's a spacecraft, where X is the number of lands you control."
+    ]
+  },
+  {
+    "id": "eff.trek21.exiledTop.cast.filtered.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 406.1",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from among {g:ExiledTop} without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "exile"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true,
+        "dropUncast": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent exiles the top five cards of their library. You may cast a creature spell from among them without paying its mana cost."
+      },
+      {
+        "text": "Target player exiles the top X cards of their library, where X is the number of lands you control. You may cast an instant or sorcery spell from among them without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles the top five cards of their library. You may cast a creature spell from among them.",
+      "Target opponent exiles the top five cards of their library. You may cast two creature spells from among them without paying their mana costs.",
+      "You may cast a creature spell from among them without paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.trek21.player.mayExile.spell",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2b",
+      "CR 701.13a",
+      "CR 109.4",
+      "CR 115.1"
+    ],
+    "pattern": "{p:Player} may exile {o:Obj}",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Choose target spell an opponent controls. That player may exile it. If they don't, you draw a card."
+      },
+      {
+        "text": "Choose target noncreature spell an opponent controls. That player may exile it. If they don't, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Choose target spell an opponent controls. That player exiles it.",
+      "Choose target spell an opponent controls. That player may exile two cards.",
+      "Choose target spell an opponent controls. That player may return it."
+    ],
+    "weak": 1
+  }
+]

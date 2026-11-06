@@ -1,0 +1,368 @@
+[
+  {
+    "id": "eff.edhv24.pump.groupsOpposed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2h"
+    ],
+    "pattern": "{d:Dur} , {f:Filter} get {pt:PT} and {g:Filter} get {qt:PT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$g"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$qt.p",
+              "toughness": "$qt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, creatures you control get +2/+2 and creatures your opponents control get -2/-2."
+      },
+      {
+        "text": "Until end of turn, artifact creatures you control get +1/+0 and creatures your opponents control get -0/-1."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+1 and creatures your opponents control get -1/-1.",
+      "Until end of turn, creatures you control get +1/+1 and creatures your opponents control get -1/-1 unless they are blue.",
+      "Until end of turn, creatures you control get +1/+1 and target creature gets -1/-1."
+    ]
+  },
+  {
+    "id": "sta.edhv24.pump.cantbeblocked.except",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} and can't be blocked except by {f:Filter}",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": "$o",
+        "mods": [
+          {
+            "layer": "7c",
+            "power": "$pt.p",
+            "toughness": "$pt.t"
+          }
+        ]
+      },
+      {
+        "s": "restrict",
+        "subject": "$o",
+        "mode": "cant",
+        "action": "beBlockedBy",
+        "other": {
+          "not": "$f"
+        }
+      }
+    ],
+    "consumes": [
+      "can't",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +2/+2 and can't be blocked except by creatures with reach."
+      },
+      {
+        "text": "Equipped creature gets +1/+0 and can't be blocked except by artifact creatures."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+1 and can't be blocked except by creatures with flying this turn.",
+      "Enchanted creature gets +1/+1 until end of turn and can't be blocked except by Walls.",
+      "Enchanted creature gets +1/+1 and can't be blocked by creatures with flying."
+    ]
+  },
+  {
+    "id": "eff.edhv24.shuffle.cardsFromGraveyardInto.playerLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 401.1",
+      "CR 404.1",
+      "CR 400.3"
+    ],
+    "pattern": "shuffle all {f:Filter} cards from {p:Player} 's graveyard into that player 's library",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "$p",
+            "isCard": true
+          }
+        },
+        "to": {
+          "zone": "library",
+          "owner": "$p"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Shuffle all artifact cards from target player's graveyard into that player's library."
+      },
+      {
+        "text": "Shuffle all land cards from target opponent's graveyard into that player's library."
+      }
+    ],
+    "counterExamples": [
+      "Shuffle all creature cards from target player's graveyard into your library.",
+      "Shuffle all creature cards from target player's hand into that player's library.",
+      "Shuffle all creature cards from target player's graveyard into that player's library unless you pay {2}."
+    ]
+  },
+  {
+    "id": "cm.edhv24.spells.less.you.shareTypeWithSelf",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 205.3m",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} you cast that share a creature type with ~ cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "anyOf": [
+                "$f"
+              ],
+              "sharesWith": {
+                "with": {
+                  "ref": "self"
+                },
+                "quality": "creatureType"
+              }
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Artifact creature spells you cast that share a creature type with ~ cost {1} less to cast."
+      },
+      {
+        "text": "Spells you cast that share a creature type with ~ cost {2} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Creature spells you cast that share a creature type with ~ cost {1} more to cast.",
+      "Creature spells you cast that share a color with ~ cost {1} less to cast.",
+      "Creature spells your opponents cast that share a creature type with ~ cost {1} less to cast."
+    ]
+  },
+  {
+    "id": "eff.edhv24.costmod.spells.chosenName.less.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 201.2",
+      "CR 611.2a"
+    ],
+    "pattern": "spells with the chosen name cost {m:ManaCost} less to cast this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "chosen": {
+                "link": "chosenCardName",
+                "quality": "cardName"
+              }
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, choose a card name. Spells with the chosen name cost {2} less to cast this turn."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, choose a card name. Spells with the chosen name cost {1} less to cast this turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose a card name. Spells with the chosen name cost {2} more to cast this turn.",
+      "When ~ enters, choose a card name. Spells with the chosen name cost {2} less to cast.",
+      "When ~ enters, choose a card name. Spells you cast with the chosen name cost {2} less to cast this turn."
+    ]
+  },
+  {
+    "id": "sta.edhv24.group.colorless",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.2c",
+      "CR 613.1e",
+      "CR 604.1"
+    ],
+    "pattern": "all {f:Filter} are colorless",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 5,
+          "colors": {
+            "set": []
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "All Elves are colorless."
+      },
+      {
+        "text": "All artifact creatures are colorless."
+      }
+    ],
+    "counterExamples": [
+      "All Elves you control are colorless until end of turn.",
+      "All Elves are colorless and have flying.",
+      "All Elves are colorful."
+    ]
+  },
+  {
+    "id": "eff.edhv24.obj.attacksYou.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 611.2a",
+      "CR 508.1b"
+    ],
+    "pattern": "{o:Obj} attacks you this turn if able",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Target creature an opponent controls attacks you this turn if able."
+      },
+      {
+        "text": "Target creature attacks you this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "Target creature attacks you each combat if able.",
+      "Target creature attacks you this turn.",
+      "Target creature blocks you this turn if able."
+    ],
+    "consumes": [
+      "if",
+      "if able"
+    ]
+  }
+]

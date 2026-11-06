@@ -1,0 +1,250 @@
+[
+  {
+    "id": "eff.edhc11.permit.alt.life.oncePerYourTurn",
+    "kind": "static",
+    "since": 9,
+    "weak": 1,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 202.3",
+      "CR 119.4",
+      "CR 500.1"
+    ],
+    "pattern": "once during each of your turns , you may cast ( a | an ) {f:Filter} by paying life equal to its mana value rather than paying its mana cost",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "costChange": {
+            "kind": "set",
+            "life": "manaValue"
+          },
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "each",
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast an artifact spell by paying life equal to its mana value rather than paying its mana cost."
+      },
+      {
+        "text": "Once during each of your turns, you may cast a creature spell by paying life equal to its mana value rather than paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Once during each turn, you may cast an enchantment spell by paying life equal to its mana value rather than paying its mana cost.",
+      "Once during each of your turns, you may cast an enchantment spell by paying life equal to its power rather than paying its mana cost.",
+      "Once during each of your turns, you may cast an enchantment spell by paying life equal to its mana value in addition to paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhc11.permit.alt.free.oncePerYourTurn.handOrTop",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 401.5",
+      "CR 500.1"
+    ],
+    "pattern": "once during each of your turns , you may cast ( a | an ) {f:Filter} from your hand or the top of your library without paying its mana cost",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  "$f"
+                ],
+                "castFrom": "hand"
+              },
+              {
+                "anyOf": [
+                  "$f"
+                ],
+                "castFrom": "library"
+              }
+            ]
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast an instant spell from your hand or the top of your library without paying its mana cost."
+      },
+      {
+        "text": "Once during each of your turns, you may cast a creature spell from your hand or the top of your library without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast a spell from your hand without paying its mana cost.",
+      "Once during each turn, you may cast a spell from your hand or the top of your library without paying its mana cost.",
+      "Once during each of your turns, you may cast a spell from your hand or the top of your library by paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhc11.permit.alt.mana.once.mvOrLess",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 202.3",
+      "CR 604.1"
+    ],
+    "pattern": "once each turn , you may pay {m:ManaCost} rather than pay the mana cost for a spell you cast with mana value x or less , where x is {q:Qty}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "manaValue": {
+              "op": "<=",
+              "value": "$q"
+            }
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {
+              "mana": "$m"
+            }
+          },
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "rather than",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Once each turn, you may pay {0} rather than pay the mana cost for a spell you cast with mana value X or less, where X is the number of charge counters on this artifact."
+      },
+      {
+        "text": "Once each turn, you may pay {1} rather than pay the mana cost for a spell you cast with mana value X or less, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "You may pay {0} rather than pay the mana cost for a spell you cast with mana value X or less, where X is the number of charge counters on this artifact.",
+      "Once each turn, you may pay {0} rather than pay the mana cost for a spell you cast with mana value X or more, where X is the number of charge counters on this artifact.",
+      "Once each turn, you may pay {0} rather than pay the mana cost for a spell you cast with power X or less, where X is the number of charge counters on this artifact."
+    ]
+  },
+  {
+    "id": "eff.edhc11.permit.play.duringTurnAttackedWith",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2c",
+      "CR 508.1a",
+      "CR 305.1",
+      "CR 601.3",
+      "CR 400.7"
+    ],
+    "pattern": "during any turn you attacked with {f:Filter} , you may play {o:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "while": {
+            "cond": "happened",
+            "event": {
+              "ev": "attacks",
+              "attacker": {
+                "anyOf": [
+                  "$f"
+                ],
+                "controller": "you"
+              }
+            },
+            "scope": "turn"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "any",
+      "during",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile the top card of your library. During any turn you attacked with a token, you may play that card."
+      },
+      {
+        "text": "{1}, {T}: Exile the top card of your library. During any turn you attacked with a Goblin, you may play that card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile the top card of your library. During any turn an opponent attacked with a token, you may play that card.",
+      "Whenever ~ attacks, exile the top card of your library. During any turn you attacked with a token, you may cast that card.",
+      "Whenever ~ attacks, exile the top card of your library. During your turn, you may play that card."
+    ]
+  }
+]

@@ -39,14 +39,14 @@ const PROMOTED = [
  * (or, for fl.forEach.opponent and the cards held below, the matches were not all played). One line each.
  */
 const HELD: Readonly<Record<string, string>> = {
-  'eff.shuffle.player': '2 cards made full (Soldier of Fortune, Boggart Forager): correct, but under three golden cards',
+  // eff.shuffle.player: held here by PROMO1 (2 cards made full (Soldier of Fortune, Boggart Forager)); edh-c-110 made it stable on those two golden cards (6.9 narrow wording, t3-review.json, edh-c-110-review.json)
   'eff.cont.becomes.subtype': '2 cards made full (Hostile Desert, Skarrg Guildmage): correct, under three golden cards',
-  'eff.damage.foreach': '1 card made full (Lotleth Giant)',
-  'eff.damage.evenly.down': '2 cards made full (Fireball, Dwarven Catapult)',
+  // eff.damage.foreach: held here by PROMO1 (1 card made full (Lotleth Giant)); edh-d-11 made it stable on Lotleth Giant (Soulhunter Rakshasa, outside the top 20,000, is full too but not evidence) (6.9 narrow wording, owner's standing rule 2026-10-27; edh-d-11-review.json)
+  // eff.damage.evenly.down: held here by PROMO1 (2 cards made full (Fireball, Dwarven Catapult)); edh-misc-5 made it stable on those two golden cards (6.9 narrow wording, fast3-t11-review.json, t3-review.json)
   'rid.mana.artifact': '2 cards made full (Castle Doom, La Forge)',
   'rid.mana.chosentype': '2 index matches (Unclaimed Territory, Pillar of Origins)',
-  'eff.put.bf.owner': '2 cards made full (Kenrith, Bilbo)',
-  'eff.put.lib.bottom.anyorder': '1 card made full (Bow of Nylea)',
+  // eff.put.bf.owner: held here by PROMO1 (2 cards made full (Kenrith, Bilbo)); edh-misc-4 made it stable on those two cards (6.9 narrow wording, edh-misc-1-review.json)
+  // eff.put.lib.bottom.anyorder: held here by PROMO1 (1 card made full (Bow of Nylea)); edh-misc-5 made it stable on Bow of Nylea and Petals of Insight (6.9 narrow wording, edh-misc-5-review.json)
   // sta.pump.cantbeblocked: held here by PROMO1 (2 cards then); Standard round 4 r4-fxb made it stable with three golden cards (Aether Tunnel, Tricks of the
   // Trade, Cryptic Coat: test/m5/golden/cards/cloud-r4-fxb-review.json)
   // sta.cantblock.noactivate: held here by PROMO1 (2 index matches (Demotion, Gelid Shackles)); p2-promote-2 made it stable on the card(s) that print it (6.9 narrow wording)
@@ -60,8 +60,8 @@ const HELD: Readonly<Record<string, string>> = {
   // eff.m6.turnFaceDown: held here by PROMO1 (2 cards then); std-rx33 made it stable with three golden cards (Obscuring Aether, Wall of Deceit, Skittish Valesk:
   // test/m5/golden/cards/cloud-std-rx33-review.json)
   // trg.m6.yourCreature.mutates: held here by PROMO1 (1 index match (Essence Symbiote)); p2-promote-2 made it stable on the card(s) that print it (6.9 narrow wording)
-  'eff.t8.gainlife.foreach3': '1 card made full (Filigree Angel)',
-  'eff.t8.gainlife.foreach4': '1 index match (Shamanic Revelation)',
+  // eff.t8.gainlife.foreach3: held here by PROMO1 (1 card made full (Filigree Angel)); edh-misc-3 made it stable on two golden cards, Crypt Incursion and Starlight (6.9 narrow wording, fast2-t8-review.json)
+  // eff.t8.gainlife.foreach4: held here by PROMO1 (1 index match (Shamanic Revelation)); edh-misc-1 made it stable on that card (6.9 narrow wording, fast2-t8-review.json)
   'fl.forEach.opponent': '28 index matches, 1 made full; the per-opponent target forms ("up to one target ... that player controls") not played',
   // eff.mana.additional.two.player: held here by PROMO1 (2 cards made full; the trigger reads "tapped for mana" as any mana ability of the land, FAST1 T4's
   // reading of every "land tapped for mana", parser/holes/event.ts#landTappedForMana); p2-promote-1 made it stable on its two cards, Market Festival and

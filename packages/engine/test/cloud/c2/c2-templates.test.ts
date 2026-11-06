@@ -19,6 +19,9 @@ import { TEMPLATE_FILES, TEMPLATE_SET } from '../../../src/parser/template-set';
 import { ENGINE_CAPABILITIES } from '../../../src/model/capabilities';
 import c2 from '../../../src/parser/templates/zz-cloud/c2.json';
 import review from '../../m5/golden/cards/cloud-c2-review.json';
+import edhPl11Review from '../../m5/golden/cards/edh-players-11-review.json';
+import edhC4Review from '../../m5/golden/cards/edh-c-4-review.json';
+import edhC66Review from '../../m5/golden/cards/edh-c-66-review.json';
 import { checkGolden, type GoldenEntry } from '../../m5/golden/harness';
 import { automated, bare, card, fullyAutomated, jsonKey } from '../../m5/templates/support';
 import { localIndex } from '../../m5/parser/support';
@@ -78,10 +81,20 @@ describe('C2 template file (design 6.3, 6.9; CONTRIBUTING "Adding a template")',
     }
   });
   it('design 6.9: a stable C2 template has its evidence: at least three hand-verified golden cards', () => {
-    const golden = review as { card: string; verified: string }[];
+    // edh-players-11 replaced The Second Doctor's old pinned entry here with its own (golden/cards/edh-players-11-review.json), which lists several templates in one
+    // parenthesis, so a template is named there as one of a list: "(a, b, <id>)".
+    const golden = [...(review as { card: string; verified: string }[]), ...(edhPl11Review as { card: string; verified: string }[])];
+    // edh-c-4 (design 6.9 deviation, owner's standing rule 2026-10-27): "Your maximum hand size is equal to ..." is printed by Midnight Oil only among the cards of the EDHREC top 20,000
+    // (Winter, Misanthropic Guide is not ranked), so its template is stable on that one golden card (golden/cards/edh-c-4-review.json) with the template and scenario tests.
+    const NARROW: Readonly<Record<string, readonly string[]>> = { 'sta.c2.maxhand.your.equalto': ['Midnight Oil'], 'sta.c2.maxhand.player.n': ['Cursed Rack'] };
+    // edh-c-66 (design 6.9 deviation, owner's standing rule 2026-10-27): "The chosen player's maximum hand size is four" is printed by Cursed Rack only among the cards of the EDHREC top 30,000, so
+    // its template is stable on that one golden card (golden/cards/edh-c-66-review.json) with the template and scenario tests (cloud/edh-c-66).
+    const goldenAll = [...golden, ...(edhC4Review as { card: string; verified: string }[]), ...(edhC66Review as { card: string; verified: string }[])];
     for (const t of C2.filter((x) => x.status === 'stable')) {
-      const cards = golden.filter((g) => g.verified.includes(`(${t.id})`)).map((g) => g.card);
-      expect(cards.length, `${t.id}: ${cards.join(', ')}`).toBeGreaterThanOrEqual(3);
+      const named = new RegExp(`[(, ]${t.id.replace(/\./g, '\\.')}[,)]`);
+      const cards = goldenAll.filter((g) => named.test(g.verified)).map((g) => g.card);
+      if (NARROW[t.id] !== undefined) for (const n of NARROW[t.id]!) expect(cards, t.id).toContain(n);
+      else expect(cards.length, `${t.id}: ${cards.join(', ')}`).toBeGreaterThanOrEqual(3);
     }
   });
   it('guard G3: a critical word a pattern spells out is listed in `consumes`', () => {

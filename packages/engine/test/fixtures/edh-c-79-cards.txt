@@ -1,0 +1,7 @@
+# edh-c-79 (Commander lane edh-c, EDHREC ranks 29,501-30,000, third pass): see packages/engine/src/parser/templates/zz-cloud/edh-c-79.json. After editing: npm run cards -- fixtures
+Planar Despair
+Eternal Flame
+Tropical Storm
+Descendant of Masumaro
+Songstitcher
+Nulltread Gargantuan

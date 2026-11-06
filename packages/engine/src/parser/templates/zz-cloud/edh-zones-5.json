@@ -1,0 +1,268 @@
+[
+  {
+    "id": "eff.edhz5.repeatProcess.anyNumber",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may repeat this process any number of times",
+    "build": {
+      "op": "repeat",
+      "times": 1,
+      "do": [],
+      "process": true,
+      "optional": true
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "any number"
+    ],
+    "needs": [
+      "op:repeat.optional"
+    ],
+    "examples": [
+      {
+        "text": "Mill a card, then draw a card. You may repeat this process any number of times."
+      },
+      {
+        "text": "Draw a card. You lose 1 life. You may repeat this process any number of times."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. You may repeat this process once.",
+      "Draw a card. Repeat this process any number of times.",
+      "Draw a card. You may repeat this process as many times as you choose.",
+      "Draw a card. Each opponent may repeat this process any number of times."
+    ]
+  },
+  {
+    "id": "eff.edhz5.search.desc.revealThatCard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 401.2"
+    ],
+    "pattern": "search your library for {f:SearchDesc} , reveal that card",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "max": 1,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for an artifact card with mana value 3 or less, reveal that card, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ dies, search your library for a land card with a basic land type, reveal that card, put it onto the battlefield, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for an artifact card with mana value 3 or less, reveal those cards, put it into your hand, then shuffle.",
+      "Search your library for two artifact cards, reveal that card, put it into your hand, then shuffle.",
+      "Search target player's library for an artifact card, reveal that card, put it into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhz5.discard.upTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "discard up to {n:Qty} card[s]",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "toDiscard"
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "bound",
+            "name": "toDiscard"
+          }
+        },
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "toDiscard"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "You may discard up to three cards. If you do, draw that many cards."
+      },
+      {
+        "text": "Discard up to two cards. You gain 2 life for each card discarded this way."
+      }
+    ],
+    "counterExamples": [
+      "Discard two cards. You gain 2 life for each card discarded this way.",
+      "Target player discards up to two cards. You gain 2 life for each card discarded this way.",
+      "Discard up to two lands. You gain 2 life for each card discarded this way."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.edhz5.each.has.escape.manaCostPlus",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.138a",
+      "CR 118.9",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "each {f:Filter} has escape . the escape cost is equal to ( its | that card 's | the card 's ) mana cost plus {c:Cost}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "escape",
+                  "text": "escape",
+                  "costIsManaCost": true,
+                  "cost": "$c"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "equal",
+      "plus"
+    ],
+    "examples": [
+      {
+        "text": "Each creature card in your graveyard has escape. The escape cost is equal to its mana cost plus exile two other cards from your graveyard."
+      },
+      {
+        "text": "Each land card in your graveyard has escape. The escape cost is equal to the card's mana cost plus exile four other cards from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Each creature card in your graveyard has escape. The escape cost is equal to its mana cost.",
+      "Each creature card in your graveyard has escape. The escape cost is equal to its power plus exile two other cards from your graveyard.",
+      "Each creature card in your graveyard has flashback. The escape cost is equal to its mana cost plus exile two other cards from your graveyard.",
+      "Each creature card in your graveyard has escape. The escape cost is equal to its mana cost plus exile two other cards from a graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhz5.search.then.shuffle.thirdFromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 401.2",
+      "CR 401.4"
+    ],
+    "pattern": "search your library for a card , then shuffle and put that card third from the top",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {},
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "library",
+          "position": {
+            "nth": 3
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for a card, then shuffle and put that card third from the top. You gain 3 life."
+      },
+      {
+        "text": "Search your library for a card, then shuffle and put that card third from the top. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a card, then shuffle and put that card on top.",
+      "Search your library for a card, then shuffle and put that card second from the top.",
+      "Search your library for a card, reveal it, then shuffle and put that card third from the top.",
+      "Search your library for two cards, then shuffle and put those cards third from the top."
+    ],
+    "consumes": [
+      "then",
+      "and"
+    ]
+  }
+]

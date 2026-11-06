@@ -451,7 +451,7 @@ describe('design 6.4: "other" counted for the size of an instruction that takes 
   manual('Test Settler', 'Creature — Human', 'Whenever this creature attacks, tap all other creatures you control, then you may put up to X land cards from your hand onto the battlefield tapped, where X is the number of other creatures you control.');
 });
 
-// ---- CR 122.1, 608.2c: Coastal Ren Faire --------------------------------------------------------------------------------------------------------------------
+// ---- CR 122.1, 608.2c: Anthropological Mission (named "Coastal Ren Faire" in the index of 2026-10-24) --------------------------------------------------------------------------------------------------------------------
 
 describe('CR 122.1, 608.2c: "Whenever you cast a noncreature spell, put a quest counter on ~. Draw a card. Then discard a card unless there are three or more quest counters on ~."', () => {
   const FAIRE = card('Test Faire', 'Enchantment', 'Whenever you cast a noncreature spell, put a quest counter on this enchantment. Draw a card. Then discard a card unless there are three or more quest counters on this enchantment.');

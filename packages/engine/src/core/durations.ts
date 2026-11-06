@@ -168,6 +168,8 @@ export function expireAtLeaversTurn(g: Game, leaver: PlayerId): void {
   const inThatTurn = (x: Lasting): boolean => {
     const d = x.duration;
     if (d.d === 'untilNextTurn') return (playersOfRef(d.whose) ?? [x.controller]).includes(leaver);
+    // edh-cast-7 (CR 800.4m, 611.2a; Single Combat ruling 2019-05-03): "until the end of your next turn" of a player who left lasts until their next turn would have begun
+    if (d.d === 'endOfNextTurn') return (playersOfRef(d.whose) ?? [x.controller]).includes(leaver);
     if (d.d === 'untilNextStep' || d.d === 'throughNextUntap') return d.whose !== undefined && whoseMatches(d.whose, leaver, x.controller);
     return false;
   };
@@ -208,8 +210,10 @@ function nextTurnBegins(g: Game): void {
   const turn = t.number;
   // audit-fix-2 (CR 500.7): with `turn`, only as THAT extra turn begins; a record whose turn is no longer queued (skipped, its player left the game, CR 800.4a)
   // and is not this one can never apply, and ends
-  const due = (e: ContinuousEffectRec): boolean => e.duration.d === 'duringNextTurn' && (e.duration.turn === undefined ? e.startedTurn < turn : e.duration.turn === t.extraTurnId);
-  const gone = (e: ContinuousEffectRec): boolean => e.duration.d === 'duringNextTurn' && e.duration.turn !== undefined && e.duration.turn !== t.extraTurnId && !(t.extraTurnIds ?? []).includes(e.duration.turn);
+  // edh-c-76 (CR 611.2a): with `whose`, as the next turn of one of those players begins (a later turn than the one the record began in)
+  const due = (e: ContinuousEffectRec): boolean =>
+    e.duration.d === 'duringNextTurn' && (e.duration.whose !== undefined ? e.startedTurn < turn && (playersOfRef(e.duration.whose) ?? [e.controller]).includes(t.activePlayer) : e.duration.turn === undefined ? e.startedTurn < turn : e.duration.turn === t.extraTurnId);
+  const gone = (e: ContinuousEffectRec): boolean => e.duration.d === 'duringNextTurn' && e.duration.whose === undefined && e.duration.turn !== undefined && e.duration.turn !== t.extraTurnId && !(t.extraTurnIds ?? []).includes(e.duration.turn);
   if (g.s.continuousEffects.some(gone)) g.s.continuousEffects = g.s.continuousEffects.filter((e) => !gone(e));
   if (g.s.continuousEffects.some(due)) g.s.continuousEffects = g.s.continuousEffects.map((e) => (due(e) ? { ...e, duration: { d: 'endOfTurn' } } : e));
 }
@@ -264,6 +268,7 @@ export function sourceHolds(g: Game, source: ObjHandle | null, controller: Playe
     case 'controlled': return charsOfObject(g.s, o).controller === controller; // the controller after layer 2 (CR 613.1b)
     case 'attached': return attachedTo !== undefined ? o.attachedTo === attachedTo : o.attachedTo !== undefined;
     case 'tapped': return o.tapped;
+    case 'controlledTapped': return o.tapped && charsOfObject(g.s, o).controller === controller; // edh-next-50 (CR 611.2b; Helm of Possession): both at once, judged every time
   }
 }
 
@@ -285,6 +290,11 @@ function stateOver(g: Game, x: Lasting): boolean {
  */
 function namedStillExiled(g: Game, id: string): boolean {
   const e = g.s.continuousEffects.find((r) => r.id === id)?.effect;
+  // edh-d-97 (CR 611.2b, 611.2c, 400.7; Monk Class): an ability granted to the objects an instruction exiled, "for as long as it remains exiled": the locked set (model/cap-walk.ts#exiledGrantsOnly)
+  if (e?.s === 'continuous') {
+    const a = e.affects;
+    return a.ref === 'fixed' && 'objects' in a && a.objects.some((h) => h.zone === 'exile' && g.s.objects[h.id]?.zone === 'exile');
+  }
   if (!e || e.s !== 'permit') return false;
   const is = e.of?.is;
   if (!is || is.ref !== 'fixed' || !('objects' in is)) return false;

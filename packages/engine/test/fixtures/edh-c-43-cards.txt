@@ -1,0 +1,21 @@
+# edh-c-43 (Commander EDHREC ranks 29,501-30,000): conditional pump with must-attack or attack-as-though-no-defender, color and abilities, Aura pump with an otherwise pump, costs less if you control A or B, the number of cards revealed this way, attacking-or-blocking predicate, two color groups. After editing: npm run cards -- fixtures
+Intrepid Ace
+Masked Gorgon
+Otarian Juggernaut
+Spire Serpent
+Repentant Vampire
+Nyx Infusion
+Serra's Boon
+Clutch of Undeath
+Frostpyre Arcanist
+Scent of Nightshade
+Scent of Cinder
+Infectious Bloodlust
+Cinder Seer
+Ivy Seer
+Nightshade Seer
+Scent of Ivy
+Gift of Fangs
+Phyrexian Boon
+Sea Legs
+Sawback Manticore

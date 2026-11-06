@@ -1,0 +1,269 @@
+[
+  {
+    "id": "eff.edhv63.payelse.mana.life",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 119.4",
+      "CR 608.2c"
+    ],
+    "pattern": "{e:Effects} unless {p:Player} pay[s] {m:ManaCost} and {n:Qty} life",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "mana": "$m",
+        "other": [
+          {
+            "kind": "payLife",
+            "amount": "$n"
+          }
+        ]
+      },
+      "else": "$e"
+    },
+    "consumes": [
+      "unless",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Counter target spell unless its controller pays {1} and 2 life."
+      },
+      {
+        "text": "Counter target spell unless its controller pays {2} and 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell unless its controller pays {1} or 2 life.",
+      "Counter target spell unless its controller pays {1} and discards a card.",
+      "Counter target spell if its controller pays {1} and 2 life."
+    ]
+  },
+  {
+    "id": "eff.edhv63.cantbeblocked.except.andor.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be blocked {d:Dur} except by {a:Filter} and/or {b:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": {
+            "not": {
+              "anyOf": [
+                "$a",
+                "$b"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Target creature can't be blocked this turn except by Goblins and/or blue creatures."
+      },
+      {
+        "text": "{2}: ~ can't be blocked this turn except by artifact creatures and/or creatures with reach."
+      }
+    ],
+    "counterExamples": [
+      "Target creature can't be blocked this turn except by Goblins and/or blue creatures and/or red creatures.",
+      "Target creature can't be blocked except by Goblins and/or blue creatures.",
+      "Target creature can't be blocked this turn by Goblins and/or blue creatures."
+    ]
+  },
+  {
+    "id": "eff.edhv63.self.and.obj.gainChoice",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "~ and {o:Obj} both gain your choice of {k1:Keyword} or {k2:Keyword} {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "keywordChoice",
+        "link": "keywordChoice",
+        "options": [
+          "$k1.text",
+          "$k2.text"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k1.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "union",
+                  "of": [
+                    {
+                      "ref": "self"
+                    },
+                    "$o"
+                  ]
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k2.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "union",
+                  "of": [
+                    {
+                      "ref": "self"
+                    },
+                    "$o"
+                  ]
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k2"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "both",
+      "your choice"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, ~ and up to one other target creature you control both gain your choice of flying or trample until end of turn."
+      },
+      {
+        "text": "Whenever ~ attacks, ~ and target creature you control both gain your choice of haste or vigilance until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, ~ and target creature you control both gain flying until end of turn.",
+      "Whenever ~ attacks, ~ and target creature you control both gain your choice of haste, flying, or trample until end of turn.",
+      "Whenever ~ attacks, target creature you control gains your choice of haste or vigilance until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhv63.aslong.attackNoDefender.cantBeBlocked",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 702.3b",
+      "CR 509.1b"
+    ],
+    "pattern": "as long as {c:Cond} , ~ can attack as though it didn't have defender and it can't be blocked",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "as though",
+      "not",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a creature with power 5 or greater, ~ can attack as though it didn't have defender and it can't be blocked."
+      },
+      {
+        "text": "As long as there is an Arcane card in your graveyard, ~ can attack as though it didn't have defender and it can't be blocked."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a creature with power 5 or greater, ~ can attack as though it didn't have defender and it can't block.",
+      "As long as you control a creature with power 5 or greater, ~ can attack as though it didn't have flying and it can't be blocked.",
+      "If you control a creature with power 5 or greater, ~ can attack as though it didn't have defender and it can't be blocked."
+    ]
+  }
+]

@@ -3,7 +3,7 @@
  * states its bounds. It is not a player: it takes the first options, says yes to "may" (so the optional branch runs), attacks with the card under test,
  * never blocks, pays automatically and cancels a payment it cannot make (CR 733.1).
  */
-import { chooseObjectsLimitHolds, obeyRequirements, type Action, type Decision, type DecisionAnswer, type ObjectId } from '@openmtg/engine';
+import { chooseObjectsLimitHolds, chooseObjectsTypesHold, obeyRequirements, type Action, type Decision, type DecisionAnswer, type ObjectId } from '@openmtg/engine';
 
 export interface AnswerContext {
   /** The permanent under test: it attacks when it can (attack triggers, combat keywords). */
@@ -22,6 +22,7 @@ export function answerFor(d: Exclude<Decision, { kind: 'priority' }>, ctx: Answe
       // FAST5 T66: a decision with a total limit ("total mana value 4 or less") takes the first options that keep it
       const ids = take(d.options, d.min, d.max);
       while (ids.length > 0 && !chooseObjectsLimitHolds(d, ids)) ids.pop();
+      if (!chooseObjectsTypesHold(d, ids)) return { kind: 'chooseObjects', ids: d.min === 0 ? [] : ids }; // edh-d-85: none chosen keeps "N card types among them"
       return { kind: 'chooseObjects', ids };
     }
     case 'yesNo': return { kind: 'yesNo', yes: true };
@@ -73,6 +74,7 @@ export function answerFor(d: Exclude<Decision, { kind: 'priority' }>, ctx: Answe
     }
     case 'chooseName': return { kind: 'chooseName', name: d.options?.[0] ?? (d.what === 'cardName' ? ctx.cardName : d.what === 'creatureType' ? 'Human' : d.what === 'landType' ? 'Forest' : 'Creature') };
     case 'commanderZone': return { kind: 'commanderZone', command: true }; // M11-0: CR 903.9a-b
+    case 'shortcut': return { kind: 'shortcut' }; // shortcuts (engine docs/design/shortcuts.md 3): CR 727.2b, let it run
   }
 }
 

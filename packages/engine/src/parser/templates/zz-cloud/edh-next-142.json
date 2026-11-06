@@ -1,0 +1,794 @@
+[
+  {
+    "id": "eff.edhn142.may.reveal.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "^ you may reveal {o:Obj} if {c:Cond}",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "you"
+          },
+          "do": [
+            {
+              "op": "reveal",
+              "who": {
+                "ref": "you"
+              },
+              "what": "$o"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, look at the top card of your library. You may reveal that card if it has three or more colored mana symbols in its mana cost. If you do, you gain 3 life."
+      },
+      {
+        "text": "At the beginning of your upkeep, look at the top card of your library. You may reveal it if it's a creature card. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, look at the top card of your library. You may reveal that card unless it's a land card. If you do, you gain 3 life.",
+      "At the beginning of your upkeep, look at the top card of your library. Reveal that card if it's a land card. If you do, you gain 3 life.",
+      "At the beginning of your upkeep, look at the top card of your library. You may reveal that card and put it into your hand if it's a land card."
+    ]
+  },
+  {
+    "id": "eff.edhn142.mana.anyCombination.itsColors",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 105.2",
+      "CR 106.1b",
+      "CR 106.5",
+      "CR 608.2h"
+    ],
+    "pattern": "add {n:Qty} mana in any combination of its colors",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "colorsOf",
+        "of": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "object",
+            "number": "singular",
+            "text": "its"
+          }
+        },
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, look at the top card of your library. If it's a creature card, you may reveal it. If you do, add three mana in any combination of its colors."
+      },
+      {
+        "text": "At the beginning of your upkeep, look at the top card of your library. You may reveal that card if it's a creature card. If you do, add two mana in any combination of its colors and put it into your hand."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add three mana in any combination of colors.",
+      "At the beginning of your upkeep, look at the top card of your library. If it's a creature card, you may reveal it. If you do, add three mana of any one of its colors."
+    ]
+  },
+  {
+    "id": "cm.edhn142.loyaltyAbilities.additional.you",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 606.4",
+      "CR 601.2f",
+      "CR 118.8",
+      "CR 107.7"
+    ],
+    "pattern": "planeswalkers' loyalty abilities you activate cost an additional {n:LoyaltySym} to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "kind": "loyalty",
+              "source": {
+                "types": [
+                  "Planeswalker"
+                ]
+              }
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "increase",
+            "loyalty": "$n"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Planeswalkers' loyalty abilities you activate cost an additional [+1] to activate."
+      },
+      {
+        "text": "Planeswalkers' loyalty abilities you activate cost an additional [+2] to activate."
+      }
+    ],
+    "counterExamples": [
+      "Planeswalkers' loyalty abilities your opponents activate cost an additional [+1] to activate.",
+      "Planeswalkers' loyalty abilities you activate cost an additional {1} to activate.",
+      "Planeswalkers' activated abilities you activate cost an additional [+1] to activate."
+    ],
+    "consumes": [
+      "additional"
+    ]
+  },
+  {
+    "id": "eff.edhn142.chooses.skipStepOrPhase",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 500.11",
+      "CR 611.2a"
+    ],
+    "pattern": "{p:Player} chooses draw step , main phase , or combat phase . the player skips each instance of the chosen step or phase this turn",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": "$p",
+        "what": "option",
+        "as": "phaseChoice",
+        "link": "phaseChoice",
+        "options": [
+          "draw step",
+          "main phase",
+          "combat phase"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "phaseChoice",
+          "equals": "draw step"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfTurn"
+            },
+            "effects": [
+              {
+                "s": "replace",
+                "replaces": {
+                  "ev": "step",
+                  "step": "draw",
+                  "whose": "$p"
+                },
+                "body": {
+                  "b": "skip"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "phaseChoice",
+          "equals": "main phase"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfTurn"
+            },
+            "effects": [
+              {
+                "s": "replace",
+                "replaces": {
+                  "ev": "phase",
+                  "phase": "precombatMain",
+                  "whose": "$p"
+                },
+                "body": {
+                  "b": "skip"
+                }
+              },
+              {
+                "s": "replace",
+                "replaces": {
+                  "ev": "phase",
+                  "phase": "postcombatMain",
+                  "whose": "$p"
+                },
+                "body": {
+                  "b": "skip"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "phaseChoice",
+          "equals": "combat phase"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfTurn"
+            },
+            "effects": [
+              {
+                "s": "replace",
+                "replaces": {
+                  "ev": "phase",
+                  "phase": "combat",
+                  "whose": "$p"
+                },
+                "body": {
+                  "b": "skip"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "skip",
+      "each",
+      "chosen",
+      "instance"
+    ],
+    "needs": [
+      "feature:shield.skip"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each opponent's upkeep, that player chooses draw step, main phase, or combat phase. The player skips each instance of the chosen step or phase this turn."
+      },
+      {
+        "text": "Whenever this creature deals combat damage to a player, that player chooses draw step, main phase, or combat phase. The player skips each instance of the chosen step or phase this turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each opponent's upkeep, that player chooses draw step, main phase, or combat phase. The player skips the chosen step or phase this turn.",
+      "At the beginning of each opponent's upkeep, that player chooses draw step or combat phase. The player skips each instance of the chosen step or phase this turn.",
+      "At the beginning of each opponent's upkeep, that player chooses draw step, main phase, or combat phase. The player skips each instance of the chosen step or phase during their next turn."
+    ]
+  },
+  {
+    "id": "sta.edhn142.otherCreatures.arePluralSubtype.sameIsTrue.spellsAndCards",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3m",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 108.3",
+      "CR 109.4"
+    ],
+    "pattern": "other creatures you control are {st:PluralSubtype} in addition to their other types . the same is true for creature spells you control and creature cards you own that aren't on the battlefield",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you",
+                  "other": true
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you",
+                  "zone": [
+                    "stack"
+                  ]
+                }
+              },
+              {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "owner": "you",
+                  "isCard": true,
+                  "zone": [
+                    "hand",
+                    "graveyard",
+                    "library",
+                    "exile",
+                    "command",
+                    "stack"
+                  ]
+                }
+              }
+            ]
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "other",
+      "in addition",
+      "same",
+      "aren't"
+    ],
+    "examples": [
+      {
+        "text": "Other creatures you control are Assassins in addition to their other types. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
+      },
+      {
+        "text": "Other creatures you control are Vampires in addition to their other types. The same is true for creature spells you control and creature cards you own that aren't on the battlefield.\nFace-down creatures you control have menace."
+      }
+    ],
+    "counterExamples": [
+      "Other creatures you control are Assassins in addition to their other types. The same is true for creature spells you control.",
+      "Creatures you control are Assassins in addition to their other types. The same is true for creature spells you control and creature cards you own that aren't on the battlefield.",
+      "Other creatures you control are Assassins in addition to their other types. The same is true for creature cards you own that are on the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhn142.eachOpponentMay.search.upTo.oneToYouRestTheirs",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 701.23a",
+      "CR 110.2a",
+      "CR 107.3"
+    ],
+    "pattern": "each opponent may search their library for up to {n:Qty} {f:Filter} cards . they each put one of those cards onto the battlefield tapped under your control and the rest onto the battlefield tapped under their control",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "playerSearch",
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "iterating"
+          },
+          "zone": "library",
+          "filter": "$f",
+          "min": 0,
+          "max": "$n",
+          "as": "search"
+        },
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "iterating"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "is": {
+                "ref": "bound",
+                "name": "search"
+              },
+              "zone": "library"
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "given"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "given"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            },
+            "tapped": true
+          }
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "each",
+            "filter": {
+              "is": {
+                "ref": "bound",
+                "name": "search"
+              },
+              "not": {
+                "is": {
+                  "ref": "bound",
+                  "name": "given"
+                }
+              },
+              "zone": "library"
+            }
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "iterating"
+            },
+            "tapped": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "up to",
+      "rest"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, each opponent may search their library for up to three basic land cards. They each put one of those cards onto the battlefield tapped under your control and the rest onto the battlefield tapped under their control. Then each player who searched their library this way shuffles."
+      },
+      {
+        "text": "When this creature enters, each opponent may search their library for up to two Forest cards. They each put one of those cards onto the battlefield tapped under your control and the rest onto the battlefield tapped under their control. Then each player who searched their library this way shuffles."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, each player may search their library for up to three basic land cards. They each put one of those cards onto the battlefield tapped under your control and the rest onto the battlefield tapped under their control.",
+      "When this creature enters, each opponent may search their library for up to three basic land cards. They each put one of those cards onto the battlefield tapped under their control and the rest onto the battlefield tapped under your control.",
+      "When this creature enters, each opponent may search their library for up to three basic land cards. They each put those cards onto the battlefield tapped under your control."
+    ]
+  },
+  {
+    "id": "eff.edhn142.wish.put.mandatory",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 400.11b",
+      "CR 400.11a",
+      "CR 100.4"
+    ],
+    "pattern": "^ put a card you own from outside the game into your hand",
+    "build": {
+      "op": "fromOutside",
+      "who": {
+        "ref": "you"
+      },
+      "reveal": false
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose one —\n• Search your library for a card, put it into your hand, then shuffle.\n• Put a card you own from outside the game into your hand."
+      },
+      {
+        "text": "Put a card you own from outside the game into your hand. Exile this spell."
+      }
+    ],
+    "counterExamples": [
+      "Put a card you own from outside the game onto the battlefield.",
+      "You may put a card you own from outside the game into your hand.",
+      "Put a card you own from your graveyard into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn142.choose.eachColorPair.fromAmong",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 105.5",
+      "CR 105.2b",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "for each color pair , choose a card that's exactly those colors from among {g:Seen}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "is": "$g",
+          "zone": "library"
+        }
+      },
+      "min": 0,
+      "max": 10,
+      "eachColorPair": true,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "exactly"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, reveal the top ten cards of your library. For each color pair, choose a card that's exactly those colors from among them. Put the chosen cards into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Reveal the top eight cards of your library. For each color pair, choose a card that's exactly those colors from among them. Put the chosen cards into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top ten cards of your library. For each color, choose a card that's exactly that color from among them.",
+      "Reveal the top ten cards of your library. For each color pair, choose a card that's those colors from among them.",
+      "For each color pair, choose a card that's exactly those colors from among cards in your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhn142.put.fromHand.bothTopOrBothBottom",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "put {n:Qty} cards from your hand both on top of your library or both on the bottom of your library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "back"
+      },
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "librarySide",
+        "link": "librarySide",
+        "options": [
+          "top",
+          "bottom"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "librarySide",
+          "equals": "top"
+        },
+        "then": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "back"
+            },
+            "to": {
+              "zone": "library",
+              "position": "top",
+              "order": "chosen"
+            }
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "librarySide",
+          "equals": "bottom"
+        },
+        "then": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "back"
+            },
+            "to": {
+              "zone": "library",
+              "position": "bottom",
+              "order": "chosen"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "both",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Draw three cards, then put two cards from your hand both on top of your library or both on the bottom of your library."
+      },
+      {
+        "text": "Draw two cards, then put two cards from your hand both on top of your library or both on the bottom of your library."
+      }
+    ],
+    "counterExamples": [
+      "Draw three cards, then put two cards from your hand on top of your library in any order.",
+      "Draw three cards, then put two cards from your hand both on top of your library or both into your graveyard.",
+      "Draw three cards, then put a card from your hand on top of your library or on the bottom of your library."
+    ]
+  },
+  {
+    "id": "eff.edhn142.may.putUpToOne.bfTapped.andUpToOne.hand.fromAmong",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.20a",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "you may put up to one {f:Filter} card from among {g:Seen} onto the battlefield tapped and up to one {h:Filter} card from among {g2:Seen} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "putOntoBattlefield"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "putOntoBattlefield"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$h"
+            ],
+            "is": "$g2",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "putIntoHand"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "putIntoHand"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "up to",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top six cards of your library. You may put up to one land card from among them onto the battlefield tapped and up to one Elf card from among them into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Reveal the top five cards of your library. You may put up to one land card from among them onto the battlefield tapped and up to one creature card from among them into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top six cards of your library. You may put up to one land card from among them onto the battlefield tapped. Put the rest on the bottom of your library in a random order.",
+      "Reveal the top six cards of your library. You may put up to two land cards from among them onto the battlefield tapped and up to one Elf card from among them into your hand.",
+      "Reveal the top six cards of your library. You may put up to one land card from among them onto the battlefield tapped and up to one Elf card from among them into your graveyard."
+    ]
+  }
+]

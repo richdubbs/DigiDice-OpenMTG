@@ -1,0 +1,8 @@
+# edh-zones-11 (Commander effort, lane edh-zones; test/cloud/edh-zones-11, golden edh-zones-11-review.json): the rest of another player's library into their graveyard, exile one of those cards, any number of Rat cards revealed, exile one face down, a cast permission only for a creature spell, two or more creatures attack a player, a creature card from among the exiled cards under your control, enters from a graveyard
+Thief of Sanity
+Karumonix, the Rat King
+Florian, Voldaren Scion
+Vivien, Champion of the Wilds
+Horn of the Mark
+Lord of the Void
+River Kelpie

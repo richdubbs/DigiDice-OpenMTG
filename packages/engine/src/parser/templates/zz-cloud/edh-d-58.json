@@ -1,0 +1,298 @@
+[
+  {
+    "id": "eff.edhd58.permit.play.obj.nextTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 514.2"
+    ],
+    "pattern": "during your next turn , you may play {o:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfNextTurn",
+        "whose": {
+          "ref": "you"
+        }
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "laterTurn": true,
+          "while": {
+            "cond": "turnOf",
+            "whose": {
+              "ref": "you"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "next",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile the top card of your library. During your next turn, you may play that card."
+      },
+      {
+        "text": "{2}, {T}: Exile the top card of your library. During your next turn, you may play it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top card of your library. During your next turn, you may cast that card.",
+      "When ~ enters, exile the top card of your library. During your next turn, each opponent may play that card.",
+      "When ~ enters, exile the top card of your library. During each of your turns, you may play that card."
+    ]
+  },
+  {
+    "id": "eff.edhd58.permit.play.eachExiled.dur.anyType",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 611.2b",
+      "CR 608.2c"
+    ],
+    "pattern": "exile all {f:Filter} . for each card exiled this way , you may play that card {d:Dur} , and mana of any type can be spent to cast that spell",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "exiled"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "permit",
+            "who": {
+              "ref": "you"
+            },
+            "action": "play",
+            "of": {
+              "is": {
+                "ref": "bound",
+                "name": "exiled"
+              }
+            },
+            "anyManaType": true
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "all",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Exile all creatures. For each card exiled this way, you may play that card for as long as it remains exiled, and mana of any type can be spent to cast that spell."
+      },
+      {
+        "text": "Exile all artifacts you control. For each card exiled this way, you may play that card for as long as it remains exiled, and mana of any type can be spent to cast that spell."
+      }
+    ],
+    "counterExamples": [
+      "Exile all creatures. For each card exiled this way, you may play that card for as long as it remains exiled.",
+      "Exile all creatures. For each card exiled this way, you may play that card until the end of your next turn, and mana of any type can be spent to cast that spell.",
+      "Exile all creatures. For each card exiled this way, each opponent may play that card for as long as it remains exiled, and mana of any type can be spent to cast that spell."
+    ]
+  },
+  {
+    "id": "eff.edhd58.choose.nonlandExiledThisWay",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 406.1"
+    ],
+    "pattern": "choose a nonland card exiled this way",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "set",
+              "number": "plural",
+              "head": "card",
+              "participle": "exiled this way",
+              "text": "cards exiled this way"
+            }
+          },
+          "zone": "exile",
+          "notTypes": [
+            "Land"
+          ]
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "consumes": [
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile all opponents' graveyards. Choose a nonland card exiled this way. You may cast that card for as long as it remains exiled."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top two cards of your library. Choose a nonland card exiled this way. Until the end of your next turn, you may play that card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile all opponents' graveyards. Choose a nonland card exiled this way.",
+      "When ~ enters, exile all opponents' graveyards. Choose a creature card exiled this way. You may cast that card for as long as it remains exiled.",
+      "When ~ enters, exile all opponents' graveyards. Choose two nonland cards exiled this way. You may cast that card for as long as it remains exiled."
+    ]
+  },
+  {
+    "id": "eff.edhd58.permit.play.impulse.freeSubtype",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 118.9",
+      "CR 205.3",
+      "CR 400.7",
+      "CR 514.2"
+    ],
+    "pattern": "you may play {o:Impulse} this turn . you may cast {k:Subtypes} spells this way without paying their mana costs",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "freeSubtypes": "$k"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile the top card of your library. You may play that card this turn. You may cast Equipment spells this way without paying their mana costs."
+      },
+      {
+        "text": "At the beginning of your upkeep, exile the top card of your library. You may play it this turn. You may cast Aura spells this way without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile the top card of your library. You may play that card this turn. You may cast Equipment spells without paying their mana costs.",
+      "Whenever ~ attacks, exile the top card of your library. You may play that card this turn. Target opponent may cast Equipment spells this way without paying their mana costs.",
+      "Whenever ~ attacks, exile the top card of your library. You may play that card until the end of your next turn. You may cast Equipment spells this way without paying their mana costs."
+    ]
+  },
+  {
+    "id": "rid.edhd58.spellCastByOpponentThisWay.costsMore",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 109.5",
+      "CR 611.2a",
+      "CR 400.3"
+    ],
+    "pattern": "a spell cast by an opponent this way costs {m:ManaCost} more to cast",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "effects.0.s": "permit",
+          "effects.1": null,
+          "effects.0.costChange": null
+        },
+        "effects": [
+          {
+            "costChange": {
+              "@new": {
+                "kind": "increase",
+                "mana": "$m"
+              }
+            },
+            "increaseIfOpponent": {
+              "@new": true
+            }
+          }
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Exile target creature. Until end of turn, its owner may play it. A spell cast by an opponent this way costs {1} more to cast."
+      },
+      {
+        "text": "Exile target artifact. For as long as that card remains exiled, its owner may play it. A spell cast by an opponent this way costs {3} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "Exile target nonland permanent. For as long as that card remains exiled, its owner may play it. A spell cast by you this way costs {2} more to cast.",
+      "Exile target nonland permanent. For as long as that card remains exiled, its owner may play it. A spell cast by an opponent this way costs {2} less to cast.",
+      "Exile target nonland permanent. For as long as that card remains exiled, its owner may play it. Each spell cast by an opponent this way costs {2} more to cast."
+    ]
+  }
+]

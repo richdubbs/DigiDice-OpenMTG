@@ -23,24 +23,36 @@ const CONDITIONS: Record<Condition['cond'], boolean> = {
   asCast: true, // FAST5X E17 (CR 601.2i)
   firstNamedResolution: true, // FAST5X E26 (CR 702.192a)
   controlledSinceUpkeep: true, // CMD3 (CR 702.30a, echo)
+  controlledSinceTurnStart: true, // edh-c-110 (CR 302.6, 400.7; Rocket Launcher)
   firstCombat: true, // Standard round 4, r4-trig (CR 500.8, 505.1a)
   firstTime: true, someMatch: true, // Standard round 5, r5-trig (CR 603.4, 603.2c)
   prime: true, // std-rx1
   share: true, // std-cardcopy-1 (CR 205.2a, 105.2)
   firstSpellCast: true, // trek-2 (CR 601.2i, 707.10)
+  putBySource: true, // edh-perms-9 (CR 608.2, 603.4): "if it wasn't put onto the battlefield with this ability"
+  playerIs: true, // edh-players-18 (CR 102.3): "if the player is your opponent"
+  otherOpponentNotAttacked: true, // edh-next-53 (CR 506.2, 508.1b): "that player has another opponent who isn't being attacked"
+  attackedYouLastTurn: true, // edh-d-45 (CR 506.1, 508.1): "a player attacked you during their last turn"
+  eventDied: true, // edh-next-97 (CR 700.4): "if it didn't die" after a leave-the-battlefield trigger
+  allChose: true, // edh-next-120 (CR 608.2d)
+  eventCrewers: true, // edh-d-89 (CR 702.122e): "if it was crewed by exactly two creatures" after "becomes crewed"
 };
 const QUANTITIES: Record<Exclude<Quantity, number>['q'], boolean> = {
-  X: true, var: true, count: true, countPlayers: true, stat: true, life: true, zoneSize: true, counters: true, devotion: true, distinct: true, happenedCount: true, spellsBefore: true, eventAmount: true,
+  X: true, var: true, count: true, countPlayers: true, stat: true, life: true, zoneSize: true, counters: true, devotion: true, distinct: true, happenedCount: true, spellsBefore: true, eventExcess: true /* edh-top-15 */, eventAmount: true,
   resultCount: true, targetCount: true, spellTargetCount: true, dieResult: true, speed: true, age: true, level: true, turnNumber: true, cardsDrawnThisTurn: true, spellsCastThisTurn: true,
-  lifeGainedThisTurn: true, math: true, live: true, ask: true,
+  lifeGainedThisTurn: true, math: true, live: true, ask: true, casterSpellsCastThisTurn: true /* edh-next-12 */, casterControlledCount: true /* edh-c-73 */,
   kickCount: true, preventedAmount: true, faceUpX: true, // M6-0 (m6 design 5, M6-0)
   commanderCasts: true, // M11-0 (m11 design 4.5): exact in every game (0 outside Commander, CR 903.8)
   commanderIdentitySize: true, // pc-statics-2 (CR 903.4): read by effects/eval.ts (a cost's amount is read when it is paid); unknown identity is not guessed
   lifeLostThisTurn: true, colorsSpent: true, // FAST4 T34
   spellManaSpent: true, // FAST5X E9 (increment, CR 702.191a)
   partySize: true, // FAST5 T38 (CR 700.8)
+  symbolsAmong: true, // edh-c-37 (CR 107.4, 202.1)
+  keywordsHad: true, // edh-next-145 (CR 702.1, 608.2h): read as a resolving effect is created (the static evaluator does not read it: a static ability with it stays manual)
   basePower: true, // std-rx29 (CR 208.1, 613.4)
+  asCast: true, // edh-next-126 (CR 601.2i): recorded as the spell became cast (actions/cast-checks.ts)
   mostSharingCreatureType: true, // r5-cost (CR 205.3m)
+  mostByController: true, lifeLostTotal: true, // edh-cast-3 (CR 109.4, 119.3)
   spellColorsSpent: true, // FAST5 T51 (CR 601.2h)
   manaSpent: true, // FAST5 T42
   excessDamage: true, // FAST5X E16 (CR 120.4a, 608.2c)
@@ -48,13 +60,19 @@ const QUANTITIES: Record<Exclude<Quantity, number>['q'], boolean> = {
   damageDealt: true, // std-rx20 (CR 120.3, 608.2c)
   unspentMana: true, // FAST5X E19 (CR 106.4)
   startingLife: true, // FAST5 T60 (CR 103.4)
+  playersLost: true, // edhn95 (CR 104.3)
   turnsBegun: true, // Standard round 9, std-r9 (CR 500.7): PlayerState.turnsBegun
   modesChosen: true, // Standard round 3, r3-trig (CR 700.2, 601.2b)
   loyaltyRemoved: true, // Standard round 3, r3-trig (CR 606.4)
   resolvedThisTurn: true, // FAST5X E17 (CR 608.2, 400.7)
+  activatedThisTurn: true, // edh-c-89 (CR 602.5b)
   descendedThisTurn: true, // FAST5X E22 (CR 700.11)
+  attacksThisTurn: true, // edh-combat-5 (CR 508.1)
   lifeLost: true, // M12-3 (CR 119.3, 608.2c)
   votes: true, // M12-3 (CR 701.38a-b)
+  dieResultHighest: true, // edh-d-49 (CR 706.2, 603.2c)
+  dieResultOther: true, diceResults: true, // edh-mana-keywords-10 (CR 706.2, 608.2h)
+  stickerVowels: true, // edh-next-147 (CR 123.6e)
   opponentsAttacked: true, // M12-3 (CR 702.121a)
   unlockedDoors: true, // cloud std-dsk (CR 709.5c, 709.5j)
   happenedDistinct: true, // CLOUD std-tmt (CR 205.2a, 608.2h)
@@ -62,6 +80,19 @@ const QUANTITIES: Record<Exclude<Quantity, number>['q'], boolean> = {
   manaSymbols: true, // Standard round 5, r5-trig (CR 107.4, 202.1)
   spellTargetTotal: true, costCount: true, // std-costs-1 (CR 601.2f, 601.2b)
   countersPut: true, // trek-6 (CR 122.6, 608.2c)
+  mostSharingName: true, // edh-replace-4 (CR 201.2)
+  happenedPlayers: true, // edh-players-9 (CR 102.3, 121.1, 120.2a)
+  extraTurnsBegun: true, // trek-18 (CR 500.7): PlayerState.extraTurnsBegun
+  snowSpent: true, // edh-zones-26 (CR 107.4h, 601.2h): the snow mana among the mana spent to cast this spell
+  timesMutated: true, // edh-next-33 (CR 702.140d)
+  permanentsToGraveyardThisTurn: true, // edh-d-3 (CR 702.69a): gravestorm
+  votesFor: true, // edhd27 (CR 701.38a-b)
+  spellX: true, // edh-d-31 (CR 107.3e): the X of the spell a cast trigger names
+  targetsOf: true, // edh-next-143 (CR 115.9a): the targets of the event spell (effects/eval.ts)
+  chosenColorsOf: true, // edh-d-45 (CR 105.1, 607.2d): cost modifiers only (statics/costmods.ts), the effect evaluator names it undetermined
+  activationManaFrom: true, // edh-next-129 (CR 602.2b, 106.3): the mana from Treasures spent on the activation (Mr. House)
+  sharedCardTypes: true, // edh-d-90 (CR 601.2f, 205.2a): cost modifiers only (statics/costmods.ts), the effect evaluator names it undetermined
+  manaProduced: true, // edh-d-90 (CR 106.3, 605.3b): the triggering mana ability's mana (effects/eval.ts)
 };
 const REFS: Record<ObjRef['ref'] | PlayerRef['ref'], true> = {
   otherOf: true, // std-rx30
@@ -69,6 +100,9 @@ const REFS: Record<ObjRef['ref'] | PlayerRef['ref'], true> = {
   you: true, controllerOf: true, ownerOf: true, anOpponent: true, active: true, defending: true, iterating: true,
   costSacrificed: true, // FAST3 T18
   costTapped: true, // T35
+  convokers: true, // edh-mana-keywords-8
+  chose: true, // edh-players-13
+  choseNumber: true, // edh-next-120
   costBeheld: true, costReturned: true, // std-rx28 (CR 701.4a, 702.188a)
   costExiled: true, // FAST5X E13
   costDiscarded: true, // CLOUD C8
@@ -76,12 +110,24 @@ const REFS: Record<ObjRef['ref'] | PlayerRef['ref'], true> = {
   voters: true, // M12F (CR 701.38a)
   costChosen: true, // FAST5X E1: gift's chosen opponent (CR 702.174a)
   seat: true, // M12-1: "the player to your left / right" (m12 design D6; CR 101.4, 103.1)
+  withLife: true, // edh-next-72
+  controlsAny: true, // edh-perms-13: "each player who controls an artifact" (CR 109.4, 101.4)
   controlsMost: true, // C6: "each player who controls the most creatures" (CR 109.4, 101.4)
   grantor: true, // r4-static: the granting object of a granted ability (statics/mods.ts#withGrantor)
   enchantedPlayer: true, // std-rr: "enchanted player", the player the source Aura is attached to (CR 303.4, 702.5a)
   eachWho: true, // std-combat-1: "each opponent who attacked you ... this turn" (CR 608.2c, 508.1)
   costChosenObject: true, // std-costs-2: what a chooseObject additional cost chose (CR 601.2b)
   costRevealed: true, // p2-refs-1 (CR 601.2b, 701.20a)
+  pair: true, // edh-top-2: soulbond's pair (CR 702.95b)
+  attackedBySource: true, // edh-players-17 (CR 506.3, 508.1)
+  attacked: true, // edh-combat-6 (CR 506.2, 506.3)
+  votedFor: true, // edh-players-17 (CR 701.38a)
+  randomOpponent: true, // trek-17: "a random opponent"
+  monarch: true, // edh-d-10: "the monarch" (CR 725.1)
+  initiative: true, // edh-next-82: "the player who has the initiative" (CR 726.1)
+  costUnattached: true, // edh-next-141 (CR 701.3d): what an unattach cost unattached
+  mostLife: true, // edh-d-85
+  grantCaster: true, // edh-next-146: "the player who cast ¤" (CR 601.2a, 611.2c), fixed by effects/handlers/lasting.ts as a spell's effect is created
 };
 
 describe('the capability tables cover the model', () => {
@@ -96,7 +142,7 @@ describe('the capability tables cover the model', () => {
   });
   it('durations are WP15\'s: every form of Duration but asLongAs is advertised, as core/durations.ts ends it (test/m5/lasting/ pins each one)', () => {
     // not asLongAs: design 3.7 wants it judged live, the build judges it at priority checks (effects/eval.ts, WP15 review)
-    expect(Object.keys(DUR_EVALUATORS).sort()).toEqual(['duringNextTurn' /* std-control-1: "during that turn" of the next turn, CR 611.2a */, 'endOfCombat', 'endOfNextTurn' /* FAST5X E29 */, 'endOfTurn', 'permanent', 'remainsExiled' /* FAST5X E29 */, 'throughNextUntap' /* MX5 */, 'until', 'untilExiledWith' /* r5-dig */, 'untilNextStep', 'untilNextTurn', 'whileObject' /* std-rx32 */, 'whileSource']);
+    expect(Object.keys(DUR_EVALUATORS).sort()).toEqual(['duringNextCombat' /* edh-d-88: "during that player's next combat" (Razorfield Ripper's reselection, CR 506.1) */, 'duringNextTurn' /* std-control-1: "during that turn" of the next turn, CR 611.2a */, 'endOfCombat', 'endOfNextTurn' /* FAST5X E29 */, 'endOfTurn', 'permanent', 'remainsExiled' /* FAST5X E29 */, 'throughNextUntap' /* MX5 */, 'until', 'untilExiledWith' /* r5-dig */, 'untilNextStep', 'untilNextTurn', 'whileObject' /* std-rx32 */, 'whileSource']);
   });
 });
 

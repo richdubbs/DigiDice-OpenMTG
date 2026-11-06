@@ -28,14 +28,15 @@ export interface CombatTax {
 const generic = (n: number): CostDef => ({ mana: [{ kind: 'generic', amount: n }] });
 
 /** The cost of one creature under one effect, or null with the reason when it can't be determined. */
-function costOf(ctx: RuleContext, src: RuleSource, m: RuleModDef): { cost: CostDef | null; why?: string } {
+function costOf(ctx: RuleContext, src: RuleSource, m: RuleModDef, creature: ObjectId): { cost: CostDef | null; why?: string } {
   if (m.cost !== undefined) {
     // an {X} that was not fixed (model/cap-walk.ts keeps such a card manual) is never read as 0
     if ((m.cost.mana ?? []).some((x) => x.kind === 'variable')) return { cost: null, why: 'the cost has an X that was not fixed' };
     return { cost: m.cost };
   }
   if (m.value === undefined || m.value === 'none') return { cost: null, why: 'no cost given' };
-  const n = evalQuantity(cxOf(ctx, src), m.value);
+  // edh-top-13 (CR 508.1h, 122.1; Nils, Discipline Enforcer): the amount is read for each taxed creature, which `{ref:'subject'}` names ("the number of counters on that creature")
+  const n = evalQuantity({ ...cxOf(ctx, src), subject: creature }, m.value);
   if (n === undefined) return { cost: null, why: 'the amount to pay can not be determined' };
   return { cost: generic(Math.max(0, n)) }; // CR 107.1b
 }
@@ -65,7 +66,7 @@ function taxesOf(ctx: RuleContext, src: RuleSource, m: RuleModDef, creature: Obj
     out.push({ creature, sourceName: src.name, cost: null, why: 'which creatures it applies to can not be judged' });
     return;
   }
-  out.push({ creature, sourceName: src.name, ...costOf(ctx, src, m) });
+  out.push({ creature, sourceName: src.name, ...costOf(ctx, src, m, creature) });
 }
 
 /** CR 508.1h: the costs of this attack declaration, one entry per taxed attacker and effect (empty when it costs nothing). */

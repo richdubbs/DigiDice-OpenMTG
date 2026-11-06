@@ -1,0 +1,10 @@
+# edh-perms-6 (Commander lane edh-perms; test/cloud/edh-perms-6, golden edh-perms-6-review.json)
+# a payment with a condition and an "if you didn't create a token this way" follow-up, another player's "may tap" for an entering permanent, counter-gated type changes,
+# a group's per-counter change, the same name as the modified creature, the equipped creature as the pronoun of a tested condition
+Arixmethes, Slumbering Isle
+Blade of the Bloodchief
+Charismatic Conqueror
+Minas Morgul, Dark Fortress
+Mirror Box
+Springheart Nantuko
+Toxrill, the Corrosive

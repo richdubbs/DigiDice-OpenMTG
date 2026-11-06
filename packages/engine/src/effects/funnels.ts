@@ -12,11 +12,14 @@ import { installTokenFunnel, installZoneChangeFunnel, type MoveOptions } from '.
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { ObjHandle, ZoneKind } from '../types/state';
 import { installDamageFunnel, installLifeLossFunnel, installSimultaneousDamageFunnel, type DamageItem, type DamageOptions } from '../rules/damage';
-import { installCostCounterFunnel } from '../rules/pay-parts';
+import { installCostCounterFunnel, installCostDrawFunnel, installCostGainLifeFunnel } from '../rules/pay-parts';
 import { installPayLifeFunnel } from '../rules/life';
-import { installDestroyFunnel, installDestroyManyFunnel, type DestroyOptions, type DestroyResult } from '../rules/destroy';
+import { installLoseGameFunnel } from '../core/sba';
+import { installDestroyFunnel, installDestroyManyFunnel, installStaticRegenerations, type DestroyOptions, type DestroyResult } from '../rules/destroy';
+import { replacementIndex } from './replacement-index';
 import type { Proposed } from './api';
 import { ruleForbids } from './cant';
+import { inDamageBatch } from './damage-batch';
 import { installEntryPipeline, performEvent, type CallerOptions, type Performed } from './perform';
 import { healMarkedDamage } from './perform-events';
 import './mana-ability'; // WP31: installs the resolver of mana abilities decided as they resolve (rules/mana.ts, CR 605.3b)
@@ -24,6 +27,7 @@ import './until-return'; // FAST4 MX1: installs the second one-shot effect of a 
 import './merge-leave'; // M6-9: installs where the card components of a token merged permanent go (core/move-parts/components.ts, CR 730.3e)
 import { affectedPlayer, installProposeTogether, isZero, proposeResult, runPipeline } from './propose';
 import { charsOfObject, hasKeyword } from '../rules/characteristics';
+import { damageAsInfect } from '../statics/hooks';
 import { shieldBudgetLeft } from './replace-bodies';
 import { applicable, handleOf, semOf } from './replacements';
 import { collectingAfter, installNestedProposer, installNestedRunner, installSemOf } from './nested';
@@ -132,14 +136,26 @@ function apnap(g: Game): PlayerId[] {
  * triggers, CR 603.2c); what the bodies deferred (CR 615.5) happens after all of them. `callers`: the milestone 3/4 options of each event's call-site.
  */
 export function proposeSimultaneous(g: Game, events: (Proposed | null)[], callers: CallerOptions[] = []): (Performed | null)[] {
+  return inDamageBatch(g, () => proposeBatch(g, events, callers));
+}
+function proposeBatch(g: Game, events: (Proposed | null)[], callers: CallerOptions[]): (Performed | null)[] {
   const destroyed = events.flatMap((e) => (e && e.ev === 'destroy' ? [e.object.id] : []));
   if (destroyed.length > 0 && g.indestructibleAtProposal === null) {
     // trek-8 re-review (CR 608.2f, 702.12b): who is indestructible is settled for the whole batch before the first permanent is destroyed
     g.indestructibleAtProposal = new Map(destroyed.map((id) => [id, hasKeyword(charsOfObject(g.s, g.obj(id)), 'indestructible')]));
     try {
-      return proposeSimultaneous(g, events, callers);
+      return proposeBatch(g, events, callers);
     } finally {
       g.indestructibleAtProposal = null;
+    }
+  }
+  // edh-next-49 (CR 510.2, 120.3b; Phyrexian Unlife ruling 2011-06-01): "all damage is dealt as though its source had infect" is decided once for a simultaneous batch, before any part changes life
+  const damaged = [...new Set(events.flatMap((e) => (e && e.ev === 'damage' && typeof e.to === 'string' ? [e.to as PlayerId] : [])))];
+  if (events.filter((e) => e && e.ev === 'damage').length > 1 && g.infectAtProposal === null) {
+    const snap = new Map(damaged.filter((p) => g.s.players.some((x) => x.id === p)).map((p) => [p, damageAsInfect(g.s, p)] as const));
+    if (snap.size > 0) {
+      g.infectAtProposal = snap;
+      try { return proposeBatch(g, events, callers); } finally { g.infectAtProposal = null; }
     }
   }
   const shares = divideShields(g, events.map((e) => (e && e.ev === 'damage' ? e : null)));
@@ -169,10 +185,43 @@ export function proposeSimultaneous(g: Game, events: (Proposed | null)[], caller
   return out;
 }
 
+/**
+ * edh-d-86: the players a "your life total would be reduced to N or less" replacement covers now (the controller of the object with it; only the `you` form, which is the one template
+ * built), each with the greatest N. Empty when there is none.
+ */
+function lossBatchCovers(g: Game): Map<PlayerId, number> {
+  const out = new Map<PlayerId, number>();
+  for (const x of replacementIndex(g.s).get('life') ?? []) {
+    const r = x.effect.replaces;
+    if (r.ev !== 'life' || r.toAtMost === undefined || r.player !== 'you') continue;
+    const c = g.s.objects[x.object]?.controller;
+    if (c !== undefined) out.set(c, Math.max(out.get(c) ?? -Infinity, r.toAtMost));
+  }
+  return out;
+}
+
 /** All the damage of one simultaneous event (CR 510.2: the combat damage of a step): `proposeSimultaneous` (M6-1; the shields divided first, CR 615.7). */
 function simultaneousFunnel(g: Game, items: DamageItem[]): number[] {
   const events = items.map((it) => (it.amount > 0 ? damageEvent(g, it.source, it.target, it.amount, it.opts ?? {}) : null));
-  const done = proposeSimultaneous(g, events, items.map((it) => ({ damage: it.opts ?? {} })));
+  // edh-d-86 (CR 510.2, 120.3a, 614.1a; Enduring Angel): the loss of life of one simultaneous batch is ONE reduction of the life total for the question "would your life total be reduced
+  // to N or less": for a player a `toAtMost` replacement covers (its controller), the losses of the batch are held, and after the damage the summed loss is proposed once when the
+  // replacement would apply to it (life - sum <= N); otherwise each loss is proposed as before, one per source, in order (triggers and history unchanged, review)
+  const covered = g.lossBatch === null && items.filter((it) => it.amount > 0 && typeof it.target === 'string').length > 1 ? lossBatchCovers(g) : new Map<PlayerId, number>();
+  const batch = covered.size > 0;
+  if (batch) g.lossBatch = new Map([...covered.keys()].map((p) => [p, []]));
+  let done: ReturnType<typeof proposeSimultaneous>;
+  let held: Map<PlayerId, { amount: number; cause: string }[]> | null = null;
+  try {
+    done = proposeSimultaneous(g, events, items.map((it) => ({ damage: it.opts ?? {} })));
+  } finally {
+    if (batch) { held = g.lossBatch; g.lossBatch = null; }
+  }
+  for (const [player, parts] of held ?? []) {
+    if (parts.length === 0 || g.player(player).hasLost) continue;
+    const sum = parts.reduce((n, x) => n + x.amount, 0);
+    if (g.player(player).life - sum <= covered.get(player)!) proposeResult(g, { ev: 'life', change: 'loss', player, amount: sum, cause: 'damage dealt at the same time', fromDamage: true });
+    else for (const x of parts) if (!g.player(player).hasLost) proposeResult(g, { ev: 'life', change: 'loss', player, amount: x.amount, cause: x.cause, fromDamage: true });
+  }
   return done.map((r) => r?.amount ?? 0);
 }
 
@@ -201,12 +250,33 @@ installDamageFunnel(damageFunnel);
 installSimultaneousDamageFunnel(simultaneousFunnel);
 // Cloud r3-repl (CR 118.3, 122.6): the counters a cost puts are proposed too (cause 'cost', by the paying player)
 installCostCounterFunnel((g, player, id, kind, count) => proposeResult(g, { ev: 'counters', change: 'put', on: { id, zone: 'battlefield' }, kind, count, cause: 'cost', by: player })?.amount ?? 0);
+// edh-cast-14 (CR 118.1, 119.3, 614.1a): the life an opponent gains to pay a cost (Invigorate) is proposed, so life gain replacements apply to it
+// edh-c-48 (CR 121.2, 614.11; the draw handler's two steps, effects/handlers/cards-draw.ts): the cards of a draw cost are proposed as one `drawMany` and then each as a `draw`
+installCostDrawFunnel((g, player, count) => {
+  const final = count > 0 ? proposeResult(g, { ev: 'drawMany', player, count })?.event : undefined;
+  const k = final?.ev === 'drawMany' ? final.count : 0;
+  for (let i = 0; i < k; i++) proposeResult(g, { ev: 'draw', player });
+});
+installCostGainLifeFunnel((g, player, amount, cause) => proposeResult(g, { ev: 'life', change: 'gain', player, amount, cause })?.amount ?? 0);
 // Cloud r3-repl (CR 120.3a, 614.1a): the life loss damage causes is proposed, so effects that modify life loss apply to it
-installLifeLossFunnel((g, player, amount, cause) => proposeResult(g, { ev: 'life', change: 'loss', player, amount, cause })?.amount ?? 0);
+installLifeLossFunnel((g, player, amount, cause) => {
+  const held = g.lossBatch?.get(player);
+  if (held !== undefined) { held.push({ amount, cause }); return amount; } // edh-d-86: held for the batch (simultaneousFunnel)
+  return proposeResult(g, { ev: 'life', change: 'loss', player, amount, cause, fromDamage: true })?.amount ?? 0;
+}); // edh-players-3: fromDamage
 // std-library-4 (CR 119.4, 614.1a): a payment of life is proposed, so "If you would pay life ..., ... instead" replaces it (effects/proposal-kinds/pay-life.ts)
 installPayLifeFunnel((g, player, amount, cause, rules) => { proposeResult(g, { ev: 'payLife', player, amount, cause, rules }); });
+// edh-replace-7 (CR 104.3, 614.1a): a loss of the game is proposed, so "If you would lose the game, instead ..." replaces it (effects/proposal-kinds/lose-game.ts)
+installLoseGameFunnel((g, player, reason, rules) => { proposeResult(g, { ev: 'loseGame', player, reason, rules }); });
 installDestroyFunnel(destroyFunnel);
 installDestroyManyFunnel(destroyManyFunnel);
+// edh-c-45 (CR 614.1a, 701.19b; Mossbridge Troll): the static "If ~ would be destroyed, regenerate it" effects of the battlefield (rules/destroy.ts#staticRegenerationCovers judges whom each covers)
+installStaticRegenerations((s) => (replacementIndex(s).get('action') ?? []).flatMap((r) => {
+  const e = r.effect;
+  const o = s.objects[r.object];
+  if (r.zone !== 'battlefield' || r.otherwise === true || o === undefined || e.shield !== undefined || e.body.b !== 'regeneration' || e.replaces.ev !== 'action' || e.replaces.verb !== 'destroy' || e.replaces.actor !== undefined || e.condition !== undefined) return [];
+  return [{ source: r.object, controller: o.controller, filter: e.replaces.object ?? {} }];
+}));
 installProposeTogether((g, events) => proposeSimultaneous(g, [...events]));
 installEntryPipeline(runPipeline);
 // M6-1 (m6 design 3.1.5, 3.2): what the replacement bodies need from the interpreter (effects/nested.ts)

@@ -1,0 +1,11 @@
+# edh-zones-3 (Commander effort, lane edh-zones; test/cloud/edh-zones-3, golden edh-zones-3-review.json): "put into a graveyard from anywhere", not legendary / not historic, events joined by "or", each opponent mills half their library, graveyard to the bottom, shuffle the artifact and the graveyard in, return from your graveyard instead
+Kozilek, Butcher of Truth
+Ulamog, the Infinite Gyre
+Worldspine Wurm
+Syr Konrad, the Grim
+Desynchronization
+Urza's Ruinous Blast
+Maddening Cacophony
+Endurance
+Elixir of Immortality
+Stitch Together

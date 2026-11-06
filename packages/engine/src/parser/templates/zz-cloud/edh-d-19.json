@@ -1,0 +1,431 @@
+[
+  {
+    "id": "eff.edhd19.planeswalk",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.31a",
+      "CR 701.31b"
+    ],
+    "pattern": "planeswalk",
+    "build": {
+      "op": "action",
+      "action": "planeswalk",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "action:planeswalk"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player votes for planeswalk or chaos. If planeswalk gets more votes, planeswalk. If chaos gets more votes or the vote is tied, chaos ensues."
+      },
+      {
+        "text": "When ~ enters, starting with you, each player votes for planeswalk or chaos. If planeswalk gets more votes, planeswalk. If chaos gets more votes or the vote is tied, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Planeswalk to a plane.",
+      "Starting with you, each player votes for planeswalk or chaos. If planeswalk gets more votes, planeswalk twice.",
+      "If planeswalk gets more votes, planeswalk to a plane."
+    ]
+  },
+  {
+    "id": "eff.edhd19.chaosEnsues",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 311.7"
+    ],
+    "pattern": "chaos ensues",
+    "build": {
+      "op": "action",
+      "action": "chaosEnsues",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "action:chaosEnsues"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player votes for planeswalk or chaos. If planeswalk gets more votes, draw a card. If chaos gets more votes or the vote is tied, chaos ensues."
+      },
+      {
+        "text": "When ~ enters, starting with you, each player votes for planeswalk or chaos. If planeswalk gets more votes, draw a card. If chaos gets more votes or the vote is tied, chaos ensues."
+      }
+    ],
+    "counterExamples": [
+      "Chaos ensues twice.",
+      "Chaos ensues on a plane."
+    ]
+  },
+  {
+    "id": "eff.edhd19.vote.secret.words",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 701.38b"
+    ],
+    "pattern": "each player secretly votes for {w:VoteWords} , then those votes are revealed",
+    "build": {
+      "op": "action",
+      "action": "vote",
+      "who": {
+        "ref": "you"
+      },
+      "choices": "$w",
+      "secret": true
+    },
+    "subject": "none",
+    "needs": [
+      "action:vote",
+      "feature:vote.words"
+    ],
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly votes for truth or consequences, then those votes are revealed. You draw cards equal to the number of truth votes."
+      },
+      {
+        "text": "When ~ enters, each player secretly votes for fellowship or aid, then those votes are revealed. For each aid vote, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each player secretly votes for carnage or carnage, then those votes are revealed.",
+      "Each player secretly votes for carnage or homage."
+    ]
+  },
+  {
+    "id": "eff.edhd19.counters.nForEachVote",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 701.38a",
+      "CR 608.2h"
+    ],
+    "pattern": "put {m:Qty} +1/+1 counters on {o:Obj} for each {n:VoteCount}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "+1/+1",
+      "count": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$m",
+          "$n"
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, starting with you, each player votes for sprout or harvest. Put two +1/+1 counters on ~ for each sprout vote."
+      },
+      {
+        "text": "When ~ enters, starting with you, each player votes for sprout or harvest. Put three +1/+1 counters on ~ for each harvest vote."
+      }
+    ],
+    "counterExamples": [
+      "Put two +1/+1 counters on ~ for each sprout vote.",
+      "When ~ enters, starting with you, each player votes for sprout or harvest. Put two +1/+1 counters on ~ for each harvest."
+    ]
+  },
+  {
+    "id": "eff.edhd19.gainLife.nForEachVote",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.1",
+      "CR 701.38a",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} gain[s] {m:Qty} life for each {n:VoteCount}",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$m",
+          "$n"
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, starting with you, each player votes for sprout or harvest. You gain 3 life for each harvest vote."
+      },
+      {
+        "text": "When ~ enters, starting with you, each player votes for time or knowledge. You gain 2 life for each knowledge vote."
+      }
+    ],
+    "counterExamples": [
+      "You gain 3 life for each harvest vote.",
+      "When ~ enters, starting with you, each player votes for sprout or harvest. You gain 3 life for each harvest."
+    ]
+  },
+  {
+    "id": "eff.edhd19.damage.nForEachVote",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 701.38a",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] {m:Qty} damage to {to:Recipient} for each {n:VoteCount}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$m",
+          "$n"
+        ]
+      }
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly votes for truth or consequences, then those votes are revealed. ~ deals 3 damage to each opponent for each consequences vote."
+      },
+      {
+        "text": "Starting with you, each player votes for death or taxes. ~ deals 2 damage to each opponent for each death vote."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 3 damage to each opponent for each consequences vote.",
+      "Each player secretly votes for truth or consequences, then those votes are revealed. ~ deals 3 damage to each opponent for each consequences."
+    ]
+  },
+  {
+    "id": "eff.edhd19.eachPlayer.returnEach.graveyard.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 110.2a",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "each player returns each {f:Filter} card from their graveyard to the battlefield",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "zone": "graveyard",
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player returns each creature card from their graveyard to the battlefield."
+      },
+      {
+        "text": "Each player returns each Elf card from their graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Each player returns each creature card from their graveyard to their hand.",
+      "Each opponent returns each creature card from their graveyard to the battlefield.",
+      "You return each creature card from your graveyard to the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhd19.sacrificeChoice.discard.forEachVote",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 701.9a",
+      "CR 701.38a",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} sacrifice[s] ( a | an ) {f:Filter} of their choice for each {n:VoteCount} and discard[s] a card for each {m:VoteCount}",
+    "build": [
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$f",
+        "count": "$n"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$m"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player votes for death or taxes. Each opponent sacrifices a creature of their choice for each death vote and discards a card for each taxes vote."
+      },
+      {
+        "text": "Starting with you, each player votes for death or taxes. Each player sacrifices a land of their choice for each taxes vote and discards a card for each death vote."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent sacrifices a creature of their choice for each death vote and discards a card for each taxes vote.",
+      "Starting with you, each player votes for death or taxes. Each opponent sacrifices a creature of their choice for each death vote and discards a card."
+    ]
+  },
+  {
+    "id": "eff.edhd19.eachPlayer.returnsUpTo.graveyard.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 400.3",
+      "CR 701.9a"
+    ],
+    "pattern": "each player returns up to {n:Qty} cards from their graveyard to their hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": {
+              "ref": "iterating"
+            },
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Each player returns up to two cards from their graveyard to their hand."
+      },
+      {
+        "text": "Starting with you, each player votes for return or embark. If return gets more votes, each player returns up to three cards from their graveyard to their hand."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent returns up to two cards from their graveyard to their hand.",
+      "Each player returns up to two cards from their graveyard to the battlefield.",
+      "Each player returns two cards from their graveyard to their hand."
+    ]
+  },
+  {
+    "id": "eff.edhd19.ownerPutsLinkedExiledBottom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 400.3",
+      "CR 401.4",
+      "CR 608.2c"
+    ],
+    "pattern": "the owner of each card exiled with ~ puts that card on the bottom of their library",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "library",
+        "position": "bottom"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target creature with power 3 or less an opponent controls until ~ leaves the battlefield.\n{0}: Starting with you, each player votes for innocent or guilty. If guilty gets more votes, the owner of each card exiled with ~ puts that card on the bottom of their library."
+      },
+      {
+        "text": "When ~ enters, exile target nonland permanent with mana value 2 or less an opponent controls until ~ leaves the battlefield.\n{1}: The owner of each card exiled with ~ puts that card on the bottom of their library."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target creature with power 3 or less an opponent controls until ~ leaves the battlefield.\n{1}: The owner of each card exiled with ~ puts that card on top of their library.",
+      "When ~ enters, exile target creature with power 3 or less an opponent controls until ~ leaves the battlefield.\n{1}: The owner of each card exiled with ~ puts that card into their hand.",
+      "You put each card exiled with ~ on the bottom of your library."
+    ]
+  }
+]

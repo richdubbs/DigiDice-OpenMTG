@@ -16,10 +16,10 @@ import { aiAgent, randomAgent, type Agent } from './harness';
 import { createGame } from '@openmtg/engine';
 
 // M6-1: Fog is automated since milestone 6 runs prevention effects of resolved spells; M6-10: so is Fatigue (zz-m6/gate.json), and p2-attack-block-1 Beseech the Queen (its
-// comparison with "the number of lands you control"), so Order of Succession (a manual sorcery with no target) keeps a manualResolve decision in the games
+// comparison with "the number of lands you control"), so Cytoshape (a manual instant; edh-d-63 automated Order of Succession, the manual sorcery it used before) keeps a manualResolve decision in the games
 const MIX: DeckList = [
   ['Plains', 5], ['Island', 5], ['Swamp', 5], ['Mountain', 5], ['Forest', 5], ['Birds of Paradise', 2], ['Soul Warden', 3], ["Ajani's Pridemate", 2],
-  ['Fire // Ice', 3], ['Fireball', 2], ["Kolaghan's Command", 2], ['Fog', 1], ['Order of Succession', 2], ['Lightning Bolt', 2], ['Giant Growth', 2], ['Counterspell', 2],
+  ['Fire // Ice', 3], ['Fireball', 2], ["Kolaghan's Command", 2], ['Fog', 1], ['Cytoshape', 2], ['Lightning Bolt', 2], ['Giant Growth', 2], ['Counterspell', 2],
   ['Mana Leak', 2], ['Doom Blade', 2], ['Raise the Alarm', 1], ['Gravedigger', 2], ['Garruk Wildspeaker', 1], ['Pacifism', 1], ['Serra Angel', 1],
   ['Grizzly Bears', 2], ['Craw Wurm', 1],
 ];
@@ -119,6 +119,7 @@ describe('every decision kind', () => {
       { ...base, kind: 'chooseName', what: 'cardName' },
       { ...base, kind: 'chooseName', what: 'creatureType', options: ['Elf', 'Goblin', 'Human'] },
       { ...base, kind: 'commanderZone', object: bf(me)[0]!, card: 'c1', rule: '903.9b', zone: 'hand' }, // M11-0: CR 903.9b
+      { ...base, kind: 'shortcut', proposer: opp, times: 10, steps: ['Pass priority', 'Pass priority'] }, // shortcuts: CR 727.2b
     ];
     const covered = new Set<string>();
     for (const d of decisions) {

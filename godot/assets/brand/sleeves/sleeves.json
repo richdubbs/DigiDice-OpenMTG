@@ -1,0 +1,302 @@
+{
+ "classic": "sleeve-classic.png",
+ "sleeves": [
+  {
+   "id": "w",
+   "colors": [
+    "W"
+   ],
+   "name": "White",
+   "file": "sleeve-w.png"
+  },
+  {
+   "id": "u",
+   "colors": [
+    "U"
+   ],
+   "name": "Blue",
+   "file": "sleeve-u.png"
+  },
+  {
+   "id": "b",
+   "colors": [
+    "B"
+   ],
+   "name": "Black",
+   "file": "sleeve-b.png"
+  },
+  {
+   "id": "r",
+   "colors": [
+    "R"
+   ],
+   "name": "Red",
+   "file": "sleeve-r.png"
+  },
+  {
+   "id": "g",
+   "colors": [
+    "G"
+   ],
+   "name": "Green",
+   "file": "sleeve-g.png"
+  },
+  {
+   "id": "wu",
+   "colors": [
+    "W",
+    "U"
+   ],
+   "name": "White-Blue",
+   "file": "sleeve-wu.png"
+  },
+  {
+   "id": "ub",
+   "colors": [
+    "U",
+    "B"
+   ],
+   "name": "Blue-Black",
+   "file": "sleeve-ub.png"
+  },
+  {
+   "id": "br",
+   "colors": [
+    "B",
+    "R"
+   ],
+   "name": "Black-Red",
+   "file": "sleeve-br.png"
+  },
+  {
+   "id": "rg",
+   "colors": [
+    "R",
+    "G"
+   ],
+   "name": "Red-Green",
+   "file": "sleeve-rg.png"
+  },
+  {
+   "id": "gw",
+   "colors": [
+    "G",
+    "W"
+   ],
+   "name": "Green-White",
+   "file": "sleeve-gw.png"
+  },
+  {
+   "id": "wb",
+   "colors": [
+    "W",
+    "B"
+   ],
+   "name": "White-Black",
+   "file": "sleeve-wb.png"
+  },
+  {
+   "id": "ur",
+   "colors": [
+    "U",
+    "R"
+   ],
+   "name": "Blue-Red",
+   "file": "sleeve-ur.png"
+  },
+  {
+   "id": "bg",
+   "colors": [
+    "B",
+    "G"
+   ],
+   "name": "Black-Green",
+   "file": "sleeve-bg.png"
+  },
+  {
+   "id": "rw",
+   "colors": [
+    "R",
+    "W"
+   ],
+   "name": "Red-White",
+   "file": "sleeve-rw.png"
+  },
+  {
+   "id": "gu",
+   "colors": [
+    "G",
+    "U"
+   ],
+   "name": "Green-Blue",
+   "file": "sleeve-gu.png"
+  },
+  {
+   "id": "wub",
+   "colors": [
+    "W",
+    "U",
+    "B"
+   ],
+   "name": "White-Blue-Black",
+   "file": "sleeve-wub.png"
+  },
+  {
+   "id": "ubr",
+   "colors": [
+    "U",
+    "B",
+    "R"
+   ],
+   "name": "Blue-Black-Red",
+   "file": "sleeve-ubr.png"
+  },
+  {
+   "id": "brg",
+   "colors": [
+    "B",
+    "R",
+    "G"
+   ],
+   "name": "Black-Red-Green",
+   "file": "sleeve-brg.png"
+  },
+  {
+   "id": "rgw",
+   "colors": [
+    "R",
+    "G",
+    "W"
+   ],
+   "name": "Red-Green-White",
+   "file": "sleeve-rgw.png"
+  },
+  {
+   "id": "gwu",
+   "colors": [
+    "G",
+    "W",
+    "U"
+   ],
+   "name": "Green-White-Blue",
+   "file": "sleeve-gwu.png"
+  },
+  {
+   "id": "wbg",
+   "colors": [
+    "W",
+    "B",
+    "G"
+   ],
+   "name": "White-Black-Green",
+   "file": "sleeve-wbg.png"
+  },
+  {
+   "id": "urw",
+   "colors": [
+    "U",
+    "R",
+    "W"
+   ],
+   "name": "Blue-Red-White",
+   "file": "sleeve-urw.png"
+  },
+  {
+   "id": "bgu",
+   "colors": [
+    "B",
+    "G",
+    "U"
+   ],
+   "name": "Black-Green-Blue",
+   "file": "sleeve-bgu.png"
+  },
+  {
+   "id": "rwb",
+   "colors": [
+    "R",
+    "W",
+    "B"
+   ],
+   "name": "Red-White-Black",
+   "file": "sleeve-rwb.png"
+  },
+  {
+   "id": "gur",
+   "colors": [
+    "G",
+    "U",
+    "R"
+   ],
+   "name": "Green-Blue-Red",
+   "file": "sleeve-gur.png"
+  },
+  {
+   "id": "wubr",
+   "colors": [
+    "W",
+    "U",
+    "B",
+    "R"
+   ],
+   "name": "White-Blue-Black-Red",
+   "file": "sleeve-wubr.png"
+  },
+  {
+   "id": "ubrg",
+   "colors": [
+    "U",
+    "B",
+    "R",
+    "G"
+   ],
+   "name": "Blue-Black-Red-Green",
+   "file": "sleeve-ubrg.png"
+  },
+  {
+   "id": "brgw",
+   "colors": [
+    "B",
+    "R",
+    "G",
+    "W"
+   ],
+   "name": "Black-Red-Green-White",
+   "file": "sleeve-brgw.png"
+  },
+  {
+   "id": "rgwu",
+   "colors": [
+    "R",
+    "G",
+    "W",
+    "U"
+   ],
+   "name": "Red-Green-White-Blue",
+   "file": "sleeve-rgwu.png"
+  },
+  {
+   "id": "gwub",
+   "colors": [
+    "G",
+    "W",
+    "U",
+    "B"
+   ],
+   "name": "Green-White-Blue-Black",
+   "file": "sleeve-gwub.png"
+  },
+  {
+   "id": "wubrg",
+   "colors": [
+    "W",
+    "U",
+    "B",
+    "R",
+    "G"
+   ],
+   "name": "All five colors",
+   "file": "sleeve-wubrg.png"
+  }
+ ]
+}

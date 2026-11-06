@@ -1,0 +1,310 @@
+[
+  {
+    "id": "cm.edhd6.self.less.duringYourTurn.mana",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5",
+      "CR 500.1",
+      "CR 107.4"
+    ],
+    "pattern": "during your turn , ~ costs {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "During your turn, ~ costs {2}{U} less to cast."
+      },
+      {
+        "text": "During your turn, ~ costs {1}{R}{R} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, ~ costs {2}{U} more to cast.",
+      "During each turn, ~ costs {2}{U} less to cast.",
+      "During your turn, ~ costs {2}{U} less to activate.",
+      "During an opponent's turn, ~ costs {2}{U} less to cast."
+    ],
+    "status": "stable",
+    "since": 9,
+    "consumes": [
+      "during"
+    ]
+  },
+  {
+    "id": "cm.edhd6.ability.less.forEachQty",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7",
+      "CR 122.1",
+      "CR 604.5"
+    ],
+    "pattern": "this ability costs {m:ManaCost} less to activate for each {n:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                "$n"
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "{6}{G}, {T}: Draw a card. This ability costs {1} less to activate for each +1/+1 counter on creatures you control."
+      },
+      {
+        "text": "{4}{G}, {T}: Draw a card. This ability costs {2} less to activate for each +1/+1 counter on creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "{5}{G}, {T}: Draw a card. This ability costs {1} more to activate for each +1/+1 counter on creatures you control.",
+      "{5}{G}, {T}: Draw a card. This ability costs {1} less to cast for each +1/+1 counter on creatures you control.",
+      "{5}{G}, {T}: Draw a card. This ability costs {1} less to activate for +1/+1 counter on creatures you control."
+    ],
+    "status": "stable",
+    "since": 9,
+    "consumes": [
+      "each"
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.edhd6.attached.base.has.addcolortype",
+    "kind": "static",
+    "cr": [
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b",
+      "CR 613.1f",
+      "CR 205.1b",
+      "CR 105.3"
+    ],
+    "pattern": "( enchanted | equipped ) creature has base power and toughness {pt:BasePT} , has {a:Abilities} , and is ( a | an ) {c:Color} {st:Subtypes} in addition to its other colors and types",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "add": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Equipped creature has base power and toughness 4/4, has trample, and is a black Demon in addition to its other colors and types."
+      },
+      {
+        "text": "Enchanted creature has base power and toughness 4/4, has flying, and is a white Angel in addition to its other colors and types."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has base power and toughness 5/5, has menace, and is a black Demon.",
+      "Equipped creature has base power and toughness 5/5, has menace, and is a black Demon in addition to its other types.",
+      "Equipped creature gets +1/+1, has menace, and is a black Demon in addition to its other colors and types.",
+      "Equipped land has base power and toughness 5/5, has menace, and is a black Demon in addition to its other colors and types."
+    ],
+    "status": "stable",
+    "since": 9,
+    "consumes": [
+      "other",
+      "in addition"
+    ]
+  },
+  {
+    "id": "eff.edhd6.exiledOwner.mayCastFree",
+    "kind": "effect",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 108.3",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 608.2g"
+    ],
+    "pattern": "the exiled card 's owner may cast that card without paying its mana cost",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "ownerOf",
+        "object": {
+          "ref": "linked",
+          "link": "exiled"
+        }
+      },
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "free": true,
+      "optional": true
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target spell with mana value 3 or less.\nWhen ~ dies, the exiled card's owner may cast that card without paying its mana cost."
+      },
+      {
+        "text": "When ~ enters, exile target nonland permanent an opponent controls.\nAt the beginning of your end step, the exiled card's owner may cast that card without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target nonland permanent an opponent controls.\nWhen ~ leaves the battlefield, the exiled card's controller may cast that card without paying its mana cost.",
+      "When ~ enters, exile target nonland permanent an opponent controls.\nWhen ~ leaves the battlefield, the exiled card's owner may cast that card.",
+      "When ~ enters, exile target nonland permanent an opponent controls.\nWhen ~ leaves the battlefield, the exiled card's owner casts that card without paying its mana cost."
+    ],
+    "status": "stable",
+    "since": 9
+  },
+  {
+    "id": "eff.edhd6.mayCast.exiledCard.free",
+    "kind": "effect",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 702.75a",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 608.2g"
+    ],
+    "pattern": "you may cast the exiled card without paying its mana cost",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "free": true,
+      "optional": true
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target nonland permanent an opponent controls.\nWhenever this creature deals combat damage to a player, you may cast the exiled card without paying its mana cost."
+      },
+      {
+        "text": "When ~ enters, exile target creature card from a graveyard.\nWhenever this creature attacks, you may cast the exiled card without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target nonland permanent an opponent controls.\nWhenever this creature deals combat damage to a player, you may cast the exiled card.",
+      "When ~ enters, exile target nonland permanent an opponent controls.\nWhenever this creature deals combat damage to a player, you cast the exiled card without paying its mana cost.",
+      "When ~ enters, exile target nonland permanent an opponent controls.\nWhenever this creature deals combat damage to a player, you may cast the exiled cards without paying their mana costs."
+    ],
+    "status": "stable",
+    "since": 9,
+    "priority": 1
+  },
+  {
+    "id": "eff.edhd6.detain.group",
+    "kind": "effect",
+    "subject": "none",
+    "cr": [
+      "CR 701.35a",
+      "CR 611.2c"
+    ],
+    "pattern": "detain {o:Objs}",
+    "build": {
+      "op": "action",
+      "action": "detain",
+      "who": {
+        "ref": "you"
+      },
+      "subject": "$o"
+    },
+    "examples": [
+      {
+        "text": "When ~ enters, detain each nonland permanent your opponents control with mana value 4 or less."
+      },
+      {
+        "text": "When ~ enters, detain all creatures your opponents control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, detain each nonland permanent your opponents control with mana value 4 or less and draw a card.",
+      "When ~ enters, detain nonland permanents.",
+      "When ~ enters, you may detain each creature your opponents control."
+    ],
+    "status": "stable",
+    "since": 9,
+    "weak": 1
+  }
+]

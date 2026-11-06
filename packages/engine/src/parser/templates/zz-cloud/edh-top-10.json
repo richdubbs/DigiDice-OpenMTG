@@ -1,0 +1,215 @@
+[
+  {
+    "id": "rid.edht10.mana.youSpend.entersWith.gains.untilNextTurn",
+    "kind": "rider",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 614.1c",
+      "CR 611.2a",
+      "CR 400.7a",
+      "CR 702.11a"
+    ],
+    "pattern": "when you spend this mana to cast ( a | an ) {f:CastSpell} , it enters with an additional {k:CounterKind} counter on it and gains {w:Keyword} until your next turn",
+    "build": {
+      "$patchPrevious": {
+        "rider": {
+          "spells": "$f",
+          "entersWith": [
+            {
+              "kind": "$k",
+              "count": 1
+            }
+          ],
+          "gains": "$w",
+          "untilNextTurn": true
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "when",
+      "spend",
+      "additional",
+      "until",
+      "next"
+    ],
+    "needs": [
+      "feature:mana.spentRider",
+      "feature:mana.spentRider.entersWith",
+      "feature:mana.spentRider.untilNextTurn"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {G}. When you spend this mana to cast a Dragon creature spell, it enters with an additional +1/+1 counter on it and gains hexproof until your next turn."
+      },
+      {
+        "text": "{1}, {T}: Add {R}. When you spend this mana to cast an Elf creature spell, it enters with an additional +1/+1 counter on it and gains flying until your next turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {G}. When you spend this mana to cast a Dragon creature spell, it enters with an additional +1/+1 counter on it and gains hexproof until end of turn.",
+      "{T}: Add {G}. When you spend this mana to cast a Dragon creature spell, it enters with an additional +1/+1 counter on it.",
+      "{T}: Add {G}. When you spend this mana to cast a Dragon creature spell, it gains hexproof until your next turn.",
+      "{T}: Draw a card. When you spend this mana to cast a Dragon creature spell, it enters with an additional +1/+1 counter on it and gains hexproof until your next turn."
+    ]
+  },
+  {
+    "id": "eff.edht10.untap.chosenOne",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 701.26b",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "untap ( a | an ) {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "untap"
+      },
+      {
+        "op": "untap",
+        "what": {
+          "ref": "bound",
+          "name": "untap"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card. Untap a creature you control."
+      },
+      {
+        "text": "When ~ enters, untap a land you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, untap up to one land you control.",
+      "When ~ enters, untap target land you control.",
+      "When ~ enters, untap all lands you control."
+    ]
+  },
+  {
+    "id": "eff.edht10.player.counters.ifTheyHaveNone",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1i",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} get[s] {n:Qty} {k:CounterKind} counter[s] if they don't have any {j:CounterKind} counters",
+    "build": {
+      "op": "putCounters",
+      "on": "$p",
+      "kind": "$k",
+      "count": "$n",
+      "guard": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": "$p",
+          "kind": "$j"
+        },
+        "op": "==",
+        "right": 0
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player gets two rad counters if they don't have any rad counters."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player gets a poison counter if they don't have any experience counters."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, that player gets two rad counters.",
+      "Whenever ~ deals combat damage to a player, that player gets two rad counters if they have any rad counters.",
+      "Whenever ~ deals combat damage to a player, that player gets two rad counters unless they don't have any rad counters.",
+      "At the beginning of your upkeep, target player gets two rad counters if they don't have any rad counters."
+    ]
+  },
+  {
+    "id": "eff.edht10.thenIf.removeThemAll.and",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 603.4"
+    ],
+    "pattern": "then if it has {n:Qty} or more {k:CounterKind} counters on it , remove them all and {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "counters": {
+            "kind": "$k",
+            "cmp": {
+              "op": ">=",
+              "value": "$n"
+            }
+          }
+        }
+      },
+      "then": {
+        "$concat": [
+          {
+            "op": "removeCounters",
+            "from": {
+              "ref": "self"
+            },
+            "kind": "$k",
+            "count": "all"
+          },
+          "$e"
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Put a night counter on ~. Then if it has eight or more night counters on it, remove them all and draw a card."
+      },
+      {
+        "text": "At the beginning of your upkeep, put a charge counter on ~. Then if it has three or more charge counters on it, remove them all and create a Treasure token."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, put a night counter on ~. Then if it has eight or more night counters on it, remove them all.",
+      "At the beginning of your upkeep, put a night counter on ~. Then if it has eight or more night counters on it, remove two of them and draw a card.",
+      "At the beginning of your upkeep, put a night counter on ~. Then if it has eight night counters on it, remove them all and draw a card.",
+      "At the beginning of your upkeep, put a night counter on ~. If it has eight or more night counters on it, remove them all and draw a card."
+    ]
+  }
+]

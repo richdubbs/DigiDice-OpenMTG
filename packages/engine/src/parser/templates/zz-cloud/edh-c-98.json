@@ -1,0 +1,261 @@
+[
+  {
+    "id": "wrap.edhv98.unless.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 608.2c"
+    ],
+    "pattern": "unless {p:Player} pay[s] {c:Cost} , {e:Effects}",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": "$c",
+      "else": "$e"
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Unless target opponent pays {3}, draw a card."
+      },
+      {
+        "text": "Unless an opponent pays {2}, destroy target artifact."
+      }
+    ],
+    "counterExamples": [
+      "Unless target opponent pays {3} draw a card.",
+      "Unless target opponent pays {3}, you may draw a card.",
+      "Unless it is blue, destroy target artifact."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv98.discard.anyNumber.filter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 608.2d"
+    ],
+    "pattern": "discard any number of {f:CardsDesc}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you",
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "toDiscard"
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "bound",
+            "name": "toDiscard"
+          }
+        },
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "toDiscard"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Discard any number of creature cards. You gain 2 life for each card discarded this way."
+      },
+      {
+        "text": "Discard any number of land cards. You draw a card for each card discarded this way."
+      }
+    ],
+    "counterExamples": [
+      "Discard any number of creature cards. You gain 2 life for each card discarded this turn.",
+      "Target player discards any number of creature cards. You gain 2 life for each card discarded this way.",
+      "Discard up to two creature cards. You gain 2 life for each card discarded this way."
+    ]
+  },
+  {
+    "id": "eff.edhv98.counters.nPerEach.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "for each {f:Filter} , put {n:Qty} {k:CounterKind} counters on {o:Obj}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          "$n",
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Destroy all creatures. For each creature destroyed this way, put two +1/+1 counters on ~."
+      },
+      {
+        "text": "Discard a card. For each card discarded this way, put three +1/+1 counters on ~."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all creatures. For each creature destroyed this turn, put two +1/+1 counters on ~.",
+      "Destroy all creatures. For each creature destroyed this way, remove two +1/+1 counters from ~.",
+      "Destroy all creatures. For each creature destroyed this way put two +1/+1 counters on ~."
+    ]
+  },
+  {
+    "id": "eff.edhv98.player.loseLife.andRevealHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 701.20a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life and reveal[s] their hand",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$n"
+      },
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Target player loses 2 life and reveals their hand."
+      },
+      {
+        "text": "Target opponent loses 1 life and reveals their hand."
+      }
+    ],
+    "counterExamples": [
+      "Target player loses 2 life and reveals the top card of their library.",
+      "Target player loses 2 life and discards their hand.",
+      "Target player gains 2 life and reveals their hand."
+    ]
+  },
+  {
+    "id": "eff.edhv98.may.haveBecomes.subtype",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.7",
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {o:Obj} become ( a | an ) {st:Subtypes} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 4,
+                  "subtypes": {
+                    "set": "$st"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "have"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: You may have target land become an Island until end of turn."
+      },
+      {
+        "text": "{2}{B}: You may have target land become a Swamp until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: You may have target land become an Island.",
+      "{2}{B}: You may have target land become a Swamp and gain flying until end of turn.",
+      "{2}{B}: Target land becomes a Swamp until end of turn."
+    ]
+  }
+]

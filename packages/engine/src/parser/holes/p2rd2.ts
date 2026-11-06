@@ -4,7 +4,7 @@
  *
  *  - `DamageWould`: "<Filter> would deal [combat | noncombat] damage [to <recipient>]", value the replaced `damage` event pattern (source, recipient, combat). The
  *    recipient is one of the forms Oracle prints for these replacements: "a permanent or player" (anything: no recipient), "an opponent or a permanent an opponent
- *    controls", "an opponent", "a player", "you", "a <Filter>" (a permanent). Each reading is weak (design 6.3 rule 2): a template that spells its sentence out keeps it.
+ *    controls", "an opponent", "a player", "you", "a <Filter>" (a permanent), and (edh-next-2) "enchanted player" / "the chosen player", alone or with "or a permanent they control". Each reading is weak (design 6.3 rule 2): a template that spells its sentence out keeps it.
  *    "would deal N or more damage" adds the amount the replaced damage must have; "any source" is every source.
  *  - `DamageMore`: "double that damage" / "twice that much damage" (x2), "triple that damage" / "three times that much damage" (x3), "that much damage plus <Qty>",
  *    "<N> damage" (the amount set to N),
@@ -26,16 +26,21 @@ const RECIPIENTS: [string[], { object?: ObjectFilter; player?: PlayerPred } | un
   [P('an opponent'), { player: 'opponent' }],
   [P('a player'), { player: 'any' }],
   [P('you'), { player: 'you' }],
+  [P('a player or battle'), { player: 'any', object: { types: ['Battle'] } }], // edh-b-10 (CR 120.1, 310.1; Rankle and Torbran)
+  [P('you or another permanent you control'), { player: 'you', object: { controller: 'you', other: true } }], // edh-next-32 (CR 120.3, 109.2; Rem Karolus: you and the permanents you control other than this one)
 ];
 
 const W_ANY_SOURCE = P('any source');
 const W_OR_MORE = P('or more');
+const W_OR_A_PERMANENT_THEY_CONTROL = P('or a permanent they control'); // edh-next-2
 
 export const damageWould: HoleFn = (ctx, pos) => {
   const out: Alt[] = [];
   const subjects: { end: number; value: ObjectFilter; weak?: number }[] = ctx.call('Filter', pos).map((s) => ({ end: s.end, value: s.value as ObjectFilter, ...(s.weak ? { weak: s.weak } : {}) }));
   const any = phraseAt(ctx, pos, W_ANY_SOURCE); // "If any source would deal 1 or more damage ..." (Equal Treatment): every source
   if (any >= 0) subjects.push({ end: any, value: {} });
+  // edh-c-2 (CR 614.1a, 120.3; Charging Tuskodon): the object itself, "If this creature would deal combat damage to a player, it deals double that damage to that player instead."
+  if (ctx.toks[pos]?.kind === 'SELF') subjects.push({ end: pos + 1, value: { self: true } });
   for (const s of subjects) {
     const w0 = phraseAt(ctx, s.end, W_WOULD_DEAL);
     if (w0 < 0) continue;
@@ -56,6 +61,15 @@ export const damageWould: HoleFn = (ctx, pos) => {
       for (const [rs, recipient] of RECIPIENTS) {
         const e = phraseAt(ctx, to, rs);
         if (e >= 0) out.push({ end: e, value: { ...base, ...(recipient !== undefined ? { recipient } : {}) } as never, weak: 1 + (s.weak ?? 0) });
+      }
+      // edh-next-2 (CR 303.4, 607.2d, 614.1a): "to enchanted player" (a Curse's Aura) and "to the chosen player" (the player a permanent chose as it entered), alone or with
+      // "or a permanent they control": the recipient is that player (and the permanents that player controls)
+      for (const p of ctx.call('Player', to)) {
+        const pv = p.value as { ref?: string };
+        if (pv === null || typeof pv !== 'object' || (pv.ref !== 'enchantedPlayer' && pv.ref !== 'linked')) continue;
+        out.push({ end: p.end, value: { ...base, recipient: { player: pv as PlayerPred } } as never, weak: 1 + (s.weak ?? 0) });
+        const withPermanent = phraseAt(ctx, p.end, W_OR_A_PERMANENT_THEY_CONTROL);
+        if (withPermanent >= 0) out.push({ end: withPermanent, value: { ...base, recipient: { player: pv as PlayerPred, object: { controller: pv as PlayerPred } } } as never, weak: 1 + (s.weak ?? 0) });
       }
       const art = ctx.toks[to]?.norm;
       if (art === 'a' || art === 'an') {

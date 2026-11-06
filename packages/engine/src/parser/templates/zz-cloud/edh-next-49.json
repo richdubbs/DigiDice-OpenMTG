@@ -1,0 +1,342 @@
+[
+  {
+    "id": "sta.edhn49.aslong.damageNoLifeLoss",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3a",
+      "CR 614.1a",
+      "CR 611.3a",
+      "CR 725.1"
+    ],
+    "pattern": "as long as {c:Cond} , damage doesn't cause you to lose life",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "life",
+            "change": "loss",
+            "player": "you",
+            "fromDamage": true
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "set": 0
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Plains, damage doesn't cause you to lose life."
+      },
+      {
+        "text": "As long as you control an artifact, damage doesn't cause you to lose life."
+      }
+    ],
+    "counterExamples": [
+      "As long as you're the monarch, damage doesn't cause you to lose life or poison counters.",
+      "As long as you're the monarch, damage doesn't cause your opponents to lose life.",
+      "As long as you're the monarch, damage doesn't cause you to gain life."
+    ]
+  },
+  {
+    "id": "sta.edhn49.aslong.damageAsInfect",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3b",
+      "CR 122.1b",
+      "CR 611.3a",
+      "CR 702.90b"
+    ],
+    "pattern": "as long as {c:Cond} , all damage is dealt to you as though its source had infect",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "damageAsInfect"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "all",
+      "as though",
+      "infect"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Plains, all damage is dealt to you as though its source had infect."
+      },
+      {
+        "text": "As long as you control an artifact, all damage is dealt to you as though its source had infect."
+      }
+    ],
+    "counterExamples": [
+      "As long as you have 0 or less life, all damage is dealt to you as though its source had wither.",
+      "As long as you have 0 or less life, all combat damage is dealt to you as though its source had infect.",
+      "As long as you have 0 or less life, all damage is dealt to each opponent as though its source had infect."
+    ]
+  },
+  {
+    "id": "sta.edhn49.sourceDamageToYou.prevent.then",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 614.1a"
+    ],
+    "pattern": "if a source would deal damage to you , prevent that damage and {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": "$e"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to you, prevent that damage and you gain that much life."
+      },
+      {
+        "text": "If a source would deal damage to you, prevent that damage and draw that many cards."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to you, prevent that damage and draw that many cards this turn.",
+      "If a source would deal damage to you, prevent that damage or draw that many cards.",
+      "If a source would deal damage to target player, prevent that damage and draw that many cards."
+    ]
+  },
+  {
+    "id": "eff.edhn49.cast.target.payLifeMv",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2",
+      "CR 118.9",
+      "CR 608.2g",
+      "CR 202.3",
+      "CR 119.4"
+    ],
+    "pattern": "you may cast {o:Obj} by paying life equal to ( its | that spell 's | the spell 's ) mana value rather than paying its mana cost",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "optional": true,
+      "costChange": {
+        "kind": "set",
+        "life": "manaValue"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may cast target instant card from your graveyard by paying life equal to its mana value rather than paying its mana cost."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player exiles cards from the top of their library until they exile a nonland card. You may cast that card by paying life equal to that spell's mana value rather than paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may cast target instant card from your graveyard by paying life equal to its power rather than paying its mana cost.",
+      "When ~ enters, you may cast target instant card from your graveyard by paying life equal to its mana value in addition to paying its mana cost.",
+      "When ~ enters, you may cast target instant card from your graveyard by paying life equal to its mana value rather than paying its mana cost twice."
+    ]
+  },
+  {
+    "id": "eff.edhn49.draw.thenDrawForEachOtherSpellCast",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 601.2i",
+      "CR 608.2h",
+      "CR 707.10"
+    ],
+    "pattern": "draw a card , then draw a card for each other {f:Filter} you've cast this turn",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": 1
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "happenedCount",
+          "event": {
+            "ev": "cast",
+            "player": "you",
+            "spell": {
+              "types": "$f.types",
+              "not": {
+                "self": true
+              }
+            }
+          },
+          "scope": "turn",
+          "by": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "other",
+      "each other",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card, then draw a card for each other instant spell you've cast this turn."
+      },
+      {
+        "text": "Draw a card, then draw a card for each other creature spell you've cast this turn."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card, then draw a card for each instant and sorcery spell you've cast this turn.",
+      "Draw a card, then draw a card for each other instant and sorcery spell your opponents have cast this turn.",
+      "Draw a card, then discard a card for each other instant and sorcery spell you've cast this turn."
+    ]
+  },
+  {
+    "id": "kw.edhn49.typecycling.artifactLand",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.29e",
+      "CR 702.29f",
+      "CR 205.2"
+    ],
+    "pattern": "artifact landcycling {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "typecycling",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": {
+        "zone": "library",
+        "allTypes": [
+          "Artifact",
+          "Land"
+        ]
+      }
+    },
+    "needs": [
+      "keyword:typecycling"
+    ],
+    "examples": [
+      {
+        "text": "Artifact landcycling {7}"
+      },
+      {
+        "text": "Flying, artifact landcycling {4}{G}{U}"
+      }
+    ],
+    "counterExamples": [
+      "Artifact landcycling",
+      "Artifact landcycling {T}"
+    ]
+  },
+  {
+    "id": "eff.edhn49.kw.equip.lessWhereXTargetPower",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.6a",
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 208.1",
+      "CR 107.3"
+    ],
+    "pattern": "equip {c:Cost} . this ability costs {x} less to activate , where x is the power of the creature it targets",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": "$c",
+      "costChange": {
+        "kind": "reduce",
+        "generic": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+            "ref": "target",
+            "id": "t0"
+          }
+        },
+        "floor": "zero"
+      }
+    },
+    "needs": [
+      "keyword:equip"
+    ],
+    "consumes": [
+      "less"
+    ],
+    "examples": [
+      {
+        "text": "Equip {5}. This ability costs {X} less to activate, where X is the power of the creature it targets."
+      },
+      {
+        "text": "Equip {8}. This ability costs {X} less to activate, where X is the power of the creature it targets."
+      }
+    ],
+    "counterExamples": [
+      "Equip {5}. This ability costs {X} more to activate, where X is the power of the creature it targets.",
+      "Equip {5}. This ability costs {X} less to activate, where X is the toughness of the creature it targets.",
+      "Equip {5}. This ability costs {X} less to activate, where X is the power of the creature equipped by it."
+    ]
+  }
+]

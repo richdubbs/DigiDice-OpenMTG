@@ -25,7 +25,7 @@ export function PayCostPrompt({ d, view, answer, busy }: PromptProps<'payCost'>)
   const [picked, setPicked] = useState<PickedSource[]>([]);
   const [life, setLife] = useState<number[]>([]);
   const symbols = costSymbols(d.costText);
-  const phyrexian = phyrexianIndices(d.costText);
+  const phyrexian = phyrexianIndices(d.costText, d.lifeSymbols);
   const pool = view.players.find((p) => p.id === d.player)?.manaPool ?? [];
   const produced = (p: PickedSource): ManaType | undefined => p.color ?? d.manaSources.find((s) => sourceKey(s) === sourceKey(p))?.produces[0];
   const chosen = picked.flatMap((p) => {

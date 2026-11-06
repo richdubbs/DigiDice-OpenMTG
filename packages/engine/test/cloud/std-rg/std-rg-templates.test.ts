@@ -213,9 +213,9 @@ describe('design 6.4, CR 508.1, 509.1: "it" after "Whenever enchanted creature a
     expect(full(c)).toBe(true);
     expect(json(c)).toContain('"what":{"ref":"event","role":"subject"}');
   });
-  it('with a target of the same sort named before it, the pronoun has two candidates and the sentence stays manual', () => {
+  it('with a target of the same sort named before it, the pronoun of the target\'s own sentence is the target (edh-next-87); in another sentence it has two candidates and stays manual', () => {
     expect(full(AURA(w('Whenever enchanted creature attacks or blocks, tap target creature. Untap it.')))).toBe(true);
-    expect(full(AURA(w('Whenever enchanted creature attacks or blocks, you gain 1 life and tap target creature an opponent controls, then untap it.')))).toBe(false);
+    expect(full(AURA(w('Whenever enchanted creature attacks or blocks, you gain 1 life and tap target creature an opponent controls, then untap it.')))).toBe(true); // edh-next-87 (CR 608.2c, 115.1): "it" in the sentence that names the target is the target (anaphora.ts), beside the enchanted creature, so this reads now
   });
   it('a mix of the creature itself and enchanted creature (different subjects) leaves "it" unresolved', () => {
     expect(full(CREATURE(w('Whenever ~ attacks or enchanted creature blocks, tap it.')))).toBe(false);

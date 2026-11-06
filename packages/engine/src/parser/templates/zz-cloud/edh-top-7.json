@@ -1,0 +1,118 @@
+[
+  {
+    "id": "eff.edht7.dur.ownerMayCast",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 108.3"
+    ],
+    "pattern": "{d:Dur} , its owner may cast {o:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "ownerOf",
+            "object": "$o"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile target nonland permanent. For as long as that card remains exiled, its owner may cast it."
+      },
+      {
+        "text": "Exile target creature. Until end of turn, its owner may cast that card."
+      }
+    ],
+    "counterExamples": [
+      "Exile target nonland permanent. For as long as that card remains exiled, you may cast it.",
+      "Exile target nonland permanent. For as long as that card remains exiled, its owner may play it.",
+      "Exile target nonland permanent. For as long as that card remains exiled, its controller may cast it."
+    ]
+  },
+  {
+    "id": "eff.edht7.thenIf.counters.mayRemoveTransform",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 701.27a",
+      "CR 712.9",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "then if there are {n:Qty} or more charge counters on {o:Obj} , you may remove those counters and transform it",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": "$o",
+          "kind": "charge"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "you"
+          },
+          "do": [
+            {
+              "op": "removeCounters",
+              "from": "$o",
+              "kind": "charge",
+              "count": "all"
+            },
+            {
+              "op": "changeFace",
+              "what": "$o",
+              "to": "transform"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if",
+      "all",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, draw a card. Then if there are four or more charge counters on it, you may remove those counters and transform it."
+      },
+      {
+        "text": "When ~ enters, you gain 2 life. Then if there are three or more charge counters on it, you may remove those counters and transform it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, draw a card. Then if there are four or fewer charge counters on it, you may remove those counters and transform it.",
+      "When ~ enters, draw a card. Then if there are four or more charge counters on it, you may remove those counters and sacrifice it.",
+      "When ~ enters, draw a card. Then if there are four or more charge counters on it, you may remove a counter and transform it."
+    ]
+  }
+]

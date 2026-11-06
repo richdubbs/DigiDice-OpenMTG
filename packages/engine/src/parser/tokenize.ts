@@ -302,6 +302,10 @@ export function tokenize(text: string, opts: TokenizeOptions = {}): Token[] {
           // "nonblack", "noncreature"
           out.push({ kind: 'WORD', text: word.slice(0, 3), norm: 'non', range: [i, i + 3], split: true });
           out.push({ kind: 'WORD', text: word.slice(3), norm: lower.slice(3), range: [i + 3, end], split: true });
+        } else if (lower === 'one' && end + 8 <= to && /^ hundred(?![\w'-])/.test(text.slice(end, to))) {
+          // edh-top-13 (Baldin, Century Herdmaster): "one hundred" is the number 100, one token as "twenty-five" is
+          out.push({ kind: 'NUM', text: text.slice(i, end + 8), norm: '100', range: [i, end + 8], value: 100 });
+          end += 8;
         } else {
           const t: Token = { kind: 'WORD', text: word, norm: lower, range: [i, end] };
           if (isUpper(word)) t.cap = true;

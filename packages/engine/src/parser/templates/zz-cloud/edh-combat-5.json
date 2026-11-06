@@ -1,0 +1,243 @@
+[
+  {
+    "id": "eff.edhcb5.dur.gains.noDefender.toughnessDamage",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 702.3b",
+      "CR 510.1a",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} gains {a:Abilities} , can attack as though it didn't have defender , and assigns combat damage equal to its toughness rather than its power",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "each",
+            "who": "player"
+          },
+          "action": "attackAsThoughNoDefender",
+          "of": {
+            "is": "$o"
+          }
+        },
+        {
+          "s": "rule",
+          "rule": "combatDamageUsesToughness",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "as though",
+      "not",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "{1}: Until end of turn, target creature you control gains flying, can attack as though it didn't have defender, and assigns combat damage equal to its toughness rather than its power."
+      },
+      {
+        "text": "{2}: Until end of turn, target creature with defender gains haste and vigilance, can attack as though it didn't have defender, and assigns combat damage equal to its toughness rather than its power. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{1}: Until end of turn, target creature you control gains flying, can block as though it didn't have defender, and assigns combat damage equal to its toughness rather than its power.",
+      "{1}: Until end of turn, target creature you control gains flying, can attack as though it didn't have defender, and assigns combat damage equal to its power rather than its toughness.",
+      "{1}: Target creature you control gains flying, can attack as though it didn't have defender, and assigns combat damage equal to its toughness rather than its power."
+    ]
+  },
+  {
+    "id": "eff.edhcb5.extraPhase.combat.theres",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 500.8",
+      "CR 505.1a"
+    ],
+    "pattern": "there's an additional combat phase after this phase",
+    "build": {
+      "op": "extraPhase",
+      "phase": "combat"
+    },
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a land you control enters, if it's your main phase, there's an additional combat phase after this phase."
+      },
+      {
+        "text": "Whenever you cast a spell, there's an additional combat phase after this phase."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a land you control enters, if it's your main phase, there's an additional main phase after this phase.",
+      "Whenever a land you control enters, if it's your main phase, there's an additional combat phase after this turn.",
+      "Whenever a land you control enters, if it's your main phase, there's two additional combat phases after this phase."
+    ]
+  },
+  {
+    "id": "dl.edhcb5.thatCombat.lead",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 500.8",
+      "CR 506.1"
+    ],
+    "pattern": "at the beginning of that combat , {e:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "beginCombat",
+        "phase": "added"
+      },
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true,
+      "do": "$e"
+    },
+    "needs": [
+      "feature:delayed.step.addedPhase"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever a land you control enters, there's an additional combat phase after this phase. At the beginning of that combat, untap all creatures you control."
+      },
+      {
+        "text": "Whenever you cast a spell, there's an additional combat phase after this phase. At the beginning of that combat, untap all lands you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a land you control enters, there's an additional combat phase after this phase. At the beginning of the next combat, untap all creatures you control.",
+      "Whenever a land you control enters, there's an additional combat phase after this phase. At the beginning of that end step, untap all creatures you control.",
+      "Whenever a land you control enters, there's an additional combat phase after this phase. At the beginning of each combat, untap all creatures you control."
+    ]
+  },
+  {
+    "id": "sta.edhcb5.each.pump.forEachTimeAttacked",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 508.1",
+      "CR 500.8"
+    ],
+    "pattern": "each {f:Filter} gets {pt:PT} for each time it has attacked this turn",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "attacksThisTurn",
+                "of": {
+                  "ref": "subject"
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "attacksThisTurn",
+                "of": {
+                  "ref": "subject"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "Each Elf you control gets +1/+1 for each time it has attacked this turn."
+      },
+      {
+        "text": "Each Knight you control gets +2/+1 for each time it has attacked this turn."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control gets +1/+0 for each time it has blocked this turn.",
+      "Each creature you control gets +1/+0 for each time it attacked this turn.",
+      "Each creature you control gets +1/+0 until end of turn for each time it has attacked this turn."
+    ]
+  },
+  {
+    "id": "eff.edhcb5.sameIsTrueFor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 702.1"
+    ],
+    "pattern": "the same is true for {a:Abilities}",
+    "build": {
+      "lower": "sameFor",
+      "what": "$a"
+    },
+    "subject": "none",
+    "consumes": [
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each combat, creatures you control gain flying until end of turn if a creature you control has flying. The same is true for reach and trample."
+      },
+      {
+        "text": "At the beginning of your end step, creatures you control gain lifelink until end of turn if a creature you control has lifelink. The same is true for vigilance, haste, and menace."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each combat, creatures you control gain flying until end of turn if a creature you control has flying. The same is true for ward 2.",
+      "At the beginning of each combat, creatures you control gain flying until end of turn if a creature you control has flying. The same is true for flying.",
+      "The same is true for reach and trample."
+    ]
+  }
+]

@@ -6,7 +6,7 @@
  * permanent spell carries onto the battlefield (CR 400.7a, core/move-parts/spell-effects.ts); "that spell can't be countered" leaves the flag the counter op
  * reads (CR 101.2). Two units with the same rider apply it once.
  */
-import type { CounterSpec, ManaSpentRider, ObjectFilter } from '../types/ability';
+import type { CounterSpec, KeywordAbilityDef, ManaSpentRider, ObjectFilter } from '../types/ability';
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { ManaUnit } from '../types/state';
 import { matchesFilter } from '../rules/filter';
@@ -15,6 +15,24 @@ import type { Game } from './game';
 
 /** actions/cast.ts#FLAG_CANT_BE_COUNTERED (statics/hooks.ts#CANT_BE_COUNTERED_FLAG), spelled here so this module does not import the cast action. */
 const FLAG_CANT_BE_COUNTERED = 'cantBeCountered';
+
+/**
+ * edh-cast-12 (CR 611.2c, 400.7a, 702.10a; Thundermane Dragon): the spell gains the keyword until end of turn: a layer 6 effect on the spell, which the permanent it
+ * becomes keeps (the same effect a mana-spent rider makes below). `sourceName` is the object whose permission gave it.
+ */
+export function giveSpellKeywordUntilEot(g: Game, player: PlayerId, spellId: ObjectId, keyword: KeywordAbilityDef, sourceName: string): void {
+  g.s.continuousEffects.push({
+    id: g.newEffectId(),
+    source: null,
+    sourceName,
+    controller: player,
+    timestamp: g.newTimestamp(),
+    startedTurn: g.s.turn.number,
+    duration: { d: 'endOfTurn' },
+    effect: { s: 'continuous', affects: { ref: 'fixed', objects: [{ id: spellId, zone: 'stack' }] }, mods: [{ layer: 6, add: [structuredClone(keyword)] }] },
+  });
+  g.log(`${g.nameOf(spellId)} gains ${keyword.keyword} until end of turn (cast with ${sourceName})`, { rules: ['CR 611.2c'], level: 'info' });
+}
 
 export function applySpentRiders(g: Game, player: PlayerId, spellId: ObjectId, spent: readonly ManaUnit[]): void {
   const spell = g.s.objects[spellId];
@@ -44,10 +62,10 @@ export function applySpentRiders(g: Game, player: PlayerId, spellId: ObjectId, s
         controller: player,
         timestamp: g.newTimestamp(),
         startedTurn: g.s.turn.number,
-        duration: { d: 'endOfTurn' },
+        duration: r.permanent === true ? { d: 'permanent' } : r.untilNextTurn === true ? { d: 'untilNextTurn', whose: { ref: 'you' } } : { d: 'endOfTurn' }, // edh-mana-keywords-4 (CR 611.2a): no stated duration, it stays; edh-top-10 (CR 611.2a, 500.1): until the mana's controller's next turn
         effect: { s: 'continuous', affects: { ref: 'fixed', objects: [{ id: spellId, zone: 'stack' }] }, mods: [{ layer: 6, add: [structuredClone(r.gains)] }] },
       });
     }
-    g.log(`${g.nameOf(spellId)} ${r.entersWith !== undefined ? 'enters with additional counters' : r.gains !== undefined ? `gains ${r.gains.keyword} until end of turn` : "can't be countered"}: mana with that rider was spent on it.`, { rules: ['CR 106.6', r.gains !== undefined ? 'CR 611.2c' : 'CR 101.2'], level: 'info' });
+    g.log(`${g.nameOf(spellId)} ${r.entersWith !== undefined ? 'enters with additional counters' : r.gains !== undefined ? `gains ${r.gains.keyword}${r.permanent === true ? '' : r.untilNextTurn === true ? ' until their next turn' : ' until end of turn'}` : "can't be countered"}: mana with that rider was spent on it.`, { rules: ['CR 106.6', r.gains !== undefined ? 'CR 611.2c' : 'CR 101.2'], level: 'info' });
   }
 }

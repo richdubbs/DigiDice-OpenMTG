@@ -1,0 +1,311 @@
+[
+  {
+    "id": "eff.edhd1.player.cast.free.ifAble",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2",
+      "CR 118.9",
+      "CR 608.2g",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} cast[s] {o:Obj} without paying its mana cost if able",
+    "build": {
+      "op": "cast",
+      "who": "$p",
+      "what": "$o",
+      "free": true
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each player's upkeep, that player exiles the top card of their library. If it's a land card, the player puts it onto the battlefield. Otherwise, the player casts it without paying its mana cost if able."
+      },
+      {
+        "text": "At the beginning of your upkeep, target opponent exiles the top card of their library. If it's an artifact card, that player puts it onto the battlefield. Otherwise, that player casts it without paying its mana cost if able."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each player's upkeep, that player exiles the top card of their library. If it's a land card, the player puts it onto the battlefield. Otherwise, the player casts it if able.",
+      "At the beginning of each player's upkeep, that player exiles the top card of their library. If it's a land card, the player puts it onto the battlefield. Otherwise, the player may cast it without paying its mana cost if able.",
+      "At the beginning of each player's upkeep, that player exiles the top card of their library. If it's a land card, the player puts it onto the battlefield. Otherwise, the player casts it by paying its mana cost if able."
+    ]
+  },
+  {
+    "id": "eff.edhd1.token.attacking.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a",
+      "CR 508.4",
+      "CR 608.2h"
+    ],
+    "pattern": "create ( a | an ) {t:TokenDesc} ( that's | that are ) tapped and attacking for each {f:Filter}",
+    "weak": 1,
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      },
+      "token": "$t",
+      "tapped": true,
+      "attacking": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create a 3/3 green Beast creature token that's tapped and attacking for each creature card in your graveyard."
+      },
+      {
+        "text": "Whenever ~ attacks, create a 1/1 white Soldier creature token that's tapped and attacking for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create a 3/3 green Beast creature token that's tapped and attacking for each creature card in your graveyard unless you control an artifact.",
+      "Whenever ~ attacks, create two 3/3 green Beast creature tokens that are tapped and attacking for each creature card in your graveyard.",
+      "Whenever ~ attacks, create a 3/3 green Beast creature token that's tapped and blocking for each creature card in your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhd1.token.forEachTimeKicked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.33d",
+      "CR 702.33e",
+      "CR 111.1",
+      "CR 111.2",
+      "CR 608.2c"
+    ],
+    "pattern": "create ( a | an ) {t:TokenDesc} for each time ( it | ~ ) was kicked",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "kickCount"
+      },
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each time",
+      "kicked"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, create a 1/1 green Squirrel creature token for each time it was kicked."
+      },
+      {
+        "text": "When ~ enters, create a 1/1 white Soldier creature token for each time ~ was kicked."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, create a 2/2 green Wolf creature token if it was kicked.",
+      "When ~ enters, create two 2/2 green Wolf creature tokens for each time it was kicked.",
+      "When ~ enters, create a 2/2 green Wolf creature token for each time it was cast."
+    ]
+  },
+  {
+    "id": "trg.edhd1.opponent.activate.abilityOf.theyControl",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.2",
+      "CR 603.2",
+      "CR 605.1a",
+      "CR 605.3b"
+    ],
+    "pattern": "whenever an opponent activates an ability of {f:Filter} they control",
+    "build": {
+      "on": [
+        {
+          "ev": "activate",
+          "player": "opponent",
+          "source": {
+            "$merge": [
+              "$f",
+              {
+                "controller": "opponent"
+              }
+            ]
+          },
+          "manaAbility": false
+        },
+        {
+          "ev": "activate",
+          "player": "opponent",
+          "source": {
+            "$merge": [
+              "$f",
+              {
+                "controller": "opponent"
+              }
+            ]
+          },
+          "manaAbility": true
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent activates an ability of an artifact they control, ~ deals 2 damage to that player."
+      },
+      {
+        "text": "Whenever an opponent activates an ability of a creature they control, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you activate an ability of an artifact you control, ~ deals 1 damage to that player.",
+      "Whenever an opponent activates an ability of an artifact, ~ deals 1 damage to that player.",
+      "Whenever an opponent activates a loyalty ability of an artifact they control, ~ deals 1 damage to that player.",
+      "Whenever an opponent activates an ability of an artifact they control that isn't a mana ability, ~ deals 1 damage to that player."
+    ]
+  },
+  {
+    "id": "eff.edhd1.choose.cardAtRandom.fromPlayersGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 404.1",
+      "CR 400.7",
+      "CR 700.2"
+    ],
+    "pattern": "choose ( a | an ) {f:Filter} card at random from {tp:Player} 's graveyard",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": {
+          "$merge": [
+            "$f",
+            {
+              "zone": "graveyard",
+              "owner": "$tp",
+              "isCard": true
+            }
+          ]
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "random": true,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Choose an artifact card at random from target opponent's graveyard. Put that card onto the battlefield under your control."
+      },
+      {
+        "text": "{T}: Choose a land card at random from target player's graveyard. Put that card onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Choose a creature card from target opponent's graveyard. Put that card onto the battlefield under your control.",
+      "{T}: Choose a creature card at random from your graveyard. Put that card onto the battlefield under your control.",
+      "{T}: Choose a creature card at random from target opponent's hand. Put that card onto the battlefield under your control."
+    ]
+  },
+  {
+    "id": "eff.edhd1.choose.oneAtRandom.thenDestroyRest",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.8a",
+      "CR 109.1",
+      "CR 700.2"
+    ],
+    "pattern": "choose ( a | an ) {f:Filter} at random , then destroy the rest",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "chosenKept"
+      },
+      {
+        "op": "destroy",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosenKept"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Choose an artifact at random, then destroy the rest."
+      },
+      {
+        "text": "Choose a land at random, then destroy the rest."
+      }
+    ],
+    "counterExamples": [
+      "Choose a creature, then destroy the rest.",
+      "Choose a creature at random, then exile the rest.",
+      "Choose up to one creature at random, then destroy the rest."
+    ]
+  }
+]

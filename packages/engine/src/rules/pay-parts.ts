@@ -4,12 +4,17 @@
  */
 import type { ObjectId, PlayerId } from '../types/ids';
 import { IllegalAction, type Game } from '../core/game';
-import { moveObject } from '../core/zones';
+import { leavingTogether, moveObject } from '../core/zones';
 import { addEffectRecord } from '../core/durations';
 import { randomInt } from '../rng';
-import { forageOptions, partText, type PlanPart } from './cost';
+import { flipCoin, rollDice, rollHookFor } from '../core/dice';
+import { coinAdvantage, diceAdvantage, firstCoinFlipsWon } from '../statics/hooks';
+import { forageOptions, opponentsWhoCanGain, partText, type PlanPart } from './cost';
 import { amongCounterHolders, isRandomPart, partCandidates } from './cost-pick';
-import { givePoison, payLife } from './life';
+import { stunRemovalDenial } from './counters';
+import { gainLife, givePoison, payLife } from './life';
+import { addMana } from './mana';
+import { unattachPermanent } from './status';
 import { charsOfObject } from './characteristics';
 import type { Paid } from './pay';
 
@@ -29,6 +34,22 @@ export function installCostCounterFunnel(f: CostCounterFunnel | null): void {
  * ability gets two; "that many minus one" may leave none): the cost is still paid. A "can't have counters put on it" effect is refused before payment
  * (rules/cost.ts#partsDenial, rules/cost-pick.ts, WP31).
  */
+/**
+ * edh-cast-14 (CR 118.1, 119.3, 614.1a): the life an opponent gains to pay a cost goes through the proposal pipeline (a `life` proposal), installed by effects/funnels.ts, so
+ * "If an opponent would gain life, ..." replacements apply to it. Without it the life is gained directly.
+ */
+export type CostGainLifeFunnel = (g: Game, player: PlayerId, amount: number, cause: string) => number;
+let costGainLifeFunnel: CostGainLifeFunnel | null = null;
+/** edh-c-48 (CR 702.24a, 121.2, 614.11): draws the cards of a "draw" cost through the proposal pipeline (effects/funnels.ts), so a replacement effect may replace them. */
+export type CostDrawFunnel = (g: Game, player: PlayerId, count: number) => void;
+let costDrawFunnel: CostDrawFunnel | null = null;
+export function installCostDrawFunnel(f: CostDrawFunnel | null): void {
+  costDrawFunnel = f;
+}
+export function installCostGainLifeFunnel(f: CostGainLifeFunnel | null): void {
+  costGainLifeFunnel = f;
+}
+
 export function putCostCounters(g: Game, player: PlayerId, target: ObjectId, kind: string, count: number): number {
   if (costCounterFunnel) return costCounterFunnel(g, player, target, kind, count);
   const o = g.obj(target);
@@ -52,7 +73,7 @@ function costMove(g: Game, id: ObjectId, to: 'graveyard' | 'hand' | 'exile', cau
 const PUBLIC_COST_ZONES: ReadonlySet<string> = new Set(['graveyard', 'exile', 'battlefield', 'stack', 'command']);
 
 /** Pay one non-tap cost part with the objects chosen for it. */
-export function payPart(g: Game, player: PlayerId, sourceId: ObjectId | null, part: PlanPart, picked: ObjectId[], label: string, paid: Paid): void {
+export function payPart(g: Game, player: PlayerId, sourceId: ObjectId | null, part: PlanPart, picked: ObjectId[], label: string, paid: Paid, castOrActivate: boolean | 'mana' = false): void {
   const name = g.player(player).name;
   const gone = (id: ObjectId): never => {
     throw new IllegalAction(`${g.nameOf(id)} is no longer available to pay for ${label}.`, ['CR 118.3']);
@@ -69,9 +90,20 @@ export function payPart(g: Game, player: PlayerId, sourceId: ObjectId | null, pa
   };
   switch (part.kind) {
     case 'payLife':
-      if (!payLife(g, player, part.amount, `paying the cost of ${label}`, ['CR 118.3b', 'CR 119.4'])) throw new IllegalAction(`You can't pay ${part.amount} life for ${label}.`, ['CR 119.4', 'CR 119.8']);
+      if (!payLife(g, player, part.amount, `paying the cost of ${label}`, ['CR 118.3b', 'CR 119.4'], castOrActivate)) throw new IllegalAction(`You can't pay ${part.amount} life for ${label}.`, ['CR 119.4', 'CR 119.8']);
       paid.lifePaid += part.amount;
       return;
+    case 'addMana': { // edh-mana-keywords-12 (CR 702.24a, 106.4, 118.1; Braid of Fire): the mana goes to the payer's pool, to be spent or lost as the step ends
+      const source = sourceId === null ? undefined : g.maybeObj(sourceId);
+      addMana(g, player, part.mana, source, false);
+      g.log(`${name} adds ${part.mana.map((t) => `{${t}}`).join('')} (cost of ${label}).`, { rules: ['CR 702.24a', 'CR 106.4'], level: 'info' });
+      return;
+    }
+    case 'rollDie': { // edh-d-49 (CR 706.2, 602.2b, 118.3; Clay Golem): rolling the die is part of paying; the roller's after-roll options (Night Shift, Monitor Monitor) apply; the result stays with the ability
+      const dice = rollDice(g, player, part.sides, 1, diceAdvantage(g.s, player), 0, rollHookFor(g, player, part.sides));
+      paid.rolled = dice.reduce((total, d) => total + d.result, 0);
+      return;
+    }
     case 'payEnergy': {
       const p = g.player(player);
       if ((p.counters.energy ?? 0) < part.amount) throw new IllegalAction(`You can't pay ${part.amount} energy for ${label}.`, ['CR 107.14', 'CR 118.3']);
@@ -93,9 +125,10 @@ export function payPart(g: Game, player: PlayerId, sourceId: ObjectId | null, pa
         return;
       }
       if ((target.counters[part.counter] ?? 0) < part.count) throw new IllegalAction(`${g.nameOf(target.id)} no longer has ${part.count} ${part.counter} counters.`, ['CR 118.3']);
+      if (part.counter === 'stun' && stunRemovalDenial(g.s, target.id)) throw new IllegalAction(`Stun counters can't be removed from ${g.nameOf(target.id)}.`, ['CR 122.1d', 'CR 614.17b']); // edh-players-22
       target.counters[part.counter] = (target.counters[part.counter] ?? 0) - part.count;
       if (target.counters[part.counter] === 0) delete target.counters[part.counter];
-      g.emit({ type: 'countersChanged', target: target.id, counter: part.counter, delta: -part.count });
+      g.emit({ type: 'countersChanged', target: target.id, counter: part.counter, delta: -part.count, by: player }); // edhd68 (CR 122.1): who removed them
       return;
     }
     case 'putCounters': {
@@ -118,8 +151,41 @@ export function payPart(g: Game, player: PlayerId, sourceId: ObjectId | null, pa
       g.log(`${name} mills ${part.count} card${part.count === 1 ? '' : 's'} (cost of ${label}).`, { rules: ['CR 701.17a', 'CR 118.3'], level: 'info' });
       return;
     }
+    case 'exileTop': {
+      // edh-d-74 (CR 701.13a, 118.3; Thought Lash): the top cards of the library go to exile (face up); a cost that exiles more than the library holds can't be paid
+      const lib = g.s.zones.library[player] ?? [];
+      if (lib.length < part.count) throw new IllegalAction(`You can't exile ${part.count} cards from the top of your library: it has fewer.`, ['CR 701.13a', 'CR 118.3']);
+      for (const id of lib.slice(0, part.count)) {
+        const n = costMove(g, id, 'exile', 'exile', label);
+        if (n) paid.costObjects.push(n);
+      }
+      g.log(`${name} exiles the top ${part.count === 1 ? 'card' : `${part.count} cards`} of their library (cost of ${label}).`, { rules: ['CR 701.13a', 'CR 118.3'], level: 'info' });
+      return;
+    }
+    case 'flipCoin': {
+      // edh-d-74 (CR 705.1-705.2, 118.3; Karplusan Minotaur ruling 2006-07-15): the payer flips a coin, calling it when its source watches coin flips ("whenever you win a coin flip"), as a
+      // flip does (effects/handlers/game.ts#flipCoin); any other flip has no winner or loser. The triggers wait until the cost is paid (CR 603.2).
+      const src = sourceId === null ? undefined : g.s.objects[sourceId];
+      const def = src === undefined ? undefined : g.s.defs[src.defId];
+      const cares = def !== undefined && JSON.stringify(def.faces).includes('"ev":"coinFlip"');
+      const stats = g.player(player).turnStats;
+      const rigged = (stats.coinFlips ?? 0) === 0 && firstCoinFlipsWon(g.s, player); // r4-mech (CR 614.1a): "those coins come up heads and you win those flips"
+      stats.coinFlips = (stats.coinFlips ?? 0) + 1;
+      const call = cares && !rigged
+        ? g.choose({ kind: 'chooseOption', player, prompt: 'Call the coin flip.', min: 1, max: 1, options: [{ id: 'heads', label: 'Heads' }, { id: 'tails', label: 'Tails' }], rules: ['CR 705.2'] }).ids[0] as 'heads' | 'tails'
+        : undefined;
+      flipCoin(g, player, call, rigged, 2 ** coinAdvantage(g.s, player) - 1);
+      return;
+    }
+    case 'draw': {
+      // edh-c-48 (CR 702.24a, 121.2, 614.11; Psychic Vortex ruling 2008-04-01): each card is drawn like any draw, so a replacement effect may replace it and the cost is still paid; a draw
+      // from an empty library is no reason to refuse the cost (the player loses as a state-based action, CR 704.5b)
+      if (costDrawFunnel) costDrawFunnel(g, player, part.count);
+      g.log(`${name} draws ${part.count} card${part.count === 1 ? '' : 's'} (cost of ${label}).`, { rules: ['CR 702.24a', 'CR 121.2', 'CR 118.3'], level: 'info' });
+      return;
+    }
     case 'reveal':
-      for (const id of picked) {
+      for (const id of part.hand === true ? [...(g.s.zones.hand[player] ?? [])] : picked) { // edh-next-117 (CR 701.20a): "reveal your hand" reveals every card in it
         if (!g.maybeObj(id)) gone(id);
         g.emit({ type: 'actionPerformed', verb: 'reveal', actor: player, objectId: id });
         const where = g.maybeObj(id)?.zone === 'command' ? 'the command zone' : 'their hand'; // M11-1: CR 702.49d
@@ -150,7 +216,7 @@ export function payPart(g: Game, player: PlayerId, sourceId: ObjectId | null, pa
       return;
     }
     case 'forage':
-      forage(g, player, label, paid);
+      forage(g, player, label, paid, castOrActivate);
       return;
     case 'exert':
       // FAST5X E28, CR 701.43a, 118.3: "Exert ~" exerts the source of the ability (CR 701.43c: only on the battlefield)
@@ -173,13 +239,15 @@ export function payPart(g: Game, player: PlayerId, sourceId: ObjectId | null, pa
       const now = sourceId !== null ? g.s.objects[sourceId] : undefined;
       const src = now ?? (sourceId !== null ? g.s.lki[sourceId]?.object : undefined);
       const v = src?.links?.[part.link];
-      const values = v?.values ?? [];
+      // edh-next-135 (Stalking Leonin): or the player a secret choice of a player holds
+      const values = part.what === 'player' ? (v?.players ?? []).map((p) => g.player(p).name) : v?.values ?? [];
       if (values.length === 0) throw new IllegalAction(`Nothing was chosen, so the cost of ${label} can't be paid.`, ['CR 118.3', 'CR 607.2d']);
+      if (v?.secret !== undefined && !v.secret.includes(player)) throw new IllegalAction(`${name} did not make that secret choice, so the cost of ${label} can't be paid.`, ['CR 118.3', 'CR 607.2d']); // review (Stalking Leonin ruling 2017-08-25)
       if (now !== undefined && v?.secret !== undefined) {
         const { secret: _secret, ...open } = v;
         now.links![part.link] = open;
       }
-      g.log(`${name} reveals the chosen creature type: ${values.join(', ')} (cost of ${label}).`, { rules: ['CR 608.2d', 'CR 118.3'], level: 'action' });
+      g.log(`${name} reveals the chosen ${part.what === 'player' ? 'player' : 'creature type'}: ${values.join(', ')} (cost of ${label}).`, { rules: ['CR 608.2d', 'CR 118.3'], level: 'action' });
       return;
     }
     case 'getCounters': {
@@ -187,6 +255,25 @@ export function payPart(g: Game, player: PlayerId, sourceId: ObjectId | null, pa
       const before = g.player(player).poison;
       givePoison(g, player, part.amount, `cost of ${label}`);
       if (g.player(player).poison - before !== part.amount) throw new IllegalAction(`${name} can't get poison counters, so the cost of ${label} can't be paid.`, ['CR 122.1f', 'CR 614.17b', 'CR 118.3']);
+      return;
+    }
+    case 'opponentGainsLife': {
+      // edh-cast-14 (CR 118.1, 119.7; Invigorate): the player chooses one opponent who can gain life; that opponent gains the life. A replacement of the gain still
+      // counts as paid (Scryfall ruling 2020-08-07)
+      const who = opponentsWhoCanGain(g.s, player);
+      if (who.length === 0) throw new IllegalAction(`No opponent can gain life, so the cost of ${label} can't be paid.`, ['CR 119.7', 'CR 118.3']);
+      let opp = who[0]!;
+      if (who.length > 1) {
+        const ans = g.choose({
+          kind: 'chooseOption', player, min: 1, max: 1, prompt: `Choose the opponent who gains ${part.amount} life (cost of ${label}).`,
+          options: who.map((id) => ({ id: String(id), label: g.player(id).name })), rules: ['CR 118.3', 'CR 119.3'],
+        });
+        const picked = who.find((id) => String(id) === ans.ids[0]);
+        if (picked !== undefined) opp = picked;
+      }
+      if (costGainLifeFunnel) costGainLifeFunnel(g, opp, part.amount, `cost of ${label}`);
+      else gainLife(g, opp, part.amount, `cost of ${label}`);
+      g.log(`${name} has ${g.player(opp).name} gain ${part.amount} life (cost of ${label}).`, { rules: ['CR 118.1', 'CR 119.3'], level: 'action' });
       return;
     }
     case 'oneOf':
@@ -214,10 +301,22 @@ export function payPart(g: Game, player: PlayerId, sourceId: ObjectId | null, pa
       return;
     }
     case 'sacrifice':
-      moveEach(picked, 'graveyard', 'sacrifice', 'sacrifices', ['CR 701.21a', 'CR 118.3']);
+      // edh-next-45 (CR 603.10a, 608.2h, 701.21a; Soulblast): "sacrifice all creatures you control" is one action, so they leave together: each is as it was before any of them moved (a lord
+      // sacrificed first still pumps the others in the total power)
+      if (part.all === true) leavingTogether(g, picked, () => moveEach(picked, 'graveyard', 'sacrifice', 'sacrifices', ['CR 701.21a', 'CR 118.3']));
+      else moveEach(picked, 'graveyard', 'sacrifice', 'sacrifices', ['CR 701.21a', 'CR 118.3']);
       // FAST3 T18: "the sacrificed creature" reads these as they last existed on the battlefield (CR 608.2h; GameState.lki is keyed by these ids), whatever
       // zone a replacement effect sent them to and even when a token ceased to exist (CR 111.7)
       (paid.sacrificed ??= []).push(...picked);
+      return;
+    case 'unattach': // edh-top-15 (CR 701.3d, 118.3): nothing moves zones; the permanents let go of what they were attached to
+      for (const id of picked) {
+        if (!g.maybeObj(id)) gone(id);
+        if (!unattachPermanent(g, id)) throw new IllegalAction(`${g.nameOf(id)} is not attached to anything, so it can't be unattached for ${label}.`, ['CR 701.3d', 'CR 118.3']);
+        g.log(`${name} unattaches ${g.nameOf(id)} (cost of ${label}).`, { rules: ['CR 701.3d', 'CR 118.3'], level: 'action' });
+      }
+      // edh-next-141 (CR 701.3d, 608.2h; Captain America, First Avenger): "Unattach an Equipment from ~: ... that Equipment's mana value": the permanents this part unattached (ObjRef costUnattached)
+      if (part.self !== true) (paid.unattached ??= []).push(...picked);
       return;
     case 'returnToHand':
       moveEach(picked, 'hand', 'returnToHand', 'returns to their hand', ['CR 118.3']);
@@ -235,6 +334,19 @@ export function payPart(g: Game, player: PlayerId, sourceId: ObjectId | null, pa
         if (n === null && g.maybeObj(id)?.zone === part.zone) throw new IllegalAction(`${nm} can't pay for ${label}: that event can't happen.`, ['CR 614.17b', 'CR 118.3']);
         if (n) paid.costObjects.push(n);
         g.log(`${name} puts ${nm} from their ${part.zone} on the ${part.position} of their library (cost of ${label}).`, { rules: ['CR 401.4', 'CR 118.3'], level: 'info' });
+      }
+      return;
+    }
+    case 'moveCards': { // edh-d-54 (CR 118.3, 400.3, 401.4): each card goes to its owner's graveyard, or on top of its owner's library
+      if (part.to === 'graveyard') { moveEach(picked, 'graveyard', 'moveCards', 'puts into its owner\'s graveyard', ['CR 400.3', 'CR 118.3']); return; }
+      for (const id of picked) {
+        const from = g.maybeObj(id)?.zone;
+        if (from === undefined) gone(id);
+        const nm = g.nameOf(id);
+        const n = moveObject(g, id, 'library', { cause: 'moveCards', position: 'top' });
+        if (n === null && g.maybeObj(id)?.zone === from) throw new IllegalAction(`${nm} can't pay for ${label}: that event can't happen.`, ['CR 614.17b', 'CR 118.3']);
+        if (n) paid.costObjects.push(n);
+        g.log(`${name} puts ${nm} on top of their library (cost of ${label}).`, { rules: ['CR 401.4', 'CR 118.3'], level: 'info' });
       }
       return;
     }
@@ -297,10 +409,11 @@ function behold(g: Game, player: PlayerId, part: Extract<PlanPart, { kind: 'beho
 function removeCountersAmong(g: Game, player: PlayerId, sourceId: ObjectId | null, part: Extract<PlanPart, { kind: 'removeCounters' }>, label: string): void {
   const plan = new Map<ObjectId, Record<string, number>>();
   const left = (id: ObjectId, kind: string): number => (g.obj(id).counters[kind] ?? 0) - (plan.get(id)?.[kind] ?? 0);
-  const leftAny = (id: ObjectId): number => Object.keys(g.obj(id).counters).reduce((n, k) => n + Math.max(0, left(id, k)), 0);
+  const stunKept = (id: ObjectId): boolean => stunRemovalDenial(g.s, id) !== null; // edh-players-22 (CR 122.1d, 614.17)
+  const leftAny = (id: ObjectId): number => Object.keys(g.obj(id).counters).reduce((n, k) => n + (k === 'stun' && stunKept(id) ? 0 : Math.max(0, left(id, k))), 0);
   const holders = amongCounterHolders(g.s, player, sourceId, part);
   for (let i = 0; i < part.count; i++) {
-    const open = holders.filter((id) => (part.counter === 'any' ? leftAny(id) : left(id, part.counter)) > 0);
+    const open = holders.filter((id) => (part.counter === 'any' ? leftAny(id) : part.counter === 'stun' && stunKept(id) ? 0 : left(id, part.counter)) > 0);
     if (open.length === 0) throw new IllegalAction(`There are no longer ${part.count} counters to remove for ${label}.`, ['CR 118.3']);
     let id = open[0]!;
     if (open.length > 1) {
@@ -313,7 +426,7 @@ function removeCountersAmong(g: Game, player: PlayerId, sourceId: ObjectId | nul
     }
     let kind = part.counter;
     if (kind === 'any') {
-      const kinds = Object.keys(g.obj(id).counters).filter((k) => left(id, k) > 0);
+      const kinds = Object.keys(g.obj(id).counters).filter((k) => left(id, k) > 0 && !(k === 'stun' && stunKept(id)));
       kind = kinds[0]!;
       if (kinds.length > 1) {
         const ans = g.choose({
@@ -348,7 +461,8 @@ function removeCountersAmong(g: Game, player: PlayerId, sourceId: ObjectId | nul
  */
 function removeAnyCounters(g: Game, player: PlayerId, id: ObjectId, count: number, label: string): void {
   const o = g.obj(id);
-  const kinds = (): string[] => Object.keys(o.counters).filter((k) => (o.counters[k] ?? 0) > 0);
+  const stunKept = Object.hasOwn(o.counters, 'stun') && stunRemovalDenial(g.s, id) !== null; // edh-players-22 (CR 122.1d, 614.17): a stun counter that can't be removed is not one of the choices
+  const kinds = (): string[] => Object.keys(o.counters).filter((k) => (o.counters[k] ?? 0) > 0 && !(stunKept && k === 'stun'));
   const total = kinds().reduce((n, k) => n + (o.counters[k] ?? 0), 0);
   if (total < count) throw new IllegalAction(`${g.nameOf(id)} no longer has ${count} counters.`, ['CR 118.3']);
   const left: Record<string, number> = {};
@@ -401,9 +515,9 @@ export function exertPermanent(g: Game, player: PlayerId, id: ObjectId, why: str
 }
 
 /** CR 701.61a: to forage is to exile three cards from your graveyard or sacrifice a Food. */
-function forage(g: Game, player: PlayerId, label: string, paid: Paid): void {
+function forage(g: Game, player: PlayerId, label: string, paid: Paid, castOrActivate: boolean | 'mana' = false): void {
   const name = g.player(player).name;
-  const { yard: graveyard, food } = forageOptions(g.s, player); // WP31 review: what a "can't" effect lets the player exile or sacrifice (CR 614.17b)
+  const { yard: graveyard, food } = forageOptions(g.s, player, castOrActivate); // WP31 review: what a "can't" effect lets the player exile or sacrifice (CR 614.17b)
   if (graveyard.length < 3 && food.length === 0) throw new IllegalAction(`You can't forage for ${label}.`, ['CR 701.61a', 'CR 614.17b', 'CR 118.3']);
   let how: 'exile' | 'food' = graveyard.length >= 3 ? 'exile' : 'food';
   if (graveyard.length >= 3 && food.length > 0) {

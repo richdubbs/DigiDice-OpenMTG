@@ -1,0 +1,87 @@
+[
+{"card":"Kirtar's Wrath","expect":"full","verified":"edh-d-5 review (Commander effort, EDHREC ranks 13,751-15,000; rank 13797, tuning), by hand against the Oracle text, the Scryfall rulings (fetched 2026-11-02) and the Comprehensive Rules (cites from the 2026-09-25 text unless listed unverified in the record): destroy all creatures that can't be regenerated, and when there are seven or more cards in your graveyard as it resolves, instead destroy all creatures (no regeneration) and then create two 1/1 white Spirit tokens with flying; the tokens are made after the destruction, so they survive (CR 614.15, 608.2c, 701.8a, 701.19c). No Scryfall rulings. (rid.p2refs2.noregen.destroyedThisWay, render/self-replacement.ts destroy restated with following instructions)","faces":[
+{"abilities":[
+{"effect":{"steps":[
+{"cond":{"atLeast":7,"cond":"exists","of":{"filter":{"isCard":true,"owner":"you","zone":"graveyard"},"ref":"each"}},"else":[
+{"op":"destroy","regeneration":"cant","what":{"filter":{"types":["Creature"]},"ref":"each"}}
+],"op":"if","then":[
+{"op":"destroy","regeneration":"cant","what":{"filter":{"types":["Creature"]},"ref":"each"}},{"count":2,"op":"createToken","token":{"colors":["W"],"keywords":["flying"],"power":1,"subtypes":["Spirit"],"toughness":1,"types":["Creature"]},"who":{"ref":"you"}}
+]}
+],"targets":[]},"kind":"spell"}
+]}
+]},
+{"card":"Sigrid, God-Favored","expect":"full","verified":"edh-d-5 review (Commander effort, EDHREC ranks 13,751-15,000; rank 14301, tuning), by hand against the Oracle text, the Scryfall rulings (fetched 2026-11-02) and the Comprehensive Rules (cites from the 2026-09-25 text unless listed unverified in the record): protection from God creatures is protection from every source that is a creature with the creature type God (a God that is not a creature now has no such type, ruling 2021-02-05); flash, first strike and the enter trigger unchanged (CR 702.16a, 205.3m, 205.2). (keyword quality type:Creature&subtype:gods, parser/holes/misc.ts#qualityAt)","faces":[
+{"abilities":[
+{"keyword":"flash","kind":"keyword"},{"keyword":"first strike","kind":"keyword"},{"keyword":"protection","kind":"keyword","quality":"type:Creature&subtype:gods"},{"effect":{"steps":[
+{"op":"move","to":{"zone":"exile"},"until":{"d":"until","event":{"ev":"zoneChange","from":"battlefield","subject":{"self":true}}},"what":{"id":"t0","ref":"target"}}
+],"targets":[
+{"filter":{"anyOf":[
+{"attacking":true},{"blocking":true}
+],"types":["Creature"]},"id":"t0","kind":"object","max":1,"min":0}
+]},"kind":"triggered","trigger":{"on":[
+{"ev":"zoneChange","subject":{"self":true},"to":"battlefield"}
+]}}
+]}
+]},
+{"card":"Pulling Teeth","expect":"full","verified":"edh-d-5 review (Commander effort, EDHREC ranks 13,751-15,000; rank 14889, tuning), by hand against the Oracle text, the Scryfall rulings (fetched 2026-11-02) and the Comprehensive Rules (cites from the 2026-09-25 text unless listed unverified in the record): clash with an opponent (not necessarily the target, ruling 2008-04-01); if you win the targeted player discards two cards, otherwise that same player (the target, not the clashed opponent) discards a card (CR 701.30, 608.2c). (render/steps-lasting.ts clash: the clashed opponent is no antecedent)","faces":[
+{"abilities":[
+{"effect":{"steps":[
+{"onLose":[
+{"count":1,"op":"discard","who":{"id":"t0","ref":"target"}}
+],"onWin":[
+{"count":2,"op":"discard","who":{"id":"t0","ref":"target"}}
+],"op":"clash","who":{"ref":"you"},"with":{"ref":"anOpponent"}}
+],"targets":[
+{"id":"t0","kind":"player","max":1,"min":1}
+]},"kind":"spell"}
+]}
+]},
+{"card":"Upwelling","expect":"full","verified":"edh-d-5 review (Commander effort, EDHREC ranks 13,751-15,000; rank 14329, tuning), by hand against the Oracle text, the Scryfall rulings (fetched 2026-11-02) and the Comprehensive Rules (cites from the 2026-09-25 text unless listed unverified in the record): no player loses unspent mana as steps and phases end while it is on the battlefield (CR 106.4, 500.5; ruling 2009-10-01: it ends again when it leaves). (sta.edhd5.players.keepMana)","faces":[
+{"abilities":[
+{"effects":[
+{"player":{"ref":"each","who":"player"},"rule":"manaDoesNotEmpty","s":"rule"}
+],"kind":"static"}
+]}
+]},
+{"card":"Abeyance","expect":"full","verified":"edh-d-5 review (Commander effort, EDHREC ranks 13,751-15,000; rank 13924, heldOut), by hand against the Oracle text, the Scryfall rulings (fetched 2026-11-02) and the Comprehensive Rules (cites from the 2026-09-25 text unless listed unverified in the record): until end of turn the target player can't cast instant or sorcery spells and can't activate any ability that isn't a mana ability (rulings 2004-10-04, 2008-08-01: spells already cast are unaffected, triggered and static abilities are unaffected, mana abilities still work), then you draw a card (CR 601.3, 602.5, 605.1a, 611.2a). (eff.edhd5.lead.player.cantCast.andCantActivate)","faces":[
+{"abilities":[
+{"effect":{"steps":[
+{"duration":{"d":"endOfTurn"},"effects":[
+{"action":"cast","mode":"cant","other":{"types":["Instant","Sorcery"],"zone":"stack"},"s":"restrict","subject":{"id":"t0","ref":"target"}},{"action":"activate","exceptMana":true,"mode":"cant","s":"restrict","subject":{"id":"t0","ref":"target"}}
+],"op":"effect"},{"count":1,"op":"draw","who":{"ref":"you"}}
+],"targets":[
+{"id":"t0","kind":"player","max":1,"min":1}
+]},"kind":"spell"}
+]}
+]},
+{"card":"Acorn Catapult","expect":"full","verified":"edh-d-5 review (Commander effort, EDHREC ranks 13,751-15,000; rank 14204, heldOut), by hand against the Oracle text, the Scryfall rulings (fetched 2026-11-02) and the Comprehensive Rules (cites from the 2026-09-25 text unless listed unverified in the record): {1},{T}: 1 damage to any target; then the controller of the permanent chosen, or the player chosen, creates a 1/1 green Squirrel (rulings 2011-09-22: an illegal target means nothing happens; prevented damage still gives the Squirrel) (CR 115.1, 109.4, 608.2h). (PlayerRef controllerOf orPlayer, parser/holes/player.ts)","faces":[
+{"abilities":[
+{"cost":{"mana":[
+{"amount":1,"kind":"generic"}
+],"tap":true},"effect":{"steps":[
+{"amount":1,"op":"damage","source":{"ref":"self"},"to":{"id":"t0","ref":"target"}},{"count":1,"op":"createToken","token":{"colors":["G"],"power":1,"subtypes":["Squirrel"],"toughness":1,"types":["Creature"]},"who":{"object":{"id":"t0","ref":"target"},"orPlayer":true,"ref":"controllerOf"}}
+],"targets":[
+{"id":"t0","kind":"anyTarget","max":1,"min":1}
+]},"kind":"activated"}
+]}
+]},
+{"card":"Gunner Conscript","expect":"full","verified":"edh-d-5 review (Commander effort, EDHREC ranks 13,751-15,000; rank 14660, tuning), by hand against the Oracle text, the Scryfall rulings (fetched 2026-11-02) and the Comprehensive Rules (cites from the 2026-09-25 text unless listed unverified in the record): trample; +1/+1 for each Aura and Equipment attached; when it dies, if an Aura was attached to it as it left, create a Junk token, and separately if an Equipment was (both triggers can happen); read from last known information (CR 603.10a, 603.4, 303.4b, 301.5; ruling 2024-03-08 on Junk). (parser/holes/cond.ts#pastTense was enchanted / was equipped)","faces":[
+{"abilities":[
+{"keyword":"trample","kind":"keyword"},{"effects":[
+{"affects":{"ref":"self"},"mods":[
+{"layer":"7c","power":{"of":{"filter":{"attachedToObject":{"ref":"self"},"subtypes":["Aura","Equipment"]},"ref":"each"},"q":"count"},"toughness":{"of":{"filter":{"attachedToObject":{"ref":"self"},"subtypes":["Aura","Equipment"]},"ref":"each"},"q":"count"}}
+],"s":"continuous"}
+],"kind":"static"},{"effect":{"steps":[
+{"count":1,"op":"createToken","token":{"predefined":"Junk"},"who":{"ref":"you"}}
+],"targets":[]},"interveningIf":{"cond":"matches","filter":{"enchanted":true},"object":{"ref":"event","role":"subject"}},"kind":"triggered","trigger":{"on":[
+{"ev":"zoneChange","from":"battlefield","subject":{"self":true},"to":"graveyard"}
+]}},{"effect":{"steps":[
+{"count":1,"op":"createToken","token":{"predefined":"Junk"},"who":{"ref":"you"}}
+],"targets":[]},"interveningIf":{"cond":"matches","filter":{"equipped":true},"object":{"ref":"event","role":"subject"}},"kind":"triggered","trigger":{"on":[
+{"ev":"zoneChange","from":"battlefield","subject":{"self":true},"to":"graveyard"}
+]}}
+]}
+]},
+{"card":"Seht's Tiger","expect":"full","verified":"edh-d-5 review (Commander effort, EDHREC ranks 13,751-15,000; rank 14365, heldOut), by hand against the Oracle text, the Scryfall rulings (fetched 2026-11-02) and the Comprehensive Rules (cites from the 2026-09-25 text unless listed unverified in the record): when it enters, you choose a color as the ability resolves and until end of turn damage from sources of that color is prevented and they can't enchant or target you (the player's protection, CR 702.16b, 702.16e, 702.16j, 608.2d, 611.2a); a source of another color is unaffected. No Scryfall rulings. (eff.edhd5.you.gain.protectionChosenColor)","faces":[{"abilities":[{"keyword":"flash","kind":"keyword"},{"effect":{"steps":[{"as":"b0","link":"protectionColor","op":"chooseValue","what":"color","who":{"ref":"you"}},{"duration":{"d":"endOfTurn"},"effects":[{"body":{"amount":"all","b":"prevent"},"replaces":{"ev":"damage","recipient":{"player":"you"},"source":{"chosen":{"link":"protectionColor","quality":"color"}}},"s":"replace"},{"action":"beTargeted","mode":"cant","other":{"chosen":{"link":"protectionColor","quality":"color"}},"s":"restrict","subject":{"ref":"you"}},{"action":"beEnchanted","mode":"cant","other":{"chosen":{"link":"protectionColor","quality":"color"}},"s":"restrict","subject":{"ref":"you"}}],"op":"effect"}],"targets":[]},"kind":"triggered","trigger":{"on":[{"ev":"zoneChange","subject":{"self":true},"to":"battlefield"}]}}]}]},
+{"card":"Gor Muldrak, Amphinologist","expect":"full","verified":"edh-d-5 review (Commander effort, EDHREC ranks 13,751-15,000; rank 14043, tuning), by hand against the Oracle text, the Scryfall rulings (fetched 2026-11-02) and the Comprehensive Rules (cites from the 2026-09-25 text unless listed unverified in the record): you and permanents you control (itself too, ruling 2020-11-10) have protection from Salamanders: sources that are Salamanders can't target or enchant them and their damage to the player is prevented (a prevention, so damage that can't be prevented still goes through, CR 615.12) (CR 702.16a-e, 604.1); the end step trigger unchanged. (sta.edhd5.youAndObjs.have.protectionFrom)","faces":[{"abilities":[{"effects":[{"body":{"amount":"all","b":"prevent"},"replaces":{"ev":"damage","recipient":{"player":"you"},"source":{"subtypes":["Salamander"]}},"s":"replace"},{"action":"beTargeted","mode":"cant","other":{"subtypes":["Salamander"]},"s":"restrict","subject":{"ref":"you"}},{"action":"beEnchanted","mode":"cant","other":{"subtypes":["Salamander"]},"s":"restrict","subject":{"ref":"you"}},{"affects":{"filter":{"controller":"you"},"ref":"each"},"mods":[{"add":[{"keyword":"protection","kind":"keyword","quality":"subtype:salamanders"}],"layer":6}],"s":"continuous"}],"kind":"static"},{"effect":{"steps":[{"count":1,"op":"createToken","token":{"colors":["U"],"power":4,"subtypes":["Salamander","Warrior"],"toughness":3,"types":["Creature"]},"who":{"fewest":true,"filter":{"types":["Creature"]},"ref":"controlsMost"}}],"targets":[]},"kind":"triggered","trigger":{"on":[{"ev":"step","step":"end","whose":"you"}]}}]}]}
+]

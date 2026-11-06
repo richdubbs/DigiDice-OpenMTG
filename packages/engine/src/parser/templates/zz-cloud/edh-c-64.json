@@ -1,0 +1,239 @@
+[
+  {
+    "id": "trg.edhv64.cast.spellOrSpellBare",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 603.6a"
+    ],
+    "pattern": "whenever you cast ( a | an ) {f:CastSpell} or {g:CastSpell}",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you",
+          "spell": {
+            "anyOf": [
+              "$f",
+              "$g"
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Whenever you cast an instant spell or Goblin spell, ~ gets +1/+1 until end of turn."
+      },
+      {
+        "text": "Whenever you cast a noncreature spell or Elf spell, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant spell and Goblin spell, ~ gets +1/+1 until end of turn.",
+      "Whenever an opponent casts an instant spell or Goblin spell, ~ gets +1/+1 until end of turn.",
+      "Whenever you cast an instant spell or Goblin spell, ~ gets +2/+1 until end of turn."
+    ],
+    "consumes": [
+      "whenever",
+      "or"
+    ]
+  },
+  {
+    "id": "trg.edhv64.cardsExiled.batch.yourTurn",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 603.2c",
+      "CR 603.10a",
+      "CR 406.1",
+      "CR 500.1"
+    ],
+    "pattern": "whenever one or more cards are put into exile during your turn",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "isCard": true
+          },
+          "to": "exile"
+        }
+      ],
+      "batch": true,
+      "while": {
+        "cond": "turnOf",
+        "whose": "you"
+      }
+    },
+    "consumes": [
+      "whenever",
+      "during",
+      "one or more"
+    ],
+    "needs": [
+      "feature:trigger.while",
+      "feature:trigger.batch"
+    ],
+    "examples": [
+      {
+        "text": "Whenever one or more cards are put into exile during your turn, create a Treasure token."
+      },
+      {
+        "text": "Whenever one or more cards are put into exile during your turn, put a +1/+1 counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever one or more cards are put into exile during an opponent's turn, create a Treasure token.",
+      "Whenever one or more cards are put into exile, create a Treasure token.",
+      "Whenever one or more creature cards are put into exile during your turn, create a Treasure token."
+    ]
+  },
+  {
+    "id": "sta.edhv64.kicked.additionalCounters",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.33d",
+      "CR 702.33e",
+      "CR 614.1c",
+      "CR 122.6",
+      "CR 400.7d"
+    ],
+    "pattern": "if ~ was kicked , it enters with {n:Qty} additional {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "wasCast",
+        "kicked": true
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If ~ was kicked, it enters with four additional time counters on it."
+      },
+      {
+        "text": "If ~ was kicked, it enters with two additional +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "If ~ wasn't kicked, it enters with four additional time counters on it.",
+      "If ~ was kicked, target creature enters with four additional time counters on it.",
+      "If ~ was kicked, it enters with five additional time counters on it and draws a card."
+    ]
+  },
+  {
+    "id": "eff.edhv64.player.mayDrawAdditional.if",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 121.1",
+      "CR 603.4"
+    ],
+    "pattern": "{p:Player} may draw an additional card if {c:Cond}",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "guard": "$c",
+      "do": [
+        {
+          "op": "draw",
+          "who": "$p",
+          "count": 1
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may draw a card. You may draw an additional card if ~ is enchanted."
+      },
+      {
+        "text": "Whenever ~ dies, you may draw a card. You may draw an additional card if you control an artifact."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may draw a card. You may draw two additional cards if ~ is enchanted.",
+      "Whenever ~ attacks, you may draw a card. You may draw an additional card unless ~ is enchanted.",
+      "Whenever ~ attacks, you may draw a card. You may discard an additional card if ~ is enchanted."
+    ]
+  },
+  {
+    "id": "eff.edhv64.token.forEach.qty.lead.you",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.6a",
+      "CR 608.2h"
+    ],
+    "pattern": "for each {n:Qty} , you create ( a | an ) {t:TokenDesc}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, for each spell you've cast this turn, you create a 1/1 green Saproling creature token."
+      },
+      {
+        "text": "Each player reveals the top card of their library. For each nonland card revealed this way, you create a 1/1 white Spirit creature token."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, for each spell you've cast this turn, target opponent creates a 1/1 green Saproling creature token.",
+      "At the beginning of your end step, for each spell you've cast this turn, you create two 1/1 green Saproling creature tokens.",
+      "At the beginning of your end step, for each spell you've cast this game, you create a 1/1 green Saproling creature token."
+    ]
+  }
+]

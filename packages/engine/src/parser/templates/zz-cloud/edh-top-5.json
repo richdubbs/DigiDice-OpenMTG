@@ -1,0 +1,339 @@
+[
+  {
+    "id": "eff.edht5.counters.put.thenGoadPut",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 701.15a",
+      "CR 608.2c",
+      "CR 122.6"
+    ],
+    "pattern": "put {n:Qty} {k:CounterKind} counter[s] on {o:Obj} , then goad each creature that had ( a | an ) {i:CounterKind} counter put on it this way",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k",
+        "count": "$n",
+        "as": "put"
+      },
+      {
+        "op": "action",
+        "action": "goad",
+        "who": {
+          "ref": "you"
+        },
+        "subject": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "put"
+            }
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then",
+      "this way",
+      "it"
+    ],
+    "needs": [
+      "action:goad"
+    ],
+    "examples": [
+      {
+        "text": "Put a flying counter on target creature, then goad each creature that had a flying counter put on it this way."
+      },
+      {
+        "text": "Put two +1/+1 counters on target creature an opponent controls, then goad each creature that had a +1/+1 counter put on it this way."
+      }
+    ],
+    "counterExamples": [
+      "Put a flying counter on target creature, then goad each creature you control.",
+      "Put a flying counter on target creature, then goad target creature that had a flying counter put on it this way."
+    ]
+  },
+  {
+    "id": "eff.edht5.eachPlayerMayPutCounters.thenGoadPut",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 701.15a",
+      "CR 608.2c"
+    ],
+    "pattern": "each player may put {n:Qty} {k:CounterKind} counter[s] on ( a | an ) {f:Filter} they control . goad each creature that had counter[s] put on it this way",
+    "build": [
+      {
+        "op": "may",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "gather": "put",
+        "do": [
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "iterating"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "anyOf": [
+                  "$f"
+                ],
+                "controller": {
+                  "ref": "iterating"
+                }
+              }
+            },
+            "min": 1,
+            "max": 1,
+            "as": "countersOn"
+          },
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "bound",
+              "name": "countersOn"
+            },
+            "kind": "$k",
+            "count": "$n",
+            "as": "put"
+          }
+        ]
+      },
+      {
+        "op": "action",
+        "action": "goad",
+        "who": {
+          "ref": "you"
+        },
+        "subject": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "put"
+            }
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "this way",
+      "it"
+    ],
+    "needs": [
+      "action:goad"
+    ],
+    "examples": [
+      {
+        "text": "Each player may put two +1/+1 counters on a creature they control. Goad each creature that had counters put on it this way."
+      },
+      {
+        "text": "Each player may put a flying counter on an artifact creature they control. Goad each creature that had counters put on it this way."
+      }
+    ],
+    "counterExamples": [
+      "Each player may put two +1/+1 counters on a creature they control. Goad each creature you control.",
+      "Each player may put two +1/+1 counters on a creature they control. Goad each creature that had counters put on it this way and untap it."
+    ]
+  },
+  {
+    "id": "rep.edht5.self.enters.underOpponentOfYourChoice",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 616.1b",
+      "CR 110.2",
+      "CR 108.3"
+    ],
+    "pattern": "~ enters [the battlefield] under the control of an opponent of your choice",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "under": {
+              "ref": "anOpponent"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "opponent"
+    ],
+    "examples": [
+      {
+        "text": "~ enters the battlefield under the control of an opponent of your choice."
+      },
+      {
+        "text": "Menace, reach, vigilance, lifelink\n~ enters the battlefield under the control of an opponent of your choice."
+      }
+    ],
+    "counterExamples": [
+      "~ enters under the control of target opponent.",
+      "~ enters under the control of an opponent of their choice.",
+      "~ enters under your control."
+    ]
+  },
+  {
+    "id": "eff.edht5.dur.play.obj.anyColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 609.4b",
+      "CR 107.4c"
+    ],
+    "pattern": "{d:Dur} , you may play {o:Obj} , and you may spend mana as though it were mana of any color to cast ( it | that spell )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaColor": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top card of target opponent's library. Until the end of your next turn, you may play that card, and you may spend mana as though it were mana of any color to cast it."
+      },
+      {
+        "text": "Exile the top card of your library. Until end of turn, you may play that card, and you may spend mana as though it were mana of any color to cast that spell."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target opponent's library. Until end of turn, you may play that card, and you may spend mana as though it were mana of any type to cast that spell.",
+      "Exile the top card of target opponent's library. Until end of turn, you may play that card, and you may spend mana as though it were mana of any color to cast those spells.",
+      "Exile the top card of target opponent's library. Until end of turn, you may play that card."
+    ]
+  },
+  {
+    "id": "sta.edht5.obj.mustAttack.cantAttackOwnerOrTheirPlaneswalkers",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 604.1",
+      "CR 101.2",
+      "CR 108.3"
+    ],
+    "pattern": "{o:Obj} attacks each combat if able and can't attack its owner or planeswalkers its owner controls",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "ownerOf",
+            "object": "$o"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "attack",
+          "other": {
+            "types": [
+              "Planeswalker"
+            ],
+            "controller": {
+              "ref": "ownerOf",
+              "object": "$o"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "if",
+      "if able",
+      "can't",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature attacks each combat if able and can't attack its owner or planeswalkers its owner controls."
+      },
+      {
+        "text": "Enchanted creature attacks each combat if able and can't attack its owner or planeswalkers its owner controls."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature attacks each combat if able and can't attack its owner.",
+      "Equipped creature attacks each combat if able and can't attack you or planeswalkers you control.",
+      "Equipped creature attacks each combat if able and can't attack its owner or creatures its owner controls.",
+      "Equipped creature attacks each combat if able and can't attack its controller or planeswalkers its controller controls."
+    ]
+  }
+]

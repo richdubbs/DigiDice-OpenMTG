@@ -1,0 +1,9 @@
+# edh-players-14 (Commander lane edh-players; test/cloud/edh-players-14, golden edh-players-14-review.json)
+# the players who discarded their hand (Snort) or did not discard a nonland card (Kroxa) this way; "~ or another nontoken historic permanent" (Arbaaz Mir); "for each opponent you attacked" (Rose); a number of rad counters equal to its power (Feral Ghoul); "it and Zombies you control gain" (Wand of Orcus); "draw a card unless target opponent sacrifices ... or pays N life" (Indulgent Tormentor)
+Snort
+Kroxa, Titan of Death's Hunger
+Arbaaz Mir
+Rose, Cutthroat Raider
+Feral Ghoul
+Wand of Orcus
+Indulgent Tormentor

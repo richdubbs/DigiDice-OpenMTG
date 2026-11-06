@@ -1,0 +1,180 @@
+[
+  {
+    "id": "eff.edhb11.controllerOf.sacrifices.it",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 109.4",
+      "CR 608.2b"
+    ],
+    "pattern": "{o:Obj} 's controller sacrifices it",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "filter": {
+        "is": "$o"
+      },
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "sacrifices"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Target artifact creature's controller sacrifices it."
+      },
+      {
+        "text": "{T}: Target green creature's controller sacrifices it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target artifact creature's owner sacrifices it.",
+      "{T}: Target artifact creature's controller sacrifices a land.",
+      "{T}: Target artifact creature's controller sacrifices another artifact."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhb11.double.power.nTimes",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.10a",
+      "CR 701.10b",
+      "CR 701.10c",
+      "CR 608.2c",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "{d:Dur} , double {o:Obj} 's power {n:Qty} times",
+    "build": {
+      "op": "repeat",
+      "times": "$n",
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": {
+                    "q": "stat",
+                    "stat": "power",
+                    "of": "$o"
+                  },
+                  "toughness": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, double target creature's power three times."
+      },
+      {
+        "text": "Until end of turn, double target creature you control's power two times."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, double target creature's power.",
+      "Double target creature's power X times.",
+      "Until end of turn, double target creature's toughness X times.",
+      "Until end of turn, double target creature's power and toughness X times."
+    ]
+  },
+  {
+    "id": "rid.edhb11.ifItDoesnt",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 603.4"
+    ],
+    "pattern": "if it doesn't , {e:Effects}",
+    "build": {
+      "$patchPrevious": {
+        "else": {
+          "@new": "$e"
+        }
+      }
+    },
+    "attachTo": "if",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, draw a card if you control a Wizard. If it doesn't, put a +1/+1 counter on ~."
+      },
+      {
+        "text": "At the beginning of your upkeep, create a Treasure token if you control a Goblin. If it doesn't, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, if it doesn't, put a +1/+1 counter on ~.",
+      "Whenever ~ deals combat damage to a player, draw a card. If it doesn't, put a +1/+1 counter on ~.",
+      "Whenever ~ deals combat damage to a player, draw a card if you control a Wizard. If you don't, put a +1/+1 counter on ~ instead."
+    ]
+  },
+  {
+    "id": "sta.edhb11.permit.equipAsInstant.anyTurn",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.6a",
+      "CR 602.5d",
+      "CR 117.1a"
+    ],
+    "pattern": "you may activate equip abilities ( any time | at any time ) you could cast an instant",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "activateEquipAsInstant"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "any time"
+    ],
+    "examples": [
+      {
+        "text": "You may activate equip abilities at any time you could cast an instant."
+      },
+      {
+        "text": "Equipped creatures get +1/+1.\nYou may activate equip abilities at any time you could cast an instant."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, you may activate equip abilities at any time you could cast an instant.",
+      "You may activate equip abilities at any time you could cast a sorcery.",
+      "You may activate crew abilities at any time you could cast an instant."
+    ]
+  }
+]

@@ -1,0 +1,126 @@
+[
+  {
+    "id": "sta.edhd76.cast.graveyard.exileInstead",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 404.1",
+      "CR 614.1a",
+      "CR 400.7"
+    ],
+    "pattern": "you may cast {f:Filter} from your graveyard . if a spell cast this way would be put into your graveyard , exile it instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "graveyardInstead": {
+            "to": {
+              "zone": "exile"
+            },
+            "yours": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if",
+      "would",
+      "instead",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "You may cast instant and sorcery spells from your graveyard. If a spell cast this way would be put into your graveyard, exile it instead."
+      },
+      {
+        "text": "You may cast creature spells from your graveyard. If a spell cast this way would be put into your graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "You may cast instant and sorcery spells from your graveyard. If a spell cast this way would be put into your graveyard, return it to your hand instead.",
+      "You may cast instant and sorcery spells from your graveyard.",
+      "You may cast instant and sorcery spells from your hand. If a spell cast this way would be put into your graveyard, exile it instead.",
+      "Once during each of your turns, you may cast an artifact spell from your graveyard. If a spell cast this way would be put into your graveyard, exile it instead."
+    ]
+  },
+  {
+    "id": "rid.edhd76.escape.costIsManaCostPlus",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.138a",
+      "CR 118.9",
+      "CR 608.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "the escape cost is equal to ( its | that card 's ) mana cost plus exile {n:Qty} other cards from your graveyard",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "effects.0.mods.0.add.0.keyword": "escape",
+          "effects.0.mods.0.add.0.cost": null,
+          "effects.0.mods.0.add.1": null
+        },
+        "effects": [
+          {
+            "mods": [
+              {
+                "add": [
+                  {
+                    "costIsManaCost": true,
+                    "cost": {
+                      "other": [
+                        {
+                          "kind": "exileFrom",
+                          "zone": "graveyard",
+                          "count": "$n",
+                          "filter": {
+                            "other": true
+                          }
+                        }
+                      ]
+                    },
+                    "kind": "keyword",
+                    "keyword": "escape"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "attachTo": "effect",
+    "consumes": [
+      "equal",
+      "plus",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Target artifact card in your graveyard gains escape until end of turn. The escape cost is equal to its mana cost plus exile four other cards from your graveyard."
+      },
+      {
+        "text": "Whenever ~ attacks, target Zombie card in your graveyard gains escape until end of turn. The escape cost is equal to that card's mana cost plus exile five other cards from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target artifact card in your graveyard gains escape until end of turn. The escape cost is equal to its power plus exile four other cards from your graveyard.",
+      "{T}: Target artifact card in your graveyard gains escape until end of turn. The escape cost is equal to its mana cost.",
+      "{T}: Target artifact card in your graveyard gains escape until end of turn. The escape cost is equal to its mana cost plus exile four other cards from an opponent's graveyard.",
+      "{T}: Target creature gains flying until end of turn. The escape cost is equal to its mana cost plus exile four other cards from your graveyard."
+    ]
+  }
+]

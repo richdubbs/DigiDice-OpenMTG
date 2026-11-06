@@ -29,19 +29,27 @@
 import type { ManaRestriction, ObjectFilter } from '../../types/ability';
 import type { Alt, HoleCtx, HoleFn } from './core';
 import { P, dedupe, mergeFilter, phraseAt } from './core';
-import { npAlts, postModAt } from './filter';
+import { npAlts, postModAt, yourCommanderAt } from './filter';
 
 const W_X_ITS = P('with {x} in its mana cost');
 const W_X_THEIR = P('with {x} in their mana costs');
+const W_NO_X_ITS = P('without {x} in its mana cost'); // edh-d-22 (CR 107.3; Titans' Nest)
+const W_NO_X_THEIR = P('without {x} in their mana costs');
 const W_FACE_UP = P('face up');
 const W_NOT_FROM_HAND = P('from anywhere other than your hand');
 const W_ABILITIES_OF = P('abilities of');
 const W_AN_ABILITY_OF = P('an ability of');
 const W_EQUIP_ONE = P('an equip ability');
 const W_EQUIP_MANY = P('equip abilities');
+const W_CLASS_LEVEL = P('gain a class level'); // edh-d-31 (CR 716.2a; Sorcerer Class)
+const W_POWERUP_ONE = P('a power-up ability'); // edh-c-110 (CR 702.193a; Quinjet Technician)
+const W_POWERUP_MANY = P('power-up abilities');
 const W_AN_ABILITY = P('an ability');
 const W_ABILITIES = P('abilities');
+const W_FORETELL: [string[], boolean][] = [[P('foretell a card from your hand'), false], [P('foretell cards from your hand'), true]]; // edh-c-48 (CR 116.2h, 702.143a)
 const W_UNLOCK: [string[], boolean][] = [[P('unlock a door'), false], [P('unlock doors'), true]];
+const W_PAY_DISTURB: [string[], boolean][] = [[P('pay a disturb cost'), false], [P('pay disturb costs'), true]]; // edh-d-22 (CR 118.9, 702.146a; Unblinking Observer)
+P('pay');
 const W_FACE_UP_WHAT: [string[], ObjectFilter, boolean][] = [[P('a permanent'), {}, false], [P('permanents'), {}, true], [P('a creature'), { types: ['Creature'] }, false], [P('creatures'), { types: ['Creature'] }, true]];
 P('source'); P('sources'); P('turn'); P('activate'); P('cast'); P('to'); P('or'); P('and'); P(',');
 
@@ -59,18 +67,28 @@ function linkChosen(f: ObjectFilter): ObjectFilter | null {
   return { ...f, chosen: { link: 'type', quality: 'creatureType' } };
 }
 
+/** "no abilities" as the filter hole stores it (holes/filter.ts, FAST5 T42): not an activated, a triggered and a static ability. */
+const isNoAbilities = (not: ObjectFilter): boolean => {
+  const keys = Object.keys(not).filter((k) => (not as Record<string, unknown>)[k] !== undefined);
+  const kinds = not.anyOf?.map((x) => x.hasAbility).sort().join();
+  return keys.length === 1 && keys[0] === 'anyOf' && kinds === 'activated,static,triggered' && not.anyOf!.every((x) => Object.keys(x).length === 1);
+};
+
 /** A spell's filter as a restriction stores it: no stack kind and no zone; "from <zone>" is where it is cast from (CR 601.2a). */
 function spellFilter(f: ObjectFilter): ObjectFilter | null {
   const { stackKind, zone, ...rest } = f;
   if (stackKind !== 'spell') return null;
-  if (rest.not !== undefined || rest.controller !== undefined || rest.targets !== undefined) return null;
+  // edh-mana-keywords-4 (CR 108.3, 106.6; Thieving Varmint): "spells you don't own" is the one `not` a restriction takes, a spell whose owner is another player
+  // edh-d-22 (CR 113.1, 106.6; Jasmine Boreal of the Seven): "creature spells with no abilities", the `not` of the three kinds of ability (holes/filter.ts, FAST5 T42)
+  if ((rest.not !== undefined && JSON.stringify(rest.not) !== '{"owner":"you"}' && !isNoAbilities(rest.not)) || rest.controller !== undefined || rest.targets !== undefined) return null;
   // pc-keywords-mana-1 (CR 205.2a, 205.3, 106.6): "instant, sorcery, Demon, and Spirit spells" (Séance Board): the any-of of card types and subtypes a list of mixed names
   // is (holes/filter.ts#shape), nothing else beside it; any other any-of is a coordination of spell descriptions this function does not build (spellsCast does)
   if (rest.anyOf !== undefined && !(Object.keys(rest).length === 1 && rest.anyOf.every((a) => Object.keys(a).every((k) => k === 'types' || k === 'subtypes')))) return null;
   let out: ObjectFilter = rest;
   if (zone !== undefined && zone !== 'stack') {
     if (typeof zone !== 'string' || zone === 'any' || zone === 'battlefield' || zone === 'library') return null;
-    if (zone === 'exile' ? rest.owner !== undefined : rest.owner !== 'you') return null; // "from exile", "from your hand", "from your graveyard"
+    // edh-c-77 (CR 601.2a, 106.6, 702.34a; Altar of the Lost): "spells with flashback from a graveyard" is a spell cast from any graveyard (no owner said), as "from exile"
+    if (zone === 'exile' ? rest.owner !== undefined : zone === 'graveyard' ? rest.owner !== undefined && rest.owner !== 'you' : rest.owner !== 'you') return null; // "from exile", "from your hand", "from your graveyard"
     out = { ...rest, castFrom: zone };
   } else if (rest.owner !== undefined) return null;
   return linkChosen(out);
@@ -93,7 +111,11 @@ function spellNp(ctx: HoleCtx, pos: number): NVal<ObjectFilter>[] {
     if (elsewhere >= 0) out.push({ end: elsewhere, value: { ...f, not: { castFrom: 'hand' } }, plural: !singular });
     const x = phraseAt(ctx, n.end, singular ? W_X_ITS : W_X_THEIR);
     if (x >= 0 && f.manaCostHasX === undefined) out.push({ end: x, value: { ...f, manaCostHasX: true }, plural: !singular }); // CR 107.3
+    const noX = phraseAt(ctx, n.end, singular ? W_NO_X_ITS : W_NO_X_THEIR); // edh-d-22 (CR 107.3): "a spell that's one or more colors without {X} in its mana cost"
+    if (noX >= 0 && f.manaCostHasX === undefined) out.push({ end: noX, value: { ...f, manaCostHasX: false }, plural: !singular });
   }
+  // trek-19 (CR 903.3, 106.6; Queen's Diamond): "cast your commander": a commander spell of the player who owns it (the bare noun, singular)
+  for (const c of yourCommanderAt(ctx, pos)) if (c.number === 'singular') out.push({ end: c.end, value: { commander: true, owner: 'you' }, plural: false });
   return out;
 }
 
@@ -151,6 +173,7 @@ function sourceNp(ctx: HoleCtx, pos: number, singular: boolean): Val<ObjectFilte
 function abilities(ctx: HoleCtx, pos: number): NVal<ManaRestriction>[] {
   const out: NVal<ManaRestriction>[] = [];
   for (const [ws, plural] of [[W_EQUIP_ONE, false], [W_EQUIP_MANY, true]] as const) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, value: { abilities: {}, abilityKeyword: 'equip' }, plural }); } // CR 702.6a
+  for (const [ws, plural] of [[W_POWERUP_ONE, false], [W_POWERUP_MANY, true]] as const) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, value: { abilities: {}, abilityKeyword: 'power-up' }, plural }); } // edh-c-110 (CR 702.193a)
   for (const [ws, plural] of [[W_AN_ABILITY, false], [W_ABILITIES, true]] as const) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, value: { abilities: {} }, plural }); }
   for (const [ws, singular] of [[W_AN_ABILITY_OF, true], [W_ABILITIES_OF, false]] as const) {
     const e = phraseAt(ctx, pos, ws);
@@ -165,6 +188,8 @@ function clause(ctx: HoleCtx, pos: number): NVal<ManaRestriction>[] {
   const w = ctx.toks[pos]?.norm;
   if (w === 'cast') for (const s of spellsCast(ctx, pos + 1)) out.push({ end: s.end, value: { spells: s.value }, plural: s.plural });
   if (w === 'activate') out.push(...abilities(ctx, pos + 1));
+  // edh-d-31 (CR 716.2a, 106.6; Sorcerer Class): "to gain a Class level" is paying the level-up cost of a Class, an activated ability of it
+  if (w === 'gain') { const e = phraseAt(ctx, pos, W_CLASS_LEVEL); if (e >= 0) out.push({ end: e, value: { abilities: {}, abilityKeyword: 'classLevel' }, plural: false }); }
   if (w === 'turn') {
     for (const [ws, f, plural] of W_FACE_UP_WHAT) {
       const e = phraseAt(ctx, pos + 1, ws);
@@ -172,6 +197,8 @@ function clause(ctx: HoleCtx, pos: number): NVal<ManaRestriction>[] {
       if (up >= 0) out.push({ end: up, value: { turnFaceUp: f }, plural });
     }
   }
+  for (const [ws, plural] of W_FORETELL) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, value: { foretell: true }, plural }); }
+  for (const [ws, plural] of W_PAY_DISTURB) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, value: { viaAlt: 'disturb' }, plural }); }
   for (const [ws, plural] of W_UNLOCK) { const e = phraseAt(ctx, pos, ws); if (e >= 0) out.push({ end: e, value: { unlock: true }, plural }); }
   return out;
 }
@@ -189,6 +216,7 @@ function mergeClauses(list: readonly ManaRestriction[]): ManaRestriction | null 
 }
 
 const SEP_TWO = [P('or to'), P('or'), P('and')];
+const SEP_COMMA_TWO = [P(', or to'), P(', or')];
 const SEP_LAST = [P(', or to'), P(', or'), P(', and')];
 /** "and" joins clauses only in the plural (see the file comment). */
 const joins = (sep: readonly string[], plural: boolean): boolean => plural || sep[sep.length - 1] !== 'and';
@@ -198,7 +226,10 @@ export const manaSpend: HoleFn = (ctx, pos) => {
   const out: Alt[] = [];
   for (const c1 of clause(ctx, pos)) {
     out.push({ end: c1.end, value: c1.value });
-    for (const sep of SEP_TWO) {
+    // edh-d-22 (CR 106.6; Brotherhood Headquarters): a first clause that itself holds an "or" of spell descriptions is set off by a comma: "cast an Assassin spell or a spell
+    // that has freerunning, or to activate an ability of an Assassin source"
+    const inner = c1.value.spells?.anyOf?.some((x) => Object.keys(x).some((k) => k !== 'types' && k !== 'subtypes' && (x as Record<string, unknown>)[k] !== undefined)) === true; // not "a Cleric, Rogue, or Wizard spell"
+    for (const sep of inner ? [...SEP_TWO, ...SEP_COMMA_TWO] : SEP_TWO) {
       const s = phraseAt(ctx, c1.end, sep);
       if (s < 0 || !joins(sep, c1.plural)) continue;
       for (const c2 of clause(ctx, s)) { if (c2.plural !== c1.plural) continue; const m = mergeClauses([c1.value, c2.value]); if (m) out.push({ end: c2.end, value: m }); }

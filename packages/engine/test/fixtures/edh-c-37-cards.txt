@@ -1,0 +1,31 @@
+# edh-c-37 (Commander EDHREC ranks 26,501-27,000): kinship (look at the top card, "if it shares a creature type with ~, you may reveal it"), tribute (keyword and "if tribute wasn't paid"), the number of <color> mana symbols in the mana costs of a group, "you may exile N <type> cards from your graveyard", "All Mountains are Plains", "gets -N/-0 and attacks this turn if able". After editing: npm run cards -- fixtures
+Ink Dissolver
+Waterspout Weavers
+Squeaking Pie Grubfellows
+Wandering Graybeard
+Winnower Patrol
+Nightshade Schemers
+Mudbutton Clanger
+Kithkin Zephyrnaut
+Fanatic of Xenagos
+Nessian Demolok
+Flame-Wreathed Phoenix
+Nessian Wilds Ravager
+Oracle of Bones
+Ornitharch
+Pharagax Giant
+Shrike Harpy
+Siren of the Fanged Coast
+Snake of the Golden Grove
+Thunder Brute
+Umbra Stalker
+Heartlash Cinder
+Skywarp Skaab
+Conversion
+Chemister's Trick
+Primalcrux
+Outrage Shaman
+Wolf-Skull Shaman
+Sensation Gorger
+Glaciers
+Pyroclast Consul

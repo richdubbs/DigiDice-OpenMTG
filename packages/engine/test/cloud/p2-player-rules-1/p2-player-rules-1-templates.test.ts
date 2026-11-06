@@ -181,8 +181,9 @@ describe('p2-player-rules-1 statics, untap step and renderer support', () => {
     expect(effects("Your life total can't change.")).toContain('"action":"loseLife"');
     expect(fullyAutomated(face('Artifact', "Each opponent's life total can't change."))).toBe(false);
   });
-  it('CR 701.35a, 611.2c: detain reads only targets: "detain each <permanents>" is no reading (a resolved restriction over a description stays live, so it would detain permanents that arrive later)', () => {
-    expect(fullyAutomated(parseCard(card('Example Edict', 'Sorcery', 'Detain each creature your opponents control.'), OPTS).faces[0]!)).toBe(false);
+  it('CR 701.35a, 611.2c: detain: "detain each <permanents>" is a reading since edh-d-6 (the detain macro fixes the set one permanent at a time, so permanents that arrive later are not detained)', () => {
+    // edh-d-6 (Lavinia of the Tenth): the earlier negative (a live `each` filter would detain newcomers) is answered by the forEach expansion in keywords/actions/restrictions.ts
+    expect(fullyAutomated(parseCard(card('Example Edict', 'Sorcery', 'Detain each creature your opponents control.'), OPTS).faces[0]!)).toBe(true);
     expect(fullyAutomated(parseCard(card('Example Edict', 'Sorcery', 'Detain target artifact.'), OPTS).faces[0]!)).toBe(true);
   });
   it('CR 613.1f: "lose K and can\'t have or gain K" is one layer 6 modification removing K and refusing it', () => {

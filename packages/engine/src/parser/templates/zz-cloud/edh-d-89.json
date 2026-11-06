@@ -1,0 +1,614 @@
+[
+  {
+    "id": "rst.edhd89.cast.self.beforeAttackers",
+    "kind": "static",
+    "since": 89,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 508.1",
+      "CR 500.8"
+    ],
+    "pattern": "cast ~ only before attackers are declared",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "all",
+            "of": [
+              {
+                "cond": "turnOf",
+                "whose": "any",
+                "step": [
+                  "untap",
+                  "upkeep",
+                  "draw",
+                  "main1",
+                  "beginCombat"
+                ]
+              },
+              {
+                "cond": "not",
+                "of": {
+                  "cond": "happened",
+                  "event": {
+                    "ev": "step",
+                    "step": "declareAttackers"
+                  },
+                  "scope": "turn"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "before"
+    ],
+    "examples": [
+      {
+        "text": "Cast Example Subject only before attackers are declared.\nTarget creature gets +3/+1 until end of turn. You gain 2 life."
+      },
+      {
+        "text": "Cast Example Subject only before attackers are declared.\nDraw two cards. You lose 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Cast Example Subject only before blockers are declared.\nDraw two cards. You lose 3 life.",
+      "Cast Example Subject only after attackers are declared.\nDraw two cards. You lose 3 life.",
+      "Cast Example Subject only during an opponent's turn, before attackers are declared.\nDraw two cards. You lose 3 life."
+    ]
+  },
+  {
+    "id": "eff.edhd89.youChooseAttackers",
+    "kind": "effect",
+    "since": 89,
+    "status": "stable",
+    "cr": [
+      "CR 508.1a",
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 508.1d",
+      "CR 723.1"
+    ],
+    "pattern": "you choose which creatures attack this turn",
+    "build": {
+      "op": "controlAttacks",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "op:controlAttacks"
+    ],
+    "consumes": [
+      "choose",
+      "attack"
+    ],
+    "examples": [
+      {
+        "text": "You choose which creatures attack this turn. Draw a card."
+      },
+      {
+        "text": "At the beginning of each opponent's upkeep, you choose which creatures attack this turn."
+      }
+    ],
+    "counterExamples": [
+      "You choose which creatures attack this combat. Draw a card.",
+      "Target opponent chooses which creatures attack this turn. Draw a card.",
+      "You choose which creatures block this turn. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhd89.youChooseBlocksTurn",
+    "kind": "effect",
+    "since": 89,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 509.1b",
+      "CR 509.1c",
+      "CR 509.1d",
+      "CR 723.1"
+    ],
+    "pattern": "you choose which creatures block this turn and how those creatures block",
+    "build": {
+      "op": "controlBlocks",
+      "who": {
+        "ref": "you"
+      },
+      "turn": true
+    },
+    "subject": "none",
+    "needs": [
+      "op:controlBlocks"
+    ],
+    "consumes": [
+      "choose",
+      "block"
+    ],
+    "examples": [
+      {
+        "text": "You choose which creatures block this turn and how those creatures block. Draw a card."
+      },
+      {
+        "text": "At the beginning of each opponent's upkeep, you choose which creatures block this turn and how those creatures block."
+      }
+    ],
+    "counterExamples": [
+      "You choose which creatures block this turn. Draw a card.",
+      "Target opponent chooses which creatures block this turn and how those creatures block. Draw a card.",
+      "You choose which creatures attack this turn and how those creatures block. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhd89.meldPair.bothAttacking.entersAttacking",
+    "kind": "effect",
+    "since": 89,
+    "status": "stable",
+    "cr": [
+      "CR 701.42a",
+      "CR 712.4a",
+      "CR 608.2c",
+      "CR 508.4",
+      "CR 108.3",
+      "CR 108.4"
+    ],
+    "pattern": "if ~ and a creature named {n:Name} are attacking , and you both own and control them , exile them , then meld them into {r:Name} . it enters tapped and attacking",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "owner": "you",
+              "controller": "you",
+              "attacking": true
+            }
+          },
+          {
+            "cond": "exists",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "name": "$n",
+                "owner": "you",
+                "controller": "you",
+                "attacking": true
+              }
+            }
+          }
+        ]
+      },
+      "then": [
+        {
+          "op": "action",
+          "action": "meldPair",
+          "who": {
+            "ref": "you"
+          },
+          "arg": "$r",
+          "partner": {
+            "attacking": true
+          },
+          "entersAttacking": true
+        }
+      ]
+    },
+    "subject": "none",
+    "needs": [
+      "feature:action.native.meldPair.attacking"
+    ],
+    "consumes": [
+      "if",
+      "and",
+      "attacking",
+      "meld",
+      "enters",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack, you gain 1 life. If ~ and a creature named Brass Wyrm are attacking, and you both own and control them, exile them, then meld them into Brass Overlord. It enters tapped and attacking."
+      },
+      {
+        "text": "Whenever you attack, draw a card. If ~ and a creature named Iron Colossus are attacking, and you both own and control them, exile them, then meld them into Iron Tyrant. It enters tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack, you gain 1 life. If ~ and a creature named Brass Wyrm are attacking, and you both own and control them, exile them, then meld them into Brass Overlord.",
+      "Whenever you attack, you gain 1 life. If ~ and a creature named Brass Wyrm are blocking, and you both own and control them, exile them, then meld them into Brass Overlord. It enters tapped and attacking.",
+      "Whenever you attack, you gain 1 life. If ~ and a creature named Brass Wyrm are attacking, and you both own and control them, exile them, then meld them into Brass Overlord. It enters tapped.",
+      "Whenever you attack, you gain 1 life. If ~ and a creature named Brass Wyrm are attacking, exile them, then meld them into Brass Overlord. It enters tapped and attacking."
+    ]
+  },
+  {
+    "id": "rid.edhd89.token.theTokenHas",
+    "kind": "rider",
+    "since": 89,
+    "status": "stable",
+    "cr": [
+      "CR 111.2",
+      "CR 111.4",
+      "CR 608.2c",
+      "CR 303.4"
+    ],
+    "pattern": "the token has {a:Abilities}",
+    "build": {
+      "$patchPrevious": {
+        "token": {
+          "abilities": {
+            "@new": "$a"
+          }
+        },
+        "@into": true
+      }
+    },
+    "attachTo": "createToken",
+    "examples": [
+      {
+        "text": "Create a 2/2 colorless Golem artifact creature token. The token has \"{T}: Add {C}.\""
+      },
+      {
+        "text": "Create a white Aura enchantment token named Oath attached to target creature you control. The token has enchant creature and \"Enchanted creature gets +1/+3.\""
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. The token has \"{T}: Add {C}.\"",
+      "Create a 2/2 colorless Golem artifact creature token. The token has \"{T}: Add {C}\" until end of turn.",
+      "Create a 2/2 colorless Golem artifact creature token. The tokens have \"{T}: Add {C}.\""
+    ]
+  },
+  {
+    "id": "eff.edhd89.choose.counterOn.aFilter",
+    "kind": "effect",
+    "since": 89,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "choose a counter on ( a | an ) {f:Filter}",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "counterKind",
+      "counterOn": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "counterKind",
+      "link": "counterKind"
+    },
+    "subject": "none",
+    "consumes": [
+      "choose",
+      "counter",
+      "on"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, choose a counter on a creature you control. Put a counter of that kind on target artifact you control if it doesn't have a counter of that kind on it."
+      },
+      {
+        "text": "At the beginning of your upkeep, choose a counter on an artifact you control. Put a counter of that kind on target creature you control if it doesn't have a counter of that kind on it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, choose two counters on a creature you control. Put a counter of that kind on target artifact you control if it doesn't have a counter of that kind on it.",
+      "Whenever ~ attacks, choose a counter on each creature you control. Put a counter of that kind on target artifact you control if it doesn't have a counter of that kind on it.",
+      "Whenever ~ attacks, choose a creature you control. Put a counter of that kind on target artifact you control if it doesn't have a counter of that kind on it."
+    ]
+  },
+  {
+    "id": "eff.edhd89.put.ofThatKind.ifNone",
+    "kind": "effect",
+    "since": 89,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 115.1"
+    ],
+    "pattern": "put a counter of that kind on {o:Recipient} if it doesn't have a counter of that kind on it",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "",
+      "count": 1,
+      "kindOfChoice": "counterKind",
+      "ifNone": true
+    },
+    "subject": "none",
+    "consumes": [
+      "put",
+      "counter",
+      "of",
+      "that",
+      "kind",
+      "on",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, choose a counter on a creature you control. Put a counter of that kind on target artifact you control if it doesn't have a counter of that kind on it."
+      },
+      {
+        "text": "{2}, {T}: Choose a counter on target creature. Put a counter of that kind on target land you control if it doesn't have a counter of that kind on it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, choose a counter on a creature you control. Put a counter of that kind on target artifact you control.",
+      "Whenever ~ attacks, choose a counter on a creature you control. Put two counters of that kind on target artifact you control if it doesn't have a counter of that kind on it.",
+      "Whenever ~ attacks, choose a counter on a creature you control. Put a counter of that kind on target artifact you control if it has a counter of that kind on it."
+    ]
+  },
+  {
+    "id": "eff.edhd89.return.bf.owner.converted",
+    "kind": "effect",
+    "since": 89,
+    "status": "stable",
+    "cr": [
+      "CR 712.14a",
+      "CR 701.28a",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "return {o:Objs} to the battlefield converted under ( its owner 's | their owners' | their owner 's ) control",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner",
+        "transformed": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ dies, exile it, then return it to the battlefield converted under its owner's control."
+      },
+      {
+        "text": "{4}: Exile ~, then return it to the battlefield converted under its owner's control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, exile it, then return it to the battlefield under its owner's control.",
+      "When ~ dies, exile it, then return it to the battlefield converted under your control.",
+      "When ~ dies, exile it, then return it to the battlefield converted and tapped under its owner's control."
+    ]
+  },
+  {
+    "id": "eff.edhd89.when.thatCreature.combatDamage.thisTurn",
+    "kind": "effect",
+    "since": 89,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 510.2",
+      "CR 514.2"
+    ],
+    "pattern": "when {o:Obj} deals combat damage to a player this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "damage",
+          "source": {
+            "is": "$o"
+          },
+          "combat": true,
+          "recipient": {
+            "player": "any"
+          }
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/+0 until end of turn. When that creature deals combat damage to a player this turn, you draw a card."
+      },
+      {
+        "text": "Target creature gets +1/+1 until end of turn. When it deals combat damage to a player this turn, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+0 until end of turn. When that creature deals combat damage to a player, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. When that creature deals damage to a player this turn, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage to a player this turn, you draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhd89.attackersUntapAllTheyControl",
+    "kind": "effect",
+    "since": 89,
+    "status": "stable",
+    "cr": [
+      "CR 701.26a",
+      "CR 508.1a",
+      "CR 303.4",
+      "CR 608.2c"
+    ],
+    "pattern": "each opponent attacking that player untaps all {f:Filter} they control",
+    "build": {
+      "op": "untap",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": {
+            "ref": "eachWho",
+            "who": "opponent",
+            "did": {
+              "ev": "attacks",
+              "defender": {
+                "ref": "enchantedPlayer"
+              }
+            },
+            "scope": "attacking"
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "attacking",
+      "untaps",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Whenever enchanted player is attacked, untap all creatures you control. Each opponent attacking that player untaps all creatures they control."
+      },
+      {
+        "text": "Whenever enchanted player is attacked, you gain 2 life. Each opponent attacking that player untaps all lands they control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever enchanted player is attacked, untap all creatures you control. Each opponent attacking that player untaps all creatures you control.",
+      "Whenever enchanted player is attacked, untap all creatures you control. Each opponent untaps all creatures they control.",
+      "Whenever enchanted player is attacked, untap all creatures you control. Each player attacking that player untaps all creatures they control."
+    ]
+  },
+  {
+    "id": "eff.edhd89.milled.put.eitherOr.bf",
+    "kind": "effect",
+    "since": 89,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card and/or ( a | an ) {g:Filter} card from among {s:Milled} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$s",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$g"
+            ],
+            "is": "$s",
+            "zone": "any",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosenOther"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "chosen"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenOther"
+            }
+          ]
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "consumes": [
+      "may",
+      "and/or"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, you mill that many cards. You may put an artifact card and/or a land card from among them onto the battlefield."
+      },
+      {
+        "text": "Mill five cards. You may put a creature card and/or an enchantment card from among them onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Mill five cards. You may put a creature card and/or an enchantment card from among them into your hand.",
+      "Mill five cards. Put a creature card and/or an enchantment card from among them onto the battlefield.",
+      "Mill five cards. You may put a creature card or an enchantment card from among them onto the battlefield.",
+      "Look at the top five cards of your library. You may put a creature card and/or an enchantment card from among the milled cards onto the battlefield."
+    ]
+  }
+]

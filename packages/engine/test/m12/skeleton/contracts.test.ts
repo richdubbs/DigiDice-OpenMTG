@@ -47,7 +47,7 @@ const ALL_LISTED: [Unlisted] extends [never] ? true : false = true;
 describe('M12-1: PLAYER_ONLY_REFS, the one table of player-only references (m12 design 4.3, review finding 6)', () => {
   it('lists exactly the PlayerRef kinds no ObjRef has, seat included; the shared kinds are not in it', () => {
     expect(ALL_LISTED).toBe(true);
-    expect([...PLAYER_ONLY_REFS].sort()).toEqual(['active', 'anOpponent', 'controllerOf', 'controlsMost' /* C6 */, 'costChosen', 'defending', 'eachWho' /* std-combat-1 */, 'enchantedPlayer' /* std-rr */, 'iterating', 'otherOf' /* std-rx30 */, 'otherOpponents', 'ownerOf', 'seat', 'voters' /* M12F */, 'you']);
+    expect([...PLAYER_ONLY_REFS].sort()).toEqual(['active', 'anOpponent', 'attacked' /* edh-combat-6 */, 'attackedBySource' /* edh-players-17 */, 'chose' /* edh-players-13 */, 'choseNumber' /* edh-next-120 */, 'controllerOf', 'controlsAny' /* edh-perms-13 */, 'controlsMost' /* C6 */, 'costChosen', 'defending', 'eachWho' /* std-combat-1 */, 'enchantedPlayer' /* std-rr */, 'grantCaster' /* edh-next-146 */, 'initiative' /* edh-next-82 */, 'iterating', 'monarch' /* edh-d-10 */, 'mostLife' /* edh-d-85 */, 'otherOf' /* std-rx30 */, 'otherOpponents', 'ownerOf', 'randomOpponent' /* trek-17 */, 'seat', 'votedFor' /* edh-players-17 */, 'voters' /* M12F */, 'withLife' /* edh-next-72 */, 'you']);
     for (const shared of ['target', 'bound', 'event', 'linked', 'each', 'fixed', 'self']) expect(isPlayerOnlyRefKind(shared), shared).toBe(false);
     expect(isPlayerOnlyRef(LEFT)).toBe(true);
     expect(Object.isFrozen(PLAYER_ONLY_REFS)).toBe(true);

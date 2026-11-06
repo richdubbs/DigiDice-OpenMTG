@@ -42,7 +42,7 @@ const EVERY_CARD: Readonly<Record<string, { cards: readonly string[]; hint: RegE
   'eff.stdfin.search.may.orBasicLand.reveal.hand': { cards: ['Sazh Katzroy'], hint: /or basic land card, reveal it, put it into your hand/i },
   'trg.stdfin.whenever.andWhenever': {
     cards: ['Giott, King of the Dwarves', 'Necklace of Girion'], hint: / and whenever /i,
-    pending: { "Astrologian's Planisphere": 'open since the hash split of 2026-10-19; reads the line with the template and compiles full, not hand-verified golden evidence yet (design 6.9)', 'Fire Lord Zuko': 'open since the hash split of 2026-10-19; reads the line with the template and compiles full, not hand-verified golden evidence yet (design 6.9)' },
+    pending: { 'Desert Warfare': 'edh-next-138 fixture card (combined copy): reads its "At the beginning of ... and whenever ..." line with the template and compiles full; its golden entry is evidence for 138\'s own templates, not for this one', "Astrologian's Planisphere": 'open since the hash split of 2026-10-19; reads the line with the template and compiles full, not hand-verified golden evidence yet (design 6.9)', 'Fire Lord Zuko': 'open since the hash split of 2026-10-19; reads the line with the template and compiles full, not hand-verified golden evidence yet (design 6.9)' },
   },
   'eff.stdfin.basepower.becomesEqual.lead': { cards: ['PuPu UFO'], hint: /base power becomes equal to/i },
   'eff.stdfin.attach.anyNumber': {

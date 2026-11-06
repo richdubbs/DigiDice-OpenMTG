@@ -1,0 +1,5 @@
+# edh-zones-19 (Commander effort, lane edh-zones; test/cloud/edh-zones-19, golden edh-zones-19-review.json): one or more opponents lose life and a once-each-turn cast (Emet-Selch of the Third Seat), a permanent deals damage to you (Dissipation Field), activate a ninjutsu ability (Satoru Umezawa), total mana value from among them and a creature or Vehicle permanent (Ao, the Dawn Sky)
+Emet-Selch of the Third Seat
+Dissipation Field
+Satoru Umezawa
+Ao, the Dawn Sky

@@ -1,0 +1,9 @@
+# edh-players-7 (Commander lane edh-players; test/cloud/edh-players-7, golden edh-players-7-review.json)
+# the cards drawn this turn chosen and paid for or put back; an attacker counts the other attackers that share a type with it; add mana per life an opponent lost; scry then draw; each creature other than ~ shrinks per death; a cast-from-hand check of the creature that entered; opponents' creatures lose and can't have hexproof or shroud
+Sylvan Library
+Shared Animosity
+Neheb, the Eternal
+Kozilek's Command
+Massacre Girl
+Chainer, Nightmare Adept
+Arcane Lighthouse

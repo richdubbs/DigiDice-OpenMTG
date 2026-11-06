@@ -20,6 +20,16 @@ import { localIndex } from '../../m5/parser/support';
 const CMD2 = cmd2 as Template[];
 /** std-ro (precon round O): the templates promoted to stable on three verified golden cards each (design 6.9). */
 const PROMOTED = ['eff.cmd2.copy.forEachCommanderCast'];
+/**
+ * edh-perms-2 (design 6.9 deviation, docs/CARD_AUTOMATION.md section 5 "Narrow wordings"; named in that round's record): "Equip commander {N}" is printed on one
+ * legal card (Commander's Plate), so it was made stable on that card's hand-verified golden entry (edh-perms-2-review.json) with the template tests and played scenarios.
+ */
+const NARROW_STABLE = ['kw.cmd2.equip.commander'];
+/** edh-misc-1 (Commander effort): stable on the one card of the EDHREC top 5,000 that prints the wording (6.9 narrow wording, named in the round record), both played in cmd2-scenarios.test.ts. */
+const NARROW = ['sta.cmd2.aslong.pump.andAnthemGrant', 'eff.cmd2.next.cast.copy.forEachCommanderCast', 'sta.cmd2.aslong.pump.andGroupGrant' /* edh-misc-3: Angelic Field Marshal, with its played scenario in test/cloud/edh-misc-3 */,
+  'eff.cmd2.destroy.all.exceptCommanders' /* edh-next-27: Slash the Ranks, played below (cmd2-scenarios) */, 'sta.cmd2.commanderTax.asLife' /* edh-next-27: Liesa, Shroud of Dusk, played below */,
+
+  'eff.cmd2.draw.xPlusTheirCommanderCasts' /* edh-next-25: Commander's Insight, the one card that prints it (held-out, opened by the owner), played in test/cloud/edh-next-25/edh-next-25-promotions.test.ts */];
 const OPTS = defaultParseOptions({ templates: [...TEMPLATE_SET], capabilities: ENGINE_CAPABILITIES }); // what a decklist card gets (design 5.2; `needs`)
 
 /** A synthetic card in which an example is an ability of the right kind: a spell on a sorcery, equip on an Equipment, anything else on a creature. */
@@ -50,7 +60,7 @@ describe('cmd2 template file (design 6.3, 6.9; CONTRIBUTING "Adding a template")
       for (const cr of t.cr) expect(cr, t.id).toMatch(/^CR \d{3}(\.\d+[a-z]?)?$/);
       expect(t.examples.length, t.id).toBeGreaterThanOrEqual(2);
       expect(t.counterExamples.length, t.id).toBeGreaterThanOrEqual(2);
-      expect(t.status, t.id).toBe(PROMOTED.includes(t.id) ? 'stable' : 'experimental'); // fewer than three verified golden cards in the tuning half (design 6.9)
+      expect(t.status, t.id).toBe(PROMOTED.includes(t.id) || NARROW_STABLE.includes(t.id) || NARROW.includes(t.id) ? 'stable' : 'experimental'); // fewer than three verified golden cards in the tuning half (design 6.9)
       expect(t.since, t.id).toBe(8);
     }
   });
@@ -61,6 +71,13 @@ describe('cmd2 template file (design 6.3, 6.9; CONTRIBUTING "Adding a template")
       expect(cards.length, id).toBeGreaterThanOrEqual(3);
     }
     for (const g of golden) expect(g.expect, g.card).toBe('full');
+    const using = (id: string): string[] => golden.filter((g) => g.verified.includes(`(${id})`)).map((g) => g.card);
+    expect(using('sta.cmd2.aslong.pump.andAnthemGrant')).toEqual(['Thunderfoot Baloth']);
+    expect(using('eff.cmd2.next.cast.copy.forEachCommanderCast')).toEqual(['Thunderclap Drake']);
+    expect(using('sta.cmd2.aslong.pump.andGroupGrant')).toEqual(['Angelic Field Marshal']);
+    expect(using('eff.cmd2.destroy.all.exceptCommanders')).toEqual(['Slash the Ranks']);
+    expect(using('sta.cmd2.commanderTax.asLife')).toEqual(['Liesa, Shroud of Dusk']);
+    expect(using('eff.cmd2.draw.xPlusTheirCommanderCasts')).toEqual(["Commander's Insight"]);
   });
   it('guard G3: a critical word a pattern spells out is listed in `consumes`', () => {
     for (const t of CMD2) {
@@ -168,9 +185,12 @@ describe('cmd2 parser support (no template of its own): the abilities are read b
     expect(fullyAutomated(f)).toBe(true);
     expect(JSON.stringify(f.abilities)).toContain('"attacker":{"commander":true,"owner":"you","controller":"you"},"count":{"op":">=","value":1}');
   });
-  it('CR 510.1, 903.3d: "a commander you control deals combat damage" is read (only creatures deal combat damage); noncombat "a permanent" damage is not', () => {
+  it('CR 510.1, 903.3d: "a commander you control deals combat damage" is read (only creatures deal combat damage); noncombat "a permanent" damage is read as a permanent source', () => {
     expect(fullyAutomated(face('Enchantment', 'Whenever a commander you control deals combat damage to a player, draw a card.'))).toBe(true);
-    expect(fullyAutomated(face('Enchantment', 'Whenever a permanent you control deals damage to a player, draw a card.'))).toBe(false);
+    // edh-zones-19 (Dissipation Field, "Whenever a permanent deals damage to you"; CR 120.1, 110.1): a damage event whose source is a permanent, any damage
+    const f = face('Enchantment', 'Whenever a permanent you control deals damage to a player, draw a card.');
+    expect(fullyAutomated(f)).toBe(true);
+    expect(JSON.stringify(f.abilities)).toContain('"source":{"controller":"you"},"sourcePermanent":true');
   });
   it('CR 903.9: "whenever your commander is put into the command zone from anywhere"', () => {
     const f = face('Enchantment', 'Whenever your commander is put into the command zone from anywhere, draw a card.');

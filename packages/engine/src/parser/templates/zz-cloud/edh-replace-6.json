@@ -1,0 +1,241 @@
+[
+  {
+    "id": "eff.edhr6.transform.each",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.27a",
+      "CR 701.27c",
+      "CR 712.9"
+    ],
+    "pattern": "transform {o:Objs}",
+    "build": {
+      "op": "changeFace",
+      "what": "$o",
+      "to": "transform"
+    },
+    "subject": "none",
+    "consumes": [
+      "transform"
+    ],
+    "examples": [
+      {
+        "text": "Transform all Werewolves you control."
+      },
+      {
+        "text": "Draw a card. Transform each creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Transform all Werewolves you control unless you pay {2}.",
+      "Transform up to two target creatures.",
+      "Untap all Werewolves you control."
+    ]
+  },
+  {
+    "id": "rep.edhr6.draw.while.instead.returnCreatureOrLose",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 121.1",
+      "CR 608.2d",
+      "CR 104.3e"
+    ],
+    "pattern": "if you would draw a card while {c:Cond} , instead return a creature card from your graveyard to the battlefield . if you can't , you lose the game",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "draw",
+            "player": "you"
+          },
+          "condition": "$c",
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "chooseObjects",
+                "who": {
+                  "ref": "you"
+                },
+                "from": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "zone": "graveyard",
+                    "owner": "you",
+                    "isCard": true
+                  }
+                },
+                "min": 1,
+                "max": 1,
+                "as": "returned"
+              },
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "returned"
+                },
+                "to": {
+                  "zone": "battlefield",
+                  "controller": {
+                    "ref": "you"
+                  }
+                },
+                "as": "did"
+              },
+              {
+                "op": "if",
+                "cond": {
+                  "cond": "did",
+                  "step": "did",
+                  "not": true
+                },
+                "then": [
+                  {
+                    "op": "loseGame",
+                    "who": {
+                      "ref": "you"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "If you would draw a card while you have no cards in hand, instead return a creature card from your graveyard to the battlefield. If you can't, you lose the game."
+      },
+      {
+        "text": "If you would draw a card while you control a Wizard, instead return a creature card from your graveyard to the battlefield. If you can't, you lose the game."
+      }
+    ],
+    "counterExamples": [
+      "If you would draw a card while you have no cards in hand, return a creature card from your graveyard to the battlefield. If you can't, you lose the game.",
+      "If an opponent would draw a card while you have no cards in hand, instead return a creature card from your graveyard to the battlefield. If you can't, you lose the game.",
+      "If you would draw a card while you have no cards in hand, instead return a land card from your graveyard to the battlefield. If you can't, you lose the game.",
+      "If you would draw a card while you have no cards in hand, instead return a creature card from your graveyard to the battlefield. If you can't, you win the game."
+    ]
+  },
+  {
+    "id": "eff.edhr6.prevent.all.to.them.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 120.3"
+    ],
+    "pattern": "prevent all damage that would be dealt to {o:Them} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control with counters on them gain hexproof until end of turn. Prevent all damage that would be dealt to those creatures this turn."
+      },
+      {
+        "text": "Artifacts you control with counters on them gain indestructible until end of turn. Prevent all damage that would be dealt to them this turn."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control with counters on them gain hexproof until end of turn. Prevent all damage that would be dealt to those creatures.",
+      "Creatures you control with counters on them gain hexproof until end of turn. Prevent all damage that would be dealt by those creatures this turn.",
+      "Creatures you control with counters on them gain hexproof until end of turn. Prevent all combat damage that would be dealt to those creatures this turn."
+    ]
+  },
+  {
+    "id": "sta.edhr6.triggerMod.dealingCombatDamage",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 510.2",
+      "CR 120.2"
+    ],
+    "pattern": "if {f:Filter} dealing combat damage to a player causes a triggered ability of a permanent you control to trigger , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "damage",
+            "source": "$f",
+            "combat": true,
+            "recipient": {
+              "player": "any"
+            }
+          },
+          "abilitiesOf": {
+            "controller": "you"
+          },
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If a Warrior you control dealing combat damage to a player causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+      },
+      {
+        "text": "If a creature dealing combat damage to a player causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "If a Warrior dealing damage to a player causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+      "If a Warrior dealing combat damage to a player causes a triggered ability of a permanent an opponent controls to trigger, that ability triggers an additional time.",
+      "If a Warrior dealing combat damage to a player causes a triggered ability of a permanent you control to trigger, that ability triggers two additional times.",
+      "If a Warrior dealing combat damage to a creature causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+    ]
+  }
+]

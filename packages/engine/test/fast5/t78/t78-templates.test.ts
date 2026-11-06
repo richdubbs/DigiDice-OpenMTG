@@ -139,7 +139,8 @@ describe('T78 "never silently wrong" (the lint and the lowering fail closed)', (
   const full = (text: string, type = 'Creature — Elf Warrior'): boolean => fullyAutomated(parseCard(card('Example Brute', type, text), OPTS).faces[0]!);
   it('"for each creature tapped this way" without the named tap step before it is not automated (an unnamed step would count nothing)', () => {
     expect(full('Whenever ~ attacks, ~ gets +1/+1 until end of turn for each creature tapped this way.')).toBe(false);
-    expect(full('Whenever ~ attacks, you may tap any number of untapped creatures you control. ~ gets +1/+1 until end of turn for each creature tapped this way.')).toBe(false);
+    // (edh-c-33: "you may tap any number of untapped creatures you control" is its template, whose tap step is named tappedThisWay, so the count reads it)
+    expect(full('Whenever ~ attacks, you may tap any number of untapped creatures you control. ~ gets +1/+1 until end of turn for each creature tapped this way.')).toBe(true);
   });
   it('"that many" after paying life is the life paid, and nothing else is offered: after another payment it stays the amount of the event', () => {
     expect(full('Whenever another creature you control enters, you may pay life equal to its power. If you do, put that many +1/+1 counters on it.')).toBe(true);

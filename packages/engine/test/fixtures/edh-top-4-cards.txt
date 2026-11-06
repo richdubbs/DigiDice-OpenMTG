@@ -1,0 +1,6 @@
+# edh-top-4 (Commander lane edh-top): protection from the chosen card type, flash if it targets a commander, protection from the card type of your choice, quoted keyword list granted to spells, Mirran/Phyrexian choice. After editing: npm run cards -- fixtures
+Serra's Emissary
+Timely Ward
+Pippin, Guard of the Citadel
+Zhulodok, Void Gorger
+Mirrodin Besieged

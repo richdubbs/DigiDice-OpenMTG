@@ -1,0 +1,432 @@
+[
+  {
+    "id": "sta.edhd102.each.has.miracle.manaCostLess",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.94a",
+      "CR 118.9",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "each {f:Filter} has miracle . its miracle cost is equal to its mana cost reduced by {4}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "miracle",
+                  "text": "miracle",
+                  "costIsManaCostLess": 4
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "Each artifact card in your hand has miracle. Its miracle cost is equal to its mana cost reduced by {4}."
+      },
+      {
+        "text": "Each creature card in your hand has miracle. Its miracle cost is equal to its mana cost reduced by {4}."
+      }
+    ],
+    "counterExamples": [
+      "Each artifact card in your hand has miracle. Its miracle cost is equal to its mana cost reduced by {3}.",
+      "Each artifact card in your hand has miracle. Its miracle cost is equal to its mana value.",
+      "Each artifact card in your hand has flashback. Its miracle cost is equal to its mana cost reduced by {4}."
+    ]
+  },
+  {
+    "id": "eff.edhd102.exileUntil.x",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 107.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "exile cards from the top of your library until you exile x {f:CardsDesc} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "exileUntil",
+          "who": {
+            "ref": "you"
+          },
+          "filter": "$f",
+          "count": {
+            "q": "X"
+          },
+          "as": "hit"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile cards from the top of your library until you exile X land cards, where X is the number of Elves you control. Put those land cards onto the battlefield."
+      },
+      {
+        "text": "{4}, {T}: Exile cards from the top of your library until you exile X creature cards, where X is the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "{4}, {T}: Exile cards from the top of your library until you exile X creature cards, where Y is the number of cards in your hand.",
+      "{4}, {T}: Exile cards from the top of target player's library until they exile X creature cards, where X is the number of cards in your hand.",
+      "{4}, {T}: Reveal cards from the top of your library until you reveal X creature cards, where X is the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "eff.edhd102.put.typedThose.bf",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 608.2c",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:TypedThose} onto the battlefield",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "consumes": [
+      "put"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile cards from the top of your library until you exile X land cards, where X is the number of Elves you control. Put those land cards onto the battlefield."
+      },
+      {
+        "text": "When ~ dies, exile cards from the top of your library until you exile X creature cards, where X is the number of cards in your hand. Put those creature cards onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Put those land cards onto the battlefield tapped.",
+      "Put those land cards onto the battlefield under your control and the rest into your graveyard.",
+      "Put those lands onto the battlefield."
+    ]
+  },
+  {
+    "id": "sta.edhd102.craft.sharesKeywords",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 613.1f",
+      "CR 702.167c",
+      "CR 611.3a",
+      "CR 702.16a"
+    ],
+    "pattern": "~ has {k:Abilities} as long as an exiled card used to craft it has {k2:Abilities} . the same is true for {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "keywordsOf": {
+                "ref": "linked",
+                "link": "craft"
+              },
+              "keywordsFirst": "$k",
+              "keywordsAmong": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "has",
+      "long",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "~ has flying as long as an exiled card used to craft it has flying. The same is true for reach and trample."
+      },
+      {
+        "text": "~ has vigilance as long as an exiled card used to craft it has vigilance. The same is true for haste, lifelink, and menace."
+      }
+    ],
+    "counterExamples": [
+      "~ has flying as long as a card exiled with it has flying. The same is true for reach and trample.",
+      "~ has flying as long as an exiled card used to craft it has flying.",
+      "Creatures you control have flying as long as an exiled card used to craft ~ has flying. The same is true for reach."
+    ]
+  },
+  {
+    "id": "eff.edhd102.choose.anyNumberTargetCreaturesPlaneswalkersPlayers",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "choose any number of target creatures , planeswalkers , and/or players",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "objectOrPlayer",
+          "filter": {
+            "types": [
+              "Creature",
+              "Planeswalker"
+            ]
+          },
+          "players": {
+            "who": "any"
+          },
+          "min": 0,
+          "max": "any",
+          "text": "any number of target creatures, planeswalkers, and/or players"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Choose any number of target creatures, planeswalkers, and/or players. For each of them, exile the top card of your library, then ~ deals damage equal to that card's mana value to that permanent or player. You may play the exiled cards until the end of your next turn."
+      },
+      {
+        "text": "{3}{R}, {T}: Choose any number of target creatures, planeswalkers, and/or players. For each of them, exile the top card of your library, then ~ deals damage equal to that card's mana value to that permanent or player. You may play the exiled cards until the end of your next turn."
+      }
+    ],
+    "counterExamples": [
+      "Choose any number of target creatures, planeswalkers, and/or players.",
+      "Choose up to two target creatures, planeswalkers, and/or players. For each of them, you gain 1 life.",
+      "Choose any number of target creatures and/or players. For each of them, you gain 1 life."
+    ]
+  },
+  {
+    "id": "eff.edhd102.forEachOfThem.exileTop.damageManaValue",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 406.1",
+      "CR 120.3",
+      "CR 202.3",
+      "CR 611.2a"
+    ],
+    "pattern": "for each of {t:Them} , exile the top card of your library , then {src:Obj} deal[s] damage equal to that card 's mana value to that permanent or player",
+    "build": {
+      "op": "forEach",
+      "over": "$t",
+      "as": "each",
+      "do": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "topCards",
+            "player": {
+              "ref": "you"
+            },
+            "count": 1
+          },
+          "to": {
+            "zone": "exile"
+          },
+          "as": "eruptExiled"
+        },
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "amount": {
+            "q": "stat",
+            "stat": "manaValue",
+            "of": {
+              "ref": "bound",
+              "name": "eruptExiled"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Choose any number of target creatures, planeswalkers, and/or players. For each of them, exile the top card of your library, then ~ deals damage equal to that card's mana value to that permanent or player. You may play the exiled cards until the end of your next turn."
+      },
+      {
+        "text": "{3}{R}, {T}: Choose any number of target creatures, planeswalkers, and/or players. For each of them, exile the top card of your library, then ~ deals damage equal to that card's mana value to that permanent or player. You may play the exiled cards until the end of your next turn."
+      }
+    ],
+    "counterExamples": [
+      "Choose any number of target creatures, planeswalkers, and/or players. For each of them, exile the top card of your library, then ~ deals damage equal to that card's power to that permanent or player. You may play the exiled cards until the end of your next turn.",
+      "Choose any number of target creatures, planeswalkers, and/or players. For each of them, exile the top card of your library, then ~ deals damage equal to that card's mana value to target player.",
+      "Choose any number of target creatures, planeswalkers, and/or players. For each of them, exile the top two cards of your library, then ~ deals damage equal to that card's mana value to that permanent or player."
+    ]
+  },
+  {
+    "id": "rep.edhd102.draw.playerExilesThatCardInstead",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 121.1",
+      "CR 406.1",
+      "CR 607.2a"
+    ],
+    "pattern": "if a player would draw a card , that player exiles that card face up instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "draw",
+            "player": "any"
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "topCards",
+                  "player": {
+                    "ref": "event",
+                    "role": "player"
+                  },
+                  "count": 1
+                },
+                "to": {
+                  "zone": "exile"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a player would draw a card, that player exiles that card face up instead. (The card is exiled instead of drawn.)\nEach player may play lands and cast spells from among cards they exiled with ~ this turn. (Only the cards they exiled.)"
+      },
+      {
+        "text": "{5}: You gain 1 life.\nIf a player would draw a card, that player exiles that card face up instead. (Nothing is drawn.)\nEach player may play lands and cast spells from among cards they exiled with ~ this turn. (Each player has their own.)"
+      }
+    ],
+    "counterExamples": [
+      "If a player would draw a card, that player exiles that card face down instead.",
+      "If you would draw a card, you exile that card face up instead.",
+      "If a player would draw a card, that player mills that card instead."
+    ]
+  },
+  {
+    "id": "sta.edhd102.eachPlayer.playFromAmongTheyExiled.thisTurn",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 611.3a"
+    ],
+    "pattern": "each player may play lands and cast spells from among cards they exiled with ~ this turn",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "each",
+            "who": "player"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "putThereThisTurn": true
+          },
+          "ownOnly": true
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "may",
+      "play",
+      "among"
+    ],
+    "examples": [
+      {
+        "text": "If a player would draw a card, that player exiles that card face up instead. (Nothing is drawn.)\nEach player may play lands and cast spells from among cards they exiled with ~ this turn. (Only the cards they exiled.)"
+      },
+      {
+        "text": "{1}: You gain 1 life.\nIf a player would draw a card, that player exiles that card face up instead. (The card is exiled.)\nEach player may play lands and cast spells from among cards they exiled with ~ this turn. (Only this turn's cards.)"
+      }
+    ],
+    "counterExamples": [
+      "Each player may play lands and cast spells from among cards exiled with ~ this turn.",
+      "Each player may play lands and cast spells from among cards they exiled with ~.",
+      "You may play lands and cast spells from among cards you exiled with ~ this turn."
+    ]
+  }
+]

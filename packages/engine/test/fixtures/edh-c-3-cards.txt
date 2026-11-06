@@ -1,0 +1,15 @@
+# edh-c-3 (Commander lane edh-c, ranks 16,251-16,875). After editing: npm run cards -- fixtures
+Pulsemage Advocate
+Spurnmage Advocate
+Nullmage Advocate
+Arachnoform
+Hivestone
+Sensei Golden-Tail
+Hagra Diabolist
+Murasa Pyromancer
+Ian the Reckless
+Spellwild Ouphe
+Call In a Professional
+Slippery Scoundrel
+Temporal Isolation
+Oak Street Innkeeper

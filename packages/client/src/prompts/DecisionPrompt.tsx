@@ -9,6 +9,7 @@ import { AssignDamagePrompt, ChooseDivisionPrompt } from './DamagePrompts';
 import { ManualResolvePrompt } from './ManualResolvePrompt';
 import { PayCostPrompt } from './PayCostPrompt';
 import { PriorityPrompt } from './PriorityPrompt';
+import { ShortcutPrompt } from './ShortcutPrompt';
 import { ChooseColorPrompt, ChooseReplacementPrompt, MulliganPrompt, PlayFirstPrompt, YesNoPrompt } from './SimplePrompts';
 import type { PromptProps } from './types';
 
@@ -32,6 +33,7 @@ export const PROMPTS: { [K in DecisionKind]: ComponentType<PromptProps<K>> } = {
   chooseDivision: ChooseDivisionPrompt,
   chooseName: ChooseNamePrompt,
   commanderZone: CommanderZonePrompt, // M11-0: CR 903.9a-b
+  shortcut: ShortcutPrompt, // shortcuts (docs/design/shortcuts.md 3, 6): CR 727.2b
 };
 
 /** The prompt for `props.d`; keyed by the decision id, so every new decision starts with fresh local state. */

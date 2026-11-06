@@ -1,0 +1,133 @@
+[
+  {
+    "id": "rep.edhv91.enters.nCounters.forEachColorSpent",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 601.2h",
+      "CR 702.180"
+    ],
+    "pattern": "~ enters with {n:Qty} {k:CounterKind} counters on it for each color of mana spent to cast it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "math",
+                  "op": "*",
+                  "args": [
+                    "$n",
+                    {
+                      "q": "colorsSpent"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with three +1/+1 counters on it for each color of mana spent to cast it."
+      },
+      {
+        "text": "~ enters with two charge counters on it for each color of mana spent to cast it."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with two +1/+1 counters on it for each mana spent to cast it.",
+      "~ enters with two +1/+1 counters on it for each color of mana among permanents you control.",
+      "~ enters with two +1/+1 counters on target creature for each color of mana spent to cast it.",
+      "~ enters with two +1/+1 counters on it for each color of mana spent to cast it unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.edhv91.cost.ability.less.forEachPartyMember",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7",
+      "CR 700.8"
+    ],
+    "pattern": "this ability costs {m:ManaCost} less to activate for each creature in your party",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "partySize",
+                  "of": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{5}, {T}: Draw a card. This ability costs {1} less to activate for each creature in your party."
+      },
+      {
+        "text": "{4}: ~ gets +2/+2 until end of turn. This ability costs {1} less to activate for each creature in your party."
+      }
+    ],
+    "counterExamples": [
+      "{5}, {T}: Draw a card. This ability costs {1} more to activate for each creature in your party.",
+      "{5}, {T}: Draw a card. This ability costs {1} less to cast for each creature in your party.",
+      "{5}, {T}: Draw a card. This ability costs {1} less to activate for each creature in an opponent's party.",
+      "{5}, {T}: Draw a card. This ability costs {1} less to activate for each creature in your party this turn."
+    ]
+  }
+]

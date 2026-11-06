@@ -14,7 +14,9 @@ import { validateTemplates } from '../../../src/parser/chart';
 import { TEMPLATE_FILES, TEMPLATE_SET } from '../../../src/parser/template-set';
 import { ENGINE_CAPABILITIES } from '../../../src/model/capabilities';
 import stdRD from '../../../src/parser/templates/zz-cloud/std-rD.json';
-import review from '../../m5/golden/cards/cloud-std-rD-review.json';
+import ownReview from '../../m5/golden/cards/cloud-std-rD-review.json';
+import edhD1Review from '../../m5/golden/cards/edh-d-1-review.json'; // edh-d-1: sta.stdrd.players.cantCast.chosen promoted (Archon of Valor's Reach)
+const review = [...ownReview, ...edhD1Review.filter((g) => g.card === "Archon of Valor's Reach")];
 import { renderAbility, renderGate } from '../../../src/index';
 import { automated, bare, card, fullyAutomated, jsonKey } from '../../m5/templates/support';
 import { localIndex } from '../../m5/parser/support';

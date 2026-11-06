@@ -7,10 +7,11 @@ import { K } from './kernel';
 import { specPhrase } from './refs';
 import { isCastChoice } from './self-replacement';
 import { cloneState, type RenderState } from './state';
-import { alt, NoRenderer, numWord, pluralize } from './text';
+import { alt, firstAlt, joinList, NoRenderer, numWord, pluralize } from './text';
 import { withX } from './fold';
 import { isComputed } from './steps-util';
 import { countQuantityForms } from '../model/forms';
+import { chosenEachExileDamage } from './program-edhd102'; // edh-d-102
 
 const word = (c: Count, st: RenderState): string => (typeof c === 'number' ? numWord(c) : c === 'any' ? 'any number' : K.qty(c, st));
 
@@ -19,7 +20,9 @@ function modeHeader(m: ModeSpec, st: RenderState): string {
   const { min, max } = m;
   const n = m.options.length;
   let count: string;
-  if (min === max) count = word(min, st);
+  // edh-next-139 (CR 601.2b, 601.4; Doomsday Confluence): "Choose X." (the number of modes is the spell's X)
+  if (m.countIsX === true) count = 'x';
+  else if (min === max) count = word(min, st);
   else if (min === 0 && max === 'any') count = 'any number';
   // r3-choose (CR 700.2, 107.3a): a calculated number of modes is said with its "where X is" clause, "choose up to X, where X is the number of Lesson cards in your graveyard"
   // std-combat-2 (CR 603.12, 700.2, 608.2h): "when you do, choose up to that many --": none up to the times a payment made a chosen number of times was made
@@ -31,6 +34,11 @@ function modeHeader(m: ModeSpec, st: RenderState): string {
   else if (max === 'any') count = `${word(min, st)} or more`;
   else count = `${word(min, st)} to ${word(max, st)}`;
   const chooser = m.chooser ? `${K.player(m.chooser, st, 'subject').text} chooses` : 'choose';
+  // edh-players-19 (CR 700.2, 603.3c; Shadrix Silverquill): "you may choose two --": none or exactly that many of the modes (ModeSpec.mayChoose)
+  if (m.mayChoose === true) {
+    if (min !== 0 || typeof max !== 'number' || max < 2 || m.chooser !== undefined || m.random === true || m.unchosen !== undefined || m.allowRepeat === true || m.override !== undefined || m.pawprints !== undefined) throw new NoRenderer('modes that "you may choose" other than a fixed number of them');
+    return `you may choose ${word(max, st)} --`;
+  }
   // p2-modal-2 (CR 700.2): "choose one at random --" (ModeSpec.random)
   if (m.random === true) {
     if (min !== 1 || max !== 1 || m.chooser !== undefined || m.allowRepeat === true || m.unchosen !== undefined) throw new NoRenderer('modes chosen at random other than one of them');
@@ -82,7 +90,7 @@ function differentPlayers(m: ModeSpec): ModeSpec | null {
     const before = m.options.slice(0, i).map((q) => q.program.targets[0]!.id);
     return JSON.stringify(t[0]!.distinctFrom ?? []) === JSON.stringify(before);
   });
-  if (!fits || m.min === 0 || m.max === 1 || m.chooser || m.override || m.allowRepeat || m.unchosen !== undefined || m.pawprints !== undefined || m.options.some((o) => o.cost !== undefined)) {
+  if (!fits || (m.min === 0 && m.mayChoose !== true) || m.max === 1 || m.chooser || m.override || m.allowRepeat || m.unchosen !== undefined || m.pawprints !== undefined || m.options.some((o) => o.cost !== undefined)) {
     throw new NoRenderer('modes whose targets must differ other than "each mode must target a different player"');
   }
   return { ...m, options: m.options.map((o) => ({ ...o, program: { ...o.program, targets: o.program.targets.map(({ distinctFrom: _d, ...t }) => t) } })) };
@@ -111,6 +119,23 @@ function modes(m: ModeSpec, st: RenderState, stop = true): string {
     const shared = chosenBasePt(m, st); // std-combat-2
     if (shared !== null) return shared;
     return m.options.map((o) => `• ${o.label!} -- ${K.cost(o.cost!, st)} -- ${endSentence(K.program(o.program, cloneState(st)))}`).join(' ');
+  }
+  // edh-next-129 (CR 700.2, 111.1; Outlaws' Merriment): "choose one at random. Create a red and white creature token with those characteristics." and the bare characteristics of each token
+  if (m.tokenChars === true) {
+    if (m.random !== true || m.min !== 1 || m.max !== 1 || m.chooser || m.override || m.allowRepeat || m.unchosen !== undefined || m.options.some((o) => o.cost !== undefined || o.label !== undefined)) throw new NoRenderer('token characteristics as modes other than one chosen at random');
+    const colors = new Set<string>();
+    const bullets = m.options.map((o) => {
+      const one = o.program.steps.length === 1 ? o.program.steps[0] : undefined;
+      if (o.program.targets.length > 0 || one?.op !== 'createToken' || one.count !== 1 || one.who.ref !== 'you' || Object.keys(one).some((k) => !['op', 'who', 'count', 'token', 'span', 'sentence'].includes(k))) throw new NoRenderer('a mode of token characteristics that is not one plain creation');
+      const text = firstAlt(endSentence(K.program(o.program, cloneState(st)))); // the plain reading ("create ...", not "you create ...")
+      const r = /^create an? (\d+\/\d+) ((?:[a-z]+ and )?[a-z]+) (.+?) creature token( with .*)?$/is.exec(text);
+      if (r === null) throw new NoRenderer('a token creation not said "create a P/T <colors> <subtypes> creature token ..."');
+      colors.add(r[2]!.toLowerCase());
+      return `• ${r[1]} ${r[3]}${r[4] ?? '.'}`;
+    });
+    if (colors.size !== 1) throw new NoRenderer('token characteristics of different colors');
+    const c = [...colors][0]!;
+    return `choose one at random. create ${/^[aeiou]/.test(c) ? 'an' : 'a'} ${c} creature token with those characteristics. ${bullets.join(' ')}`;
   }
   const spree = m.options.length > 0 && m.options.every((o) => o.cost !== undefined);
   // FAST5X E1 (CR 702.172a): the modes of a Spree spell are printed with no header (the "Spree" keyword line, a separate ability, says "choose one or more")
@@ -142,6 +167,11 @@ function modes(m: ModeSpec, st: RenderState, stop = true): string {
       const choose = n === 2 ? alt('you may choose both instead', 'choose one or more instead') : alt('choose one or more instead', 'choose any number instead');
       return `${head} if ${alt(when, `${when} as you cast ${K.obj({ ref: 'self' }, st, 'object').text}`)}, ${choose}. ${options.join(' ')}`;
     }
+    // edh-cast-8 (CR 700.2, 601.2b; Flame of Anor): "If you control a Wizard as you cast this spell, you may choose two instead." (three or more modes: one or two)
+    if (m.min === 1 && m.max === 1 && m.override.min === 1 && m.override.max === 2 && n >= 3) {
+      const when = K.cond(m.override.when, st);
+      return `${head} if ${alt(when, `${when} as you cast ${K.obj({ ref: 'self' }, st, 'object').text}`)}, you may choose two instead. ${options.join(' ')}`;
+    }
     const instead = m.override.min === n && m.override.max === n && n === 2 ? 'both' : m.override.min === m.override.max ? word(m.override.max, st) : null;
     if (instead === null) throw new NoRenderer('a changed number of modes that is not one number');
     return `${head} if ${K.cond(m.override.when, st)}, choose ${instead} instead. ${options.join(' ')}`;
@@ -149,7 +179,7 @@ function modes(m: ModeSpec, st: RenderState, stop = true): string {
   let out = `${header} ${options.join(' ')}`;
   // std-blb (CR 700.2d): Oracle prints the Confluences' "Choose three. You may choose the same mode more than once." before the bullets
   // r5-cost (CR 700.2d): and "Choose up to four. You may choose the same mode more than once." (Moment of Reckoning)
-  if (m.allowRepeat && !spree && !m.override && (m.min === m.max || m.min === 0) && m.pawprints === undefined) out = alt(`${out} you may choose the same mode more than once.`, `${modeHeader(m, st).replace(/ --$/, '.')} you may choose the same mode more than once. ${options.join(' ')}`);
+  if (m.allowRepeat && !spree && !m.override && (m.min === m.max || m.min === 0 || m.countIsX === true) && m.pawprints === undefined) out = alt(`${out} you may choose the same mode more than once.`, `${modeHeader(m, st).replace(/ --$/, '.')} you may choose the same mode more than once. ${options.join(' ')}`);
   else if (m.allowRepeat) out += ' you may choose the same mode more than once.';
   if (m.override) out += ` if ${K.cond(m.override.when, st)}, choose ${word(m.override.max, st)} instead.`;
   return out;
@@ -170,12 +200,18 @@ export function program(p: EffectProgram, st: RenderState): string {
     if (shared !== null) return shared;
     parts.push(modes(p.modes, st));
   }
-  const chosen = p.modes === undefined ? (chosenInstead(p, st) ?? chosenFirst(p, st) ?? chosenPair(p, st) ?? chosenPlayerAndTarget(p, st)) : null;
+  const chosen = p.modes === undefined ? (chosenInstead(p, st) ?? chosenSacrificeReturn(p, st) ?? chosenFirst(p, st) ?? chosenPair(p, st) ?? chosenKicked(p, st) ?? chosenPlayerAndTarget(p, st) ?? chosenUpToOneEach(p, st) ?? chosenEachExileDamage(p, st) /* edh-d-102 */) : null;
   // p2-damage-2: one target announced first, the later ones in their own instructions, as a further reading (chosenFirst)
   const later = p.modes === undefined && p.targets.length > 1 ? chosenFirst(p, st, true) : null;
   const whereX = p.modes === undefined ? targetCountWhereX(p, st) : null; // p2-counters-state-3
+  const valueWhereX = p.modes === undefined ? targetManaValueWhereX(p, st) : null; // edh-cast-5
   const body = K.steps(p.steps, st);
-  const readings = [chosen, later, whereX].filter((x): x is string => x !== null);
+  // edh-next-39 (CR 602.2b, 601.2c; Endurance Bobblehead): in an activated ability the number of targets is read as the ability is activated
+  const activatedX = whereX !== null && st.activating === true ? `${whereX} as you activate this ability` : null;
+  const readings = [chosen, later, whereX, valueWhereX, activatedX].filter((x): x is string => x !== null);
+  // edh-d-101 (CR 700.2, 608.2c; Blood on the Snow; family then-after-modes): the instructions printed after a spell's bullets are done after the chosen mode, "Then return ..." as well
+  // as "Return ..." (the modes run first either way)
+  if (body !== '' && p.modes !== undefined && readings.length === 0 && !/^then /.test(body)) { parts.push(alt(body, `then ${body}`)); return parts.join(' '); }
   if (body !== '') parts.push(readings.length === 0 ? body : alt(body, ...readings));
   return parts.join(' ');
 }
@@ -196,12 +232,50 @@ function targetCountWhereX(p: EffectProgram, st: RenderState): string | null {
   if (!(t.min === 0 || JSON.stringify(t.min) === key)) return null;
   // guard G10 (fail closed): only a count the targets' announcement reads (model/forms.ts#countQuantityForms); any other one ("your devotion to black", "the number of
   // opponents you have") would gate a sentence the engine then cannot run, and the whole ability would lose what its fallback kept automated
-  if (countQuantityForms(t.max as never).includes('feature:count.quantity')) return null;
+  // edh-d-49 (CR 603.12, 706.2; Slight Malfunction): the result of the roll before a "When you do" is fixed as the reflexive trigger is created (model/cap-walk.ts#reflexiveBakedCounts)
+  if (countQuantityForms(t.max as never).includes('feature:count.quantity') && JSON.stringify(t.max) !== '{"q":"dieResult"}') return null;
   const v = cloneState(st);
   v.xCount = key;
   const text = K.steps(p.steps.map((s) => withX(s, key)), v);
-  if (text === '' || /[.!?]\s/.test(text) || / where x is /.test(text)) return null;
+  if (text === '' || / where x is /.test(text)) return null;
+  if (/[.!?]\s/.test(text)) {
+    // edh-next-140 (CR 107.3, 601.2c, 608.2h; Archipelagore): the clause closes the FIRST sentence when only its instruction uses the count and a later sentence follows: "tap up to X target
+    // creatures, where X is the number of times this creature has mutated. Those creatures don't untap during their controller's next untap step."
+    if (p.steps.length < 2 || p.steps.slice(1).some((x) => JSON.stringify(x).includes(key))) return null;
+    const w = cloneState(st);
+    w.xCount = key;
+    const first = K.steps([withX(p.steps[0]!, key)], w);
+    if (first === '' || /[.!?]\s/.test(first) || / where x is /.test(first)) return null;
+    const where = K.qty(t.max as never, w);
+    const rest = K.steps(p.steps.slice(1), w);
+    if (rest === '' || / where x is /.test(rest)) return null;
+    return `${first.replace(/\.$/, '')}, where x is ${where}. ${rest}`;
+  }
   return `${text.replace(/\.$/, '')}, where x is ${K.qty(t.max as never, v)}`;
+}
+
+/**
+ * edh-cast-5 (CR 107.3, 202.3, 601.2c, 608.2h; family target-mana-value-where-x): a target whose description limits its mana value by a calculated quantity ("counter target
+ * spell with mana value less than or equal to the number of Faeries you control") is also said with X and one "where X is" clause closing the sentence: "Counter target
+ * spell with mana value X or less, where X is the number of Faeries you control." (Spellstutter Sprite). The quantity is read as the target is announced, the same number
+ * either way. Only one such target among the steps' targets and a body that is one sentence (the clause closes that sentence). Null for anything else; the plain reading stays
+ * the first.
+ */
+function targetManaValueWhereX(p: EffectProgram, st: RenderState): string | null {
+  const named = JSON.stringify(p.steps);
+  // edh-next-27 (CR 107.3, 208.1, 601.2c; Go-Shintai of Hidden Cruelty): the same for a limit on toughness or power, "destroy target creature with toughness X or less, where X is the number of Shrines you control"
+  const FIELDS = ['manaValue', 'toughness', 'power'] as const;
+  const limits = [...st.specs.values()].flatMap((t) => FIELDS.map((field) => {
+    const mv = t.kind === 'object' || t.kind === 'spell' || t.kind === 'stackObject' ? t.filter?.[field] : undefined;
+    return named.includes(`"ref":"target","id":"${t.id}"`) && mv !== undefined && mv.op === '<=' && typeof mv.value === 'object' && isComputed(mv.value) && mv.value.q !== 'X' && mv.value.q !== 'var' ? { t, field, mv } : null;
+  })).filter((x): x is NonNullable<typeof x> => x !== null);
+  if (limits.length !== 1) return null;
+  const { t, field, mv } = limits[0]!;
+  const v = cloneState(st);
+  v.specs.set(t.id, { ...t, filter: { ...t.filter, [field]: { op: '<=', value: { q: 'X' } } } } as typeof t);
+  const text = K.steps(p.steps, v);
+  if (text === '' || /[.!?]\s/.test(text) || / where x is /.test(text)) return null;
+  return `${text.replace(/\.$/, '')}, where x is ${K.qty(mv.value as never, v)}`;
 }
 
 /** std-costs-2: the binding name the shared instruction of target-only modes says "those cards" with (sharedModes). */
@@ -232,6 +306,41 @@ function sharedModes(p: EffectProgram, st: RenderState): string | null {
   const body = endSentence(K.steps([step, ...p.steps.slice(1)], v));
   const bullets = specs.map((t) => `• ${endSentence(specPhrase(t, v, { noZone: true }))}`);
   return `${modeHeader(m, v).replace(/ --$/, '.')} ${body} ${bullets.join(' ')}`;
+}
+
+/** edh-next-124: the binding name the group of chosenUpToOneEach's targets is said with. */
+const CHOSEN_EACH = '$chosenEach';
+
+/**
+ * edh-next-124 (CR 115.1, 601.2c, 608.2b; the parser's template eff.edhn124.choose.threeTargets and lower/mentions.ts#announcedGroup; Teferi, Who Slows the Sunset): two or more
+ * object targets, each "up to one", announced together in a sentence of their own, with instructions that name them only as one group: "Choose up to one target artifact, up to
+ * one target creature, and up to one target land. Untap the chosen permanents you control. Tap the chosen permanents you don't control. You gain 2 life." The group is "the
+ * chosen <nouns>" (a noun every target's description has). Null for any other program. Rendered on a copy of the state.
+ */
+function chosenUpToOneEach(p: EffectProgram, st: RenderState): string | null {
+  if (p.targets.length < 2 || p.steps.length === 0) return null;
+  if (!p.targets.every((t) => t.kind === 'object' && t.min === 0 && t.max === 1 && t.perOpponent !== true && t.perPlayer !== true && t.onlyIf === undefined && t.chooser === undefined)) return null;
+  const union = JSON.stringify({ ref: 'union', of: p.targets.map((t) => ({ ref: 'target', id: t.id })) });
+  const pieces = JSON.stringify(p.steps).split(union);
+  if (pieces.length < 2 || pieces.some((x) => p.targets.some((t) => x.includes(JSON.stringify({ ref: 'target', id: t.id }))))) return null;
+  const v = cloneState(st);
+  try {
+    const phrases = p.targets.map((t) => K.obj({ ref: 'target', id: t.id }, v, 'object').text);
+    const nounsOf = (id: string): string[] => v.info.get(`t:${id}`)?.nouns ?? [];
+    // the nouns every target's description has, and "permanent" when every target is a permanent (no zone but the battlefield)
+    const onBattlefield = p.targets.every((t) => t.filter?.zone === undefined || t.filter.zone === 'battlefield');
+    const shared = [...nounsOf(p.targets[0]!.id), ...(onBattlefield ? ['permanent'] : [])]
+      .filter((n, i, all) => all.indexOf(n) === i && (n === 'permanent' ? onBattlefield : p.targets.every((t) => nounsOf(t.id).includes(n))));
+    if (shared.length === 0) return null;
+    v.afterTrigger = false;
+    v.info.set(`b:${CHOSEN_EACH}`, { nouns: shared, plural: true, alts: shared.map((n) => `the chosen ${pluralize(n)}`) });
+    v.mentioned.add(`b:${CHOSEN_EACH}`);
+    const steps = JSON.parse(pieces.join(JSON.stringify({ ref: 'bound', name: CHOSEN_EACH }))) as EffectProgram['steps'];
+    return `choose ${joinList(phrases)}. ${K.steps(steps, v)}`;
+  } catch (e) {
+    if (e instanceof NoRenderer) return null;
+    throw e;
+  }
 }
 
 /** std-costs-2: the binding name the group of chosenInstead's targets is said with. */
@@ -313,6 +422,30 @@ function chosenPair(p: EffectProgram, st: RenderState): string | null {
 }
 
 /**
+ * edh-mana-keywords-9 (CR 115.1, 115.3, 601.2c, 702.33c, 608.2c; the parser's template eff.edhmk9.choose.anyTarget.thenAnotherPerKick and lower/mentions.ts#announcedGroup; Comet
+ * Storm): "Choose any target, then choose another target for each time ~ was kicked. ~ deals X damage to each of them.": any target and as many other targets as the spell was
+ * kicked, announced together in a sentence of their own, and the one damage step that deals the same damage to every one of them. Null for any other program. Rendered on a copy.
+ */
+function chosenKicked(p: EffectProgram, st: RenderState): string | null {
+  if (p.targets.length !== 2 || p.steps.length !== 1) return null;
+  const [a, b] = [p.targets[0]!, p.targets[1]!];
+  const kicks = JSON.stringify({ q: 'kickCount' });
+  if (a.kind !== 'anyTarget' || a.min !== 1 || a.max !== 1 || a.filter !== undefined || a.players !== undefined || a.distinctFrom !== undefined) return null;
+  if (b.kind !== 'anyTarget' || JSON.stringify(b.min) !== kicks || JSON.stringify(b.max) !== kicks || b.filter !== undefined || b.players !== undefined || JSON.stringify(b.distinctFrom) !== JSON.stringify([a.id])) return null;
+  const [step] = p.steps;
+  if (step?.op !== 'damage' || step.guard !== undefined || step.as !== undefined || JSON.stringify(step.to) !== JSON.stringify({ ref: 'union', of: [{ ref: 'target', id: a.id }, { ref: 'target', id: b.id }] })) return null;
+  const v = cloneState(st);
+  try {
+    const one = K.steps([{ ...step, to: { ref: 'target', id: a.id } }], v);
+    if (!/ to any target\.?$/.test(one)) return null;
+    return `choose any target, then choose another target for each time ~ was kicked. ${one.replace(/ to any target(\.?)$/, ' to each of them$1')}`;
+  } catch (e) {
+    if (e instanceof NoRenderer) return null;
+    throw e;
+  }
+}
+
+/**
  * std-rx30 (CR 115.1, 601.2c; the parser's eff.stdrx30.choose.targetPlayer.andTargets): a target player and up to one target object that player controls announced
  * together in a sentence of their own, "Choose target opponent and up to one target creature they control. They reveal their hand. ..." (Cloak and Dagger, Entwined):
  * the same targets and instructions; afterwards the player is "they" and the object also "the chosen <noun>". Rendered on a copy of the state.
@@ -343,6 +476,31 @@ function chosenPlayerAndTarget(p: EffectProgram, st: RenderState): string | null
 }
 
 /**
+ * edh-zones-26 (CR 701.21a, 115.1, 608.2b, 608.2c; the parser's templates eff.edhz26.* and lower/choose.ts#lowerSacrificeReturnPair; Goblin Welder): a permanent and a card in a
+ * graveyard of its controller announced together, "Choose target artifact a player controls and target artifact card in that player's graveyard.", and the one
+ * `exchange` step of kind `sacrificeReturn` after it: "If both targets are still legal as this ability resolves, that player simultaneously sacrifices the artifact and returns
+ * the artifact card to the battlefield." (also "Then that player ..."). One card type word for both. Null for any other program. Rendered on a copy of the state.
+ */
+function chosenSacrificeReturn(p: EffectProgram, st: RenderState): string | null {
+  const [ta, tb] = p.targets;
+  const [step] = p.steps;
+  if (p.targets.length !== 2 || p.steps.length !== 1 || ta === undefined || tb === undefined || step?.op !== 'exchange' || step.what !== 'sacrificeReturn' || step.guard !== undefined || step.as !== undefined) return null;
+  if (JSON.stringify(step.a) !== JSON.stringify({ ref: 'target', id: ta.id }) || JSON.stringify(step.b) !== JSON.stringify({ ref: 'target', id: tb.id })) return null;
+  const single = (t: typeof ta, keys: string[]): string | null => {
+    const f = t.filter as unknown as Record<string, unknown> | undefined;
+    const types = f?.['types'];
+    if (t.kind !== 'object' || t.min !== 1 || t.max !== 1 || t.onlyIf !== undefined || t.distinctFrom !== undefined || f === undefined || Object.keys(f).sort().join() !== keys.join()) return null;
+    return Array.isArray(types) && types.length === 1 && typeof types[0] === 'string' ? types[0].toLowerCase() : null;
+  };
+  const a = single(ta, ['types']);
+  const b = single(tb, ['isCard', 'owner', 'types', 'zone']);
+  const f2 = tb.filter as unknown as Record<string, unknown>;
+  if (a === null || a !== b || ta.perOpponent === true || ta.perPlayer === true || f2['zone'] !== 'graveyard' || f2['isCard'] !== true) return null;
+  if (JSON.stringify(f2['owner']) !== JSON.stringify({ ref: 'controllerOf', object: { ref: 'target', id: ta.id } })) return null;
+  return `choose target ${a} a player controls and target ${a} card in that player's graveyard. ${alt('if both targets are still legal as this ability resolves, ', 'then ')}that player simultaneously sacrifices the ${a} and returns the ${a} card to the battlefield`;
+}
+
+/**
  * Cloud std-eoe (CR 115.1, 601.2c; the parser's lower/choose.ts): the one object target of an effect announced in a sentence of its own before the instructions,
  * "Choose up to one target creature. That creature can't be blocked this turn ...": the same targets and the same instructions, the first of which names the
  * target as "that creature" or "it" (state.ts#chosen). Only when the first instruction names that target; null otherwise. Rendered on a copy of the state.
@@ -350,11 +508,11 @@ function chosenPlayerAndTarget(p: EffectProgram, st: RenderState): string | null
 function chosenFirst(p: EffectProgram, st: RenderState, laterTargets = false): string | null {
   const [t] = p.targets;
   // r3-choose: a player too; r4-dig: a spell too ("Choose target spell. Surveil 2, then counter the chosen spell ...", CR 115.1, 601.2c)
-  if (t === undefined || (t.kind !== 'object' && t.kind !== 'player' && t.kind !== 'spell') || p.steps.length === 0) return null;
+  if (t === undefined || (t.kind !== 'object' && t.kind !== 'player' && t.kind !== 'spell' && t.kind !== 'stackObject' /* edh-cast-15: Subtlety, "choose up to one target creature spell or planeswalker spell" */ && !(t.kind === 'anyTarget' && t.min === 1 && t.max === 1 && t.filter === undefined) /* edh-c-46: Blast of Genius, "choose any target" */) || p.steps.length === 0) return null;
   // p2-damage-2 (CR 115.1, 601.2c): later targets of their own instructions after it ("Choose target creature an opponent controls. When that creature dies this turn,
   // you gain 3 life. Target creature you control fights that creature.", Time to Feed): only targets the first instruction does not name, and only when no reading
   // of several targets announced together applies (`laterTargets`, the last one tried)
-  if (p.targets.length > 1 && (!laterTargets || p.targets.slice(1).some((o) => JSON.stringify(p.steps[0]).includes(JSON.stringify({ ref: 'target', id: o.id })) || o.chooser !== undefined) || t.perPlayer === true)) return null;
+  if (p.targets.length > 1 && (!laterTargets || p.targets.slice(1).some((o) => (JSON.stringify(p.steps[0]).includes(JSON.stringify({ ref: 'target', id: o.id })) && !(t.kind === 'player' && o.kind === 'object' && JSON.stringify(o.filter?.controller) === JSON.stringify({ ref: 'target', id: t.id }))) /* edh-c-77 (CR 115.1, 601.2c; The Fall of Kroog): "Choose target opponent. Destroy target land that player controls." */ || o.chooser !== undefined) || t.perPlayer === true)) return null;
   const ref = JSON.stringify({ ref: 'target', id: t.id });
   // r3-choose (the parser's lower/choose.ts): a later instruction may be the first to name it ("You may sacrifice an artifact. If you do, return the chosen card ...")
   const first = JSON.stringify(p.steps[0]).includes(ref);
@@ -363,7 +521,8 @@ function chosenFirst(p: EffectProgram, st: RenderState, laterTargets = false): s
   try {
     // std-rx30 (CR 115.1, 601.2c): up to one target of each player, announced "For each player, choose up to one other target artifact or creature that player controls."
     // (Kitesail Larcenist); afterwards "the chosen permanents" as well
-    const each = t.kind === 'object' && t.perPlayer === true ? 'for each player, ' : '';
+    // edh-d-101 (CR 115.1, 601.2c; Disorienting Choice): and up to one target of each opponent, "For each opponent, choose up to one target artifact or enchantment that player controls."
+    const each = t.kind === 'object' && t.perPlayer === true ? 'for each player, ' : t.kind === 'object' && t.perOpponent === true ? 'for each opponent, ' : '';
     const head = `${each}choose ${K.obj({ ref: 'target', id: t.id }, v, 'object').text}`;
     v.afterTrigger = false;
     // r3-choose (CR 608.2c; the parser's participle, lower/mentions.ts): the target is also "the chosen <noun>" after its own sentence
@@ -372,11 +531,15 @@ function chosenFirst(p: EffectProgram, st: RenderState, laterTargets = false): s
     const nouns = info?.player === true ? ['player'] : each !== '' ? [...new Set([...(info?.nouns ?? []), 'permanent'])] : (info?.nouns ?? []);
     // std-costs-2 (family each-chosen): several targets are also "each chosen <noun>" ("Return each chosen creature to your hand")
     const chosenAs = (n: string): string[] => (info?.plural === true && info.player !== true ? [alt(`the chosen ${pluralize(n)}`, `each chosen ${n}`)] : [`the chosen ${info?.plural ? pluralize(n) : n}`]);
-    if (info !== undefined) v.info.set(key, { ...info, alts: [...new Set([...(info.alts ?? []), ...nouns.flatMap(chosenAs)])] });
+    // edh-c-46 (CR 115.1, 608.2c; Blast of Genius): the player or permanent any target chose is "that permanent or player"
+    // edh-next-74 (CR 115.1, 608.2c; Radiant Performer): the spell or ability any "target spell or ability" chose is "that spell or ability"
+    const anyAlts = t.kind === 'anyTarget' ? ['that permanent or player'] : t.kind === 'stackObject' && t.filter?.stackKind === undefined ? ['that spell or ability'] : [];
+    if (info !== undefined) v.info.set(key, { ...info, alts: [...new Set([...(info.alts ?? []), ...nouns.flatMap(chosenAs), ...anyAlts])] });
     if (first) v.chosen = { key, list: p.steps };
     const rest = K.steps(p.steps, v);
     // p2-c-dieroll-2 (family choose-then-roll): "choose target creature an opponent controls, then roll a d20." over result rows (the parser's lower/choose.ts#thenRoll)
-    if (p.steps[0]?.op === 'rollDie') return alt(`${head}. ${rest}`, `${head}, then ${rest}`);
+    // edh-top-8 (family choose-then-roll; CR 115.1, 705.1; Invert Polarity): and "choose target spell, then flip a coin." (the parser's lower/choose.ts#thenRoll, a flip with riders after it)
+    if (p.steps[0]?.op === 'rollDie' || p.steps[0]?.op === 'flipCoin') return alt(`${head}. ${rest}`, `${head}, then ${rest}`);
     return `${head}. ${rest}`;
   } catch (e) {
     if (e instanceof NoRenderer) return null;

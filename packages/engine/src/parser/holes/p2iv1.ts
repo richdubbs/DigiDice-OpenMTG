@@ -76,7 +76,8 @@ function cardsInGraveyard(ctx: HoleCtx, pos: number, out: Alt[]): void {
       if (n.number !== 'plural' || f.zone !== undefined || f.owner !== undefined || f.controller !== undefined || f.isCard !== true || !describedCards(f)) continue;
       const e = phraseAt(ctx, n.end, W_ARE_IN_YOUR_GRAVEYARD);
       const g = e >= 0 ? mergeFilter(f, { zone: 'graveyard', owner: 'you' }) : null;
-      if (g) out.push({ end: e, value: exists(g, c.cmp.value), ...flagsOf(n.flags) });
+      // edhn95: the zone is stated by "are in your graveyard" (merged above), so the np's `zone-unstated` flag no longer holds (an effect's suffix "if" refused the card with it)
+      if (g) out.push({ end: e, value: exists(g, c.cmp.value), ...flagsOf(n.flags?.filter((x) => x !== 'zone-unstated')) });
     }
   }
 }
@@ -221,6 +222,7 @@ function greatestManaValue(ctx: HoleCtx, pos: number, out: Alt[]): void {
 const W_DIDNT_CAST_IT_FROM_HAND = [P("you didn't cast it from your hand"), P('you did not cast it from your hand')];
 const W_IT_WASNT_CAST = [P("it wasn't cast"), P('it was not cast')];
 const W_NO_MANA_SPENT = P('no mana was spent to cast');
+const W_NO_COLORED_MANA_SPENT = P('no colored mana was spent to cast'); // edh-d-53
 /**
  * "you didn't cast it from your hand", "it wasn't cast" (CR 601.2a, 400.7d): the cast record of the object the pronoun names (`$self`, resolved as "it was cast" is:
  * the source itself, or the object that entered of an enters trigger, parser/lower/ability.ts#resolveCondAnaphors). "no mana was spent to cast it" (CR 601.2h): the
@@ -238,6 +240,14 @@ function castRecord(ctx: HoleCtx, pos: number, out: Alt[], spentObjects: SpentOb
   }
   const nm = phraseAt(ctx, pos, W_NO_MANA_SPENT);
   if (nm >= 0) for (const o of spentObjects(ctx, nm)) out.push({ end: o.end, weak: 1, value: compare({ q: 'spellManaSpent', of: o.value }, '==', 0), ...flagsOf(o.flags) });
+  // edh-d-53 (CR 601.2h, 105.1; Void Mirror): "no colored mana was spent to cast it / that spell": the colors among the mana spent to cast the spell of the cast trigger
+  // are none (`spellColorsSpent`; colorless mana and a spell cast for no mana are no color). Only the spell of a cast trigger: the marker `$spell` makes the sentence
+  // manual anywhere else (lower/anaphora.ts#castSpellMarker)
+  const nc = phraseAt(ctx, pos, W_NO_COLORED_MANA_SPENT);
+  if (nc >= 0) for (const o of spentObjects(ctx, nc)) {
+    if ((o.value as { ref?: string }).ref === 'self') continue;
+    out.push({ end: o.end, value: compare({ q: 'spellColorsSpent', $spell: o.value } as never, '==', 0), ...flagsOf(o.flags) });
+  }
 }
 
 const W_THERE_ARE = P('there are');
@@ -257,10 +267,14 @@ function countersAmong(ctx: HoleCtx, pos: number, out: Alt[]): void {
 }
 
 const W_A_PLAYER_DISCARDED = P('a player discarded a card this turn');
+const W_AN_OPPONENT_DISCARDED = P('an opponent discarded a card this turn'); // edh-next-47
 const W_ATTACKED_THIS_TURN = P('attacked this turn');
 const W_DEALT_DAMAGE_TO_AN_OPPONENT = P('dealt damage to an opponent this turn');
 /** "a player discarded a card this turn", "no creatures attacked this turn", "~ dealt damage to an opponent this turn" (the turn's history, CR 603.4). */
 function turnHistory(ctx: HoleCtx, pos: number, out: Alt[]): void {
+  // edh-next-47 (CR 701.9a, 603.4; Tinybones, Trinket Thief): "an opponent discarded a card this turn": a discard by an opponent this turn (the history's discard entries, as "you discarded a card this turn")
+  const od = phraseAt(ctx, pos, W_AN_OPPONENT_DISCARDED);
+  if (od >= 0) out.push({ end: od, value: { cond: 'happened', event: { ev: 'action', verb: 'discard', actor: 'opponent' }, scope: 'turn' } as Condition });
   const d = phraseAt(ctx, pos, W_A_PLAYER_DISCARDED);
   if (d >= 0) out.push({ end: d, value: { cond: 'happened', event: { ev: 'action', verb: 'discard' }, scope: 'turn' } as Condition });
   const no = phraseAt(ctx, pos, W_NO);

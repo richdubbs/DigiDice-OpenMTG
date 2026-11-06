@@ -1,0 +1,9 @@
+# edh-replace-3 (Commander lane edh-replace; test/cloud/edh-replace-3, golden edh-replace-3-review.json)
+# damagePrevented trigger event, choose a player + itself damage, each other opponent if cond, one or more creatures deal combat damage to one or more players, nontoken creature not cast exiled, prevent + reflexive with target
+Selfless Squire
+Stuffy Doll
+Vincent, Vengeful Atoner
+Contaminant Grafter
+Containment Priest
+Phyrexian Vindicator
+Myr Battlesphere

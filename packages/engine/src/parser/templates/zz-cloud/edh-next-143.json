@@ -1,0 +1,727 @@
+[
+  {
+    "id": "eff.edhn143.player.revealsTopN.theirLibrary",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 401.2"
+    ],
+    "pattern": "{p:Player} reveal[s] the top {n:Qty} cards of their library",
+    "build": {
+      "op": "reveal",
+      "who": "$p",
+      "what": {
+        "ref": "topCards",
+        "player": "$p",
+        "count": "$n"
+      }
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent reveals the top four cards of their library."
+      },
+      {
+        "text": "{2}, {T}: Target player reveals the top three cards of their library."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent reveals the bottom four cards of their library.",
+      "Target opponent reveals the top four cards of your library."
+    ]
+  },
+  {
+    "id": "eff.edhn143.dig.mayPut.mvAtMost.bf.underYourControl",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 202.3"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card with mana value {n:Qty} or less from among {g:Seen} onto the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            },
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent reveals the top five cards of their library. You may put a creature card with mana value 3 or less from among them onto the battlefield under your control. That player puts the rest on the bottom of their library in a random order."
+      },
+      {
+        "text": "{T}: Target player reveals the top four cards of their library. You may put an artifact card with mana value 2 or less from among them onto the battlefield under your control. That player puts the rest on the bottom of their library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent reveals the top five cards of their library. You may put a creature card with mana value 3 or less from among them onto the battlefield under its owner's control. That player puts the rest on the bottom of their library in a random order.",
+      "Target opponent reveals the top five cards of their library. You may put a creature card with mana value 3 or greater from among them onto the battlefield under your control. That player puts the rest on the bottom of their library in a random order."
+    ]
+  },
+  {
+    "id": "sta.edhn143.eachSpellYouCast.hasKeyword.ifManaFromArtifact",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2h",
+      "CR 106.3",
+      "CR 707.10",
+      "CR 702.61a"
+    ],
+    "pattern": "each spell you cast has {k:Keyword} if mana from an artifact was spent to cast it",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack",
+          "manaSpentFrom": "Artifact"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            "$k"
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Each spell you cast has split second if mana from an artifact was spent to cast it."
+      },
+      {
+        "text": "Flying\nEach spell you cast has cascade if mana from an artifact was spent to cast it."
+      }
+    ],
+    "counterExamples": [
+      "Each spell you cast has split second if mana from a land was spent to cast it.",
+      "Each spell you cast has split second if mana from an artifact wasn't spent to cast it.",
+      "Each spell an opponent casts has split second if mana from an artifact was spent to cast it."
+    ]
+  },
+  {
+    "id": "eff.edhn143.forEachPlayer.chooseFriendOrFoe",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4"
+    ],
+    "pattern": "for each player , choose friend or foe",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "option",
+      "options": [
+        "friend",
+        "foe"
+      ],
+      "as": "friendOrFoe",
+      "link": "friendOrFoe",
+      "forEachPlayer": {
+        "ref": "each",
+        "who": "player"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "For each player, choose friend or foe. Each friend draws a card. Each foe loses 2 life."
+      },
+      {
+        "text": "For each player, choose friend or foe. Each friend gains 3 life. Each foe discards a card."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent, choose friend or foe. Each friend draws a card. Each foe loses 2 life.",
+      "Each player chooses friend or foe. Each friend draws a card. Each foe loses 2 life."
+    ]
+  },
+  {
+    "id": "eff.edhn143.player.discardsHand.thenDrawsThatManyPlus",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 107.1"
+    ],
+    "pattern": "{p:Player} discard[s] all cards from their hand , then draw[s] {n:Qty} cards plus {m:Qty}",
+    "build": [
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "hand"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": {
+          "q": "math",
+          "op": "+",
+          "args": [
+            "$n",
+            "$m"
+          ]
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "all",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player discards all cards from their hand, then draws that many cards plus one."
+      },
+      {
+        "text": "Target opponent discards all cards from their hand, then draws that many cards plus two."
+      }
+    ],
+    "counterExamples": [
+      "Each player discards all cards from their hand, then draws that many cards minus one.",
+      "Each player discards a card from their hand, then draws that many cards plus one."
+    ]
+  },
+  {
+    "id": "eff.edhn143.eot.playerCantCast.youLookPlayTheirTop.anyColor",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 401.5",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 609.4b",
+      "CR 101.2"
+    ],
+    "pattern": "until end of turn , {p:Player} can't cast spells , you may look at the top card of their library any time , you may play the top card of their library , and you may spend mana as though it were mana of any color to cast spells this way",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "cast",
+          "other": {
+            "stackKind": "spell",
+            "zone": "stack"
+          }
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "lookAt",
+          "ofLibrary": "$p"
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "fromTop": true,
+          "ofLibrary": "$p",
+          "anyManaColor": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "may",
+      "can't",
+      "as though",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, choose target opponent. Until end of turn, that player can't cast spells, you may look at the top card of their library any time, you may play the top card of their library, and you may spend mana as though it were mana of any color to cast spells this way."
+      },
+      {
+        "text": "{3}, {T}: Choose target opponent. Until end of turn, that player can't cast spells, you may look at the top card of their library any time, you may play the top card of their library, and you may spend mana as though it were mana of any color to cast spells this way."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, choose target opponent. Until end of turn, that player can't cast spells, you may look at the top card of your library any time, you may play the top card of your library, and you may spend mana as though it were mana of any color to cast spells this way.",
+      "At the beginning of your upkeep, choose target opponent. Until your next turn, that player can't cast spells, you may look at the top card of their library any time, you may play the top card of their library, and you may spend mana as though it were mana of any color to cast spells this way."
+    ]
+  },
+  {
+    "id": "eff.edhn143.thisTurn.playerCantCastOrActivate.handRevealed",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 101.2",
+      "CR 602.5",
+      "CR 605.3",
+      "CR 402.3"
+    ],
+    "pattern": "this turn , {p:Player} can't cast spells or activate abilities and plays with their hand revealed",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "cast",
+          "other": {
+            "stackKind": "spell",
+            "zone": "stack"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "activate"
+        },
+        {
+          "s": "permit",
+          "who": "$p",
+          "action": "revealHand"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, choose target opponent. This turn, that player can't cast spells or activate abilities and plays with their hand revealed."
+      },
+      {
+        "text": "{2}, {T}: Choose target player. This turn, that player can't cast spells or activate abilities and plays with their hand revealed."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, choose target opponent. This turn, that player can't cast spells or activate abilities that aren't mana abilities and plays with their hand revealed.",
+      "At the beginning of your upkeep, choose target opponent. That player can't cast spells or activate abilities and plays with their hand revealed."
+    ]
+  },
+  {
+    "id": "eff.edhn143.mayPlayLandsCastSpells.fromPlayersHand.thisTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 108.3"
+    ],
+    "pattern": "you may play lands and cast spells from {p:Player} 's hand this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "fromHandOf": "$p"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, choose target opponent. This turn, that player can't cast spells or activate abilities and plays with their hand revealed. You may play lands and cast spells from that player's hand this turn."
+      },
+      {
+        "text": "{1}, {T}: Choose target player. This turn, that player can't cast spells or activate abilities and plays with their hand revealed. You may play lands and cast spells from that player's hand this turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, choose target opponent. This turn, that player can't cast spells or activate abilities and plays with their hand revealed. You may play lands and cast spells from that player's graveyard this turn.",
+      "At the beginning of your upkeep, choose target opponent. This turn, that player can't cast spells or activate abilities and plays with their hand revealed. You may cast spells from that player's hand this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn143.eachPlayer.shufflePermanents.revealThatMany.putTypesThenEnchantments",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 701.24a",
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 110.2",
+      "CR 303.4f",
+      "CR 401.4",
+      "CR 111.7"
+    ],
+    "pattern": "each player shuffles all permanents they own into their library , then reveals that many cards from the top of their library . each player puts all artifact , creature , and land cards revealed this way onto the battlefield , then does the same for enchantment cards , then puts all cards revealed this way that weren't put onto the battlefield on the bottom of their library",
+    "build": [
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "who": "player"
+        },
+        "as": "each",
+        "gather": "revealed",
+        "do": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "each",
+              "filter": {
+                "zone": "battlefield",
+                "owner": {
+                  "ref": "bound",
+                  "name": "each"
+                }
+              }
+            },
+            "to": {
+              "zone": "library",
+              "owner": {
+                "ref": "bound",
+                "name": "each"
+              }
+            },
+            "as": "shuffled"
+          },
+          {
+            "op": "shuffle",
+            "who": {
+              "ref": "bound",
+              "name": "each"
+            }
+          },
+          {
+            "op": "reveal",
+            "who": {
+              "ref": "bound",
+              "name": "each"
+            },
+            "what": {
+              "ref": "topCards",
+              "player": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "count": {
+                "q": "resultCount",
+                "step": "shuffled"
+              }
+            },
+            "as": "revealed"
+          }
+        ]
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "types": [
+                  "Artifact"
+                ]
+              },
+              {
+                "types": [
+                  "Creature"
+                ]
+              },
+              {
+                "types": [
+                  "Land"
+                ]
+              }
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Enchantment"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "each",
+      "then",
+      "that many",
+      "this way",
+      "same",
+      "they",
+      "their"
+    ],
+    "examples": [
+      {
+        "text": "Each player shuffles all permanents they own into their library, then reveals that many cards from the top of their library. Each player puts all artifact, creature, and land cards revealed this way onto the battlefield, then does the same for enchantment cards, then puts all cards revealed this way that weren't put onto the battlefield on the bottom of their library."
+      },
+      {
+        "text": "Flash\nEach player shuffles all permanents they own into their library, then reveals that many cards from the top of their library. Each player puts all artifact, creature, and land cards revealed this way onto the battlefield, then does the same for enchantment cards, then puts all cards revealed this way that weren't put onto the battlefield on the bottom of their library."
+      }
+    ],
+    "counterExamples": [
+      "Each player shuffles all permanents they own into their library, then reveals that many cards from the top of their library. Each player puts all artifact, creature, and land cards revealed this way onto the battlefield, then puts all cards revealed this way that weren't put onto the battlefield on the bottom of their library.",
+      "Each player shuffles all creatures they own into their library, then reveals that many cards from the top of their library. Each player puts all artifact, creature, and land cards revealed this way onto the battlefield, then does the same for enchantment cards, then puts all cards revealed this way that weren't put onto the battlefield on the bottom of their library."
+    ]
+  },
+  {
+    "id": "sta.edhn143.playersCantSearch.anyPlayerMayPayToIgnore",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 101.2",
+      "CR 604.1",
+      "CR 116.2d"
+    ],
+    "pattern": "players can't search libraries . any player may pay {m:ManaCost} for that player to ignore this effect until end of turn",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "mode": "cant",
+      "action": "search",
+      "ignoreFor": {
+        "mana": "$m"
+      }
+    },
+    "consumes": [
+      "can't",
+      "may",
+      "until",
+      "libraries"
+    ],
+    "examples": [
+      {
+        "text": "Players can't search libraries. Any player may pay {2} for that player to ignore this effect until end of turn."
+      },
+      {
+        "text": "Vigilance\nPlayers can't search libraries. Any player may pay {1}{W} for that player to ignore this effect until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Players can't search libraries. Any player may pay {2} for that player to ignore this effect until your next turn.",
+      "Players can't search libraries. Any opponent may pay {2} for that player to ignore this effect until end of turn."
+    ]
+  },
+  {
+    "id": "cm.edhn143.alternative.free.ifFirstSpellThisGame",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 601.2i"
+    ],
+    "pattern": "if ~ is the first spell you've cast this game , you may cast it without paying its mana cost",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "alternativeCost",
+          "cost": {},
+          "name": "alternative",
+          "when": {
+            "cond": "firstSpellCast",
+            "scope": "game"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "may",
+      "first"
+    ],
+    "examples": [
+      {
+        "text": "If this spell is the first spell you've cast this game, you may cast it without paying its mana cost.\nDraw two cards."
+      },
+      {
+        "text": "If this spell is the first spell you've cast this game, you may cast it without paying its mana cost.\nCreate two 1/1 white Soldier creature tokens."
+      }
+    ],
+    "counterExamples": [
+      "If this spell is the first spell you've cast this turn, you may cast it without paying its mana cost.\nDraw two cards.",
+      "If this spell is the second spell you've cast this game, you may cast it without paying its mana cost.\nDraw two cards."
+    ]
+  },
+  {
+    "id": "eff.edhn143.you.revealYourHand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 402.3"
+    ],
+    "pattern": "reveal your hand",
+    "build": {
+      "op": "reveal",
+      "who": {
+        "ref": "you"
+      },
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": "hand",
+          "owner": {
+            "ref": "you"
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever this creature deals combat damage to a player, you may reveal your hand. If cards with at least four different mana values are revealed this way, draw a card."
+      },
+      {
+        "text": "{T}: Reveal your hand. If cards with at least three different mana values are revealed this way, you gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Reveal your library. If cards with at least three different mana values are revealed this way, you gain 3 life.",
+      "{T}: Reveal their hand. If cards with at least three different mana values are revealed this way, you gain 3 life."
+    ]
+  }
+]

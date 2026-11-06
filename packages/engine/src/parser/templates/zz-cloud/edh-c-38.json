@@ -1,0 +1,384 @@
+[
+  {
+    "id": "eff.edhv38.return.selfAndObj.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 402.1",
+      "CR 608.2c"
+    ],
+    "pattern": "return ~ and {o:Obj} to ( their owners' hands | their owner 's hand )",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "self"
+          },
+          "$o"
+        ]
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}, {T}: Return ~ and target artifact you control to their owner's hand."
+      },
+      {
+        "text": "{T}: Return ~ and another target artifact creature to their owners' hands."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Return ~ or target creature you control to their owner's hand.",
+      "{T}: Return ~ and target creature you control to their owner's library.",
+      "{T}: Return ~ and target creature you control to your hand."
+    ]
+  },
+  {
+    "id": "eff.edhv38.search.targetPlayerGraveyardHandLibrary.chosenName.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 201.3",
+      "CR 607.2d",
+      "CR 608.2d",
+      "CR 406.1"
+    ],
+    "pattern": "search target player 's graveyard , hand [,] and library for any number of cards with that name and exile them",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "owner": {
+          "ref": "target",
+          "id": "",
+          "$target": {
+            "kind": "player",
+            "min": 1,
+            "max": 1,
+            "text": "target player"
+          }
+        },
+        "zone": "graveyard",
+        "alsoZones": [
+          "hand",
+          "library"
+        ],
+        "allZones": true,
+        "filter": {
+          "chosen": {
+            "link": "cardName",
+            "quality": "cardName"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Choose a nonland card name. Search target player's graveyard, hand, and library for any number of cards with that name and exile them. Then that player shuffles. You gain 2 life."
+      },
+      {
+        "text": "Choose a nonland card name. Search target player's graveyard, hand and library for any number of cards with that name and exile them. Then that player shuffles. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Choose a nonland card name. Search target player's graveyard, hand, and library for any number of cards with that name and put them into your hand. Then that player shuffles.",
+      "Choose a nonland card name. Search target player's graveyard and library for any number of cards with that name and exile them. Then that player shuffles.",
+      "Choose a nonland card name. Search its owner's graveyard, hand, and library for any number of cards with that name and exile them. Then that player shuffles."
+    ]
+  },
+  {
+    "id": "eff.edhv38.search.targetOpponentGraveyardHandLibrary.chosenName.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 201.3",
+      "CR 607.2d",
+      "CR 608.2d",
+      "CR 406.1"
+    ],
+    "pattern": "search target opponent 's graveyard , hand [,] and library for any number of cards with that name and exile them",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "owner": {
+          "ref": "target",
+          "id": "",
+          "$target": {
+            "kind": "player",
+            "min": 1,
+            "max": 1,
+            "text": "target opponent",
+            "players": {
+              "who": "opponent"
+            }
+          }
+        },
+        "zone": "graveyard",
+        "alsoZones": [
+          "hand",
+          "library"
+        ],
+        "allZones": true,
+        "filter": {
+          "chosen": {
+            "link": "cardName",
+            "quality": "cardName"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Choose a nonland card name. Search target opponent's graveyard, hand, and library for any number of cards with that name and exile them. Then that player shuffles. You gain 2 life."
+      },
+      {
+        "text": "Choose a nonland card name. Search target opponent's graveyard, hand and library for any number of cards with that name and exile them. Then that player shuffles. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Choose a nonland card name. Search target opponent's graveyard, hand, and library for any number of cards with that name and put them into your hand. Then that player shuffles.",
+      "Choose a nonland card name. Search target opponent's graveyard and library for any number of cards with that name and exile them. Then that player shuffles.",
+      "Choose a nonland card name. Search its owner's graveyard, hand, and library for any number of cards with that name and exile them. Then that player shuffles."
+    ]
+  },
+  {
+    "id": "sta.edhv38.attached.pump.isColor",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1e",
+      "CR 613.4c",
+      "CR 303.4a",
+      "CR 105.3"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} and is {c:Color}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": [
+              "$c"
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Enchanted creature gets +2/+2 and is red."
+      },
+      {
+        "text": "Equipped creature gets -1/+2 and is blue."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +3/+1 and is black until end of turn.",
+      "Enchanted creature gets +3/+1 and is black and red.",
+      "Enchanted creature gets +3/+1 and becomes black."
+    ]
+  },
+  {
+    "id": "sta.edhv38.self.isColorless.cda",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.3",
+      "CR 613.1e",
+      "CR 105.2c",
+      "CR 702.114a"
+    ],
+    "pattern": "~ is colorless",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield",
+        "hand",
+        "library",
+        "graveyard",
+        "stack",
+        "exile",
+        "command"
+      ],
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": []
+              }
+            }
+          ],
+          "cda": true
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ is colorless."
+      },
+      {
+        "text": "~ is colorless.\nWhenever ~ attacks, you gain 7 life."
+      }
+    ],
+    "counterExamples": [
+      "~ is colorless until end of turn.",
+      "~ is green.",
+      "~ becomes colorless."
+    ]
+  },
+  {
+    "id": "eff.edhv38.player.revealHand.discardFilter.random",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9b",
+      "CR 701.20a",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} reveal[s] their hand and discard[s] {f:DiscardDesc} at random",
+    "build": [
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        }
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": 1,
+        "filter": "$f",
+        "mode": "random"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{B}{B}, {T}: Target opponent reveals their hand and discards a land card at random. Activate only during your turn."
+      },
+      {
+        "text": "Target player reveals their hand and discards an instant or sorcery card at random."
+      }
+    ],
+    "counterExamples": [
+      "Target player reveals their hand and discards a creature card.",
+      "Target player reveals their hand and discards two creature cards at random.",
+      "Target player reveals their library and discards a creature card at random."
+    ],
+    "consumes": [
+      "random"
+    ]
+  },
+  {
+    "id": "eff.edhv38.manifest.topN",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.40a",
+      "CR 701.40e",
+      "CR 701.40b"
+    ],
+    "pattern": "manifest the top {n:Count} cards of your library",
+    "build": {
+      "op": "action",
+      "action": "manifest",
+      "who": {
+        "ref": "you"
+      },
+      "n": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Manifest the top three cards of your library."
+      },
+      {
+        "text": "Manifest the top four cards of your library."
+      }
+    ],
+    "counterExamples": [
+      "Manifest the top card of your library.",
+      "Manifest the top two cards of target player's library.",
+      "Manifest two cards from your hand."
+    ]
+  }
+]

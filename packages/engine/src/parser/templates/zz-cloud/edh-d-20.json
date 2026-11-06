@@ -1,0 +1,539 @@
+[
+  {
+    "id": "eff.edhd20.choose.playerAtRandom",
+    "kind": "effect",
+    "since": 20,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 102.1"
+    ],
+    "pattern": "choose a player at random",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "player",
+      "as": "chosenPlayer",
+      "random": true
+    },
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, choose a player at random. That player gains control of target artifact you control."
+      },
+      {
+        "text": "When ~ enters, choose a player at random. ~ deals 3 damage to that player."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, choose a player. That player gains control of target artifact you control.",
+      "At the beginning of your upkeep, choose a player at random from among your opponents. That player gains control of target artifact you control.",
+      "At the beginning of your upkeep, choose target player at random. That player gains control of target artifact you control."
+    ]
+  },
+  {
+    "id": "eff.edhd20.exile.aCard.fromYourGraveyard.atRandom",
+    "kind": "effect",
+    "since": 20,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 404.1"
+    ],
+    "pattern": "exile a card from your graveyard at random",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, mill a card, then exile a card from your graveyard at random. You may play the exiled card this turn."
+      },
+      {
+        "text": "At the beginning of your end step, exile a card from your graveyard at random. You may play that card this turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, exile a card from your graveyard. You may play that card this turn.",
+      "At the beginning of your upkeep, exile a card from target player's graveyard at random. You may play that card this turn.",
+      "At the beginning of your upkeep, exile a card from your hand at random. You may play that card this turn."
+    ]
+  },
+  {
+    "id": "eff.edhd20.player.exiles.filterCard.fromTheirGraveyard",
+    "kind": "effect",
+    "since": 20,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 404.1",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} exiles ( a | an ) {f:Filter} card from their graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "$p",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, choose a player at random. That player exiles an instant card from their graveyard. You gain 2 life."
+      },
+      {
+        "text": "When ~ enters, target opponent exiles a creature card from their graveyard. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent exiles a creature card from your graveyard. You gain 2 life.",
+      "When ~ enters, target opponent exiles a creature card from their hand. You gain 2 life.",
+      "When ~ enters, target opponent exiles a creature card from their graveyard at random. You gain 2 life."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhd20.forEach.filter.flipCoin",
+    "kind": "effect",
+    "since": 20,
+    "status": "stable",
+    "cr": [
+      "CR 705.1",
+      "CR 705.2",
+      "CR 608.2f"
+    ],
+    "pattern": "for each {f:Filter} , flip a coin",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "flipCoin",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, for each attacking creature, flip a coin. If you lose the flip, that creature gets -1/-1 until end of turn."
+      },
+      {
+        "text": "{R}: For each tapped creature, flip a coin. If you win the flip, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, for each attacking creature, flip two coins. If you lose the flip, that creature gets -1/-1 until end of turn.",
+      "Whenever ~ attacks, flip a coin. If you lose the flip, that creature gets -1/-1 until end of turn.",
+      "{R}: For each tapped creature, you flip a coin until you lose a flip."
+    ]
+  },
+  {
+    "id": "eff.edhd20.flipCoin.forEachOpponentYouHave",
+    "kind": "effect",
+    "since": 20,
+    "status": "stable",
+    "cr": [
+      "CR 705.1",
+      "CR 705.2",
+      "CR 608.2f"
+    ],
+    "pattern": "flip a coin for each opponent you have",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "flipCoin",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, flip a coin for each opponent you have. For each flip you win, draw a card. For each flip you lose, ~ deals 2 damage to that player."
+      },
+      {
+        "text": "When ~ attacks, flip a coin for each opponent you have. For each flip you win, you gain 1 life. For each flip you lose, that player draws a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, flip a coin for each player. For each flip you win, draw a card.",
+      "When ~ enters, flip a coin for each creature you control. For each flip you win, draw a card.",
+      "When ~ enters, flip two coins for each opponent you have. For each flip you win, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhd20.forEachFlip.win",
+    "kind": "effect",
+    "since": 20,
+    "status": "stable",
+    "cr": [
+      "CR 705.2",
+      "CR 608.2c",
+      "CR 608.2f"
+    ],
+    "pattern": "for each flip you win , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "flip",
+        "won": true
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, flip a coin for each opponent you have. For each flip you win, draw a card."
+      },
+      {
+        "text": "When ~ attacks, flip a coin for each opponent you have. For each flip you win, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "For each flip you win, draw a card.",
+      "When ~ enters, flip a coin for each opponent you have. For each flip you lose, draw a card.",
+      "When ~ enters, draw a card. For each flip you win, draw a card."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhd20.forEachFlip.lose",
+    "kind": "effect",
+    "since": 20,
+    "status": "stable",
+    "cr": [
+      "CR 705.2",
+      "CR 608.2c",
+      "CR 608.2f"
+    ],
+    "pattern": "for each flip you lose , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "flip",
+        "won": false
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, flip a coin for each opponent you have. For each flip you lose, you lose 1 life."
+      },
+      {
+        "text": "When ~ attacks, flip a coin for each opponent you have. For each flip you lose, discard a card."
+      }
+    ],
+    "counterExamples": [
+      "For each flip you lose, discard a card.",
+      "When ~ enters, flip a coin for each opponent you have. For each flip you win, discard a card.",
+      "When ~ enters, draw a card. For each flip you lose, discard a card."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhd20.flipCoin.forEach.filter",
+    "kind": "effect",
+    "since": 20,
+    "status": "stable",
+    "cr": [
+      "CR 705.1",
+      "CR 705.2",
+      "CR 608.2f"
+    ],
+    "pattern": "flip a coin for each {f:Filter}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "flipCoin",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, flip a coin for each creature you control. Destroy each creature whose coin comes up tails."
+      },
+      {
+        "text": "{R}: Flip a coin for each creature that isn't a Demon. Destroy each creature whose coin comes up tails."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, flip a coin for each creature you control. Destroy each creature.",
+      "When ~ enters, flip two coins for each creature you control. Destroy each creature whose coin comes up tails.",
+      "When ~ enters, flip a coin. Destroy each creature whose coin comes up tails."
+    ]
+  },
+  {
+    "id": "eff.edhd20.destroyEach.creature.whoseCoinTails",
+    "kind": "effect",
+    "since": 20,
+    "status": "stable",
+    "cr": [
+      "CR 705.2",
+      "CR 701.8a",
+      "CR 608.2f"
+    ],
+    "pattern": "destroy each creature whose coin comes up tails",
+    "build": [
+      {
+        "op": "if",
+        "cond": {
+          "cond": "flip",
+          "won": false
+        },
+        "then": [
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "you"
+            },
+            "from": {
+              "ref": "bound",
+              "name": "each"
+            },
+            "min": 1,
+            "max": 1,
+            "as": "tails"
+          }
+        ]
+      },
+      {
+        "op": "destroy",
+        "what": {
+          "ref": "bound",
+          "name": "tails"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, flip a coin for each creature that isn't a Demon. Destroy each creature whose coin comes up tails."
+      },
+      {
+        "text": "When ~ enters, flip a coin for each creature you don't control. Destroy each creature whose coin comes up tails."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, flip a coin for each creature that isn't a Demon. Destroy each creature whose coin comes up heads.",
+      "When ~ enters, flip a coin for each creature. Destroy each artifact whose coin comes up tails.",
+      "When ~ enters, destroy each creature whose coin comes up tails."
+    ]
+  },
+  {
+    "id": "eff.edhd20.sacrificed.eachFilter.byItsController",
+    "kind": "effect",
+    "since": 20,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2c",
+      "CR 109.4"
+    ],
+    "pattern": "each {f:Filter} is sacrificed by its controller",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "filter": {
+        "anyOf": [
+          "$f"
+        ],
+        "controller": {
+          "ref": "iterating"
+        }
+      },
+      "count": 1,
+      "mode": "all"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each attacking creature is sacrificed by its controller."
+      },
+      {
+        "text": "When ~ enters, each tapped creature is sacrificed by its controller."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each attacking creature is sacrificed.",
+      "When ~ enters, each attacking creature is destroyed by its controller.",
+      "When ~ enters, each attacking creature is sacrificed by you."
+    ]
+  },
+  {
+    "id": "eff.edhd20.player.flipsCoin",
+    "kind": "effect",
+    "since": 20,
+    "status": "stable",
+    "cr": [
+      "CR 705.1",
+      "CR 705.2"
+    ],
+    "pattern": "{p:Player} flips a coin",
+    "build": {
+      "op": "flipCoin",
+      "who": "$p"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever a player casts a creature spell, that player flips a coin. If they lose the flip, counter that spell."
+      },
+      {
+        "text": "Whenever an opponent casts a spell, that player flips a coin. If they lose the flip, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player casts a spell, that player flips a coin until they lose a flip.",
+      "Whenever a player casts a spell, that player flips two coins. If they lose the flip, counter that spell.",
+      "Whenever a player casts a spell, that player flips a coin. If you lose the flip, counter that spell."
+    ]
+  },
+  {
+    "id": "eff.edhd20.ifTheyFlip.lose",
+    "kind": "effect",
+    "since": 20,
+    "status": "stable",
+    "cr": [
+      "CR 705.2",
+      "CR 608.2c"
+    ],
+    "pattern": "if they lose the flip , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "flip",
+        "won": false
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player casts a creature spell, that player flips a coin. If they lose the flip, counter that spell."
+      },
+      {
+        "text": "Whenever an opponent casts a spell, that player flips a coin. If they lose the flip, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "If they lose the flip, counter that spell.",
+      "Whenever a player casts a spell, flip a coin. If they lose the flip, counter that spell.",
+      "Whenever a player casts a spell, that player flips a coin. If you lose the flip, counter that spell."
+    ]
+  }
+]

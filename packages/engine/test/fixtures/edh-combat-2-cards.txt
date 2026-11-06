@@ -1,0 +1,8 @@
+# edh-combat-2 (Commander lane edh-combat): the golden cards of the round (test/m5/golden/cards/edh-combat-2-review.json)
+Reyav, Master Smith
+Halvar, God of Battle // Sword of the Realms
+Jolene, the Plunder Queen
+Finale of Glory
+Stormtide Leviathan
+Scion of Draco
+Sting, the Glinting Dagger

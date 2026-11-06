@@ -1,0 +1,131 @@
+[
+  {
+    "id": "sta.edhn51.spells.cast.fromExile.conspire",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 702.78a",
+      "CR 707.10"
+    ],
+    "pattern": "each {f:Filter} you cast from exile has conspire",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "castFrom": "exile",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "conspire",
+              "text": "conspire"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each noncreature spell you cast from exile has conspire."
+      },
+      {
+        "text": "Each instant spell you cast from exile has conspire."
+      }
+    ],
+    "counterExamples": [
+      "Each instant spell you cast from your hand has conspire.",
+      "Each instant spell you cast has conspire.",
+      "Each instant spell an opponent casts from exile has conspire."
+    ]
+  },
+  {
+    "id": "eff.edhn51.eachOtherPlayerMay.search.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 400.3",
+      "CR 102.2"
+    ],
+    "pattern": "each other player may search their library for ( a | an ) {f:Filter} card and put ( it | that card ) onto the battlefield",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "iterating"
+          },
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "as": "opponentSearch"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "opponentSearch"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "iterating"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each other",
+      "each",
+      "other",
+      "may",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Each other player may search their library for a land card and put that card onto the battlefield."
+      },
+      {
+        "text": "Draw a card. Each other player may search their library for a basic Forest card and put it onto the battlefield. Then each player who searched their library this way shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Each player may search their library for a land card and put that card onto the battlefield.",
+      "Each other player may search your library for a land card and put that card onto the battlefield.",
+      "Each other player may search their library for a land card and put that card into their hand."
+    ]
+  }
+]

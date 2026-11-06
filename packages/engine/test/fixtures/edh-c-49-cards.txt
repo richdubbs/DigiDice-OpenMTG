@@ -1,0 +1,6 @@
+# edh-c-49 (Commander EDHREC ranks 16,501-17,000): two cost reductions of one spell, protection from creatures your opponents control, enlist triggers, twice the life gained, damage to each player and their creatures. Nezumi Shortfang is in test-cards.txt already. After editing: npm run cards -- fixtures
+Geistlight Snare
+Crypsis
+Guardian of New Benalia
+False Cure
+Incite Rebellion

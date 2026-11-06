@@ -1,0 +1,215 @@
+[
+  {
+    "id": "eff.edhn96.player.revealUntilN.areRevealed",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 608.2c",
+      "CR 107.3"
+    ],
+    "pattern": "{p:Player} reveals cards from the top of their library until {n:Qty} {f:CardsDesc} are revealed",
+    "build": {
+      "op": "revealUntil",
+      "who": "$p",
+      "filter": "$f",
+      "as": "hit",
+      "revealed": "revealed",
+      "count": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent reveals cards from the top of their library until four land cards are revealed. Draw a card."
+      },
+      {
+        "text": "Target player reveals cards from the top of their library until three creature cards are revealed. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent reveals cards from the top of their library until they reveal four land cards. Draw a card.",
+      "Target opponent reveals cards from the top of your library until four land cards are revealed. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhn96.forEach.lead.pump.group.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2h"
+    ],
+    "pattern": "for each {f:Filter} , {o:Objs} get {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Discard your hand, then draw four cards. For each card discarded this way, creatures you control get +1/+0 until end of turn."
+      },
+      {
+        "text": "Sacrifice any number of creatures. For each creature sacrificed this way, Goblins you control get +0/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Discard your hand, then draw four cards. For each card discarded this way, creatures you control get +1/+0.",
+      "Discard your hand, then draw four cards. For each card discarded this way, creatures you control get +1/+0 until your next turn.",
+      "Discard your hand, then draw four cards. For each card discarded this way and each card drawn this way, creatures you control get +1/+0 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn96.youCantLoseLife.youCantLoseGame.oppsCantWin.thisTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.8",
+      "CR 104.3b",
+      "CR 104.3a",
+      "CR 101.2",
+      "CR 611.2a"
+    ],
+    "pattern": "you can't lose life this turn , you can't lose the game this turn , and your opponents can't win the game this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "loseLife"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "lose"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "mode": "cant",
+          "action": "win"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "If you have 5 or less life, you can't lose life this turn, you can't lose the game this turn, and your opponents can't win the game this turn."
+      },
+      {
+        "text": "You can't lose life this turn, you can't lose the game this turn, and your opponents can't win the game this turn."
+      }
+    ],
+    "counterExamples": [
+      "You can't lose life this turn, you can't lose the game this turn, and your opponents can't lose the game this turn.",
+      "You can't lose life this turn and you can't lose the game this turn.",
+      "You can't lose life, you can't lose the game this turn, and your opponents can't win the game this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn96.put.bf.tapped.underPlayer",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 400.7",
+      "CR 701.23",
+      "CR 614.1c"
+    ],
+    "pattern": "put {o:Objs} onto the battlefield tapped under {p:Player} 's control",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": "$p",
+        "tapped": true
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "under"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, you may search your library for a Forest card, put it onto the battlefield tapped under target player's control, then shuffle."
+      },
+      {
+        "text": "Search your library for a Plains card, put it onto the battlefield tapped under target opponent's control, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, you may search your library for a Forest card, put it onto the battlefield tapped under your control, then shuffle.",
+      "When this creature enters, you may search your library for a Forest card, put it onto the battlefield tapped under its owner's control, then shuffle."
+    ]
+  }
+]

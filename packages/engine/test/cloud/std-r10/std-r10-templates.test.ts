@@ -198,7 +198,7 @@ describe('std-r10 capability (design 5.2, fail closed): a `nextSpell` filter may
   });
   it('the handler\'s field list and the walker\'s agree (the walker imports no handler, design 5.4)', () => {
     for (const k of NEXT_SPELL_FILTER_FIELDS) {
-      const v = k === 'zone' ? 'stack' : k === 'stackKind' ? 'spell' : k === 'anyOf' ? [{ types: ['Creature'] }] : ['X'];
+      const v = k === 'zone' ? 'stack' : k === 'stackKind' ? 'spell' : k === 'castFrom' ? 'hand' : k === 'faceDown' ? true /* edh-next-141: a face-down spell, true only */ : k === 'anyOf' ? [{ types: ['Creature'] }] : ['X'];
       expect(capabilitiesOfDef(spellOf({ [k]: v })), k).not.toContain('feature:nextSpell.filter');
       expect(nextSpellFilterOk({ [k]: v }), k).toBe(true);
     }

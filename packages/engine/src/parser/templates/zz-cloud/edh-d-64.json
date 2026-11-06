@@ -1,0 +1,178 @@
+[
+  {
+    "id": "eff.edhd64.creaturesPlayerControls.cantAttackYou.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 506.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "creatures {p:Player} control[s] can't attack you {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "$p"
+            }
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Creatures target opponent controls can't attack you this turn."
+      },
+      {
+        "text": "Creatures each opponent controls can't attack you this combat."
+      }
+    ],
+    "counterExamples": [
+      "Creatures target opponent controls can't attack you.",
+      "Creatures target opponent controls can't attack you or planeswalkers you control this turn.",
+      "Creatures target opponent controls can't block you this turn."
+    ]
+  },
+  {
+    "id": "eff.edhd64.eachOtherPlayer.copiesSpell",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 101.4"
+    ],
+    "pattern": "each other player copies {o:Obj}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "each",
+        "who": "otherPlayer"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever a player casts a sorcery spell, each other player copies that spell."
+      },
+      {
+        "text": "Whenever a player casts an instant spell, each other player copies it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player casts an instant spell, each other player copies that spell twice.",
+      "Whenever a player casts an instant spell, each other player may copy that spell.",
+      "Whenever a player casts an instant spell, each opponent copies that spell."
+    ],
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ]
+  },
+  {
+    "id": "rid.edhd64.eachOfThosePlayers.newTargets",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.10c",
+      "CR 115.7"
+    ],
+    "pattern": "each of those players may choose new targets for their copy",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "who.ref": "each"
+        },
+        "newTargets": {
+          "@new": "may"
+        },
+        "@into": true
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player casts a sorcery spell, each other player copies that spell. Each of those players may choose new targets for their copy."
+      },
+      {
+        "text": "Whenever a player casts an instant spell, each other player copies it. Each of those players may choose new targets for their copy."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player casts an instant spell, each other player copies that spell. Each of those players may choose new targets for their copies.",
+      "Whenever a player casts an instant spell, copy that spell. Each of those players may choose new targets for their copy.",
+      "Whenever a player casts an instant spell, each other player draws a card. Each of those players may choose new targets for their copy."
+    ]
+  },
+  {
+    "id": "eff.edhd64.tapAndGoad",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.26a",
+      "CR 701.15a",
+      "CR 608.2c"
+    ],
+    "pattern": "tap and goad {o:Objs}",
+    "build": [
+      {
+        "op": "tap",
+        "what": "$o"
+      },
+      {
+        "op": "action",
+        "action": "goad",
+        "who": {
+          "ref": "you"
+        },
+        "subject": "$o"
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:goad"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent chooses a creature they control. Tap and goad the chosen creatures."
+      },
+      {
+        "text": "Each player chooses a creature they control. Tap and goad those creatures."
+      }
+    ],
+    "counterExamples": [
+      "Tap target creature and goad it.",
+      "Each opponent chooses a creature they control. Goad and tap the chosen creatures.",
+      "Each opponent chooses a creature they control. Untap and goad the chosen creatures."
+    ]
+  }
+]

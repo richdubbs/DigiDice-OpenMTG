@@ -1,0 +1,438 @@
+[
+  {
+    "id": "sta.edhv43.aslong.pump.mustAttack",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 508.1d"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} get[s] {pt:PT} and attacks each combat if able",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "if",
+      "each",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control an artifact, ~ gets +2/+2 and attacks each combat if able."
+      },
+      {
+        "text": "As long as you have 10 or more life, ~ gets +1/+0 and attacks each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control an artifact, ~ gets +2/+2 and attacks this combat if able.",
+      "As long as you control an artifact, ~ gets +2/+2 and blocks each combat if able.",
+      "As long as you control an artifact, ~ gets +2/+2 and attacks each combat.",
+      "~ gets +2/+2 and attacks each combat if able."
+    ]
+  },
+  {
+    "id": "sta.edhv43.aslong.pump.attackNoDefender",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 702.3b",
+      "CR 609.4"
+    ],
+    "pattern": "as long as {c:Cond} , ~ get[s] {pt:PT} and can attack as though it didn't have defender",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control an artifact, ~ gets +2/+2 and can attack as though it didn't have defender."
+      },
+      {
+        "text": "As long as you have 10 or more life, ~ gets +1/+0 and can attack as though it didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control an artifact, ~ gets +2/+2 and can block as though it didn't have defender.",
+      "As long as you control an artifact, ~ gets +2/+2 and can attack as though it didn't have flying.",
+      "As long as you control an artifact, ~ gets +2/+2 and can attack as though it had defender.",
+      "~ gets +2/+2 and can attack as though it didn't have defender."
+    ]
+  },
+  {
+    "id": "sta.edhv43.aslong.color.grant",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 105.3",
+      "CR 613.1e",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} is {col:Color} and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$col"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as there are five or more cards in your graveyard, ~ is green and has trample."
+      },
+      {
+        "text": "As long as you control a Swamp, ~ is black and has \"{1}{B}, {T}: Target player loses 1 life.\""
+      }
+    ],
+    "counterExamples": [
+      "As long as there are five or more cards in your graveyard, ~ is a Zombie and has trample.",
+      "As long as there are five or more cards in your graveyard, ~ loses green and has trample.",
+      "As long as there are five or more cards in your graveyard, ~ is green and loses trample.",
+      "~ is green and has trample."
+    ]
+  },
+  {
+    "id": "sta.edhv43.attached.pump.aslongIs.otherwise.pump",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "enchanted creature gets {pt:PT} as long as it's {f:Filter} . otherwise , it gets {pt2:PT}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "attachedTo"
+        },
+        "filter": "$f"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ],
+      "otherwise": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt2.p",
+              "toughness": "$pt2.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "otherwise"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +2/+2 as long as it's an Elf. Otherwise, it gets -2/-2."
+      },
+      {
+        "text": "Enchanted creature gets +1/+0 as long as it's a Zombie. Otherwise, it gets -3/-1."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +2/+2 as long as it's an Elf. Then, it gets -2/-2.",
+      "Enchanted creature gets +2/+2 as long as it's an Elf. Otherwise, it can't attack.",
+      "Enchanted creature gets +2/+2 as long as it's an Elf. Otherwise, it gets -2/-2 until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhv43.attached.pump.aslongIs.color.otherwise.pump",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "enchanted creature gets {pt:PT} as long as it's {col:Color} . otherwise , it gets {pt2:PT}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "attachedTo"
+        },
+        "filter": {
+          "colors": [
+            "$col"
+          ]
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ],
+      "otherwise": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt2.p",
+              "toughness": "$pt2.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "otherwise"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +1/+1 as long as it's blue. Otherwise, it gets -1/-2."
+      },
+      {
+        "text": "Enchanted creature gets +3/+0 as long as it's red. Otherwise, it gets -1/-1."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+1 as long as it's blue. Then, it gets -1/-2.",
+      "Enchanted creature gets +1/+1 as long as it's blue. Otherwise, it can't attack.",
+      "Enchanted creature gets +1/+1 as long as it's blue. Otherwise, it gets -1/-2 until end of turn.",
+      "Enchanted creature gets +1/+2 as long as it's an Elf. Otherwise, it gets -1/-2."
+    ]
+  },
+  {
+    "id": "cm.edhv43.self.less.ifControlEither",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.1"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast if you control ( a | an ) {f:Filter} or ( a | an ) {g:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "controller": "you",
+            "anyOf": [
+              "$f",
+              "$g"
+            ]
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {2} less to cast if you control a Goblin or a Wizard."
+      },
+      {
+        "text": "~ costs {1} less to cast if you control an artifact creature or a Wizard."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {2} less to cast if you control a Goblin and a Wizard.",
+      "~ costs {2} less to cast if an opponent controls a Goblin or a Wizard.",
+      "~ costs {2} more to cast if you control a Goblin or a Wizard."
+    ]
+  },
+  {
+    "id": "sta.edhv43.pumpgrant.mustAttack",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 508.1d"
+    ],
+    "pattern": "enchanted creature gets {pt:PT} , has {a:Abilities} , and attacks each combat if able",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "mustIfAble",
+          "action": "attack"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "if",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +3/+1, has haste, and attacks each combat if able."
+      },
+      {
+        "text": "Enchanted creature gets +1/+0, has trample, and attacks each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +3/+1, has haste, and attacks this combat if able.",
+      "Enchanted creature gets +3/+1, has haste, and blocks each combat if able.",
+      "Enchanted creature gets +3/+1, has haste, and attacks each combat.",
+      "Equipped creature gets +3/+1, has haste, and attacks each combat if able."
+    ]
+  }
+]

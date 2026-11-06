@@ -1,0 +1,233 @@
+[
+  {
+    "id": "rep.edhz14.opponent.search.topN",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 701.23a"
+    ],
+    "pattern": "if an opponent would search a library , that player searches the top {n:Qty} cards of that library instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "action",
+        "verb": "search",
+        "actor": "opponent"
+      },
+      "body": {
+        "b": "modify",
+        "count": {
+          "set": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that player",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If an opponent would search a library, that player searches the top three cards of that library instead."
+      },
+      {
+        "text": "If an opponent would search a library, that player searches the top five cards of that library instead."
+      }
+    ],
+    "counterExamples": [
+      "If you would search a library, you search the top three cards of that library instead.",
+      "If an opponent would search a library, that player searches the bottom three cards of that library instead.",
+      "If an opponent would search a library, that player searches that library twice instead."
+    ]
+  },
+  {
+    "id": "eff.edhz14.you.return.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 608.2c",
+      "CR 109.5"
+    ],
+    "pattern": "you return {o:Objs} to your hand",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target opponent discards a card and you return target creature card from your graveyard to your hand."
+      },
+      {
+        "text": "Target player loses 2 life and you return up to two target artifact cards from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent discards a card and you return target creature card from your graveyard to the battlefield.",
+      "Target opponent discards a card and that player returns target creature card from their graveyard to their hand.",
+      "Target opponent discards a card and you return target creature card from your graveyard to your hand at random."
+    ]
+  },
+  {
+    "id": "eff.edhz14.exile.anyNumber.fromHand.faceDown",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 406.3",
+      "CR 608.2c",
+      "CR 400.3",
+      "CR 701.13a"
+    ],
+    "pattern": "exile any number of cards from your hand face down",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        },
+        "as": "exiledDown"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Exile any number of cards from your hand face down."
+      },
+      {
+        "text": "Exile any number of cards from your hand face down. Draw that many cards."
+      }
+    ],
+    "counterExamples": [
+      "Exile any number of cards from your hand.",
+      "Exile any number of cards from your graveyard face down.",
+      "Exile up to two cards from your hand face down."
+    ]
+  },
+  {
+    "id": "eff.edhz14.lookAt.putTop.anyOrder",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 406.3",
+      "CR 608.2c",
+      "CR 701.20"
+    ],
+    "pattern": "[ then ] look at {t:Them} and put them on top of your library in any order",
+    "build": [
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": "$t"
+      },
+      {
+        "op": "move",
+        "what": "$t",
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "and",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Exile any number of cards from your hand face down. Draw that many cards. Then look at the exiled cards and put them on top of your library in any order."
+      },
+      {
+        "text": "Exile any number of cards from your hand face down. Look at the exiled cards and put them on top of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Exile any number of cards from your hand face down. Look at the exiled cards and put them on the bottom of your library in any order.",
+      "Exile any number of cards from your hand face down. Look at the exiled cards and put them into your hand.",
+      "Exile any number of cards from your hand face down. Look at the exiled cards and put them on top of your library in a random order."
+    ]
+  },
+  {
+    "id": "sta.edhz14.cantCauseSearch.theirController",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 101.2",
+      "CR 109.5"
+    ],
+    "pattern": "spells and abilities ( your opponents control | each opponent controls ) can't cause their controller to search their library",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "who": "player"
+      },
+      "mode": "cant",
+      "action": "search",
+      "other": {
+        "controller": "opponent"
+      },
+      "causedByOwn": true
+    },
+    "consumes": [
+      "and",
+      "each",
+      "can't",
+      "their"
+    ],
+    "examples": [
+      {
+        "text": "Spells and abilities each opponent controls can't cause their controller to search their library."
+      },
+      {
+        "text": "Whenever ~ attacks, you gain 2 life and draw a card.\nSpells and abilities each opponent controls can't cause their controller to search their library."
+      }
+    ],
+    "counterExamples": [
+      "Spells and abilities each opponent controls can't cause their controller to search their graveyard.",
+      "Spells and abilities you control can't cause their controller to search their library.",
+      "Spells and abilities each opponent controls can't cause you to search your library.",
+      "Spells and abilities each opponent controls can't cause their controller to search their library and graveyard."
+    ]
+  }
+]

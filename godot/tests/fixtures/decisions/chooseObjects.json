@@ -1,0 +1,16 @@
+{
+  "id": "d3",
+  "player": "p1",
+  "prompt": "Discard two cards.",
+  "rules": [
+    "CR 701.9a"
+  ],
+  "kind": "chooseObjects",
+  "options": [
+    "o30",
+    "o31",
+    "o32"
+  ],
+  "min": 2,
+  "max": 2
+}

@@ -1,0 +1,25 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" path="res://prompts/PromptFrame.tscn" id="1_frame"]
+[ext_resource type="Script" path="res://prompts/ChooseNumber.gd" id="2_script"]
+
+[node name="ChooseNumber" instance=ExtResource("1_frame")]
+script = ExtResource("2_script")
+
+[node name="Row" type="HBoxContainer" parent="Frame/Box/Body"]
+layout_mode = 2
+
+[node name="Number" type="SpinBox" parent="Frame/Box/Body/Row"]
+layout_mode = 2
+rounded = true
+
+[node name="Slider" type="HSlider" parent="Frame/Box/Body/Row"]
+custom_minimum_size = Vector2(240, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+rounded = true
+
+[node name="Range" type="Label" parent="Frame/Box/Body/Row"]
+layout_mode = 2
+theme_type_variation = &"PromptDetail"

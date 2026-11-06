@@ -11,9 +11,9 @@
 import type { OpHandlers } from '../api';
 import { move } from './zones-move';
 import { counter, destroy, sacrifice, sacrificeChoice } from './zones-remove';
-import { attach, exchange, phaseOut, regenerate, removeFromCombat, tap, untap } from './zones-status';
+import { attach, exchange, phaseIn, phaseOut, regenerate, removeFromCombat, tap, untap } from './zones-status';
 import { changeFace } from './change-face'; // M6-0: the CHANGE_FACE dispatch (m6 design 2.6)
 
 export const ZONES_HANDLERS: OpHandlers = {
-  move, destroy, sacrifice, sacrificeChoice, counter, tap, untap, attach, changeFace, phaseOut, regenerate, removeFromCombat, exchange,
+  move, destroy, sacrifice, sacrificeChoice, counter, tap, untap, attach, changeFace, phaseOut, phaseIn, regenerate, removeFromCombat, exchange,
 };

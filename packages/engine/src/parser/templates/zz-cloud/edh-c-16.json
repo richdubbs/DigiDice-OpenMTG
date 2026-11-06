@@ -1,0 +1,211 @@
+[
+  {
+    "id": "cm.edhv16.self.less.duringYourStep",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 604.5",
+      "CR 118.7",
+      "CR 500.1",
+      "CR 513.1"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast during your end step",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you",
+        "step": "end"
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {1} less to cast during your end step."
+      },
+      {
+        "text": "~ costs {3} less to cast during your end step."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {1} more to cast during your end step.",
+      "~ costs {1} less to cast during each opponent's end step.",
+      "~ costs {1} less to cast during your upkeep.",
+      "~ costs {1}{U} less to cast during your end step."
+    ]
+  },
+  {
+    "id": "eff.edhv16.rollDie.fourSided",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2"
+    ],
+    "pattern": "roll a four-sided die",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 4
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{3}, {T}: Roll a four-sided die. You gain life equal to the result."
+      },
+      {
+        "text": "When ~ enters, roll a four-sided die. You gain life equal to the result."
+      }
+    ],
+    "counterExamples": [
+      "Roll a six-sided die.",
+      "Roll two four-sided dice.",
+      "Roll a four-sided die twice."
+    ]
+  },
+  {
+    "id": "sta.edhv16.attached.pumpgrant.lure",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 509.1c",
+      "CR 303.4"
+    ],
+    "pattern": "enchanted creature gets {pt:PT} and has {a:Abilities} , and all creatures able to block it do so",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ]
+            }
+          },
+          "mode": "mustIfAble",
+          "action": "block",
+          "other": {
+            "is": {
+              "ref": "attachedTo"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "able",
+      "do so"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +3/+3 and has trample, and all creatures able to block it do so."
+      },
+      {
+        "text": "Enchanted creature gets +1/+1 and has haste, and all creatures able to block it do so."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +3/+3 and has trample, and all creatures able to attack it do so.",
+      "Enchanted creature gets +3/+3 and has trample, and all creatures able to block it can do so.",
+      "Enchanted creature gets +3/+3 and loses trample, and all creatures able to block it do so."
+    ]
+  },
+  {
+    "id": "eff.edhv16.cantSearch.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 101.2",
+      "CR 611.2a"
+    ],
+    "pattern": "( {p:Player} | players ) can't search libraries {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "$when": "p",
+            "then": "$p",
+            "else": {
+              "ref": "each",
+              "who": "player"
+            }
+          },
+          "mode": "cant",
+          "action": "search"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't",
+      "libraries"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent can't search libraries this turn."
+      },
+      {
+        "text": "Players can't search libraries until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Players can't search graveyards this turn.",
+      "Players can search libraries this turn.",
+      "Target player can't search libraries."
+    ]
+  }
+]

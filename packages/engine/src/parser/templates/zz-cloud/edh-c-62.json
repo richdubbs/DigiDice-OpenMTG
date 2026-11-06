@@ -1,0 +1,210 @@
+[
+  {
+    "id": "rid.edhv62.noregen.theCreature",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.19c",
+      "CR 701.19a"
+    ],
+    "pattern": "the creature can't be regenerated",
+    "build": {
+      "$patchPrevious": {
+        "regeneration": "cant"
+      }
+    },
+    "attachTo": "destroy",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target artifact creature. The creature can't be regenerated."
+      },
+      {
+        "text": "Destroy target nonwhite creature. The creature can't be regenerated."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. The creature can't be regenerated.",
+      "Destroy target creature. The creature can be regenerated.",
+      "Exile target creature. The creature can't be regenerated."
+    ]
+  },
+  {
+    "id": "eff.edhv62.draw.perKick",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 702.33d",
+      "CR 702.33c",
+      "CR 121.1",
+      "CR 400.7d"
+    ],
+    "pattern": "draw a card for each time ( it | ~ ) was kicked",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "kickCount"
+      }
+    },
+    "consumes": [
+      "each",
+      "each time",
+      "kicked"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card for each time ~ was kicked."
+      },
+      {
+        "text": "Draw a card for each time it was kicked."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card for each artifact you control.",
+      "Draw a card if ~ was kicked.",
+      "Target player draws a card for each time ~ was kicked.",
+      "Draw two cards for each time ~ was kicked."
+    ]
+  },
+  {
+    "id": "sta.edhv62.otherturns.is.sized.artifactcreature.with",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 500.1",
+      "CR 301.7"
+    ],
+    "pattern": "during turns other than yours , ~ is ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature with {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "not",
+        "of": {
+          "cond": "turnOf",
+          "whose": "you"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "other",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During turns other than yours, ~ is a 3/3 Golem artifact creature with trample."
+      },
+      {
+        "text": "During turns other than yours, ~ is a 1/4 Wall artifact creature with defender."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, ~ is a 3/3 Golem artifact creature with trample.",
+      "During turns other than yours, ~ is a 3/3 Golem artifact creature with trample until end of turn.",
+      "During turns other than yours, ~ becomes a 3/3 Golem artifact creature with trample.",
+      "During turns other than yours, ~ is a 3/3 Golem creature with trample."
+    ]
+  },
+  {
+    "id": "eff.edhv62.player.gainControl.all",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "player",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 110.2"
+    ],
+    "pattern": "{p:Player} gains control of all {f:Filter} [{d:Dur}]",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "d": "permanent"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent gains control of all creatures you control."
+      },
+      {
+        "text": "Target player gains control of all artifacts you control until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent gains control of target artifact you control.",
+      "Target opponent gains control of each creature you control.",
+      "Gain control of all creatures you control.",
+      "Each player gains control of all creatures they own."
+    ],
+    "weak": 1
+  }
+]

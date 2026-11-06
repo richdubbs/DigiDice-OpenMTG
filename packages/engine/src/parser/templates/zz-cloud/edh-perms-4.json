@@ -1,0 +1,376 @@
+[
+  {
+    "id": "eff.edhpm4.swapEnchant.linked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.5a",
+      "CR 303.4a",
+      "CR 613.1f",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} loses {r:EnchantGraveyardQuote} and gains {a:EnchantLinkedQuote}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "removeEnchant": "$r",
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "loses",
+      "gains"
+    ],
+    "examples": [
+      {
+        "text": "When this Aura enters, it loses \"enchant artifact card in a graveyard\" and gains \"enchant artifact put onto the battlefield with this Aura.\""
+      },
+      {
+        "text": "When this Aura enters, it loses \"enchant land card in a graveyard\" and gains \"enchant land put onto the battlefield with this Aura.\""
+      }
+    ],
+    "counterExamples": [
+      "When this Aura enters, it loses \"enchant artifact card in a graveyard\" and gains \"enchant artifact you control.\"",
+      "When this Aura enters, it loses \"enchant artifact card in your graveyard\" and gains \"enchant artifact put onto the battlefield with this Aura.\"",
+      "When this Aura enters, it loses flying and gains \"enchant artifact put onto the battlefield with this Aura.\""
+    ]
+  },
+  {
+    "id": "eff.edhpm4.becomesAura.linked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.5a",
+      "CR 303.4a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes an aura with {a:EnchantLinkedQuote}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": [
+                  "Aura"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "becomes"
+    ],
+    "examples": [
+      {
+        "text": "When this enchantment enters, it becomes an Aura with \"enchant artifact put onto the battlefield with this enchantment.\""
+      },
+      {
+        "text": "When this enchantment enters, it becomes an Aura with \"enchant land put onto the battlefield with this enchantment.\""
+      }
+    ],
+    "counterExamples": [
+      "When this enchantment enters, it becomes an Aura with \"enchant artifact you control.\"",
+      "When this enchantment enters, it becomes an Equipment with \"enchant artifact put onto the battlefield with this enchantment.\""
+    ]
+  },
+  {
+    "id": "eff.edhpm4.returnEnchanted.attachSelf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 303.4a",
+      "CR 303.4f",
+      "CR 701.3a",
+      "CR 607.2a",
+      "CR 400.7"
+    ],
+    "pattern": "return {e:EnchantedCard} to the battlefield under your control and attach ~ to it",
+    "build": [
+      {
+        "op": "move",
+        "what": "$e",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        },
+        "link": "putWith"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "ref": "linked",
+          "link": "putWith"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "return",
+      "attach"
+    ],
+    "examples": [
+      {
+        "text": "When this Aura enters, return enchanted artifact card to the battlefield under your control and attach this Aura to it."
+      },
+      {
+        "text": "When this Aura enters, return enchanted land card to the battlefield under your control and attach this Aura to it."
+      }
+    ],
+    "counterExamples": [
+      "When this Aura enters, return enchanted artifact card to the battlefield under its owner's control and attach this Aura to it.",
+      "When this Aura enters, return target artifact card to the battlefield under your control and attach this Aura to it.",
+      "When this Aura enters, return enchanted artifact card to the battlefield under your control."
+    ]
+  },
+  {
+    "id": "eff.edhpm4.putEnchanted.tapped.attachSelf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 303.4a",
+      "CR 303.4f",
+      "CR 701.3a",
+      "CR 607.2a",
+      "CR 400.7"
+    ],
+    "pattern": "put {e:EnchantedCard} onto the battlefield tapped under your control and attach ~ to it",
+    "build": [
+      {
+        "op": "move",
+        "what": "$e",
+        "to": {
+          "zone": "battlefield",
+          "tapped": true,
+          "controller": {
+            "ref": "you"
+          }
+        },
+        "link": "putWith"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "ref": "linked",
+          "link": "putWith"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "put",
+      "attach",
+      "tapped"
+    ],
+    "examples": [
+      {
+        "text": "When this Aura enters, put enchanted artifact card onto the battlefield tapped under your control and attach this Aura to it."
+      },
+      {
+        "text": "When this Aura enters, put enchanted land card onto the battlefield tapped under your control and attach this Aura to it."
+      }
+    ],
+    "counterExamples": [
+      "When this Aura enters, put enchanted artifact card onto the battlefield under your control and attach this Aura to it.",
+      "When this Aura enters, put target artifact card onto the battlefield tapped under your control and attach this Aura to it.",
+      "When this Aura enters, put enchanted artifact card onto the battlefield tapped under your control."
+    ]
+  },
+  {
+    "id": "eff.edhpm4.putTarget.fromGraveyard.attachSelf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 303.4a",
+      "CR 303.4f",
+      "CR 701.3a",
+      "CR 607.2a",
+      "CR 400.7",
+      "CR 115.1"
+    ],
+    "pattern": "put {o:Obj} onto the battlefield under your control and attach ~ to it",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        },
+        "link": "putWith"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "ref": "linked",
+          "link": "putWith"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "put",
+      "attach"
+    ],
+    "examples": [
+      {
+        "text": "When this enchantment enters, put target artifact card from a graveyard onto the battlefield under your control and attach this enchantment to it."
+      },
+      {
+        "text": "When this enchantment enters, put target land card from a graveyard onto the battlefield under your control and attach this enchantment to it."
+      }
+    ],
+    "counterExamples": [
+      "When this enchantment enters, put target artifact card from a graveyard onto the battlefield under its owner's control and attach this enchantment to it.",
+      "When this enchantment enters, put target artifact card from a graveyard onto the battlefield under your control."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhpm4.linked.controllerSacrifices",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 701.21a",
+      "CR 109.4",
+      "CR 603.10a"
+    ],
+    "pattern": "that ( creature | permanent ) 's controller sacrifices it",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "controllerOf",
+        "object": {
+          "ref": "linked",
+          "link": "putWith"
+        }
+      },
+      "filter": {
+        "is": {
+          "ref": "linked",
+          "link": "putWith"
+        }
+      },
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "sacrifices"
+    ],
+    "examples": [
+      {
+        "text": "When this Aura enters, if it's on the battlefield, it loses \"enchant artifact card in a graveyard\" and gains \"enchant artifact put onto the battlefield with this Aura.\" Return enchanted artifact card to the battlefield under your control and attach this Aura to it. When this Aura leaves the battlefield, that permanent's controller sacrifices it."
+      },
+      {
+        "text": "When this enchantment enters, put target artifact card from a graveyard onto the battlefield under your control and attach this enchantment to it. When this enchantment leaves the battlefield, that permanent's controller sacrifices it."
+      }
+    ],
+    "counterExamples": [
+      "When this Aura leaves the battlefield, that permanent's owner sacrifices it.",
+      "When this Aura leaves the battlefield, that permanent's controller sacrifices a creature.",
+      "When this Aura leaves the battlefield, that player's controller sacrifices it."
+    ]
+  },
+  {
+    "id": "sta.edhpm4.self.flash.offTimingSacrifice",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 702.8a",
+      "CR 603.7",
+      "CR 701.21a",
+      "CR 117.1a"
+    ],
+    "pattern": "you may cast ~ as though it had flash . if you cast it ( any time | at any time ) a sorcery couldn't have been cast , the controller of the permanent it becomes sacrifices it at the beginning of the next cleanup step",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": {
+            "self": true
+          },
+          "offTimingSacrifice": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though",
+      "if",
+      "sacrifices",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "You may cast this spell as though it had flash. If you cast it at any time a sorcery couldn't have been cast, the controller of the permanent it becomes sacrifices it at the beginning of the next cleanup step."
+      },
+      {
+        "text": "You may cast ~ as though it had flash. If you cast it at any time a sorcery couldn't have been cast, the controller of the permanent it becomes sacrifices it at the beginning of the next cleanup step."
+      }
+    ],
+    "counterExamples": [
+      "You may cast this spell as though it had flash. If you cast it any time a sorcery couldn't have been cast, the controller of the permanent it becomes sacrifices it at the beginning of the next end step.",
+      "You may cast this spell as though it had flash. If you cast it any time a sorcery couldn't have been cast, the owner of the permanent it becomes sacrifices it at the beginning of the next cleanup step.",
+      "You may cast this spell as though it had flash."
+    ]
+  }
+]

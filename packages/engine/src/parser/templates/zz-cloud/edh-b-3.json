@@ -1,0 +1,408 @@
+[
+  {
+    "id": "eff.edhb3.search.upTo.cardsDesc.reveal",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 202.3"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:CardsDesc} , reveal ( them | those cards )",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "min": 0,
+      "max": "$n",
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to two creature cards with mana value 1 or less, reveal them, put them into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ enters, you may search your library for up to three artifact cards with mana value 2 or less, reveal them, put them into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two creature cards with mana value 1 or less, reveal it, put them into your hand, then shuffle.",
+      "Search your library for two creature cards with mana value 1 or less, reveal them, put them into your hand, then shuffle.",
+      "Search your graveyard for up to two creature cards with mana value 1 or less, reveal them, put them into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhb3.search.upTo.reveal.shuffleTopAnyOrder",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 401.4"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards , reveal them , then shuffle and put those cards on top in any order",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "$n",
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to three Wizard cards, reveal them, then shuffle and put those cards on top in any order."
+      },
+      {
+        "text": "Search your library for up to two Equipment cards, reveal them, then shuffle and put those cards on top in any order."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to three Wizard cards, reveal them, then shuffle and put those cards on the bottom in any order.",
+      "Search your library for up to three Wizard cards, reveal them, then shuffle and put those cards on top in a random order.",
+      "Search your library for three Wizard cards, reveal them, then shuffle and put those cards on top in any order."
+    ]
+  },
+  {
+    "id": "eff.edhb3.search.oneOfEach5",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 401.2"
+    ],
+    "pattern": "search your library for {f:SearchDesc} , {g:SearchDesc} , {h:SearchDesc} , {i:SearchDesc} , and {j:SearchDesc}",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "max": 1,
+      "and": [
+        "$g",
+        "$h",
+        "$i",
+        "$j"
+      ],
+      "as": "search"
+    },
+    "subject": "none",
+    "needs": [
+      "op:search.and"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for a white card, a blue card, a black card, a red card, and a green card, put them into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for a Plains card, an Island card, a Swamp card, a Mountain card, and a Forest card, put them onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a white card, a blue card, a black card, a red card, or a green card. Reveal those cards, put them into your hand, then shuffle.",
+      "Search your library for a white card, a blue card, a black card, and a red card. Reveal those cards, put them into your hand, then shuffle.",
+      "Search your graveyard for a white card, a blue card, a black card, a red card, and a green card. Reveal those cards, put them into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhb3.search.upTo.anyCards",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 107.3"
+    ],
+    "pattern": "search your library for up to {n:Qty} cards",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": {},
+      "min": 0,
+      "max": "$n",
+      "as": "search"
+    },
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to three cards, put them into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for up to two cards, put those cards into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for three cards, put them into your hand, then shuffle.",
+      "Search your graveyard for up to three cards, put them into your hand, then shuffle.",
+      "Search your library for up to three cards, put it into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "sta.edhb3.attached.blocks.anynumber",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 509.1a",
+      "CR 509.1b",
+      "CR 604.1",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature can block any number of creatures",
+    "build": {
+      "s": "rule",
+      "rule": "extraBlockers",
+      "value": "none",
+      "of": {
+        "is": {
+          "ref": "attachedTo"
+        }
+      }
+    },
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Enchant Goblin Wizard\nEnchanted creature can block any number of creatures."
+      },
+      {
+        "text": "Equip {1}{G}{W}\nEquipped creature can block any number of creatures."
+      }
+    ],
+    "counterExamples": [
+      "Enchant Goblin Wizard\nEnchanted creature can block an additional creature each combat.",
+      "Enchant Goblin Wizard\nEnchanted creature can block any number of creatures this turn.",
+      "Target creature can block any number of creatures."
+    ]
+  },
+  {
+    "id": "eff.edhb3.you.draw.loseLife.thenEffects",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "you draw {n:Qty} card[s] , lose {m:Qty} life , then {e:Effects}",
+    "build": {
+      "$concat": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": "$m"
+        },
+        "$e"
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "You draw two cards, lose 2 life, then create a Treasure token."
+      },
+      {
+        "text": "When ~ enters, you draw a card, lose 1 life, then create a Clue token."
+      }
+    ],
+    "counterExamples": [
+      "You draw two cards, lose 2 life, and create a Treasure token.",
+      "You draw two cards, gain 2 life, then create a Treasure token.",
+      "Target player draws two cards, loses 2 life, then creates a Treasure token."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhb3.exile.allCards.allHandsAndGraveyards",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 400.1",
+      "CR 404.1",
+      "CR 608.2c"
+    ],
+    "pattern": "exile all cards from all hands and graveyards",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": [
+            "hand",
+            "graveyard"
+          ],
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Exile all permanents. Exile all cards from all hands and graveyards."
+      },
+      {
+        "text": "Exile all cards from all hands and graveyards. Each player draws a card."
+      }
+    ],
+    "counterExamples": [
+      "Exile all cards from all hands.",
+      "Exile all cards from all graveyards.",
+      "Exile all cards from all hands and libraries."
+    ]
+  },
+  {
+    "id": "eff.edhb3.search.may.basicLandOrSubtype.reveal.hand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 2,
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 701.24a"
+    ],
+    "pattern": "you may search your library for a basic land card or {st:Subtypes} card , reveal it , put it into your hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "anyOf": [
+              {
+                "supertypes": [
+                  "Basic"
+                ],
+                "types": [
+                  "Land"
+                ]
+              },
+              {
+                "subtypes": "$st"
+              }
+            ]
+          },
+          "max": 1,
+          "reveal": true,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may search your library for a basic land card or Town card, reveal it, put it into your hand, then shuffle."
+      },
+      {
+        "text": "When ~ enters, you may search your library for a basic land card or Cave card, reveal it, put it into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may search your library for a basic land card or Town card, reveal it, put it onto the battlefield, then shuffle.",
+      "When ~ enters, you may search your library for a basic land card and Town card, reveal it, put it into your hand, then shuffle.",
+      "When ~ enters, you may search your library for a nonbasic land card or Town card, reveal it, put it into your hand, then shuffle."
+    ]
+  }
+]

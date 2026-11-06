@@ -27,6 +27,10 @@
           "optional": true,
           "name": {
             "$ordinal": "kicker"
+          },
+          "xMin": {
+            "$ifParam": "xMin",
+            "then": "$xMin"
           }
         }
       ]

@@ -1,0 +1,15 @@
+# edh-c-39 (Commander EDHREC ranks 27,501-28,000, first pass): switch its power and toughness, prevent the next N damage + a counter per damage prevented, X plus N life, Auras that pump and block each combat / can't attack alone, ~ and that creature phase out, mana values among cards in your graveyard, a creature has a -1/-1 counter, put that card into their graveyard, look at a library and put the card on the bottom, look at a library and shuffle it. After editing: npm run cards -- fixtures
+Valakut Fireboar
+Vitalizing Cascade
+Test of Faith
+Spirespine
+Sightless Brawler
+Dream Fighter
+Syndicate Infiltrator
+Tenacious Hunter
+Eye Spy
+Visions
+Coral Fighters
+Swirling Sandstorm
+Tetsuo Umezawa
+Goblin Test Pilot

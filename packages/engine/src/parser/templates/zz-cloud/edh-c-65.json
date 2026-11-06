@@ -1,0 +1,386 @@
+[
+  {
+    "id": "eff.edhv65.mill.you.forEachCounterOn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "mill a card for each {k:CounterKind} counter on {o:Obj}",
+    "build": {
+      "op": "mill",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "counters",
+        "on": "$o",
+        "kind": "$k"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, put a gnaw counter on ~. Then mill a card for each gnaw counter on ~."
+      },
+      {
+        "text": "At the beginning of your end step, mill a card for each charge counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, mill two cards for each charge counter on ~.",
+      "At the beginning of your end step, mill a card for each charge counter on ~ unless it is blue."
+    ]
+  },
+  {
+    "id": "sta.edhv65.enchantedLand.creature.with.stillLand.noColor",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 303.4",
+      "CR 205.1b",
+      "CR 105.3",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "enchanted land is ( a | an ) {pt:BasePT} {st:Subtypes} creature with {a:Abilities} . it's still a land",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted land is a 3/3 Treefolk creature with vigilance. It's still a land."
+      },
+      {
+        "text": "Enchanted land is a 2/6 Wall creature with defender and reach. It's still a land."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted land is a 4/4 Elemental creature with reach and haste.",
+      "Enchanted creature is a 4/4 Elemental creature with reach and haste. It's still a land.",
+      "Enchanted land is a 4/4 Elemental creature with reach and haste until end of turn. It's still a land.",
+      "Enchanted land is a 2/6 Wall creature with defender and reach until end of turn. It's still a land."
+    ]
+  },
+  {
+    "id": "sta.edhv65.enchantedBasic.creature.with.stillLand",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 303.4",
+      "CR 205.1b",
+      "CR 105.3",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "enchanted ( plains | island | swamp | mountain | forest ) is ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} creature with {a:Abilities} . it's still a land",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted Forest is a 5/5 green Treefolk creature with reach. It's still a land."
+      },
+      {
+        "text": "Enchanted Island is a 2/5 blue Wall creature with defender and flying. It's still a land."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted Forest is a 5/5 green Treefolk creature with reach.",
+      "Enchanted Forest is a 5/5 green Treefolk creature with reach. It's still a creature.",
+      "Enchanted Forest is a 5/5 green Treefolk creature with reach and haste until end of turn. It's still a land."
+    ]
+  },
+  {
+    "id": "eff.edhv65.each.equippedCreatureAndEquipment.grant",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 301.5",
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 702.2"
+    ],
+    "pattern": "each equipped creature and equipment you control gains {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "controller": "you",
+              "anyOf": [
+                {
+                  "types": [
+                    "Creature"
+                  ],
+                  "equipped": true
+                },
+                {
+                  "subtypes": [
+                    "Equipment"
+                  ]
+                }
+              ]
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, each equipped creature and Equipment you control gains first strike until end of turn."
+      },
+      {
+        "text": "At the beginning of your end step, each equipped creature and Equipment you control gains vigilance and trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, each equipped creature and Equipment you control gains first strike.",
+      "Whenever ~ attacks, each equipped creature and Equipment you control loses first strike until end of turn.",
+      "Whenever ~ attacks, each equipped creature and artifact you control gains first strike until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv65.destroy.all.exceptSelf",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 109.2",
+      "CR 608.2b"
+    ],
+    "pattern": "destroy all {f:Filter} ( except | except for ) ~",
+    "build": {
+      "op": "destroy",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "not": {
+            "self": true
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, destroy all creatures except for ~. Those creatures can't be regenerated."
+      },
+      {
+        "text": "When ~ enters, destroy all artifacts and creatures except ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, destroy all creatures except for target creature.",
+      "When ~ enters, destroy all creatures except for commanders you control."
+    ]
+  },
+  {
+    "id": "eff.edhv65.return.cardAndCard.graveyard.hand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 400.2",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 700.2"
+    ],
+    "pattern": "return ( a | an ) {f:Filter} card and ( a | an ) {g:Filter} card from your graveyard to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "regrowA"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$g"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true,
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "regrowA"
+              }
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "regrowB"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "regrowA"
+            },
+            {
+              "ref": "bound",
+              "name": "regrowB"
+            }
+          ]
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Return an artifact card and a land card from your graveyard to your hand."
+      },
+      {
+        "text": "Return a Goblin card and an enchantment card from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Return a creature card and a land card from your graveyard to the battlefield.",
+      "Return a creature card and a land card from an opponent's graveyard to your hand.",
+      "Return a creature card or a land card from your graveyard to your hand."
+    ]
+  }
+]

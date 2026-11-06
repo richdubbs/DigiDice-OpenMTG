@@ -1,0 +1,327 @@
+[
+  {
+    "id": "eff.edhn36.milled.may.put.hand.desc",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "weak": 1,
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j"
+    ],
+    "pattern": "you may put {f:DiscardDesc} from among {g:Milled} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Mill three cards. You may put a noncreature, nonland card from among the cards milled this way into your hand."
+      },
+      {
+        "text": "Mill four cards. You may put a noncreature, nonartifact card from among the cards milled this way into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill three cards. You may put a noncreature, nonland card from among the cards milled this way onto the battlefield.",
+      "Mill three cards. You must put a noncreature, nonland card from among the cards milled this way into your hand.",
+      "Mill three cards. You may put two noncreature, nonland cards from among the cards milled this way into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn36.milled.may.put.hand.orCard.mvAtMost",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 202.3",
+      "CR 400.7j"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card or ( a | an ) {h:Filter} card with mana value {n:Qty} or less from among {g:Milled} into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  "$f",
+                  {
+                    "anyOf": [
+                      "$h"
+                    ],
+                    "manaValue": {
+                      "op": "<=",
+                      "value": "$n"
+                    }
+                  }
+                ]
+              }
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Mill three cards. You may put a Forest card or a creature card with mana value 2 or less from among the cards milled this way into your hand."
+      },
+      {
+        "text": "Mill four cards. You may put an artifact card or an instant card with mana value 3 or less from among the cards milled this way into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill three cards. You may put a Forest card or a creature card with mana value 2 or greater from among the cards milled this way into your hand.",
+      "Mill three cards. You may put a Forest card or a creature card with mana value 2 or less from among the cards milled this way onto the battlefield.",
+      "Mill three cards. You may put a Forest card and a creature card with mana value 2 or less from among the cards milled this way into your hand.",
+      "Mill three cards. You must put a Forest card or a creature card with mana value 2 or less from among the cards milled this way into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn36.dig.upTo.putHand.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4",
+      "CR 701.24c"
+    ],
+    "pattern": "put up to {n:Qty} of {g:Seen} into your hand and {r:Rest} on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "consumes": [
+      "random",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. Put up to two of them into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. Put up to one of those cards into your hand and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. Put up to two of them into your hand and the rest on the bottom of your library in any order.",
+      "Look at the top six cards of your library. Put up to two of them into your hand and the rest on top of your library in a random order.",
+      "Look at the top six cards of your library. Put up to two of them onto the battlefield and the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhn36.delay.return.whenThatTokenDies",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 603.10a",
+      "CR 700.4",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "return {o:Obj} to the battlefield under its owner 's control when {t:ThatToken} dies",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "is": "$t"
+          },
+          "from": "battlefield",
+          "to": "graveyard"
+        }
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "battlefield",
+            "controller": "owner"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "Exile target creature. Create a 3/3 white Knight creature token. Return the exiled card to the battlefield under its owner's control when that token dies."
+      },
+      {
+        "text": "Exile target artifact. Create a 1/1 white Soldier creature token. Return the exiled card to the battlefield under its owner's control when that token dies."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature. Create a 3/3 white Knight creature token. Return that card to the battlefield under its owner's control when that token leaves the battlefield.",
+      "Exile target creature. Create a 3/3 white Knight creature token. Return that card to the battlefield under your control when that token dies.",
+      "Exile target creature. Create a 3/3 white Knight creature token. Return that card to the battlefield under its owner's control when that creature dies."
+    ]
+  },
+  {
+    "id": "sta.edhn36.obj.noAttackBlockCrew.noActivate.exceptMana",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1c",
+      "CR 509.1b",
+      "CR 702.122a",
+      "CR 602.5",
+      "CR 605.1a",
+      "CR 303.4"
+    ],
+    "pattern": "{o:Obj} can't attack , block , or crew vehicles . its activated abilities can't be activated unless they're mana abilities",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "block"
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "crew"
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "activate",
+          "exceptMana": true
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature can't attack, block, or crew Vehicles. Its activated abilities can't be activated unless they're mana abilities."
+      },
+      {
+        "text": "Enchanted artifact can't attack, block, or crew Vehicles. Its activated abilities can't be activated unless they're mana abilities."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't attack, block, or crew Vehicles. Its activated abilities can't be activated unless they're loyalty abilities.",
+      "Enchanted creature can't attack or block. Its activated abilities can't be activated unless they're mana abilities.",
+      "Enchanted creature can't attack, block, or crew Vehicles. Its triggered abilities can't be activated unless they're mana abilities."
+    ]
+  }
+]

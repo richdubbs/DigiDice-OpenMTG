@@ -19,10 +19,13 @@ import { findObjects } from './filter';
 import { filterCtxOutside } from './filter-env';
 import { lifeBudget } from './life';
 import { solve } from './solver';
-import { buildProviders, extraManaModes, manaSources, spendAllows, spendOptions, type ManaConverter, type ManaSource } from './sources';
+import { buildProviders, costKindOf, extraManaModes, manaSources, spendAllows, spendOptions, type ManaConverter, type ManaSource } from './sources';
 import { solveWithConverters } from './convert';
 import { costUseDenial, type CostUse } from './cant';
+import { removableCounters } from './counters';
 import { crewSaddleValue } from '../statics/hooks';
+import { staticAnyColorEverywhere } from '../statics/play-permits';
+import { lifeForColors } from './life-for';
 import { colorSymbolCount } from '../types/mana';
 
 /**
@@ -36,13 +39,15 @@ export function countersFor(counters: Readonly<Record<string, number>>, kind: st
   return n;
 }
 
-export type PickPart = Extract<PlanPart, { kind: 'sacrifice' | 'returnToHand' | 'putIntoLibrary' | 'exileFrom' | 'discard' | 'tapUntapped' | 'tapPower' | 'collectEvidence' | 'reveal' | 'removeCounters' | 'putCounters' | 'behold' | 'chooseObject' | 'untapTapped' }>;
+export type PickPart = Extract<PlanPart, { kind: 'sacrifice' | 'unattach' | 'returnToHand' | 'putIntoLibrary' | 'exileFrom' | 'discard' | 'moveCards' | 'tapUntapped' | 'tapPower' | 'collectEvidence' | 'reveal' | 'removeCounters' | 'putCounters' | 'behold' | 'chooseObject' | 'untapTapped' }>;
 
 export const isPickPart = (part: PlanPart): part is PickPart => {
   switch (part.kind) {
-    case 'sacrifice': case 'returnToHand': case 'exileFrom': case 'tapUntapped': case 'tapPower': case 'collectEvidence': case 'reveal': case 'behold': case 'chooseObject': return true;
+    case 'sacrifice': case 'unattach': case 'returnToHand': case 'exileFrom': case 'tapUntapped': case 'tapPower': case 'collectEvidence': case 'behold': case 'chooseObject': return true;
+    case 'reveal': return part.hand !== true; // edh-next-117: "reveal your hand" picks nothing
     case 'putIntoLibrary': return true; // trek-9: the source itself (isSelfPart)
     case 'untapTapped': return true; // p2-cost-parts-1
+    case 'moveCards': return true; // edh-d-54
     case 'discard': return part.hand !== true; // "discard your hand" picks nothing
     case 'removeCounters': return part.filter !== undefined && part.among !== true; // on the source otherwise; r3-cost: "from among" is chosen counter by counter as it is paid
     case 'putCounters': return part.self !== true && part.filter !== undefined;
@@ -52,32 +57,48 @@ export const isPickPart = (part: PlanPart): part is PickPart => {
 
 /** "Sacrifice this permanent", "discard this card": the source itself pays, there is nothing to choose. */
 export const isSelfPart = (part: PlanPart): boolean =>
-  (part.kind === 'sacrifice' || part.kind === 'returnToHand' || part.kind === 'exileFrom' || part.kind === 'discard' || part.kind === 'reveal' || part.kind === 'putIntoLibrary') && part.self === true;
+  (part.kind === 'sacrifice' || part.kind === 'unattach' || part.kind === 'returnToHand' || part.kind === 'exileFrom' || part.kind === 'discard' || part.kind === 'reveal' || part.kind === 'putIntoLibrary') && part.self === true;
 
 /** Discarding at random (CR 701.9b) is decided when the cost is paid. */
 export const isRandomPart = (part: PlanPart): boolean => part.kind === 'discard' && part.random === true;
 
-type Threshold = Extract<PlanPart, { kind: 'tapPower' | 'collectEvidence' | 'exileFrom' }>;
+type Threshold = Extract<PlanPart, { kind: 'tapPower' | 'collectEvidence' | 'exileFrom' | 'sacrifice' }>;
 
 /**
  * A part that takes as many objects as it needs to reach a total (tapPower, collectEvidence). std-costs-1: also an EXACT total, "Exile one or more other artifacts
  * you control with total mana value X" (`exileFrom` with `total`, CR 118.3, 107.3a): the objects' mana values add up to exactly that number (isExactPart).
  */
-export const isThresholdPart = (part: PlanPart): part is Threshold => part.kind === 'tapPower' || part.kind === 'collectEvidence' || (part.kind === 'exileFrom' && (part.total !== undefined || part.symbolTotal !== undefined)); // std-cardcopy-7: or a total of mana symbols
+export const isThresholdPart = (part: PlanPart): part is Threshold => part.kind === 'tapPower' || part.kind === 'collectEvidence' || (part.kind === 'exileFrom' && (part.total !== undefined || part.symbolTotal !== undefined || part.mvTotal !== undefined || part.typesAmong !== undefined)) || (part.kind === 'sacrifice' && part.totalPower !== undefined); // edh-next-147: or a sacrifice of total power N or more // std-cardcopy-7: or a total of mana symbols; edh-d-100: or of mana values
 
 /** std-costs-1: a threshold part whose total must be met exactly, not exceeded. */
 export const isExactPart = (part: PlanPart): boolean => part.kind === 'exileFrom' && part.total !== undefined;
 
-export const thresholdOf = (part: Threshold): number => (part.kind === 'tapPower' ? part.power : part.kind === 'exileFrom' ? part.total ?? part.symbolTotal?.atLeast ?? 0 : part.amount);
+export const thresholdOf = (part: Threshold): number => (part.kind === 'tapPower' ? part.power : part.kind === 'sacrifice' ? part.totalPower ?? 0 : part.kind === 'exileFrom' ? part.total ?? part.symbolTotal?.atLeast ?? part.mvTotal?.atLeast ?? part.typesAmong?.atLeast ?? 0 : part.amount);
+
+/** edh-d-100 (CR 205.2a): the card types of a card, as "card types among them" counts them. */
+const CARD_TYPES: readonly string[] = ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Instant', 'Kindred', 'Land', 'Planeswalker', 'Sorcery'];
+function cardTypesOf(s: GameState, id: ObjectId): string[] {
+  const o = s.objects[id];
+  return o ? charsOfObject(s, o).types.filter((t) => CARD_TYPES.includes(t)) : [];
+}
+
+/**
+ * The total a threshold part's objects reach together: the sum of what each counts (valueOf), or, for "with four or more card types among them" (`typesAmong`, edh-d-100, CR 205.2a), the
+ * number of different card types among them (a union, never a sum).
+ */
+export function thresholdTotal(s: GameState, part: Threshold, ids: readonly ObjectId[]): number {
+  if (part.kind === 'exileFrom' && part.typesAmong !== undefined) return new Set(ids.flatMap((id) => cardTypesOf(s, id))).size;
+  return ids.reduce((n, id) => n + valueOf(s, part, id), 0);
+}
 
 /** What one object counts for a threshold part: a creature's power, or a card's mana value. */
 export function valueOf(s: GameState, part: Threshold, id: ObjectId): number {
   const o = s.objects[id];
   if (!o) return 0;
   const c = charsOfObject(s, o);
-  if (part.kind === 'tapPower' && part.as !== undefined) return crewSaddleValue(s, id, c); // FAST5X E3: what it counts for a crew or saddle cost (CR 702.122a, 702.171a)
+  if (part.kind === 'tapPower' && part.as !== undefined) return crewSaddleValue(s, id, c, part.as); // FAST5X E3: what it counts for a crew or saddle cost (CR 702.122a, 702.171a)
   if (part.kind === 'exileFrom' && part.symbolTotal !== undefined) return colorSymbolCount(c.manaCost, part.symbolTotal.color); // std-cardcopy-7 (CR 107.4)
-  return part.kind === 'tapPower' ? ptNumbers(c).power ?? 0 : c.manaValue;
+  return part.kind === 'tapPower' || part.kind === 'sacrifice' ? ptNumbers(c).power ?? 0 : c.manaValue; // edh-next-147: a sacrifice of total power counts power (CR 208.1)
 }
 
 /**
@@ -87,10 +108,10 @@ export function valueOf(s: GameState, part: Threshold, id: ObjectId): number {
 export function amongCounterHolders(s: GameState, player: PlayerId, sourceId: ObjectId | null, part: Extract<PlanPart, { kind: 'removeCounters' }>): ObjectId[] {
   if (part.filter === undefined) return [];
   const ctx = filterCtxOutside(s, { controller: player, ...(sourceId ? { sourceId } : {}), x: null });
-  return findObjects(s, { ...part.filter, zone: 'battlefield', controller: 'you' }, ctx).filter((o) => !o.phasedOut && countersFor(o.counters, part.counter) > 0).map((o) => o.id);
+  return findObjects(s, { ...part.filter, zone: 'battlefield', controller: 'you' }, ctx).filter((o) => !o.phasedOut && removableCounters(s, o.id, o.counters, part.counter) > 0).map((o) => o.id); // edh-players-22: stun counters that can't be removed do not count
 }
 export function countersAmong(s: GameState, player: PlayerId, sourceId: ObjectId | null, part: Extract<PlanPart, { kind: 'removeCounters' }>): number {
-  return amongCounterHolders(s, player, sourceId, part).reduce((n, id) => n + countersFor(s.objects[id]!.counters, part.counter), 0);
+  return amongCounterHolders(s, player, sourceId, part).reduce((n, id) => n + removableCounters(s, id, s.objects[id]!.counters, part.counter), 0);
 }
 
 /** How many objects a pick part takes (a threshold part takes at least one unless its total is 0). */
@@ -114,6 +135,10 @@ export function partCandidates(s: GameState, player: PlayerId, sourceId: ObjectI
       case 'sacrifice':
         if (part.self) return sourceId && s.objects[sourceId]?.zone === 'battlefield' ? [sourceId] : [];
         return findObjects(s, { ...part.filter, zone: 'battlefield', controller: 'you' }, ctx).map((o) => o.id); // CR 701.21a: only your own
+      case 'unattach': { // edh-top-15 (CR 701.3d): a permanent of the filter that is attached to something (anyone's: the Equipment that granted the ability may be an opponent's)
+        const got = part.self ? (sourceId && s.objects[sourceId]?.zone === 'battlefield' ? [sourceId] : []) : findObjects(s, { controller: 'any', ...part.filter, zone: 'battlefield' }, ctx).map((o) => o.id);
+        return got.filter((id) => s.objects[id]?.attachedTo !== null && s.objects[id]?.attachedTo !== undefined);
+      }
       case 'returnToHand':
         if (part.self) return sourceId && s.objects[sourceId]?.zone === 'battlefield' ? [sourceId] : [];
         // FAST3 T14: "return an enchantment to its owner's hand" may return anyone's (CR 118.3; the text says "you control" where it means yours, and the parsed
@@ -148,6 +173,8 @@ export function partCandidates(s: GameState, player: PlayerId, sourceId: ObjectI
         // FAST5X E13: "Exile a creature you control" (CR 118.3): permanents you control
         if (part.zone === 'battlefield') return findObjects(s, { ...(part.filter ?? {}), zone: 'battlefield', controller: 'you' }, ctx).map((o) => o.id);
         return findObjects(s, { ...(part.filter ?? {}), zone: part.zone, owner: 'you' }, ctx).map((o) => o.id);
+      case 'moveCards': // edh-d-54 (CR 118.3): cards of the filter in exile (whoever owns them, as the filter says) or in your hand
+        return findObjects(s, part.from === 'hand' ? { ...(part.filter ?? {}), zone: 'hand', owner: 'you' } : { ...(part.filter ?? {}), zone: 'exile', faceDown: false }, ctx).map((o) => o.id); // face-down cards in exile are not looked at (Void Attendant, Ruin Processor rulings): never offered
       case 'collectEvidence':
         return findObjects(s, { zone: 'graveyard', owner: 'you' }, ctx).map((o) => o.id);
       case 'behold':
@@ -160,7 +187,9 @@ export function partCandidates(s: GameState, player: PlayerId, sourceId: ObjectI
         // std-costs-2 (CR 601.2b): the objects of each filter, in the zone it names ("a creature you control or a warped creature card you own in exile")
         return [...new Set(part.filters.flatMap((f) => findObjects(s, f, ctx).map((o) => o.id)))];
       case 'removeCounters':
-        return part.filter ? findObjects(s, { ...part.filter, zone: 'battlefield', controller: 'you' }, ctx).filter((o) => countersFor(o.counters, part.counter) >= part.count).map((o) => o.id) : [];
+        // edhd68 (Rift Elemental): "a permanent you control or suspended card you own": the filter names the zone and the player of each half itself
+        if (part.filter?.anyOf !== undefined && Array.isArray(part.filter.zone)) return findObjects(s, part.filter, ctx).filter((o) => removableCounters(s, o.id, o.counters, part.counter) >= part.count).map((o) => o.id);
+        return part.filter ? findObjects(s, { ...part.filter, zone: 'battlefield', controller: 'you' }, ctx).filter((o) => removableCounters(s, o.id, o.counters, part.counter) >= part.count).map((o) => o.id) : [];
       case 'putCounters':
         return part.filter ? findObjects(s, { ...part.filter, zone: 'battlefield', controller: 'you' }, ctx).map((o) => o.id) : [];
       default:
@@ -173,7 +202,7 @@ export function partCandidates(s: GameState, player: PlayerId, sourceId: ObjectI
   const use = costUse(part);
   // CR 702.26b: a phased-out permanent is treated as though it doesn't exist. CR 614.17b (WP31): an object a "can't" effect keeps from paying this part
   // ("can't be sacrificed", "can't leave the battlefield", "you can't discard cards", ...) is no candidate.
-  const rest = all.filter((id) => id !== self && !s.objects[id]?.phasedOut && (use === undefined || costUseDenial(s, player, id, use) === null));
+  const rest = all.filter((id) => id !== self && !s.objects[id]?.phasedOut && (use === undefined || costUseDenial(s, player, id, use, part.kind === 'putCounters' ? part.counter : undefined, costKindOf(plan?.spend)) === null));
   return chosen ? rest.filter((id) => chosen.includes(id)) : rest;
 }
 
@@ -183,6 +212,7 @@ function costUse(part: PlanPart): CostUse | undefined {
     case 'sacrifice': return 'sacrifice';
     case 'returnToHand': return part.beamUp === true ? 'beamUp' : 'returnToHand'; // trek-1: a beam me up cost (rules/cant.ts)
     case 'exileFrom': return 'exile';
+    case 'tapPower': return part.as === 'crew' ? 'crew' : undefined; // edh-c-72 (CR 702.122a, 614.17b): a creature that can't crew can't be tapped for a crew cost
     case 'collectEvidence': return 'exile'; // CR 701.59a: exile cards from your graveyard (WP31 review)
     case 'discard': return 'discard';
     case 'putCounters': return 'putCounters';
@@ -212,8 +242,15 @@ function namesOf(s: GameState, id: ObjectId): string {
 export function pickFeasible(s: GameState, player: PlayerId, sourceId: ObjectId | null, plan: CostPlan, part: PickPart): boolean {
   const cands = pickCandidates(s, player, sourceId, plan, part);
   if (isExactPart(part) && isThresholdPart(part)) return exactSubset(cands.map((id) => valueOf(s, part, id)), thresholdOf(part), pickCount(part));
-  if (isThresholdPart(part)) return cands.reduce((n, id) => n + valueOf(s, part, id), 0) >= thresholdOf(part);
-  if (part.kind === 'sacrifice' && part.distinctNames === true) return new Set(cands.map((id) => namesOf(s, id))).size >= pickCount(part); // r3-cost
+  if (isThresholdPart(part)) return thresholdTotal(s, part, cands) >= thresholdOf(part); // edh-d-100: a union for `typesAmong`
+  const sac = part as PickPart; // edh-next-147: a sacrifice is a threshold part only with `totalPower`, so the type guard above does not rule every sacrifice out
+  if (sac.kind === 'sacrifice' && sac.distinctNames === true) return new Set(cands.map((id) => namesOf(s, id))).size >= pickCount(sac); // r3-cost
+  if (part.kind === 'discard' && part.distinctNames === true) return new Set(cands.map((id) => namesOf(s, id))).size >= pickCount(part); // edh-next-90 (CR 118.3, 201.2)
+  if (part.kind === 'discard' && part.sameName === true) { // edh-c-111 (CR 118.3, 201.2): some name is shared by enough of the candidates
+    const by = new Map<string, number>();
+    for (const id of cands) by.set(namesOf(s, id), (by.get(namesOf(s, id)) ?? 0) + 1);
+    return [...by.values()].some((n) => n >= pickCount(part));
+  }
   return cands.length >= pickCount(part);
 }
 
@@ -268,10 +305,11 @@ export function findAssignment(
   const needMana = withMana && plan.mana.length > 0;
   const sources = needMana ? manaSources(s, player, undefined, plan.spend) : [];
   const allows = spendAllows(s, player, plan.spend);
-  const anyType = spendOptions(plan.spend); // FAST5X E29 (CR 609.4b); std-rx32: "as though it were mana of any color"
+  const lifeFor = lifeForColors(s, player, plan.spend); // edhc5 (CR 118.1): K'rrik; the Defilers
+  const anyType = { ...spendOptions(plan.spend, staticAnyColorEverywhere(s, player)), ...(lifeFor ? { lifeFor } : {}) }; // edh-mana-keywords-4: the player's "spend mana as though it were mana of any color"; FAST5X E29 (CR 609.4b); std-rx32: "as though it were mana of any color"
   const bySource = new Map(sources.map((x) => [x.objectId, x]));
   const p = s.players.find((x) => x.id === player)!;
-  const life = Math.max(0, lifeBudget(s, player) - lifeInParts(plan));
+  const life = Math.max(0, lifeBudget(s, player, costKindOf(plan.spend)) - lifeInParts(plan));
   // An object is "lost" to the mana payment when the part uses it up in a way that matters to mana.
   const lost = (group: Group, id: ObjectId): boolean => (group === 'tap' ? bySource.has(id) : group === 'remove' ? bySource.get(id)?.modes.some((m) => m.sacrifices) === true : false);
   // FAST5X E5 (CR 605.3a): filter abilities may pay too, when the ordinary sources can't (rules/convert.ts); read only then. A filter ability's permanent is
@@ -373,6 +411,12 @@ export function findAssignment(
     if (isThresholdPart(part)) {
       // Total power / mana value N or more: the fewest objects that reach it, preferring the ones mana does not need.
       const need = thresholdOf(part);
+      // edh-d-100 (CR 205.2a; Nethergoyf): card types among them: a union, so the fewest cards that reach it are found by adding cards while the union grows
+      if (part.kind === 'exileFrom' && part.typesAmong !== undefined) {
+        const pool = [...relevant, ...neutral];
+        for (let j = 0; j <= Math.min(pool.length, 9); j++) if (combos(pool, j, (chosen) => thresholdTotal(s, part, [...fixed, ...chosen]) >= need && take(chosen))) return true;
+        return false;
+      }
       const val = (id: ObjectId): number => valueOf(s, part, id);
       const have = fixed.reduce((t, id) => t + val(id), 0);
       const byValue = (a: ObjectId, b: ObjectId): number => val(b) - val(a);
@@ -397,14 +441,25 @@ export function findAssignment(
     const need = pickCount(part) - fixed.length;
     if (need < 0) return false;
     // r3-cost (CR 118.3, 201.2): "with different names": the objects are not interchangeable; every combination of the free ones is tried (few objects)
-    if (part.kind === 'sacrifice' && part.distinctNames === true) {
+    const named = part as PickPart; // edh-next-147: see pickFeasible
+    if ((named.kind === 'sacrifice' || named.kind === 'discard') && named.distinctNames === true) { // edh-next-90: a discard with different names too
       const names = (ids: ObjectId[]): boolean => new Set(ids.map((id) => namesOf(s, id))).size === ids.length;
       if (!names(fixed)) return false;
       return combos(free, need, (chosen) => names([...fixed, ...chosen]) && take(chosen));
     }
-    // Neutral objects are interchangeable as far as mana goes, so only the first few ever need trying.
+    // edh-c-111 (CR 118.3, 201.2): "with the same name": every combination of the free cards is tried (few cards in a hand)
+    if (part.kind === 'discard' && part.sameName === true) {
+      const same = (ids: ObjectId[]): boolean => new Set(ids.map((id) => namesOf(s, id))).size <= 1;
+      if (!same(fixed)) return false;
+      return combos(free, need, (chosen) => same([...fixed, ...chosen]) && take(chosen));
+    }
+    // Neutral objects are interchangeable as far as mana goes, so only the first few ever need trying. edh-mana-keywords-6 (CR 118.3; "Sacrifice a Swamp and a Forest"):
+    // not for another part of the same group that follows, which may need the very object this part would take first (a Swamp Forest pays the Forest part only);
+    // then which neutral objects this part takes is tried too
+    const competes = order.slice(n + 1).some((k) => groupOf(parts[k] as PickPart) === group);
     for (let j = 0; j <= Math.min(need, relevant.length); j++) {
       if (need - j > neutral.length) continue;
+      if (competes) { if (combos(relevant, j, (chosen) => combos(neutral, need - j, (rest) => take([...chosen, ...rest])))) return true; continue; }
       const rest = neutral.slice(0, need - j);
       if (combos(relevant, j, (chosen) => take([...chosen, ...rest]))) return true;
     }

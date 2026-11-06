@@ -1,0 +1,249 @@
+[
+  {
+    "id": "cm.edhv49.self.also.less.if",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5",
+      "CR 113.6"
+    ],
+    "pattern": "it also costs {m:ManaCost} less to cast if {c:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "also"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {1} less to cast if you control a Golem. It also costs {1} less to cast if you control an Island."
+      },
+      {
+        "text": "~ costs {2} less to cast if you control a Spirit. It also costs {1} less to cast if you control three or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "It also costs {1} more to cast if you control a Golem.",
+      "It also costs {1} less to cast unless you control a Golem.",
+      "It also costs {1} less to cast for each Golem you control."
+    ]
+  },
+  {
+    "id": "eff.edhv49.player.loseLife.perCardFewerThanThreeInHand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 119.3",
+      "CR 402.1",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] 1 life for each card fewer than three in their hand",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "max",
+        "args": [
+          0,
+          {
+            "q": "math",
+            "op": "-",
+            "args": [
+              3,
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "zone": "hand",
+                    "owner": "$p",
+                    "isCard": true
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each opponent's end step, that player loses 1 life for each card fewer than three in their hand."
+      },
+      {
+        "text": "When ~ enters, target opponent loses 1 life for each card fewer than three in their hand."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent loses 1 life for each card fewer than four in their hand.",
+      "When ~ enters, target opponent loses 2 life for each card fewer than three in their hand.",
+      "When ~ enters, target opponent gains 1 life for each card fewer than three in their hand."
+    ]
+  },
+  {
+    "id": "eff.edhv49.player.loseLife.twicePerLifeGained",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 119.3",
+      "CR 603.2",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] 2 life for each 1 life they gained",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          2,
+          {
+            "q": "eventAmount"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player gains life, that player loses 2 life for each 1 life they gained."
+      },
+      {
+        "text": "Whenever an opponent gains life, that player loses 2 life for each 1 life they gained."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player gains life, that player loses 3 life for each 1 life they gained.",
+      "Whenever a player gains life, that player loses 2 life for each 2 life they gained.",
+      "Whenever a player gains life, that player gains 2 life for each 1 life they gained."
+    ]
+  },
+  {
+    "id": "eff.edhv49.forEachPlayer.damageThemAndTheirCreatures.equalCreatures",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 101.4",
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 608.2h"
+    ],
+    "pattern": "for each player , {src:Obj} deal[s] damage to that player and each creature that player controls equal to the number of creatures they control",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "amount": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": {
+                  "ref": "bound",
+                  "name": "each"
+                }
+              }
+            }
+          },
+          "also": [
+            {
+              "to": {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": {
+                    "ref": "bound",
+                    "name": "each"
+                  }
+                }
+              },
+              "amount": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": {
+                      "ref": "bound",
+                      "name": "each"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. For each player, ~ deals damage to that player and each creature that player controls equal to the number of creatures they control."
+      },
+      {
+        "text": "For each player, ~ deals damage to that player and each creature that player controls equal to the number of creatures they control. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "For each player, ~ deals damage to that player and each creature that player controls equal to the number of lands they control.",
+      "For each player, ~ deals damage to that player or each creature that player controls equal to the number of creatures they control.",
+      "For each player, ~ deals damage to each creature that player controls and that player equal to the number of creatures they control."
+    ]
+  }
+]

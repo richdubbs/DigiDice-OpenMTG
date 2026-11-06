@@ -1,0 +1,5 @@
+# edh-perms-4 (Commander lane edh-perms; test/cloud/edh-perms-4, golden edh-perms-4-review.json)
+# Auras that enchant a card in a graveyard (feature:enchant.zone): Animate Dead, Dance of the Dead, Necromancy
+Animate Dead
+Dance of the Dead
+Necromancy

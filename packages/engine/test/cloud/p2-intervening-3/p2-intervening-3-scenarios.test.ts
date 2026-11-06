@@ -83,7 +83,8 @@ describe('CR 400.3: "At the beginning of your end step, if a permanent was put i
 const NEAR_MISSES: readonly string[] = [
   "Whenever this creature attacks, if it's attacking the player with the least life, you gain 2 life.",
   'When this creature enters, if three mana of the same color was spent to cast it, you gain 2 life.',
-  'At the beginning of your end step, if a permanent was put into your graveyard from the battlefield this turn, you gain 2 life.',
+  // edh-next-59: "a permanent was put into your graveyard from the battlefield this turn" is now read (a permanent you own went from the battlefield to your graveyard, Kami of Transience), so it is no near miss; its two-permanent form stays manual
+  'At the beginning of your end step, if two permanents were put into your graveyard from the battlefield this turn, you gain 2 life.',
 ];
 const compile = (text: string): CardDef => card('Test Vigil Keeper', 'Creature — Human', text, { pt: ['2', '2'] });
 

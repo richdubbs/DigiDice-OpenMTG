@@ -41,7 +41,7 @@ describe('CR 205.3: the subtype lists equal the ones generated from the Comprehe
     const all = [...LAND_TYPES, ...CREATURE_TYPES];
     expect(all.filter((t) => t.includes('’'))).toEqual([]);
     expect(LAND_TYPES).toContain("Urza's");
-    expect(CREATURE_TYPES.filter((t) => t.includes("'")).sort()).toEqual(["C'tan", "Na'kuhl", "Shi'ar"]); // Na'kuhl: printed on a Star Trek card, not yet in the rules
+    expect(CREATURE_TYPES.filter((t) => t.includes("'")).sort()).toEqual(["C'tan", "Jem'Hadar", "Na'kuhl", "Shi'ar", "Vau-N'Akat"]); // Na'kuhl, Vau-N'Akat: printed on Star Trek cards (index 2026-10-28), not yet in the rules; Jem'Hadar: the same (index 2026-11-03, trek-21's regenerated lexicon)
     expect(CREATURE_TYPES.filter((t) => t.includes(' '))).toEqual(['Time Lord']);
   });
 

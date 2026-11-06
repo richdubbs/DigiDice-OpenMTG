@@ -52,6 +52,9 @@ import cloudCmd1 from './templates/zz-cloud/cmd1.json';
 import cloudCmd2 from './templates/zz-cloud/cmd2.json';
 import cloudCmd3 from './templates/zz-cloud/cmd3.json';
 import cloudCmd5 from './templates/zz-cloud/cmd5.json';
+import cloudEdhB5 from './templates/zz-cloud/edh-b-5.json';
+import cloudEdhC24 from './templates/zz-cloud/edh-c-24.json';
+import cloudEdhC11 from './templates/zz-cloud/edh-c-11.json';
 import cloudLook3 from './templates/zz-cloud/look3.json';
 import cloudP2AttackBlock1 from './templates/zz-cloud/p2-attack-block-1.json';
 import cloudP2AttackBlock2 from './templates/zz-cloud/p2-attack-block-2.json';
@@ -426,18 +429,513 @@ import cloudStdExilePlay13 from './templates/zz-cloud/std-exile-play-1-3.json';
 import cloudTrek1 from './templates/zz-cloud/trek-1.json';
 import cloudTrek11 from './templates/zz-cloud/trek-11.json';
 import cloudTrek12 from './templates/zz-cloud/trek-12.json';
+import cloudTrek15 from './templates/zz-cloud/trek-15.json';
 import cloudTrek2 from './templates/zz-cloud/trek-2.json';
+import cloudTrek20 from './templates/zz-cloud/trek-20.json';
+import cloudTrek21 from './templates/zz-cloud/trek-21.json';
 import cloudTrek3 from './templates/zz-cloud/trek-3.json';
 import cloudTrek5 from './templates/zz-cloud/trek-5.json';
 import cloudTrek7 from './templates/zz-cloud/trek-7.json';
 import cloudTrek8 from './templates/zz-cloud/trek-8.json';
 import cloudTrek9 from './templates/zz-cloud/trek-9.json';
+import cloudEdhB1 from './templates/zz-cloud/edh-b-1.json';
+import cloudEdhB11 from './templates/zz-cloud/edh-b-11.json';
+import cloudEdhB12 from './templates/zz-cloud/edh-b-12.json';
+import cloudEdhB13 from './templates/zz-cloud/edh-b-13.json';
+import cloudEdhB14 from './templates/zz-cloud/edh-b-14.json';
+import cloudEdhB2 from './templates/zz-cloud/edh-b-2.json';
+import cloudEdhB3 from './templates/zz-cloud/edh-b-3.json';
+import cloudEdhB4 from './templates/zz-cloud/edh-b-4.json';
+import cloudEdhB6 from './templates/zz-cloud/edh-b-6.json';
+import cloudEdhB7 from './templates/zz-cloud/edh-b-7.json';
+import cloudEdhB8 from './templates/zz-cloud/edh-b-8.json';
+import cloudEdhB9 from './templates/zz-cloud/edh-b-9.json';
+import cloudEdhC1 from './templates/zz-cloud/edh-c-1.json';
+import cloudEdhC10 from './templates/zz-cloud/edh-c-10.json';
+import cloudEdhC101 from './templates/zz-cloud/edh-c-101.json';
+import cloudEdhC102 from './templates/zz-cloud/edh-c-102.json';
+import cloudEdhC103 from './templates/zz-cloud/edh-c-103.json';
+import cloudEdhC104 from './templates/zz-cloud/edh-c-104.json';
+import cloudEdhC105 from './templates/zz-cloud/edh-c-105.json';
+import cloudEdhC106 from './templates/zz-cloud/edh-c-106.json';
+import cloudEdhC107 from './templates/zz-cloud/edh-c-107.json';
+import cloudEdhC108 from './templates/zz-cloud/edh-c-108.json';
+import cloudEdhC109 from './templates/zz-cloud/edh-c-109.json';
+import cloudEdhC110 from './templates/zz-cloud/edh-c-110.json';
+import cloudEdhC111 from './templates/zz-cloud/edh-c-111.json';
+import cloudEdhC112 from './templates/zz-cloud/edh-c-112.json';
+import cloudEdhC113 from './templates/zz-cloud/edh-c-113.json';
+import cloudEdhC114 from './templates/zz-cloud/edh-c-114.json';
+import cloudEdhC12 from './templates/zz-cloud/edh-c-12.json';
+import cloudEdhC13 from './templates/zz-cloud/edh-c-13.json';
+import cloudEdhC14 from './templates/zz-cloud/edh-c-14.json';
+import cloudEdhC15 from './templates/zz-cloud/edh-c-15.json';
+import cloudEdhC16 from './templates/zz-cloud/edh-c-16.json';
+import cloudEdhC17 from './templates/zz-cloud/edh-c-17.json';
+import cloudEdhC18 from './templates/zz-cloud/edh-c-18.json';
+import cloudEdhC19 from './templates/zz-cloud/edh-c-19.json';
+import cloudEdhC27 from './templates/zz-cloud/edh-c-27.json';
+import cloudEdhC2 from './templates/zz-cloud/edh-c-2.json';
+import cloudEdhC20 from './templates/zz-cloud/edh-c-20.json';
+import cloudEdhC21 from './templates/zz-cloud/edh-c-21.json';
+import cloudEdhC22 from './templates/zz-cloud/edh-c-22.json';
+import cloudEdhC23 from './templates/zz-cloud/edh-c-23.json';
+import cloudEdhC25 from './templates/zz-cloud/edh-c-25.json';
+import cloudEdhC26 from './templates/zz-cloud/edh-c-26.json';
+import cloudEdhC80 from './templates/zz-cloud/edh-c-80.json';
+import cloudEdhC28 from './templates/zz-cloud/edh-c-28.json';
+import cloudEdhC29 from './templates/zz-cloud/edh-c-29.json';
+import cloudEdhC3 from './templates/zz-cloud/edh-c-3.json';
+import cloudEdhC30 from './templates/zz-cloud/edh-c-30.json';
+import cloudEdhC31 from './templates/zz-cloud/edh-c-31.json';
+import cloudEdhC32 from './templates/zz-cloud/edh-c-32.json';
+import cloudEdhC33 from './templates/zz-cloud/edh-c-33.json';
+import cloudEdhC34 from './templates/zz-cloud/edh-c-34.json';
+import cloudEdhC35 from './templates/zz-cloud/edh-c-35.json';
+import cloudEdhC100 from './templates/zz-cloud/edh-c-100.json';
+import cloudEdhC36 from './templates/zz-cloud/edh-c-36.json';
+import cloudEdhC37 from './templates/zz-cloud/edh-c-37.json';
+import cloudEdhC38 from './templates/zz-cloud/edh-c-38.json';
+import cloudEdhC39 from './templates/zz-cloud/edh-c-39.json';
+import cloudEdhC4 from './templates/zz-cloud/edh-c-4.json';
+import cloudEdhC40 from './templates/zz-cloud/edh-c-40.json';
+import cloudEdhC41 from './templates/zz-cloud/edh-c-41.json';
+import cloudEdhC42 from './templates/zz-cloud/edh-c-42.json';
+import cloudEdhC43 from './templates/zz-cloud/edh-c-43.json';
+import cloudEdhC44 from './templates/zz-cloud/edh-c-44.json';
+import cloudEdhC45 from './templates/zz-cloud/edh-c-45.json';
+import cloudEdhC46 from './templates/zz-cloud/edh-c-46.json';
+import cloudEdhC47 from './templates/zz-cloud/edh-c-47.json';
+import cloudEdhC48 from './templates/zz-cloud/edh-c-48.json';
+import cloudEdhC49 from './templates/zz-cloud/edh-c-49.json';
+import cloudEdhC5 from './templates/zz-cloud/edh-c-5.json';
+import cloudEdhC50 from './templates/zz-cloud/edh-c-50.json';
+import cloudEdhC51 from './templates/zz-cloud/edh-c-51.json';
+import cloudEdhC52 from './templates/zz-cloud/edh-c-52.json';
+import cloudEdhC53 from './templates/zz-cloud/edh-c-53.json';
+import cloudEdhC55 from './templates/zz-cloud/edh-c-55.json';
+import cloudEdhC56 from './templates/zz-cloud/edh-c-56.json';
+import cloudEdhC57 from './templates/zz-cloud/edh-c-57.json';
+import cloudEdhC58 from './templates/zz-cloud/edh-c-58.json';
+import cloudEdhC59 from './templates/zz-cloud/edh-c-59.json';
+import cloudEdhC6 from './templates/zz-cloud/edh-c-6.json';
+import cloudEdhC60 from './templates/zz-cloud/edh-c-60.json';
+import cloudEdhC61 from './templates/zz-cloud/edh-c-61.json';
+import cloudEdhC62 from './templates/zz-cloud/edh-c-62.json';
+import cloudEdhC63 from './templates/zz-cloud/edh-c-63.json';
+import cloudEdhC64 from './templates/zz-cloud/edh-c-64.json';
+import cloudEdhC65 from './templates/zz-cloud/edh-c-65.json';
+import cloudEdhC66 from './templates/zz-cloud/edh-c-66.json';
+import cloudEdhC67 from './templates/zz-cloud/edh-c-67.json';
+import cloudEdhC68 from './templates/zz-cloud/edh-c-68.json';
+import cloudEdhC69 from './templates/zz-cloud/edh-c-69.json';
+import cloudEdhC70 from './templates/zz-cloud/edh-c-70.json';
+import cloudEdhC71 from './templates/zz-cloud/edh-c-71.json';
+import cloudEdhC72 from './templates/zz-cloud/edh-c-72.json';
+import cloudEdhC73 from './templates/zz-cloud/edh-c-73.json';
+import cloudEdhC74 from './templates/zz-cloud/edh-c-74.json';
+import cloudEdhC75 from './templates/zz-cloud/edh-c-75.json';
+import cloudEdhC76 from './templates/zz-cloud/edh-c-76.json';
+import cloudEdhC77 from './templates/zz-cloud/edh-c-77.json';
+import cloudEdhC78 from './templates/zz-cloud/edh-c-78.json';
+import cloudEdhC79 from './templates/zz-cloud/edh-c-79.json';
+import cloudEdhC8 from './templates/zz-cloud/edh-c-8.json';
+import cloudEdhC81 from './templates/zz-cloud/edh-c-81.json';
+import cloudEdhC82 from './templates/zz-cloud/edh-c-82.json';
+import cloudEdhC83 from './templates/zz-cloud/edh-c-83.json';
+import cloudEdhC84 from './templates/zz-cloud/edh-c-84.json';
+import cloudEdhC85 from './templates/zz-cloud/edh-c-85.json';
+import cloudEdhC86 from './templates/zz-cloud/edh-c-86.json';
+import cloudEdhC87 from './templates/zz-cloud/edh-c-87.json';
+import cloudEdhC88 from './templates/zz-cloud/edh-c-88.json';
+import cloudEdhC89 from './templates/zz-cloud/edh-c-89.json';
+import cloudEdhC9 from './templates/zz-cloud/edh-c-9.json';
+import cloudEdhC90 from './templates/zz-cloud/edh-c-90.json';
+import cloudEdhC91 from './templates/zz-cloud/edh-c-91.json';
+import cloudEdhC92 from './templates/zz-cloud/edh-c-92.json';
+import cloudEdhC93 from './templates/zz-cloud/edh-c-93.json';
+import cloudEdhC94 from './templates/zz-cloud/edh-c-94.json';
+import cloudEdhC95 from './templates/zz-cloud/edh-c-95.json';
+import cloudEdhC96 from './templates/zz-cloud/edh-c-96.json';
+import cloudEdhC97 from './templates/zz-cloud/edh-c-97.json';
+import cloudEdhC98 from './templates/zz-cloud/edh-c-98.json';
+import cloudEdhC99 from './templates/zz-cloud/edh-c-99.json';
 import cloudEdhCast1 from './templates/zz-cloud/edh-cast-1.json';
+import cloudEdhCast10 from './templates/zz-cloud/edh-cast-10.json';
+import cloudEdhCast11 from './templates/zz-cloud/edh-cast-11.json';
+import cloudEdhCast12 from './templates/zz-cloud/edh-cast-12.json';
+import cloudEdhCast13 from './templates/zz-cloud/edh-cast-13.json';
+import cloudEdhCast14 from './templates/zz-cloud/edh-cast-14.json';
+import cloudEdhCast15 from './templates/zz-cloud/edh-cast-15.json';
+import cloudEdhCast2 from './templates/zz-cloud/edh-cast-2.json';
+import cloudEdhCast3 from './templates/zz-cloud/edh-cast-3.json';
+import cloudEdhCast4 from './templates/zz-cloud/edh-cast-4.json';
+import cloudEdhCast5 from './templates/zz-cloud/edh-cast-5.json';
+import cloudEdhCast6 from './templates/zz-cloud/edh-cast-6.json';
+import cloudEdhCast7 from './templates/zz-cloud/edh-cast-7.json';
+import cloudEdhCast8 from './templates/zz-cloud/edh-cast-8.json';
+import cloudEdhCast9 from './templates/zz-cloud/edh-cast-9.json';
+import cloudEdhCombat1 from './templates/zz-cloud/edh-combat-1.json';
+import cloudEdhCombat2 from './templates/zz-cloud/edh-combat-2.json';
+import cloudEdhCombat3 from './templates/zz-cloud/edh-combat-3.json';
+import cloudEdhCombat4 from './templates/zz-cloud/edh-combat-4.json';
+import cloudEdhCombat5 from './templates/zz-cloud/edh-combat-5.json';
+import cloudEdhCombat6 from './templates/zz-cloud/edh-combat-6.json';
+import cloudEdhCombat7 from './templates/zz-cloud/edh-combat-7.json';
+import cloudEdhD1 from './templates/zz-cloud/edh-d-1.json';
+import cloudEdhD10 from './templates/zz-cloud/edh-d-10.json';
+import cloudEdhD100 from './templates/zz-cloud/edh-d-100.json'; // edh-d-100
+import cloudEdhD101 from './templates/zz-cloud/edh-d-101.json'; // edh-d-101
+import cloudEdhD102 from './templates/zz-cloud/edh-d-102.json'; // edh-d-102
+import cloudEdhD11 from './templates/zz-cloud/edh-d-11.json';
+import cloudEdhD2 from './templates/zz-cloud/edh-d-2.json';
+import cloudEdhD3 from './templates/zz-cloud/edh-d-3.json';
+import cloudEdhD4 from './templates/zz-cloud/edh-d-4.json';
+import cloudEdhD5 from './templates/zz-cloud/edh-d-5.json';
+import cloudEdhD6 from './templates/zz-cloud/edh-d-6.json';
+import cloudEdhD60 from './templates/zz-cloud/edh-d-60.json';
+import cloudEdhD7 from './templates/zz-cloud/edh-d-7.json';
+import cloudEdhD8 from './templates/zz-cloud/edh-d-8.json';
+import cloudEdhD9 from './templates/zz-cloud/edh-d-9.json';
+import cloudEdhD12 from './templates/zz-cloud/edh-d-12.json'; // edh-d-12
+import cloudEdhD13 from './templates/zz-cloud/edh-d-13.json';
+import cloudEdhD14 from './templates/zz-cloud/edh-d-14.json';
+import cloudEdhD15 from './templates/zz-cloud/edh-d-15.json';
+import cloudEdhD26 from './templates/zz-cloud/edh-d-26.json';
+import cloudEdhD25 from './templates/zz-cloud/edh-d-25.json';
+import cloudEdhD16 from './templates/zz-cloud/edh-d-16.json';
+import cloudEdhD17 from './templates/zz-cloud/edh-d-17.json'; // edh-d-17
+import cloudEdhD19 from './templates/zz-cloud/edh-d-19.json';
+import cloudEdhD31 from './templates/zz-cloud/edh-d-31.json';
+import cloudEdhD20 from './templates/zz-cloud/edh-d-20.json';
+import cloudEdhD21 from './templates/zz-cloud/edh-d-21.json';
+import cloudEdhD22 from './templates/zz-cloud/edh-d-22.json';
+import cloudEdhD23 from './templates/zz-cloud/edh-d-23.json';
+import cloudEdhD24 from './templates/zz-cloud/edh-d-24.json';
+import cloudEdhD27 from './templates/zz-cloud/edh-d-27.json'; // edh-d-27 (lane vote, second pass)
+import cloudEdhD28 from './templates/zz-cloud/edh-d-28.json';
+import cloudEdhD29 from './templates/zz-cloud/edh-d-29.json';
+import cloudEdhD30 from './templates/zz-cloud/edh-d-30.json';
+import cloudEdhD32 from './templates/zz-cloud/edh-d-32.json';
+import cloudEdhD33 from './templates/zz-cloud/edh-d-33.json';
+import cloudEdhD34 from './templates/zz-cloud/edh-d-34.json';
+import cloudEdhD35 from './templates/zz-cloud/edh-d-35.json';
+import cloudEdhD36 from './templates/zz-cloud/edh-d-36.json';
+import cloudEdhD37 from './templates/zz-cloud/edh-d-37.json'; // edh-d-37 (lane lands)
+import cloudEdhD38 from './templates/zz-cloud/edh-d-38.json';
+import cloudEdhD39 from './templates/zz-cloud/edh-d-39.json'; // edh-d-39
+import cloudEdhD40 from './templates/zz-cloud/edh-d-40.json';
+import cloudEdhD41 from './templates/zz-cloud/edh-d-41.json';
+import cloudEdhD42 from './templates/zz-cloud/edh-d-42.json'; // edh-d-42 (lane tokens, second pass)
+import cloudEdhD43 from './templates/zz-cloud/edh-d-43.json';
+import cloudEdhD44 from './templates/zz-cloud/edh-d-44.json';
+import cloudEdhD45 from './templates/zz-cloud/edh-d-45.json';
+import cloudEdhD46 from './templates/zz-cloud/edh-d-46.json';
+import cloudEdhD47 from './templates/zz-cloud/edh-d-47.json';
+import cloudEdhD48 from './templates/zz-cloud/edh-d-48.json';
+import cloudEdhD49 from './templates/zz-cloud/edh-d-49.json'; // edh-d-49
+import cloudEdhD50 from './templates/zz-cloud/edh-d-50.json'; // edh-d-50 (lane next-cast)
+import cloudEdhD51 from './templates/zz-cloud/edh-d-51.json';
+import cloudEdhD52 from './templates/zz-cloud/edh-d-52.json'; // edh-d-52 (lane d-rank-2)
+import cloudEdhD53 from './templates/zz-cloud/edh-d-53.json';
+import cloudEdhD54 from './templates/zz-cloud/edh-d-54.json';
+import cloudEdhD55 from './templates/zz-cloud/edh-d-55.json'; // edh-d-55 (lane d-rank-5)
+import cloudEdhD56 from './templates/zz-cloud/edh-d-56.json'; // edh-d-56 (lane d-leftovers-4)
+import cloudEdhD57 from './templates/zz-cloud/edh-d-57.json';
+import cloudEdhD58 from './templates/zz-cloud/edh-d-58.json'; // edh-d-58 (Commander coordinator D, lane exile-play fourth pass; code edhd58)
+import cloudEdhD59 from './templates/zz-cloud/edh-d-59.json'; // edh-d-59
+import cloudEdhD61 from './templates/zz-cloud/edh-d-61.json';
+import cloudEdhD62 from './templates/zz-cloud/edh-d-62.json'; // edh-d-62 (lane commander, third pass)
+import cloudEdhD63 from './templates/zz-cloud/edh-d-63.json'; // edh-d-63 (lane group-choices)
+import cloudEdhD64 from './templates/zz-cloud/edh-d-64.json'; // edh-d-64 (lane each-player, fourth pass)
+import cloudEdhD66 from './templates/zz-cloud/edh-d-66.json'; // edh-d-66 (lane stack-marks, concept round)
+import cloudEdhD67 from './templates/zz-cloud/edh-d-67.json'; // edh-d-67 (lane prevent-r2)
+import cloudEdhD68 from './templates/zz-cloud/edh-d-68.json';
+import cloudEdhD69 from './templates/zz-cloud/edh-d-69.json';
+import cloudEdhD70 from './templates/zz-cloud/edh-d-70.json';
+import cloudEdhD71 from './templates/zz-cloud/edh-d-71.json'; // edh-d-71 (concept lane turns-phases)
+import cloudEdhD72 from './templates/zz-cloud/edh-d-72.json'; // edh-d-72 (lane chosen-qualities)
+import cloudEdhD73 from './templates/zz-cloud/edh-d-73.json';
+import cloudEdhD74 from './templates/zz-cloud/edh-d-74.json'; // edh-d-74 (lane pay-or-else; code edhd74)
+import cloudEdhD75 from './templates/zz-cloud/edh-d-75.json';
+import cloudEdhD76 from './templates/zz-cloud/edh-d-76.json'; // edh-d-76 (concept lane graveyard-cast)
+import cloudEdhD77 from './templates/zz-cloud/edh-d-77.json'; // edh-d-77 (lane exile-links, concept round)
+import cloudEdhD78 from './templates/zz-cloud/edh-d-78.json'; // edh-d-78 (lane must-finish-5000, handed over by A)
+import cloudEdhD79 from './templates/zz-cloud/edh-d-79.json';
+import cloudEdhD80 from './templates/zz-cloud/edh-d-80.json'; // edh-d-80 (lane must-finish-5000)
+import cloudEdhD84 from './templates/zz-cloud/edh-d-84.json';
+import cloudEdhD85 from './templates/zz-cloud/edh-d-85.json'; // edh-d-85 (Commander coordinator D, EDHREC ranks 5,001-10,000, group combat)
+import cloudEdhD86 from './templates/zz-cloud/edh-d-86.json'; // edh-d-86 (Commander coordinator D, band 5,001-10,000, group combat)
+import cloudEdhD87 from './templates/zz-cloud/edh-d-87.json'; // edh-d-87 (Commander coordinator D, band 5,001-10,000, group combat; code edhd87)
+import cloudEdhD88 from './templates/zz-cloud/edh-d-88.json'; // edh-d-88
+import cloudEdhD89 from './templates/zz-cloud/edh-d-89.json'; // edh-d-89 (Commander coordinator D, band 5,001-10,000, group combat)
+import cloudEdhD90 from './templates/zz-cloud/edh-d-90.json';
+import cloudEdhD91 from './templates/zz-cloud/edh-d-91.json';
+import cloudEdhD92 from './templates/zz-cloud/edh-d-92.json'; // edh-d-92
+import cloudEdhD93 from './templates/zz-cloud/edh-d-93.json'; // edh-d-93
+import cloudEdhD94 from './templates/zz-cloud/edh-d-94.json'; // edh-d-94
+import cloudEdhD95 from './templates/zz-cloud/edh-d-95.json'; // edh-d-95
+import cloudEdhD96 from './templates/zz-cloud/edh-d-96.json'; // edh-d-96
+import cloudEdhD97 from './templates/zz-cloud/edh-d-97.json'; // edh-d-97
+import cloudEdhD98 from './templates/zz-cloud/edh-d-98.json'; // edh-d-98
+import cloudEdhD99 from './templates/zz-cloud/edh-d-99.json'; // edh-d-99
 import cloudEdhMk1 from './templates/zz-cloud/edh-mana-keywords-1.json';
+import cloudEdhMk10 from './templates/zz-cloud/edh-mana-keywords-10.json';
+import cloudEdhMk11 from './templates/zz-cloud/edh-mana-keywords-11.json';
+import cloudEdhMk12 from './templates/zz-cloud/edh-mana-keywords-12.json';
+import cloudEdhMk2 from './templates/zz-cloud/edh-mana-keywords-2.json';
+import cloudEdhMk3 from './templates/zz-cloud/edh-mana-keywords-3.json';
+import cloudEdhMk4 from './templates/zz-cloud/edh-mana-keywords-4.json';
+import cloudEdhMk5 from './templates/zz-cloud/edh-mana-keywords-5.json';
+import cloudEdhMk6 from './templates/zz-cloud/edh-mana-keywords-6.json';
+import cloudEdhMk7 from './templates/zz-cloud/edh-mana-keywords-7.json';
+import cloudEdhMk8 from './templates/zz-cloud/edh-mana-keywords-8.json';
+import cloudEdhMk9 from './templates/zz-cloud/edh-mana-keywords-9.json';
+import cloudEdhMisc1 from './templates/zz-cloud/edh-misc-1.json';
+import cloudEdhMisc2 from './templates/zz-cloud/edh-misc-2.json';
+import cloudEdhMisc3 from './templates/zz-cloud/edh-misc-3.json';
+import cloudEdhMisc4 from './templates/zz-cloud/edh-misc-4.json';
+import cloudEdhMisc5 from './templates/zz-cloud/edh-misc-5.json';
+import cloudEdhMisc6 from './templates/zz-cloud/edh-misc-6.json';
+import cloudEdhNext1 from './templates/zz-cloud/edh-next-1.json';
+import cloudEdhNext10 from './templates/zz-cloud/edh-next-10.json';
+import cloudEdhNext100 from './templates/zz-cloud/edh-next-100.json'; // edh-next-100
+import cloudEdhNext101 from './templates/zz-cloud/edh-next-101.json';
+import cloudEdhNext108 from './templates/zz-cloud/edh-next-108.json';
+import cloudEdhNext102 from './templates/zz-cloud/edh-next-102.json';
+import cloudEdhNext103 from './templates/zz-cloud/edh-next-103.json';
+import cloudEdhNext109 from './templates/zz-cloud/edh-next-109.json';
+import cloudEdhNext11 from './templates/zz-cloud/edh-next-11.json'; // edh-next-11
+import cloudEdhNext12 from './templates/zz-cloud/edh-next-12.json';
+import cloudEdhNext121 from './templates/zz-cloud/edh-next-121.json'; // edh-next-121
+import cloudEdhNext128 from './templates/zz-cloud/edh-next-128.json'; // edh-next-128
+import cloudEdhNext13 from './templates/zz-cloud/edh-next-13.json';
+import cloudEdhNext18 from './templates/zz-cloud/edh-next-18.json';
+import cloudEdhNext19 from './templates/zz-cloud/edh-next-19.json';
+import cloudEdhNext14 from './templates/zz-cloud/edh-next-14.json';
+import cloudEdhNext15 from './templates/zz-cloud/edh-next-15.json';
+import cloudEdhNext16 from './templates/zz-cloud/edh-next-16.json';
+import cloudEdhNext17 from './templates/zz-cloud/edh-next-17.json';
+import cloudEdhNext2 from './templates/zz-cloud/edh-next-2.json';
+import cloudEdhNext20 from './templates/zz-cloud/edh-next-20.json';
+import cloudEdhNext21 from './templates/zz-cloud/edh-next-21.json';
+import cloudEdhNext22 from './templates/zz-cloud/edh-next-22.json';
+import cloudEdhNext23 from './templates/zz-cloud/edh-next-23.json';
+import cloudEdhNext24 from './templates/zz-cloud/edh-next-24.json';
+import cloudEdhNext25 from './templates/zz-cloud/edh-next-25.json';
+import cloudEdhNext26 from './templates/zz-cloud/edh-next-26.json';
+import cloudEdhNext27 from './templates/zz-cloud/edh-next-27.json';
+import cloudEdhNext3 from './templates/zz-cloud/edh-next-3.json';
+import cloudEdhNext30 from './templates/zz-cloud/edh-next-30.json';
+import cloudEdhNext31 from './templates/zz-cloud/edh-next-31.json';
+import cloudEdhNext32 from './templates/zz-cloud/edh-next-32.json';
+import cloudEdhNext33 from './templates/zz-cloud/edh-next-33.json';
+import cloudEdhNext34 from './templates/zz-cloud/edh-next-34.json';
+import cloudEdhNext35 from './templates/zz-cloud/edh-next-35.json';
+import cloudEdhNext36 from './templates/zz-cloud/edh-next-36.json';
+import cloudEdhNext37 from './templates/zz-cloud/edh-next-37.json';
+import cloudEdhNext38 from './templates/zz-cloud/edh-next-38.json';
+import cloudEdhNext39 from './templates/zz-cloud/edh-next-39.json';
+import cloudEdhNext4 from './templates/zz-cloud/edh-next-4.json';
+import cloudEdhNext42 from './templates/zz-cloud/edh-next-42.json';
+import cloudEdhNext40 from './templates/zz-cloud/edh-next-40.json';
+import cloudEdhNext41 from './templates/zz-cloud/edh-next-41.json';
+import cloudEdhNext43 from './templates/zz-cloud/edh-next-43.json';
+import cloudEdhNext44 from './templates/zz-cloud/edh-next-44.json';
+import cloudEdhNext45 from './templates/zz-cloud/edh-next-45.json';
+import cloudEdhNext46 from './templates/zz-cloud/edh-next-46.json';
+import cloudEdhNext53 from './templates/zz-cloud/edh-next-53.json';
+import cloudEdhNext48 from './templates/zz-cloud/edh-next-48.json';
+import cloudEdhNext49 from './templates/zz-cloud/edh-next-49.json';
+import cloudEdhNext5 from './templates/zz-cloud/edh-next-5.json';
+import cloudEdhNext50 from './templates/zz-cloud/edh-next-50.json';
+import cloudEdhNext51 from './templates/zz-cloud/edh-next-51.json';
+import cloudEdhNext52 from './templates/zz-cloud/edh-next-52.json';
+import cloudEdhNext54 from './templates/zz-cloud/edh-next-54.json';
+import cloudEdhNext55 from './templates/zz-cloud/edh-next-55.json';
+import cloudEdhNext56 from './templates/zz-cloud/edh-next-56.json';
+import cloudEdhNext57 from './templates/zz-cloud/edh-next-57.json';
+import cloudEdhNext58 from './templates/zz-cloud/edh-next-58.json';
+import cloudEdhNext59 from './templates/zz-cloud/edh-next-59.json';
+import cloudEdhNext6 from './templates/zz-cloud/edh-next-6.json';
+import cloudEdhNext60 from './templates/zz-cloud/edh-next-60.json';
+import cloudEdhNext61 from './templates/zz-cloud/edh-next-61.json';
+import cloudEdhNext62 from './templates/zz-cloud/edh-next-62.json';
+import cloudEdhNext73 from './templates/zz-cloud/edh-next-73.json';
+import cloudEdhNext63 from './templates/zz-cloud/edh-next-63.json';
+import cloudEdhNext64 from './templates/zz-cloud/edh-next-64.json';
+import cloudEdhNext65 from './templates/zz-cloud/edh-next-65.json';
+import cloudEdhNext74 from './templates/zz-cloud/edh-next-74.json';
+import cloudEdhNext66 from './templates/zz-cloud/edh-next-66.json';
+import cloudEdhNext67 from './templates/zz-cloud/edh-next-67.json';
+import cloudEdhNext68 from './templates/zz-cloud/edh-next-68.json';
+import cloudEdhNext69 from './templates/zz-cloud/edh-next-69.json';
+import cloudEdhNext7 from './templates/zz-cloud/edh-next-7.json';
+import cloudEdhNext70 from './templates/zz-cloud/edh-next-70.json';
+import cloudEdhNext71 from './templates/zz-cloud/edh-next-71.json';
+import cloudEdhNext72 from './templates/zz-cloud/edh-next-72.json';
+import cloudEdhNext75 from './templates/zz-cloud/edh-next-75.json';
+import cloudEdhNext76 from './templates/zz-cloud/edh-next-76.json';
+import cloudEdhNext78 from './templates/zz-cloud/edh-next-78.json';
+import cloudEdhNext79 from './templates/zz-cloud/edh-next-79.json';
+import cloudEdhNext84 from './templates/zz-cloud/edh-next-84.json';
+import cloudEdhNext8 from './templates/zz-cloud/edh-next-8.json';
+import cloudEdhNext9 from './templates/zz-cloud/edh-next-9.json';
+import cloudEdhNext90 from './templates/zz-cloud/edh-next-90.json';
+import cloudEdhNext80 from './templates/zz-cloud/edh-next-80.json';
+import cloudEdhNext81 from './templates/zz-cloud/edh-next-81.json';
+import cloudEdhNext82 from './templates/zz-cloud/edh-next-82.json';
+import cloudEdhNext83 from './templates/zz-cloud/edh-next-83.json';
+import cloudEdhNext85 from './templates/zz-cloud/edh-next-85.json';
+import cloudEdhNext86 from './templates/zz-cloud/edh-next-86.json';
+import cloudEdhNext89 from './templates/zz-cloud/edh-next-89.json';
+import cloudEdhNext92 from './templates/zz-cloud/edh-next-92.json';
+import cloudEdhNext93 from './templates/zz-cloud/edh-next-93.json';
+import cloudEdhNext94 from './templates/zz-cloud/edh-next-94.json';
+import cloudEdhNext95 from './templates/zz-cloud/edh-next-95.json';
+import cloudEdhNext96 from './templates/zz-cloud/edh-next-96.json';
+import cloudEdhNext104 from './templates/zz-cloud/edh-next-104.json';
+import cloudEdhNext111 from './templates/zz-cloud/edh-next-111.json';
+import cloudEdhNext105 from './templates/zz-cloud/edh-next-105.json';
+import cloudEdhNext106 from './templates/zz-cloud/edh-next-106.json';
+import cloudEdhNext126 from './templates/zz-cloud/edh-next-126.json'; // edh-next-126
+import cloudEdhNext131 from './templates/zz-cloud/edh-next-131.json'; // edh-next-131
+import cloudEdhNext110 from './templates/zz-cloud/edh-next-110.json'; // edh-next-110
+import cloudEdhNext113 from './templates/zz-cloud/edh-next-113.json';
+import cloudEdhNext114 from './templates/zz-cloud/edh-next-114.json';
+import cloudEdhNext115 from './templates/zz-cloud/edh-next-115.json'; // edh-next-115 (third pass top-rank-t3; code edhn115)
+import cloudEdhNext116 from './templates/zz-cloud/edh-next-116.json';
+import cloudEdhNext117 from './templates/zz-cloud/edh-next-117.json'; // edh-next-117
+import cloudEdhNext118 from './templates/zz-cloud/edh-next-118.json';
+import cloudEdhNext97 from './templates/zz-cloud/edh-next-97.json';
+import cloudEdhNext98 from './templates/zz-cloud/edh-next-98.json';
+import cloudEdhNext99 from './templates/zz-cloud/edh-next-99.json';
 import cloudEdhPm1 from './templates/zz-cloud/edh-perms-1.json';
+import cloudEdhPm10 from './templates/zz-cloud/edh-perms-10.json';
+import cloudEdhPm11 from './templates/zz-cloud/edh-perms-11.json';
+import cloudEdhPm12 from './templates/zz-cloud/edh-perms-12.json';
+import cloudEdhPm13 from './templates/zz-cloud/edh-perms-13.json';
+import cloudEdhPm14 from './templates/zz-cloud/edh-perms-14.json';
+import cloudEdhPm15 from './templates/zz-cloud/edh-perms-15.json';
+import cloudEdhPm16 from './templates/zz-cloud/edh-perms-16.json';
+import cloudEdhPm17 from './templates/zz-cloud/edh-perms-17.json';
+import cloudEdhPm18 from './templates/zz-cloud/edh-perms-18.json';
+import cloudEdhPm20 from './templates/zz-cloud/edh-perms-20.json';
+import cloudEdhPm22 from './templates/zz-cloud/edh-perms-22.json';
+import cloudEdhPm2 from './templates/zz-cloud/edh-perms-2.json';
+import cloudEdhPm21 from './templates/zz-cloud/edh-perms-21.json';
+import cloudEdhPm23 from './templates/zz-cloud/edh-perms-23.json';
+import cloudEdhPm24 from './templates/zz-cloud/edh-perms-24.json';
+import cloudEdhPm3 from './templates/zz-cloud/edh-perms-3.json';
+import cloudEdhPm4 from './templates/zz-cloud/edh-perms-4.json';
+import cloudEdhPm5 from './templates/zz-cloud/edh-perms-5.json';
+import cloudEdhPm6 from './templates/zz-cloud/edh-perms-6.json';
+import cloudEdhPm7 from './templates/zz-cloud/edh-perms-7.json';
+import cloudEdhPm8 from './templates/zz-cloud/edh-perms-8.json';
+import cloudEdhPm9 from './templates/zz-cloud/edh-perms-9.json';
 import cloudEdhPlayers1 from './templates/zz-cloud/edh-players-1.json';
+import cloudEdhPlayers10 from './templates/zz-cloud/edh-players-10.json';
+import cloudEdhPlayers11 from './templates/zz-cloud/edh-players-11.json';
+import cloudEdhPlayers12 from './templates/zz-cloud/edh-players-12.json';
+import cloudEdhPlayers13 from './templates/zz-cloud/edh-players-13.json';
+import cloudEdhPlayers14 from './templates/zz-cloud/edh-players-14.json';
+import cloudEdhPlayers15 from './templates/zz-cloud/edh-players-15.json';
+import cloudEdhPlayers16 from './templates/zz-cloud/edh-players-16.json';
+import cloudEdhPlayers17 from './templates/zz-cloud/edh-players-17.json';
+import cloudEdhPlayers18 from './templates/zz-cloud/edh-players-18.json';
+import cloudEdhPlayers19 from './templates/zz-cloud/edh-players-19.json';
+import cloudEdhPlayers2 from './templates/zz-cloud/edh-players-2.json';
+import cloudEdhPlayers20 from './templates/zz-cloud/edh-players-20.json';
+import cloudEdhPlayers21 from './templates/zz-cloud/edh-players-21.json';
+import cloudEdhPlayers22 from './templates/zz-cloud/edh-players-22.json';
+import cloudEdhPlayers23 from './templates/zz-cloud/edh-players-23.json';
+import cloudEdhPlayers3 from './templates/zz-cloud/edh-players-3.json';
+import cloudEdhPlayers4 from './templates/zz-cloud/edh-players-4.json';
+import cloudEdhPlayers5 from './templates/zz-cloud/edh-players-5.json';
+import cloudEdhPlayers6 from './templates/zz-cloud/edh-players-6.json';
+import cloudEdhPlayers7 from './templates/zz-cloud/edh-players-7.json';
+import cloudEdhPlayers8 from './templates/zz-cloud/edh-players-8.json';
+import cloudEdhPlayers9 from './templates/zz-cloud/edh-players-9.json';
+import cloudEdhReplace1 from './templates/zz-cloud/edh-replace-1.json';
+import cloudEdhReplace2 from './templates/zz-cloud/edh-replace-2.json';
+import cloudEdhReplace3 from './templates/zz-cloud/edh-replace-3.json';
+import cloudEdhReplace4 from './templates/zz-cloud/edh-replace-4.json';
+import cloudEdhReplace5 from './templates/zz-cloud/edh-replace-5.json';
+import cloudEdhReplace6 from './templates/zz-cloud/edh-replace-6.json';
+import cloudEdhReplace7 from './templates/zz-cloud/edh-replace-7.json';
+import cloudEdhTop1 from './templates/zz-cloud/edh-top-1.json';
+import cloudEdhTop10 from './templates/zz-cloud/edh-top-10.json';
+import cloudEdhTop13 from './templates/zz-cloud/edh-top-13.json';
+import cloudEdhTop14 from './templates/zz-cloud/edh-top-14.json';
+import cloudEdhTop15 from './templates/zz-cloud/edh-top-15.json';
+import cloudEdhTop16 from './templates/zz-cloud/edh-top-16.json';
+import cloudEdhTop2 from './templates/zz-cloud/edh-top-2.json';
+import cloudEdhTop3 from './templates/zz-cloud/edh-top-3.json';
+import cloudEdhTop4 from './templates/zz-cloud/edh-top-4.json';
+import cloudEdhTop5 from './templates/zz-cloud/edh-top-5.json';
+import cloudEdhTop6 from './templates/zz-cloud/edh-top-6.json';
+import cloudEdhTop7 from './templates/zz-cloud/edh-top-7.json';
+import cloudEdhTop8 from './templates/zz-cloud/edh-top-8.json';
+import cloudEdhTop9 from './templates/zz-cloud/edh-top-9.json';
 import cloudEdhZones1 from './templates/zz-cloud/edh-zones-1.json';
+import cloudEdhZones10 from './templates/zz-cloud/edh-zones-10.json';
+import cloudEdhZones11 from './templates/zz-cloud/edh-zones-11.json';
+import cloudEdhZones12 from './templates/zz-cloud/edh-zones-12.json';
+import cloudEdhZones13 from './templates/zz-cloud/edh-zones-13.json';
+import cloudEdhZones14 from './templates/zz-cloud/edh-zones-14.json';
+import cloudEdhZones15 from './templates/zz-cloud/edh-zones-15.json';
+import cloudEdhZones16 from './templates/zz-cloud/edh-zones-16.json';
+import cloudEdhZones17 from './templates/zz-cloud/edh-zones-17.json';
+import cloudEdhZones21 from './templates/zz-cloud/edh-zones-21.json';
+import cloudEdhZones18 from './templates/zz-cloud/edh-zones-18.json';
+import cloudEdhZones19 from './templates/zz-cloud/edh-zones-19.json';
+import cloudEdhZones2 from './templates/zz-cloud/edh-zones-2.json';
+import cloudEdhZones22 from './templates/zz-cloud/edh-zones-22.json';
+import cloudEdhZones24 from './templates/zz-cloud/edh-zones-24.json';
+import cloudEdhZones26 from './templates/zz-cloud/edh-zones-26.json';
+import cloudEdhZones20 from './templates/zz-cloud/edh-zones-20.json';
+import cloudEdhZones25 from './templates/zz-cloud/edh-zones-25.json';
+import cloudEdhZones27 from './templates/zz-cloud/edh-zones-27.json';
+import cloudEdhZones3 from './templates/zz-cloud/edh-zones-3.json';
+import cloudEdhZones4 from './templates/zz-cloud/edh-zones-4.json';
+import cloudEdhZones5 from './templates/zz-cloud/edh-zones-5.json';
+import cloudEdhZones6 from './templates/zz-cloud/edh-zones-6.json';
+import cloudEdhZones7 from './templates/zz-cloud/edh-zones-7.json';
+import cloudEdhZones8 from './templates/zz-cloud/edh-zones-8.json';
+import cloudEdhZones9 from './templates/zz-cloud/edh-zones-9.json';
 import cloudP2ZoneMoves2 from './templates/zz-cloud/p2-zone-moves-2.json';
+import cloudTrek13 from './templates/zz-cloud/trek-13.json';
+import cloudTrek14 from './templates/zz-cloud/trek-14.json';
+import cloudTrek16 from './templates/zz-cloud/trek-16.json';
+import cloudTrek17 from './templates/zz-cloud/trek-17.json';
+import cloudTrek18 from './templates/zz-cloud/trek-18.json';
+import cloudTrek19 from './templates/zz-cloud/trek-19.json';
+import cloudTrek22 from './templates/zz-cloud/trek-22.json'; // trek-22
+import cloudEdhNext119 from './templates/zz-cloud/edh-next-119.json'; // edh-next-119
+import cloudEdhNext120 from './templates/zz-cloud/edh-next-120.json'; // edh-next-120
+import cloudEdhNext122 from './templates/zz-cloud/edh-next-122.json'; // edh-next-122
+import cloudEdhNext123 from './templates/zz-cloud/edh-next-123.json';
+import cloudEdhNext124 from './templates/zz-cloud/edh-next-124.json';
+import cloudEdhNext125 from './templates/zz-cloud/edh-next-125.json'; // edh-next-125
+import cloudEdhNext127 from './templates/zz-cloud/edh-next-127.json'; // edh-next-127
+import cloudEdhNext129 from './templates/zz-cloud/edh-next-129.json'; // edh-next-129
+import cloudEdhNext130 from './templates/zz-cloud/edh-next-130.json'; // edh-next-130
+import cloudEdhNext132 from './templates/zz-cloud/edh-next-132.json'; // edh-next-132
+import cloudEdhNext133 from './templates/zz-cloud/edh-next-133.json'; // edh-next-133
+import cloudEdhNext134 from './templates/zz-cloud/edh-next-134.json'; // edh-next-134
+import cloudEdhNext135 from './templates/zz-cloud/edh-next-135.json'; // edh-next-135
+import cloudEdhNext136 from './templates/zz-cloud/edh-next-136.json'; // edh-next-136
+import cloudEdhNext137 from './templates/zz-cloud/edh-next-137.json';
+import cloudEdhNext138 from './templates/zz-cloud/edh-next-138.json'; // edh-next-138
+import cloudEdhNext139 from './templates/zz-cloud/edh-next-139.json'; // edh-next-139
+import cloudEdhNext140 from './templates/zz-cloud/edh-next-140.json'; // edh-next-140
+import cloudEdhNext141 from './templates/zz-cloud/edh-next-141.json'; // edh-next-141
+import cloudEdhNext142 from './templates/zz-cloud/edh-next-142.json'; // edh-next-142
+import cloudEdhNext143 from './templates/zz-cloud/edh-next-143.json'; // edh-next-143
+import cloudEdhNext144 from './templates/zz-cloud/edh-next-144.json'; // edh-next-144
+import cloudEdhNext145 from './templates/zz-cloud/edh-next-145.json'; // edh-next-145
+import cloudEdhNext146 from './templates/zz-cloud/edh-next-146.json'; // edh-next-146
+import cloudEdhNext147 from './templates/zz-cloud/edh-next-147.json'; // edh-next-147
 
 /** The template files in path order (relative to parser/templates), with their templates. */
 export const TEMPLATE_FILES: readonly { file: string; templates: readonly Template[] }[] = Object.freeze(([
@@ -486,11 +984,499 @@ export const TEMPLATE_FILES: readonly { file: string; templates: readonly Templa
   ['zz-cloud/cmd2.json', cloudCmd2], // cmd2 (commander batch): references to commanders in card text (CR 903.3d, 903.3e, 903.8, 113.6): cast triggers of the spell itself, commander casts
   ['zz-cloud/cmd3.json', cloudCmd3], // CMD3 (commander batch): the Commander-product backlog, white, blue and colorless identities: Thriving lands (a color other than, {W} or one mana of the chosen color), ...
   ['zz-cloud/cmd5.json', cloudCmd5], // cmd5: the Commander backlog with two or more colors (tuning half): sacrifice another permanent, ...
+  ['zz-cloud/edh-b-1.json', cloudEdhB1], // edh-b-1 (Commander coordinator B; path order: 'edh-b' sorts after 'cmd5', before 'edh-cast'): see the file
+  ['zz-cloud/edh-b-11.json', cloudEdhB11], // edh-b-11 (Commander coordinator B, EDHREC ranks 6,501-7,250, fifth pass; code edhb11; path order: 'edh-b-11' sorts after 'edh-b-1' and before 'edh-b-2'): see the file
+  ['zz-cloud/edh-b-12.json', cloudEdhB12], // edh-b-12 (Commander second pass, ranks 8,001-9,000; path order: 'edh-b-12' sorts after 'edh-b-1.json', before 'edh-b-2'): see the file
+  ['zz-cloud/edh-b-13.json', cloudEdhB13], // edh-b-13 (Commander second pass over EDHREC ranks 9,001-10,000, third pass; path order: 'edh-b-13' sorts after 'edh-b-1' and before 'edh-b-2'): see the file
+  ['zz-cloud/edh-b-14.json', cloudEdhB14], // edh-b-14 (Commander coordinator B, EDHREC ranks 8,001-9,000, sixth pass; code edhb14; path order: 'edh-b-14' sorts after 'edh-b-1', before 'edh-b-2'): see the file
+  ['zz-cloud/edh-b-2.json', cloudEdhB2], // edh-b-2 (Commander effort, coordinator B, EDHREC ranks 7,251 to 8,000; path order: 'edh-b' sorts before 'edh-cast'): see the file
+  ['zz-cloud/edh-b-3.json', cloudEdhB3], // edh-b-3 (Commander lane edh-b, second pass over EDHREC ranks 8,001-9,000; path order: 'edh-b' sorts before 'edh-cast-1' and after 'cloud-...'): see the file
+  ['zz-cloud/edh-b-4.json', cloudEdhB4], // edh-b-4 (Commander second pass, ranks 9,001-10,000; path order: 'edh-b' sorts before 'edh-cast'): see the file
+  ['zz-cloud/edh-b-5.json', cloudEdhB5], // edh-b-5 (Commander EDHREC ranks 8,001-9,000, second pass; path order: 'edh-b-5' sorts before 'edh-c-2'): see the file
+  ['zz-cloud/edh-b-6.json', cloudEdhB6], // edh-b-6 (Commander EDHREC ranks 9,001-10,000, second pass; path order: 'edh-b-6' sorts before 'edh-c-2'): see the file
+  ['zz-cloud/edh-b-7.json', cloudEdhB7], // edh-b-7 (Commander coordinator B; path order after edh-b-1): see the file
+  ['zz-cloud/edh-b-8.json', cloudEdhB8], // edh-b-8 (Commander lane edh-b, second pass over EDHREC ranks 8,001-9,000; path order: 'edh-b-8' sorts after 'edh-b-2'): see the file
+  ['zz-cloud/edh-b-9.json', cloudEdhB9], // edh-b-9 (Commander coordinator B, EDHREC ranks 6,501-7,250, second and third pass; code edhb9; path order: after edh-b-7): see the file
+  ['zz-cloud/edh-c-1.json', cloudEdhC1], // edh-c-1 (Commander lane edh-c, EDHREC ranks 15,001-15,625; path order: 'edh-c-' sorts before 'edh-cast'): see the file
+  ['zz-cloud/edh-c-10.json', cloudEdhC10], // edh-c-10 (Commander lane edh-c, code edhv10; path order: 'edh-c-' sorts before 'edh-cast'): see the file
+  ['zz-cloud/edh-c-100.json', cloudEdhC100], // edh-c-100 (Commander lane edh-c, EDHREC ranks 23,501-24,000 fourth pass, code edhv100; path order: 'edh-c-100' sorts after 'edh-c-10.json' ('.' < '0') and before 'edh-c-11')
+  ['zz-cloud/edh-c-101.json', cloudEdhC101], // edh-c-101 (Commander EDHREC ranks 21,001-21,500, fourth pass; path order: 'edh-c-101' sorts after 'edh-c-10', before 'edh-c-11'): see the file
+  ['zz-cloud/edh-c-102.json', cloudEdhC102], // edh-c-102 (Commander EDHREC ranks 29,001-29,500, third pass; path order: after 'edh-c-10', before 'edh-c-11'): see the file
+  ['zz-cloud/edh-c-103.json', cloudEdhC103], // edh-c-103 (Commander effort, coordinator C, EDHREC 21,501-22,000, third pass; path order: 'edh-c-103' sorts after 'edh-c-10.json', before 'edh-c-11')
+  ['zz-cloud/edh-c-104.json', cloudEdhC104], // edh-c-104 (Commander coordinator C, EDHREC ranks 27,501-28,000, third pass; code edhv104; path order: 'edh-c-104' sorts before 'edh-c-11'): see the file
+  ['zz-cloud/edh-c-105.json', cloudEdhC105], // edh-c-105 (Commander EDHREC ranks 24,501-25,000, fourth pass; path order: 'edh-c-105' sorts after 'edh-c-10', before 'edh-c-11'): see the file
+  ['zz-cloud/edh-c-106.json', cloudEdhC106], // edh-c-106 (Commander EDHREC ranks 25,001-25,500, third pass; path order: 'edh-c-10' < 'edh-c-106' < 'edh-c-11'): see the file
+  ['zz-cloud/edh-c-107.json', cloudEdhC107], // edh-c-107 (Commander EDHREC ranks 18,001-18,500, later pass; path order: 'edh-c-107' sorts after 'edh-c-10', before 'edh-c-12'): see the file
+  ['zz-cloud/edh-c-108.json', cloudEdhC108], // edh-c-108 (Commander EDHREC ranks 22,501-23,000, third pass; path order: 'edh-c-108' sorts after 'edh-c-10', before 'edh-c-11'): see the file
+  ['zz-cloud/edh-c-109.json', cloudEdhC109], // edh-c-109 (Commander EDHREC ranks 22,001-22,500, fourth pass; path order: 'edh-c-10.json' < 'edh-c-109.json' < 'edh-c-11.json'): see the file
+  ['zz-cloud/edh-c-11.json', cloudEdhC11], // edh-c-11 (Commander lane edh-c, EDHREC ranks 16,876 to 17,500, second pass; path order: 'edh-c-11' sorts before 'edh-c-2'): see the file
+  ['zz-cloud/edh-c-110.json', cloudEdhC110], // edh-c-110 (Commander EDHREC ranks 23,001-23,500, fourth pass; path order: 'edh-c-110' sorts after 'edh-c-11', before 'edh-c-12')
+  ['zz-cloud/edh-c-111.json', cloudEdhC111], // edh-c-111 (Commander edh-c, EDHREC ranks 19,501-20,000, later pass; path order: 'edh-c-111' sorts after 'edh-c-11.json', before 'edh-c-12'): see the file
+  ['zz-cloud/edh-c-112.json', cloudEdhC112], // edh-c-112 (Commander EDHREC ranks 17,001-17,500, fifth pass; path order: 'edh-c-11.json' < 'edh-c-112.json' < 'edh-c-12.json'): see the file
+  ['zz-cloud/edh-c-113.json', cloudEdhC113], // edh-c-113 (Commander EDHREC ranks 18,501-19,000, later pass; path order: 'edh-c-11.json' < 'edh-c-113.json' < 'edh-c-12.json'): see the file
+  ['zz-cloud/edh-c-114.json', cloudEdhC114], // edh-c-114 (Commander EDHREC ranks 19,001-19,500, third pass; path order: 'edh-c-110.json' < 'edh-c-114.json' < 'edh-c-12.json'): see the file
+  ['zz-cloud/edh-c-12.json', cloudEdhC12], // edh-c-12 (Commander EDHREC ranks 18,126-18,750, second pass; path order: 'edh-c-12' sorts before 'edh-c-2')
+  ['zz-cloud/edh-c-13.json', cloudEdhC13], // edh-c-13 (Commander EDHREC ranks 18,751-19,375; path order: 'edh-c-13' sorts before 'edh-c-2' ('1' < '2')): see the file
+  ['zz-cloud/edh-c-14.json', cloudEdhC14], // edh-c-14 (Commander EDHREC ranks 16,251-16,875, second pass; path order: 'edh-c-14' sorts before 'edh-c-2'): choose an opponent at random, attacks that player this combat if able, loses half their life rounded down
+  ['zz-cloud/edh-c-15.json', cloudEdhC15], // edh-c-15 (Commander lane edh-c, EDHREC ranks 15,001-15,625, second pass; path order: 'edh-c-15' sorts before 'edh-c-2'): see the file
+  ['zz-cloud/edh-c-16.json', cloudEdhC16], // edh-c-16 (Commander edh-c, EDHREC 19,376-20,000; path order: 'edh-c-16' sorts after 'edh-c-1.json' ('.' < '1') and before 'edh-c-2'): see the file
+  ['zz-cloud/edh-c-17.json', cloudEdhC17], // edh-c-17 (Commander effort, coordinator C, EDHREC 15,626-16,250 third pass; path order: 'edh-c-17' sorts after 'edh-c-1', before 'edh-c-2'): see the file
+  ['zz-cloud/edh-c-18.json', cloudEdhC18], // edh-c-18 (Commander EDHREC ranks 17,501-18,125, third pass; path order: 'edh-c-18' sorts after 'edh-c-1', before 'edh-c-2'): see the file
+  ['zz-cloud/edh-c-19.json', cloudEdhC19], // edh-c-19 (Commander lane edh-c, code edhv19; path order: 'edh-c-19' sorts after 'edh-c-10', before 'edh-c-2'): see the file
+  ['zz-cloud/edh-c-2.json', cloudEdhC2], // edh-c-2 (Commander lane edh-c; path order: 'edh-c-2' sorts before 'edh-cast-1'): see the file
+  ['zz-cloud/edh-c-20.json', cloudEdhC20], // edh-c-20 (Commander effort, EDHREC 18,126-18,750, third pass; path order: 'edh-c-2.json' < 'edh-c-20.json' < 'edh-c-3.json'): see the file
+  ['zz-cloud/edh-c-21.json', cloudEdhC21], // edh-c-21 (Commander EDHREC ranks 18,751-19,375, third pass; path order: 'edh-c-21' sorts after 'edh-c-2', before 'edh-c-3')
+  ['zz-cloud/edh-c-22.json', cloudEdhC22], // edh-c-22 (Commander lane edh-c, EDHREC ranks 16,251-16,875; path order: 'edh-c-22' sorts before 'edh-c-3'): see the file
+  ['zz-cloud/edh-c-23.json', cloudEdhC23], // edh-c-23 (Commander edh-c, EDHREC 19,376-20,000, third pass; path order: 'edh-c-23' sorts after 'edh-c-2.json' and before 'edh-c-3'): see the file
+  ['zz-cloud/edh-c-24.json', cloudEdhC24], // edh-c-24 (Commander EDHREC ranks 20,001-20,500, first pass; path order: after edh-c-2, before edh-c-3): see the file
+  ['zz-cloud/edh-c-25.json', cloudEdhC25], // edh-c-25 (Commander EDHREC ranks 20,501-21,000; path order: 'edh-c-25' sorts after 'edh-c-2', before 'edh-c-3'): see the file
+  ['zz-cloud/edh-c-26.json', cloudEdhC26], // edh-c-26 (Commander EDHREC ranks 21,001-21,500; path order: 'edh-c-2.json' < 'edh-c-26.json' < 'edh-c-3.json'): see the file
+  ['zz-cloud/edh-c-27.json', cloudEdhC27], // edh-c-27 (Commander EDHREC ranks 21,501-22,000; path order: 'edh-c-27' sorts before 'edh-c-3'): see the file
+  ['zz-cloud/edh-c-28.json', cloudEdhC28], // edh-c-28 (Commander EDHREC ranks 22,001-22,500; path order: 'edh-c-28' sorts after 'edh-c-2', before 'edh-c-3'): see the file
+  ['zz-cloud/edh-c-29.json', cloudEdhC29], // edh-c-29 (Commander EDHREC ranks 22,501-23,000; path order: 'edh-c-29' sorts after 'edh-c-2', before 'edh-c-3'): see the file
+  ['zz-cloud/edh-c-3.json', cloudEdhC3], // edh-c-3 (Commander lane edh-c, EDHREC ranks 16,251-16,875; path order: 'edh-c-' sorts before 'edh-cast'): see the file
+  ['zz-cloud/edh-c-30.json', cloudEdhC30], // edh-c-30 (Commander lane edh-c, EDHREC ranks 23,001 to 23,500; path order: 'edh-c-30' sorts after 'edh-c-3'): see the file
+  ['zz-cloud/edh-c-31.json', cloudEdhC31], // edh-c-31 (Commander EDHREC ranks 23,501-24,000; path order: 'edh-c-31' sorts after 'edh-c-3', before 'edh-c-4'): "~ can block creatures with shadow as though they didn't have shadow"
+  ['zz-cloud/edh-c-32.json', cloudEdhC32], // edh-c-32 (Commander EDHREC ranks 24,001-24,500; path order: 'edh-c-32' sorts after 'edh-c-3', before 'edh-c-4'): see the file
+  ['zz-cloud/edh-c-33.json', cloudEdhC33], // edh-c-33 (Commander EDHREC ranks 24,501-25,000; path order: 'edh-c-33' sorts after 'edh-c-3' and before 'edh-c-4'): see the file
+  ['zz-cloud/edh-c-34.json', cloudEdhC34], // edh-c-34 (Commander EDHREC ranks 25,001-25,500; path order: 'edh-c-3.json' < 'edh-c-34.json' < 'edh-c-4.json'): see the file
+  ['zz-cloud/edh-c-35.json', cloudEdhC35], // edh-c-35 (Commander lane edh-c, EDHREC ranks 25,501-26,000, code edhv35; path order: 'edh-c-35' sorts after 'edh-c-3' and before 'edh-c-4')
+  ['zz-cloud/edh-c-36.json', cloudEdhC36], // edh-c-36 (Commander lane edh-c, EDHREC ranks 26,001-26,500; path order: 'edh-c-36' sorts after 'edh-c-3', before 'edh-c-4'): see the file
+  ['zz-cloud/edh-c-37.json', cloudEdhC37], // edh-c-37 (Commander EDHREC ranks 26,501-27,000; path order: 'edh-c-3' sorts before 'edh-c-37', which sorts before 'edh-c-4'): kinship ("you may reveal it"), exile N typed cards from the graveyard, all <subtype> are Plains, pump and attacks this turn
+  ['zz-cloud/edh-c-38.json', cloudEdhC38], // edh-c-38 (Commander EDHREC ranks 27,001-27,500, first pass; path order: after edh-c-3): see the file
+  ['zz-cloud/edh-c-39.json', cloudEdhC39], // edh-c-39 (Commander EDHREC ranks 27,501-28,000; path order: 'edh-c-39' sorts after 'edh-c-3', before 'edh-c-4'): see the file
+  ['zz-cloud/edh-c-4.json', cloudEdhC4], // edh-c-4 (Commander lane edh-c, EDHREC ranks 16,876 to 17,500; path order: 'edh-c-4' sorts before 'edh-cast'): see the file
+  ['zz-cloud/edh-c-40.json', cloudEdhC40], // edh-c-40 (Commander EDHREC ranks 28,001-28,500; path order: 'edh-c-4.json' < 'edh-c-40.json' < 'edh-c-5.json'): see the file
+  ['zz-cloud/edh-c-41.json', cloudEdhC41], // edh-c-41 (Commander effort, coordinator C, EDHREC ranks 28,501-29,000; path order: 'edh-c-4.json' sorts before 'edh-c-41.json'): see the file
+  ['zz-cloud/edh-c-42.json', cloudEdhC42], // edh-c-42 (Commander EDHREC ranks 29,001-29,500; path order: 'edh-c-4.' sorts before 'edh-c-42', before 'edh-c-5'): see the file
+  ['zz-cloud/edh-c-43.json', cloudEdhC43], // edh-c-43 (Commander EDHREC ranks 29,501-30,000): conditional pump with must-attack / attack-as-though-no-defender, color and abilities, Aura pump with an otherwise pump
+  ['zz-cloud/edh-c-44.json', cloudEdhC44], // edh-c-44 (Commander EDHREC ranks 17,501-18,000, fourth pass; path order: 'edh-c-44' sorts after 'edh-c-4', before 'edh-cast-1'): see the file
+  ['zz-cloud/edh-c-45.json', cloudEdhC45], // edh-c-45 (Commander EDHREC ranks 15,501-16,000, third pass): damage plus N for a union of two sources, for each 1 life lost, two cost reductions, hexproof from a list, regenerate instead of destroy
+  ['zz-cloud/edh-c-46.json', cloudEdhC46], // edh-c-46 (Commander edh-c, EDHREC ranks 17,001-17,500, third pass; path order: 'edh-c-46' sorts after 'edh-c-4', before 'edh-c-5'): see the file
+  ['zz-cloud/edh-c-47.json', cloudEdhC47], // edh-c-47 (Commander lane edh-c, EDHREC ranks 16,001-16,500; path order: 'edh-c-47' sorts after 'edh-c-4.json' ('.' < '7') and before 'edh-c-5')
+  ['zz-cloud/edh-c-48.json', cloudEdhC48], // edh-c-48 (Commander worker, ranks 15,001-15,500; path order: after edh-c-45, before edh-c-5): see the file
+  ['zz-cloud/edh-c-49.json', cloudEdhC49], // edh-c-49 (Commander effort, EDHREC 16,501-17,000, fourth pass; path order: 'edh-c-49' sorts after 'edh-c-4', before 'edh-c-5'): see the file
+  ['zz-cloud/edh-c-5.json', cloudEdhC5], // edh-c-5 (Commander EDHREC ranks 17,501-18,125; path order: 'edh-c-5' sorts before 'edh-cast-1' ('-' < 'a')): see the file
+  ['zz-cloud/edh-c-50.json', cloudEdhC50], // edh-c-50 (Commander effort, coordinator C, EDHREC 18,501-19,000; path order: 'edh-c-50' sorts after 'edh-c-5.json' ('.' < '0'), before 'edh-c-6'): see the file
+  ['zz-cloud/edh-c-51.json', cloudEdhC51], // edh-c-51 (Commander effort, coordinator C, EDHREC 23,501-24,000; path order: 'edh-c-5.json' < 'edh-c-51.json' < 'edh-c-6.json'): see the file
+  ['zz-cloud/edh-c-52.json', cloudEdhC52], // edh-c-52 (Commander effort, coordinator C, EDHREC ranks 19,001-19,500; path order: 'edh-c-52' sorts after 'edh-c-5', before 'edh-c-6'): see the file
+  ['zz-cloud/edh-c-53.json', cloudEdhC53], // edh-c-53 (Commander effort, coordinator C, EDHREC ranks 24,001-24,500, second pass; code edhv53; path order: 'edh-c-53' sorts after 'edh-c-5.json', before 'edh-c-6'): see the file
+  ['zz-cloud/edh-c-55.json', cloudEdhC55], // edh-c-55 (Commander EDHREC ranks 23,001-23,500; path order: 'edh-c-55' sorts after 'edh-c-5', before 'edh-c-6'): see the file
+  ['zz-cloud/edh-c-56.json', cloudEdhC56], // edh-c-56 (Commander EDHREC ranks 29,501-30,000, second pass; path order: 'edh-c-5.json' < 'edh-c-56.json' < 'edh-c-6.json'): narrow single-card wordings, see the file
+  ['zz-cloud/edh-c-57.json', cloudEdhC57], // edh-c-57 (Commander EDHREC ranks 21,501-22,000, second pass; path order: 'edh-c-57' sorts after 'edh-c-5', before 'edh-c-9'): see the file
+  ['zz-cloud/edh-c-58.json', cloudEdhC58], // edh-c-58 (Commander effort, coordinator C, EDHREC 19,501-20,000; path order: 'edh-c-58' sorts after 'edh-c-5.json' and before 'edh-c-6'): see the file
+  ['zz-cloud/edh-c-59.json', cloudEdhC59], // edh-c-59 (Commander effort, coordinator C, EDHREC ranks 20,001-20,500, second pass; path order: 'edh-c-59' sorts after 'edh-c-5' and before 'edh-c-6'): see the file
+  ['zz-cloud/edh-c-6.json', cloudEdhC6], // edh-c-6 (Commander effort, EDHREC 18,126-18,750; path order: '-' sorts before 'a' of edh-cast): domain payments, see the file
+  ['zz-cloud/edh-c-60.json', cloudEdhC60], // edh-c-60 (Commander EDHREC ranks 17,501-18,000, sixth pass; path order: 'edh-c-6.json' < 'edh-c-60.json' < 'edh-c-7.json'): see the file)
+  ['zz-cloud/edh-c-61.json', cloudEdhC61], // edh-c-61 (Commander lane edh-c, EDHREC ranks 25,501 to 26,000, second pass; path order: 'edh-c-61' sorts after 'edh-c-6', before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-62.json', cloudEdhC62], // edh-c-62 (Commander effort, coordinator C, EDHREC 25,001-25,500 second pass; path order: 'edh-c-62' sorts after 'edh-c-6', before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-63.json', cloudEdhC63], // edh-c-63 (Commander effort, coordinator C, EDHREC 24,501-25,000; path order: 'edh-c-63' sorts after 'edh-c-6.json', before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-64.json', cloudEdhC64], // edh-c-64 (Commander EDHREC ranks 20,501-21,000, second pass; path order: 'edh-c-64' sorts after 'edh-c-6', before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-65.json', cloudEdhC65], // edh-c-65 (Commander effort, coordinator C, EDHREC 21,001-21,500 second pass; path order: 'edh-c-65' sorts after 'edh-c-6.json', before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-66.json', cloudEdhC66], // edh-c-66 (Commander EDHREC ranks 22,001-22,500, second pass; path order: 'edh-c-66' sorts after 'edh-c-6', before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-67.json', cloudEdhC67], // edh-c-67 (Commander lane edh-c, EDHREC ranks 27,001-27,500, second pass; path order: 'edh-c-6.json' < 'edh-c-67'): see the file
+  ['zz-cloud/edh-c-68.json', cloudEdhC68], // edh-c-68 (Commander EDHREC ranks 26,001-26,500, second pass; path order: 'edh-c-68' sorts after 'edh-c-6.json', before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-69.json', cloudEdhC69], // edh-c-69 (Commander EDHREC ranks 28,001-28,500, second pass; path order: 'edh-c-6.json' < 'edh-c-69.json' < 'edh-c-8.json'): see the file
+  ['zz-cloud/edh-c-70.json', cloudEdhC70], // edh-c-70 (Commander EDHREC ranks 29,001-29,500, second pass)
+  ['zz-cloud/edh-c-71.json', cloudEdhC71], // edh-c-71 (Commander EDHREC ranks 28,501-29,000, second pass; path order: 'edh-c-71' sorts after 'edh-c-6', before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-72.json', cloudEdhC72], // edh-c-72 (Commander lane edh-c, EDHREC ranks 26,501-27,000, code edhv72; path order: 'edh-c-72' sorts after 'edh-c-7')
+  ['zz-cloud/edh-c-73.json', cloudEdhC73], // edh-c-73 (Commander EDHREC ranks 22,501-23,000, second pass; code edhv73; path order: 'edh-c-73' sorts before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-74.json', cloudEdhC74], // edh-c-74 (Commander lane edh-c, code edhv74, EDHREC ranks 17,001-17,500, fourth pass; path order: 'edh-c-74' sorts between 'edh-c-6' and 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-75.json', cloudEdhC75], // edh-c-75 (Commander EDHREC ranks 27,501-28,000, second pass; path order: 'edh-c-75' sorts after 'edh-c-6', before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-76.json', cloudEdhC76], // edh-c-76 (Commander EDHREC ranks 23,001-23,500, third pass; path order: 'edh-c-76' sorts after 'edh-c-6', before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-77.json', cloudEdhC77], // edh-c-77 (Commander EDHREC ranks 23,501-24,000, third pass; path order: 'edh-c-77' sorts after 'edh-c-6', before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-78.json', cloudEdhC78], // edh-c-78 (Commander EDHREC ranks 18,001-18,500, later pass; path order: 'edh-c-78' sorts after 'edh-c-6', before 'edh-c-8'): see the file
+  ['zz-cloud/edh-c-79.json', cloudEdhC79], // edh-c-79 (Commander EDHREC ranks 29,501-30,000, third pass; path order: 'edh-c-79' sorts after 'edh-c-6', before 'edh-c-9'): see the file
+  ['zz-cloud/edh-c-8.json', cloudEdhC8], // edh-c-8 (Commander effort, coordinator C; path order: 'edh-c-8' sorts after 'cmd5', before 'edh-cast'): see the file
+  ['zz-cloud/edh-c-80.json', cloudEdhC80], // edh-c-80 (Commander EDHREC ranks 21,001-21,500, third pass; path order: 'edh-c-8.json' < 'edh-c-80.json' < 'edh-c-9.json'): see the file
+  ['zz-cloud/edh-c-81.json', cloudEdhC81], // edh-c-81 (Commander EDHREC ranks 15,001-15,500, later pass; path order: 'edh-c-81' sorts after 'edh-c-8', before 'edh-c-9'): see the file
+  ['zz-cloud/edh-c-82.json', cloudEdhC82], // edh-c-82 (Commander EDHREC ranks 24,501-25,000, third pass, code edhv82; path order: 'edh-c-8.json' < 'edh-c-82.json' < 'edh-c-9.json'): see the file
+  ['zz-cloud/edh-c-83.json', cloudEdhC83], // edh-c-83 (Commander EDHREC ranks 22,001-22,500, third pass; path order: 'edh-c-83' sorts after 'edh-c-8.json' ('.' < '3'), before 'edh-c-9'): see the file
+  ['zz-cloud/edh-c-84.json', cloudEdhC84], // edh-c-84 (Commander EDHREC ranks 18,501-19,000, later pass; path order: 'edh-c-84' sorts after 'edh-c-8.json', before 'edh-c-9'): see the file
+  ['zz-cloud/edh-c-85.json', cloudEdhC85], // edh-c-85 (Commander EDHREC ranks 15,501-16,000, later pass): lose all unspent mana, the second target of the first target's controller
+  ['zz-cloud/edh-c-86.json', cloudEdhC86], // edh-c-86 (Commander EDHREC ranks 16,001-16,500, later pass; path order: 'edh-c-8.json' < 'edh-c-86.json' < 'edh-c-9.json'): see the file
+  ['zz-cloud/edh-c-87.json', cloudEdhC87], // edh-c-87 (Commander effort, coordinator C, EDHREC ranks 26,001-26,500, third pass; path order: 'edh-c-87' sorts after 'edh-c-8.json', before 'edh-c-9'): see the file
+  ['zz-cloud/edh-c-88.json', cloudEdhC88], // edh-c-88 (Commander EDHREC ranks 20,501-21,000, third pass; path order: 'edh-c-88' sorts after 'edh-c-8', before 'edh-c-9'): see the file
+  ['zz-cloud/edh-c-89.json', cloudEdhC89], // edh-c-89 (Commander EDHREC ranks 19,501-20,000, later pass; path order: 'edh-c-89' sorts after 'edh-c-8.json', before 'edh-c-9.json'): see the file
+  ['zz-cloud/edh-c-9.json', cloudEdhC9], // edh-c-9 (Commander EDHREC ranks 17,501-18,125, second pass; path order: 'edh-c-9' sorts after 'edh-c-5', before 'edh-cast-1'): see the file
+  ['zz-cloud/edh-c-90.json', cloudEdhC90], // edh-c-90 (Commander EDHREC ranks 17,501-18,000, later pass; path order: 'edh-c-90' sorts after 'edh-c-9.json', before 'edh-cast-1'): becomes-creature still a land/planeswalker, in addition to its other types, may have ~ become an artifact creature
+  ['zz-cloud/edh-c-91.json', cloudEdhC91], // edh-c-91 (Commander lane edh-c, EDHREC ranks 25,501-26,000, third pass, code edhv91; path order: 'edh-c-9.json' < 'edh-c-91.json')
+  ['zz-cloud/edh-c-92.json', cloudEdhC92], // edh-c-92 (Commander EDHREC ranks 19,001-19,500, later pass; path order: 'edh-c-9.json' < 'edh-c-92.json' < 'edh-cast-1.json'): attached has K and can't be blocked except by F, base power and a quoted grant, each opponent may return a card to the battlefield, protection from the chosen card name
+  ['zz-cloud/edh-c-93.json', cloudEdhC93], // edh-c-93 (Commander EDHREC ranks 28,501-29,000, third pass; path order: 'edh-c-9.json' < 'edh-c-93.json')
+  ['zz-cloud/edh-c-94.json', cloudEdhC94], // edh-c-94 (Commander EDHREC ranks 26,501-27,000, third pass, code edhv94; path order: 'edh-c-94' sorts after 'edh-c-9', before 'edh-cast')
+  ['zz-cloud/edh-c-95.json', cloudEdhC95], // edh-c-95 (Commander EDHREC ranks 24,001-24,500, third pass; path order: after edh-c-9, before edh-cast-1): see the file
+  ['zz-cloud/edh-c-96.json', cloudEdhC96], // edh-c-96 (Commander effort, coordinator C, EDHREC 27,001-27,500 third pass; path order: 'edh-c-96' sorts after 'edh-c-9.json'): see the file
+  ['zz-cloud/edh-c-97.json', cloudEdhC97], // edh-c-97 (Commander EDHREC ranks 20,001-20,500, third pass; path order: after 'edh-c-9', before 'edh-cast-1'): see the file
+  ['zz-cloud/edh-c-98.json', cloudEdhC98], // edh-c-98 (Commander EDHREC ranks 28,001-28,500, third pass; path order: 'edh-c-98' sorts after 'edh-c-9.json', before 'edh-cast-1'): see the file
+  ['zz-cloud/edh-c-99.json', cloudEdhC99], // edh-c-99 (Commander EDHREC ranks 29,501-30,000, fourth pass; path order: 'edh-c-99' sorts after 'edh-c-9', before 'edh-cast-1'): see the file
   ['zz-cloud/edh-cast-1.json', cloudEdhCast1], // edh-cast-1 (Commander lane edh-cast; path order: 'edh-cast' sorts after 'cmd5', before 'edh-mana'): casting from the top of the library for life, cost reductions by color, subtype and power
+  ['zz-cloud/edh-cast-10.json', cloudEdhCast10], // edh-cast-10 (Commander lane edh-cast; path order: 'edh-cast-10' sorts after 'edh-cast-1', before 'edh-cast-2'): see the file
+  ['zz-cloud/edh-cast-11.json', cloudEdhCast11], // edh-cast-11 (Commander lane edh-cast; path order: 'edh-cast-11' sorts after 'edh-cast-1', before 'edh-cast-2'): see the file
+  ['zz-cloud/edh-cast-12.json', cloudEdhCast12], // edh-cast-12 (Commander lane edh-cast; path order: 'edh-cast-12' sorts after 'edh-cast-11', before 'edh-cast-2'): see the file
+  ['zz-cloud/edh-cast-13.json', cloudEdhCast13], // edh-cast-13 (Commander lane edh-cast; path order: 'edh-cast-13' sorts after 'edh-cast-12', before 'edh-cast-2'): see the file
+  ['zz-cloud/edh-cast-14.json', cloudEdhCast14], // edh-cast-14 (Commander lane edh-cast; path order: 'edh-cast-14' sorts after 'edh-cast-13', before 'edh-cast-2'): see the file
+  ['zz-cloud/edh-cast-15.json', cloudEdhCast15], // edh-cast-15 (Commander lane edh-cast; path order: 'edh-cast-15' sorts after 'edh-cast-13', before 'edh-cast-2'): see the file
+  ['zz-cloud/edh-cast-2.json', cloudEdhCast2], // edh-cast-2 (Commander lane edh-cast; path order: after edh-cast-1, before edh-mana): "can't cast additional spells", spell-copy and cast causes of trigger doublers, cast-history conditions
+  ['zz-cloud/edh-cast-3.json', cloudEdhCast3], // edh-cast-3 (Commander lane edh-cast; path order: after edh-cast-1/-2, before edh-mana): cost statics by life lost, damage dealt and the most an opponent controls, see the file
+  ['zz-cloud/edh-cast-4.json', cloudEdhCast4], // edh-cast-4 (Commander lane edh-cast; path order: after edh-cast-3, before edh-mana): see the file
+  ['zz-cloud/edh-cast-5.json', cloudEdhCast5], // edh-cast-5 (Commander lane edh-cast; path order: after edh-cast-3, before edh-combat): pay 2 life for a colored mana symbol (K'rrik, the Defilers), see the file
+  ['zz-cloud/edh-cast-6.json', cloudEdhCast6], // edh-cast-6 (Commander lane edh-cast; path order: after edh-cast-5, before edh-combat): see the file
+  ['zz-cloud/edh-cast-7.json', cloudEdhCast7], // edh-cast-7 (Commander lane edh-cast; path order: after edh-cast-5, before edh-combat): see the file
+  ['zz-cloud/edh-cast-8.json', cloudEdhCast8], // edh-cast-8 (Commander lane edh-cast; path order: after edh-cast-6, before edh-combat): "if it's a spell with lesser mana value" (Rashmi), see the file
+  ['zz-cloud/edh-cast-9.json', cloudEdhCast9], // edh-cast-9 (Commander lane edh-cast; path order: after edh-cast-7, before edh-combat): see the file
+  ['zz-cloud/edh-combat-1.json', cloudEdhCombat1], // edh-combat-1 (Commander lane edh-combat; path order: 'edh-combat' sorts after 'edh-cast', before 'edh-mana'): attack and combat restrictions and triggers, see the file
+  ['zz-cloud/edh-combat-2.json', cloudEdhCombat2], // edh-combat-2 (Commander lane edh-combat; path order: 'edh-co' sorts after 'edh-ca', before 'edh-m'): see the file
+  ['zz-cloud/edh-combat-3.json', cloudEdhCombat3], // edh-combat-3 (Commander lane edh-combat; path order: after edh-combat-1, before edh-mana): see the file
+  ['zz-cloud/edh-combat-4.json', cloudEdhCombat4], // edh-combat-4 (Commander lane edh-combat; path order: 'edh-combat-4' sorts after 'edh-combat-2', before 'edh-m'): see the file
+  ['zz-cloud/edh-combat-5.json', cloudEdhCombat5], // edh-combat-5 (Commander lane edh-combat; path order: 'edh-combat-5' sorts after 'edh-combat-3', before 'edh-m'): see the file
+  ['zz-cloud/edh-combat-6.json', cloudEdhCombat6], // edh-combat-6 (Commander lane edh-combat): see the file
+  ['zz-cloud/edh-combat-7.json', cloudEdhCombat7], // edh-combat-7 (Commander lane edh-combat): see the file
+  ['zz-cloud/edh-d-1.json', cloudEdhD1], // edh-d-1 (Commander coordinator D, EDHREC ranks 10,001-11,250, code edhd1; path order: after edh-combat-7, before edh-mana-keywords-1): see the file
+  ['zz-cloud/edh-d-10.json', cloudEdhD10], // edh-d-10 (Commander coordinator D, EDHREC ranks 10,001-11,250, third pass; code edhd10): see the file
+  ['zz-cloud/edh-d-100.json', cloudEdhD100], // edh-d-100 (MUST-FINISH round, EDHREC ranks 5,001-10,000, graveyard-exile-cast; code edhd100; path order: after edh-d-10.json, before edh-d-11.json): see the file
+  ['zz-cloud/edh-d-101.json', cloudEdhD101], // edh-d-101 (Commander coordinator D, EDHREC ranks 5,001-10,000, group graveyard-exile-cast; code edhd101; path order: 'edh-d-101' sorts after 'edh-d-10', before 'edh-d-11'): see the file
+  ['zz-cloud/edh-d-102.json', cloudEdhD102], // edh-d-102 (must-finish round of the EDHREC band 5,001-10,000, graveyard-exile-cast; code edhd102; path order: after edh-d-10, before edh-d-11): see the file
+  ['zz-cloud/edh-d-11.json', cloudEdhD11], // edh-d-11 (Commander coordinator D, EDHREC ranks 11,251-12,500, third pass; code edhd11; path order: 'edh-d-11' sorts after 'edh-d-1', before 'edh-d-2'): whenever one or more players sacrifice one or more creatures (whole batch)
+  ['zz-cloud/edh-d-12.json', cloudEdhD12], // edh-d-12 (Commander coordinator D, EDHREC ranks 12,501-13,750, third pass; code edhd12; path order: after edh-d-1): see the file
+  ['zz-cloud/edh-d-13.json', cloudEdhD13], // edh-d-13 (Commander coordinator D, EDHREC ranks 11,251-12,500, fourth pass; code edhd13; path order: 'edh-d-13' sorts after 'edh-d-10', before 'edh-d-2'): see the file
+  ['zz-cloud/edh-d-14.json', cloudEdhD14], // edh-d-14 (Commander coordinator D, EDHREC ranks 13,751-15,000, fourth pass; code edhd14; path order: after edh-d-10, before edh-d-2): see the file
+  ['zz-cloud/edh-d-15.json', cloudEdhD15], // edh-d-15 (Commander coordinator D, EDHREC ranks 12,501-13,750, fourth pass; code edhd15; path order: after edh-d-10, before edh-d-2): see the file
+  ['zz-cloud/edh-d-16.json', cloudEdhD16], // edh-d-16 (Commander coordinator D, EDHREC ranks 12,501-13,750, fifth pass; code edhd16; path order: after edh-d-11, before edh-d-2): dig variants, library position, copy riders
+  ['zz-cloud/edh-d-17.json', cloudEdhD17], // edh-d-17 (Commander coordinator D, EDHREC ranks 13,751-15,000, fifth pass; code edhd17; path order: after edh-d-12, before edh-d-2): see the file
+  ['zz-cloud/edh-d-19.json', cloudEdhD19], // edh-d-19 (Commander lane vote; code edhd19; path order: after edh-d-16, before edh-d-2): see the file
+  ['zz-cloud/edh-d-2.json', cloudEdhD2], // edh-d-2 (Commander lane edh-d, EDHREC ranks 11,251-12,500; path order: after edh-combat-7, before edh-mana-keywords-1): see the file
+  ['zz-cloud/edh-d-20.json', cloudEdhD20], // edh-d-20 (Commander coordinator D, lane random: coin flips and "at random"; code edhd20; path order: after edh-d-2): see the file
+  ['zz-cloud/edh-d-21.json', cloudEdhD21], // edh-d-21 (Commander coordinator D, lane type-change; code edhd21; path order: after edh-d-2, before edh-d-3): see the file
+  ['zz-cloud/edh-d-22.json', cloudEdhD22], // edh-d-22 (Commander coordinator D, lane mana; code edhd22; path order: after edh-d-2, before edh-d-3): mana abilities and spend restrictions
+  ['zz-cloud/edh-d-23.json', cloudEdhD23], // edh-d-23 (Commander coordinator D, lane dig; code edhd23; path order: after edh-d-2, before edh-d-3): digs, see the file
+  ['zz-cloud/edh-d-24.json', cloudEdhD24], // edh-d-24 (Commander coordinator D, lane attach across the top 20,000; code edhd24; path order: after edh-d-2, before edh-d-3): see the file
+  ['zz-cloud/edh-d-25.json', cloudEdhD25], // edh-d-25 (Commander coordinator D, lane combat; code edhd25; path order: after edh-d-2, before edh-d-3): see the file
+  ['zz-cloud/edh-d-26.json', cloudEdhD26], // edh-d-26 (Commander coordinator D, lane name-hand, code edhd26; path order: after edh-d-2, before edh-d-3): see the file
+  ['zz-cloud/edh-d-27.json', cloudEdhD27], // edh-d-27 (Commander lane vote, second pass; code edhd27; path order: after edh-d-25, before edh-d-3)
+  ['zz-cloud/edh-d-28.json', cloudEdhD28], // edh-d-28 (Commander coordinator D, lane random, second pass; code edhd28; path order: after edh-d-2, before edh-d-3): see the file
+  ['zz-cloud/edh-d-29.json', cloudEdhD29], // edh-d-29 (Commander coordinator D, lane attach second pass; code edhd29): see the file
+  ['zz-cloud/edh-d-3.json', cloudEdhD3], // edh-d-3 (coordinator D, EDHREC ranks 12,501-13,750; path order: 'edh-d' sorts after 'edh-combat', before 'edh-fix'/'edh-mana'): see the file
+  ['zz-cloud/edh-d-30.json', cloudEdhD30], // edh-d-30 (Commander lane type-change, second pass; code edhd30; path order: after edh-d-3, before edh-d-4): see the file
+  ['zz-cloud/edh-d-31.json', cloudEdhD31], // edh-d-31 (Commander lane mana, second pass; code edhd31; path order: after edh-d-3, before edh-d-4): see the file
+  ['zz-cloud/edh-d-32.json', cloudEdhD32], // edh-d-32 (Commander coordinator D, lane pile-open-phase; code edhd32; path order: after edh-d-3, before edh-d-4): opening-hand reveals, piles
+  ['zz-cloud/edh-d-33.json', cloudEdhD33], // edh-d-33 (Commander coordinator D, lane name-hand second pass; code edhd33; path order: after edh-d-3, before edh-d-4): see the file
+  ['zz-cloud/edh-d-34.json', cloudEdhD34], // edh-d-34 (Commander coordinator D, lane turns-stack; code edhd34; path order: after edh-d-3, before edh-d-4): extra combats and extra turns
+  ['zz-cloud/edh-d-35.json', cloudEdhD35], // edh-d-35 (Commander coordinator D, lane dig second pass; code edhd35; path order: after edh-d-25): reveal until N cards, per-permanent reveals, look-any-number digs
+  ['zz-cloud/edh-d-36.json', cloudEdhD36], // edh-d-36 (Commander lane counter-modes; code edhd36; path order: after edh-d-3, before edh-d-4): counterspell riders, see the file
+  ['zz-cloud/edh-d-37.json', cloudEdhD37], // edh-d-37 (Commander lane lands; code edhd37; path order: after edh-d-3, before edh-d-4): see the file
+  ['zz-cloud/edh-d-38.json', cloudEdhD38], // edh-d-38 (Commander lane combat, second pass; code edhd38; path order: after edh-d-3, before edh-d-4): see the file
+  ['zz-cloud/edh-d-39.json', cloudEdhD39], // edh-d-39 (Commander lane pile-open-phase, second pass; code edhd39; path order: after edh-d-31, before edh-d-4): see the file
+  ['zz-cloud/edh-d-4.json', cloudEdhD4], // edh-d-4 (Commander coordinator D, EDHREC ranks 13,751-15,000; code edhd4; path order: 'edh-d-4' sorts after 'edh-combat-7', before 'edh-mana-keywords-1'): see the file
+  ['zz-cloud/edh-d-40.json', cloudEdhD40], // edh-d-40 (Commander coordinator D, lane d-leftovers; code edhd40; path order: 'edh-d-40' sorts after 'edh-d-4', before 'edh-d-5'): see the file
+  ['zz-cloud/edh-d-41.json', cloudEdhD41], // edh-d-41 (Commander coordinator D, lane d-leftovers-2: attach and type-change leftovers; code edhd41; path order: after edh-d-4, before edh-d-5)
+  ['zz-cloud/edh-d-42.json', cloudEdhD42], // edh-d-42 (Commander coordinator D, lane tokens second pass; code edhd42; path order: after edh-d-4, before edh-d-5): see the file
+  ['zz-cloud/edh-d-43.json', cloudEdhD43], // edh-d-43 (Commander coordinator D, lane counter-modes second pass; code edhd43; path order: after edh-d-4): see the file
+  ['zz-cloud/edh-d-44.json', cloudEdhD44], // edh-d-44 (Commander coordinator D, lane d-leftovers-3; code edhd44; path order: after edh-d-4, before edh-d-5): see the file
+  ['zz-cloud/edh-d-45.json', cloudEdhD45], // edh-d-45 (Commander coordinator D, lane cost third pass; code edhd45; path order: after edh-d-4, before edh-d-5): see the file
+  ['zz-cloud/edh-d-46.json', cloudEdhD46], // edh-d-46 (Commander lane lands, second pass; code edhd46; path order: after edh-d-4, before edh-d-5): see the file
+  ['zz-cloud/edh-d-47.json', cloudEdhD47], // edh-d-47 (Commander lane exchange, second pass; code edhd47; path order: after edh-d-4, before edh-d-5): see the file
+  ['zz-cloud/edh-d-48.json', cloudEdhD48], // edh-d-48 (Commander coordinator D, lane counters third pass; code edhd48; path order: after edh-d-4, before edh-d-5): see the file
+  ['zz-cloud/edh-d-49.json', cloudEdhD49], // edh-d-49 (Commander lane dice, second pass, coordinator D; code edhd49; path order: after edh-d-41, before edh-d-5): see the file
+  ['zz-cloud/edh-d-5.json', cloudEdhD5], // edh-d-5 (Commander EDHREC ranks 13,751-15,000, second pass; code edhd5; path order: 'edh-d-5' sorts after 'edh-combat-7', before 'edh-mana-keywords-1'): see the file
+  ['zz-cloud/edh-d-50.json', cloudEdhD50], // edh-d-50 (Commander lane next-cast; code edhd50; path order: after edh-d-5, before edh-d-6): see the file
+  ['zz-cloud/edh-d-51.json', cloudEdhD51], // edh-d-51 (Commander coordinator D, lane d-rank-1, EDHREC ranks 10,501-12,000; code edhd51; path order: after edh-d-5, before edh-d-6): see the file
+  ['zz-cloud/edh-d-52.json', cloudEdhD52], // edh-d-52 (Commander coordinator D, lane d-rank-2 ranks 12,001-13,500; code edhd52; path order: after edh-d-5, before edh-d-6): see the file
+  ['zz-cloud/edh-d-53.json', cloudEdhD53], // edh-d-53 (Commander coordinator D, lane d-rank-3; code edhd53; path order: after edh-d-5, before edh-d-6): see the file
+  ['zz-cloud/edh-d-54.json', cloudEdhD54], // edh-d-54 (Commander coordinator D, lane d-rank-4, ranks 18,001-19,500; code edhd54; path order: after edh-d-5, before edh-mana-keywords-1): see the file
+  ['zz-cloud/edh-d-55.json', cloudEdhD55], // edh-d-55 (Commander coordinator D, lane d-rank-5; code edhd55; path order: after edh-d-5, before edh-d-6): see the file
+  ['zz-cloud/edh-d-56.json', cloudEdhD56], // edh-d-56 (lane d-leftovers-4; code edhd56; path order: after edh-d-5, before edh-d-6): see the file
+  ['zz-cloud/edh-d-57.json', cloudEdhD57], // edh-d-57 (Commander coordinator D, lane instead third pass; code edhd57; path order: after edh-d-5.json): see the file
+  ['zz-cloud/edh-d-58.json', cloudEdhD58], // edh-d-58 (Commander coordinator D, lane exile-play fourth pass; code edhd58; path order: after edh-d-5): see the file
+  ['zz-cloud/edh-d-59.json', cloudEdhD59], // edh-d-59 (Commander coordinator D, lane graveyard fourth pass; code edhd59; path order: after edh-d-5, before edh-d-6): see the file
+  ['zz-cloud/edh-d-6.json', cloudEdhD6], // edh-d-6 (Commander EDHREC ranks 10,001-11,250, second pass; path order: after edh-combat-7, before edh-mana-keywords-1): see the file
+  ['zz-cloud/edh-d-60.json', cloudEdhD60], // edh-d-60 (Commander coordinator D, lane copy fourth pass; code edhd60; path order: after edh-d-6, before edh-d-7): see the file
+  ['zz-cloud/edh-d-61.json', cloudEdhD61], // edh-d-61 (Commander lane transform, second pass; code edhd61; path order: after edh-d-6, before edh-d-7): see the file
+  ['zz-cloud/edh-d-62.json', cloudEdhD62], // edh-d-62 (Commander coordinator D, lane commander third pass; code edhd62; path order: after edh-d-6, before edh-d-7): see the file
+  ['zz-cloud/edh-d-63.json', cloudEdhD63], // edh-d-63 (Commander coordinator D, lane group-choices; code edhd63; path order: after edh-d-6, before edh-d-7): see the file
+  ['zz-cloud/edh-d-64.json', cloudEdhD64], // edh-d-64 (Commander lane each-player, fourth pass; code edhd64; path order: after edh-d-6): see the file
+  ['zz-cloud/edh-d-66.json', cloudEdhD66], // edh-d-66 (Commander coordinator D, lane stack-marks, concept round; code edhd66; path order: after edh-d-6, before edh-d-7)
+  ['zz-cloud/edh-d-67.json', cloudEdhD67], // edh-d-67 (Commander coordinator D, lane prevent-r2, second pass of prevent; code edhd67; path order: after edh-d-6, before edh-d-7): see the file
+  ['zz-cloud/edh-d-68.json', cloudEdhD68], // edh-d-68 (lane time-counters, concept round; code edhd68; path order: after edh-d-6, before edh-d-7): see the file
+  ['zz-cloud/edh-d-69.json', cloudEdhD69], // edh-d-69 (Commander coordinator D, lane designations; code edhd69; path order: after edh-d-6.json): see the file
+  ['zz-cloud/edh-d-7.json', cloudEdhD7], // edh-d-7 (Commander lane edh-d, EDHREC ranks 12,501-13,750 second pass, code edhd7; path order: 'edh-d-7' sorts after 'edh-combat' and before 'edh-mana-keywords')
+  ['zz-cloud/edh-d-70.json', cloudEdhD70], // edh-d-70 (lane player-counters, concept round; code edhd70; path order: after edh-d-7, before edh-d-8): see the file
+  ['zz-cloud/edh-d-71.json', cloudEdhD71], // edh-d-71 (Commander coordinator D, concept lane turns-phases; code edhd71; path order: after edh-d-7, before edh-d-8): see the file
+  ['zz-cloud/edh-d-72.json', cloudEdhD72], // edh-d-72 (Commander coordinator D, concept lane chosen-qualities; code edhd72; path order: after edh-d-7, before edh-d-8): see the file
+  ['zz-cloud/edh-d-73.json', cloudEdhD73], // edh-d-73 (Commander lane face-down, concept round, coordinator D; code edhd73; path order: after edh-d-7, before edh-d-8): see the file
+  ['zz-cloud/edh-d-74.json', cloudEdhD74], // edh-d-74 (Commander coordinator D, lane pay-or-else, concept round; code edhd74; path order: after edh-d-7, before edh-d-8)
+  ['zz-cloud/edh-d-75.json', cloudEdhD75], // edh-d-75 (Commander coordinator D, lane attack-requirements, concept round; code edhd75; path order: after edh-d-7, before edh-d-8): see the file
+  ['zz-cloud/edh-d-76.json', cloudEdhD76], // edh-d-76 (Commander concept lane graveyard-cast; code edhd76; path order: after edh-d-7, before edh-d-8): see the file
+  ['zz-cloud/edh-d-77.json', cloudEdhD77], // edh-d-77 (Commander coordinator D, lane exile-links, concept round; code edhd77; path order: after edh-d-7, before edh-d-8)
+  ['zz-cloud/edh-d-78.json', cloudEdhD78], // edh-d-78 (Commander coordinator D, lane must-finish-5000; code edhd78; path order: after edh-d-7, before edh-d-8)
+  ['zz-cloud/edh-d-79.json', cloudEdhD79], // edh-d-79 (lane must-finish-5000, handed over by A; code edhd79)
+  ['zz-cloud/edh-d-8.json', cloudEdhD8], // edh-d-8 (Commander coordinator D, EDHREC ranks 11,251-12,500; code edhd8; path order: after edh-d-4): see the file
+  ['zz-cloud/edh-d-80.json', cloudEdhD80], // edh-d-80 (Commander coordinator D, lane must-finish-5000; code edhd80; path order: after edh-d-8, before edh-d-9): see the file
+  ['zz-cloud/edh-d-84.json', cloudEdhD84], // edh-d-84 (Commander coordinator D, lane must-finish-5000; code edhd84; path order: after edh-d-8, before edh-d-9): see the file
+  ['zz-cloud/edh-d-85.json', cloudEdhD85], // edh-d-85 (Commander coordinator D, ranks 5,001-10,000, group combat; code edhd85; path order: after edh-d-8, before edh-d-9): see the file
+  ['zz-cloud/edh-d-86.json', cloudEdhD86], // edh-d-86 (Commander coordinator D, band 5,001-10,000, group combat; code edhd86; path order: after edh-d-8, before edh-d-9)
+  ['zz-cloud/edh-d-87.json', cloudEdhD87], // edh-d-87 (Commander coordinator D, band 5,001-10,000, group combat; code edhd87; path order: after edh-d-8, before edh-d-9): see the file
+  ['zz-cloud/edh-d-88.json', cloudEdhD88], // edh-d-88 (Commander coordinator D, must-finish band 5,001-10,000, group combat; code edhd88; path order: after edh-d-8, before edh-d-9): see the file
+  ['zz-cloud/edh-d-89.json', cloudEdhD89], // edh-d-89 (Commander coordinator D, EDHREC band 5,001-10,000, group combat; code edhd89; path order: after edh-d-8, before edh-d-9): see the file
+  ['zz-cloud/edh-d-9.json', cloudEdhD9], // edh-d-9 (Commander coordinator D, EDHREC ranks 13,751-15,000, third pass; code edhd9): see the file
+  ['zz-cloud/edh-d-90.json', cloudEdhD90], // edh-d-90 (Commander coordinator D, EDHREC band 5,001-10,000, group combat; code edhd90; path order: after edh-d-9, before edh-mana-keywords-1): see the file
+  ['zz-cloud/edh-d-91.json', cloudEdhD91], // edh-d-91 (Commander coordinator D, EDHREC ranks 5,001-10,000, group combat; code edhd91; path order: after edh-d-9): see the file
+  ['zz-cloud/edh-d-92.json', cloudEdhD92], // edh-d-92 (Commander coordinator D, band 5,001-10,000, group counters; code edhd92; path order: after edh-d-9): see the file
+  ['zz-cloud/edh-d-93.json', cloudEdhD93], // edh-d-93 (Commander coordinator D, EDHREC ranks 5,001-10,000, group counters; code edhd93; path order: after edh-d-9): see the file
+  ['zz-cloud/edh-d-94.json', cloudEdhD94], // edh-d-94 (Commander coordinator D, band 5,001-10,000, group counters part 3; code edhd94; path order: after edh-d-9): see the file
+  ['zz-cloud/edh-d-95.json', cloudEdhD95], // edh-d-95 (Commander coordinator D, EDHREC band 5,001-10,000, group counters; code edhd95; path order: after edh-d-9.json): see the file
+  ['zz-cloud/edh-d-96.json', cloudEdhD96], // edh-d-96 (MUST-FINISH round, graveyard, exile and cast part 1; code edhd96; path order: after edh-d-9.json, before edh-fix-1.json): see the file
+  ['zz-cloud/edh-d-97.json', cloudEdhD97], // edh-d-97 (Commander coordinator D, EDHREC band 5,001-10,000, graveyard-exile-cast part 2; code edhd97; path order: after edh-d-9.json): see the file
+  ['zz-cloud/edh-d-98.json', cloudEdhD98], // edh-d-98 (Commander coordinator D, must-finish, group graveyard-exile-cast; code edhd98; path order: after edh-d-9, before edh-mana-keywords-1): see the file
+  ['zz-cloud/edh-d-99.json', cloudEdhD99], // edh-d-99 (Commander coordinator D, EDHREC ranks 5,001-10,000, group graveyard-exile-cast; code edhd99; path order: 'edh-d-99' sorts after 'edh-d-9.json', before 'edh-mana-keywords-1'): see the file
   ['zz-cloud/edh-mana-keywords-1.json', cloudEdhMk1], // edh-mana-keywords-1 (Commander lane edh-mana-keywords; path order: 'edh-' sorts after 'cmd5', before 'look3'): any color among, Equip legendary creature, the exiled card's colors, see the file
+  ['zz-cloud/edh-mana-keywords-10.json', cloudEdhMk10], // edh-mana-keywords-10 (path order: 'edh-mana-keywords-10' sorts after 'edh-mana-keywords-1', before 'edh-mana-keywords-2'): see the file
+  ['zz-cloud/edh-mana-keywords-11.json', cloudEdhMk11], // edh-mana-keywords-11 (path order: 'edh-mana-keywords-11' sorts after '-10', before '-2'): see the file
+  ['zz-cloud/edh-mana-keywords-12.json', cloudEdhMk12], // edh-mana-keywords-12 (path order: after '-11', before '-2'): see the file
+  ['zz-cloud/edh-mana-keywords-2.json', cloudEdhMk2], // edh-mana-keywords-2 (path order: after edh-mana-keywords-1): mana riders of the second Commander round
+  ['zz-cloud/edh-mana-keywords-3.json', cloudEdhMk3], // edh-mana-keywords-3 (path order: after edh-mana-keywords-2): different-colors mana and the later templates of the third round
+  ['zz-cloud/edh-mana-keywords-4.json', cloudEdhMk4], // edh-mana-keywords-4 (path order: after edh-mana-keywords-3): "spend mana as though it were mana of any color" for every payment
+  ['zz-cloud/edh-mana-keywords-5.json', cloudEdhMk5], // edh-mana-keywords-5 (path order: after edh-mana-keywords-4): "if it isn't a mana ability" activation triggers
+  ['zz-cloud/edh-mana-keywords-6.json', cloudEdhMk6], // edh-mana-keywords-6 (path order: after edh-mana-keywords-5): "one mana of any of ~'s colors"
+  ['zz-cloud/edh-mana-keywords-7.json', cloudEdhMk7], // edh-mana-keywords-7 (path order: after edh-mana-keywords-5): each card of a kind has flashback, cost equal to its mana cost
+  ['zz-cloud/edh-mana-keywords-8.json', cloudEdhMk8], // edh-mana-keywords-8 (path order: after edh-mana-keywords-6, before edh-misc-1): creatures that convoked a spell
+  ['zz-cloud/edh-mana-keywords-9.json', cloudEdhMk9], // edh-mana-keywords-9 (path order: after edh-mana-keywords-7): see the file
+  ['zz-cloud/edh-misc-1.json', cloudEdhMisc1], // edh-misc-1 (Commander lane edh-misc; path order: 'edh-mi' sorts after 'edh-ma', before 'edh-p'): a creature dying causes a triggered ability of a permanent you control to trigger an additional time
+  ['zz-cloud/edh-misc-2.json', cloudEdhMisc2], // edh-misc-2 (Commander lane edh-misc; path order: after edh-misc-1, before edh-perms-1): see the file
+  ['zz-cloud/edh-misc-3.json', cloudEdhMisc3], // edh-misc-3 (Commander lane edh-misc; path order: after edh-misc-1/-2, before 'edh-p'): see the file
+  ['zz-cloud/edh-misc-4.json', cloudEdhMisc4], // edh-misc-4 (Commander lane edh-misc; path order: after edh-misc-3, before 'edh-p'): see the file
+  ['zz-cloud/edh-misc-5.json', cloudEdhMisc5], // edh-misc-5 (Commander lane edh-misc; path order: after edh-misc-3/-4, before 'edh-p'): see the file
+  ['zz-cloud/edh-misc-6.json', cloudEdhMisc6], // edh-misc-6 (Commander lane edh-misc; path order: after edh-misc-4, before 'edh-p'): see the file
+  ['zz-cloud/edh-next-1.json', cloudEdhNext1], // edh-next-1 (Commander lane edh-next, EDHREC ranks 5,001-6,500; path order: 'edh-n' sorts after 'edh-misc-6', before 'edh-perms-1'): see the file
+  ['zz-cloud/edh-next-10.json', cloudEdhNext10], // edh-next-10 (Commander lane edh-next, EDHREC ranks 12,501-15,000, third pass; path order: after edh-next-1, before edh-next-2): see the file
+  ['zz-cloud/edh-next-100.json', cloudEdhNext100], // edh-next-100 (concept round emblem-cleave, EDHREC top 20,000; code edhn100; path order: after edh-next-10.json, before edh-next-11): see the file
+  ['zz-cloud/edh-next-101.json', cloudEdhNext101], // edh-next-101 (concept lane secret-vote: manifest, votes, type additions; code edhn101; path order: after edh-next-10, before edh-next-11): see the file
+  ['zz-cloud/edh-next-102.json', cloudEdhNext102], // edh-next-102 (concept round saga-phasing, EDHREC top 20,000; code edhn102; path order: after edh-next-10.json, before edh-next-11): see the file
+  ['zz-cloud/edh-next-103.json', cloudEdhNext103], // edh-next-103 (top-rank second pass 7; code edhn103; path order: after edh-next-10.json, before edh-next-11.json): see the file
+  ['zz-cloud/edh-next-104.json', cloudEdhNext104], // edh-next-104 (concept round double-winlose, EDHREC top 20,000; code edhn104; path order: after edh-next-10.json, before edh-next-11): see the file
+  ['zz-cloud/edh-next-105.json', cloudEdhNext105], // edh-next-105 (concept lane delayed-control, EDHREC top 20,000; code edhn105; path order: after edh-next-10, before edh-next-11): see the file
+  ['zz-cloud/edh-next-106.json', cloudEdhNext106], // edh-next-106 (concept lane mana-r2; code edhn106; path order: after edh-next-10.json, before edh-next-11.json): see the file
+  ['zz-cloud/edh-next-108.json', cloudEdhNext108], // edh-next-108 (concept lane sac-random, EDHREC top 20,000; code edhn108; path order: after edh-next-102.json, before edh-next-11.json): see the file
+  ['zz-cloud/edh-next-109.json', cloudEdhNext109], // edh-next-109 (concept lane walkers-small; code edhn109; path order: after edh-next-105, before edh-next-11): see the file
+  ['zz-cloud/edh-next-11.json', cloudEdhNext11], // edh-next-11 (Commander lane edh-next, EDHREC ranks 10,001-12,500, third pass; path order: after edh-next-1, before edh-next-2): see the file
+  ['zz-cloud/edh-next-110.json', cloudEdhNext110], // edh-next-110 (concept lane tokens-counters, EDHREC top 20,000; code edhn110; path order: after edh-next-11.json, before edh-next-12): see the file
+  ['zz-cloud/edh-next-111.json', cloudEdhNext111], // edh-next-111 (concept round combat-r2, EDHREC top 20,000; code edhn111; path order: after edh-next-11.json, before edh-next-12.json)
+  ['zz-cloud/edh-next-113.json', cloudEdhNext113], // edh-next-113 (third pass top-rank-t1, EDHREC top 20,000; code edhn113; path order: after edh-next-11, before edh-next-12): see the file
+  ['zz-cloud/edh-next-114.json', cloudEdhNext114], // edh-next-114 (top-rank third pass 2, EDHREC top 20,000; code edhn114; path order: after edh-next-11.json, before edh-next-12.json): see the file
+  ['zz-cloud/edh-next-115.json', cloudEdhNext115], // edh-next-115 (third pass over top-rank-t3, EDHREC top 20,000; code edhn115; path order: after edh-next-11.json, before edh-next-12): see the file
+  ['zz-cloud/edh-next-116.json', cloudEdhNext116], // edh-next-116 (THIRD PASS 4 over top-rank-t4; code edhn116): see the file
+  ['zz-cloud/edh-next-117.json', cloudEdhNext117], // edh-next-117 (third pass top-rank-t5; code edhn117; path order: after edh-next-111, before edh-next-12): see the file
+  ['zz-cloud/edh-next-118.json', cloudEdhNext118], // edh-next-118 (third pass 6, EDHREC top 20,000; code edhn118; path order: after edh-next-111.json)
+  ['zz-cloud/edh-next-119.json', cloudEdhNext119], // edh-next-119 (must-finish round, control changes and searches; code edhn119; path order: after edh-next-111.json, before edh-next-12.json): Opposition Agent's search rules
+  ['zz-cloud/edh-next-12.json', cloudEdhNext12], // edh-next-12 (Commander lane edh-next, EDHREC ranks 5,001-6,500, fourth pass: engine statics): see the file
+  ['zz-cloud/edh-next-120.json', cloudEdhNext120], // edh-next-120 (must-finish round, hidden and simultaneous choices; code edhn120; path order: after edh-next-12.json, before edh-next-13.json): see the file
+  ['zz-cloud/edh-next-121.json', cloudEdhNext121], // edh-next-121 (must-finish round, dice, coins and random; code edhn121; path order: after edh-next-12.json, before edh-next-13.json): see the file
+  ['zz-cloud/edh-next-122.json', cloudEdhNext122], // edh-next-122 (must-finish round, group copies; code edhn122; path order: after edh-next-12.json, before edh-next-16.json): see the file
+  ['zz-cloud/edh-next-123.json', cloudEdhNext123], // edh-next-123 (must-finish round, exile and cast, villainous choice; code edhn123; path order: after edh-next-12.json, before edh-next-13.json): see the file
+  ['zz-cloud/edh-next-124.json', cloudEdhNext124], // edh-next-124 (must-finish round, group planeswalkers; code edhn124; path order: after edh-next-12.json, before edh-next-13.json): see the file
+  ['zz-cloud/edh-next-125.json', cloudEdhNext125], // edh-next-125 (must-finish round: becomes a creature, counters, artifacts; code edhn125; path order: after edh-next-12.json, before edh-next-13.json): see the file
+  ['zz-cloud/edh-next-126.json', cloudEdhNext126], // edh-next-126 (MUST-FINISH round: library, manifest and the rest; code edhn126; path order: after edh-next-12.json, before edh-next-13.json): see the file
+  ['zz-cloud/edh-next-127.json', cloudEdhNext127], // edh-next-127 (must-finish round, dice, coins and random; code edhn127; path order: after edh-next-12.json, before edh-next-13.json): see the file
+  ['zz-cloud/edh-next-128.json', cloudEdhNext128], // edh-next-128 (MUST-FINISH round, EDHREC 5,001-10,000, dice, coins and random; code edhn128; path order: after edh-next-126, before edh-next-13): see the file
+  ['zz-cloud/edh-next-129.json', cloudEdhNext129], // edh-next-129 (must-finish round, EDHREC 5,001-10,000, dice, coins and random; code edhn129; path order: after edh-next-126.json, before edh-next-13.json): see the file
+  ['zz-cloud/edh-next-13.json', cloudEdhNext13], // edh-next-13 (Commander lane edh-next, EDHREC ranks 13,751-15,000; path order: after edh-next-1, before edh-next-2): see the file
+  ['zz-cloud/edh-next-130.json', cloudEdhNext130], // edh-next-130 (must-finish round, group copies; code edhn130; path order: after edh-next-13.json, before edh-next-14.json): see the file
+  ['zz-cloud/edh-next-131.json', cloudEdhNext131], // edh-next-131 (must-finish round, group copies; code edhn131; path order: after edh-next-13.json, before edh-next-14.json): see the file
+  ['zz-cloud/edh-next-132.json', cloudEdhNext132], // edh-next-132 (must-finish round, group copies; code edhn132; path order: after edh-next-13.json, before edh-next-14.json): see the file
+  ['zz-cloud/edh-next-133.json', cloudEdhNext133], // edh-next-133 (must-finish round, group copies; code edhn133; path order: after edh-next-13.json, before edh-next-14.json): see the file
+  ['zz-cloud/edh-next-134.json', cloudEdhNext134], // edh-next-134 (MUST-FINISH round, group control; code edhn134; path order: after edh-next-13.json, before edh-next-14.json): see the file
+  ['zz-cloud/edh-next-135.json', cloudEdhNext135], // edh-next-135 (must-finish round, choices, votes and opponents; code edhn135; path order: after edh-next-13.json, before edh-next-14.json): see the file
+  ['zz-cloud/edh-next-136.json', cloudEdhNext136], // edh-next-136 (must-finish round, group planeswalkers; code edhn136; path order: after edh-next-13.json, before edh-next-14.json): see the file
+  ['zz-cloud/edh-next-137.json', cloudEdhNext137], // edh-next-137 (must-finish round, group planeswalkers; code edhn137; path order: after edh-next-13.json, before edh-next-14.json): see the file
+  ['zz-cloud/edh-next-138.json', cloudEdhNext138], // edh-next-138 (must-finish round, tokens; code edhn138; path order: after edh-next-13.json, before edh-next-14.json): see the file
+  ['zz-cloud/edh-next-139.json', cloudEdhNext139], // edh-next-139 (must-finish round, group tokens; code edhn139; path order: after edh-next-13.json, before edh-next-14.json): see the file
+  ['zz-cloud/edh-next-14.json', cloudEdhNext14], // edh-next-14 (Commander lane edh-next, EDHREC ranks 11,251-12,500, third pass; path order: after edh-next-1, before edh-next-2): see the file
+  ['zz-cloud/edh-next-140.json', cloudEdhNext140], // edh-next-140 (must-finish round, mana and costs; code edhn140; path order: after edh-next-14.json, before edh-next-15.json): see the file
+  ['zz-cloud/edh-next-141.json', cloudEdhNext141], // edh-next-141 (MUST-FINISH round: mana and costs, EDHREC ranks 5,001-10,000; code edhn141; path order: after edh-next-14, before edh-next-15): see the file
+  ['zz-cloud/edh-next-142.json', cloudEdhNext142], // edh-next-142 (must-finish round, library, draw and search; code edhn142; path order: after edh-next-14.json, before edh-next-15.json): see the file
+  ['zz-cloud/edh-next-143.json', cloudEdhNext143], // edh-next-143 (MUST-FINISH round: library, draw and search; code edhn143; path order: after edh-next-14.json, before edh-next-15.json): see the file
+  ['zz-cloud/edh-next-144.json', cloudEdhNext144], // edh-next-144 (MUST-FINISH round: library, draw and search; code edhn144; path order: after edh-next-14.json, before edh-next-15.json): see the file
+  ['zz-cloud/edh-next-145.json', cloudEdhNext145], // edh-next-145 (must-finish round, group "other"; code edhn145; path order: after edh-next-14.json, before edh-next-15.json): see the file
+  ['zz-cloud/edh-next-146.json', cloudEdhNext146], // edh-next-146 (must-finish round, group other, EDHREC 5,001-10,000; code edhn146; path order: after edh-next-14.json, before edh-next-15.json): see the file
+  ['zz-cloud/edh-next-147.json', cloudEdhNext147], // edh-next-147 (MUST-FINISH round, group other, EDHREC 5,001-10,000; code edhn147; path order: after edh-next-14.json, before edh-next-15.json): see the file
+  ['zz-cloud/edh-next-15.json', cloudEdhNext15], // edh-next-15 (Commander lane edh-next, EDHREC ranks 10,001-11,250, fourth pass; path order: 'edh-next-15' sorts after 'edh-next-1', before 'edh-next-2'): see the file
+  ['zz-cloud/edh-next-16.json', cloudEdhNext16], // edh-next-16 (Commander lane edh-next, EDHREC ranks 12,501-13,750, fourth pass; path order: after edh-next-12, before edh-next-2): see the file
+  ['zz-cloud/edh-next-17.json', cloudEdhNext17], // edh-next-17 (Commander lane edh-next, EDHREC ranks 13,751-15,000, second pass; path order: after edh-next-13, before edh-next-2): see the file
+  ['zz-cloud/edh-next-18.json', cloudEdhNext18], // edh-next-18 (Commander lane edh-next, EDHREC ranks 5,001-6,500, fifth pass; path order: after edh-next-17, before edh-next-2): see the file
+  ['zz-cloud/edh-next-19.json', cloudEdhNext19], // edh-next-19 (Commander lane edh-next, EDHREC ranks 11,251-12,500, fourth pass; path order: after edh-next-13, before edh-next-2): see the file
+  ['zz-cloud/edh-next-2.json', cloudEdhNext2], // edh-next-2 (Commander lane edh-next; path order: after edh-misc-6, before edh-perms-1): see the file
+  ['zz-cloud/edh-next-20.json', cloudEdhNext20], // edh-next-20 (Commander lane edh-next, EDHREC ranks 12,501-15,000, fifth pass; path order: after edh-next-2, before edh-next-3): see the file
+  ['zz-cloud/edh-next-21.json', cloudEdhNext21], // edh-next-21 (Commander lane edh-next, EDHREC ranks 10,001-11,250, fifth pass; path order: after edh-next-2, before edh-next-3): see the file
+  ['zz-cloud/edh-next-22.json', cloudEdhNext22], // edh-next-22 (Commander lane edh-next, EDHREC ranks 5,751-6,500, sixth pass; path order: 'edh-next-22' sorts after 'edh-next-2.json', before edh-next-3): see the file
+  ['zz-cloud/edh-next-23.json', cloudEdhNext23], // edh-next-23 (Commander EDHREC ranks 7,251-8,000; path order: 'edh-next-23' sorts after 'edh-next-2x', before 'edh-next-3'): see the file
+  ['zz-cloud/edh-next-24.json', cloudEdhNext24], // edh-next-24 (Commander lane edh-next, EDHREC ranks 9,001-10,000; path order: after edh-next-21, before edh-next-3): see the file
+  ['zz-cloud/edh-next-25.json', cloudEdhNext25], // edh-next-25 (Commander lane edh-next, EDHREC ranks 8,001-9,000; path order: after edh-next-21, before edh-next-3): see the file
+  ['zz-cloud/edh-next-26.json', cloudEdhNext26], // edh-next-26 (Commander lane edh-next, EDHREC ranks 6,501-7,250; path order: after edh-next-22, before edh-next-3): see the file
+  ['zz-cloud/edh-next-27.json', cloudEdhNext27], // edh-next-27 (Commander lane edh-next, EDHREC ranks 5,001-5,750, seventh pass; path order: 'edh-next-27' sorts after 'edh-next-22', before 'edh-next-3'): see the file
+  ['zz-cloud/edh-next-3.json', cloudEdhNext3], // edh-next-3 (Commander lane edh-next; path order: 'edh-n' sorts after 'edh-misc-6', before 'edh-p'): time travel, see the file
+  ['zz-cloud/edh-next-30.json', cloudEdhNext30], // edh-next-30 (Commander lane edh-next, EDHREC ranks 5,001-6,250, thirtieth pass; path order: 'edh-next-30' sorts after 'edh-next-3.json', before 'edh-next-4'): see the file
+  ['zz-cloud/edh-next-31.json', cloudEdhNext31], // edh-next-31 (Commander EDHREC ranks 6,251-7,500; code edhn31; path order: 'edh-next-3.json' < 'edh-next-31.json' < 'edh-next-4.json'): see the file
+  ['zz-cloud/edh-next-32.json', cloudEdhNext32], // edh-next-32 (Commander EDHREC ranks 7,501-8,750; path order: after edh-next-3, before edh-next-4): see the file
+  ['zz-cloud/edh-next-33.json', cloudEdhNext33], // edh-next-33 (Commander lane edh-next, EDHREC ranks 8,751-10,000; path order: 'edh-next-33' sorts after 'edh-next-3.json', before zz-push/): see the file
+  ['zz-cloud/edh-next-34.json', cloudEdhNext34], // edh-next-34 (Commander EDHREC ranks 15,001-16,250; path order: after edh-next-3, before edh-next-4): see the file
+  ['zz-cloud/edh-next-35.json', cloudEdhNext35], // edh-next-35 (Commander lane edh-next, EDHREC ranks 16,251-17,500; path order: 'edh-next-35' sorts after 'edh-next-3.json', before 'edh-next-4'): see the file
+  ['zz-cloud/edh-next-36.json', cloudEdhNext36], // edh-next-36 (Commander lane edh-next, EDHREC ranks 17,501-18,750; path order: 'edh-next-36' sorts after 'edh-next-33', before 'edh-next-4'): see the file
+  ['zz-cloud/edh-next-37.json', cloudEdhNext37], // edh-next-37 (Commander lane edh-next, EDHREC ranks 18,751-20,000; path order: 'edh-next-37' sorts after 'edh-next-33', before 'edh-next-4.json'): see the file
+  ['zz-cloud/edh-next-38.json', cloudEdhNext38], // edh-next-38 (Commander EDHREC ranks 8,751-10,000, second pass; code edhn38; path order: after edh-next-34, before edh-next-4): see the file
+  ['zz-cloud/edh-next-39.json', cloudEdhNext39], // edh-next-39 (Commander EDHREC ranks 5,001-6,250, second pass; path order: 'edh-next-34.json' < 'edh-next-39.json' < 'edh-next-4.json'): see the file
+  ['zz-cloud/edh-next-4.json', cloudEdhNext4], // edh-next-4 (Commander lane edh-next; path order: after edh-next-3, before edh-perms-1): see the file
+  ['zz-cloud/edh-next-40.json', cloudEdhNext40], // edh-next-40 (Commander EDHREC ranks 6,251-7,500, second pass; code edhn40; path order: after edh-next-4, before edh-next-5): see the file
+  ['zz-cloud/edh-next-41.json', cloudEdhNext41], // edh-next-41 (Commander lane edh-next, EDHREC ranks 7,501-8,750, third pass; path order: 'edh-next-4.json' < 'edh-next-41.json' < 'edh-next-5.json'): see the file
+  ['zz-cloud/edh-next-42.json', cloudEdhNext42], // edh-next-42 (Commander lane edh-next, EDHREC ranks 15,001-16,250, second pass; path order: after edh-next-4, before edh-next-5): see the file
+  ['zz-cloud/edh-next-43.json', cloudEdhNext43], // edh-next-43 (Commander EDHREC ranks 17,501-18,750, second pass; code edhn43; path order: after edh-next-4, before edh-next-5)
+  ['zz-cloud/edh-next-44.json', cloudEdhNext44], // edh-next-44 (Commander EDHREC ranks 16,251-17,500, second pass; code edhn44; path order: after edh-next-40, before edh-next-5): see the file
+  ['zz-cloud/edh-next-45.json', cloudEdhNext45], // edh-next-45 (Commander EDHREC ranks 18,751-20,000, second pass; code edhn45; path order: after edh-next-41, before edh-next-5): see the file
+  ['zz-cloud/edh-next-46.json', cloudEdhNext46], // edh-next-46 (Commander lane edh-next, EDHREC ranks 8,751-10,000, third pass; code edhn46; path order: after edh-next-42, before edh-next-5): see the file
+  ['zz-cloud/edh-next-48.json', cloudEdhNext48], // edh-next-48 (Commander EDHREC ranks 7,501-8,750, third pass; code edhn48; path order: after edh-next-44, before edh-next-5): see the file
+  ['zz-cloud/edh-next-49.json', cloudEdhNext49], // edh-next-49 (Commander EDHREC ranks 6,251-7,500, third pass; code edhn49; path order: after edh-next-45, before edh-next-5): see the file
+  ['zz-cloud/edh-next-5.json', cloudEdhNext5], // edh-next-5 (Commander lane edh-next; path order: after edh-next-3, before edh-perms-1): see the file
+  ['zz-cloud/edh-next-50.json', cloudEdhNext50], // edh-next-50 (Commander EDHREC ranks 15,001-16,250, third pass; code edhn50; path order: after edh-next-5, before edh-next-6): see the file
+  ['zz-cloud/edh-next-51.json', cloudEdhNext51], // edh-next-51 (Commander EDHREC ranks 17,501-18,750, third pass; code edhn51; path order: after edh-next-5, before edh-next-6): see the file
+  ['zz-cloud/edh-next-52.json', cloudEdhNext52], // edh-next-52 (Commander EDHREC ranks 16,251-17,500, third pass; code edhn52; path order: after edh-next-5, before edh-next-6): see the file
+  ['zz-cloud/edh-next-53.json', cloudEdhNext53], // edh-next-53 (Commander lane edh-next, EDHREC ranks 8,751-10,000, fourth pass; code edhn53): see the file
+  ['zz-cloud/edh-next-54.json', cloudEdhNext54], // edh-next-54 (Commander lane exchange: control exchange and "gain control of", EDHREC top 20,000; code edhn54; path order: after edh-next-5, before edh-next-6): see the file
+  ['zz-cloud/edh-next-55.json', cloudEdhNext55], // edh-next-55 (Commander lane dice, die rolls; code edhn55; path order: after edh-next-5, before edh-next-6): see the file
+  ['zz-cloud/edh-next-56.json', cloudEdhNext56], // edh-next-56 (Commander lane exile-play; code edhn56; path order: after edh-next-5.json, before edh-next-6): see the file
+  ['zz-cloud/edh-next-57.json', cloudEdhNext57], // edh-next-57 (Commander lane copy, EDHREC top 20,000; code edhn57; path order: after edh-next-5, before edh-next-6): see the file
+  ['zz-cloud/edh-next-58.json', cloudEdhNext58], // edh-next-58 (lane cost, code edhn58; path order: after edh-next-52): see the file
+  ['zz-cloud/edh-next-59.json', cloudEdhNext59], // edh-next-59 (Commander lane graveyard; code edhn59; path order: after edh-next-53, before edh-next-6): see the file
+  ['zz-cloud/edh-next-6.json', cloudEdhNext6], // edh-next-6 (Commander lane edh-next, EDHREC ranks 5,001-6,500, second pass; path order: after edh-next-3, before edh-perms-1): see the file
+  ['zz-cloud/edh-next-60.json', cloudEdhNext60], // edh-next-60 (Commander lane prevent: damage prevention and redirection; code edhn60; path order: after edh-next-6, before edh-next-7): see the file
+  ['zz-cloud/edh-next-61.json', cloudEdhNext61], // edh-next-61 (Commander lane instead, EDHREC top 20,000; code edhn61): see the file
+  ['zz-cloud/edh-next-62.json', cloudEdhNext62], // edh-next-62 (Commander lane exile-play, second round; code edhn62; path order: after edh-next-6.json, before edh-next-7): see the file
+  ['zz-cloud/edh-next-63.json', cloudEdhNext63], // edh-next-63 (Commander lane counters; code edhn63; path order: after edh-next-6.json, before edh-next-7): see the file
+  ['zz-cloud/edh-next-64.json', cloudEdhNext64], // edh-next-64 (Commander lane tokens: token makers with unusual token specs, EDHREC top 20,000; code edhn64; path order: after edh-next-6.json, before edh-next-7): see the file
+  ['zz-cloud/edh-next-65.json', cloudEdhNext65], // edh-next-65 (Commander lane copy, second round, EDHREC top 20,000; code edhn65; path order: after edh-next-6, before edh-next-7): see the file
+  ['zz-cloud/edh-next-66.json', cloudEdhNext66], // edh-next-66 (Commander lane each-player: per-player and symmetric effects, EDHREC top 20,000; code edhn66; path order: after edh-next-60, before edh-next-7): see the file
+  ['zz-cloud/edh-next-67.json', cloudEdhNext67], // edh-next-67 (lane cost round 2, code edhn67): see the file
+  ['zz-cloud/edh-next-68.json', cloudEdhNext68], // edh-next-68 (Commander lane graveyard, second round; code edhn68; path order: after edh-next-64, before edh-next-7): see the file
+  ['zz-cloud/edh-next-69.json', cloudEdhNext69], // edh-next-69 (Commander lane rest, EDHREC top 20,000; code edhn69): see the file
+  ['zz-cloud/edh-next-7.json', cloudEdhNext7], // edh-next-7 (Commander lane edh-next, EDHREC ranks 5,001-6,500, third pass): see the file
+  ['zz-cloud/edh-next-70.json', cloudEdhNext70], // edh-next-70 (Commander lane counters, second round; code edhn70; path order: after edh-next-7.json, before edh-next-8): see the file
+  ['zz-cloud/edh-next-71.json', cloudEdhNext71], // edh-next-71 (Commander lane instead, second round; code edhn71; path order: after edh-next-7.json, before edh-next-8): see the file
+  ['zz-cloud/edh-next-72.json', cloudEdhNext72], // edh-next-72 (Commander lane each-player, second round; code edhn72; path order: after edh-next-7, before edh-next-8): see the file
+  ['zz-cloud/edh-next-73.json', cloudEdhNext73], // edh-next-73 (Commander lane exile-play, third round; code edhn73; path order: after edh-next-72, before edh-next-75): see the file
+  ['zz-cloud/edh-next-74.json', cloudEdhNext74], // edh-next-74 (Commander lane copy, third round, EDHREC top 20,000; code edhn74; path order: after edh-next-7.json, before edh-next-8): see the file
+  ['zz-cloud/edh-next-75.json', cloudEdhNext75], // edh-next-75 (Commander lane commander, EDHREC top 20,000; code edhn75; path order: after edh-next-7, before edh-next-8): see the file
+  ['zz-cloud/edh-next-76.json', cloudEdhNext76], // edh-next-76 (Commander lane transform: transforming double-faced cards, EDHREC top 20,000; code edhn76; path order: after edh-next-7, before edh-next-8): see the file
+  ['zz-cloud/edh-next-78.json', cloudEdhNext78], // edh-next-78 (cluster round, EDHREC top 20,000; code edhn78): final chapter ability triggers / resolves
+  ['zz-cloud/edh-next-79.json', cloudEdhNext79], // edh-next-79 (Commander lane rest, second round; code edhn79; path order: after edh-next-71, before edh-next-8): see the file
+  ['zz-cloud/edh-next-8.json', cloudEdhNext8], // edh-next-8 (Commander lane edh-next, EDHREC ranks 10,001-12,500, second pass; path order: after edh-next-6): see the file
+  ['zz-cloud/edh-next-80.json', cloudEdhNext80], // edh-next-80 (Commander lane graveyard, third round; code edhn80; path order: after edh-next-8, before edh-next-9): see the file
+  ['zz-cloud/edh-next-81.json', cloudEdhNext81], // edh-next-81 (Commander small clusters, EDHREC top 20,000; code edhn81; path order: after edh-next-8.json, before edh-next-9): see the file
+  ['zz-cloud/edh-next-82.json', cloudEdhNext82], // edh-next-82 (Commander lane commander, second round; code edhn82; path order: after edh-next-8, before edh-next-9): see the file
+  ['zz-cloud/edh-next-83.json', cloudEdhNext83], // edh-next-83 (Commander lane each-player, third round; code edhn83): see the file
+  ['zz-cloud/edh-next-84.json', cloudEdhNext84], // edh-next-84 (top-rank lane, EDHREC top 20,000; code edhn84; path order: after edh-next-8, before edh-next-9): each gain <keyword> until end of turn and can't be blocked this turn except by <filter>
+  ['zz-cloud/edh-next-85.json', cloudEdhNext85], // edh-next-85 (top-rank round, EDHREC top 20,000; code edhn85; path order: after edh-next-8, before edh-next-9): see the file
+  ['zz-cloud/edh-next-86.json', cloudEdhNext86], // edh-next-86 (Commander top-rank part 2, EDHREC 6,001-7,500; code edhn86; path order: after edh-next-8.json, before edh-next-9): see the file
+  ['zz-cloud/edh-next-89.json', cloudEdhNext89], // edh-next-89 (Commander top-rank part 5, EDHREC ranks 10,501-12,000; code edhn89; path order: after edh-next-88, before edh-next-9): see the file
+  ['zz-cloud/edh-next-9.json', cloudEdhNext9], // edh-next-9 (Commander lane edh-next, EDHREC ranks 12,501-15,000, second pass; path order: after edh-next-6, before edh-perms-1): see the file
+  ['zz-cloud/edh-next-90.json', cloudEdhNext90], // edh-next-90 (top-rank-6, EDHREC ranks 12,001-13,500; code edhn90): see the file
+  ['zz-cloud/edh-next-92.json', cloudEdhNext92], // edh-next-92 (top-rank lane part 8, EDHREC top 20,000; code edhn92; path order: after edh-next-9.json, before edh-perms-1): see the file
+  ['zz-cloud/edh-next-93.json', cloudEdhNext93], // edh-next-93 (top-rank lane second pass 1, EDHREC top 20,000; code edhn93; path order: after edh-next-9, before edh-perms-1): see the file
+  ['zz-cloud/edh-next-94.json', cloudEdhNext94], // edh-next-94 (Commander top-rank second pass 2, EDHREC top 20,000; code edhn94; path order: after edh-next-9, before edh-perms-1): see the file
+  ['zz-cloud/edh-next-95.json', cloudEdhNext95], // edh-next-95 (top-rank second pass 3, EDHREC ~5,000-6,000; code edhn95; path order: after edh-next-9.json, before edh-perms-1): see the file
+  ['zz-cloud/edh-next-96.json', cloudEdhNext96], // edh-next-96 (top-rank round, second pass 4; code edhn96; path order: 'edh-next-96' sorts after 'edh-next-9'): see the file
+  ['zz-cloud/edh-next-97.json', cloudEdhNext97], // edh-next-97 (top-rank second pass 6; code edhn97; path order: after edh-next-9.json, before edh-perms-1): see the file
+  ['zz-cloud/edh-next-98.json', cloudEdhNext98], // edh-next-98 (top-rank second pass 8, EDHREC top 20,000; code edhn98; path order: after edh-next-9.json, before edh-perms-1)
+  ['zz-cloud/edh-next-99.json', cloudEdhNext99], // edh-next-99 (top-rank second pass 5, EDHREC top 20,000; code edhn99; path order: after edh-next-9.json, before edh-perms-1): see the file
   ['zz-cloud/edh-perms-1.json', cloudEdhPm1], // edh-perms-1 (Commander lane edh-perms; path order: 'edh-p' sorts after 'edh-m', before 'look3'): see the file
+  ['zz-cloud/edh-perms-10.json', cloudEdhPm10], // edh-perms-10 (Commander lane edh-perms; path order: 'edh-perms-10' sorts after 'edh-perms-1', before 'edh-perms-2'): moved permanents that enter with additional counters if they match a description
+  ['zz-cloud/edh-perms-11.json', cloudEdhPm11], // edh-perms-11 (Commander lane edh-perms; path order: 'edh-perms-11' sorts after 'edh-perms-1', before 'edh-perms-2' by plain string order; see the file)
+  ['zz-cloud/edh-perms-12.json', cloudEdhPm12], // edh-perms-12 (Commander lane edh-perms; path order: 'edh-perms-12' sorts after 'edh-perms-1' (10, 11), before 'edh-perms-2'): see the file
+  ['zz-cloud/edh-perms-13.json', cloudEdhPm13], // edh-perms-13 (Commander lane edh-perms; path order: 'edh-perms-13' sorts after 'edh-perms-11', before 'edh-perms-2'): see the file
+  ['zz-cloud/edh-perms-14.json', cloudEdhPm14], // edh-perms-14 (Commander lane edh-perms; sorts after 'edh-perms-13'): see the file
+  ['zz-cloud/edh-perms-15.json', cloudEdhPm15], // edh-perms-15 (Commander lane edh-perms; path order: 'edh-perms-15' sorts after 'edh-perms-13', before 'edh-perms-2'): see the file
+  ['zz-cloud/edh-perms-16.json', cloudEdhPm16], // edh-perms-16 (Commander lane edh-perms; path order: 'edh-perms-16' sorts after 'edh-perms-15', before 'edh-perms-2'): see the file
+  ['zz-cloud/edh-perms-17.json', cloudEdhPm17], // edh-perms-17 (Commander lane edh-perms; path order: 'edh-perms-17' sorts after 'edh-perms-16', before 'edh-perms-2'): see the file
+  ['zz-cloud/edh-perms-18.json', cloudEdhPm18], // edh-perms-18 (Commander lane edh-perms; path order: 'edh-perms-18' sorts after 'edh-perms-15' (16, 17), before 'edh-perms-2'): see the file
+  ['zz-cloud/edh-perms-2.json', cloudEdhPm2], // edh-perms-2 (Commander lane edh-perms; path order: after edh-perms-1, before look3): see the file
+  ['zz-cloud/edh-perms-20.json', cloudEdhPm20], // edh-perms-20 (Commander lane edh-perms; path order: 'edh-perms-20' sorts after 'edh-perms-2', before 'edh-perms-3'): see the file
+  ['zz-cloud/edh-perms-21.json', cloudEdhPm21], // edh-perms-21 (Commander lane edh-perms; path order: 'edh-perms-21' sorts after 'edh-perms-2' ('.' < '1'), before 'edh-perms-3'): see the file
+  ['zz-cloud/edh-perms-22.json', cloudEdhPm22], // edh-perms-22 (Commander lane edh-perms; path order: 'edh-perms-22' sorts after 'edh-perms-20', before 'edh-perms-3'): see the file
+  ['zz-cloud/edh-perms-23.json', cloudEdhPm23], // edh-perms-23 (Commander lane edh-perms; path order: 'edh-perms-23' sorts after 'edh-perms-22', before 'edh-perms-3'): see the file
+  ['zz-cloud/edh-perms-24.json', cloudEdhPm24], // edh-perms-24 (Commander lane edh-perms; path order: 'edh-perms-24' sorts after 'edh-perms-21', before 'edh-perms-3'): see the file
+  ['zz-cloud/edh-perms-3.json', cloudEdhPm3], // edh-perms-3 (Commander lane edh-perms; path order: 'edh-perms-3' sorts after 'edh-perms-1', before 'edh-players'): see the file
+  ['zz-cloud/edh-perms-4.json', cloudEdhPm4], // edh-perms-4 (Commander lane edh-perms; path order: 'edh-perms-4' sorts after edh-perms-2 (3), before edh-players-1): Auras that enchant a card in a graveyard (Animate Dead, Dance of the Dead, Necromancy)
+  ['zz-cloud/edh-perms-5.json', cloudEdhPm5], // edh-perms-5 (Commander lane edh-perms; path order: 'edh-perms-5' sorts after 'edh-perms-3', before 'edh-players'): see the file
+  ['zz-cloud/edh-perms-6.json', cloudEdhPm6], // edh-perms-6 (Commander lane edh-perms; path order: 'edh-perms-6' sorts after 'edh-perms-3', before 'edh-players'): see the file
+  ['zz-cloud/edh-perms-7.json', cloudEdhPm7], // edh-perms-7 (Commander lane edh-perms; path order: after edh-perms-5, before edh-players): see the file
+  ['zz-cloud/edh-perms-8.json', cloudEdhPm8], // edh-perms-8 (Commander lane edh-perms; path order: 'edh-perms-8' sorts after 'edh-perms-5', before 'edh-players'): see the file
+  ['zz-cloud/edh-perms-9.json', cloudEdhPm9], // edh-perms-9 (Commander lane edh-perms; path order: after edh-perms-6 (7, 8), before edh-players): see the file
   ['zz-cloud/edh-players-1.json', cloudEdhPlayers1], // edh-players-1 (Commander lane edh-players; path order: 'edh-' sorts after 'cmd', before 'look3'): "you may play two additional lands on each of your turns", "may draw up to N cards"
+  ['zz-cloud/edh-players-10.json', cloudEdhPlayers10], // edh-players-10 (Commander lane edh-players; path order: after edh-players-1, before edh-players-2): see the file
+  ['zz-cloud/edh-players-11.json', cloudEdhPlayers11], // edh-players-11 (Commander lane edh-players; path order: 'edh-players-11' sorts after 'edh-players-1', before 'edh-players-2'): the players who did an optional action, see the file
+  ['zz-cloud/edh-players-12.json', cloudEdhPlayers12], // edh-players-12 (Commander lane edh-players; path order: after edh-players-10 and -11, before edh-players-2): see the file
+  ['zz-cloud/edh-players-13.json', cloudEdhPlayers13], // edh-players-13 (Commander lane edh-players; path order: after edh-players-10 (11, 12), before edh-players-2): each player's own choice (a creature type, fame or fortune), "for each player who chose fame"
+  ['zz-cloud/edh-players-14.json', cloudEdhPlayers14], // edh-players-14 (Commander lane edh-players; path order: 'edh-players-14' sorts after 'edh-players-11' (12, 13), before 'edh-players-2'): see the file
+  ['zz-cloud/edh-players-15.json', cloudEdhPlayers15], // edh-players-15 (Commander lane edh-players; path order: after edh-players-13, before edh-players-2): see the file
+  ['zz-cloud/edh-players-16.json', cloudEdhPlayers16], // edh-players-16 (Commander lane edh-players; path order: after edh-players-13 (14, 15), before edh-players-2): see the file
+  ['zz-cloud/edh-players-17.json', cloudEdhPlayers17], // edh-players-17 (Commander lane edh-players; path order: after edh-players-13 (14, 15, 16), before edh-players-2): see the file
+  ['zz-cloud/edh-players-18.json', cloudEdhPlayers18], // edh-players-18 (Commander lane edh-players; path order: after edh-players-17, before edh-players-2): see the file
+  ['zz-cloud/edh-players-19.json', cloudEdhPlayers19], // edh-players-19 (Commander lane edh-players; path order: 'edh-players-19' sorts after 'edh-players-16', before 'edh-players-2'): see the file
+  ['zz-cloud/edh-players-2.json', cloudEdhPlayers2], // edh-players-2 (Commander lane edh-players; path order: 'edh-players-2' sorts after 'edh-players-1', before 'edh-zones-1'): suppress only some permanents' abilities, hexproof from colors for you, life fixed, protection from everything, life lost per counter
+  ['zz-cloud/edh-players-20.json', cloudEdhPlayers20], // edh-players-20 (Commander lane edh-players; path order: 'edh-players-20' sorts after 'edh-players-2.json', before 'edh-players-3'): see the file
+  ['zz-cloud/edh-players-21.json', cloudEdhPlayers21], // edh-players-21 (Commander lane edh-players; path order: 'edh-players-21' sorts after 'edh-players-2' (and 20), before 'edh-players-3'): see the file
+  ['zz-cloud/edh-players-22.json', cloudEdhPlayers22], // edh-players-22 (Commander lane edh-players; path order: 'edh-players-22' sorts after 'edh-players-20', before 'edh-players-3'): see the file
+  ['zz-cloud/edh-players-23.json', cloudEdhPlayers23], // edh-players-23 (Commander lane edh-players; path order: 'edh-players-23' sorts after 'edh-players-2' (and 20-22), before 'edh-players-3'): see the file
+  ['zz-cloud/edh-players-3.json', cloudEdhPlayers3], // edh-players-3 (Commander lane edh-players; path order: 'edh-players-3' sorts after 'edh-players-1', before 'edh-zones-1'): tokens tapped and attacking a player or a planeswalker they control, X/X creature lands (Lair of the Hydra), see the file
+  ['zz-cloud/edh-players-4.json', cloudEdhPlayers4], // edh-players-4 (Commander lane edh-players; path order: 'edh-players-4' sorts after 'edh-players-2', before 'edh-replace-1'): see the file
+  ['zz-cloud/edh-players-5.json', cloudEdhPlayers5], // edh-players-5 (Commander lane edh-players; path order: after 'edh-players-3', before 'edh-replace-1'): see the file
+  ['zz-cloud/edh-players-6.json', cloudEdhPlayers6], // edh-players-6 (Commander lane edh-players; path order: 'edh-players-6' sorts after 'edh-players-4', before 'edh-replace-1'): see the file
+  ['zz-cloud/edh-players-7.json', cloudEdhPlayers7], // edh-players-7 (Commander lane edh-players; path order: after 'edh-players-5', before 'edh-replace-1'): see the file
+  ['zz-cloud/edh-players-8.json', cloudEdhPlayers8], // edh-players-8 (Commander lane edh-players; path order: after 'edh-players-6', before 'edh-replace-1'): see the file
+  ['zz-cloud/edh-players-9.json', cloudEdhPlayers9], // edh-players-9 (Commander lane edh-players; path order: after 'edh-players-7', before 'edh-replace-1'): see the file
+  ['zz-cloud/edh-replace-1.json', cloudEdhReplace1], // edh-replace-1 (Commander lane edh-replace; path order: 'edh-r' sorts after 'edh-players', before 'look3'): see the file
+  ['zz-cloud/edh-replace-2.json', cloudEdhReplace2], // edh-replace-2 (Commander lane edh-replace; path order: 'edh-r' sorts after 'edh-players', before 'edh-zones'): see the file
+  ['zz-cloud/edh-replace-3.json', cloudEdhReplace3], // edh-replace-3 (Commander lane edh-replace; path order: after edh-replace-1, before edh-zones-1): see the file
+  ['zz-cloud/edh-replace-4.json', cloudEdhReplace4], // edh-replace-4 (Commander lane edh-replace; path order: 'edh-replace-4' sorts after 'edh-replace-2', before 'edh-zones'): see the file
+  ['zz-cloud/edh-replace-5.json', cloudEdhReplace5], // edh-replace-5 (Commander lane edh-replace; path order: after edh-replace-3, before edh-zones-1): see the file
+  ['zz-cloud/edh-replace-6.json', cloudEdhReplace6], // edh-replace-6 (Commander lane edh-replace; path order: after edh-replace-5, before edh-top-1): see the file
+  ['zz-cloud/edh-replace-7.json', cloudEdhReplace7], // edh-replace-7 (Commander lane edh-replace; path order: after edh-replace-6, before edh-top-1): see the file
+  ['zz-cloud/edh-top-1.json', cloudEdhTop1], // edh-top-1 (the most played cards left in any lane; path order: 'edh-t' sorts after 'edh-replace', before 'edh-zones'): see the file
+  ['zz-cloud/edh-top-10.json', cloudEdhTop10], // edh-top-10 (Commander lane edh-top; path order: 'edh-top-10' sorts after 'edh-top-1.json', before 'edh-top-2'): see the file
+  ['zz-cloud/edh-top-13.json', cloudEdhTop13], // edh-top-13 (Commander lane edh-top; path order: after edh-top-10, before edh-top-2): see the file
+  ['zz-cloud/edh-top-14.json', cloudEdhTop14], // edh-top-14 (Commander lane edh-top; path order: after edh-top-13, before edh-top-2): attach to another random opponent
+  ['zz-cloud/edh-top-15.json', cloudEdhTop15], // edh-top-15 (Commander lane edh-top; path order: after edh-top-14, before edh-top-2): the unattach family
+  ['zz-cloud/edh-top-16.json', cloudEdhTop16], // edh-top-16 (Commander lane edh-top; path order: after edh-top-15, before edh-top-2): die-roll readings
+  ['zz-cloud/edh-top-2.json', cloudEdhTop2], // edh-top-2 (Commander lane edh-top; path order: after edh-top-1): soulbond statics
+  ['zz-cloud/edh-top-3.json', cloudEdhTop3], // edh-top-3 (Commander lane edh-top; path order: after edh-top-2): different mana values, conditional divided total, optional sacrifice copies
+  ['zz-cloud/edh-top-4.json', cloudEdhTop4], // edh-top-4 (Commander lane edh-top; path order: after edh-top-3): protection from the chosen card type, flash if it targets
+  ['zz-cloud/edh-top-5.json', cloudEdhTop5], // edh-top-5 (Commander lane edh-top; path order: after edh-top-4): goad each creature that had counters put on it this way, attack bans on the owner
+  ['zz-cloud/edh-top-6.json', cloudEdhTop6], // edh-top-6 (Commander lane edh-top; path order: after edh-top-4): a target for each opponent in a graveyard, they're Zombies in addition, join forces
+  ['zz-cloud/edh-top-7.json', cloudEdhTop7], // edh-top-7 (Commander lane edh-top; path order: after edh-top-6): its owner may cast it
+  ['zz-cloud/edh-top-8.json', cloudEdhTop8], // edh-top-8 (Commander lane edh-top; path order: after edh-top-7): play lands and cast spells from among a group
+  ['zz-cloud/edh-top-9.json', cloudEdhTop9], // edh-top-9 (Commander lane edh-top; path order: after edh-top-8): double the counters you have
   ['zz-cloud/edh-zones-1.json', cloudEdhZones1], // edh-zones-1 (Commander effort, lane edh-zones; path order: 'edh' sorts after 'cmd5', before 'look3'): library and graveyard moves, see the file
+  ['zz-cloud/edh-zones-10.json', cloudEdhZones10], // edh-zones-10 (Commander effort, lane edh-zones; path order: 'edh-zones-10' sorts after 'edh-zones-1.json', before 'edh-zones-2'): see the file
+  ['zz-cloud/edh-zones-11.json', cloudEdhZones11], // edh-zones-11 (Commander effort, lane edh-zones; path order: 'edh-zones-11' sorts after 'edh-zones-1', before 'edh-zones-2'): see the file
+  ['zz-cloud/edh-zones-12.json', cloudEdhZones12], // edh-zones-12 (Commander effort, lane edh-zones; path order: 'edh-zones-12' sorts after 'edh-zones-10', before 'edh-zones-2'): see the file
+  ['zz-cloud/edh-zones-13.json', cloudEdhZones13], // edh-zones-13 (Commander effort, lane edh-zones; path order: 'edh-zones-13' sorts after 'edh-zones-1', before 'edh-zones-2'): see the file
+  ['zz-cloud/edh-zones-14.json', cloudEdhZones14], // edh-zones-14 (Commander effort, lane edh-zones; path order: 'edh-zones-14' sorts after 'edh-zones-12', before 'edh-zones-2'): see the file
+  ['zz-cloud/edh-zones-15.json', cloudEdhZones15], // edh-zones-15 (Commander effort, lane edh-zones; path order: 'edh-zones-15' sorts after 'edh-zones-12', before 'edh-zones-2'): see the file
+  ['zz-cloud/edh-zones-16.json', cloudEdhZones16], // edh-zones-16 (Commander effort, lane edh-zones; path order: 'edh-zones-16' sorts after 'edh-zones-15', before 'edh-zones-2'): see the file
+  ['zz-cloud/edh-zones-17.json', cloudEdhZones17], // edh-zones-17 (Commander effort, lane edh-zones; path order: 'edh-zones-17' sorts after 'edh-zones-14', before 'edh-zones-2'): see the file
+  ['zz-cloud/edh-zones-18.json', cloudEdhZones18], // edh-zones-18 (Commander effort, lane edh-zones; path order: 'edh-zones-18' sorts after 'edh-zones-15', before 'edh-zones-2'): see the file
+  ['zz-cloud/edh-zones-19.json', cloudEdhZones19], // edh-zones-19 (Commander effort, lane edh-zones; path order: 'edh-zones-19' sorts after 'edh-zones-17', before 'edh-zones-2'): see the file
+  ['zz-cloud/edh-zones-2.json', cloudEdhZones2], // edh-zones-2 (Commander effort, lane edh-zones; path order: 'edh-zones-2' sorts right after 'edh-zones-1'): see the file
+  ['zz-cloud/edh-zones-20.json', cloudEdhZones20], // edh-zones-20 (Commander effort, lane edh-zones; path order: 'edh-zones-20' sorts right after 'edh-zones-2.json'): see the file
+  ['zz-cloud/edh-zones-21.json', cloudEdhZones21], // edh-zones-21 (Commander effort, lane edh-zones; path order: 'edh-zones-21' sorts after 'edh-zones-2.json', before 'edh-zones-3'): see the file
+  ['zz-cloud/edh-zones-22.json', cloudEdhZones22], // edh-zones-22 (Commander effort, lane edh-zones; path order: 'edh-zones-22' sorts after 'edh-zones-21', before 'edh-zones-3'): see the file
+  ['zz-cloud/edh-zones-24.json', cloudEdhZones24], // edh-zones-24 (Commander effort, lane edh-zones; path order: 'edh-zones-24' sorts after 'edh-zones-22', before 'edh-zones-3'): see the file
+  ['zz-cloud/edh-zones-25.json', cloudEdhZones25], // edh-zones-25 (Commander effort, lane edh-zones; path order: 'edh-zones-25' sorts after 'edh-zones-22', before 'edh-zones-3'): see the file
+  ['zz-cloud/edh-zones-26.json', cloudEdhZones26], // edh-zones-26 (Commander effort, lane edh-zones; path order: 'edh-zones-26' sorts after 'edh-zones-24', before 'edh-zones-3'): see the file
+  ['zz-cloud/edh-zones-27.json', cloudEdhZones27], // edh-zones-27 (Commander effort, lane edh-zones; path order: 'edh-zones-27' sorts after 'edh-zones-25', before 'edh-zones-3'): see the file
+  ['zz-cloud/edh-zones-3.json', cloudEdhZones3], // edh-zones-3 (Commander effort, lane edh-zones; path order: after 'edh-zones-1', before 'look3'): see the file
+  ['zz-cloud/edh-zones-4.json', cloudEdhZones4], // edh-zones-4 (Commander effort, lane edh-zones; path order: after 'edh-zones-3', before 'look3'): see the file
+  ['zz-cloud/edh-zones-5.json', cloudEdhZones5], // edh-zones-5 (Commander effort, lane edh-zones; path order: after 'edh-zones-3', before 'look3'): see the file
+  ['zz-cloud/edh-zones-6.json', cloudEdhZones6], // edh-zones-6 (Commander effort, lane edh-zones; path order: after 'edh-zones-4', before 'look3'): see the file
+  ['zz-cloud/edh-zones-7.json', cloudEdhZones7], // edh-zones-7 (Commander effort, lane edh-zones; path order: after 'edh-zones-4', before 'look3'): see the file
+  ['zz-cloud/edh-zones-8.json', cloudEdhZones8], // edh-zones-8 (Commander effort, lane edh-zones; path order: after 'edh-zones-4', before 'look3'): see the file
+  ['zz-cloud/edh-zones-9.json', cloudEdhZones9], // edh-zones-9 (Commander effort, lane edh-zones; path order: after 'edh-zones-6', before 'look3'): see the file
   ['zz-cloud/look3.json', cloudLook3], // LOOK3: "If you don't put the card onto the battlefield / into your hand, ..." after the card was looked at (CR 608.2c, 701.20e)
   ['zz-cloud/p2-attack-block-1.json', cloudP2AttackBlock1], // p2-attack-block-1 (lane p2-attack-block; path order: 'p2-' sorts after 'look3', before 'r3-'): attack and block restrictions (CR 506.5, 508.1c, 509.1b, 702.14)
   ['zz-cloud/p2-attack-block-2.json', cloudP2AttackBlock2], // p2-attack-block-2 (lane p2-attack-block; path order: 'p2-' sorts after 'look3', before 'r3-'): attack and block restrictions II (CR 509.1b, 609.4, 702.3b)
@@ -734,7 +1720,17 @@ export const TEMPLATE_FILES: readonly { file: string; templates: readonly Templa
   ['zz-cloud/trek-1.json', cloudTrek1], // trek-1 (lane trek, Star Trek; path order: 'trek' sorts after 'std-woe', before zz-fast1/): beam me up, assimilate, "gets +N/+N and becomes a <type>"
   ['zz-cloud/trek-11.json', cloudTrek11], // trek-11 (lane trek; path order: 'trek-11' sorts after 'trek-1.json', before 'trek-2'): "Once during each of your turns, you may play a permanent card you own from outside the game or from your graveyard" (CR 400.11, 305.1, 601.3)
   ['zz-cloud/trek-12.json', cloudTrek12], // trek-12 (lane trek; path order: 'trek-12' sorts after 'trek-1', before 'trek-2'): "create a copy of ~" of the card an exile-only ability is on (with r4-copy's "you may cast the copy")
+  ['zz-cloud/trek-13.json', cloudTrek13], // trek-13 (lane trek, Star Trek cards; path order: 'trek-13' sorts after 'trek-12', before 'trek-2'): Borg and assimilate; replicate and undaunted granted to spells, a group's protection from a chosen color
+  ['zz-cloud/trek-14.json', cloudTrek14], // trek-14 (lane trek; path order: 'trek-14' sorts after 'trek-12', before 'trek-2'): Star Trek counters and creature types
+  ['zz-cloud/trek-15.json', cloudTrek15], // trek-15 (lane trek, Star Trek cards; path order: 'trek-15' sorts after 'trek-12', before 'trek-2'): a resolved goad for as long as you control ~, "if they don't, ..." after a player's refusal, a tapped and attacking token for each
+  ['zz-cloud/trek-16.json', cloudTrek16], // trek-16 (lane trek, Star Trek; path order: 'trek-16' sorts after 'trek-12', before 'trek-2'): "if one or more tokens would be created under your control, that many <tokens> are created instead"; "each <objects> becomes a copy of <object> <dur>"
+  ['zz-cloud/trek-17.json', cloudTrek17], // trek-17 (lane trek; path order: 'trek-17' sorts after 'trek-12', before 'trek-2'): library: reveal and put (untapped typed those, all revealed this way tapped), sacrifice then search that many, owner draws and shuffles, dilemma
+  ['zz-cloud/trek-18.json', cloudTrek18], // trek-18 (lane trek; path order: 'trek-18' sorts after 'trek-12', before 'trek-2'): once-a-turn casts from the graveyard and from the top of the library, player hexproof until end of turn
+  ['zz-cloud/trek-19.json', cloudTrek19], // trek-19 (lane trek; path order: 'trek-19' sorts after 'trek-12', before 'trek-2'): the rest of the new Star Trek cards: see the file's templates
   ['zz-cloud/trek-2.json', cloudTrek2], // trek-2 (lane trek; path order: 'trek-2' sorts after 'std-woe', before zz-fast1/): "if you gaining life causes a triggered ability ... to trigger" (CR 603.2d)
+  ['zz-cloud/trek-20.json', cloudTrek20], // trek-20 (lane trek, Star Trek reprints; path order: 'trek-20' sorts after 'trek-2.json', before 'trek-3'): "creatures can't attack you until your next turn" (Chronomantic Escape)
+  ['zz-cloud/trek-21.json', cloudTrek21], // trek-21 (lane trek, Star Trek cards of 2026-11-03; path order: 'trek-21' sorts after 'trek-20', before 'trek-3')
+  ['zz-cloud/trek-22.json', cloudTrek22], // trek-22 (lane trek, coordinator D; path order: 'trek-22' sorts after 'trek-20', before 'trek-3'): see the file
   ['zz-cloud/trek-3.json', cloudTrek3], // trek-3 (lane trek, Star Trek cards; path order: 'trek-3' sorts after 'std-woe', before zz-fast1/): "<obj> [also] gains <abilities> <dur> if <cond>", "<player> exiles that card, then draws a card", "<player> may search their library for a <card>, reveal it, put it into their hand, then shuffle"
   ['zz-cloud/trek-4.json', cloudTrek4], // trek-4 (lane trek; path order: 'trek-4' sorts after 'std-woe', before zz-fast1/): "If you do, it enters with additional counters ... the copied permanent has on it" (CR 614.1c), "<permanents> can't phase in" (CR 702.26c)
   ['zz-cloud/trek-5.json', cloudTrek5], // trek-5 (lane trek, Star Trek cards; path order: 'trek-5' sorts after 'std-woe', before zz-fast1/): "You have no maximum hand size <dur>", "double <player>'s life total", "<player> can't sacrifice <filter>", "~'s base power and toughness become N/M"

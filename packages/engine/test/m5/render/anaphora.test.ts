@@ -20,7 +20,9 @@ describe('CR 608.2c and design D12 / 6.4: two creatures named by the trigger mak
   });
   it('a damage event with a creature source and a creature recipient is ambiguous too', () => {
     const damage: EventPattern = { ev: 'damage', source: { types: ['Creature'] }, recipient: { object: { types: ['Creature'] } } };
-    for (const role of ['object', 'source', 'subject']) rejects(trig([damage], [destroy(event(role))]), 'Whenever a creature deals damage to a creature, destroy that creature.');
+    // edh-next-44 (Sosuke, Son of Seshiro; CR 608.2c): "that creature" is the creature dealt damage (the recipient, role `object`) when the recipient is exactly a creature; the source and the subject stay refused
+    accepts(trig([damage], [destroy(event('object'))]), 'Whenever a creature deals damage to a creature, destroy that creature.');
+    for (const role of ['source', 'subject']) rejects(trig([damage], [destroy(event(role))]), 'Whenever a creature deals damage to a creature, destroy that creature.');
   });
   it('different nouns make the noun a unique name (but a bare "it" stays ambiguous)', () => {
     const damage: EventPattern = { ev: 'damage', source: { types: ['Creature'] }, recipient: { object: { types: ['Land'] } } };

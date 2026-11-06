@@ -1,0 +1,287 @@
+[
+  {
+    "id": "eff.edhn83.forEachPlayer.unlessPays.orMana",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 2,
+    "cr": [
+      "CR 608.2c",
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 101.4"
+    ],
+    "pattern": "for each player , {e:Effects} unless {p:Player} pay[s] {m:ManaCost} or {n:ManaCost}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "pay",
+          "who": "$p",
+          "cost": {
+            "other": [
+              {
+                "kind": "oneOf",
+                "options": [
+                  {
+                    "mana": "$m"
+                  },
+                  {
+                    "mana": "$n"
+                  }
+                ]
+              }
+            ]
+          },
+          "else": "$e"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, for each player, ~ deals 2 damage to that player unless they pay {B} or {3}."
+      },
+      {
+        "text": "At the beginning of your upkeep, for each player, ~ deals 1 damage to that player unless they pay {1} or {2}{U}."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, for each player, ~ deals 2 damage to that player unless they pay {B} and {3}.",
+      "At the beginning of your upkeep, for each player, ~ deals 2 damage to that player if they pay {B} or {3}."
+    ]
+  },
+  {
+    "id": "sta.edhn83.self.pump.foreach.qty",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "~ gets {pt:PT} for each {n:Qty}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              "$n"
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              "$n"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ gets +3/+3 for each opponent whose life total is less than half their starting life total."
+      },
+      {
+        "text": "~ gets +2/+0 for each opponent you have."
+      }
+    ],
+    "counterExamples": [
+      "~ gets +3/+3 for each opponent whose life total is less than half their starting life total until end of turn.",
+      "Target creature gets +3/+3 for each opponent you have.",
+      "~ gets +3/+3."
+    ]
+  },
+  {
+    "id": "dl.edhn83.nextMain.thisTurn.lead",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 603.7b",
+      "CR 505.1"
+    ],
+    "pattern": "at the beginning of the next main phase this turn , {e:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "main1",
+        "next": true,
+        "anyMain": true
+      },
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true,
+      "do": "$e"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card. At the beginning of the next main phase this turn, target creature you control gets +2/+0 until end of turn."
+      },
+      {
+        "text": "Untap all lands you control. At the beginning of the next main phase this turn, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. At the beginning of the next main phase, you gain 2 life.",
+      "Draw a card. At the beginning of each main phase this turn, you gain 2 life."
+    ],
+    "consumes": [
+      "next"
+    ]
+  },
+  {
+    "id": "eff.edhn83.eachPlayer.exileHandFaceDown.drawSeven",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 101.4",
+      "CR 701.13a",
+      "CR 406.3",
+      "CR 121.1"
+    ],
+    "pattern": "each player exiles all cards from their hand face down and draws seven cards",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "isCard": true
+          }
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        },
+        "as": "exiledFromHands"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "count": 7
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all",
+      "face down",
+      "their"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Each player exiles all cards from their hand face down and draws seven cards."
+      },
+      {
+        "text": "Untap all lands you control. Each player exiles all cards from their hand face down and draws seven cards."
+      }
+    ],
+    "counterExamples": [
+      "Each player exiles all cards from their graveyard face down and draws seven cards.",
+      "Each opponent exiles all cards from their hand face down and draws seven cards.",
+      "Each player exiles all cards from their hand face down and draws six cards."
+    ]
+  },
+  {
+    "id": "dl.edhn83.nextEnd.eachPlayer.discardHand.returnExiled",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 608.2c",
+      "CR 101.4",
+      "CR 701.9a"
+    ],
+    "pattern": "at the beginning of the next end step , each player discards their hand and returns to their hand each card they exiled this way",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "end",
+        "next": true
+      },
+      "capture": [
+        "exiledFromHands"
+      ],
+      "do": [
+        {
+          "op": "discard",
+          "who": {
+            "ref": "each",
+            "who": "player"
+          },
+          "count": "hand"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "exiledFromHands"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "this way",
+      "their",
+      "they",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Each player exiles all cards from their hand face down and draws seven cards. At the beginning of the next end step, each player discards their hand and returns to their hand each card they exiled this way."
+      },
+      {
+        "text": "Untap all lands you control. Each player exiles all cards from their hand face down and draws seven cards. Then at the beginning of the next end step, each player discards their hand and returns to their hand each card they exiled this way."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Each player exiles all cards from their hand face down and draws seven cards. At the beginning of the next end step, each player returns to their hand each card they exiled this way.",
+      "Draw a card. Each player exiles all cards from their hand face down and draws seven cards. At the beginning of the next end step, each opponent discards their hand and returns to their hand each card they exiled this way."
+    ]
+  }
+]

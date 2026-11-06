@@ -14,6 +14,7 @@
  * Every call returns a record with its OWN arrays (design 4.3, hazards 2-3): last known information stores the result, and a caller that edits what it got
  * (a test, a layer experiment) must never reach the cache or another caller's answer. The abilities inside are shared, immutable data.
  */
+import { frozenTopsKey } from '../statics/frozen-tops';
 import type { AbilityDef, KeywordAbilityDef } from '../types/ability';
 import type { CardDef, CardType, Supertype } from '../types/card';
 import type { ObjectId, PlayerId } from '../types/ids';
@@ -24,6 +25,7 @@ import type { CharsAdditions } from '../statics/api';
 import { printedCharAbilities } from '../statics/abilities';
 import { computeAll, intrinsicChars } from '../statics/layers';
 import { copyChars } from '../statics/mods';
+import { hasNamedKeyword } from '../statics/match';
 import { layerSourcesPresent } from '../statics/live';
 import { holdStill, installScopeVerifier, stableScopeFor } from '../statics/stable-scope';
 import { installLayeredAllProvider, installLayeredReadsWidener } from '../statics/rule-sources';
@@ -78,7 +80,7 @@ export interface BaseChars {
  */
 export interface Chars extends Omit<BaseChars, 'abilities' | 'keywords'>, CharsAdditions {}
 
-const PERMANENT_TYPES: readonly CardType[] = ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'];
+export const PERMANENT_TYPES: readonly CardType[] = ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'];
 
 // ---- the cache of a layered state ----------------------------------------------------------------------------------------------
 
@@ -113,6 +115,7 @@ export const CHARS_CACHE_STATS = { hits: 0, misses: 0 };
 function layerInputs(s: GameState): unknown[] {
   const parts: unknown[] = LAYER_WALK_ORDER.map((k) => s[k]);
   parts.push(historyKey(s)); // FAST5X E9: the history, when a definition can read it (CR 611.3a "as long as ... this turn")
+  parts.push(frozenTopsKey(s)); // edh-zones-20: the top cards a suspended cast, play or activation froze (CR 401.5; statics/match.ts `topCards`)
   return parts;
 }
 
@@ -151,7 +154,7 @@ function defsReadHistory(defs: GameState['defs']): boolean {
     let r = DEF_READS_HISTORY.get(d);
     // FAST5X E28: and the history filter "attacked this turn" (statics/match.ts reads it, CR 611.3a)
     // CLOUD std-ecl: and the history count "the number of creatures that entered the battlefield under your control this turn" (statics/match.ts `happenedCount`)
-    if (r === undefined) { const j = JSON.stringify(d); DEF_READS_HISTORY.set(d, (r = j.includes('"cond":"happened"') || j.includes('"attackedThisTurn":') || j.includes('"countersPutThisTurn":') || j.includes('"q":"happenedCount"'))); }
+    if (r === undefined) { const j = JSON.stringify(d); DEF_READS_HISTORY.set(d, (r = j.includes('"cond":"happened"') || j.includes('"firstCastOf":') || j.includes('"attackedThisTurn":') || j.includes('"enteredThisTurn":') || j.includes('"countersPutThisTurn":') || j.includes('"q":"happenedCount"') || j.includes('"q":"attacksThisTurn"'))); }
     if (r) { v = true; break; }
   }
   DEFS_READ_HISTORY.set(defs, { v, n });
@@ -218,6 +221,7 @@ function keyInputs(s: GameState, reads: number): unknown[] {
     }
   });
   parts.push(historyKey(s));
+  parts.push(frozenTopsKey(s)); // edh-zones-20 (CR 401.5): the top cards a suspended cast froze are part of the key, as in `layerInputs`
   return parts;
 }
 const OBJECTS_PART = (): number => LAYER_WALK_ORDER.indexOf('objects');
@@ -244,6 +248,7 @@ export const LAYER_WALK_ORDER: readonly (keyof GameState)[] = [...FINGERPRINTED]
 export const NOT_READ_BY_LAYERS: readonly (keyof GameState)[] = [
   'schema', 'seed', 'rng', 'options', 'defs', 'stage', 'priority', 'pendingTriggers', 'turnActivations', 'delayedTriggers', 'history', 'reminders', 'lki',
   'pending', 'suspended', 'log', 'result', 'counters', 'actionCount',
+  'turnActions', // shortcuts (CR 727, docs/design/shortcuts.md 1): optional, the settled actions of this turn; only core/shortcut*.ts and the view read it
 ];
 
 /** The characteristics of every object of a layered state, computed once per distinct state (cache key: the state object plus a snapshot of its layer inputs). */
@@ -436,5 +441,5 @@ export const isInstantOrSorcery = (c: Chars): boolean => c.types.includes('Insta
 
 /** True if the object has the keyword (CR 702; multiple instances are redundant for the static keywords the engine implements). */
 export function hasKeyword(c: Chars, keyword: string): boolean {
-  return c.keywords.some((k) => k.keyword === keyword);
+  return hasNamedKeyword(c, keyword); // edh-combat-2: a landwalk is also its land word ("islandwalk"), statics/match.ts#hasNamedKeyword
 }

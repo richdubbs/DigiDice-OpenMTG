@@ -1,0 +1,5 @@
+# edh-next-77 (lane quantities): the discard named by "when you discard a card this way", different mana values among cards
+Narset of the Ancient Way
+Fiery Encore
+Summon: Kujata
+All-Seeing Arbiter

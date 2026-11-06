@@ -1,0 +1,733 @@
+[
+  {
+    "id": "eff.edhn72.forEach.thisWay.controllerCloaks.top",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 701.58a",
+      "CR 701.58b"
+    ],
+    "pattern": "for each {f:Filter} , its controller cloaks the top card of their library",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "eachMoved",
+      "do": [
+        {
+          "op": "action",
+          "action": "cloak",
+          "who": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "bound",
+              "name": "eachMoved"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "For each player, exile up to one target creature that player controls. For each creature exiled this way, its controller cloaks the top card of their library."
+      },
+      {
+        "text": "For each opponent, exile up to one target artifact that player controls. For each artifact exiled this way, its controller cloaks the top card of their library."
+      }
+    ],
+    "counterExamples": [
+      "For each player, exile up to one target creature that player controls. For each creature exiled this way, you cloak the top card of your library.",
+      "For each player, exile up to one target creature that player controls. For each creature exiled this way, its controller manifests the top card of their library.",
+      "For each player, exile up to one target creature that player controls. For each creature exiled this way, its owner cloaks the top card of their library."
+    ]
+  },
+  {
+    "id": "eff.edhn72.forEachOpponent.exile.thatPlayerGainsLifePower",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 102.3",
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 406.1",
+      "CR 119.1"
+    ],
+    "pattern": "for each opponent , exile {o:OppTarget} and that player gains life equal to its power",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "exile"
+        },
+        "as": "move"
+      },
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "bound",
+          "name": "move"
+        },
+        "as": "eachMoved",
+        "do": [
+          {
+            "op": "gainLife",
+            "who": {
+              "ref": "controllerOf",
+              "object": {
+                "ref": "bound",
+                "name": "eachMoved"
+              }
+            },
+            "amount": {
+              "q": "stat",
+              "stat": "power",
+              "of": {
+                "ref": "bound",
+                "name": "eachMoved"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "priority": 2,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, for each opponent, exile up to one target artifact that player controls and that player gains life equal to its power."
+      },
+      {
+        "text": "For each opponent, exile up to one target artifact that player controls and that player gains life equal to its power."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent, exile up to one target creature that player controls and you gain life equal to its power.",
+      "For each opponent, exile up to one target creature you control and that player gains life equal to its power."
+    ]
+  },
+  {
+    "id": "eff.edhn72.eachPlayer.may.put.fromHand.bf.thenOpponentsWhoDidntDraw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 608.2c",
+      "CR 110.2a",
+      "CR 121.1",
+      "CR 400.7"
+    ],
+    "pattern": "each player may put ( a | an ) {f:Filter} card from their hand onto the battlefield , then each opponent who didn't draw[s] ( a | 1 ) card",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "hand",
+            "owner": {
+              "ref": "iterating"
+            },
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "otherOf",
+          "of": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "than": {
+            "ref": "ownerOf",
+            "object": {
+              "ref": "bound",
+              "name": "put"
+            }
+          }
+        },
+        "count": 1
+      }
+    ],
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "each",
+      "may",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, each player may put a land card from their hand onto the battlefield, then each opponent who didn't draws a card."
+      },
+      {
+        "text": "When ~ enters, each player may put a creature card from their hand onto the battlefield, then each opponent who didn't draws a card."
+      }
+    ],
+    "counterExamples": [
+      "Each player may put a land card from their hand onto the battlefield, then each player who didn't draws a card.",
+      "Each player may put a land card from their hand onto the battlefield, then each opponent who did draws a card.",
+      "Each opponent may put a land card from their hand onto the battlefield, then each opponent who didn't draws a card."
+    ]
+  },
+  {
+    "id": "eff.edhn72.eachOpponent.mayInvestigate.otherwiseLoseLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 102.3",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.16a",
+      "CR 119.3"
+    ],
+    "pattern": "each opponent may investigate . each opponent who doesn't loses {n:Qty} life",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "investigated",
+      "do": [
+        {
+          "op": "action",
+          "action": "investigate",
+          "who": {
+            "ref": "iterating"
+          }
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "iterating"
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "who",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters or leaves the battlefield, each opponent may investigate. Each opponent who doesn't loses 1 life."
+      },
+      {
+        "text": "When ~ dies, each opponent may investigate. Each opponent who doesn't loses 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent may investigate. Each player who doesn't loses 1 life.",
+      "Each player may investigate. Each opponent who doesn't loses 1 life.",
+      "Each opponent may investigate. Each opponent who does loses 1 life."
+    ]
+  },
+  {
+    "id": "eff.edhn72.youInvestigatePlusOpponentsWhoInvestigated",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 102.3",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.16a",
+      "CR 119.3"
+    ],
+    "pattern": "you investigate x times , where x is one plus the number of opponents who investigated this way",
+    "build": {
+      "op": "action",
+      "action": "investigate",
+      "who": {
+        "ref": "you"
+      },
+      "n": {
+        "q": "math",
+        "op": "+",
+        "args": [
+          1,
+          {
+            "q": "resultCount",
+            "step": "investigated"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent may investigate. Each opponent who doesn't loses 1 life. You investigate X times, where X is one plus the number of opponents who investigated this way."
+      },
+      {
+        "text": "When ~ dies, each opponent may investigate. Each opponent who doesn't loses 2 life. You investigate X times, where X is one plus the number of opponents who investigated this way."
+      }
+    ],
+    "counterExamples": [
+      "You investigate X times, where X is the number of opponents who investigated this way.",
+      "You investigate X times, where X is one plus the number of players who investigated this way.",
+      "You investigate X times, where X is one plus the number of opponents who drew a card this way."
+    ]
+  },
+  {
+    "id": "eff.edhn72.eachPlayerExactlyLife.losesGame.thenGainLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 104.3b",
+      "CR 104.4a",
+      "CR 119.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "each player with exactly {n:Qty} life loses the game , then each player gains {m:Qty} life",
+    "build": [
+      {
+        "op": "loseGame",
+        "who": {
+          "ref": "withLife",
+          "who": "player",
+          "op": "==",
+          "n": "$n"
+        }
+      },
+      {
+        "op": "gainLife",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "amount": "$m"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each player with exactly 13 life loses the game, then each player gains 1 life."
+      },
+      {
+        "text": "When ~ enters, each player with exactly 7 life loses the game, then each player gains 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Each player with exactly 13 life loses the game, then each opponent gains 1 life.",
+      "Each opponent with exactly 13 life loses the game, then each player gains 1 life.",
+      "Each player with 13 life or less loses the game, then each player gains 1 life."
+    ]
+  },
+  {
+    "id": "eff.edhn72.eachPlayerExactlyLife.losesGame.thenLoseLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 104.3b",
+      "CR 104.4a",
+      "CR 119.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "each player with exactly {n:Qty} life loses the game , then each player loses {m:Qty} life",
+    "build": [
+      {
+        "op": "loseGame",
+        "who": {
+          "ref": "withLife",
+          "who": "player",
+          "op": "==",
+          "n": "$n"
+        }
+      },
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "amount": "$m"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each player with exactly 13 life loses the game, then each player loses 1 life."
+      },
+      {
+        "text": "When ~ enters, each player with exactly 7 life loses the game, then each player loses 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Each player with exactly 13 life loses the game, then each opponent loses 1 life.",
+      "Each opponent with exactly 13 life loses the game, then each player loses 1 life.",
+      "Each player with 13 life or less loses the game, then each player loses 1 life."
+    ]
+  },
+  {
+    "id": "eff.edhn72.eachPlayerMayDrawUpToTwo.gainLifePerCardLess",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 121.1",
+      "CR 119.1"
+    ],
+    "pattern": "each player may draw up to two cards . for each card less than two a player draws this way , that player gains {l:Qty} life",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "do": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": 2,
+          "upTo": true,
+          "as": "drewUpTo"
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "iterating"
+          },
+          "amount": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$l",
+              {
+                "q": "math",
+                "op": "-",
+                "args": [
+                  2,
+                  {
+                    "q": "resultCount",
+                    "step": "drewUpTo"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "iterating"
+          },
+          "amount": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$l",
+              2
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "up to",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Each player may draw up to two cards. For each card less than two a player draws this way, that player gains 4 life."
+      },
+      {
+        "text": "Each player may draw up to two cards. For each card less than two a player draws this way, that player gains 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Each player may draw up to three cards. For each card less than two a player draws this way, that player gains 2 life.",
+      "Each opponent may draw up to two cards. For each card less than two a player draws this way, that player gains 2 life.",
+      "Each player may draw up to two cards. For each card less than two a player draws this way, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.edhn72.eachPlayerMayDiscardUpToThree.damageThreeMinus",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.9a",
+      "CR 120.3",
+      "CR 608.2h"
+    ],
+    "pattern": "each player may discard up to three cards . ~ deals damage to each player equal to 3 minus the number of cards they discarded this way",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "iterating"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "zone": "hand",
+              "owner": {
+                "ref": "iterating"
+              }
+            }
+          },
+          "min": 0,
+          "max": 3,
+          "as": "toDiscard"
+        },
+        {
+          "op": "discard",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": {
+            "q": "count",
+            "of": {
+              "ref": "bound",
+              "name": "toDiscard"
+            }
+          },
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "toDiscard"
+            }
+          },
+          "as": "discarded"
+        },
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": {
+            "ref": "iterating"
+          },
+          "amount": {
+            "q": "math",
+            "op": "-",
+            "args": [
+              3,
+              {
+                "q": "resultCount",
+                "step": "discarded",
+                "which": {
+                  "isCard": true
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": {
+            "ref": "iterating"
+          },
+          "amount": 3
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "up to",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each player may discard up to three cards. ~ deals damage to each player equal to 3 minus the number of cards they discarded this way."
+      },
+      {
+        "text": "When ~ enters, each player may discard up to three cards. ~ deals damage to each player equal to 3 minus the number of cards they discarded this way."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent may discard up to three cards. ~ deals damage to each player equal to 3 minus the number of cards they discarded this way.",
+      "Each player may discard up to two cards. ~ deals damage to each player equal to 3 minus the number of cards they discarded this way.",
+      "Each player may discard up to three cards. ~ deals damage to each opponent equal to 3 minus the number of cards they discarded this way."
+    ]
+  },
+  {
+    "id": "eff.edhn72.eachOpponent.sacrifices.permanent.sharesCardType",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 102.3",
+      "CR 205.2a",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 701.21a"
+    ],
+    "pattern": "each opponent sacrifice[s] a permanent of their choice that shares a card type with {o:Obj}",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "filter": {
+        "sharesWith": {
+          "with": "$o",
+          "quality": "cardType"
+        }
+      },
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another nonland permanent you control is put into a graveyard from the battlefield, each opponent sacrifices a permanent of their choice that shares a card type with it."
+      },
+      {
+        "text": "Whenever a creature you control dies, each opponent sacrifices a permanent of their choice that shares a card type with it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control dies, each opponent sacrifices a creature of their choice that shares a card type with it.",
+      "Whenever a creature you control dies, each player sacrifices a permanent of their choice that shares a card type with it.",
+      "Whenever a creature you control dies, each opponent sacrifices a permanent of their choice that shares a creature type with it."
+    ]
+  },
+  {
+    "id": "eff.edhn72.eachOpponent.chooses.sharesCardType.andSacrificesIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 102.3",
+      "CR 205.2a",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 701.21a"
+    ],
+    "pattern": "each opponent chooses a permanent they control that shares a card type with {o:Obj} and sacrifices it",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "filter": {
+        "sharesWith": {
+          "with": "$o",
+          "quality": "cardType"
+        }
+      },
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast this spell, sacrifice an enchantment.\nEach opponent chooses a permanent they control that shares a card type with the sacrificed enchantment and sacrifices it."
+      },
+      {
+        "text": "When ~ enters, each opponent chooses a permanent they control that shares a card type with it and sacrifices it."
+      }
+    ],
+    "counterExamples": [
+      "Each player chooses a permanent they control that shares a card type with it and sacrifices it.",
+      "Each opponent chooses a creature they control that shares a card type with it and sacrifices it.",
+      "Each opponent chooses a permanent they control that shares a creature type with it and sacrifices it."
+    ]
+  }
+]

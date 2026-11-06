@@ -1,5 +1,5 @@
 /**
- * WP14 capability discipline (design 5.2, 15.1 rule 5): each of its 16 ops is a capability because it has a handler AND a renderer; the value forms its
+ * WP14 capability discipline (design 5.2, 15.1 rule 5): each of its 17 ops is a capability because it has a handler AND a renderer; the value forms its
  * handlers resolve by hand are named by the walker and are NOT capabilities, so a card that needs one is never classified automated; the section 13 cards
  * whose every node WP14 and the merged packages run classify as full; storm is advertised now that `op:copy` works (STATUS W1 open item f).
  */
@@ -13,12 +13,12 @@ import { RENDERERS } from '../../../src/render/step';
 import type { AbilityDef, EffectStep } from '../../../src/index';
 import { EXAMPLES } from '../model/examples';
 
-const WP14_OPS = ['move', 'destroy', 'sacrifice', 'sacrificeChoice', 'counter', 'tap', 'untap', 'attach', 'changeFace', 'phaseOut', 'regenerate', 'removeFromCombat', 'exchange', 'createToken', 'copy', 'cast'];
+const WP14_OPS = ['move', 'destroy', 'sacrifice', 'sacrificeChoice', 'counter', 'tap', 'untap', 'attach', 'changeFace', 'phaseOut', 'regenerate', 'removeFromCombat', 'exchange', 'createToken', 'copy', 'cast', 'phaseIn' /* edhn102 */];
 const ability = (steps: EffectStep[]): AbilityDef => ({ kind: 'spell', text: 'x', effect: { targets: [], steps } });
 const example = (name: string): AbilityDef => EXAMPLES.find((e) => e.name === name)!.faces[0]!.abilities[0]!;
 
 describe('WP14 capabilities (design 5.2)', () => {
-  it('the zones and tokens tables hold exactly the 16 ops of design 15.2, and each is an engine capability (handler and renderer)', () => {
+  it('the zones and tokens tables hold exactly the 17 ops of design 15.2, and each is an engine capability (handler and renderer)', () => {
     expect([...Object.keys(ZONES_HANDLERS), ...Object.keys(TOKENS_HANDLERS)].sort()).toEqual([...WP14_OPS].sort());
     for (const op of WP14_OPS) {
       expect(Object.hasOwn(OP_HANDLERS, op), op).toBe(true);

@@ -1,0 +1,9 @@
+# edh-c-50 (Commander effort, coordinator C, EDHREC ranks 18,501 to 19,000). After editing: npm run cards -- fixtures
+Invasion of Muraganda // Primordial Plasm
+Woolly Razorback
+Futurist Operative
+Spoils of Evil
+Sway of Illusion
+Wreck Hunter
+Tezzeret the Schemer
+Skyship Weatherlight

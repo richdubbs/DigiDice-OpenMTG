@@ -1,0 +1,393 @@
+[
+  {
+    "id": "eff.edhp17.gainLife.youAndPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.1",
+      "CR 119.3",
+      "CR 101.4"
+    ],
+    "pattern": "you and {p:Player} each gain {n:Qty} life",
+    "build": {
+      "op": "gainLife",
+      "who": {
+        "ref": "you"
+      },
+      "also": "$p",
+      "amount": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You and target opponent each gain 4 life."
+      },
+      {
+        "text": "{3}, {T}: You and target player each gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "You and target opponent each lose 4 life.",
+      "Target opponent gains 4 life.",
+      "You and target opponent each gain 4 life at random."
+    ]
+  },
+  {
+    "id": "eff.edhp17.counters.put.you.onChosen.youControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 115.10"
+    ],
+    "pattern": "you put {n:Qty} {k:CounterKind} counter[s] on ( a | an ) {f:Filter} you control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "countersOn"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "countersOn"
+        },
+        "kind": "$k",
+        "count": "$n"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your end step, each opponent loses 1 life and you put two +1/+1 counters on a creature you control."
+      },
+      {
+        "text": "At the beginning of each opponent's upkeep, that player discards a card and you put a -1/-1 counter on an artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, each opponent loses 1 life and you put two +1/+1 counters on target creature you control.",
+      "At the beginning of your end step, each opponent loses 1 life and you put two +1/+1 counters on a creature an opponent controls.",
+      "At the beginning of your end step, each opponent loses 1 life and you put two +1/+1 counters on a creature you control at random."
+    ]
+  },
+  {
+    "id": "eff.edhp17.forEachVote.gainControlOwnedByVoter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.38a",
+      "CR 701.38d",
+      "CR 108.3",
+      "CR 608.2d",
+      "CR 608.2f",
+      "CR 613.1b"
+    ],
+    "pattern": "for each {q:VoteCount} , choose ( a | an ) {f:Filter} owned by the voter and gain control of it",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "votedFor",
+        "votes": "$q"
+      },
+      "as": "voter",
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "owner": {
+                "ref": "bound",
+                "name": "voter"
+              }
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "seizedByVote"
+        },
+        {
+          "op": "effect",
+          "duration": {
+            "d": "permanent"
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": {
+                "ref": "bound",
+                "name": "seizedByVote"
+              },
+              "mods": [
+                {
+                  "layer": 2,
+                  "controller": {
+                    "ref": "you"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player votes for aid or profit. For each profit vote, choose a permanent owned by the voter and gain control of it."
+      },
+      {
+        "text": "Starting with you, each player votes for grace or taxes. For each taxes vote, choose a creature owned by the voter and gain control of it."
+      }
+    ],
+    "counterExamples": [
+      "Starting with you, each player votes for aid or profit. For each profit vote, choose a permanent owned by the voter and gain control of it until end of turn.",
+      "Starting with you, each player votes for aid or profit. For each profit vote, choose a permanent owned by an opponent and gain control of it.",
+      "For each profit vote, choose a permanent owned by the voter and gain control of it."
+    ]
+  },
+  {
+    "id": "eff.edhp17.eachPlayer.choose.color",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 105.1",
+      "CR 101.4"
+    ],
+    "pattern": "each player chooses a color",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "what": "color",
+      "as": "chosenColors",
+      "link": "chosenColor"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player chooses a color. Then exile each creature unless it's colorless or it's only the color its controller chose."
+      },
+      {
+        "text": "Each player chooses a color. Then exile each artifact unless it's colorless or it's only the color its controller chose."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent chooses a color. Then exile each creature unless it's colorless or it's only the color its controller chose.",
+      "Each player chooses a card type. Then exile each creature unless it's colorless or it's only the color its controller chose.",
+      "Each player chooses two colors. Then exile each creature unless it's colorless or it's only the color its controller chose."
+    ]
+  },
+  {
+    "id": "eff.edhp17.exileEach.unlessColorlessOrOnlyControllersColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.2a",
+      "CR 105.2c",
+      "CR 608.2d",
+      "CR 406.2"
+    ],
+    "pattern": "then exile each {f:Filter} unless it's colorless or it's only the color its controller chose",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "not": {
+            "anyOf": [
+              {
+                "colorless": true
+              },
+              {
+                "onlyColorChosenByController": "chosenColor"
+              }
+            ]
+          }
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless",
+      "only",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Each player chooses a color. Then exile each creature unless it's colorless or it's only the color its controller chose."
+      },
+      {
+        "text": "Each player chooses a color. Then exile each artifact unless it's colorless or it's only the color its controller chose."
+      }
+    ],
+    "counterExamples": [
+      "Each player chooses a color. Then exile each creature unless it's colorless or it's the color its controller chose.",
+      "Each player chooses a color. Then exile each creature unless it's colorless.",
+      "Each player chooses a color. Then exile each creature unless it's only the color its controller chose."
+    ]
+  },
+  {
+    "id": "trg.edhp17.when.attackEnchantedOpponentOrTheyAttackYou",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2c",
+      "CR 508.1",
+      "CR 506.3",
+      "CR 508.5",
+      "CR 303.4"
+    ],
+    "pattern": "( when | whenever ) you attack enchanted opponent or a planeswalker they control or when they attack you or a planeswalker you control",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you"
+          },
+          "count": {
+            "op": ">=",
+            "value": 1
+          },
+          "defender": {
+            "ref": "enchantedPlayer"
+          },
+          "orPlaneswalker": true
+        },
+        {
+          "ev": "attacks",
+          "attacker": {
+            "types": [
+              "Creature"
+            ],
+            "controller": {
+              "ref": "enchantedPlayer"
+            }
+          },
+          "count": {
+            "op": ">=",
+            "value": 1
+          },
+          "defender": "you",
+          "orPlaneswalker": true
+        }
+      ],
+      "batch": true
+    },
+    "consumes": [
+      "when",
+      "whenever",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "When you attack enchanted opponent or a planeswalker they control or when they attack you or a planeswalker you control, draw a card."
+      },
+      {
+        "text": "Whenever you attack enchanted opponent or a planeswalker they control or when they attack you or a planeswalker you control, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "When you attack enchanted opponent or a planeswalker they control, draw a card.",
+      "When you attack enchanted opponent or a planeswalker they control or when they attack you, draw a card.",
+      "When you attack enchanted opponent or a planeswalker they control or when they attack you or a planeswalker you control with two or more creatures, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhp17.untap.next.theirController",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "^ {o:They} don't untap during their controller 's next untap step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "not",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Tap up to three target artifacts. They don't untap during their controller's next untap step."
+      },
+      {
+        "text": "Tap two target lands. They don't untap during their controller's next untap step."
+      }
+    ],
+    "counterExamples": [
+      "Tap up to three target artifacts. They don't untap during their controller's untap step.",
+      "Tap up to three target artifacts. They untap during their controller's next untap step.",
+      "Tap up to three target artifacts. They don't untap during their controller's next end step."
+    ]
+  }
+]

@@ -80,6 +80,7 @@ export function copiableOrWhy(s: GameState, o: GameObject): CopiableValues | { r
   const def = s.defs[o.defId];
   if (!def) return { reason: 'the object has no definition this player can see' };
   if (o.kind === 'ability') return { reason: 'an ability is not an object a copy effect can copy (CR 707.10 copies abilities on the stack)' };
+  if (faceDownHere(o) && o.faceDownInfo?.profile.startsWith('set:') === true) return { reason: 'copying a face-down permanent with set characteristics is not automated yet (CR 708.10)' }; // edh-mana-keywords-12
   let cv: CopiableValues;
   if (faceDownHere(o)) cv = { defId: faceDownDef(o), face: 0, except: [] };
   else {
@@ -173,12 +174,13 @@ export function applyCopiable(c: Chars, cv: CopiableValues, subject: ObjectId, s
   const abilities = copiedAbilities(effectId, base, extra, ns);
   const x = o?.zone === 'stack' ? o.stack?.x ?? 0 : 0;
   let out: Chars = {
-    name: base.name, names: base.names, face, combined: false, manaCost: base.manaCost,
-    manaValue: cv.manaValueZero ? 0 : manaValue(costForManaValue(def, face, base.manaCost), x),
+    name: base.name, names: base.names, face, combined: false, manaCost: cv.noManaCost === true ? null : base.manaCost, // edh-next-122 (CR 707.9b, 202.1b): "has no mana cost"
+    manaValue: cv.manaValueZero || cv.noManaCost === true ? 0 : manaValue(costForManaValue(def, face, base.manaCost), x),
     colors: base.colors, supertypes: base.supertypes, types: base.types, subtypes: base.subtypes,
     abilities, keywords: keywordsOfAbilities(abilities), controller: c.controller, cantHave: c.cantHave,
   };
   for (const k of ['power', 'toughness', 'loyalty', 'defense'] as const) if (base[k] !== undefined) out[k] = base[k];
+  if (cv.startingLoyalty !== undefined) out.loyalty = String(cv.startingLoyalty); // edh-next-136 (CR 707.9b, 306.5b): "its starting loyalty is 1"
   if (cv.name !== undefined) out = { ...out, name: cv.name, names: [cv.name] }; // FAST5 T64, CR 707.9b-c: "except its name is ..."
   const fx = { id: effectId, source: subject, controller: c.controller, timestamp: 0 };
   for (const m of cv.except) {
@@ -194,6 +196,13 @@ export const LAYER_1A: ApplyMods | null = (c, mods, subject, s, all, fx) => {
   if (isMergeEffect(fx?.id)) {
     const o = s.objects[subject] ?? s.lki[subject]?.object;
     return o && fx ? applyMergeStep(c, o, s, fx.id) : c;
+  }
+  // edh-next-146 (CR 613.2a, 707.2; Corrupted Shapeshifter): an "as ~ enters, it becomes ..." record modifies the object's copiable values: its modifications, each with its own
+  // layer's function, in layer 1a (so the later layers, an ability-removing or P/T-setting effect among them, apply on top of them)
+  if (fx?.asEntry === true && fx.copy === undefined) {
+    let out = c;
+    for (const m of mods) if (m.layer !== '1a' && m.layer !== '1b' && m.layer !== 3) out = applyMods(out, [m], subject, s, all, fx);
+    return out;
   }
   if (!fx?.copy || !mods.some((m) => m.layer === '1a')) return c;
   return applyCopiable(c, fx.copy, subject, s, all, fx.id);
@@ -265,6 +274,8 @@ export function concreteSnapshot(s: GameState, target: GameObject, of: CopiableV
   const kept: Modification[] = [];
   const drop = new Set<Characteristic>(of.dropCda ?? []);
   let keptName: string | undefined;
+  let noManaCost = false;
+  let startingLoyalty: number | undefined; // edh-next-136
   let ownChars: Chars | { reason: string } | undefined;
   const ownOnce = (): Chars | { reason: string } => {
     if (ownChars) return ownChars;
@@ -288,6 +299,14 @@ export function concreteSnapshot(s: GameState, target: GameObject, of: CopiableV
       } else if ('thisAbility' in x) {
         // MX2: a resolved effect replaces it with the ability itself before the snapshot (effects/handlers/lasting.ts); anywhere else it can't be stated
         return { reason: '"it has this ability" outside a resolving ability is not automated (CR 707.9a)' };
+      } else if ('noManaCost' in x) {
+        noManaCost = true; // edh-next-122 (CR 707.9b, 202.1b): "the token has no mana cost"
+      } else if ('startingLoyalty' in x) {
+        if (!Number.isInteger(x.startingLoyalty) || x.startingLoyalty < 0) return { reason: 'a starting loyalty that is not a number is not automated (CR 707.9b, 306.5b)' };
+        startingLoyalty = x.startingLoyalty; // edh-next-136 (CR 707.9b, 306.5b): "its starting loyalty is 1"
+      } else if ('ifEmbalmed' in x) {
+        // edh-next-122 (CR 702.128b): judged as the object enters (effects/enters-parts/copy.ts resolves it); anywhere else it can't be told
+        return { reason: '"if this creature was embalmed" outside an entering copy is not automated (CR 702.128b, 707.9b)' };
       } else if (nested) return { reason: 'a conditional copy exception inside another one is not automated (CR 707.9f)' };
       else {
         // CR 707.9f: judged on the result of the copy without this exception (with the unconditional ones), as the permanent it will be
@@ -304,6 +323,8 @@ export function concreteSnapshot(s: GameState, target: GameObject, of: CopiableV
   if (why) return why;
   const out: CopiableValues = { ...of, except: [...of.except, ...kept] };
   if (keptName !== undefined) out.name = keptName;
+  if (noManaCost) out.noManaCost = true;
+  if (startingLoyalty !== undefined) out.startingLoyalty = startingLoyalty;
   if (drop.size > 0) out.dropCda = [...drop];
   return out;
 }
@@ -364,6 +385,7 @@ export function copyRecord(args: {
 export function snapshotDefs(s: GameState): string[] {
   const out = new Set<string>();
   for (const rec of s.continuousEffects) {
+    if (rec.textOf) { out.add(rec.textOf.defId); for (const x of rec.textOf.alsoAbilitiesOf ?? []) out.add(x.defId); } // edh-next-120: a text box exchange's snapshot
     if (!rec.copy) continue;
     out.add(rec.copy.defId);
     for (const x of rec.copy.alsoAbilitiesOf ?? []) out.add(x.defId);

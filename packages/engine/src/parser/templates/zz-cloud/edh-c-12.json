@@ -1,0 +1,513 @@
+[
+  {
+    "id": "eff.edhv12.may.lifeTotal.become",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.5",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have your life total become {n:Qty}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "setLife",
+          "who": {
+            "ref": "you"
+          },
+          "value": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, you may have your life total become the number of cards in your hand."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may have your life total become 20."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you have your life total become 20.",
+      "When ~ enters, you may have your life total become 20 instead.",
+      "When ~ enters, you may have target player's life total become 20."
+    ]
+  },
+  {
+    "id": "eff.edhv12.may.have.become.artifactCreature.with.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have {o:Obj} become ( a | an ) {pt:BasePT} {st:Subtypes} artifact creature with {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 4,
+                  "types": {
+                    "set": [
+                      "Artifact",
+                      "Creature"
+                    ]
+                  },
+                  "subtypes": {
+                    "set": "$st"
+                  }
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                },
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you sacrifice a Food token, you may have ~ become a 4/4 Golem artifact creature with trample until end of turn."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may have ~ become a 2/2 Construct artifact creature with flying until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you sacrifice a Food token, you may have ~ become a 4/4 Golem artifact creature with trample.",
+      "Whenever you sacrifice a Food token, you may have ~ become a 4/4 Golem creature with trample until end of turn.",
+      "Whenever you sacrifice a Food token, have ~ become a 4/4 Golem artifact creature with trample until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv12.becomes.artifactCreature.gets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 301.7",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) artifact creature and gets {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, ~ becomes an artifact creature and gets +2/+0 until end of turn."
+      },
+      {
+        "text": "At the beginning of your upkeep, ~ becomes an artifact creature and gets +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a noncreature spell, ~ becomes an artifact creature and gets +1/+1.",
+      "Whenever you cast a noncreature spell, ~ becomes an artifact creature and gets +1/+1 until your next turn.",
+      "Whenever you cast a noncreature spell, ~ becomes an enchantment creature and gets +1/+1 until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhv12.enchanted.isSubtype.cantAttackBlock",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 508.1c",
+      "CR 509.1b",
+      "CR 303.4"
+    ],
+    "pattern": "enchanted creature is ( a | an ) {st:Subtypes} and can't attack or block",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature is a Frog and can't attack or block."
+      },
+      {
+        "text": "Enchanted creature is an Elk and can't attack or block."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature is a Frog and can't attack.",
+      "Enchanted creature is a Frog and can't attack or block until end of turn.",
+      "Enchanted creature is a Frog in addition to its other types and can't attack or block."
+    ]
+  },
+  {
+    "id": "sta.edhv12.enchanted.base.has.loseOther.colorType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 105.3",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 303.4"
+    ],
+    "pattern": "enchanted creature has base power and toughness {pt:BasePT} , has {a:Abilities} , loses all other abilities , and is ( a | an ) {c:Color} {st:Subtypes} in addition to its other colors and types",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "add": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "other",
+      "in addition"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature has base power and toughness 1/3, has defender, loses all other abilities, and is a green Plant in addition to its other colors and types."
+      },
+      {
+        "text": "Enchanted creature has base power and toughness 1/1, has flying, loses all other abilities, and is a white Bird in addition to its other colors and types."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature has base power and toughness 1/3, has defender, loses all abilities, and is a green Plant in addition to its other colors and types.",
+      "Enchanted creature has base power and toughness 1/3, has defender, loses all other abilities, and is a green Plant.",
+      "Enchanted creature has base power and toughness 1/3, has defender, loses all other abilities, and is a green Plant in addition to its other colors and types until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhv12.attached.pump.extrablock",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.4c",
+      "CR 509.1a",
+      "CR 509.1b",
+      "CR 702.19b",
+      "CR 301.5"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} and can block an additional creature each combat",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "rule",
+          "rule": "extraBlockers",
+          "value": 1,
+          "of": {
+            "is": {
+              "ref": "attachedTo"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +1/+2 and can block an additional creature each combat."
+      },
+      {
+        "text": "Enchanted creature gets +0/+1 and can block an additional creature each combat."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+2 and can block an additional creature.",
+      "Equipped creature gets +1/+2 and can block two additional creatures each combat.",
+      "Equipped creature gets +1/+2 and can block an additional creature each combat until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhv12.enchanted.pump.aslongIs.otherwise.cantAttackBlock",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 508.1c",
+      "CR 509.1b"
+    ],
+    "pattern": "enchanted creature gets {pt:PT} as long as it's ( a | an ) {f:Filter} . otherwise , it can't attack or block",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "attachedTo"
+        },
+        "filter": "$f"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ],
+      "otherwise": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "otherwise",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +1/+1 as long as it's an Elf. Otherwise, it can't attack or block."
+      },
+      {
+        "text": "Enchanted creature gets +3/+0 as long as it's a Goblin. Otherwise, it can't attack or block."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+1 as long as it's an Elf. Then, it can't attack or block.",
+      "Enchanted creature gets +1/+1 as long as it's an Elf. Otherwise, it can't attack.",
+      "Enchanted creature gets +1/+1 as long as it's an Elf. Otherwise, it can't block."
+    ]
+  },
+  {
+    "id": "rep.edhv12.enters.nCounters.forEach",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "~ enters with {n:Qty} {k:CounterKind} counters on it for each {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "math",
+                  "op": "*",
+                  "args": [
+                    "$n",
+                    {
+                      "q": "count",
+                      "of": {
+                        "ref": "each",
+                        "filter": "$f"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with three +1/+1 counters on it for each other nontoken Elf you control."
+      },
+      {
+        "text": "~ enters with two charge counters on it for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with two +1/+1 counters on it for each time it was blocked.",
+      "~ enters with two +1/+1 counters on target creature for each Goblin you control.",
+      "~ enters with two +1/+1 counters on it for each Goblin you control unless it is blue."
+    ]
+  }
+]

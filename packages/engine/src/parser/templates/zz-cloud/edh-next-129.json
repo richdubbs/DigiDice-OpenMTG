@@ -1,0 +1,752 @@
+[
+  {
+    "id": "eff.edhn129.copy.thenReselectRandom",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 707.10",
+      "CR 115.7",
+      "CR 608.2c"
+    ],
+    "pattern": "copy {o:Obj} , then reselect the targets at random for {s:Obj} and the copy",
+    "build": [
+      {
+        "op": "copy",
+        "what": "$o",
+        "result": "spell",
+        "who": {
+          "ref": "you"
+        },
+        "as": "reselected"
+      },
+      {
+        "op": "chooseNewTargets",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "union",
+          "of": [
+            "$s",
+            {
+              "ref": "bound",
+              "name": "reselected"
+            }
+          ]
+        },
+        "random": true
+      }
+    ],
+    "consumes": [
+      "then",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Gain control of target instant spell that targets only a single permanent or player. Copy it, then reselect the targets at random for the spell and the copy. The new targets can't be you or a permanent you control."
+      },
+      {
+        "text": "Gain control of target sorcery spell that targets only a single permanent or player. Copy it, then reselect the targets at random for the spell and the copy. The new targets can't be you or a permanent you control."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell, then reselect the targets for the spell and the copy.",
+      "Copy target instant spell, then choose new targets at random for the copy."
+    ]
+  },
+  {
+    "id": "rid.edhn129.newTargets.notYours",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 115.7",
+      "CR 109.4"
+    ],
+    "pattern": "the new targets can't be you or a permanent you control",
+    "build": {
+      "$patchPrevious": {
+        "notYours": true,
+        "@require": {
+          "random": true,
+          "notYours": null
+        }
+      }
+    },
+    "attachTo": "chooseNewTargets",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Gain control of target instant spell that targets only a single permanent or player. Copy it, then reselect the targets at random for the spell and the copy. The new targets can't be you or a permanent you control."
+      },
+      {
+        "text": "Gain control of target sorcery spell that targets only a single permanent or player. Copy it, then reselect the targets at random for the spell and the copy. The new targets can't be you or a permanent you control."
+      }
+    ],
+    "counterExamples": [
+      "You may choose new targets for target spell. The new targets can't be you or a permanent you control.",
+      "Copy target instant spell. The new targets can't be you or a permanent you control."
+    ]
+  },
+  {
+    "id": "rid.edhn129.instead.thatTokenAnd",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 111.1"
+    ],
+    "pattern": "if {c:Cond} , instead create that token and {n:Qty} {t:TokenDesc}",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          "@previous",
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": "$n",
+            "token": "$t"
+          }
+        ],
+        "else": [
+          "@previous"
+        ],
+        "@require": {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          }
+        }
+      }
+    },
+    "attachTo": "createToken",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you roll a 5 or higher, create a 2/2 colorless Robot artifact creature token. If you rolled 6 or higher, instead create that token and a Treasure token."
+      },
+      {
+        "text": "Whenever you attack, create a 1/1 white Soldier creature token. If you control five or more artifacts, instead create that token and a Clue token."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack, create a 1/1 white Soldier creature token. If you control five or more artifacts, create that token and a Clue token.",
+      "Whenever you attack, draw a card. If you control five or more artifacts, instead create that token and a Clue token."
+    ]
+  },
+  {
+    "id": "eff.edhn129.rollDie.plusOneForEachTreasureMana",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 706.1",
+      "CR 602.2b",
+      "CR 106.3"
+    ],
+    "pattern": "roll a six-sided die plus an additional six-sided die for each mana from treasures spent to activate this ability",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 6,
+      "count": {
+        "q": "math",
+        "op": "+",
+        "args": [
+          1,
+          {
+            "q": "activationManaFrom",
+            "subtype": "Treasure"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "additional",
+      "each",
+      "spent"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Roll a six-sided die plus an additional six-sided die for each mana from Treasures spent to activate this ability."
+      },
+      {
+        "text": "{2}{R}, {T}: Roll a six-sided die plus an additional six-sided die for each mana from Treasures spent to activate this ability."
+      }
+    ],
+    "counterExamples": [
+      "{4}, {T}: Roll a six-sided die plus an additional six-sided die for each Treasure you control.",
+      "{4}, {T}: Roll a twenty-sided die plus an additional twenty-sided die for each mana from Treasures spent to activate this ability."
+    ]
+  },
+  {
+    "id": "eff.edhn129.flipUntilLoseOrStop",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 705.1",
+      "CR 705.2",
+      "CR 608.2c"
+    ],
+    "pattern": "flip a coin until you lose a flip or choose to stop flipping",
+    "build": {
+      "op": "flipCoin",
+      "who": {
+        "ref": "you"
+      },
+      "untilLose": true,
+      "mayStop": true,
+      "as": "flips"
+    },
+    "consumes": [
+      "until",
+      "or",
+      "stop"
+    ],
+    "examples": [
+      {
+        "text": "Flip a coin until you lose a flip or choose to stop flipping. If you lose a flip, ~ has no effect. If you win one or more flips, ~ deals 2 damage to target creature. If you win two or more flips, ~ deals 4 damage to each opponent. If you win three or more flips, draw seven cards and untap all lands you control."
+      },
+      {
+        "text": "Flip a coin until you lose a flip or choose to stop flipping. If you lose a flip, ~ has no effect. If you win one or more flips, draw a card. If you win two or more flips, you gain 4 life."
+      }
+    ],
+    "counterExamples": [
+      "Flip a coin until you lose a flip.",
+      "Flip a coin until you win a flip or choose to stop flipping."
+    ]
+  },
+  {
+    "id": "rid.edhn129.lostFlip.noEffect",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 705.2",
+      "CR 608.2c"
+    ],
+    "pattern": "if you lose a flip , ~ has no effect",
+    "build": {
+      "$patchPrevious": {
+        "lostVoids": true,
+        "@require": {
+          "mayStop": true,
+          "lostVoids": null
+        }
+      }
+    },
+    "attachTo": "flipCoin",
+    "consumes": [
+      "if",
+      "no"
+    ],
+    "examples": [
+      {
+        "text": "Flip a coin until you lose a flip or choose to stop flipping. If you lose a flip, ~ has no effect. If you win one or more flips, ~ deals 2 damage to target creature. If you win two or more flips, ~ deals 4 damage to each opponent. If you win three or more flips, draw seven cards and untap all lands you control."
+      },
+      {
+        "text": "Flip a coin until you lose a flip or choose to stop flipping. If you lose a flip, ~ has no effect. If you win one or more flips, draw a card. If you win two or more flips, you gain 4 life."
+      }
+    ],
+    "counterExamples": [
+      "Flip a coin until you lose a flip. If you lose a flip, ~ has no effect.",
+      "Flip a coin. If you lose a flip, ~ has no effect."
+    ]
+  },
+  {
+    "id": "eff.edhn129.ifWonFlips.orMore",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 705.2",
+      "CR 608.2c"
+    ],
+    "pattern": "if you win {n:Qty} or more flips , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "resultCount",
+          "step": "flips"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": "$e"
+    },
+    "consumes": [
+      "if",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Flip a coin until you lose a flip or choose to stop flipping. If you lose a flip, ~ has no effect. If you win one or more flips, ~ deals 2 damage to target creature. If you win two or more flips, ~ deals 4 damage to each opponent. If you win three or more flips, draw seven cards and untap all lands you control."
+      },
+      {
+        "text": "Flip a coin until you lose a flip or choose to stop flipping. If you lose a flip, ~ has no effect. If you win one or more flips, draw a card. If you win two or more flips, you gain 4 life."
+      }
+    ],
+    "counterExamples": [
+      "Flip a coin. If you win the flip, draw a card.",
+      "If you win two or more games, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhn129.chooseOpponentRandom.notAttackedLastCombat",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 506.1",
+      "CR 508.1"
+    ],
+    "pattern": "choose an opponent at random that ~ didn't attack during your last combat",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "opponent",
+      "as": "chosenPlayer",
+      "random": true,
+      "notAttackedLastCombat": true
+    },
+    "consumes": [
+      "random",
+      "didn't",
+      "last",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of combat on your turn, choose an opponent at random that ~ didn't attack during your last combat. ~ attacks that player this combat if able. If you can't choose an opponent this way, you lose 2 life."
+      },
+      {
+        "text": "At the beginning of combat on your turn, choose an opponent at random that ~ didn't attack during your last combat. ~ attacks that player this combat if able. If you can't choose an opponent this way, sacrifice ~."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of combat on your turn, choose an opponent at random that ~ attacked during your last combat.",
+      "At the beginning of combat on your turn, choose an opponent that ~ didn't attack during your last combat."
+    ]
+  },
+  {
+    "id": "eff.edhn129.ifCantChooseOpponent",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "if you can't choose an opponent this way , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "did",
+        "step": "chosenPlayer",
+        "not": true
+      },
+      "then": "$e"
+    },
+    "consumes": [
+      "if",
+      "can't",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of combat on your turn, choose an opponent at random that ~ didn't attack during your last combat. ~ attacks that player this combat if able. If you can't choose an opponent this way, you lose 2 life."
+      },
+      {
+        "text": "At the beginning of combat on your turn, choose an opponent at random that ~ didn't attack during your last combat. ~ attacks that player this combat if able. If you can't choose an opponent this way, sacrifice ~."
+      }
+    ],
+    "counterExamples": [
+      "If you can't choose a creature this way, tap ~.",
+      "If you can't, tap ~."
+    ]
+  },
+  {
+    "id": "eff.edhn129.ifFlip.win.decideAgain",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 705.2",
+      "CR 608.2c"
+    ],
+    "pattern": "if you win the flip , {e:Effects} , and you decide whether to flip again",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "flip",
+        "won": true
+      },
+      "then": "$e",
+      "againDecides": {
+        "ref": "you"
+      }
+    },
+    "consumes": [
+      "if",
+      "whether",
+      "again"
+    ],
+    "examples": [
+      {
+        "text": "Flip a coin. If you win the flip, you gain 3 life and target opponent loses 3 life, and you decide whether to flip again. If you lose the flip, you lose 3 life and that opponent gains 3 life, and that player decides whether to flip again. Double the life stakes with each flip."
+      },
+      {
+        "text": "Flip a coin. If you win the flip, you gain 2 life and target player loses 2 life, and you decide whether to flip again. If you lose the flip, you lose 2 life and that player gains 2 life, and that player decides whether to flip again. Double the life stakes with each flip."
+      }
+    ],
+    "counterExamples": [
+      "Flip a coin. If you win the flip, you gain 1 life, and you may flip again.",
+      "Flip a coin. If you lose the flip, you lose 1 life, and you decide whether to flip again."
+    ]
+  },
+  {
+    "id": "eff.edhn129.ifFlip.lose.playerDecidesAgain",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 705.2",
+      "CR 608.2c"
+    ],
+    "pattern": "if you lose the flip , {e:Effects} , and {p:Player} decides whether to flip again",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "flip",
+        "won": false
+      },
+      "then": "$e",
+      "againDecides": "$p"
+    },
+    "consumes": [
+      "if",
+      "whether",
+      "again"
+    ],
+    "examples": [
+      {
+        "text": "Flip a coin. If you win the flip, you gain 3 life and target opponent loses 3 life, and you decide whether to flip again. If you lose the flip, you lose 3 life and that opponent gains 3 life, and that player decides whether to flip again. Double the life stakes with each flip."
+      },
+      {
+        "text": "Flip a coin. If you win the flip, you gain 2 life and target player loses 2 life, and you decide whether to flip again. If you lose the flip, you lose 2 life and that player gains 2 life, and that player decides whether to flip again. Double the life stakes with each flip."
+      }
+    ],
+    "counterExamples": [
+      "Flip a coin. If you lose the flip, you lose 1 life, and that player may flip again.",
+      "Flip a coin. If you win the flip, you gain 1 life, and that player decides whether to flip again."
+    ]
+  },
+  {
+    "id": "rid.edhn129.doubleLifeStakes",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 705.2",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "double the life stakes with each flip",
+    "build": {
+      "$patchPrevious": {
+        "doubleLife": true,
+        "@require": {
+          "cond": {
+            "cond": "flip",
+            "won": false
+          },
+          "doubleLife": null
+        }
+      }
+    },
+    "attachTo": "if",
+    "consumes": [
+      "double",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Flip a coin. If you win the flip, you gain 3 life and target opponent loses 3 life, and you decide whether to flip again. If you lose the flip, you lose 3 life and that opponent gains 3 life, and that player decides whether to flip again. Double the life stakes with each flip."
+      },
+      {
+        "text": "Flip a coin. If you win the flip, you gain 2 life and target player loses 2 life, and you decide whether to flip again. If you lose the flip, you lose 2 life and that player gains 2 life, and that player decides whether to flip again. Double the life stakes with each flip."
+      }
+    ],
+    "counterExamples": [
+      "Flip a coin. If you lose the flip, you lose 1 life. Double the life stakes with each flip.",
+      "Double the life stakes with each flip."
+    ]
+  },
+  {
+    "id": "eff.edhn129.may.have.becomeXX.artifactCreature.whereX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 205.1a",
+      "CR 706.2"
+    ],
+    "pattern": "{d:Dur} , you may have ~ become ( a | an ) x/x {st:Subtypes} artifact creature with {a:Abilities} , where x is {q:Qty}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": {
+                "ref": "self"
+              },
+              "mods": [
+                {
+                  "layer": 4,
+                  "types": {
+                    "set": [
+                      "Artifact",
+                      "Creature"
+                    ]
+                  },
+                  "subtypes": {
+                    "set": "$st"
+                  }
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                },
+                {
+                  "layer": "7b",
+                  "power": "$q",
+                  "toughness": "$q"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{5}: Roll a d6. Until end of turn, you may have ~ become an X/X Insect artifact creature with flying, where X is the result."
+      },
+      {
+        "text": "{3}: Roll a d8. Until end of turn, you may have ~ become an X/X Construct artifact creature with trample, where X is the result."
+      }
+    ],
+    "counterExamples": [
+      "{4}: Roll a d6. Until end of turn, ~ becomes an X/X Insect artifact creature with flying, where X is the result, and you may draw a card.",
+      "{4}: Until end of turn, you may have ~ become an X/X Insect creature with flying, where X is the result."
+    ]
+  },
+  {
+    "id": "eff.edhn129.choose2Random.selfGain.thatAbility",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "choose {k1:Keyword} or {k2:Keyword} at random . ~ gains that ability until end of turn",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "keywordChoice",
+        "link": "keywordChoice",
+        "options": [
+          "$k1.text",
+          "$k2.text"
+        ],
+        "random": true
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k1.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfTurn"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k2.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfTurn"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k2"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "random",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of combat on your turn, choose flying or indestructible at random. ~ gains that ability until end of turn."
+      },
+      {
+        "text": "At the beginning of your upkeep, choose trample or haste at random. ~ gains that ability until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of combat on your turn, choose flying or indestructible. ~ gains that ability until end of turn.",
+      "At the beginning of combat on your turn, choose flying or indestructible at random. Creatures you control gain that ability until end of turn."
+    ]
+  },
+  {
+    "id": "rid.edhn129.mayCastCopy.byPaying",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.12",
+      "CR 118.9",
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 608.2g"
+    ],
+    "pattern": "you may cast the copy by paying {m:ManaCost} rather than paying its mana cost",
+    "build": {
+      "$patchPrevious": {
+        "op": "cast",
+        "result": null,
+        "copyIn": "exile",
+        "optional": true,
+        "costChange": {
+          "kind": "set",
+          "cost": {
+            "mana": "$m"
+          },
+          "name": "alternative"
+        },
+        "@require": {
+          "what.ref": "bound",
+          "result": "spell",
+          "count": null,
+          "newTargets": null,
+          "except": null,
+          "as": null
+        },
+        "@into": true
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Exile target instant or sorcery card from a graveyard. Copy that card. You may cast the copy by paying {1} rather than paying its mana cost. Activate only as a sorcery."
+      },
+      {
+        "text": "{2}, {T}: Exile target instant card from your graveyard. Copy that card. You may cast the copy by paying {U} rather than paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile target instant card from a graveyard. Copy that card. You may cast the copy by paying {1} rather than paying its mana cost if you control a Wizard.",
+      "{T}: You may cast target instant card by paying {1} rather than paying its mana cost."
+    ],
+    "weak": 1
+  }
+]

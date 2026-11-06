@@ -106,16 +106,34 @@ function specOf(id: string, ph: TargetPhrase, earlier: TargetSpec[], onlyIf: Con
     else spec.filter = { ...(spec.filter ?? {}), other: true };
   }
   if (ph.sameOwner === true) spec.sameOwner = true; // FAST3 T14: "from a single graveyard" (CR 115.1)
+  // edh-c-3 (CR 115.1, 404.1; Pulsemage Advocate ruling 2004-10-04: "a single opponent"): "two target cards from an opponent's graveyard" are cards of ONE opponent's graveyard
+  if (ph.kind === 'object' && ph.max !== 1 && ph.filter?.zone === 'graveyard' && ph.filter.owner === 'opponent' && /\bfrom an opponent's graveyard$/.test(ph.text)) spec.sameOwner = true;
+  if (ph.differentManaValues === true) spec.differentManaValues = true; // edh-top-3: "that each have a different mana value" (CR 202.3, 115.1)
   if (ph.differentNames === true) spec.differentNames = true; // FAST5 T42: "with different names" (CR 201.2, 115.1)
   if (ph.groupLimit !== undefined) spec.groupLimit = clone(ph.groupLimit); // FAST5 T66: "with total mana value 6 or less" (CR 115.1, 601.2c)
   if (ph.perOpponent === true) spec.perOpponent = true; // FAST5 T66: "for each opponent, ... that player controls" (CR 115.1, 601.2c)
+  if (ph.perOpponentPoison !== undefined) spec.perOpponentPoison = ph.perOpponentPoison; // edh-d-96: "... who has three or more poison counters as you cast this spell" (CR 601.2c)
   if (ph.perPlayer === true) spec.perPlayer = true; // r5-fxb: "for each player, ... that player controls" (CR 115.1, 601.2c)
+  if (ph.eachWithOne === true && ph.perPlayer === true) spec.eachWithOne = true; // edh-next-127: one target in each graveyard that has one (Mysterious Stranger)
   if (ph.sharedCardType === true) spec.sharedCardType = true; // FAST5 T66: "that share a card type" (CR 205.2a, 115.1)
+  if (ph.sharedPermanentType === true) spec.sharedPermanentType = true; // edh-next-54: "that share a permanent type" (CR 110.4)
   if (ph.sharedCreatureType === true) spec.sharedCreatureType = true; // CLOUD std-ecl: "that share a creature type" (CR 205.3m, 115.1)
   if (ph.differentControllers === true) spec.differentControllers = true; // CLOUD std-tmt: "controlled by different players" (CR 115.1, 110.2)
+  if (ph.equalToughness === true) spec.equalToughness = true; // edh-next-126: "with equal toughness" (CR 115.1, 208.1)
   if (ph.sameController === true) spec.sameController = true; // std-rx30: "controlled by the same opponent" (CR 115.1, 110.2)
   if (ph.perCardType === true) spec.perCardType = true; // std-cardcopy-7: "of each card type" (CR 115.1, 205.2a)
+  // edh-zones-26 (CR 115.1, 601.2c, 108.3, 404.1; Goblin Welder): "target artifact card in that player's graveyard" right after "target artifact a player controls": the card is in the
+  // graveyard of the player who controls the target announced just before it (the filter's `owner` reads the earlier target as the targets are chosen, rules/targets.ts#playersOf)
+  if (ph.ownerOfEarlierController === true && earlier.length > 0) spec.filter = { ...(spec.filter ?? {}), owner: { ref: 'controllerOf', object: { ref: 'target', id: earlier[earlier.length - 1]!.id } } };
+  // edh-c-85 (CR 115.1, 601.2c, 109.4; Mutiny): "another target creature that player controls" after "target creature an opponent controls": controlled by the controller of the target announced
+  // just before it; with no earlier target there is no such player (the phrase is no target spec then: the filter would name nobody)
+  if (ph.controllerOfEarlierController === true && earlier.length > 0) {
+    spec.filter = { ...(spec.filter ?? {}), controller: { ref: 'controllerOf', object: { ref: 'target', id: earlier[earlier.length - 1]!.id } } };
+  }
   if (ph.random === true) spec.random = true; // p2-damage-2: "chosen at random" (CR 601.2c, 603.3d)
+  if (ph.chooser !== undefined) spec.chooser = clone(ph.chooser); // edh-c-103: "of their choice" (CR 601.2c, 601.7)
+  if (ph.chooserElse !== undefined) spec.chooserElse = ph.chooserElse; // edh-d-87 (CR 601.7a; Bladegriff Prototype)
+  if (ph.chooserControls === true) spec.chooserControls = true; // edh-next-146: "of an opponent's choice they control" (CR 601.7a)
   if (onlyIf) spec.onlyIf = clone(onlyIf);
   return spec;
 }
@@ -132,13 +150,14 @@ function numberUnit(u: Unit, d: Draft, earlier: TargetSpec[]): boolean {
   // T20 (FAST4): a target a keyword action implies is placed at the words of the action (`locate`, "support 2", CR 701.41a)
   for (const f of all) { const k = (f.phrase.locate ?? f.phrase.text).toLowerCase(); byText.set(k, [...(byText.get(k) ?? []), f]); }
   const pos = new Map<(typeof all)[number], number>();
+  const span = new Map<(typeof all)[number], number>(); // edh-top-3: the tokens of each phrase (Mention.len)
   // longer phrases first: "target creature" inside "another target creature" is not an occurrence of its own
   const claimed: [number, number][] = [];
   for (const [text, fs] of [...byText].sort((a, b) => b[0].length - a[0].length)) {
     const occ = occurrences(u.tokens, text).filter(([a, b]) => !claimed.some(([x, y]) => a < y && b > x));
     if (occ.length === 0) return false;
-    if (occ.length === fs.length) fs.forEach((f, i) => pos.set(f, occ[i]![0]));
-    else if (occ.length === 1) fs.forEach((f) => pos.set(f, occ[0]![0]));
+    if (occ.length === fs.length) fs.forEach((f, i) => { pos.set(f, occ[i]![0]); span.set(f, occ[i]![1] - occ[i]![0]); });
+    else if (occ.length === 1) fs.forEach((f) => { pos.set(f, occ[0]![0]); span.set(f, occ[0]![1] - occ[0]![0]); });
     else return false;
     claimed.push(...occ);
   }
@@ -153,12 +172,14 @@ function numberUnit(u: Unit, d: Draft, earlier: TargetSpec[]): boolean {
       ids.set(f, seen.id);
       continue;
     }
+    if (f.phrase.controllerOfEarlierController === true && earlier.length === 0) return false; // edh-c-85: "that player" would name nobody
     const id = `t${d.targets.length}`;
     const spec = specOf(id, f.phrase, earlier, f.onlyIf);
     d.targets.push(spec);
     earlier.push(spec);
     u.targetIds = [...(u.targetIds ?? []), id];
     u.targetPos = { ...(u.targetPos ?? {}), [id]: p };
+    u.targetLen = { ...(u.targetLen ?? {}), [id]: span.get(f) ?? 0 };
     idAt.set(p, { id, key: f.key });
     ids.set(f, id);
   }
@@ -195,7 +216,7 @@ function markDivisions(d: Draft): void {
       const on = isRec(step) ? step['on'] : undefined;
       const spec = isRec(step) && step['op'] === 'putCounters' && isRec(on) && on['ref'] === 'target' ? d.targets.find((s) => s.id === on['id']) : undefined;
       if (!isRec(step) || !spec || spec.divide || spec.kind !== 'object') { refused = true; return undefined; }
-      spec.divide = { what: 'counters', total: clone(step['count']) as Quantity };
+      spec.divide = { what: 'counters', total: clone(step['count']) as Quantity, ...(node['upTo'] === true ? { upTo: true as const } : {}) }; // edh-perms-22: "distribute up to that many"
       return step;
     }) as Rec[];
     if (refused) setManual(u, { code: 'ambiguous', reason: 'counters to distribute need the targets of the same instruction (CR 601.2d)' });
@@ -207,6 +228,9 @@ function markDivisions(d: Draft): void {
  * a filter whose types or subtypes it has none of (a Vehicle can become a creature, CR 301.7b), anything but a spell for an instant or sorcery.
  */
 export function couldBeSource(f: Rec, heads: readonly string[]): boolean {
+  // edh-zones-12 (CR 607.2a, 109.2; Mimic Vat): the cards exiled with an object are in exile, not the object itself on the battlefield: "return each other card exiled with ~" is never about ~
+  const is = f['is'];
+  if (isRec(is) && is['ref'] === 'linked' && is['link'] === 'exiled') return false;
   const any = f['anyOf'];
   if (Array.isArray(any) && any.length > 0 && !any.some((x) => isRec(x) && couldBeSource(x, heads))) return false;
   const words = (k: string): string[] => (Array.isArray(f[k]) ? (f[k] as unknown[]).map((x) => String(x).toLowerCase()) : []);
@@ -247,22 +271,17 @@ function otherNotSource(u: Unit, d: Draft, specs: readonly TargetSpec[], prior: 
   // Standard round 4, r4-refs (CR 603.10a, 400.7, 109.2): "Whenever a creature you control with an impostor counter on it dies, exile it. Return up to one other target
   // creature card from your graveyard to the battlefield.": on a trigger of ONE event that moves another described object (never this one) into a zone, an "other"
   // target in that same zone that this object can never be is other than the card the event put there (`not: {is: <the event's object>}`), the one other object
-  // the words can mean. Only for a target's own description, with no `not` of its own, and only once an earlier sentence of the ability has moved that object
-  // out of the zone ("exile it"): without one, "other" stays manual (the pinned m5/templates/review.test.ts case, "Whenever a creature you control dies, return
-  // up to one other target creature card from your graveyard to your hand")
+  // the words can mean. Only for a target's own description, with no `not` of its own. edh-d-59: also when no earlier sentence moved that object out of the zone (before, only
+  // after an "exile it"; the m5/templates/review.test.ts case "Whenever a creature you control dies, return up to one other target creature card from your graveyard to your hand")
   const ev1 = d.trigger?.on.length === 1 ? d.trigger.on[0] : undefined;
   if (ev1?.ev === 'zoneChange' && ev1.subject.self !== true && ev1.to !== undefined && !couldBeSource(ev1.subject as unknown as Rec, heads)) {
     const into = Array.isArray(ev1.to) ? ev1.to : [ev1.to];
-    // the object moved is the event's, or "it" (not resolved yet in this pass) while no earlier sentence has a target, so the event's object is the one thing named
-    const noTargets = prior.every((p) => (p.targetIds?.length ?? 0) === 0);
-    const theEventsObject = (w: Rec): boolean => (w['ref'] === 'event' && w['role'] === 'subject')
-      || (noTargets && isRec(w['$anaphor']) && w['$anaphor']['sort'] === 'object' && w['$anaphor']['number'] === 'singular' && w['$anaphor']['text'] === 'it');
-    const movedOut = (zone: string): boolean => prior.some((p) => p.manual === undefined && p.steps.some((st) => isRec(st) && st['op'] === 'move' && st['guard'] === undefined
-      && isRec(st['what']) && theEventsObject(st['what']) && isRec(st['to']) && st['to']['zone'] !== zone));
     for (const s of specs) {
       const f = isRec(s.filter) ? (s.filter as unknown as Rec) : null;
-      if (f === null || f['other'] !== true || f['not'] !== undefined || typeof f['zone'] !== 'string' || !into.includes(f['zone'] as never) || couldBeSource(f, heads)) continue;
-      if (!movedOut(f['zone'])) continue;
+      if (f === null || f['other'] !== true || f['not'] !== undefined || typeof f['zone'] !== 'string' || !into.includes(f['zone'] as never) || (couldBeSource(f, heads) && (f['zone'] === 'battlefield' || f['zone'] === 'stack'))) continue;
+      // edh-d-59 (CR 608.2c, 109.2, 603.10a; Puca's Covenant): also with no earlier instruction moving it ("Whenever a creature you control with a counter on it dies, you may return
+      // another target permanent card ... from your graveyard to your hand"): the one object "another" can mean here is the card the trigger is about (this object can never be it,
+      // checked above); the ability functions on the battlefield, so this object is not a card in a graveyard, exile, hand or library, and the target is any such card but that one
       delete f['other'];
       f['not'] = { is: { ref: 'event', role: 'subject' } };
     }
@@ -302,12 +321,63 @@ function otherNotSource(u: Unit, d: Draft, specs: readonly TargetSpec[], prior: 
       f['not'] = { is: { ref: 'bound', name: step['as'] } };
     }
   }
+  // edh-c-67 (CR 608.2d, 109.2, 109.4; Goblin War Cry): "Target opponent chooses a creature they control. Other creatures they control can't block this turn.": in a sentence with no
+  // target of its own right after a sentence whose last instruction is one player's choice of exactly one object out of a described group, a group of that very description
+  // that this object can never be (a spell) leaves out what was chosen (the one other object the words can mean, unique-candidate rule, design 6.4). Only with every earlier sentence understood
+  const chooseStep = isRec(lastStep) && lastStep['op'] === 'chooseObjects' && lastStep['min'] === 1 && lastStep['max'] === 1 && lastStep['perPlayer'] === undefined && lastStep['startingWith'] === undefined
+    && lastStep['random'] !== true && lastStep['groupLimit'] === undefined && lastStep['distinct'] === undefined && typeof lastStep['as'] === 'string' && isRec(lastStep['from']) && lastStep['from']['ref'] === 'each'
+    && isRec(lastStep['from']['filter']) ? lastStep : undefined;
+  if (chooseStep !== undefined && spell && specs.length === 0 && !u.rider && prior.every((p) => p.manual === undefined)) {
+    const flat = (f: Rec): string => {
+      const { anyOf, ...rest } = f;
+      return JSON.stringify(Array.isArray(anyOf) && anyOf.length === 1 && isRec(anyOf[0]) ? { ...anyOf[0], ...rest } : f, (_k, v) => (isRec(v) ? Object.fromEntries(Object.entries(v).sort(([x], [y]) => (x < y ? -1 : 1))) : v));
+    };
+    const want = flat((chooseStep['from'] as Rec)['filter'] as Rec);
+    for (const f of filters) {
+      if (f['other'] !== true || f['not'] !== undefined || couldBeSource(f, heads)) continue;
+      const { other: _o, ...plain0 } = f;
+      // "they" is the chooser (the player of the sentence before), not yet resolved at this pass: the description is the chosen object's own
+      const ctl = plain0['controller'];
+      const plain = isRec(ctl) && isRec(ctl['$anaphor']) && ctl['$anaphor']['text'] === 'they' ? { ...plain0, controller: chooseStep['who'] } : plain0;
+      if (flat(plain) !== want) continue;
+      delete f['other'];
+      f['not'] = { is: { ref: 'bound', name: chooseStep['as'] } };
+    }
+  }
+  // edh-d-28 (CR 608.2d, 109.2, 115.3; The Nipton Lottery): "Choose a creature at random. You gain control of that creature until end of turn. Untap it. ... Then destroy all other creatures.": in a
+  // sentence with no target of its own, in an instant or sorcery (never in the group), "other" in a group of the very description of the creature an earlier sentence chose at random (exactly ONE
+  // such random choice of exactly one object in the ability) is the group without that creature (the one other object the words can mean, unique-candidate rule, design 6.4). Only with
+  // every earlier sentence understood
+  if (spell && specs.length === 0 && !u.rider && prior.length > 0 && prior.every((p) => p.manual === undefined)) {
+    const randoms: Rec[] = [];
+    for (const p of prior) visit(p.steps, (n) => { if (n['op'] === 'chooseObjects' && n['random'] === true) randoms.push(n); });
+    const one = randoms.length === 1 ? randoms[0]! : undefined;
+    if (one !== undefined && one['min'] === 1 && one['max'] === 1 && one['perPlayer'] === undefined && one['startingWith'] === undefined && one['groupLimit'] === undefined && one['distinct'] === undefined
+      && typeof one['as'] === 'string' && isRec(one['from']) && one['from']['ref'] === 'each' && isRec(one['from']['filter'])) {
+      const flat = (f: Rec): string => {
+        const { anyOf, ...rest } = f;
+        return JSON.stringify(Array.isArray(anyOf) && anyOf.length === 1 && isRec(anyOf[0]) ? { ...anyOf[0], ...rest } : f, (_k, v) => (isRec(v) ? Object.fromEntries(Object.entries(v).sort(([x], [y]) => (x < y ? -1 : 1))) : v));
+      };
+      const want = flat(one['from']['filter']);
+      for (const f of filters) {
+        if (f['other'] !== true || f['not'] !== undefined || couldBeSource(f, heads)) continue;
+        const { other: _o, ...plain } = f;
+        if (flat(plain) !== want) continue;
+        delete f['other'];
+        f['not'] = { is: { ref: 'bound', name: one['as'] } };
+      }
+    }
+  }
   // std-library-2 (CR 608.2c, 109.2, 701.21a, 400.7): "Each player sacrifices a creature or planeswalker of their choice. If you sacrificed a permanent this way, you may
   // return another permanent card from your graveyard to your hand." (Deadly Brew): in an instant or sorcery, which is never in the group, "another" card in a
   // graveyard, in a sentence with no target of its own right after a sentence whose last instruction sacrificed, is other than what that sacrifice put into the
   // graveyard (the one other object the words can mean, unique-candidate rule, design 6.4): the sacrifice binds what it moved (effects/handlers/zones-util.ts#bindMoved,
   // the cards in the graveyard). Only with every earlier sentence understood
-  const sacStep = isRec(lastStep) && (lastStep['op'] === 'sacrificeChoice' || lastStep['op'] === 'sacrifice') ? lastStep as Rec : undefined;
+  // trek-15 (The Promise of Kahless): "You may sacrifice a Klingon or Warrior. If you do, return all other Klingon and Warrior creature cards from your graveyard": the sacrifice is
+  // the only instruction of a "you may" of the player who sacrifices (the objects it bound are those "other" leaves out; with the sacrifice declined "if you do" stops the return)
+  const sacOf = (st: unknown): Rec | undefined => (isRec(st) && (st['op'] === 'sacrificeChoice' || st['op'] === 'sacrifice') ? st : undefined);
+  const mayDo = isRec(lastStep) && lastStep['op'] === 'may' && JSON.stringify(lastStep['who']) === '{"ref":"you"}' && Array.isArray(lastStep['do']) && lastStep['do'].length === 1 ? sacOf(lastStep['do'][0]) : undefined;
+  const sacStep = sacOf(lastStep) ?? mayDo;
   const inGraveyard = (f: Rec): boolean => f['zone'] === 'graveyard'
     || (f['zone'] === undefined && Array.isArray(f['anyOf']) && f['anyOf'].length > 0 && f['anyOf'].every((x) => isRec(x) && x['zone'] === 'graveyard'));
   // audit-fix-1 (CR 701.21a, 608.2h, 400.7; unverified): "another" is other than what YOU sacrificed, not what every player did: after "each player sacrifices ...",
@@ -327,6 +397,74 @@ function otherNotSource(u: Unit, d: Draft, specs: readonly TargetSpec[], prior: 
       f['not'] = { is: { ref: 'bound', name: sacStep['as'], ...(sacWhich !== null ? { which: sacWhich } : {}) } };
     }
   }
+  // edh-players-7 (CR 508.1, 603.2, 109.2, 115.3; Shared Animosity): "Whenever a creature you control attacks, it gets +1/+0 until end of turn for each other attacking
+  // creature that shares a creature type with it.": an ability that is not the attacker (an enchantment) is never an attacking creature, and the trigger has exactly one
+  // attacking creature of its own (one trigger per attacker, no batch), so "other attacking creature" can only be other than that creature (unique candidate, design
+  // 6.4): `not: {is: <the attacker>}`. Only a group of attacking creatures with no `not` of its own, in a trigger of the single event `attacks` for a described attacker
+  const ev2 = d.trigger?.on.length === 1 ? d.trigger.on[0] : undefined;
+  if (ev2?.ev === 'attacks' && ev2.attacker !== undefined && ev2.attacker.self !== true && ev2.count === undefined && ev2.alone === undefined && ev2.withOther === undefined) {
+    for (const f of filters) {
+      if (f['other'] !== true || (f['attacking'] !== true && !(isRec(f['attacking']) && d.trigger?.batch !== true)) /* edh-players-12: attacking a player, "each other creature that's attacking one of your opponents" (one attacker, no batch) */ || f['not'] !== undefined || couldBeSource(f, heads)) continue;
+      delete f['other'];
+      f['not'] = { is: { ref: 'event', role: 'subject' } }; // the attacking creature is the event's subject (triggers/normalize.ts)
+    }
+  }
+  // edh-d-40 (CR 508.1, 603.2, 109.2, 115.3; Sigil of Valor): "Whenever equipped creature attacks alone, it gets +1/+1 until end of turn for each other creature you control.": an ability that
+  // cannot be one of the creatures counted (an Equipment, an Aura) has exactly one attacking creature in its trigger (no batch), the one the sentence's "it" pumps, so the one other object
+  // "other" can mean is that creature (unique candidate, design 6.4): `not: {is: <the attacker>}`. Only a COUNTED group (a quantity, "for each other creature"), in a trigger of the single
+  // event `attacks` for a described attacker, when a continuous effect of the sentence is on the event's attacker
+  if (ev2?.ev === 'attacks' && ev2.attacker !== undefined && ev2.attacker.self !== true && ev2.count === undefined && ev2.withOther === undefined && d.trigger?.batch !== true) {
+    let onAttacker = false;
+    visit(u.steps, (n) => { if (n['s'] === 'continuous' && isRec(n['affects']) && ((n['affects']['ref'] === 'event' && n['affects']['role'] === 'attacker') || isRec(n['affects']['$anaphor']))) onAttacker = true; });
+    // only a lone pump of the attacker: no target, no token or card an earlier instruction made or moved that "it" could mean instead (review of edh-d-40)
+    if (onAttacker && prior.length === 0 && (u.targetIds?.length ?? 0) === 0 && u.steps.every((st) => st['op'] === 'effect')) {
+      const countedOthers = new Set<unknown>();
+      visit(u.steps, (n) => { if (n['q'] === 'count' && isRec(n['of']) && isRec(n['of']['filter'])) countedOthers.add(n['of']['filter']); });
+      for (const f of filters) {
+        if (!countedOthers.has(f) || f['other'] !== true || f['not'] !== undefined || f['sharesWith'] !== undefined /* edh-players-7 pins that shape as manual */ || couldBeSource(f, heads)) continue;
+        delete f['other'];
+        f['not'] = { is: { ref: 'event', role: 'subject' } }; // the attacking creature is the event's subject (triggers/normalize.ts)
+      }
+    }
+  }
+  // edh-cast-13 (CR 109.2, 115.3, 608.2c; Paladin Class): "target attacking creature gets +1/+1 for each other attacking creature": in a sentence with ONE target of one object, a
+  // group of the very description of that target ("other" attacking creature) that this object can never be is the group without the target (the one other object the words can
+  // mean, unique-candidate rule, design 6.4): `not: {is: <the target>}`. Only a group whose description is the target's own plus `other`, with no `not` of its own
+  const own = specs.length === 1 && specs[0]!.kind === 'object' && specs[0]!.max === 1 && isRec(specs[0]!.filter) ? specs[0]! : undefined;
+  if (own !== undefined) {
+    const ownFilter = JSON.stringify(own.filter);
+    // only a group that is COUNTED ("for each other attacking creature"); the recipients of an effect ("deals 2 damage to each other creature you control") keep their pinned reading
+    const counted = new Set<unknown>();
+    visit(u.steps, (n) => { if (n['q'] === 'count' && isRec(n['of']) && isRec(n['of']['filter'])) counted.add(n['of']['filter']); });
+    // edh-c-53: the group a continuous effect changes (an "affects" of "each" with its filter), not a filter some condition or event pattern reads
+    const affected = new Set<unknown>();
+    visit(u.steps, (n) => { if (n['s'] === 'continuous' && isRec(n['affects']) && n['affects']['ref'] === 'each' && isRec(n['affects']['filter'])) affected.add(n['affects']['filter']); });
+    for (const f of filters) {
+      // edh-c-53 (CR 109.2, 115.3, 608.2c; Sigil Blessing): in an instant or sorcery, which is never in the group, the recipients too: "Until end of turn, target creature you control
+      // gets +3/+3 and other creatures you control get +1/+1" - the one other object "other" can mean is the target (unique-candidate rule, design 6.4)
+      if (!counted.has(f) && !(spell && affected.has(f))) continue;
+      if (f['other'] !== true || f['not'] !== undefined || typeof f['op'] === 'string') continue;
+      const { other: _other, ...plain } = f;
+      // this object could be in the group (a creature): "other" is then other than the target or other than this object, neither sure (manual, never a superset)
+      if (couldBeSource(f, heads)) return '"other" in a count beside a target may mean "other than the target" or "other than this object" (which fits the description) (CR 109.2, 115.3)';
+      if (JSON.stringify(plain) !== ownFilter) continue;
+      delete f['other'];
+      f['not'] = { is: { ref: 'target', id: own.id } };
+    }
+  }
+  // edh-next-99 (CR 120.3, 603.2, 109.2, 115.3; Kusari-Gama): "Whenever equipped creature deals damage to a blocking creature, ~ deals that much damage to each other creature defending player
+  // controls.": the trigger's one event is damage to a described object (no batch), the recipients are a group of creatures that an Equipment (an ability that is never one of them) cannot
+  // be, so the one other object "other" can mean is the creature that was damaged (unique candidate, design 6.4): `not: {is: <the damaged object>}`. Only the recipients of a damage
+  // step, in a trigger of the single event `damage` to an object, with no `not` of their own
+  if (ev2?.ev === 'damage' && isRec(ev2.recipient) && ev2.recipient.object !== undefined && d.trigger?.batch !== true) {
+    const recipients = new Set<unknown>();
+    visit(u.steps, (n) => { if (n['op'] === 'damage' && isRec(n['to']) && n['to']['ref'] === 'each' && isRec(n['to']['filter'])) recipients.add(n['to']['filter']); });
+    for (const f of filters) {
+      if (!recipients.has(f) || f['other'] !== true || f['not'] !== undefined || couldBeSource(f, heads)) continue;
+      delete f['other'];
+      f['not'] = { is: { ref: 'event', role: 'object' } };
+    }
+  }
   const bad = filters.find((f) => f['other'] === true && !couldBeSource(f, heads));
   if (bad) return '"other" cannot mean "other than this object" here (this object never matches the description), and nothing else says what it excludes (CR 109.2, 115.3)';
   // Cloud std-woe (CR 115.3, 109.2, 508.1k): "Whenever Amy Rose attacks, attach up to one target Equipment to her. Then up to one other target attacking creature gets
@@ -338,6 +476,14 @@ function otherNotSource(u: Unit, d: Draft, specs: readonly TargetSpec[], prior: 
     if (!ownAttack || s.kind !== 'object' || s.distinctFrom === undefined || s.distinctFrom.length === 0 || !isRec(s.filter) || (s.filter as unknown as Rec)['attacking'] !== true) continue;
     if (!couldBeSource(s.filter as unknown as Rec, heads)) continue;
     const before = s.distinctFrom.map((id) => byId.get(id));
+    // edh-d-89 (CR 115.3, 109.2, 301.5c; Amy Rose): when every earlier target is an Equipment ("attach up to one target Equipment to her"), the phrase keeps BOTH exclusions, other than this
+    // object (`other`) and distinct from the earlier target (`distinctFrom`): its legal targets are within those of either reading (an Equipment that is an attacking creature can't be attached,
+    // CR 301.5c, and is excluded by both), so it is never a superset; any other earlier target stays manual
+    const equipmentOnly = before.every((e) => e !== undefined && e.kind === 'object' && isRec(e.filter) && JSON.stringify((e.filter as unknown as Rec)['subtypes']) === '["Equipment"]');
+    if (equipmentOnly) {
+      (s.filter as unknown as Rec)['other'] = true;
+      continue;
+    }
     if (before.every((e) => e !== undefined && e.kind === 'object' && isRec(e.filter) && !couldBeSource(e.filter as unknown as Rec, heads))) {
       return '"other" may mean "other than this object" (which fits the description) or "other than the earlier target" (which never is this object) (CR 109.2, 115.3)';
     }
@@ -370,9 +516,25 @@ const PER_PLAYER_OPS: ReadonlySet<string> = new Set(['mill', 'draw', 'loseLife',
  * (render/steps-flow.ts says it as before, "... each mill ..."). Each player's amount reads only that player's own zone or life, which no other player's instruction
  * changes, so one at a time is the same as all at once. Anything else is left to lower/targets.ts#severalPlayersAmount, which refuses it.
  */
+/**
+ * edh-players-15 (CR 608.2e, 101.4, 701.21a; Will of the Abzan): "Any number of target opponents each sacrifice a creature with the greatest power among creatures that player controls":
+ * the sacrifice of several player targets reads each of them for the creatures THEY control, so the target inside its filter (and count) is `{ref:'iterating'}`, the player whose
+ * choice it is (effects/handlers/zones-remove.ts#asChooser); all of them choose first and the sacrifices happen together. Only the choice step itself (the players stay `who`).
+ */
+function sacrificeOfEachTarget(u: Unit, many: ReadonlySet<string>): void {
+  u.steps = u.steps.map((step) => {
+    const who = step['who'];
+    if (step['op'] !== 'sacrificeChoice' || step['guard'] !== undefined || !isRec(who) || who['ref'] !== 'target' || !many.has(String(who['id']))) return step;
+    const id = String(who['id']);
+    const read = (v: unknown): unknown => rewrite(v, (node) => (node['ref'] === 'target' && node['id'] === id && Object.keys(node).length === 2 ? { ref: 'iterating' } : undefined));
+    return Object.fromEntries(Object.entries(step).map(([k, v]) => [k, k === 'who' ? v : read(v)])) as Rec;
+  });
+}
+
 export function perPlayerAmounts(u: Unit, specs: readonly TargetSpec[], d: Draft): void {
   const many = new Set(specs.filter((s) => s.kind === 'player' && s.max !== 1).map((s) => s.id));
   if (many.size === 0) return;
+  sacrificeOfEachTarget(u, many); // edh-players-15
   u.steps = u.steps.map((step) => {
     const who = step['who'];
     if (typeof step['op'] !== 'string' || !PER_PLAYER_OPS.has(step['op']) || step['guard'] !== undefined || step['as'] !== undefined || !isRec(who) || who['ref'] !== 'target' || !many.has(String(who['id']))) return step;
@@ -383,6 +545,58 @@ export function perPlayerAmounts(u: Unit, specs: readonly TargetSpec[], d: Draft
     const each = rewrite(step, (node) => (node['ref'] === 'target' && node['id'] === id && Object.keys(node).length === 2 ? { ref: 'bound', name } : undefined)) as Rec;
     return { op: 'forEach', over: { ref: 'target', id }, as: name, do: [each] } as Rec;
   });
+}
+
+/**
+ * edh-zones-3 (CR 608.2e, 608.2f, 102.2; Maddening Cacophony): "Each opponent mills half their library, rounded up": a group of players (`who: {ref:'each', who}`) doing one
+ * instruction (mill, draw, lose or gain life) with an amount that reads the same group ("their library") has an amount per player, which one step cannot say (the
+ * engine refuses a zone size of several players, design 3.4, as soon as there are two opponents). The instruction becomes a `forEach` over the group, one player at a time,
+ * with the group read as that player; each player's amount reads only their own zone or life, which no other player's instruction changes (as perPlayerAmounts).
+ */
+export function perGroupAmounts<T>(input: readonly T[]): T[] {
+  const steps = input as unknown as Rec[];
+  const text = JSON.stringify(steps);
+  let n = 0;
+  const fresh = (): string => { let name = 'player'; while (text.includes(`"${name}"`) || name === 'player' && n > 0) name = `player${++n}`; n++; return name; };
+  const one = (step: Rec): Rec => {
+    // (an `if` of the sentence, "Each opponent mills eight cards. If this spell was kicked, instead each opponent mills half their library": both branches)
+    if (step['op'] === 'if' && Array.isArray(step['then'])) {
+      const then = (step['then'] as Rec[]).map(one);
+      const otherwise = Array.isArray(step['else']) ? (step['else'] as Rec[]).map(one) : undefined;
+      // (the same object when nothing changed: later passes find a step by its identity)
+      const same = then.every((x, i) => x === (step['then'] as Rec[])[i]) && (otherwise === undefined || otherwise.every((x, i) => x === (step['else'] as Rec[])[i]));
+      return same ? step : { ...step, then, ...(otherwise !== undefined ? { else: otherwise } : {}) };
+    }
+    const who = step['who'];
+    // (mill and draw only: the rendering of a life total counted for each player is not said this way yet, and a group's life loss/gain stays as it was)
+    if (step['op'] !== 'mill' && step['op'] !== 'draw') return step;
+    if (step['guard'] !== undefined || step['as'] !== undefined || !isRec(who) || who['ref'] !== 'each' || (who['who'] !== 'opponent' && who['who'] !== 'player') || Object.keys(who).length !== 2) return step;
+    // (only the plain instruction: nothing but its player and its amount, which is the one place the group is read; an "unless" payment or a guard keeps its own reading)
+    const amountKey = 'count';
+    if (JSON.stringify(step[amountKey] ?? null).includes('"agg":"max"')) return step; // edh-d-26 (CR 608.2h; Tales of the Ancestors): a largest-hand count is read for all players before anyone draws (the draw handler's per-player counts), never player by player
+    if (Object.keys(step).some((k) => k !== 'op' && k !== 'who' && k !== amountKey) || !JSON.stringify(step[amountKey] ?? null).includes(JSON.stringify({ ref: 'each', who: who['who'] }))) return step;
+    const name = fresh();
+    const each = rewrite(step, (node) => (node['ref'] === 'each' && node['who'] === who['who'] && Object.keys(node).length === 2 ? { ref: 'bound', name } : undefined)) as Rec;
+    return { op: 'forEach', over: { ref: 'each', who: who['who'] }, as: name, do: [each] } as Rec;
+  };
+  return steps.map(one) as unknown as T[];
+}
+
+/**
+ * edh-players-12 (CR 101.4, 608.2d; Heartwood Storyteller): "Each opponent may draw a card." / "Each of that player's opponents may draw a card.": the `may` of a group is the
+ * choice of every player of it, and the instruction they chose to do names the same group as `who`; the engine runs that instruction once for each player who chose,
+ * that player iterating (effects/handlers/control.ts#mayHandler), so the instruction's `who` is `{ref:'iterating'}` (a template writes the group twice, "$p"). Only a
+ * `may` of one plain instruction (no otherwise, no guard) whose `who` is the very same group.
+ */
+export function groupMayActs<T>(input: readonly T[]): T[] {
+  const group = (v: unknown): boolean => isRec(v) && ((v['ref'] === 'each' && (v['who'] === 'opponent' || v['who'] === 'player') && Object.keys(v).length === 2)
+    || (v['ref'] === 'otherOf' && JSON.stringify(v['of']) === JSON.stringify({ ref: 'each', who: 'player' })));
+  return (input as unknown as Rec[]).map((step) => {
+    if (step['op'] !== 'may' || !group(step['who']) || step['otherwise'] !== undefined || step['guard'] !== undefined || !Array.isArray(step['do']) || step['do'].length !== 1) return step;
+    const only = step['do'][0] as Rec;
+    if (!isRec(only) || only['guard'] !== undefined || only['as'] !== undefined || only['op'] !== 'draw' || JSON.stringify(only['who']) !== JSON.stringify(step['who'])) return step;
+    return { ...step, do: [{ ...only, who: { ref: 'iterating' } }] };
+  }) as unknown as T[];
 }
 
 /**
@@ -435,14 +649,20 @@ const STEP_DELAY_LEADS: ReadonlySet<string> = new Set(['dl.nextEnd.lead', 'dl.yo
  * power to up to one target creature you don't control." (Feral Encounter). Only a delay that is a step of the sentence itself; the end step leads above stay refused
  * (train-1 bounce: Swooping Pteranodon's earlier "that creature" then saw the delayed sentence's target as a second antecedent).
  */
-export const STEP_DELAY_TARGET_LEADS: ReadonlySet<string> = new Set(['dl.stdlib1.nextCombat.thisTurn.lead']);
+export const STEP_DELAY_TARGET_LEADS: ReadonlySet<string> = new Set(['dl.stdlib1.nextCombat.thisTurn.lead', 'dl.nextEnd.lead' /* edh-next-134 */]);
+/**
+ * edh-next-134 (CR 603.7, 603.3d; Swooping Pteranodon ruling 2023-11-10: "You choose the target land ... as the delayed triggered ability triggers at the beginning of the next end
+ * step"): the step each target-taking lead waits for. "At the beginning of the next end step, target land deals 3 damage to that creature." now takes its own target too (the
+ * train-1 bounce is settled by lower/anaphora.ts: a pronoun of an earlier sentence never sees a target the delay takes, as it never sees a later sentence's target).
+ */
+export const STEP_DELAY_TARGET_LEAD_STEP: Readonly<Record<string, string>> = { 'dl.stdlib1.nextCombat.thisTurn.lead': 'beginCombat', 'dl.nextEnd.lead': 'end' };
 function targetsInStepDelayLead(u: Unit): boolean {
   const own = u.templates.some((t) => STEP_DELAY_TARGET_LEADS.has(t));
   if (!own && !u.templates.some((t) => STEP_DELAY_LEADS.has(t))) return false;
   let found = false;
   const top = new Set<unknown>(u.steps);
   visit(u.steps, (node) => {
-    if (node['op'] === 'delay' && isRec(node['when']) && node['when']['at'] === 'step' && markersOf(node['do']).length > 0 && !(own && top.has(node) && node['when']['step'] === 'beginCombat')) found = true;
+    if (node['op'] === 'delay' && isRec(node['when']) && node['when']['at'] === 'step' && markersOf(node['do']).length > 0 && !(own && top.has(node) && u.templates.some((t) => STEP_DELAY_TARGET_LEAD_STEP[t] === (node['when'] as Rec)['step']))) found = true;
   });
   return found;
 }

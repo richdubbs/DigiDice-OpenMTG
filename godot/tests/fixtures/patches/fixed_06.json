@@ -1,0 +1,1 @@
+{"name":"integer-like keys (JavaScript orders them first)","before":{"2":2,"b":1},"ops":[{"op":"set","path":["1"],"value":0},{"op":"set","path":["a"],"value":5}],"after":{"1":0,"2":2,"b":1,"a":5}}

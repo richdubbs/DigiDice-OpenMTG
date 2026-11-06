@@ -1,0 +1,130 @@
+[
+  {
+    "id": "sta.edhc12.top.cast.gainsHaste",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 401.5",
+      "CR 611.2c",
+      "CR 702.10a"
+    ],
+    "pattern": "you may cast {f:Filter} from the top of your library . if you cast a creature spell this way , it gains haste until end of turn",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "fromTop": true,
+          "gainsThisTurn": {
+            "kind": "keyword",
+            "keyword": "haste",
+            "text": "haste"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if",
+      "this way",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "You may cast creature spells with power 3 or greater from the top of your library. If you cast a creature spell this way, it gains haste until end of turn."
+      },
+      {
+        "text": "You may cast Elf creature spells from the top of your library. If you cast a creature spell this way, it gains haste until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "You may cast creature spells from the top of your library. If you cast a creature spell this way, it gains flying until end of turn.",
+      "You may cast creature spells from the top of your library. If you cast a creature spell this way, it gains haste.",
+      "You may cast creature spells from your graveyard. If you cast a creature spell this way, it gains haste until end of turn.",
+      "You may cast creature spells from the top of your library. If you cast a creature spell this way, you gain haste until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhc12.stack.xAtLeast.cantCounter.cantPrevent",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 107.3",
+      "CR 615.12",
+      "CR 604.1"
+    ],
+    "pattern": "if x is {n:Qty} or more , ~ can't be countered and the damage can't be prevented",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": {
+        "cond": "wasCast",
+        "xAtLeast": "$n"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "beCountered"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {}
+          },
+          "mode": "cant",
+          "action": "preventDamage",
+          "other": {
+            "self": true
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "preventDamage",
+          "other": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "If X is 6 or more, this spell can't be countered and the damage can't be prevented."
+      },
+      {
+        "text": "If X is 7 or more, this spell can't be countered and the damage can't be prevented."
+      }
+    ],
+    "counterExamples": [
+      "If X is 5 or more, this spell can't be countered.",
+      "If X is 5 or more, this spell can't be countered and the damage can't be reduced.",
+      "If X is 5 or less, this spell can't be countered and the damage can't be prevented.",
+      "This spell can't be countered and the damage can't be prevented."
+    ]
+  }
+]

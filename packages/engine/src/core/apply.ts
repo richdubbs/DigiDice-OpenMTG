@@ -21,6 +21,9 @@ import { collectPendingTriggers } from './triggers';
 import { unaliasAction } from './view';
 import { earlyDenial, performPriorityAction } from './priority-actions';
 import { throwDenial } from '../rules/denial';
+import { answeredByWith, recordSettled } from './shortcut';
+import { performShortcut, type StepRun } from './shortcut-run';
+import { FROZEN_ACTIONS, freezeLibraries, thawLibraries } from '../statics/frozen-tops';
 // WP11 (review): installs the replacement funnels of moveObject, createToken, dealDamage and destroy (design 8.5). Every game state is made by core/create.ts,
 // which imports this module, and every action is applied here, so the funnels are in place whatever else a caller imports.
 import '../effects/funnels';
@@ -41,8 +44,10 @@ export function applyAction(state: GameState, action: Action): ApplyResult {
   try {
     // m4 (audit 2026-10-12, CR 400.2): another player's hidden hand cards appear in a view under aliases; an action chosen from that view (a manual op
     // moving a card of that hand) names them by alias, which is translated back here (core/view.ts). Deterministic, so a replayed log gives the same game.
-    const result = applyInner(state, unaliasAction(state, action));
+    const unaliased = unaliasAction(state, action);
+    const result = applyInner(state, unaliased);
     result.state.actionCount = state.actionCount + 1;
+    recordSettled(state, unaliased, result.state); // shortcuts (CR 727, docs/design/shortcuts.md 1): the settled actions of this turn
     return result;
   } catch (e) {
     if (e instanceof IllegalAction) return { state, events: [], error: { message: e.message, rules: e.rules } };
@@ -84,8 +89,7 @@ function applyInner(state: GameState, action: Action): ApplyResult {
       if (action.decisionId !== pending.id) throw new IllegalAction('That decision is no longer current.');
       const sus = state.suspended;
       // M12-2 (m12 design D11): in a multiplayer game each answer remembers who gave it (`Suspension.answeredBy`); a two-player game records nothing (D16)
-      const by = state.options.multiplayer !== undefined && (sus.answeredBy?.length ?? 0) === sus.answers.length ? [...(sus.answeredBy ?? []), action.player] : undefined;
-      return run(sus.base, sus.action, [...sus.answers, action.answer], by);
+      return run(sus.base, sus.action, [...sus.answers, action.answer], answeredByWith(state, sus, action.player));
     }
     case 'cancel': {
       if (!pending || !state.suspended || !pending.cancellable) throw new IllegalAction('There is nothing to cancel.');
@@ -116,11 +120,15 @@ export function run(base: GameState, action: Action, answers: DecisionAnswer[], 
   s.pending = null;
   s.suspended = null;
   const g = new Game(s, answers, answeredBy);
+  const frozen = FROZEN_ACTIONS.has(action.type); // CR 401.5: a static ability reads the libraries as they were when this action began (statics/frozen-tops.ts)
+  if (frozen) freezeLibraries(s);
   try {
     perform(g, action);
     if (!g.answersConsumed) throw new EngineBug('Not all decision answers were consumed (engine nondeterminism)');
-    return { state: s, events: g.events };
+    if (frozen) thawLibraries();
+    return { state: g.s, events: g.events }; // `g.s`: a shortcut replaces the working state with the state after each step it plays (core/shortcut-run.ts)
   } catch (e) {
+    if (frozen) thawLibraries();
     if (e instanceof NeedDecision) {
       s.pending = e.decision;
       s.suspended = { base, action, answers: [...answers], ...(answeredBy ? { answeredBy: [...answeredBy] } : {}), emitted: g.events.length };
@@ -128,6 +136,32 @@ export function run(base: GameState, action: Action, answers: DecisionAnswer[], 
     }
     throw e;
   }
+}
+
+/**
+ * Shortcuts (CR 727, docs/design/shortcuts.md 5.1, 5.3): the lenient inner runner. `action` with the recorded `answers` on a clone of `base`, like `run`, but a
+ * step that does not end settled is not applied (CR 733.1) and says why instead: an illegal action or answer, a question the answers did not cover (a decision
+ * would be left pending), answers left over. Each is a sign that the step no longer goes the same way, never an engine bug here; an `EngineBug` is not caught.
+ */
+export function runLenient(base: GameState, action: Action, answers: readonly DecisionAnswer[], answeredBy?: readonly PlayerId[]): StepRun {
+  const s = cloneState(base);
+  s.pending = null;
+  s.suspended = null;
+  const g = new Game(s, answers, answeredBy);
+  const frozen = FROZEN_ACTIONS.has(action.type); // CR 401.5: like `run`, a step's statics read the libraries as they were when the step began (nested runs stack)
+  if (frozen) freezeLibraries(s);
+  try {
+    perform(g, action);
+  } catch (e) {
+    // the question itself is not named: its prompt is the asked player's and may speak of what only they can see (CR 400.2)
+    if (e instanceof NeedDecision) return { ok: false, why: 'a question came up that the recorded step did not answer' };
+    if (e instanceof IllegalAction) return { ok: false, why: e.message };
+    throw e;
+  } finally {
+    if (frozen) thawLibraries();
+  }
+  if (!g.answersConsumed) return { ok: false, why: 'the step took fewer decisions than when it was recorded' };
+  return { ok: true, state: g.s, events: g.events };
 }
 
 /**
@@ -144,7 +178,8 @@ export function replayedEvents(prev: GameState, action: Action, viewer: PlayerId
   return hidden ? 0 : sus.emitted;
 }
 
-function perform(g: Game, action: Action): void {
+/** Perform one action on the working state of `g` (`run`, and the shortcut's inner runner `runLenient`). */
+export function perform(g: Game, action: Action): void {
   switch (action.type) {
     case 'startGame':
       startGame(g, action.concessions ?? []);
@@ -165,6 +200,9 @@ function perform(g: Game, action: Action): void {
     case 'special':
       performPriorityAction(g, action);
       advance(g);
+      return;
+    case 'shortcut':
+      performShortcut(g, action, runLenient); // CR 727 (unverified): the consents, then the passes (core/shortcut-run.ts)
       return;
     default:
       throw new EngineBug(`perform: unexpected action ${action.type}`);

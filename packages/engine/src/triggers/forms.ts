@@ -25,6 +25,7 @@ import { LEVELS_FORMS } from './forms-levels';
 import { MERGE_FORMS } from './forms-merge';
 import { SADDLE_FORMS } from './forms-saddle';
 import { PLOT_FORMS } from './forms-plot';
+import { PHASE_FORMS } from './forms-phase';
 import { ROOM_FORMS } from './forms-rooms';
 import { historyPatternForms } from '../rules/history';
 
@@ -34,7 +35,7 @@ import { historyPatternForms } from '../rules/history';
  * it emits (match.ts#NOT_EMITTED is the M6 kinds no part lists). All empty in M6-0.
  */
 export interface EventFormsPart { SUPPORTED: readonly string[]; EMITS: readonly EventPattern['ev'][] }
-export const EVENT_FORMS_PARTS: readonly EventFormsPart[] = [FACE_FORMS, DFC_FORMS, LEVELS_FORMS, MERGE_FORMS, SADDLE_FORMS, PLOT_FORMS, ROOM_FORMS]; // SADDLE_FORMS: FAST5X E3; PLOT_FORMS: FAST5X E6; ROOM_FORMS: FAST5X E8
+export const EVENT_FORMS_PARTS: readonly EventFormsPart[] = [FACE_FORMS, DFC_FORMS, LEVELS_FORMS, MERGE_FORMS, SADDLE_FORMS, PLOT_FORMS, ROOM_FORMS, PHASE_FORMS]; // SADDLE_FORMS: FAST5X E3; PLOT_FORMS: FAST5X E6; ROOM_FORMS: FAST5X E8
 
 /** The finer names this build honors (each WITHOUT the `feature:` prefix): the verbs and changes whose `GameEvent`s the engine emits (`normalize.ts`). */
 export const SUPPORTED: readonly string[] = [
@@ -46,9 +47,9 @@ export const SUPPORTED: readonly string[] = [
   'ev.becomes.tapped', 'ev.becomes.untapped',
   // WP14 (effects/handlers/zones*.ts, tokens*.ts and their primitives emit `countered`, `abilityCountered`, `attached`, `transformed`, `spellCopied`; an Aura
   // spell resolving emits `attached` in core/resolve.ts): CR 701.6 countering, 701.3a attaching, 701.27 transforming, 707.10 copies of spells ("cast or copy").
-  // NOT `ev.becomes.unattached`: CR 701.3d counts an attachment leaving the battlefield, its host leaving its zone and the 704.5m-n state-based actions as
-  // "becoming unattached", and none of those paths (core/zones.ts, core/sba-objects.ts) emits it yet; only the attach op and re-attaching do.
-  'ev.action.counter', 'ev.becomes.attached', 'ev.becomes.transformed', 'ev.cast.orCopy',
+  // `ev.becomes.unattached` (edh-perms-10, CR 701.3d): the attach op, re-attaching, the state-based actions of an illegal host (704.5n, 704.5p) and an attachment leaving the battlefield
+  // (core/zones.ts#moveObject; its own ability looks back, CR 603.10c) emit it, with the permanent it left as `from`. A by-hand unattach (core/manual.ts) emits nothing.
+  'ev.action.counter', 'ev.becomes.attached', 'ev.becomes.unattached' /* edh-perms-10 */, 'ev.becomes.transformed', 'ev.cast.orCopy', 'ev.cast.copyOnly' /* edh-b-13: match.ts#cast, a copy of a spell only */,
   // WP32: CR 115.1, 603.3d. "Becomes the target of a spell or ability" is emitted for every way a spell or ability gets targets: a spell cast (actions/cast.ts,
   // also cast while an effect resolves), an activated ability (actions/activate.ts), a triggered ability put on the stack (triggers/stack.ts, also reflexive,
   // delayed and "Trigger now" ones), and a copy with its targets (rules/stack-objects.ts). Its `by` is judged on that spell or ability (match.ts). Makes ward work.
@@ -59,6 +60,8 @@ export const SUPPORTED: readonly string[] = [
   'ev.action.exploit',
   // MX4: CR 309.7, "whenever you complete a dungeon" (core/dungeons.ts emits the action `completeDungeon` as the dungeon leaves the game)
   'ev.action.completeDungeon',
+  // edh-next-109: CR 119.4, "whenever you pay life" (rules/life.ts#payLife and effects/perform-events.ts emit `lifePaid`, triggers/normalize.ts reports it as the action `payLife`)
+  'ev.action.payLife',
   // MX3: CR 701.54d, core/ring.ts emits `actionPerformed` with verb ringTempts each time the Ring tempts a player (with the chosen Ring-bearer, if any)
   'ev.action.ringTempts',
   // FAST5X E12: CR 701.59a, "whenever you collect evidence": paying it as a cost (rules/pay-parts.ts) and the action (effects/handlers/evidence.ts) emit it
@@ -75,12 +78,14 @@ export const SUPPORTED: readonly string[] = [
   'ev.action.cycle',
   // FAST5X E9: CR 701.22d, 701.25d, "whenever you scry / surveil" and "you've scried or surveilled this turn": effects/handlers/cards-library.ts emits the action
   // once per player after the whole process (scry 0 and surveil 0 are none, CR 701.22b, 701.25c), the only places a player scries or surveils
-  'ev.action.scry', 'ev.action.surveil',
+  'ev.action.scry', 'ev.action.surveil', 'ev.action.scryBottom' /* edh-d-96: effects/handlers/cards-library.ts emits it (CR 701.22a) */,
   // FAST5X E10: CR 701.67c, rules/pay.ts#payPlan emits `actionPerformed` 'waterbend' once per waterbend cost paid (however it was paid); CR 701.65b, the airbend
   // action (effects/handlers/airbend.ts) emits 'airbend' once when it exiles one or more objects
   'ev.action.waterbend', 'ev.action.airbend',
   // std-mana-12 (CR 701.66, 702.189): the earthbend macro and the firebending trigger end with op reportAction, which emits 'earthbend' / 'firebend'
   'ev.action.earthbend', 'ev.action.firebend',
+  // edh-next-113 (CR 603.2, 701.16a; Erdwal Illuminator): the investigate macro (keywords/actions/tokens.ts) ends with op reportAction, once for each investigation
+  'ev.action.investigate',
   // FAST5X E17: CR 505.1b, "your second main phase": core/turn.ts#beginStep numbers the main phases of the turn, the step matchers read the number
   'ev.step.nth',
   // FAST5X E20 (rules/crime.ts): CR 700.13, a crime is reported as a spell is cast, an ability activated or a triggered ability put on the stack with a target
@@ -91,6 +96,8 @@ export const SUPPORTED: readonly string[] = [
   // M12-3: "attacks you or a planeswalker you control" (CR 506.3, 508.1b): match.ts and rules/history.ts read the planeswalker's controller (triggers/history.ts
   // records the defending player of a planeswalker attack, CR 508.5)
   'ev.attacks.orPlaneswalker',
+  'ev.attacks.defending', // edh-combat-1 (CR 508.5, 603.4): "if you're the defending player": match.ts and rules/history.ts read the attack's defending player
+  'ev.cause.unplayed', // edh-zones-21 (CR 305.1, 603.6a): match.ts compares the zone change's cause with a land play's ('play land', actions/land.ts)
   'ev.cause.craft', // Standard round 3, r3-trig (CR 702.167a): rules/pay-parts.ts exiles craft's materials with the cause 'craft', match.ts compares it
   'ev.cast.modal', // Standard round 3, r3-trig (CR 700.2): normalize.ts says whether modes were chosen for the spell as it was cast, match.ts reads it
   'ev.cast.notOwnedByCaster', // std-exile-play-1-1 (CR 108.3, 601.2a): match.ts compares the spell's owner with the caster
@@ -124,7 +131,23 @@ export const SUPPORTED: readonly string[] = [
   // p2-trigger-events-1: CR 701.17a, a card moved from a library to a graveyard with the cause 'mill' (the mill op and the mill cost) is the owner's action `mill`
   // (normalize.ts#CAUSE_VERBS), one for each card milled
   'ev.action.mill',
+  'ev.action.draw.atLeast', // edh-players-18 (CR 121.2): the `drawMany` proposal's count, match.ts reads it
   'ev.draw.exceptFirstInDrawStep', // edh-players-1 (CR 504.1): normalize.ts marks the first card drawn in the draw step, match.ts reads it
+  'ev.becomesBlocked.byAtLeast', // edh-c-48 (CR 509.3e): normalize.ts carries the number of blockers before and after (`blockCount`, `blockCountBefore`), match.ts reads them
+  'ev.attacks.withOther', // edh-combat-5 (CR 508.1): another creature of the same declaration (normalize.ts carries the declared ids, match.ts reads them)
+  'ev.attacks.otherThanAttacker', // edh-players-20 (CR 506.2, 508.1b): the player attacked is not the attacker's controller (match.ts)
+  'ev.becomes.into', // edh-next-76 (CR 701.27e): "transforms into a Phyrexian", the object after the transform judged on the filter (match.ts)
+  'ev.becomes.notAsAttacker', // edh-players-20 (CR 508.1f): a tap that is not the attack declaration's (normalize.ts carries `asAttacker`, match.ts reads it)
+  'ev.action.payCumulativeUpkeep', 'ev.action.failCumulativeUpkeep', // edh-d-74 (CR 702.24a): the cumulative upkeep's pay step (effects/handlers/pay.ts) emits `actionPerformed` for the permanent and the player
+  'ev.action.evolve', // edh-c-48 (CR 702.100a): an evolve ability's counter (effects/handlers/counters.ts#putCounters) emits `actionPerformed` 'evolve' for the creature
+  'ev.action.fight', // edh-combat-6 (CR 701.14a): a fight (effects/handlers/lifedamage.ts#fightBetween) emits `actionPerformed` 'fight' for each creature that fought
+  'ev.life.totalAmount', // edh-players-20 (CR 119.3, 603.2c): the amount is the player's total in the batch (occurrences.ts#byPlayerTotal)
+  'ev.action.destroy.by', // edh-players-22 (CR 109.5, 701.8a): normalize.ts carries the destroying controller (`by`), match.ts reads it
+  'ev.attacks.allAttack', // edh-c-83 (CR 508.1, 603.2c): every permanent of a description was declared in the same declaration (match.ts reads normalize.ts's declared ids)
+  'ev.action.enlist', // edh-c-49 (CR 702.154a): core/attack-options.ts emits `actionPerformed` 'enlist' for the enlisting creature
+  'ev.action.foretell', // edh-d-73 (CR 702.143a): effects/handlers/foretell-ops.ts emits `actionPerformed` 'foretell' for the player who foretold a card
+  'ev.action.connive', // edh-next-33 (CR 701.50a): the connive macro (keywords/actions/library.ts) ends with op reportAction 'connive' for the creature
+  'ev.action.discard.by', // edh-next-132 (CR 701.9a, 109.5): normalize.ts carries the controller of the effect that made the player discard (`by`), match.ts reads it
 ];
 
 const isQuantityCmp = (c: NumberCmp | undefined): boolean => c !== undefined && typeof c.value !== 'number';
@@ -144,13 +167,17 @@ export function eventPatternForms(p: EventPattern): string[] {
       if (p.verb === 'tap' && p.object?.controller !== 'opponent') out.push('feature:ev.action.tap.notOpponent');
       if (p.from !== undefined) out.push(p.verb === 'playLand' ? 'feature:ev.action.playLand.from' : 'feature:ev.action.from.other'); // cloud std-spm (CR 305.1)
       if (p.notFrom !== undefined) out.push(p.verb === 'playLand' ? 'feature:ev.action.playLand.notFrom' : 'feature:ev.action.from.other'); // Standard round 4, r4-trig (CR 305.1)
+      if (p.atLeast !== undefined) out.push(p.verb === 'draw' ? 'feature:ev.action.draw.atLeast' : 'feature:ev.action.atLeast.other'); // edh-players-18 (CR 121.2)
+      if (p.by !== undefined) out.push(p.verb === 'destroy' ? 'feature:ev.action.destroy.by' : p.verb === 'discard' ? 'feature:ev.action.discard.by' /* edh-next-132 */ : 'feature:ev.action.by.other'); // edh-players-22 (CR 109.5)
       if (p.searched !== undefined) out.push(p.verb === 'search' ? 'feature:ev.action.search.ownLibrary' : 'feature:ev.action.from.other'); // Standard round 4, r4-trig (CR 701.23a)
       break;
     case 'becomes':
       out.push(`feature:ev.becomes.${p.what}`);
       // (r5-trig: the creature that crews or saddles is the `by` of 'crewCostPaid' / 'saddleCostPaid', which the matcher reads, CR 702.122b, 702.171c)
       // std-rx31: "becomes attached to a creature" (the permanent it became attached to, the event's `object`, triggers/match.ts)
-      if (p.by !== undefined && p.what !== 'targeted' && p.what !== 'crewCostPaid' && p.what !== 'saddleCostPaid' && p.what !== 'teamworkCostPaid' && p.what !== 'attached') out.push('feature:ev.becomes.by');
+      if (p.by !== undefined && p.what !== 'targeted' && p.what !== 'crewCostPaid' && p.what !== 'saddleCostPaid' && p.what !== 'teamworkCostPaid' && p.what !== 'attached' && p.what !== 'unattached' /* edh-perms-10 */) out.push('feature:ev.becomes.by');
+      if (p.into !== undefined) out.push(p.what === 'transformed' ? 'feature:ev.becomes.into' : 'feature:ev.becomes.into.other'); // edh-next-76: the second never registered
+      if (p.notAsAttacker === true) out.push('feature:ev.becomes.notAsAttacker'); // edh-players-20 (CR 508.1f): Verity Circle
       if (p.untapStep === true) out.push(p.what === 'untapped' ? 'feature:ev.becomes.untapStep' : 'feature:ev.becomes.untapStep.other'); // r5-trig (CR 502.3); the second never registered
       if ((p.what === 'crewCostPaid' || p.what === 'saddleCostPaid' || p.what === 'teamworkCostPaid') && p.by === undefined) out.push('feature:ev.becomes.by.missing'); // never registered // only "becomes the target of ... by" has a source to filter
       // cloud std-dsk: "whenever you turn a permanent face up" (who turned it, CR 702.37e); never registered for another change (the matcher fails closed)
@@ -158,6 +185,7 @@ export function eventPatternForms(p: EventPattern): string[] {
       break;
     case 'cast':
       if (p.orCopy) out.push('feature:ev.cast.orCopy');
+      if (p.copyOnly === true) out.push('feature:ev.cast.copyOnly'); // edh-b-13 (CR 707.10)
       if (p.via !== undefined) out.push('feature:ev.cast.via'); // FAST5X E2 (CR 702.185c)
       if (p.notFrom !== undefined) out.push('feature:ev.cast.notFrom'); // Standard round 5, r5-trig (CR 601.2a)
       if (p.nthMin !== undefined) out.push('feature:ev.cast.nthMin'); // Standard round 5, r5-trig (CR 601.2i)
@@ -165,30 +193,51 @@ export function eventPatternForms(p: EventPattern): string[] {
       if (p.modal === true) out.push('feature:ev.cast.modal'); // Standard round 3, r3-trig (CR 700.2)
       if (p.notOwnedByCaster === true) out.push('feature:ev.cast.notOwnedByCaster'); // std-exile-play-1-1 (CR 108.3)
       // FAST5X E18 (CR 601.2i): counted from the history, so the spell filter must be one the history facts answer (rules/history.ts#historyPatternForms)
+      if (p.anyCaster === true) out.push('feature:ev.cast.nthAnyCaster'); // edh-next-91 (CR 601.2i)
       if (p.nthMatching === true) out.push('feature:ev.cast.nthMatching', ...historyPatternForms({ ev: 'cast', ...(p.spell ? { spell: p.spell } : {}) }));
       break;
+    case 'abilityTriggered': if (p.causedBy === 'entering') out.push('feature:ev.abilityTriggered.entering'); break; // edh-next-74 (CR 603.6a)
     case 'beginTurn': if (p.extra !== undefined) out.push('feature:ev.beginTurn.extra'); break;
     case 'step': if (p.nth !== undefined) out.push('feature:ev.step.nth'); break; // FAST5X E17 (CR 505.1b)
     case 'activate':
       if (p.ability !== undefined) out.push('feature:ev.activate.ability'); // FAST5X E20
       if (p.activated !== undefined) out.push('feature:ev.activate.activated'); // std-rx28 (CR 602.2, 115.9b)
+      if (p.targetsYourCreature !== undefined) out.push('feature:ev.activate.targetsYourCreature'); // edh-next-67 (CR 115.1, 602.2b): triggers/match.ts, rules/history.ts
       if (p.tapped === true || p.produced !== undefined) out.push('feature:trigger.tappedForMana'); // std-mana-1 (CR 106.12): rules/mana.ts marks the activation's {T}
+      if (p.lifePaid === true) out.push('feature:trigger.activateLifePaid'); // edh-next-74 (CR 602.2b): triggers/match.ts
+      if (p.xInCost === true) out.push('feature:trigger.activateXInCost'); // edh-next-74 (CR 107.3a)
+      if (p.manaSpentAtLeast !== undefined) out.push('feature:trigger.activateManaSpent'); // edh-d-50 (CR 602.2b, 106.3): triggers/match.ts
+      if (p.produced === 'chosen') out.push('feature:trigger.producedChosen'); // edh-mana-keywords-5 (CR 106.4, 607.2d): triggers/match.ts#producedChosen
       break;
     case 'attacks':
       if (isQuantityCmp(p.count)) out.push('feature:ev.cmp.quantity');
       if (p.orPlaneswalker !== undefined) out.push('feature:ev.attacks.orPlaneswalker'); // M12-3 (CR 506.3, 508.1b)
+      if (p.defending !== undefined) out.push('feature:ev.attacks.defending'); // edh-combat-1 (CR 508.5)
+      if (p.withOther !== undefined) out.push('feature:ev.attacks.withOther'); // edh-combat-5 (CR 508.1)
+      if (p.allAttack !== undefined) out.push('feature:ev.attacks.allAttack'); // edh-c-83 (CR 508.1, 603.2c)
+      if (p.otherThanAttacker !== undefined) out.push('feature:ev.attacks.otherThanAttacker'); // edh-players-20 (CR 506.2, 508.1b)
       if (p.power !== undefined) out.push(isQuantityCmp(p.power) ? 'feature:ev.cmp.quantity' : 'feature:ev.attacks.power'); // Standard round 3, r3-trig (CR 508.1)
+      break;
+    case 'becomesBlocked':
+      if (p.byAtLeast !== undefined) out.push('feature:ev.becomesBlocked.byAtLeast'); // edh-c-48 (CR 509.3e)
       break;
     case 'damage':
       if (isQuantityCmp(p.amount)) out.push('feature:ev.cmp.quantity');
       if (p.excess !== undefined) out.push('feature:ev.damage.excess'); // FAST5X E16 (CR 120.10)
       if (p.amountIsToughness !== undefined) out.push('feature:ev.damage.amountIsToughness'); // std-rx28 (CR 120.1, 208.1)
       if (p.toSourceTarget !== undefined) out.push('feature:ev.damage.toSourceTarget'); // std-rx28 (CR 115.9b)
+      if (p.sourcePermanent !== undefined) out.push('feature:ev.damage.sourcePermanent'); // edh-zones-19 (CR 109.2)
+      if (p.toOtherThanSourceController !== undefined) out.push('feature:ev.damage.toOtherThanSourceController'); // edhd63 (CR 120.1, 109.4)
       break;
-    case 'life': if (isQuantityCmp(p.amount)) out.push('feature:ev.cmp.quantity'); break;
+    case 'life':
+      if (isQuantityCmp(p.amount)) out.push('feature:ev.cmp.quantity');
+      if (p.fromDamage !== undefined) out.push('feature:ev.life.fromDamage'); // edh-players-3 (CR 120.3a)
+      if (p.totalAmount !== undefined) out.push('feature:ev.life.totalAmount'); // edh-players-20 (CR 119.3, 603.2c)
+      break;
     case 'dieRoll': if (isQuantityCmp(p.result)) out.push('feature:ev.cmp.quantity'); break;
     case 'counters':
       if (p.atLeast !== undefined && typeof p.atLeast !== 'number') out.push('feature:ev.cmp.quantity');
+      if (p.byController !== undefined) out.push('feature:ev.counters.byController'); // edhn63 (CR 122.6)
       if (p.by !== undefined) out.push('feature:ev.counters.by'); // FAST5X E21 (CR 122.6): "whenever you put ... counters on ..."
       break;
     default: break;
@@ -268,9 +317,10 @@ function isModalTriggeredManaAbility(def: AbilityDef): boolean {
 
 /** The finer capability names a delayed trigger's `when` needs: its event pattern's, and `feature:delayed.step.notNext` for the one reading of `next` the build does not know. */
 export function delayedWhenForms(w: DelayedWhen): string[] {
-  if (w.at === 'event') return eventPatternForms(w.event);
+  if (w.at === 'event') return [...eventPatternForms(w.event), ...(w.or !== undefined ? ['feature:delayed.event.or', ...w.or.flatMap(eventPatternForms)] : [])]; // edh-next-74: `or` (CR 603.7)
   // A step trigger fires at the first such step AFTER it was created (CR 603.7a); that is what "the next end step" means. `next: false` has no other documented meaning.
   if (w.at === 'step' && w.next === false) return ['feature:delayed.step.notNext'];
   if (w.at === 'step' && w.anyMain === true) return ['feature:delayed.step.anyMain']; // r5-fxb (triggers/delayed.ts#fires)
+  if (w.at === 'step' && w.phase === 'added') return ['feature:delayed.step.addedPhase']; // edh-combat-5 (triggers/delayed.ts#fires)
   return [];
 }

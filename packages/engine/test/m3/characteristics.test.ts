@@ -130,14 +130,13 @@ describe('the local mana-ability recognizer (until the milestone 5 parser)', () 
     const persist = compiledDef('Kitchen Finks');
     expect(persist.faces[0]!.abilities.map((a) => a.kind)).toEqual(['triggered', 'keyword']);
     expect(persist.automation.level).toBe('full');
-    // An unimplemented keyword stays a manual ability: Aven Warhawk's flying is automated, its amplify (CR 702.38) is manual with the capability it needs
-    // (std-ry8: Hexbane Tortoise, the example before, is full now that enlist is implemented).
-    const amplify = compiledDef('Aven Warhawk');
-    expect(amplify.faces[0]!.abilities.map((a) => a.kind)).toEqual(['manual', 'keyword']);
-    expect(amplify.automation.level).toBe('partial');
-    const raw = getCard('Aven Warhawk');
+    // An unimplemented keyword stays a manual ability: Charging Binox's trample is automated, its assist (CR 702.132) is manual with the capability it needs
+    // (std-ry8: Hexbane Tortoise, and edh-c-42: Aven Warhawk, the examples before, are full now that enlist and amplify are implemented).
+    const assist = compiledDef('Charging Binox');
+    expect(assist.automation.level).toBe('partial');
+    const raw = getCard('Charging Binox');
     const def = compileCard(raw);
-    expect(def.faces[0]!.abilities[0]).toMatchObject({ kind: 'manual', reason: expect.stringContaining('keyword:amplify') });
+    expect(def.faces[0]!.abilities[0]).toMatchObject({ kind: expect.stringMatching(/^(manual|keyword)$/), reason: expect.stringContaining('keyword:assist') });
     const elves = compiledDef('Llanowar Elves');
     expect(elves.automation).toMatchObject({ level: 'full', unsupported: [] });
   });

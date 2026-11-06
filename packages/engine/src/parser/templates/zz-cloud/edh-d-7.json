@@ -1,0 +1,661 @@
+[
+  {
+    "id": "rep.edhd7.enters.counters.whereX.greatestPowerAmongTwo",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 107.3",
+      "CR 208.1",
+      "CR 608.2h"
+    ],
+    "pattern": "~ enters with x {k:CounterKind} counters on it , where x is the greatest power among {f:Filter} and {g:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "stat",
+                  "stat": "power",
+                  "of": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        "$f",
+                        "$g"
+                      ],
+                      "zone": [
+                        "battlefield",
+                        "graveyard"
+                      ]
+                    }
+                  },
+                  "agg": "max"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~ enters with X +1/+1 counters on it, where X is the greatest power among artifacts you control and artifact cards in your graveyard."
+      },
+      {
+        "text": "~ enters with X +1/+1 counters on it, where X is the greatest power among Goblins you control and Goblin cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with X +1/+1 counters on it, where X is the greatest power among creatures you control.",
+      "~ enters with X +1/+1 counters on target creature, where X is the greatest power among creatures you control and creature cards in your graveyard.",
+      "~ enters with two +1/+1 counters on it, where X is the greatest power among creatures you control and creature cards in your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhd7.search.playerLibrary.exactly.exile",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23d",
+      "CR 406.3",
+      "CR 608.2c"
+    ],
+    "pattern": "search {p:Player} 's library for {n:Qty} cards and exile them",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "owner": "$p",
+        "filter": {},
+        "min": "$n",
+        "max": "$n",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search target player's library for two cards and exile them. Then that player shuffles."
+      },
+      {
+        "text": "Search target opponent's library for five cards and exile them. Then that player shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Search target player's library for up to three cards and exile them. Then that player shuffles.",
+      "Search target player's graveyard for three cards and exile them. Then that player shuffles.",
+      "Search target player's library for three cards and exile it. Then that player shuffles."
+    ],
+    "consumes": [
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhd7.search.searchDesc.andReveal",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library for {f:SearchDesc} and reveal it",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "max": 1,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for an artifact card with flying and reveal it. Put it into your hand. Then shuffle."
+      },
+      {
+        "text": "Search your library for a creature card with haste, menace, or lifelink and reveal it. Shuffle and put that card on top."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for an artifact card with flying and reveal them. Put it into your hand. Then shuffle.",
+      "Search your library for two artifact cards with flying and reveal them. Put them into your hand. Then shuffle."
+    ],
+    "consumes": [
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhd7.shuffleAndPutOnTop",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 401.2",
+      "CR 701.23a"
+    ],
+    "pattern": "^ shuffle and put {o:Obj} on top",
+    "build": [
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for a land card and reveal it. Shuffle and put that card on top."
+      },
+      {
+        "text": "Search your library for an artifact card with vigilance, menace, or reach and reveal it. Shuffle and put that card on top."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for an artifact card with flying and reveal it. Shuffle and put that card on the bottom.",
+      "Shuffle and put that card on top.",
+      "Search your library for an artifact card with flying and reveal it. Shuffle and put it into your hand."
+    ],
+    "consumes": [
+      "and"
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhd7.cast.free.optional.ifInstantOrSorcery",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2",
+      "CR 608.2c",
+      "CR 608.2g",
+      "CR 603.4"
+    ],
+    "pattern": "you may cast {o:Obj} without paying its mana cost if it's ( a | an ) instant or sorcery spell",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "free": true,
+      "optional": true,
+      "guard": {
+        "cond": "matches",
+        "object": "$o",
+        "filter": {
+          "types": [
+            "Instant",
+            "Sorcery"
+          ]
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "if",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, you may look at the top card of your library. You may cast it without paying its mana cost if it's an instant or sorcery spell."
+      },
+      {
+        "text": "Exile the top card of your library. You may cast that card without paying its mana cost if it's an instant or sorcery spell."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you may look at the top card of your library. You may cast it without paying its mana cost unless it's an instant or sorcery spell.",
+      "At the beginning of your upkeep, you may look at the top card of your library. You may cast it if it's an instant or sorcery spell.",
+      "At the beginning of your upkeep, you may look at the top card of your library. You may cast it without paying its mana cost if it's a creature spell."
+    ]
+  },
+  {
+    "id": "rid.edhd7.draw.eachPlayer.insteadOnlyYou",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 121.1",
+      "CR 702.131"
+    ],
+    "pattern": "if {c:Cond} , instead only you draw a card",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "who.ref": "each"
+        },
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "draw",
+            "who": {
+              "ref": "you"
+            },
+            "count": 1
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "draw",
+    "consumes": [
+      "if",
+      "instead",
+      "only"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, each player draws a card. If you control a Wizard, instead only you draw a card."
+      },
+      {
+        "text": "At the beginning of each upkeep, each player draws a card. If you have the city's blessing, instead only you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you draw a card. If you have the city's blessing, instead only you draw a card.",
+      "At the beginning of your upkeep, each player draws a card. If you have the city's blessing, instead only you draw two cards.",
+      "At the beginning of your upkeep, each player draws a card. If you have the city's blessing, only you draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhd7.eachPlayer.returnN.graveyard.bf",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "each player returns {n:Qty} {f:Filter} cards from their graveyard to the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": {
+              "ref": "iterating"
+            },
+            "isCard": true
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player returns three creature cards from their graveyard to the battlefield."
+      },
+      {
+        "text": "Each player returns two artifact cards from their graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Each player may return two land cards from their graveyard to the battlefield.",
+      "Each player returns two land cards from their hand to the battlefield.",
+      "Each opponent returns two land cards from their graveyard to the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhd7.look.oneHand.oneGraveyard.oneBottom",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 401.2",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "put one of {g:Seen} into your hand , one into your graveyard , and one on the bottom of your library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "kept"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "kept"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "binned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "binned"
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "bottomed"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "bottomed"
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "one"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top four cards of your library. Put one of those cards into your hand, one into your graveyard, and one on the bottom of your library."
+      },
+      {
+        "text": "Look at the top three cards of your library. Put one of them into your hand, one into your graveyard, and one on the bottom of your library."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top three cards of your library. Put one of those cards into your hand, one into your graveyard, and one on top of your library.",
+      "Look at the top three cards of your library. Put one of those cards into your hand and one into your graveyard.",
+      "Put one of those cards into your hand, one into your graveyard, and one on the bottom of your library."
+    ]
+  },
+  {
+    "id": "eff.edhd7.may.put.fromPlayerGraveyard.bf.underYou",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 400.7",
+      "CR 404.1"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card from {p:Player} 's graveyard onto the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "$p",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent mills three cards. You may put a creature card from that player's graveyard onto the battlefield under your control."
+      },
+      {
+        "text": "Target player mills five cards. You may put an artifact card from that player's graveyard onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent mills eight cards. You put an artifact card from that player's graveyard onto the battlefield under your control.",
+      "Target opponent mills eight cards. You may put an artifact card from that player's graveyard onto the battlefield.",
+      "Target opponent mills eight cards. You may put an artifact card from that player's hand onto the battlefield under your control."
+    ]
+  },
+  {
+    "id": "eff.edhd7.sacrificeSelf.createTokens.whereX.thatCreatureMv",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 111.2",
+      "CR 202.3",
+      "CR 608.2h",
+      "CR 603.10a"
+    ],
+    "pattern": "sacrifice ~ and create x {t:TokenDesc} , where x is that creature 's mana value",
+    "build": [
+      {
+        "op": "sacrifice",
+        "what": {
+          "ref": "self"
+        }
+      },
+      {
+        "op": "createToken",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "stat",
+          "stat": "manaValue",
+          "of": {
+            "ref": "event",
+            "role": "subject"
+          }
+        },
+        "token": "$t"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature enters, sacrifice this creature and create X 1/1 white Spirit creature tokens, where X is that creature's mana value."
+      },
+      {
+        "text": "When a creature enters, sacrifice this creature and create X 3/3 red Demon creature tokens, where X is that creature's mana value."
+      }
+    ],
+    "counterExamples": [
+      "When a creature enters, sacrifice this artifact and create X 2/2 green Monkey creature tokens, where X is that creature's power.",
+      "When a creature enters, create X 2/2 green Monkey creature tokens, where X is that creature's mana value.",
+      "When a creature enters, sacrifice this artifact and create two 2/2 green Monkey creature tokens, where X is that creature's mana value."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhd7.search.playerLibrary.desc",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 608.2c"
+    ],
+    "pattern": "search {p:Player} 's library for {f:SearchDesc}",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "owner": "$p",
+      "filter": "$f",
+      "max": 1,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search target opponent's library for a land card. You may cast that card without paying its mana cost. Then that player shuffles."
+      },
+      {
+        "text": "Search target player's library for an artifact card. You may put that card onto the battlefield. Then that player shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Search target opponent's graveyard for an instant or sorcery card. You may cast that card without paying its mana cost.",
+      "Search target opponent's library for two creature cards. You may cast that card without paying its mana cost. Then that player shuffles.",
+      "Search target opponent's library. You may cast that card without paying its mana cost."
+    ],
+    "weak": 1
+  }
+]

@@ -1,0 +1,537 @@
+[
+  {
+    "id": "eff.edhv79.pump.foreach.domain.durAfter",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2h",
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 305.6",
+      "CR 205.3i"
+    ],
+    "pattern": "{o:Objs} get {pt:PT} {d:Dur} for each basic land type among lands you control",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "math",
+                    "op": "+",
+                    "args": [
+                      {
+                        "q": "math",
+                        "op": "min",
+                        "args": [
+                          1,
+                          {
+                            "q": "count",
+                            "of": {
+                              "ref": "each",
+                              "filter": {
+                                "types": [
+                                  "Land"
+                                ],
+                                "controller": "you",
+                                "subtypes": [
+                                  "Plains"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "q": "math",
+                        "op": "min",
+                        "args": [
+                          1,
+                          {
+                            "q": "count",
+                            "of": {
+                              "ref": "each",
+                              "filter": {
+                                "types": [
+                                  "Land"
+                                ],
+                                "controller": "you",
+                                "subtypes": [
+                                  "Island"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "q": "math",
+                        "op": "min",
+                        "args": [
+                          1,
+                          {
+                            "q": "count",
+                            "of": {
+                              "ref": "each",
+                              "filter": {
+                                "types": [
+                                  "Land"
+                                ],
+                                "controller": "you",
+                                "subtypes": [
+                                  "Swamp"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "q": "math",
+                        "op": "min",
+                        "args": [
+                          1,
+                          {
+                            "q": "count",
+                            "of": {
+                              "ref": "each",
+                              "filter": {
+                                "types": [
+                                  "Land"
+                                ],
+                                "controller": "you",
+                                "subtypes": [
+                                  "Mountain"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "q": "math",
+                        "op": "min",
+                        "args": [
+                          1,
+                          {
+                            "q": "count",
+                            "of": {
+                              "ref": "each",
+                              "filter": {
+                                "types": [
+                                  "Land"
+                                ],
+                                "controller": "you",
+                                "subtypes": [
+                                  "Forest"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "math",
+                    "op": "+",
+                    "args": [
+                      {
+                        "q": "math",
+                        "op": "min",
+                        "args": [
+                          1,
+                          {
+                            "q": "count",
+                            "of": {
+                              "ref": "each",
+                              "filter": {
+                                "types": [
+                                  "Land"
+                                ],
+                                "controller": "you",
+                                "subtypes": [
+                                  "Plains"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "q": "math",
+                        "op": "min",
+                        "args": [
+                          1,
+                          {
+                            "q": "count",
+                            "of": {
+                              "ref": "each",
+                              "filter": {
+                                "types": [
+                                  "Land"
+                                ],
+                                "controller": "you",
+                                "subtypes": [
+                                  "Island"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "q": "math",
+                        "op": "min",
+                        "args": [
+                          1,
+                          {
+                            "q": "count",
+                            "of": {
+                              "ref": "each",
+                              "filter": {
+                                "types": [
+                                  "Land"
+                                ],
+                                "controller": "you",
+                                "subtypes": [
+                                  "Swamp"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "q": "math",
+                        "op": "min",
+                        "args": [
+                          1,
+                          {
+                            "q": "count",
+                            "of": {
+                              "ref": "each",
+                              "filter": {
+                                "types": [
+                                  "Land"
+                                ],
+                                "controller": "you",
+                                "subtypes": [
+                                  "Mountain"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "q": "math",
+                        "op": "min",
+                        "args": [
+                          1,
+                          {
+                            "q": "count",
+                            "of": {
+                              "ref": "each",
+                              "filter": {
+                                "types": [
+                                  "Land"
+                                ],
+                                "controller": "you",
+                                "subtypes": [
+                                  "Forest"
+                                ]
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{2}{U}: Creatures you control get +1/+1 until end of turn for each basic land type among lands you control."
+      },
+      {
+        "text": "{1}{B}: Creatures you control get -2/-2 until end of turn for each basic land type among lands you control."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+1 until end of turn for each land type among lands you control.",
+      "Creatures you control get +1/+1 until end of turn for each basic land type among lands an opponent controls.",
+      "Creatures you control get +1/+1 for each basic land type among lands you control."
+    ]
+  },
+  {
+    "id": "eff.edhv79.damage.andHalfRoundedUp",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 107.1a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient} and half {m:Qty} damage , rounded up , to {p:Player}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": "$p",
+          "amount": {
+            "q": "math",
+            "op": "ceilDiv",
+            "args": [
+              "$m",
+              2
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "~ deals X damage to target opponent and half X damage, rounded up, to you, where X is the number of Forests you control."
+      },
+      {
+        "text": "~ deals X damage to any target and half X damage, rounded up, to you, where X is the number of artifacts you control."
+      }
+    ],
+    "counterExamples": [
+      "~ deals X damage to target opponent and half X damage, rounded down, to you, where X is the number of Forests you control.",
+      "~ deals X damage to target opponent and half X damage to you, where X is the number of Forests you control.",
+      "~ deals X damage to target opponent and X damage, rounded up, to you, where X is the number of Forests you control."
+    ]
+  },
+  {
+    "id": "eff.edhv79.damage.recipientAndAdditionalEach",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 120.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {to:Recipient} and {m:Qty} additional damage to each {f:Filter}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$to",
+      "amount": "$n",
+      "also": [
+        {
+          "to": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "amount": "$m"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "~ deals X damage to each creature with reach and 1 additional damage to each green creature."
+      },
+      {
+        "text": "~ deals 2 damage to each creature with flying and 3 additional damage to each green creature."
+      }
+    ],
+    "counterExamples": [
+      "~ deals X damage to each creature with reach and 1 more damage to each green creature.",
+      "~ deals X damage to each creature with reach and 1 additional damage to target green creature.",
+      "~ deals X damage to target creature with reach and 1 additional damage to each green creature."
+    ]
+  },
+  {
+    "id": "eff.edhv79.removeCounter.perFilter",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2b",
+      "CR 122.1",
+      "CR 608.2h",
+      "CR 107.3"
+    ],
+    "pattern": "remove ( a | an ) {k:CounterKind} counter from {o:Objs} for each {f:Filter}",
+    "build": {
+      "op": "removeCounters",
+      "from": "$o",
+      "kind": "$k",
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, remove a +1/+1 counter from ~ for each card in target opponent's hand."
+      },
+      {
+        "text": "At the beginning of your end step, remove a charge counter from ~ for each creature you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, remove a +1/+1 counter from ~ for each other creature you control.",
+      "At the beginning of your upkeep, remove a +1/+1 counter from ~.",
+      "At the beginning of your upkeep, remove all +1/+1 counters from ~ for each card in your hand."
+    ]
+  },
+  {
+    "id": "eff.edhv79.prevent.combat.byTargetObj",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.2",
+      "CR 120.3"
+    ],
+    "pattern": "prevent all combat damage that would be dealt ( {d:Dur} by {o:Obj} | by {o:Obj} {d:Dur} )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            },
+            "combat": true
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt this turn by target attacking creature with reach."
+      },
+      {
+        "text": "{2}{R}: Prevent all combat damage that would be dealt this turn by target blocking creature."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt this turn by target attacking creature with reach.",
+      "Prevent all combat damage that would be dealt this turn by target attacking creature with reach and target blocking creature.",
+      "Prevent all combat damage that would be dealt by target attacking creature with reach."
+    ]
+  },
+  {
+    "id": "eff.edhv79.putOwnerLibraryTop.choose",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 400.3",
+      "CR 109.2"
+    ],
+    "pattern": "put {n:Qty} {f:Filter} on top of its owner 's library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "toTop"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "toTop"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, put a creature you control on top of its owner's library."
+      },
+      {
+        "text": "At the beginning of your upkeep, put an artifact you control on top of its owner's library."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, put a creature you control on the bottom of its owner's library.",
+      "Whenever ~ attacks, put target creature you control on top of its owner's library.",
+      "Whenever ~ attacks, put a creature you control on top of your library."
+    ]
+  }
+]

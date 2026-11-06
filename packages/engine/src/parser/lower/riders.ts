@@ -24,13 +24,15 @@
  *     (render/self-replacement.ts, WP23 review): the same op on the same player and objects, another amount or destination. "You may X instead", a
  *     subset of a group, another target (CR 601.2c) or another instruction are refused, so the sentence stays manual.
  *   - r5-refs INTERFACE CHANGE (additive, opt-in): `{"@append": [X]}` as a value appends to the list the previous step has at that key (mergePatch).
+ *   - edh-d-43 INTERFACE CHANGE (additive, opt-in): `"@after": [steps]` at the top of the patch puts those instructions right after the modified step (see the merge below).
  *   - M6-8 INTERFACE CHANGE (additive, opt-in): `"@step": -n` at the top of the patch names the n-th top-level step from the END of the previous sentence
  *     instead of its last one (-1, the default): "The new creature type can't be Wall." restricts the second of the two choices of Artificial Evolution's
  *     first sentence, whose last step is the effect (CR 612.2, 608.2d). The named step must have the op of `attachTo`; a step that does not exist refuses.
  */
+import type { Quantity } from '../../types/ability';
 import type { Draft, Rec, Unit } from './types';
 import { canonicalJson } from '../holes';
-import { isCastChoice, notWideReplacement } from '../../render/self-replacement';
+import { isCastChoice, keywordChoiceGrant, notWideReplacement, sameGrantTarget } from '../../render/self-replacement';
 import { clone, cloneDraft, freshName, isRec, rewrite, sequences, setManual } from './util';
 
 /** A rider whose patch cannot be applied as written (a reference that does not exist, a key that is already set). */
@@ -51,6 +53,9 @@ function lookupPrevious(prev: Rec, path: string): unknown {
 }
 
 /** Replace every "@previous" / "@previous.<path>" string of a patch by what it names in the previous step. */
+/** edh-d-90: the instructions after an `addMana` that a "this mana" rider looks past (they add no mana: CR 106.4). */
+const MANA_RIDER_SKIPS: ReadonlySet<string> = new Set(['gainLife', 'loseLife', 'draw']);
+
 export function resolvePrevious(patch: unknown, prev: Rec): unknown {
   if (typeof patch === 'string') {
     if (patch === PREVIOUS) return clone(prev);
@@ -168,6 +173,17 @@ export function applyRider(last: Rec, patch: Rec, count: number, spell = false, 
     // std-costs-2 INTERFACE CHANGE (additive, opt-in): `"@names": true`, the rider names the instruction it replaces ("put that card onto the battlefield instead of
     // putting it into your hand"): the template's `attachTo`, `@step` and `@require` pick that one instruction among several (CR 614.15)
     const named = resolved['@names'] === true;
+    // edh-next-141 (CR 614.15, 608.2c, 702.2, 702.20; Éowyn, Lady of Rohan): "target creature gains your choice of first strike or vigilance until end of turn. If that creature is
+    // equipped, it gains first strike and vigilance until end of turn instead.": the choice and its two grants (eff.t41.gains.choice2) are ONE instruction, a grant of one of two
+    // keywords; one grant of keywords to the same object for the same duration replaces all of it (the choice is not made when the condition holds)
+    if (count !== 1 && !named && sentence !== undefined && sentence.length === count && sentence[count - 1] === last && rest0IsIf(resolved)) {
+      const grant = keywordChoiceGrant(sentence);
+      const then = resolved['then'];
+      if (grant !== null && Array.isArray(then) && then.length === 1 && isRec(then[0]) && sameGrantTarget(then[0], grant)) {
+        const { '@replace': _r, '@names': _n, ...rest } = resolved;
+        if (Array.isArray(rest['else']) && rest['else'].length === 1 && canonicalJson(rest['else'][0]) === canonicalJson(last)) return { ...rest, else: clone(sentence) };
+      }
+    }
     if (count !== 1 && !whole && !named) throw new RiderRefused('"instead" after a sentence with several instructions (CR 614.15)');
     const { '@replace': _drop, '@names': _named, ...rest } = resolved;
     // the only replacement fold: if C then [X] else [Y], with Y the previous step (flow.json#fl.instead)
@@ -190,10 +206,22 @@ export function applyRider(last: Rec, patch: Rec, count: number, spell = false, 
     // same target the replaced move names. Only a move of the target of the previous move to somewhere else, step for step the same otherwise.
     // CLOUD C9 (CR 701.8a, 400.7): the same for a replaced destroy: "Destroy target attacking creature. If that creature is a Demon, exile it instead." ("it" is the card
     // the destroy put into the graveyard; in the branch that exiles instead, it is the target)
+    const retargetAgainst = (prev: Rec) => (x: unknown): unknown =>
+      isRec(x) && (x['op'] === 'move' || (x['op'] === 'destroy' && prev['op'] === 'destroy' /* edh-replace-4: a guarded destroy by another guarded destroy (Fatal Push) */) || (x['op'] === 'counter' && prev['op'] === 'counter' /* edh-next-93 (Bane's Contingency): "instead counter that spell, scry 2, then draw a card" */)) && (prev['op'] === 'move' || prev['op'] === 'destroy' || prev['op'] === 'counter') && typeof prev['as'] === 'string' && isRec(x['what']) && x['what']['ref'] === 'bound'
+        && x['what']['name'] === prev['as'] && isRec(prev['what']) && prev['what']['ref'] === 'target' ? { ...x, what: prev['what'], as: prev['as'] } : x;
+    // edh-replace-7 (CR 614.15, 608.2d; Emeria Shepherd): "You may return target ... to your hand. If C, you may return that card to the battlefield instead.": the same, inside the one instruction of
+    // each of the two choices
     const retarget = (x: unknown): unknown =>
-      isRec(x) && x['op'] === 'move' && (last['op'] === 'move' || last['op'] === 'destroy') && typeof last['as'] === 'string' && isRec(x['what']) && x['what']['ref'] === 'bound'
-        && x['what']['name'] === last['as'] && isRec(last['what']) && last['what']['ref'] === 'target' ? { ...x, what: last['what'], as: last['as'] } : x;
-    const then = Array.isArray(rest['then']) ? rest['then'].map(retarget) : rest['then'];
+      isRec(x) && x['op'] === 'may' && last['op'] === 'may' && Array.isArray(x['do']) && Array.isArray(last['do']) && x['do'].length === 1 && last['do'].length === 1 && isRec(last['do'][0])
+        ? { ...x, do: [retargetAgainst(last['do'][0])(x['do'][0])] } : retargetAgainst(last)(x);
+    // edh-replace-1 (CR 614.15, 118.12a; Stubborn Denial): "Counter target noncreature spell unless its controller pays {1}. If C, counter that spell instead.": "that spell" of the
+    // replacing counter is the spell the counter of the payment offer names (`as`); in the branch that replaces the offer that name is not bound, so the branch counts the
+    // same target spell (the very counter step the offer is about)
+    const offered = last['op'] === 'pay' && Array.isArray(last['else']) && last['else'].length === 1 && isRec(last['else'][0]) ? last['else'][0] : undefined;
+    const retargetOffer = (x: unknown): unknown =>
+      offered !== undefined && isRec(x) && x['op'] === 'counter' && offered['op'] === 'counter' && typeof offered['as'] === 'string' && isRec(x['what']) && x['what']['ref'] === 'bound'
+        && x['what']['name'] === offered['as'] && Object.keys(x).length === 2 ? clone(offered) : x;
+    const then = Array.isArray(rest['then']) ? rest['then'].map(retarget).map(retargetOffer) : rest['then'];
     if (Array.isArray(then)) rest['then'] = then;
     // FAST5X E1: with a condition decided at announcement ("if this spell was bargained", "if the gift was promised"), any one instruction (render/self-replacement.ts#isCastChoice)
     // FAST5X E19: ... and with the mana spent to cast the triggering spell, fixed before the ability triggered (opus; render/self-replacement.ts#isFixedChoice)
@@ -207,6 +235,8 @@ export function applyRider(last: Rec, patch: Rec, count: number, spell = false, 
   }
   return mergePatch(last, resolved) as Rec;
 }
+
+const rest0IsIf = (r: Rec): boolean => r['op'] === 'if' && Array.isArray(r['else']) && r['else'].length === 1;
 
 /**
  * r4-repl (CR 614.15, 608.2c, 701.23a): "Search your library for a Vehicle card, reveal it, and put it into your hand. If C, put that card onto the battlefield
@@ -290,6 +320,13 @@ function oneOf(patch: Rec, last: Rec): Rec {
   throw new RiderRefused('no shape of "@oneOf" fits the previous step');
 }
 
+/** edh-zones-25: how many sentences with steps a rider's `"@unit": -n` skips before the one it modifies (0 without it; a value that is not an integer below -1 skips more than there are: no sentence). */
+function unitBack(patch: Rec): number {
+  const v = patch['@unit'];
+  if (v === undefined) return 0;
+  return typeof v === 'number' && Number.isInteger(v) && v < -1 ? -v - 1 : Number.MAX_SAFE_INTEGER;
+}
+
 /** M6-8: the step a patch names, counted from the end of the previous sentence (-1: the last); null for a value that is not a negative integer. */
 function stepBack(patch: Rec): number | null {
   const v = patch['@step'];
@@ -305,12 +342,23 @@ function stepBack(patch: Rec): number | null {
  * branch and the wrapper must have no other branch (an `else` / `otherwise` would leave it unknown which branch the sentence speaks of).
  * Returns the list holding the instruction and its index, or null (the rider is then manual as before).
  */
+/** edh-next-65: the last instruction of a delayed trigger's `do` when it is of the op `op` (and the delayed trigger has no other shape): where a rider after an "instead" fold of delayed copies acts. */
+function delayedInner(step: Rec, op: string): { holder: Rec[]; at: number } | null {
+  if (step['op'] !== 'delay' || !Array.isArray(step['do']) || step['do'].length === 0) return null;
+  const list = step['do'] as unknown[];
+  const inner = list[list.length - 1];
+  return isRec(inner) && inner['op'] === op ? { holder: list as Rec[], at: list.length - 1 } : null;
+}
+
 function innerStep(step: Rec, op: string): { holder: Rec[]; at: number } | null {
   let cur = step;
   for (let depth = 0; depth < 4; depth++) {
-    const key = cur['op'] === 'may' || cur['op'] === 'delay' ? 'do' : cur['op'] === 'pay' || cur['op'] === 'if' ? 'then' : null;
+    // edh-cast-15 (CR 106.6, 707.10c; Sunken Palace): "Add {U}. When you spend this mana to cast a spell or activate an ability, copy that spell or ability. You may choose new targets for the copy.":
+    // the instructions of the triggered ability the mana carries (`addMana.whenSpent.do`) are such a wrapper
+    const spent = cur['op'] === 'addMana' && isRec(cur['whenSpent']) ? cur['whenSpent']['do'] : undefined;
+    const key = cur['op'] === 'may' || cur['op'] === 'delay' ? 'do' : cur['op'] === 'pay' || cur['op'] === 'if' ? 'then' : spent !== undefined ? 'whenSpent' : null;
     if (key === null || cur['else'] !== undefined || cur['otherwise'] !== undefined) return null;
-    const list = cur[key];
+    const list = key === 'whenSpent' ? spent : cur[key];
     if (!Array.isArray(list) || list.length === 0 || !isRec(list[list.length - 1])) return null;
     const inner = list[list.length - 1] as Rec;
     if (inner['op'] === op) return { holder: list as Rec[], at: list.length - 1 };
@@ -383,7 +431,13 @@ export function lowerRiders(input: Draft): Draft {
     const folds = new Map<number, Rec>();
     seq.forEach((u, i) => {
       if (u.manual || !u.rider) return;
-      const prev = seq.slice(0, i).reverse().find((p) => p.manual !== undefined || p.steps.length > 0);
+      // edh-zones-25 INTERFACE CHANGE (additive, opt-in): `"@unit": -n` (n >= 2) names the n-th sentence back that has steps, when the sentences between are plain
+      // automated instructions ("Search ..., reveal those cards, and put one onto the battlefield tapped and the rest into your hand. Then shuffle. If C, search ... instead
+      // of two." modifies the search of the first sentence, over the continuation "Then shuffle." that is a sentence of its own, CR 608.2c, 614.15); a rider or a manual sentence
+      // in between refuses
+      const eligible = seq.slice(0, i).reverse().filter((p) => p.manual !== undefined || p.steps.length > 0);
+      const skip = unitBack(u.rider.patch);
+      const prev = skip === 0 ? eligible[0] : eligible.slice(0, skip).every((p) => p.manual === undefined && p.rider === undefined) ? eligible[skip] : undefined;
       const back = stepBack(u.rider.patch); // M6-8: "@step" (file comment); -1 is the last step
       let at = prev && !prev.manual && back !== null ? prev.steps.length + back : -1;
       // edh-cast-1 INTERFACE CHANGE (additive, opt-in): `"@alsoStep": -2` lets a rider whose `attachTo` op is not the previous sentence's last step reach the step before it, when that
@@ -400,6 +454,7 @@ export function lowerRiders(input: Draft): Draft {
       let hat = at;
       let last = at >= 0 ? prev!.steps[at] : undefined;
       let unlessElse = false;
+      let elseBranch: { holder: Rec[]; at: number } | undefined; // edh-cast-12: the other branch of an "instead" fold a rider with `@eachBranch` modifies too
       // FAST5 T47 (CR 608.2c, 608.2d): a rider after "you may [do X]" modifies X, the one instruction inside the choice ("Then you may have it become a 0/0
       // Elemental creature until end of turn. It's still a land."); it is applied there when the `may` itself is not what the template attaches to
       const through = last !== undefined && u.rider.attachTo !== undefined && last['op'] === 'may' && u.rider.attachTo !== 'may' && Array.isArray(last['do'])
@@ -408,8 +463,13 @@ export function lowerRiders(input: Draft): Draft {
       // lower/where-x.ts): "Create X 1/1 Pilot creature tokens, where X is .... The tokens have "..."" gives the tokens the abilities
       const whereX = last !== undefined && !through && u.rider.attachTo !== undefined && last['lower'] === 'whereX' && last['op'] === undefined && Array.isArray(last['steps'])
         && last['steps'].length === 1 && isRec(last['steps'][0]) && last['steps'][0]['op'] === u.rider.attachTo && u.rider.patch['@replace'] === undefined;
+      // edh-d-90 (CR 106.4, 500.5, 608.2c; Colossal Plow): "Whenever ~ attacks, add {W}{W}{W} and you gain 3 life. Until end of turn, you don't lose this mana as steps and phases end.": "this mana"
+      // is the mana of the sentence's ONE `addMana` step, followed only by a gain or loss of life or a draw (which add no mana): the rider modifies that step
+      const manaAt = !through && !whereX && last !== undefined && u.rider.attachTo === 'addMana' && last['op'] !== 'addMana' && holder !== undefined && hat === holder.length - 1 ? holder.findIndex((x) => isRec(x) && x['op'] === 'addMana') : -1;
+      const manaBack = manaAt >= 0 && JSON.stringify(holder!).split('"addMana"').length === 2 && holder!.slice(manaAt + 1).every((x) => isRec(x) && MANA_RIDER_SKIPS.has(String(x['op'])) && x['guard'] === undefined);
       if (through) { holder = last!['do'] as Rec[]; hat = 0; last = holder[0]; }
       else if (whereX) { holder = last!['steps'] as Rec[]; hat = 0; last = holder[0]; }
+      else if (manaBack) { hat = manaAt; last = holder![hat]; }
       // std-rg (CR 603.12, 608.2c): a rider after "When you do, you may cast target ... without paying its mana cost." modifies the instruction the reflexive trigger
       // carries out ("If that spell would be put into your graveyard, exile it instead."): the last instruction of its `do`, when that is what the template attaches to
       else if (last !== undefined && u.rider.attachTo !== undefined && last['op'] === 'reflexive' && u.rider.patch['@replace'] === undefined && Array.isArray(last['do']) && last['do'].length > 0
@@ -419,17 +479,39 @@ export function lowerRiders(input: Draft): Draft {
       else if (last !== undefined && u.rider.attachTo !== undefined && last['op'] !== u.rider.attachTo && u.rider.patch['@into'] === true && innerStep(last, u.rider.attachTo) !== null) {
         const inner = innerStep(last, u.rider.attachTo)!;
         holder = inner.holder; hat = inner.at; last = inner.holder[inner.at]; // T45: through "may" / "pay" / "if"
-      } else if (last !== undefined && u.rider.attachTo !== undefined && last['op'] === 'pay' && last['op'] !== u.rider.attachTo && u.rider.patch['@replace'] === undefined
-        && last['then'] === undefined && Array.isArray(last['else']) && last['else'].length === 1 && isRec(last['else'][0]) && last['else'][0]['op'] === u.rider.attachTo) {
+      } else if (last !== undefined && u.rider.patch['@replace'] === true && (last['op'] === 'pay' || last['op'] === 'if') && last['else'] === undefined && Array.isArray(last['then']) && last['then'].length === 1
+        && isRec(last['then'][0]) && !['pay', 'may', 'if'].includes(String(last['then'][0]['op']))
+        && !(holder === prev?.steps && at === holder.length - 1 && keywordChoiceGrant(holder) !== null) /* edh-next-141: the last grant of a keyword choice is not an "if you do" branch (applyRider) */) {
+        // edh-replace-2 (CR 614.15, 608.2c): "You may pay {G/W}. If you do, put a +1/+1 counter on it. If it's a Unicorn, put two +1/+1 counters on it instead.": the
+        // consequence of "if you do" (an `if` on the payment, which a later pass folds into the payment's `then`) is the one instruction the "instead" sentence replaces:
+        // X replaces Y only where Y would happen (CR 614.15), so the replacement sits inside that branch. With several consequences which one is replaced would be a
+        // guess, so only a branch with ONE
+        holder = last['then'] as Rec[]; hat = 0; last = holder[0];
+      } else if (last !== undefined && u.rider.attachTo !== undefined && last['op'] === 'pay' && !u.rider.attachTo.split('|').includes('pay') && u.rider.patch['@replace'] === undefined /* edh-d-5: attachTo may list several ops */
+        && last['then'] === undefined && Array.isArray(last['else']) && last['else'].length === 1 && isRec(last['else'][0]) && u.rider.attachTo.split('|').includes(String(last['else'][0]['op']))) {
         // FAST5 T56 (CR 118.12a, 608.2c): "Counter target spell unless its controller pays {3}. If that spell is countered this way, exile it instead ...": the rider
         // modifies the instruction the "unless" wrapper (a `pay` whose `else` is that ONE instruction) carries out when the payer does not pay; `@replace` stays out
         holder = last['else'] as Rec[]; hat = 0; last = holder[0]; unlessElse = true;
       } else if (last !== undefined && u.rider.attachTo !== undefined && last['op'] === 'if' && last['op'] !== u.rider.attachTo && u.rider.patch['@replace'] === undefined
-        && folds.get(i - 1) === last && Array.isArray(last['then']) && last['then'].length > 0 && isRec(last['then'][last['then'].length - 1])
-        && (last['then'][last['then'].length - 1] as Rec)['op'] === u.rider.attachTo) {
+        // edh-players-18 (CR 608.2c; Neheb, Dreadhorde Champion): or an "If you do" sentence (a `did` condition, no `else`): "If you do, draw that many cards and add that much {R}. Until end of
+        // turn, you don't lose this mana as steps and phases end." modifies the mana the branch added
+        && (folds.get(i - 1) === last || ((u.rider.attachTo === 'addMana' || u.rider.attachTo === 'copy' /* edh-next-131 (CR 707.12, 608.2c; Blue Mage's Cane, Jacob Frye): "If you do, copy it. You may cast the copy." */) && isRec(last['cond']) && last['cond']['cond'] === 'did' && last['else'] === undefined)) && Array.isArray(last['then']) && last['then'].length > 0 && isRec(last['then'][last['then'].length - 1])
+        && ((last['then'][last['then'].length - 1] as Rec)['op'] === u.rider.attachTo || delayedInner(last['then'][last['then'].length - 1] as Rec, u.rider.attachTo) !== null)) {
         // CLOUD C9 (CR 608.2c): a rider right after an "instead" sentence modifies that sentence's last instruction, in the branch that replaces the earlier one:
         // "If there are seven or more cards in your graveyard, instead destroy that creature. It can't be regenerated." (CR 701.19c)
+        // edh-cast-12 INTERFACE CHANGE (additive, opt-in): `"@eachBranch": true` at the top of a patch makes such a rider modify the last instruction of the `else` branch too, when that
+        // is also of the op the template attaches to: "Copy target instant or sorcery spell you control. If this spell was cast from a graveyard, copy that spell twice instead. You may
+        // choose new targets for the copies." (CR 707.10c) speaks of the copies of either branch
+        const fold = last;
         holder = last['then'] as Rec[]; hat = holder.length - 1; last = holder[hat];
+        // edh-next-65 (CR 603.7b, 707.10c; Sea Gate Stormcaller): the instruction that replaces is a delayed trigger whose copy the rider modifies ("copy the next ... spell you cast this turn when you cast it.
+        // If ~ was kicked, copy that spell twice instead. You may choose new targets for the copies.")
+        const viaThen = last !== undefined && last['op'] !== u.rider.attachTo ? delayedInner(last, u.rider.attachTo) : null;
+        if (viaThen !== null) { holder = viaThen.holder; hat = viaThen.at; last = holder[hat]; }
+        const other = fold['else'];
+        const otherLast = Array.isArray(other) && other.length > 0 && isRec(other[other.length - 1]) ? (other[other.length - 1] as Rec) : undefined;
+        if (u.rider.patch['@eachBranch'] === true && Array.isArray(other) && otherLast !== undefined && otherLast['op'] === u.rider.attachTo) elseBranch = { holder: other as Rec[], at: other.length - 1 };
+        else if (u.rider.patch['@eachBranch'] === true && otherLast !== undefined && delayedInner(otherLast, u.rider.attachTo) !== null) elseBranch = delayedInner(otherLast, u.rider.attachTo)!;
       }
       // CLOUD std-msh (CR 608.2c): "Create a tapped 2/1 Villain token if there are two or more creature cards in your graveyard. Otherwise, mill two cards.": a
       // guarded instruction ("X if C", the step's `guard`) is "if C, X", an `if` step whose one instruction is X, which "Otherwise, Y" completes with its `else`
@@ -439,7 +521,9 @@ export function lowerRiders(input: Draft): Draft {
         last = { op: 'if', cond: guard, then: [bare] };
         // std-rx31 (CR 608.2c, 400.7): "Return it to the battlefield if it's an artifact creature card. Otherwise, return it to the battlefield and ...": in the branch
         // where the guarded move of a target did not happen, "it" (the name that move gives the card it moved) is that target itself, as for an "instead" fold (applyRider)
-        const moved = bare['op'] === 'move' && typeof bare['as'] === 'string' && isRec(bare['what']) && bare['what']['ref'] === 'target' ? bare['as'] : null;
+        // edh-next-144 (CR 608.2c, 400.7; Loyal Inventor): "Put that card into your hand if you control an Assassin. Otherwise, put that card on top of your library.": the same
+        // holds for a card a step before named (a searched card, `{"ref": "bound"}`): where it was not moved, "that card" is still the card that step named
+        const moved = bare['op'] === 'move' && typeof bare['as'] === 'string' && isRec(bare['what']) && (bare['what']['ref'] === 'target' || (bare['what']['ref'] === 'bound' && typeof bare['what']['name'] === 'string' && bare['what']['name'] !== bare['as'])) ? bare['as'] : null;
         if (moved !== null) {
           const target = bare['what'];
           u.rider.patch = rewrite(u.rider.patch, (n) => (n['ref'] === 'bound' && n['name'] === moved ? clone(target) : undefined)) as Rec;
@@ -452,7 +536,7 @@ export function lowerRiders(input: Draft): Draft {
       // names; a filter of the new steps that names the previous step's target ({"is": "@previous.what"}) must look in the zone that target's own description names
       if (u.rider.patch['@before'] !== undefined) {
         const refuse = (why: string): void => setManual(u, { code: 'no-template', reason: `the rider ${u.rider!.template} cannot modify the previous step: ${why} (CR 608.2c)` });
-        if (last === undefined || prev === undefined || holder !== prev.steps || hat !== prev.steps.length - 1 || (u.rider.attachTo !== undefined && !u.rider.attachTo.split('|').includes(String(last['op'])))) {
+        if (last === undefined || prev === undefined || holder !== prev.steps || (hat !== prev.steps.length - 1 && !(typeof also === 'number' && hat === prev.steps.length + also /* edh-next-90: `@alsoStep` reached the step before the last ("..., put it into your hand, then shuffle.") */)) || (u.rider.attachTo !== undefined && !u.rider.attachTo.split('|').includes(String(last['op'])))) {
           refuse('it acts before the last instruction of the sentence before, which is not of its kind');
           return;
         }
@@ -473,6 +557,16 @@ export function lowerRiders(input: Draft): Draft {
           if (spec === undefined || n['zone'] === undefined || canonicalJson(n['zone']) !== canonicalJson(spec.filter?.zone)) zoneOk = false;
         });
         if (!zoneOk) { refuse('its group is not the zone the previous instruction moves its targets from'); return; }
+        // edh-next-90 INTERFACE CHANGE (additive, opt-in): `"@guardPrevious": "unlessDid"` makes the previous step run only when the optional instruction the rider put before it
+        // was not carried out ("You may put that card onto the battlefield instead of putting it into your hand if C", CR 614.15, 608.2d): the `may` of the inserted `if` records
+        // whether it was done (`as`) and the previous step, which would move the same card a second time (the engine follows a card that moved), has the guard "if that was not done"
+        if (u.rider.patch['@guardPrevious'] === 'unlessDid') {
+          const inserted = (before as Rec[]).length === 1 ? (before as Rec[])[0] : undefined;
+          if (inserted === undefined || inserted['op'] !== 'may' || inserted['as'] !== undefined || last['guard'] !== undefined) { refuse('the optional instruction it puts before the previous step cannot be told apart'); return; }
+          const name = freshName(d, 'did');
+          inserted['as'] = name;
+          holder[hat] = { ...last, guard: { cond: 'did', step: name, not: true } };
+        }
         holder.splice(hat, 0, ...(before as Rec[]));
         delete u.rider;
         u.steps = [];
@@ -500,15 +594,64 @@ export function lowerRiders(input: Draft): Draft {
         return;
       }
       let merged: Rec;
+      let sibling: Rec | undefined;
+      let afterSteps: unknown;
       try {
-        const { '@step': _step, '@alsoStep': _also, '@into': _into, '@require': require, ...patch } = byOp(oneOf(u.rider.patch, last), last);
+        // edh-d-95 (CR 608.2c, 611.2): the instructions `"@after"` puts after the modified step may name parts of it too ("@previous.filter": "That spell can't be countered." after "The next
+        // creature spell you cast this turn can be cast as though it had flash" is a second rider on the same next spell)
+        afterSteps = u.rider.patch['@after'] === undefined ? undefined : resolvePrevious(u.rider.patch['@after'], last);
+        const { '@step': _step, '@unit': _unit, '@alsoStep': _also, '@into': _into, '@eachBranch': _each, '@withPrevious': withPrevious, '@require': require, '@after': _after, ...patch } = byOp(oneOf(u.rider.patch, last), last);
         checkRequired(last, require);
+        // edh-next-53 (CR 614.15, 608.2c; The Destined Black Mage): "~ deals 1 damage to each opponent. If C, it deals 3 damage to each opponent instead.": the "it" of the sentence that says what is
+        // done instead is the source of the damage it replaces (the same damage is dealt, with another amount), not the event's subject the pronoun resolved to (a cast spell, a creature that died)
+        const thenSteps = patch['then'];
+        if (u.rider.patch['@replace'] === true && /\bit deals\b/i.test(u.text) && last['op'] === 'damage' && isRec(last['source']) && Array.isArray(thenSteps) && thenSteps.length === 1
+          && isRec(thenSteps[0]) && thenSteps[0]['op'] === 'damage' && isRec(thenSteps[0]['source']) && thenSteps[0]['source']['ref'] === 'event') {
+          patch['then'] = [{ ...thenSteps[0], source: clone(last['source']) }];
+        }
         // CLOUD C9: the whole previous sentence when the rider acts on its last top-level step itself (an "instead" fold may then replace all of it)
         const sentence = holder === prev!.steps && hat === prev!.steps.length - 1 ? prev!.steps : undefined;
         merged = applyRider(last, patch, prev!.steps.length, d.spell === true, sentence);
+        // edh-cast-15 INTERFACE CHANGE (additive, opt-in): `"@withPrevious": true` makes the same patch modify the instruction right before the step too, when it is of the same op ("copy all spells you
+        // control, then copy all other activated and triggered abilities you control. You may choose new targets for the copies." speaks of the copies of both instructions, CR 707.10c)
+        if (withPrevious === true) {
+          const before = hat > 0 ? holder[hat - 1] : undefined;
+          if (!isRec(before) || before['op'] !== last['op']) throw new RiderRefused('there is no instruction of the same kind right before it');
+          sibling = applyRider(before, patch, prev!.steps.length, d.spell === true);
+        }
+        if (elseBranch !== undefined) {
+          const e = elseBranch.holder[elseBranch.at]!;
+          // (an instruction with no count has none to carry over: one copy)
+          const own: Rec = { ...patch };
+          if (own['count'] === '@previous.count' && e['count'] === undefined) delete own['count'];
+          elseBranch.holder[elseBranch.at] = applyRider(e, own, prev!.steps.length, d.spell === true);
+        }
       } catch (e) {
         if (!(e instanceof RiderRefused)) throw e;
         setManual(u, { code: 'no-template', reason: `the rider ${u.rider.template} cannot modify the previous step: ${e.message} (CR 608.2c)` });
+        return;
+      }
+      // edh-misc-4 (CR 608.2c, 608.2d; Treasure Chest, Fecund Greenshell, Aid from the Cowl rulings; owner's standing rule 2026-10-27, a recorded G10 change): "If C, you may
+      // put it onto the battlefield. Otherwise, put it into your hand.": "Otherwise" is whether the card was put onto the battlefield, so the second instruction also
+      // happens when you decline the first. The `may` (the last instruction of the branch; yours, one move) gets the other instruction as its `otherwise`, which runs when
+      // the option was declined or could not be carried out; the `else` stays for the condition not holding. Said once again by the renderer (render/steps-flow.ts#otherwiseEcho).
+      if (isOtherwisePatch(u.rider.patch) && merged['op'] === 'if' && Array.isArray(merged['then']) && Array.isArray(merged['else'])) {
+        const may = merged['then'][merged['then'].length - 1];
+        if (isRec(may) && may['op'] === 'may' && isRec(may['who']) && may['who']['ref'] === 'you' && Object.keys(may['who']).length === 1 && may['otherwise'] === undefined
+          && may['anyOne'] === undefined && may['villainous'] === undefined && Array.isArray(may['do']) && may['do'].length === 1 && isRec(may['do'][0]) && may['do'][0]['op'] === 'move'
+          && isRec(merged['cond']) && merged['cond']['cond'] === 'matches' && isRec(may['do'][0]['what']) && JSON.stringify(may['do'][0]['what']) === JSON.stringify(merged['cond']['object']) // (a test of the very card the option moves, as in the rulings)
+          && !JSON.stringify(merged['else']).includes('"ref":"target"')) {
+          merged['then'][merged['then'].length - 1] = { ...may, otherwise: clone(merged['else']) };
+        }
+      }
+      // edh-replace-2 (CR 614.15, 608.2c; review): a swap of one instruction of you by another of you ("Scry 1. If C, draw a card instead.") is read only when nothing before the replaced
+      // sentence is an instruction of that kind: "Draw a card. You gain 2 life. If C, draw two cards instead." replaces the draw, not the life gain
+      const youOps = ['scry', 'surveil', 'draw', 'mill', 'gainLife', 'loseLife'];
+      const thenOp = Array.isArray(merged['then']) && isRec(merged['then'][0]) ? merged['then'][0]['op'] : undefined;
+      if (u.rider.patch['@replace'] === true && merged['op'] === 'if' && merged['then'] !== undefined && Array.isArray(merged['else']) && merged['else'].length === 1 && isRec(merged['else'][0])
+        && thenOp !== merged['else'][0]['op'] && youOps.includes(String(thenOp)) && youOps.includes(String(merged['else'][0]['op']))
+        && (seq.slice(0, i).some((p) => p !== prev && p.steps.some((x) => youOps.includes(String(x['op'])))) || (prev !== undefined && prev.steps.slice(0, -1).some((x) => youOps.includes(String(x['op'])))))) {
+        setManual(u, { code: 'no-template', reason: `the rider ${u.rider.template} cannot modify the previous step: an earlier instruction of the same kind makes it unclear which one "instead" replaces (CR 614.15, 608.2c)` });
         return;
       }
       sameNameInBoth(last, merged, seq.slice(i + 1));
@@ -516,11 +659,78 @@ export function lowerRiders(input: Draft): Draft {
       // r4-repl: unless it replaces only the last instruction (`else` is that one step, riders.ts#movesTheOnlyMoved)
       if (u.rider.patch['@replace'] === true && holder === prev!.steps && prev!.steps.length > 1 && !(Array.isArray(merged['else']) && merged['else'].length === 1)) prev!.steps.splice(0, prev!.steps.length, merged);
       else holder[hat] = merged;
+      // edh-d-43 INTERFACE CHANGE (additive, opt-in): `"@after": [steps]` also puts instructions right AFTER the modified step, in the same holder: "If that spell is countered this way, exile it
+      // instead of putting it into its owner's graveyard, then you may cast it without paying its mana cost." (CR 608.2c, 614.15) changes where the spell goes, then the cast follows
+      const after = afterSteps;
+      if (Array.isArray(after) && after.every(isRec) && u.rider.patch['@replace'] === undefined) holder.splice(hat + 1, 0, ...(clone(after) as Rec[]));
+      if (sibling !== undefined) holder[hat - 1] = sibling;
       if (u.rider.patch['@replace'] === true && holder === prev!.steps) folds.set(i, merged);
       if (d.spell === true && !unlessElse) onlyIfOfReplaced(d, merged);
       delete u.rider;
       u.steps = [];
     });
   }
+  // edh-replace-2 (CR 614.6, 700.4; review of Burn from Within): "If that creature would die this turn, exile it instead." after "If a creature is dealt damage this way, ..." is about the
+  // creature the damage step really dealt damage to, not about its target: the shield is made for the objects the step bound (`as`), so it does nothing for damage that was prevented
+  for (const seq of sequences(d)) {
+    const damaged = new Map<string, Rec>();
+    const armed = new Set<string>();
+    for (const u of seq) {
+      for (const st of u.steps) {
+        if (st['op'] === 'damage' && typeof st['as'] === 'string' && isRec(st['to']) && st['to']['ref'] === 'target') damaged.set(st['as'], st['to']);
+        if (st['op'] === 'if' && isRec(st['cond']) && st['cond']['cond'] === 'exists') {
+          const of = st['cond']['of'];
+          const is = isRec(of) && isRec(of['filter']) ? of['filter']['is'] : undefined;
+          if (isRec(is) && is['ref'] === 'bound' && typeof is['name'] === 'string' && damaged.has(is['name'])) armed.add(is['name']);
+        }
+        if (st['op'] === 'effect' && Array.isArray(st['effects'])) {
+          for (const e of st['effects']) {
+            const subject = isRec(e) && e['s'] === 'replace' && isRec(e['replaces']) ? e['replaces']['subject'] : undefined;
+            if (!isRec(subject) || !isRec(subject['is'])) continue;
+            const name = [...armed].find((n) => canonicalJson(damaged.get(n)) === canonicalJson(subject['is']));
+            if (name !== undefined) subject['is'] = { ref: 'bound', name };
+          }
+        }
+      }
+    }
+  }
+  fixDividedTotals(d);
   return d;
+}
+
+/**
+ * edh-top-3 (CR 601.2d, 107.3, 614.15): "~ deals X damage divided as you choose among up to two target creatures and/or planeswalkers. If X is 6 or more, ~ deals twice X damage
+ * divided as you choose among them instead." The division is announced with the targets, so its total is read from the X announced: the total of the spec (which lowerTargets set
+ * from the first sentence's amount, X) is the amount of the branch that applies, `then` when X meets the number, else the amount of the previous sentence. Written with the
+ * arithmetic the announcement reads (actions/announce-cond.ts#announceQty): B + (A - B) * min(1, floor(X / N)), exact for a whole number N of 1 or more and X of 0 or more.
+ * Only an `if` step comparing the announced X with a number (`>=`) whose two branches are ONE divided-announced damage step each to the same target; any other shape is left as it
+ * was (the lint, model/lint-nodes.ts, refuses a division that does not match a damage step).
+ */
+function fixDividedTotals(d: Draft): void {
+  const dividedDamage = (steps: unknown): Rec | undefined => (Array.isArray(steps) && steps.length === 1 && isRec(steps[0]) && steps[0]['op'] === 'damage' && steps[0]['divided'] === 'announced' ? steps[0] : undefined);
+  for (const seq of sequences(d)) for (const u of seq) {
+    if (u.manual) continue;
+    rewrite(u.steps, (node) => {
+      if (node['op'] !== 'if' || !isRec(node['cond'])) return undefined;
+      const c = node['cond'];
+      const th = dividedDamage(node['then']);
+      const el = dividedDamage(node['else']);
+      if (th === undefined || el === undefined) return undefined;
+      const to = th['to'];
+      if (!isRec(to) || to['ref'] !== 'target' || JSON.stringify(to) !== JSON.stringify(el['to'])) return undefined;
+      const spec = d.targets.find((s) => s.id === to['id']);
+      if (spec?.divide === undefined || spec.divide.what !== 'damage') return undefined;
+      // two divided-damage branches of one target whose condition is not "X is N or more" (N a whole number of 1 or more): the total announced would be X while a branch deals more,
+      // so the sentence is manual (fail closed; review of edh-top-3: "If X is 0 or more, ...")
+      if (c['cond'] !== 'compare' || c['op'] !== '>=' || !isRec(c['left']) || c['left']['q'] !== 'X' || typeof c['right'] !== 'number' || !Number.isInteger(c['right']) || c['right'] < 1) {
+        setManual(u, { code: 'ambiguous', reason: 'the amount divided among the targets depends on a condition the announcement cannot read (CR 601.2d)' });
+        return undefined;
+      }
+      const a = th['amount'] as Quantity;
+      const b = el['amount'] as Quantity;
+      const reaches = { q: 'math', op: 'min', args: [1, { q: 'math', op: 'floorDiv', args: [{ q: 'X' }, c['right']] }] };
+      spec.divide = { what: 'damage', total: clone({ q: 'math', op: '+', args: [b, { q: 'math', op: '*', args: [{ q: 'math', op: '-', args: [a, b] }, reaches] }] }) as Quantity };
+      return undefined;
+    });
+  }
 }

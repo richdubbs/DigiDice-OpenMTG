@@ -1,0 +1,6 @@
+# edh-zones-27 (Commander effort, lane edh-zones; test/cloud/edh-zones-27, golden edh-zones-27-review.json): Cosmic Intervention (exile instead + return at the next end step), Mari the Killing Quill (hit counters on exiled cards, a granted trigger that removes one), Aminatou's Augury (a land from among the exiled cards, one free cast per nonland card type), Urabrask // The Great Work (cast from any graveyard, "instant and/or sorcery" gate), Urabrask, Heretic Praetor (the next draw replaced by an exile and a play permission)
+Cosmic Intervention
+Mari, the Killing Quill
+Aminatou's Augury
+Urabrask // The Great Work
+Urabrask, Heretic Praetor

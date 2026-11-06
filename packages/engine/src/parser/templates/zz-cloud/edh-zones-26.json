@@ -1,0 +1,463 @@
+[
+  {
+    "id": "eff.edhz26.choose.permanentAndCardOfItsController",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 108.3",
+      "CR 608.2c"
+    ],
+    "pattern": "choose target {a:Filter} a player controls and target {b:Filter} card in that player 's graveyard",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "target",
+            "id": "",
+            "$target": {
+              "kind": "object",
+              "filter": "$a",
+              "min": 1,
+              "max": 1,
+              "text": "target permanent a player controls",
+              "locate": "controls"
+            }
+          },
+          {
+            "ref": "target",
+            "id": "",
+            "$target": {
+              "kind": "object",
+              "filter": {
+                "$merge": [
+                  "$b",
+                  {
+                    "zone": "graveyard",
+                    "isCard": true
+                  }
+                ]
+              },
+              "min": 1,
+              "max": 1,
+              "text": "target card in that player's graveyard",
+              "ownerOfEarlierController": true,
+              "locate": "graveyard"
+            }
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "that player",
+      "that",
+      "player",
+      "'s",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Choose target creature a player controls and target creature card in that player's graveyard. Then that player simultaneously sacrifices the creature and returns the creature card to the battlefield."
+      },
+      {
+        "text": "Choose target enchantment a player controls and target enchantment card in that player's graveyard. If both targets are still legal as this ability resolves, that player simultaneously sacrifices the enchantment and returns the enchantment card to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature a player controls and target creature card in your graveyard. Then that player simultaneously sacrifices the creature and returns the creature card to the battlefield.",
+      "Choose target creature you control and target creature card in that player's graveyard. Then that player simultaneously sacrifices the creature and returns the creature card to the battlefield.",
+      "Choose target creature a player controls and target artifact card in that player's graveyard. Then that player simultaneously sacrifices the creature and returns the artifact card to the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhz26.thatPlayer.sacrificeAndReturnTogether",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 701.20",
+      "CR 400.7",
+      "CR 608.2b",
+      "CR 608.2c",
+      "CR 614.1"
+    ],
+    "pattern": "( if both targets are still legal as this ability resolves , | then ) that player simultaneously sacrifices the {a:Filter} and returns the {b:Filter} card to the battlefield",
+    "build": {
+      "lower": "sacrificeReturnPair",
+      "a": "$a",
+      "b": "$b"
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "then",
+      "that player",
+      "that",
+      "player",
+      "both",
+      "still",
+      "legal",
+      "simultaneously",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Choose target creature a player controls and target creature card in that player's graveyard. Then that player simultaneously sacrifices the creature and returns the creature card to the battlefield."
+      },
+      {
+        "text": "Choose target land a player controls and target land card in that player's graveyard. If both targets are still legal as this ability resolves, that player simultaneously sacrifices the land and returns the land card to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature a player controls and target creature card in that player's graveyard. Then that player simultaneously sacrifices the creature and returns the creature card to their hand.",
+      "Choose target creature a player controls and target creature card in that player's graveyard. If both targets are still legal as this ability resolves, that player sacrifices the creature and returns the creature card to the battlefield.",
+      "Choose target creature a player controls and target creature card in that player's graveyard. Then that player simultaneously sacrifices the creature and returns the creature to the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhz26.dig.rest.thatLibraryBottom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put {r:Rest} on the bottom of that library",
+    "build": [
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Look at the top three cards of target player's library. Exile one of them face down and put the other on the bottom of that library."
+      },
+      {
+        "text": "When this creature enters, look at the top two cards of target opponent's library. Exile one of them face down and put the other on the bottom of that library."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top three cards of target player's library. Exile one of them face down and put the other on top of that library.",
+      "Look at the top three cards of target player's library. Exile one of them face down and put the other on the bottom of your library.",
+      "Look at the top three cards of target player's library. Exile one of them face down and put the other on the bottom of that library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhz26.put.fromTheirGraveyard.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 404.1",
+      "CR 110.2a",
+      "CR 110.5",
+      "CR 608.2c",
+      "CR 108.3"
+    ],
+    "pattern": "put ( a | an ) {f:Filter} card from ( their | that player 's ) graveyard onto the battlefield tapped under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "isCard": true,
+            "owner": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "player",
+                "number": "singular",
+                "head": "player",
+                "text": "that player"
+              }
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "tapped": true,
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "{T}: Target opponent mills two cards. Put a creature card from their graveyard onto the battlefield tapped under your control."
+      },
+      {
+        "text": "{T}: Target player mills four cards. Put an artifact card from that player's graveyard onto the battlefield tapped under your control."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target opponent mills two cards. Put a creature card from their graveyard onto the battlefield under your control.",
+      "{T}: Target opponent mills two cards. Put a creature card from your graveyard onto the battlefield tapped under your control.",
+      "{T}: Target opponent mills two cards. Put two creature cards from their graveyard onto the battlefield tapped under your control."
+    ]
+  },
+  {
+    "id": "eff.edhz26.they.mayCast.obj.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9"
+    ],
+    "pattern": "they may cast {o:Obj} without paying its mana cost",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "bound",
+        "name": "",
+        "$anaphor": {
+          "sort": "any",
+          "number": "plural",
+          "text": "they"
+        }
+      },
+      "what": "$o",
+      "free": true,
+      "optional": true
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent exiles cards from the top of their library until they exile a land card. They may cast that card without paying its mana cost."
+      },
+      {
+        "text": "Target player exiles cards from the top of their library until they exile a creature card. They may cast that card without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent exiles cards from the top of their library until they exile a land card. They may cast that card.",
+      "Target opponent exiles cards from the top of their library until they exile a land card. They cast that card without paying its mana cost.",
+      "Target opponent exiles cards from the top of their library until they exile a land card. They may cast that card by paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhz26.choose.numberAtRandom.oneTwoThree",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2c",
+      "CR 607.2d"
+    ],
+    "pattern": "choose 1 , 2 , or 3 at random",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "number",
+      "min": 1,
+      "max": 3,
+      "random": true,
+      "as": "chosenNumber",
+      "link": "chosenNumber"
+    },
+    "consumes": [
+      "random",
+      "or",
+      "at random"
+    ],
+    "examples": [
+      {
+        "text": "Choose 1, 2, or 3 at random. Target player mills that many cards, then exiles cards from the top of their library until they exile a land card."
+      },
+      {
+        "text": "Choose 1, 2, or 3 at random. Target opponent mills that many cards, then exiles cards from the top of their library until they exile an artifact card."
+      }
+    ],
+    "counterExamples": [
+      "Choose 1, 2, or 4 at random. Target player mills that many cards, then exiles cards from the top of their library until they exile a land card.",
+      "Choose 1, 2, or 3. Target player mills that many cards, then exiles cards from the top of their library until they exile a land card.",
+      "Choose 1 or 2 at random. Target player mills that many cards, then exiles cards from the top of their library until they exile a land card."
+    ]
+  },
+  {
+    "id": "eff.edhz26.player.mill.thatMany.thenExileUntil",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.17a",
+      "CR 406.1",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} mill[s] that many cards , then exile[s] cards from the top of their library until they exile {f:DiscardDesc}",
+    "build": [
+      {
+        "op": "mill",
+        "who": "$p",
+        "count": {
+          "q": "chosenNumber",
+          "link": "@producerNumber"
+        }
+      },
+      {
+        "op": "exileUntil",
+        "who": "$p",
+        "filter": "$f"
+      }
+    ],
+    "consumes": [
+      "then",
+      "until",
+      "that many",
+      "that",
+      "many"
+    ],
+    "examples": [
+      {
+        "text": "Choose 1, 2, or 3 at random. Target player mills that many cards, then exiles cards from the top of their library until they exile a land card."
+      },
+      {
+        "text": "Counter target spell. Choose 1, 2, or 3 at random. Its controller mills that many cards, then exiles cards from the top of their library until they exile a creature card."
+      }
+    ],
+    "counterExamples": [
+      "Choose 1, 2, or 3 at random. Target player mills that many cards, then exiles cards from the top of your library until they exile a land card.",
+      "Choose 1, 2, or 3 at random. Target player mills that many cards, then exiles two cards from the top of their library.",
+      "Choose 1, 2, or 3 at random. Target player mills that many cards, then exiles cards from the top of their library until they exile two land cards."
+    ]
+  },
+  {
+    "id": "eff.edhz26.manifest.top.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.40a",
+      "CR 701.40e",
+      "CR 110.2",
+      "CR 608.2c"
+    ],
+    "pattern": "manifest the top card of {p:Player} 's library",
+    "build": {
+      "op": "action",
+      "action": "manifest",
+      "who": {
+        "ref": "you"
+      },
+      "subject": {
+        "ref": "topCards",
+        "player": "$p",
+        "count": 1
+      }
+    },
+    "needs": [
+      "action:manifest"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, manifest the top card of that player's library."
+      },
+      {
+        "text": "Manifest the top card of target opponent's library."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, manifest the top two cards of that player's library.",
+      "Whenever ~ deals combat damage to a player, manifest the top card of that player's graveyard.",
+      "Whenever ~ deals combat damage to a player, cloak the top card of that player's library."
+    ]
+  },
+  {
+    "id": "eff.edhz26.asManyTimes.mayExileTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 406.1"
+    ],
+    "pattern": "as many times as you choose , you may exile the top card of your library",
+    "build": {
+      "op": "repeat",
+      "times": 1,
+      "optional": true,
+      "do": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "topCards",
+            "player": {
+              "ref": "you"
+            },
+            "count": 1
+          },
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as many times",
+      "many",
+      "times"
+    ],
+    "examples": [
+      {
+        "text": "{T}: As many times as you choose, you may exile the top card of your library. You gain life equal to the total mana value of the cards exiled this way."
+      },
+      {
+        "text": "At the beginning of your upkeep, as many times as you choose, you may exile the top card of your library. Draw a card if the total mana value of the cards exiled this way is 4 or less."
+      }
+    ],
+    "counterExamples": [
+      "{T}: As many times as you choose, you may exile the top card of your graveyard. You gain life equal to the total mana value of the cards exiled this way.",
+      "{T}: As many times as you choose, exile the top card of your library. You gain life equal to the total mana value of the cards exiled this way.",
+      "{T}: Exile the top card of your library. You gain life equal to the total mana value of the cards exiled this way."
+    ]
+  }
+]

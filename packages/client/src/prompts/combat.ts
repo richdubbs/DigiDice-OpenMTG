@@ -138,17 +138,18 @@ export function initialBlocks(d: DeclareBlockersDecision): Block[] {
 /**
  * Whether a declaration obeys one requirement (CR 508.1d, 509.1c), as the engine reads it (rules/requirements.ts): `attack` - the creature attacks (one of
  * `among`, when given); `block` - the creature blocks (one of `among`); `beBlocked` - the attacking creature is blocked by at least one creature (one of
- * `among`).
+ * `among`), or by `min` creatures (edh-d-38).
  */
 export function requirementObeyed(r: CombatRequirement, decl: { attacks?: readonly { attacker: string; defender: string }[]; blocks?: readonly Block[] }): boolean {
   const ok = (id: string) => !r.among || r.among.includes(id);
   switch (r.kind) {
     case 'attack':
-      return (decl.attacks ?? []).some((a) => a.attacker === r.creature && ok(a.defender));
+      if (r.allIfAny && r.group) { const grp = r.group; return (decl.attacks ?? []).some((a) => a.attacker === r.creature) || !(decl.attacks ?? []).some((a) => grp.includes(a.attacker)); } // edh-d-88: War's Toll (it attacks, or none of its group does)
+      return (decl.attacks ?? []).some((a) => (r.group ? r.group.includes(a.attacker) : a.attacker === r.creature) && ok(a.defender)); // edh-d-75: a group requirement is obeyed by any creature of the group
     case 'block':
       return (decl.blocks ?? []).some((b) => b.blocker === r.creature && ok(b.attacker));
     case 'beBlocked':
-      return (decl.blocks ?? []).some((b) => b.attacker === r.creature && ok(b.blocker));
+      { const n = (decl.blocks ?? []).filter((b) => b.attacker === r.creature && ok(b.blocker)).length; return r.exactly !== undefined ? n === r.exactly : n >= (r.min ?? 1); } // edh-d-38: "two or more"; edh-d-75: "exactly one"
     default:
       return false;
   }

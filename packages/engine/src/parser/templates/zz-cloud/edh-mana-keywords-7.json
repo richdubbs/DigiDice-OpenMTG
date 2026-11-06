@@ -1,0 +1,155 @@
+[
+  {
+    "id": "sta.edhmk7.each.flashback.manacost",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 702.34a",
+      "CR 118.9"
+    ],
+    "pattern": "each {f:Filter} has flashback . the flashback cost is equal to ( its | that card 's ) mana cost",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "flashback",
+                  "text": "flashback",
+                  "costIsManaCost": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "Each artifact card in your graveyard has flashback. The flashback cost is equal to that card's mana cost."
+      },
+      {
+        "text": "Each Arcane card in your graveyard has flashback. The flashback cost is equal to its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Each artifact card in your graveyard has flashback. The flashback cost is equal to its power.",
+      "Each artifact card in your graveyard has flashback {2}. The flashback cost is equal to its mana cost.",
+      "During your turn, each artifact card in your graveyard has flashback. The flashback cost is equal to that card's mana cost."
+    ]
+  },
+  {
+    "id": "rid.edhmk7.mana.youSpend.commander.scryCasts",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 603.2",
+      "CR 701.22a",
+      "CR 903.8"
+    ],
+    "pattern": "when you spend this mana to cast your commander , scry x , where x is the number of times it's been cast from the command zone this game",
+    "build": {
+      "$patchPrevious": {
+        "whenSpent": {
+          "@new": {
+            "spells": {
+              "commander": true,
+              "owner": "you"
+            },
+            "do": [
+              {
+                "op": "scry",
+                "who": {
+                  "ref": "you"
+                },
+                "count": {
+                  "q": "commanderCasts",
+                  "spell": true
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "when",
+      "spend",
+      "commander"
+    ],
+    "needs": [
+      "feature:q.commanderCasts.spell"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {C}. When you spend this mana to cast your commander, scry X, where X is the number of times it's been cast from the command zone this game."
+      },
+      {
+        "text": "{2}, {T}: Add {G}. When you spend this mana to cast your commander, scry X, where X is the number of times it's been cast from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {C}. When you spend this mana to cast your commander, scry 2.",
+      "{T}: Add {C}. If you spend this mana to cast your commander, scry X, where X is the number of times it's been cast from the command zone this game.",
+      "{T}: Add {C}. When you spend this mana to cast your commander, each opponent scries X, where X is the number of times it's been cast from the command zone this game."
+    ]
+  },
+  {
+    "id": "rid.edhmk7.mana.cantBeSpent.generic",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 107.4b",
+      "CR 601.2g"
+    ],
+    "pattern": "this mana can't be spent to pay generic mana costs",
+    "build": {
+      "$patchPrevious": {
+        "restriction": {
+          "notGeneric": true
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "can't"
+    ],
+    "needs": [
+      "feature:mana.restriction.notGeneric"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {R}{G}. This mana can't be spent to pay generic mana costs."
+      },
+      {
+        "text": "{2}, {T}: Add one mana of any color. This mana can't be spent to pay generic mana costs."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {R}{G}. This mana can't be spent to pay colored mana costs.",
+      "{T}: Add {R}{G}. This mana can be spent to pay generic mana costs.",
+      "{T}: Add {R}{G}. This mana can't be spent to pay generic mana costs or to cast creature spells."
+    ]
+  }
+]

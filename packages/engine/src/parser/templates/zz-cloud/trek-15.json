@@ -1,0 +1,172 @@
+[
+  {
+    "id": "eff.trek15.goaded.selfAnd.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.15a",
+      "CR 701.15b",
+      "CR 701.15c",
+      "CR 611.2b",
+      "CR 608.2c"
+    ],
+    "pattern": "~ and {o:Obj} are goaded {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "self"
+              },
+              "$o"
+            ]
+          },
+          "mode": "mustIfAble",
+          "action": "attack",
+          "goad": true
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, choose target creature an opponent controls. ~ and that creature are goaded for as long as you control ~."
+      },
+      {
+        "text": "When ~ enters, choose target creature. ~ and that creature are goaded until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose target creature an opponent controls. ~ and that creature are goaded.",
+      "When ~ enters, choose target creature an opponent controls. ~ and that player are goaded for as long as you control ~.",
+      "When ~ enters, choose target creature an opponent controls. ~ and that creature aren't goaded for as long as you control ~."
+    ]
+  },
+  {
+    "id": "eff.trek15.you.surveil",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.25a",
+      "CR 109.5"
+    ],
+    "pattern": "you surveil {n:Qty}",
+    "build": {
+      "op": "surveil",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever this creature blocks, you surveil 3."
+      },
+      {
+        "text": "When this creature enters, it deals 1 damage to each opponent and you surveil 2."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature blocks, you surveil 3 cards.",
+      "Whenever this creature blocks, you scry 3.",
+      "Whenever this creature blocks, target player surveil 3."
+    ]
+  },
+  {
+    "id": "eff.trek15.forEach.oppAttacked.token.tappedAttacking.front",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 508.4",
+      "CR 506.3",
+      "CR 608.2c"
+    ],
+    "pattern": "for each opponent you attacked this turn , create ( a | an ) tapped and attacking {t:TokenDesc}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "opponentsAttacked",
+        "scope": "turn"
+      },
+      "token": "$t",
+      "tapped": true,
+      "attacking": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack, for each opponent you attacked this turn, create a tapped and attacking 2/1 red Warrior creature token with haste."
+      },
+      {
+        "text": "Whenever you attack, for each opponent you attacked this turn, create a tapped and attacking 1/1 white Soldier creature token."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack, for each opponent you attacked this turn, create a tapped 2/1 red Warrior creature token with haste.",
+      "Whenever you attack, for each opponent you attacked this turn, create two tapped and attacking 2/1 red Warrior creature tokens with haste.",
+      "Whenever you attack, for each opponent you attacked this turn, create a tapped and blocking 2/1 red Warrior creature token with haste."
+    ]
+  },
+  {
+    "id": "eff.trek15.forEach.filter.token.tappedAttacking.front",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 508.4",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "for each {f:Filter} , create ( a | an ) tapped and attacking {t:TokenDesc}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      },
+      "token": "$t",
+      "tapped": true,
+      "attacking": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, for each attacking non-Elf creature, create a tapped and attacking 1/1 green Elf creature token with reach."
+      },
+      {
+        "text": "Whenever ~ attacks, for each attacking Elf, create a tapped and attacking 1/1 green Elf creature token with reach."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, for each attacking non-Elf creature, create a tapped 1/1 green Elf creature token with reach.",
+      "Whenever ~ attacks, for each attacking non-Elf creature, create two tapped and attacking 1/1 green Elf creature tokens with reach.",
+      "Whenever ~ attacks, for each attacking non-Elf creature, create a tapped and attacking 1/1 green Elf creature token with reach unless it is red."
+    ]
+  }
+]

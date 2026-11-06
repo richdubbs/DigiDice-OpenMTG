@@ -50,16 +50,23 @@ describe('p2-c-cast-zone-1: abilities that function in the graveyard (CR 113.6k,
     expect(json(f)).toContain('"zone":["graveyard"]');
     expect(fullyAutomated(creature('At the beginning of your upkeep, if ~ is in your hand, you may pay {2}. If you do, draw a card.'))).toBe(false);
   });
-  it('lower/trigger-zone.ts: "When ~ is put into your graveyard from your library" functions in the graveyard; "from anywhere" stays manual', () => {
+  it('lower/trigger-zone.ts: "When ~ is put into your graveyard from your library" functions in the graveyard; "from anywhere" does too since edh-zones-3 (CR 603.6c), when the whole effect is understood', () => {
     const f = creature('When ~ is put into your graveyard from your library, you may put it onto the battlefield.');
     expect(fullyAutomated(f), JSON.stringify(f.diagnostics)).toBe(true);
     expect(json(f)).toContain('"zone":["graveyard"]');
-    expect(fullyAutomated(creature('When ~ is put into a graveyard from anywhere, you gain 2 life.'))).toBe(false);
+    expect(fullyAutomated(creature('When ~ is put into a graveyard from anywhere, you gain 2 life.'))).toBe(true); // edh-zones-3 (CR 603.6c, 113.6k)
+    expect(fullyAutomated(creature('When ~ is put into a graveyard from anywhere, fnord the foo.'))).toBe(false);
   });
   it('lower/ability.ts#deadWhereItFunctions: an ability with no zone whose condition needs ~ in another zone stays manual (it would never apply on the battlefield)', () => {
-    expect(fullyAutomated(creature('As long as ~ is in your graveyard, lands you control have "{T}: Add {G}."'))).toBe(false);
+    // edh-next-80 (Riftstone Portal): the graveyard wording is now read by sta.edhn80.graveyard.grant, which gives the static ability its zone (graveyard), so it does function there
+    const gy = creature('As long as ~ is in your graveyard, lands you control have "{T}: Add {G}."');
+    expect(fullyAutomated(gy)).toBe(true);
+    expect(JSON.stringify(gy.abilities)).toContain('"zone":["graveyard"]');
+    // the negative stays: another zone, no zone given
+    expect(fullyAutomated(creature('As long as ~ is in your hand, lands you control have "{T}: Add {G}."'))).toBe(false);
   });
   it('a cast trigger that makes a token copy of the spell stays manual (only a spell copy or a counter of it is read from the stack)', () => {
-    expect(fullyAutomated(creature("When you cast this spell, create a token that's a copy of it."))).toBe(false);
+    // edh-next-97 (Osgood, Operation Double): a token copy of the spell, made while it is still on the stack, is now read (cast-self.ts#castSelfProgramSafe); the plain wording is automated, the next test keeps the unsafe ones manual
+    expect(fullyAutomated(creature("When you cast this spell, create a token that's a copy of it."))).toBe(true);
   });
 });

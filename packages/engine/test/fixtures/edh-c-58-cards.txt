@@ -1,0 +1,7 @@
+# edh-c-58 (Commander lane edh-c, EDHREC 19,501-20,000): red creatures and white creatures you control gain, a four-keyword pump choice, enters with counters for each mana spent, an opponent controls at least N more creatures, base power and toughness X/X where X. After editing: npm run cards -- fixtures
+Rise of the Hobgoblins
+Argivian Avenger
+Verazol, the Split Current
+Avatar of Might
+The Meep
+Isolated Watchtower

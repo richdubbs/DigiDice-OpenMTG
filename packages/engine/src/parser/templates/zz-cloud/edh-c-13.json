@@ -1,0 +1,302 @@
+[
+  {
+    "id": "eff.edhv13.eachMay.scry",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.22a",
+      "CR 101.4",
+      "CR 608.2d"
+    ],
+    "pattern": "each player may scry {n:Qty}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "do": [
+        {
+          "op": "scry",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each player may scry 1."
+      },
+      {
+        "text": "At the beginning of your upkeep, each player may scry 2."
+      }
+    ],
+    "counterExamples": [
+      "Each player scries 1.",
+      "Each opponent may scry 1.",
+      "Each player may scry 1 cards."
+    ]
+  },
+  {
+    "id": "eff.edhv13.thenIf.itHas.counters.removeThemTransform",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 701.27a",
+      "CR 712.9",
+      "CR 608.2c"
+    ],
+    "pattern": "then if it has {n:Qty} or more {k:CounterKind} counters on {o:Obj} , remove ( them | all of them ) and transform it",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": "$o",
+          "kind": "$k"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": [
+        {
+          "op": "removeCounters",
+          "from": "$o",
+          "kind": "$k",
+          "count": "all"
+        },
+        {
+          "op": "changeFace",
+          "what": "$o",
+          "to": "transform"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Draw a card, then put a ritual counter on ~. Then if it has three or more ritual counters on it, remove them and transform it."
+      },
+      {
+        "text": "{T}: Put a verse counter on ~. Then if it has four or more verse counters on it, remove all of them and transform it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Put a verse counter on ~. Then if it has four or fewer verse counters on it, remove them and transform it.",
+      "{T}: Put a verse counter on ~. Then if it has four or more verse counters on it, remove them and sacrifice it.",
+      "{T}: Put a verse counter on ~. Then if it has four or more verse counters on it, remove a counter and transform it."
+    ]
+  },
+  {
+    "id": "eff.edhv13.thenIf.thereAre.counters.removeAllOfThemTransform",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 701.27a",
+      "CR 712.9",
+      "CR 608.2c"
+    ],
+    "pattern": "then if there are {n:Qty} or more {k:CounterKind} counters on {o:Obj} , remove all of them and transform it",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": "$o",
+          "kind": "$k"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": [
+        {
+          "op": "removeCounters",
+          "from": "$o",
+          "kind": "$k",
+          "count": "all"
+        },
+        {
+          "op": "changeFace",
+          "what": "$o",
+          "to": "transform"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, put a hatchling counter on ~. Then if there are five or more hatchling counters on it, remove all of them and transform it."
+      },
+      {
+        "text": "{T}: Put a verse counter on ~. Then if there are four or more verse counters on it, remove all of them and transform it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Put a verse counter on ~. Then if there are four or fewer verse counters on it, remove all of them and transform it.",
+      "{T}: Put a verse counter on ~. Then if there are four or more verse counters on it, remove all of them and sacrifice it.",
+      "{T}: Put a verse counter on ~. Then if there are four or more verse counters on it, remove all of those counters and transform it."
+    ]
+  },
+  {
+    "id": "eff.edhv13.exchange.power.itAnd",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.12a",
+      "CR 613.4b",
+      "CR 611.2a"
+    ],
+    "pattern": "exchange its power and the power of {o:Obj} {d:Dur}",
+    "build": {
+      "op": "exchange",
+      "what": "power",
+      "a": {
+        "ref": "self"
+      },
+      "b": "$o",
+      "duration": "$d"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever this creature blocks, exchange its power and the power of target creature it's blocking until end of combat."
+      },
+      {
+        "text": "Whenever this creature attacks, exchange its power and the power of target creature an opponent controls until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature blocks, exchange its power and the power of target creature it's blocking.",
+      "Whenever this creature blocks, exchange its power and toughness with that of target creature it's blocking until end of combat.",
+      "Whenever this creature blocks, exchange its power and the power of each creature it's blocking until end of combat."
+    ]
+  },
+  {
+    "id": "eff.edhv13.linked.returnEach.battlefield.owners",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 400.3"
+    ],
+    "pattern": "return ( each | all ) ( card | cards ) exiled with ( it | ~ ) to the battlefield under ( its owner 's | their owners ' ) control",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Exile target creature you control.\nAt the beginning of your upkeep, you may sacrifice ~. If you do, return each card exiled with ~ to the battlefield under its owner's control."
+      },
+      {
+        "text": "{T}: Exile target artifact you control.\n{T}, Sacrifice ~: Return all cards exiled with ~ to the battlefield under their owners' control."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Exile target artifact you control.\n{T}, Sacrifice ~: Return all cards exiled with ~ to the battlefield under your control.",
+      "{T}: Exile target artifact you control.\n{T}, Sacrifice ~: Return all cards exiled with ~ to the battlefield tapped under their owners' control.",
+      "{T}, Sacrifice ~: Return all cards exiled with ~ to the battlefield under their owners' control."
+    ]
+  },
+  {
+    "id": "eff.edhv13.look.top.whereX.putBack.anyOrder",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 701.20e",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "look at the top x cards of your library , where x is {q:Qty} , then put them back in any order",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "look",
+          "who": {
+            "ref": "you"
+          },
+          "at": {
+            "ref": "topCards",
+            "player": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "X"
+            }
+          },
+          "as": "looked"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "looked"
+          },
+          "to": {
+            "zone": "library",
+            "position": "top",
+            "order": "chosen"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Look at the top X cards of your library, where X is the number of Wizards on the battlefield, then put them back in any order."
+      },
+      {
+        "text": "Look at the top X cards of your library, where X is the number of lands you control, then put them back in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top X cards of your library, where X is the number of lands you control, then put them on the bottom in any order.",
+      "Look at the top X cards of your library, where X is the number of lands you control, then put them back in a random order.",
+      "Look at the top X cards of target player's library, where X is the number of lands you control, then put them back in any order."
+    ]
+  }
+]

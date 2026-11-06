@@ -1,0 +1,1 @@
+{"name":"the root replaced","before":[1,2],"ops":[{"op":"set","path":[],"value":{"a":1}}],"after":{"a":1}}

@@ -59,7 +59,7 @@ const CALLS_ALLOWED: Record<string, { names: string[]; why: string }> = {
   'effects/handlers/cards-reveal.ts': { names: ['showCards'], why: 'revealing and looking at cards changes who may see them, nothing else (CR 701.20)' },
   'effects/handlers/cards-draw.ts': { names: ['showCards'], why: 'a card discarded at random is shown to its owner (CR 701.20, 701.9b)' },
   'effects/handlers/learn.ts': { names: ['showCards'], why: 'FAST5 MX7: the Lesson card learn brings into the hand is revealed (CR 701.48a, 701.20a); revealing changes who may see it, nothing else' },
-  'effects/bodies/m5.ts': { names: ['showCards'], why: "std-rx6: \"As ~ enters, look at an opponent's hand, then ...\" (an entering body, CR 614.12a, 402.3): looking at cards changes who may see them, nothing else (CR 701.20e)" },
+  'effects/bodies/m5.ts': { names: ['showCards', 'rollDice'], why: "std-rx6: \"As ~ enters, look at an opponent's hand, then ...\" (an entering body, CR 614.12a, 402.3): looking at cards changes who may see them, nothing else (CR 701.20e); edh-next-128: \"As ~ enters, roll X d6\" (Neverwinter Hydra) calls the one primitive of a die roll, as WP15's rollDie does (CR 706.1-706.2)" },
   'effects/handlers/outside.ts': { names: ['showCards'], why: 'cloud r3-mech: the card a wish reveals from outside the game is shown to every player (CR 400.11b, 701.20a), as learn does; revealing changes who may see it, nothing else' },
 };
 
@@ -72,6 +72,8 @@ const RULES_CORE_ALLOWED: Record<string, string> = {
   'core/manual.ts': 'the manual operations a player applies by hand (design 10.5), through the primitives',
   'core/create.ts': 'creating the game state (CR 103)',
   'core/start.ts': 'the start of the game: play order, mulligans, opening hands (CR 103)',
+  'core/mulligans.ts': 'edh-next-137: the mulligans of the start of the game (CR 103.5), moved out of core/start.ts unchanged',
+  'core/restart.ts': 'edh-next-137: restarting the game (CR 727): a new game state built as core/create.ts builds one, then the start procedure of CR 103',
   'core/turn.ts': 'the turn structure: steps, phases, priority (CR 500-514, 117)',
   'core/steps.ts': 'the turn-based actions of the steps (CR 502-514): untap, draw, cleanup, the end of "until end of turn" effects',
   'core/turn-effects.ts': 'extra turns and phases, ending the turn (CR 500.7, 724): the primitives of WP15\'s game ops',
@@ -81,6 +83,7 @@ const RULES_CORE_ALLOWED: Record<string, string> = {
   'core/combat-tax.ts': 'paying the costs to attack and block (CR 508.1h-j, 509.1d-f) through payPlan; payability is judged on a copy of the state with the attackers tapped (CR 508.1f)',
   'core/resolve.ts': 'a spell or ability leaving the stack as it resolves (CR 608)',
   'core/sba.ts': 'state-based actions and the end of the game (CR 704, 104): the design 8.5 performer of game end',
+  'core/loss.ts': 'a player loses the game (CR 104.3): the loss itself, once nothing replaced it (edh-replace-7; split off core/sba.ts, called by it and by the loseGame proposal kind)',
   'core/sba-objects.ts': 'the state-based actions on objects (CR 704.5)',
   'core/sba-commander.ts': 'M11-1: the state-based actions of the Commander rules (CR 704.6c, 704.6d): a commander its owner puts into the command zone is moved with moveObject, whose funnel proposes the move',
   'core/durations.ts': 'the one writer of resolved continuous effects (addEffectRecord, reached through effects/perform-direct.ts) and the end of durations (CR 611.2, 610.3); FAST4 MX1: of the moves "until" an event (addUntilMove, through effects/perform-direct.ts#performUntilMove)',
@@ -111,6 +114,7 @@ const RULES_CORE_ALLOWED: Record<string, string> = {
   'core/prepare.ts': 'M6-6: the prepared designation (CR 722.3a-b) and the copy of a prepare spell its controller creates in exile (CR 722.3c), the primitives behind effects/handlers/levels.ts and the enters part',
   'core/citys-blessing.ts': 'CMD3: the city\'s blessing (CR 702.131c), a designation of a player kept for the rest of the game, given by ascend (CR 702.131a-b): the primitive behind the designate handler and an immediate check',
   'core/player-control.ts': 'std-control-3: controlling another player (CR 723.1): the waiting and active player-control records, created by op controlPlayer and begun and ended by the turn machinery (core/turn.ts, core/steps.ts)',
+  'core/special/ignore-effect.ts': 'edh-next-143: the "pay to ignore this effect" special action (CR 116.2d) records who ignores which object\'s effect this turn (GameState.ignoredEffects), as a special action\'s own bookkeeping, after its cost is paid',
 };
 
 /** Fields only a game object or a player has (never an interpreter value such as DestinationFacts or ExecCtx), so writing one is a state write whatever the receiver. */

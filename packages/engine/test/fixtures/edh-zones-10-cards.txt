@@ -1,0 +1,9 @@
+# edh-zones-10 (Commander effort, lane edh-zones; test/cloud/edh-zones-10, golden edh-zones-10-review.json): tutor to top with a mana value, shuffle the rest into the library, search for any number with total mana value, search for N cards, any number of lands onto the battlefield under your control, repeat this process until, shares a permanent type, "if it's a nonland card"
+Conduit of Ruin
+Genesis Hydra
+Protean Hulk
+Final Parting
+Mind's Dilation
+Cloudstone Curio
+Oblivion Sower
+Tainted Pact

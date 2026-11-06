@@ -5,13 +5,23 @@
  * The store lives on the object INSTANCE: a new object (any zone change, CR 400.7) starts with no links, and an object that left keeps its last known links in
  * its `LastKnown.object`. Reading never creates the record; writing creates it. Link ids are plain strings chosen by the card data ("exiled", "chosenColor").
  */
-import type { GameObject, LinkValue } from '../types/state';
+import type { GameObject, GameState, LinkValue } from '../types/state';
 import type { LinkId } from '../types/ability';
 
 /** What the object's linked ability remembers under `link` (CR 607.2a), or undefined. A missing object or a missing record reads as undefined. */
 export function readLink(o: GameObject | undefined, link: LinkId): LinkValue | undefined {
   const store = o?.links;
   return store !== undefined && Object.hasOwn(store, link) ? store[link] : undefined; // hasOwn: a link named "constructor" or "__proto__" is just a name
+}
+
+/**
+ * edh-next-137 (CR 114.2, 607.2a; Tibalt, Cosmic Impostor): `readLink`, and for an emblem made to read the links of the permanent that made it (`GameObject.linksFrom`), a link it
+ * does not hold itself is read from that permanent, or from its last known information once it has left (CR 400.7: no later object of that card is followed).
+ */
+export function readLinkOf(s: GameState, o: GameObject | undefined, link: LinkId): LinkValue | undefined {
+  const own = readLink(o, link);
+  if (own !== undefined || o?.linksFrom === undefined) return own;
+  return readLink(s.objects[o.linksFrom] ?? (Object.hasOwn(s.lki, o.linksFrom) ? s.lki[o.linksFrom]!.object : undefined), link);
 }
 
 /**

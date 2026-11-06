@@ -1,0 +1,1 @@
+{"name":"work_01","before":{"a":1,"b":2},"ops":[{"op":"keys","path":[],"keys":["b","a"]}],"maxWork":10,"after":{"b":2,"a":1}}

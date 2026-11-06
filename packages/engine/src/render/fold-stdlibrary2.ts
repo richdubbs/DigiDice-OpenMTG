@@ -32,8 +32,10 @@ function returnAnotherThanSacrificed(list: EffectStep[], i: number, st: RenderSt
   const yours = (info.sacrificedBy === '{"ref":"you"}' && which === 'null') || (info.sacrificedBy === '{"ref":"each","who":"player"}' && which === '{"controller":"you"}');
   if (!yours) return null;
   if (b?.op !== 'move' || b.guard !== undefined || b.as !== undefined || b.until !== undefined || b.link !== undefined || JSON.stringify(b.what) !== JSON.stringify({ ref: 'bound', name: a.as })) return null;
-  if (JSON.stringify(b.to) !== '{"zone":"hand"}') return null;
-  const text = `return ${K.np({ ...f, not: undefined, other: true }, st, { det: 'a' })} to your hand`;
+  // edh-perms-12 (Rise of the Witch-king): ... or to the battlefield under your control ("you may return another permanent card from your graveyard to the battlefield")
+  const toHand = JSON.stringify(b.to) === '{"zone":"hand"}';
+  if (!toHand && JSON.stringify(b.to) !== '{"zone":"battlefield","controller":{"ref":"you"}}') return null;
+  const text = `return ${K.np({ ...f, not: undefined, other: true }, st, { det: 'a' })} to ${toHand ? 'your hand' : 'the battlefield'}`;
   return { clauses: [acting('you', text, `you ${text}`)], consumed: 2 };
 }
 
@@ -49,7 +51,9 @@ function eachPlayerMayPutAnyFromHand(list: EffectStep[], i: number, st: RenderSt
   const a = list[i];
   const b = list[i + 1];
   if (a?.op !== 'chooseObjects' || a.guard !== undefined || a.random !== undefined || a.groupLimit !== undefined || a.startingWith !== undefined || a.min !== 0 || a.max !== 'any') return null;
-  if (!same(a.who, ITERATING) || !same(a.perPlayer, { ref: 'each', who: 'player' }) || a.from.ref !== 'each') return null;
+  // edh-next-66 (Tempting Wurm; CR 101.4, 102.3): the same two steps over `each opponent`
+  const group = same(a.perPlayer, { ref: 'each', who: 'player' }) ? 'player' : same(a.perPlayer, { ref: 'each', who: 'opponent' }) ? 'opponent' : null;
+  if (!same(a.who, ITERATING) || group === null || a.from.ref !== 'each') return null;
   const f = a.from.filter;
   if (f.anyOf?.length !== 1 || f.zone !== 'hand' || !same(f.owner, ITERATING) || Object.keys(f).some((k) => !['anyOf', 'zone', 'owner'].includes(k))) return null;
   if (b?.op !== 'move' || b.guard !== undefined || b.as !== undefined || b.until !== undefined || b.link !== undefined || !same(b.what, { ref: 'bound', name: a.as })) return null;
@@ -57,7 +61,7 @@ function eachPlayerMayPutAnyFromHand(list: EffectStep[], i: number, st: RenderSt
   const kind = f.anyOf[0]!;
   bind(st, a.as, { nouns: [...K.nounsOf(kind), 'card'], plural: true });
   const cards = K.np({ ...kind, isCard: true, zone: 'hand' }, st, { det: 'none', plural: true, noZone: true });
-  return { clauses: [plain(`each player may put any number of ${cards} from their hand onto the battlefield`, { standalone: true })], consumed: 2 };
+  return { clauses: [plain(`each ${group} may put any number of ${cards} from their hand onto the battlefield`, { standalone: true })], consumed: 2 };
 }
 
 
@@ -81,6 +85,15 @@ function sourceOfChoiceWhenPrevented(list: EffectStep[], i: number, st: RenderSt
   if (r.s !== 'replace' || r.condition !== undefined || r.optional !== undefined || r.selfReplacement !== undefined || !same(r.shield, { uses: 1 })) return null;
   if (!same(r.replaces, { ev: 'damage', source: { is: { ref: 'bound', name: c.as } }, recipient: { player: 'you' } })) return null;
   const body = r.body;
+  // edh-replace-1 (CR 615.5; Deflecting Palm): the additional effect of the prevention without a name, "If damage is prevented this way, ~ deals that much damage to that
+  // source's controller." is part of the prevention and takes place right after it, not a reflexive triggered ability (CR 603.12 is for "when ... this way")
+  if (body.b === 'prevent' && body.amount === 'all' && body.as === undefined && body.then?.length === 1 && Object.keys(body).length === 3) {
+    if (!same(body.then[0], { op: 'damage', source: { ref: 'self' }, to: { ref: 'controllerOf', object: { ref: 'bound', name: c.as } }, amount: PREVENTED })) return null;
+    if (list.slice(i + 2).some((x) => JSON.stringify(x).includes(`"name":${JSON.stringify(c.as)}`))) return null;
+    const dur0 = K.dur(e.duration, st);
+    const self0 = K.obj({ ref: 'self' }, st, 'object').text;
+    return { clauses: [plain(`the next time a source of your choice would deal damage to you${dur0 ? ` ${dur0}` : ''}, prevent that damage. if damage is prevented this way, ${self0} deals that much damage to that source's controller`, { standalone: true })], consumed: 2 };
+  }
   if (body.b !== 'prevent' || body.amount !== 'all' || body.as === undefined || body.then?.length !== 1 || Object.keys(body).length !== 4) return null;
   const rf = body.then[0]!;
   if (rf.op !== 'reflexive' || rf.guard !== undefined || rf.as !== undefined || rf.modes !== undefined || rf.targets.length !== 0 || !same(rf.when, { did: body.as }) || rf.do.length !== 2) return null;

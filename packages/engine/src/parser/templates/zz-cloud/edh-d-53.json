@@ -1,0 +1,95 @@
+[
+  {
+    "id": "eff.edhd53.obj.attacksPlayer.eachCombat.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 506.2",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} attacks {p:Player} each combat if able",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack",
+          "otherPlayer": "$p"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "if",
+      "if able",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Choose an opponent at random. Until end of turn, target creature you control attacks that player each combat if able."
+      },
+      {
+        "text": "{2}: Choose an opponent at random. Until the end of your next turn, ~ attacks that player each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Choose an opponent at random. Until end of turn, target creature you control attacks that player this combat if able.",
+      "{2}: Choose an opponent at random. Until end of turn, target creature you control attacks that player each combat.",
+      "{2}: Choose an opponent at random. Until end of turn, target creature you control blocks that player each combat if able."
+    ]
+  },
+  {
+    "id": "eff.edhd53.attackTax.lasting.announcedX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 508.1h",
+      "CR 508.1i",
+      "CR 604.1",
+      "CR 611.2a",
+      "CR 107.3"
+    ],
+    "pattern": "{d:Dur} , {f:Filter} can't attack unless their controller pays {x} for each attacking creature they control",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "attackTax",
+          "of": "$f",
+          "defenders": "any",
+          "value": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "unless",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{X}{G}: This turn, creatures with flying can't attack unless their controller pays {X} for each attacking creature they control."
+      },
+      {
+        "text": "{X}{W}: Until end of turn, green creatures can't attack unless their controller pays {X} for each attacking creature they control."
+      }
+    ],
+    "counterExamples": [
+      "{X}{G}: This turn, creatures with flying can attack unless their controller pays {X} for each attacking creature they control.",
+      "{X}{G}: This turn, creatures with flying can't attack if their controller pays {X} for each attacking creature they control.",
+      "{X}{G}: This turn, creatures with flying can't attack unless their controller pays {X} for each blocking creature they control."
+    ],
+    "subject": "none"
+  }
+]

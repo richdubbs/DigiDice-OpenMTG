@@ -192,7 +192,8 @@ describe('std-rx34 Cond (CR 601.2h, 106.1): "If {G} was spent to cast this spell
     expect(JSON.stringify(face('Instant', 'Draw a card. If {R}{R} was spent to cast this spell, you gain 3 life.').abilities)).toContain('"spent":{"color":"R","atLeast":2}');
   });
   it('colorless or generic mana, or another object ("that spell") is not read so', () => {
-    expect(JSON.stringify(face('Instant', 'Draw a card. If {C} was spent to cast this spell, you gain 3 life.').abilities)).not.toContain('"spent"');
+    // combined copy: edh-next-138 (Drowner of Truth) reads {C} too: colorless mana spent (spent.color 'C', edh-players-10's widening; CR 601.2h, 106.1b)
+    expect(JSON.stringify(face('Instant', 'Draw a card. If {C} was spent to cast this spell, you gain 3 life.').abilities)).toContain('"spent":{"color":"C","atLeast":1}');
     expect(JSON.stringify(face('Instant', 'Draw a card. If {2} was spent to cast this spell, you gain 3 life.').abilities)).not.toContain('"spent"');
   });
 });

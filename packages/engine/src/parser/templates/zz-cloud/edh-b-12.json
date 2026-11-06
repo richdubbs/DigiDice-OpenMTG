@@ -1,0 +1,648 @@
+[
+  {
+    "id": "prm.edhb12.flash.duringOppEnd",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 702.8a",
+      "CR 609.4",
+      "CR 513.1",
+      "CR 604.1"
+    ],
+    "pattern": "during ( each | an ) opponent 's end step , you may cast {f:Filter} as though they had flash",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "opponent",
+        "step": "end"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "each",
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "During each opponent's end step, you may cast artifact spells as though they had flash."
+      },
+      {
+        "text": "During an opponent's end step, you may cast creature spells as though they had flash."
+      }
+    ],
+    "counterExamples": [
+      "During each opponent's end step, you may cast artifact spells as though they had haste.",
+      "During your end step, you may cast artifact spells as though they had flash.",
+      "During each opponent's upkeep, you may cast artifact spells as though they had flash."
+    ]
+  },
+  {
+    "id": "rst.edhb12.players.cantCastOrActivate.graveyards",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2a",
+      "CR 602.5",
+      "CR 101.2",
+      "CR 113.6"
+    ],
+    "pattern": "players can't cast spells from graveyards or activate abilities of cards in graveyards",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "each",
+          "who": "player"
+        },
+        "mode": "cant",
+        "action": "castFromZone"
+      },
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard"
+          }
+        },
+        "mode": "cant",
+        "action": "activate"
+      }
+    ],
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control have flying. Players can't cast spells from graveyards or activate abilities of cards in graveyards."
+      },
+      {
+        "text": "Artifacts you control have hexproof. Players can't cast spells from graveyards or activate abilities of cards in graveyards."
+      }
+    ],
+    "counterExamples": [
+      "Players can't cast spells from graveyards or activate abilities of cards in libraries.",
+      "Players can't cast spells from libraries or activate abilities of cards in graveyards.",
+      "Your opponents can't cast spells from graveyards or activate abilities of cards in graveyards."
+    ]
+  },
+  {
+    "id": "cm.edhb12.spells.less.youDontOwn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.1",
+      "CR 108.3"
+    ],
+    "pattern": "spells you cast but don't own cost {m:ManaCost} less to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "stackKind": "spell",
+              "zone": "stack",
+              "not": {
+                "owner": "you"
+              }
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "but"
+    ],
+    "examples": [
+      {
+        "text": "Spells you cast but don't own cost {2} less to cast."
+      },
+      {
+        "text": "Spells you cast but don't own cost {3} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Spells you cast but don't own cost {1} more to cast.",
+      "Spells your opponents cast but don't own cost {1} less to cast.",
+      "Spells you cast but don't control cost {1} less to cast.",
+      "Spells you cast but don't own cost {1}{G} less to cast."
+    ]
+  },
+  {
+    "id": "rst.edhb12.enchantedPlayer.cantActivateNonManaNonLoyalty",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.5",
+      "CR 605.1a",
+      "CR 606.1",
+      "CR 101.2",
+      "CR 303.4"
+    ],
+    "pattern": "enchanted player can't activate abilities that aren't mana abilities or loyalty abilities",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "enchantedPlayer"
+      },
+      "mode": "cant",
+      "action": "activate",
+      "exceptMana": true,
+      "exceptLoyalty": true
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control have flying. Enchanted player can't activate abilities that aren't mana abilities or loyalty abilities."
+      },
+      {
+        "text": "Artifacts you control have hexproof. Enchanted player can't activate abilities that aren't mana abilities or loyalty abilities."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted player can't activate abilities that aren't mana abilities.",
+      "Enchanted player can't activate loyalty abilities.",
+      "Enchanted creature can't activate abilities that aren't mana abilities or loyalty abilities.",
+      "Your opponents can't activate abilities that aren't mana abilities or loyalty abilities."
+    ]
+  },
+  {
+    "id": "eff.edhb12.exchange.handLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.12a",
+      "CR 401.1",
+      "CR 701.24a",
+      "CR 400.3"
+    ],
+    "pattern": "exchange your hand and library , then shuffle",
+    "build": [
+      {
+        "op": "exchange",
+        "a": {
+          "ref": "you"
+        },
+        "b": {
+          "ref": "you"
+        },
+        "what": "handLibrary"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "exchange",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "{2}{U}, {T}: Exchange your hand and library, then shuffle."
+      },
+      {
+        "text": "When ~ enters, exchange your hand and library, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Exchange your hand and graveyard, then shuffle.",
+      "Exchange your hand and library.",
+      "Exchange target player's hand and library, then shuffle."
+    ]
+  },
+  {
+    "id": "sta.edhb12.top.look.lands",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.5",
+      "CR 305.1",
+      "CR 601.3",
+      "CR 611.3a"
+    ],
+    "pattern": "you may look at the top card of your library any time , and you may play lands from the top of your library",
+    "build": [
+      {
+        "s": "permit",
+        "who": {
+          "ref": "you"
+        },
+        "action": "lookAt"
+      },
+      {
+        "s": "permit",
+        "who": {
+          "ref": "you"
+        },
+        "action": "play",
+        "of": {
+          "types": [
+            "Land"
+          ]
+        },
+        "fromTop": true
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control have flying. You may look at the top card of your library any time, and you may play lands from the top of your library."
+      },
+      {
+        "text": "Artifacts you control have hexproof. You may look at the top card of your library any time, and you may play lands from the top of your library."
+      }
+    ],
+    "counterExamples": [
+      "You may look at the top card of your library any time, and you may play lands from your graveyard.",
+      "You may look at the top two cards of your library any time, and you may play lands from the top of your library.",
+      "You may look at the top card of your library any time, and you may cast creature spells from the top of your library."
+    ]
+  },
+  {
+    "id": "eff.edhb12.mill.thenReturnOpponentsChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2d",
+      "CR 400.3",
+      "CR 701.20a"
+    ],
+    "pattern": "mill {n:Qty} cards , then return ( a | an ) {f:CardDesc} of an opponent 's choice from your graveyard to your hand",
+    "build": [
+      {
+        "op": "mill",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "anOpponent"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "$merge": [
+              "$f",
+              {
+                "zone": "graveyard",
+                "owner": "you",
+                "isCard": true
+              }
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "picked"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "picked"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "mill",
+      "opponent",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "{2}{U}: Mill two cards, then return a nonland card of an opponent's choice from your graveyard to your hand."
+      },
+      {
+        "text": "When ~ enters, mill three cards, then return a creature card of an opponent's choice from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill two cards, then return a nonland card of your choice from your graveyard to your hand.",
+      "Mill two cards, then return a nonland card of an opponent's choice from your graveyard to the battlefield.",
+      "Mill two cards, then return a nonland card of an opponent's choice from a graveyard to your hand."
+    ]
+  },
+  {
+    "id": "eff.edhb12.chooseUpTo.thenDestroyRestSentences",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.8a",
+      "CR 109.1"
+    ],
+    "pattern": "choose up to {n:Qty} {f:Filter} . destroy the rest",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosenKept"
+      },
+      {
+        "op": "destroy",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosenKept"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "the rest"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all lands. Choose up to two artifacts. Destroy the rest."
+      },
+      {
+        "text": "Choose up to three enchantments. Destroy the rest."
+      }
+    ],
+    "counterExamples": [
+      "Choose up to one creature. Exile the rest.",
+      "Choose up to one creature you control. Destroy the rest.",
+      "Choose up to one creature. Sacrifice the rest."
+    ]
+  },
+  {
+    "id": "eff.edhb12.group.loseAll.basePT.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 514.2"
+    ],
+    "pattern": "{o:Objs} lose all abilities and have base power and toughness {pt:BasePT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, creatures your opponents control lose all abilities and have base power and toughness 1/1 until end of turn."
+      },
+      {
+        "text": "When ~ enters, all artifacts lose all abilities and have base power and toughness 0/1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, creatures your opponents control lose all abilities and have base power and toughness 1/1.",
+      "Whenever ~ attacks, creatures your opponents control lose flying and have base power and toughness 1/1 until end of turn.",
+      "Whenever ~ attacks, creatures your opponents control lose all abilities until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhb12.durFirst.basePT.gains.isntSubtype",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 611.2a"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} has base power and toughness {pt:BasePT} , gains {a:Abilities} , and isn't ( a | an ) {st:Subtypes}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "remove": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "isn't"
+    ],
+    "examples": [
+      {
+        "text": "{1}{R}: Until end of turn, ~ has base power and toughness 5/3, gains trample, and isn't a Human."
+      },
+      {
+        "text": "Until end of turn, target creature has base power and toughness 2/2, gains flying, and isn't an Elf."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature has base power and toughness 2/2, gains flying, and is a Human.",
+      "Target creature has base power and toughness 2/2, gains flying, and isn't an Elf.",
+      "Until end of turn, target creature has base power and toughness 2/2, loses flying, and isn't an Elf."
+    ]
+  },
+  {
+    "id": "eff.edhb12.activePlayer.addsCC.forEachOpponentLostLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 102.1",
+      "CR 119.3",
+      "CR 500.1"
+    ],
+    "pattern": "the active player adds {C}{C} for each of your opponents who lost life this turn",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "active"
+      },
+      "dynamic": {
+        "kind": "ofType",
+        "type": "C",
+        "count": {
+          "q": "math",
+          "op": "*",
+          "args": [
+            2,
+            {
+              "q": "countPlayers",
+              "of": {
+                "ref": "each",
+                "who": "opponent"
+              },
+              "lostLifeThisTurn": true
+            }
+          ]
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each postcombat main phase, the active player adds {C}{C} for each of your opponents who lost life this turn."
+      },
+      {
+        "text": "At the beginning of each end step, the active player adds {C}{C} for each of your opponents who lost life this turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each postcombat main phase, the active player adds {C}{C} for each of your opponents who gained life this turn.",
+      "At the beginning of each postcombat main phase, you add {C}{C} for each of your opponents who lost life this turn.",
+      "At the beginning of each postcombat main phase, the active player adds {C}{G} for each of your opponents who lost life this turn."
+    ]
+  },
+  {
+    "id": "eff.edhb12.player.sacrificesOfTheirChoice.forEachCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 122.1"
+    ],
+    "pattern": "{p:Player} sacrifice[s] ( a | an ) {f:Filter} of their choice for each {k:CounterKind} counter on ~",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": "$f",
+      "count": {
+        "q": "counters",
+        "on": {
+          "ref": "self"
+        },
+        "kind": "$k"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each opponent sacrifices a creature of their choice for each doom counter on ~."
+      },
+      {
+        "text": "At the beginning of each end step, that player sacrifices a land of their choice for each ash counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each player's upkeep, that player sacrifices a permanent of your choice for each soot counter on ~.",
+      "At the beginning of each player's upkeep, that player sacrifices two permanents of their choice for each soot counter on ~.",
+      "At the beginning of each player's upkeep, that player sacrifices a permanent of their choice for each soot counter on target artifact."
+    ]
+  }
+]

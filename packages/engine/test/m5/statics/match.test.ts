@@ -3,12 +3,12 @@
  * getChars). Checked directly on a board, and the tables of what it evaluates are pinned against its behavior.
  */
 import { describe, expect, it } from 'vitest';
-import type { Condition, ObjectFilter, ObjRef, Quantity } from '../../../src/index';
+import type { Condition, ObjectFilter, ObjRef, Quantity, GameState } from '../../../src/index';
 import { computeAll } from '../../../src/statics/layers';
 import { eachMatching, evalCondition, evalQuantity, filterMatches, objectsOf, playersOf, STATIC_CONDITION_KINDS, STATIC_FILTER_FIELDS, STATIC_OBJREF_KINDS, STATIC_QUANTITY_KINDS, type EvalCx } from '../../../src/statics/match';
 import { FINGERPRINTED, NOT_READ_BY_LAYERS } from '../../../src/rules/characteristics';
 import { createGame } from '../../../src/index';
-import { simpleConfig } from '../../helpers';
+import { act, simpleConfig, startedGame } from '../../helpers';
 import { activated, scenario } from '../helpers';
 import { creature, nth, tweak } from './fixtures';
 import { setLink } from '../../../src/statics/links';
@@ -78,7 +78,7 @@ describe('filters', () => {
   });
   it('a field this module does not evaluate NEVER matches, also under `not` (it is not silently ignored)', () => {
     expect(match({ dealtDamageThisTurn: true })).toEqual([]);
-    expect(match({ not: { enteredThisTurn: true }, types: ['Creature'] })).toEqual([]);
+    expect(match({ not: { blockedThisTurn: true }, types: ['Creature'] })).toEqual([]); // edh-c-8: enteredThisTurn is evaluated now
     expect(match({ castFrom: 'hand', zone: 'any' })).toEqual([]); // FAST4 T24: stackKind is evaluated now (statics/match.ts#stackKindOk)
     const cx = cxOf();
     expect(filterMatches(cx, nth(base, 'Test Red'), { castFrom: 'hand' })).toBe(false);
@@ -213,32 +213,51 @@ describe('the tables say what is evaluated', () => {
       live: { q: 'live', value: 1 }, turnNumber: { q: 'turnNumber' }, cardsDrawnThisTurn: { q: 'cardsDrawnThisTurn' }, spellsCastThisTurn: { q: 'spellsCastThisTurn' },
       lifeGainedThisTurn: { q: 'lifeGainedThisTurn' },
       kickCount: { q: 'kickCount' }, // M6-0 (CR 702.33d: never cast = kicked 0 times)
+      commanderIdentitySize: { q: 'commanderIdentitySize' }, // pc-statics-2 (CR 903.4: answers only with a commander, see below)
       commanderCasts: { q: 'commanderCasts' }, // M11-0 (CR 903.8: 0 outside Commander)
       speed: { q: 'speed' }, // FAST5X-4 (CR 702.179f: no speed counts as 0)
       partySize: { q: 'partySize', of: { ref: 'you' } }, // FAST5 T38 (CR 700.8)
+      symbolsAmong: { q: 'symbolsAmong', color: 'B', of: { ref: 'each', filter: { zone: 'graveyard', owner: 'you' } } }, // edh-c-37 (CR 107.4, 202.1)
       unspentMana: { q: 'unspentMana' }, // FAST5X E19 (CR 106.4: an empty mana pool has 0)
       turnsBegun: { q: 'turnsBegun' }, // std-r9 (CR 500.7: none of your turns begun counts 0)
+      extraTurnsBegun: { q: 'extraTurnsBegun' }, // trek-18 (CR 500.7: no extra turn begun counts 0)
+      attacksThisTurn: { q: 'attacksThisTurn', of: { ref: 'self' } }, // edh-combat-5 (CR 508.1)
+      mostSharingCreatureType: { q: 'mostSharingCreatureType', among: { ref: 'each', filter: { types: ['Creature'] } } }, // edh-c-59 (CR 205.3m)
       descendedThisTurn: { q: 'descendedThisTurn' }, // FAST5X E22 (CR 700.11: no permanent card put into your graveyard this turn counts as 0)
       startingLife: { q: 'startingLife' }, // FAST5 T60 (CR 103.4: the game's starting life total, 20 here)
+      playersLost: { q: 'playersLost' }, // edhn95 (CR 104.3)
       happenedCount: { q: 'happenedCount', event: { ev: 'zoneChange', subject: { types: ['Creature'], controller: 'you' }, to: 'battlefield' }, scope: 'turn' }, // CLOUD std-ecl (CR 611.3a: nothing entered yet counts 0)
       lifeLostThisTurn: { q: 'lifeLostThisTurn', of: { ref: 'you' } }, // Cloud std-woe (CR 119.3: no life lost this turn counts as 0)
       unlockedDoors: { q: 'unlockedDoors', among: { ref: 'self' } }, // r4-static (CR 709.5c: no Room permanent counts 0)
       costCount: { q: 'costCount', name: 'sacrificed' }, // std-costs-1 (CR 601.2b: never cast, nothing announced, 0)
+      mostByController: { q: 'mostByController', of: { ref: 'self' } }, // edh-cast-3 (CR 109.4: the most one player controls of a set; none counts 0)
+      chosenNumber: { q: 'chosenNumber', link: 'devoured' }, // edh-c-95 (CR 702.82b: read only when the source kept the link, see below)
+      lifeLostTotal: { q: 'lifeLostTotal', of: { ref: 'each', who: 'opponent' } }, // edh-cast-3 (CR 119.3: no life lost this turn counts 0; only the opponents' total is read)
     };
     expect(Object.keys(samples).sort()).toEqual([...STATIC_QUANTITY_KINDS].sort());
-    for (const [k, v] of Object.entries(samples)) expect(evalQuantity(cx, v), k).not.toBeUndefined();
+    // pc-statics-2 (CR 903.4, 903.4f): read only with a commander whose identity is given (War Room ruling 2020-11-10), so its canonical example runs in a Commander state
+    const withCommander = { ...base, players: base.players.map((p) => (p.id === 'p1' ? { ...p, commanders: [{ card: 'c-cmd', defId: 'd-cmd', casts: 0, identity: ['R', 'G'] }] } : p)) } as GameState;
+    for (const [k, v] of Object.entries(samples)) if (k !== 'chosenNumber') expect(evalQuantity(k === 'commanderIdentitySize' ? cxOf(withCommander) : cx, v), k).not.toBeUndefined();
+    expect(evalQuantity(cxOf(withCommander), { q: 'commanderIdentitySize' })).toBe(2);
+    expect(evalQuantity(cx, { q: 'commanderIdentitySize' })).toBeUndefined(); // no commander: not read
+    expect(evalQuantity(cx, { q: 'chosenNumber', link: 'devoured' })).toBeUndefined(); // edh-c-95: the source kept no such link (fail closed; the played case is cloud/edh-c-95)
+    expect(evalQuantity(cx, { q: 'lifeLostTotal', of: { ref: 'you' } })).toBeUndefined(); // edh-fix-3: any group but the opponents is not read (fail closed)
   });
   it('the condition and reference kinds listed are the ones with behavior; the filter fields include every field a static ability in the model can use that has no history or stack meaning', () => {
-    expect([...STATIC_CONDITION_KINDS].sort()).toEqual(['all', 'any', 'chosen', 'classLevel' /* M6-0, CR 716.2a */, 'compare', 'completedDungeon' /* MX4, CR 309.7 */, 'designation', 'exists', 'happened' /* FAST5X E9 */, 'matches', 'not', 'prime' /* std-rx1 */, 'turnOf', 'wasCast']);
-    expect([...STATIC_OBJREF_KINDS].sort()).toEqual(['attachedTo', 'each', 'fixed', 'linked', 'self', 'subject', 'union']);
-    for (const f of ['enteredThisTurn', 'dealtDamageThisTurn', 'blockedThisTurn', 'targets']) expect(STATIC_FILTER_FIELDS.has(f), f).toBe(false);
+    expect([...STATIC_CONDITION_KINDS].sort()).toEqual(['all', 'any', 'attackedYouLastTurn' /* edh-d-45 */, 'chosen', 'classLevel' /* M6-0, CR 716.2a */, 'compare', 'completedDungeon' /* MX4, CR 309.7 */, 'designation', 'exists', 'happened' /* FAST5X E9 */, 'matches', 'not', 'prime' /* std-rx1 */, 'turnOf', 'wasCast']);
+    expect([...STATIC_OBJREF_KINDS].sort()).toEqual(['attachedTo', 'each', 'fixed', 'linked', 'pair' /* edh-top-2 */, 'self', 'subject', 'topCards' /* edh-zones-20 */, 'union']);
+    for (const f of ['dealtDamageThisTurn', 'blockedThisTurn', 'targets']) expect(STATIC_FILTER_FIELDS.has(f), f).toBe(false);
+    expect(STATIC_FILTER_FIELDS.has('enteredThisTurn')).toBe(true); // edh-c-8: read from the turn's history (CR 400.7, 611.3a)
     for (const f of ['attackedThisTurn' /* FAST5X E28 */, 'stackKind' /* FAST4 T24 */, 'castFrom' /* std-rf */, 'zone', 'controller', 'types', 'keyword', 'hasAbility', 'counters', 'sharesWith', 'chosen', 'anyOf', 'not']) expect(STATIC_FILTER_FIELDS.has(f), f).toBe(true);
   });
 });
 
 describe('the cache fingerprint covers every part of the state exactly once', () => {
   it('each key of GameState is either read by the layers (and in the fingerprint) or listed as not read', () => {
-    const keys = Object.keys(createGame(simpleConfig())).sort();
+    // shortcuts (docs/design/shortcuts.md 1): `turnActions` is optional, absent until a settled action is recorded: the keys of a game after one pass too
+    const played = act(startedGame(), { type: 'pass', player: 'p1' });
+    expect(played.turnActions).toHaveLength(1);
+    const keys = [...new Set([...Object.keys(createGame(simpleConfig())), ...Object.keys(played)])].sort();
     expect([...FINGERPRINTED, ...NOT_READ_BY_LAYERS].sort()).toEqual(keys);
     expect(FINGERPRINTED.filter((k) => NOT_READ_BY_LAYERS.includes(k))).toEqual([]);
   });

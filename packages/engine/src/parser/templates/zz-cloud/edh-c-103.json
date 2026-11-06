@@ -1,0 +1,104 @@
+[
+  {
+    "id": "eff.edhv103.payelse.mana.orMana",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 608.2c",
+      "CR 118.3"
+    ],
+    "pattern": "{e:Effects} unless {p:Player} pay[s] {m:ManaCost} or {n:ManaCost}",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "other": [
+          {
+            "kind": "oneOf",
+            "options": [
+              {
+                "mana": "$m"
+              },
+              {
+                "mana": "$n"
+              }
+            ]
+          }
+        ]
+      },
+      "else": "$e"
+    },
+    "consumes": [
+      "unless",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Counter target spell unless its controller pays {B} or {3}."
+      },
+      {
+        "text": "Counter target creature spell unless its controller pays {1} or {2}{U}."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell unless its controller pays {1} or 2 life.",
+      "Counter target spell unless its controller pays {1} and {3}.",
+      "Counter target spell if its controller pays {B} or {3}."
+    ]
+  },
+  {
+    "id": "eff.edhv103.exile.allAndGraveyards",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 404.1",
+      "CR 701.13a",
+      "CR 608.2c"
+    ],
+    "pattern": "exile all {f:Filter} and graveyards",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": [
+            "battlefield",
+            "graveyard"
+          ],
+          "anyOf": [
+            "$f",
+            {
+              "zone": "graveyard"
+            }
+          ]
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Exile all creatures and graveyards."
+      },
+      {
+        "text": "Exile all artifacts and graveyards."
+      }
+    ],
+    "counterExamples": [
+      "Exile all creatures and graveyards unless an opponent pays {2}.",
+      "Exile all creatures and libraries.",
+      "Exile all graveyards and creatures."
+    ]
+  }
+]

@@ -57,5 +57,5 @@ describe('C1 API over HTTP', () => {
     await opened.store.automation.start();
     const status = await get<StatusResponse>('/api/status');
     expect(status.body.coverage?.total).toBe(fx.deckCards.length);
-  }, 60_000);
+  }, 240_000); // classifies every deck card with the whole template set: about 54 s before the Commander card work added its templates, over 60 s after
 });

@@ -1,0 +1,621 @@
+[
+{
+"card": "Tempt with Discovery",
+"expect": "full",
+"verified": "edh-zones-8 review, by hand against the Oracle text, the rulings and the rules cited (eff.edhz8.eachOpponentMay.search.bf, eff.edhz8.forEachOpponentWhoSearches.searchBf, eff.edhz8.eachPlayerWhoSearched.shuffles; the engine keeps the zones every player who chose to search searched, effects/run.ts and effects/handlers/control.ts, and the shuffle reads them; CR 701.23a, 701.24a, 608.2d, 101.4): you search for a land card and put it onto the battlefield; each opponent, in turn order, chooses whether to search their own library for a land card and put it onto the battlefield; you search once more for each opponent who searched (a searcher who finds nothing still searched); then each player who searched a library this way shuffles (nobody who did not search does). The first search keeps its own name, so the repeated one is a second step.",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"as": "b0",
+"filter": {
+"types": [
+"Land"
+]
+},
+"max": 1,
+"op": "search",
+"who": {
+"ref": "you"
+},
+"zone": "library"
+},
+{
+"op": "move",
+"to": {
+"controller": {
+"ref": "you"
+},
+"zone": "battlefield"
+},
+"what": {
+"name": "b0",
+"ref": "bound"
+}
+},
+{
+"as": "b1",
+"do": [
+{
+"as": "b2",
+"filter": {
+"types": [
+"Land"
+]
+},
+"max": 1,
+"op": "search",
+"who": {
+"ref": "iterating"
+},
+"zone": "library"
+},
+{
+"op": "move",
+"to": {
+"controller": {
+"ref": "iterating"
+},
+"zone": "battlefield"
+},
+"what": {
+"name": "b2",
+"ref": "bound"
+}
+}
+],
+"op": "may",
+"who": {
+"ref": "each",
+"who": "opponent"
+}
+},
+{
+"do": [
+{
+"as": "b3",
+"filter": {
+"types": [
+"Land"
+]
+},
+"max": 1,
+"op": "search",
+"who": {
+"ref": "you"
+},
+"zone": "library"
+},
+{
+"op": "move",
+"to": {
+"controller": {
+"ref": "you"
+},
+"zone": "battlefield"
+},
+"what": {
+"name": "b3",
+"ref": "bound"
+}
+}
+],
+"op": "repeat",
+"times": {
+"q": "resultCount",
+"step": "b1"
+}
+},
+{
+"ifSearched": true,
+"op": "shuffle",
+"who": {
+"ref": "each",
+"who": "player"
+}
+}
+],
+"targets": []
+},
+"kind": "spell"
+}
+]
+}
+]
+},
+{
+"card": "Animist's Awakening",
+"expect": "full",
+"verified": "edh-zones-8 review, by hand against the Oracle text and the rules cited (eff.edhz8.dig.putAll.bf.tapped.rest.bottomRandom, eff.edhz8.ifCond.untap.thoseLandsPut; CR 701.20a, 701.20e, 401.4, 110.2a, 608.2c): reveal the top X cards; every land card among them is put onto the battlefield tapped, every other revealed card goes to the bottom of your library in a random order; spell mastery: if there are two or more instant and/or sorcery cards in your graveyard as it resolves (the spell itself is still on the stack), untap those lands (the ones just put, no others).",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"as": "b0",
+"op": "reveal",
+"what": {
+"count": {
+"q": "X"
+},
+"player": {
+"ref": "you"
+},
+"ref": "topCards"
+},
+"who": {
+"ref": "you"
+}
+},
+{
+"as": "b1",
+"op": "move",
+"to": {
+"controller": {
+"ref": "you"
+},
+"tapped": true,
+"zone": "battlefield"
+},
+"what": {
+"filter": {
+"anyOf": [
+{
+"types": [
+"Land"
+]
+}
+],
+"is": {
+"name": "b0",
+"ref": "bound"
+},
+"zone": "library"
+},
+"ref": "each"
+}
+},
+{
+"op": "move",
+"to": {
+"order": "random",
+"position": "bottom",
+"zone": "library"
+},
+"what": {
+"filter": {
+"is": {
+"name": "b0",
+"ref": "bound"
+},
+"zone": "library"
+},
+"ref": "each"
+}
+},
+{
+"cond": {
+"atLeast": 2,
+"cond": "exists",
+"of": {
+"filter": {
+"isCard": true,
+"owner": "you",
+"types": [
+"Instant",
+"Sorcery"
+],
+"zone": "graveyard"
+},
+"ref": "each"
+}
+},
+"op": "if",
+"then": [
+{
+"op": "untap",
+"what": {
+"name": "b1",
+"ref": "bound"
+}
+}
+]
+}
+],
+"targets": []
+},
+"kind": "spell"
+}
+]
+}
+]
+},
+{
+"card": "Kindred Summons",
+"expect": "full",
+"verified": "edh-zones-8 review, by hand against the Oracle text and the rules cited (eff.edhz8.put.bf.thenShuffleRestIntoLibrary, the existing eff.t67.choose.creatureType and eff.r4dig.revealUntil.x; CR 701.20a, 701.24a, 608.2c, 205.3m): choose a creature type, reveal cards from the top until X creature cards of that type are revealed (X = the creatures you control of that type, counted as it resolves), put those cards onto the battlefield, then shuffle the rest of the revealed cards into your library (they go into the library and you shuffle it).",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"as": "b0",
+"link": "chosenCreatureType",
+"op": "chooseValue",
+"what": "creatureType",
+"who": {
+"ref": "you"
+}
+},
+{
+"as": "b1",
+"count": {
+"of": {
+"filter": {
+"chosen": {
+"link": "chosenCreatureType",
+"quality": "creatureType"
+},
+"controller": "you",
+"types": [
+"Creature"
+]
+},
+"ref": "each"
+},
+"q": "count"
+},
+"filter": {
+"chosen": {
+"link": "chosenCreatureType",
+"quality": "creatureType"
+},
+"types": [
+"Creature"
+]
+},
+"op": "revealUntil",
+"revealed": "revealed",
+"who": {
+"ref": "you"
+}
+},
+{
+"op": "move",
+"to": {
+"controller": {
+"ref": "you"
+},
+"zone": "battlefield"
+},
+"what": {
+"name": "b1",
+"ref": "bound"
+}
+},
+{
+"op": "move",
+"to": {
+"zone": "library"
+},
+"what": {
+"filter": {
+"is": {
+"name": "b2",
+"ref": "bound"
+},
+"not": {
+"is": {
+"name": "b1",
+"ref": "bound"
+}
+},
+"zone": "library"
+},
+"ref": "each"
+}
+},
+{
+"op": "shuffle",
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"kind": "spell"
+}
+]
+}
+]
+},
+{
+"card": "Muxus, Goblin Grandee",
+"expect": "full",
+"verified": "edh-zones-8 review, by hand against the Oracle text and the rules cited (eff.edhz8.dig.putAll.mvAtMost.bf.rest.bottomRandom, the existing trg.enters and eff.t9.pump.foreach.other.1.1; CR 701.20a, 701.20e, 401.4, 110.2a, 608.2c): when it enters, reveal the top six cards; every Goblin creature card with mana value 5 or less among them is put onto the battlefield, every other revealed card goes to the bottom of your library in a random order. The attack trigger was already automated.",
+"faces": [
+{
+"abilities": [
+{
+"effect": {
+"steps": [
+{
+"as": "b0",
+"op": "reveal",
+"what": {
+"count": 6,
+"player": {
+"ref": "you"
+},
+"ref": "topCards"
+},
+"who": {
+"ref": "you"
+}
+},
+{
+"op": "move",
+"to": {
+"controller": {
+"ref": "you"
+},
+"zone": "battlefield"
+},
+"what": {
+"filter": {
+"anyOf": [
+{
+"subtypes": [
+"Goblin"
+],
+"types": [
+"Creature"
+]
+}
+],
+"is": {
+"name": "b0",
+"ref": "bound"
+},
+"manaValue": {
+"op": "<=",
+"value": 5
+},
+"zone": "library"
+},
+"ref": "each"
+}
+},
+{
+"op": "move",
+"to": {
+"order": "random",
+"position": "bottom",
+"zone": "library"
+},
+"what": {
+"filter": {
+"is": {
+"name": "b0",
+"ref": "bound"
+},
+"zone": "library"
+},
+"ref": "each"
+}
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"ev": "zoneChange",
+"subject": {
+"self": true
+},
+"to": "battlefield"
+}
+]
+}
+},
+{
+"effect": {
+"steps": [
+{
+"duration": {
+"d": "endOfTurn"
+},
+"effects": [
+{
+"affects": {
+"ref": "event",
+"role": "attacker"
+},
+"mods": [
+{
+"layer": "7c",
+"power": {
+"of": {
+"filter": {
+"controller": "you",
+"other": true,
+"subtypes": [
+"Goblin"
+]
+},
+"ref": "each"
+},
+"q": "count"
+},
+"toughness": {
+"of": {
+"filter": {
+"controller": "you",
+"other": true,
+"subtypes": [
+"Goblin"
+]
+},
+"ref": "each"
+},
+"q": "count"
+}
+}
+],
+"s": "continuous"
+}
+],
+"op": "effect"
+}
+],
+"targets": []
+},
+"kind": "triggered",
+"trigger": {
+"on": [
+{
+"attacker": {
+"self": true
+},
+"ev": "attacks"
+}
+]
+}
+}
+]
+}
+]
+},
+{
+"card": "Trenzalore Clocktower",
+"expect": "full",
+"verified": "edh-zones-8 review, by hand against the Oracle text and the rules cited (eff.edhz8.shuffle.graveyardAndHandInto.you; CR 701.24a, 401.1, 402.1, 404.1, 602.5b): the cost removes twelve time counters and exiles the land; the effect puts your graveyard and hand into your library, shuffles it, then draws seven; activate only if you control a Time Lord. The mana ability and the time counter were already automated.",
+"faces": [
+{
+"abilities": [
+{
+"cost": {
+"tap": true
+},
+"effect": {
+"steps": [
+{
+"op": "addMana",
+"units": [
+[
+"U"
+]
+],
+"who": {
+"ref": "you"
+}
+},
+{
+"count": 1,
+"kind": "time",
+"on": {
+"ref": "self"
+},
+"op": "putCounters"
+}
+],
+"targets": []
+},
+"isMana": true,
+"kind": "activated"
+},
+{
+"cost": {
+"mana": [
+{
+"amount": 1,
+"kind": "generic"
+},
+{
+"color": "U",
+"kind": "colored"
+}
+],
+"other": [
+{
+"count": 12,
+"counter": "time",
+"kind": "removeCounters",
+"self": true
+},
+{
+"count": 1,
+"kind": "exileFrom",
+"self": true,
+"zone": "battlefield"
+}
+],
+"tap": true
+},
+"effect": {
+"steps": [
+{
+"op": "move",
+"to": {
+"owner": {
+"ref": "you"
+},
+"zone": "library"
+},
+"what": {
+"filter": {
+"owner": "you",
+"zone": [
+"graveyard",
+"hand"
+]
+},
+"ref": "each"
+}
+},
+{
+"op": "shuffle",
+"who": {
+"ref": "you"
+}
+},
+{
+"count": 7,
+"op": "draw",
+"who": {
+"ref": "you"
+}
+}
+],
+"targets": []
+},
+"kind": "activated",
+"onlyIf": {
+"cond": "exists",
+"of": {
+"filter": {
+"controller": "you",
+"subtypes": [
+"Time Lord"
+]
+},
+"ref": "each"
+}
+}
+}
+]
+}
+]
+},
+{"card":"Genesis Ultimatum","expect":"full","verified":"edh-zones-8 review, by hand against the Oracle text and the rules cited (eff.edhz8.dig.anyNumber.bf.rest.hand; CR 701.20e, 608.2c, 608.2d, 110.2a): look at the top five cards; you choose any number of permanent cards among them to put onto the battlefield; the rest (everything of the five still in the library after the move: the cards not chosen, nonpermanents, and an Aura that could not be attached, Scryfall ruling 2025-04-04) go into your hand; the spell is exiled instead of going to the graveyard.","faces":[{"abilities":[{"effect":{"steps":[{"as":"b0","at":{"count":5,"player":{"ref":"you"},"ref":"topCards"},"op":"look","who":{"ref":"you"}},{"as":"b1","from":{"filter":{"anyOf":[{"types":["Artifact","Battle","Creature","Enchantment","Land","Planeswalker"]}],"is":{"name":"b0","ref":"bound"},"zone":"library"},"ref":"each"},"max":"any","min":0,"op":"chooseObjects","who":{"ref":"you"}},{"op":"move","to":{"controller":{"ref":"you"},"zone":"battlefield"},"what":{"name":"b1","ref":"bound"}},{"op":"move","to":{"zone":"hand"},"what":{"filter":{"is":{"name":"b0","ref":"bound"},"zone":"library"},"ref":"each"}},{"op":"move","to":{"zone":"exile"},"what":{"ref":"self"}}],"targets":[]},"kind":"spell"}]}]}
+]

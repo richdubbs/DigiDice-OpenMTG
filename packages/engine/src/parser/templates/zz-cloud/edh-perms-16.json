@@ -1,0 +1,205 @@
+[
+  {
+    "id": "eff.edhpm16.attach.anyNumber.toRecipient",
+    "kind": "effect",
+    "weak": 1,
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.3a",
+      "CR 701.3b",
+      "CR 303.4",
+      "CR 608.2d"
+    ],
+    "pattern": "attach any number of {f:Filter} to {to:Recipient}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "any",
+        "as": "attachChoice"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "bound",
+          "name": "attachChoice"
+        },
+        "to": "$to"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "{T}: You may attach any number of Auras you control to target permanent or player."
+      },
+      {
+        "text": "{2}, {T}: You may attach any number of Equipment you control to target permanent or player."
+      }
+    ],
+    "counterExamples": [
+      "{T}: You may attach any number of Auras you control to each permanent or player.",
+      "{T}: You may attach any number of Auras you control to target permanent or player at random.",
+      "{T}: Attach an Aura you control to target permanent or player."
+    ]
+  },
+  {
+    "id": "eff.edhpm16.forEach.mayAttachIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.3a",
+      "CR 701.3b",
+      "CR 608.2d",
+      "CR 608.2f"
+    ],
+    "pattern": "for each {f:Filter} , you may attach it to ( a | an ) {g:Filter}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "you"
+          },
+          "do": [
+            {
+              "op": "chooseObjects",
+              "who": {
+                "ref": "you"
+              },
+              "from": {
+                "ref": "each",
+                "filter": "$g"
+              },
+              "min": 1,
+              "max": 1,
+              "as": "attachHost"
+            },
+            {
+              "op": "attach",
+              "what": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "to": {
+                "ref": "bound",
+                "name": "attachHost"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "For each Aura you control, you may attach it to a creature you control."
+      },
+      {
+        "text": "For each Equipment you control, you may attach it to an artifact creature you control."
+      }
+    ],
+    "counterExamples": [
+      "For each Aura you control, attach it to a creature you control.",
+      "For each Aura you control, you may attach it to target creature you control.",
+      "For each Aura you control, you may attach it to each creature you control."
+    ]
+  },
+  {
+    "id": "eff.edhpm16.counters.yourChoiceOfCounts",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "put your choice of {n1:Qty} {k1:ListedCounterKind} counter[s] or {n2:Qty} {k2:ListedCounterKind} counter[s] on {o:Obj}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "counterChoice",
+        "link": "counterChoice",
+        "options": [
+          "$k1",
+          "$k2"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k1"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k1",
+            "count": "$n1"
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k2"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k2",
+            "count": "$n2"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "Put your choice of a +1/+1 counter or two charge counters on target creature."
+      },
+      {
+        "text": "Put your choice of three +1/+1 counters or a flying counter on up to one target artifact."
+      }
+    ],
+    "counterExamples": [
+      "Put a +1/+1 counter or two charge counters on target creature.",
+      "Put your choice of a +1/+1 counter, two charge counters, or a flying counter on target creature.",
+      "Put your choice of a +1/+1 counter and two charge counters on target creature.",
+      "Put your choice of a +1/+1 counter or two charge counters on each creature you control."
+    ]
+  }
+]

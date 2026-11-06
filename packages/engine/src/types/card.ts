@@ -69,6 +69,8 @@ export const CARD_TYPES: readonly CardType[] = [
   'Artifact', 'Battle', 'Conspiracy', 'Creature', 'Dungeon', 'Enchantment', 'Instant',
   'Kindred', 'Land', 'Phenomenon', 'Plane', 'Planeswalker', 'Scheme', 'Sorcery', 'Vanguard',
 ];
+/** edht4: the card type a chosen word names ("instant", "Instant"), for protection from the chosen card type (CR 702.16a, 607.2d); undefined for anything else. */
+export const cardTypeNamed = (word: string): CardType | undefined => CARD_TYPES.find((t) => t.toLowerCase() === word.trim().toLowerCase());
 /** Supertypes (CR 205.4a). */
 export type Supertype = 'Basic' | 'Legendary' | 'Ongoing' | 'Snow' | 'World';
 export const SUPERTYPES: readonly Supertype[] = ['Basic', 'Legendary', 'Ongoing', 'Snow', 'World'];

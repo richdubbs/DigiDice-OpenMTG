@@ -188,3 +188,14 @@ export function baseChars(s: GameState, o: GameObject): Chars {
   if (src.kind !== 'melded') c.manaValue = baseManaValue(def, c, o);
   return c;
 }
+
+/**
+ * edh-cast-4 (CR 202.3e, 601.2b; Void Winnower ruling): does the mana value of this object have the parity? A spell with {X} in its mana cost has the value
+ * chosen for X; while X is still to be announced (the cast check before step 601.2b) no parity is known, so neither matches there, and the cast is judged again once X is
+ * chosen, or not announced and 0 (actions/cast.ts). Zero is even.
+ */
+export function manaValueParityMatches(o: GameObject, c: { manaValue: number; manaCost: ManaCost | null | undefined }, parity: 'even' | 'odd'): boolean {
+  // (a card still in a hand or elsewhere, seen as the spell it would be, has no stack information yet; a spell on the stack that never announced X is cast with X = 0, CR 107.3b)
+  if (o.zone === 'stack' && o.stack === undefined && (c.manaCost ?? []).some((m) => m.kind === 'variable' && m.name === 'X')) return false;
+  return (c.manaValue % 2 === 0) === (parity === 'even');
+}

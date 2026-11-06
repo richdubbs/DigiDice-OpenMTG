@@ -885,3 +885,13 @@
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
+
+/* Shortcuts (CR 727, PriorityPrompt's "Repeat..."): the panel stacks its parts; the steps before the loop's first step are dimmed. */
+.prompt-repeat {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.prompt-repeat-out {
+  opacity: 0.55;
+}

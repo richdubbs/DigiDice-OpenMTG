@@ -60,6 +60,16 @@
             "duration": {
               "d": "endOfTurn"
             }
+          },
+          {
+            "op": "reportAction",
+            "who": {
+              "ref": "you"
+            },
+            "verb": "crew",
+            "object": {
+              "ref": "self"
+            }
           }
         ]
       }

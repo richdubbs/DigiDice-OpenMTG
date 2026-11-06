@@ -1,0 +1,496 @@
+[
+  {
+    "id": "eff.edhn120.eachPlayer.secretlyChooses.number.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 101.4"
+    ],
+    "pattern": "each player secretly chooses a number 0 or greater , then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "what": "number",
+      "min": 0,
+      "secret": true,
+      "reveal": true,
+      "as": "secretNumber",
+      "link": "secretNumber"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all",
+      "this way",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly chooses a number 0 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way. ~ deals damage equal to the highest number to each player who chose that number."
+      },
+      {
+        "text": "Each player secretly chooses a number 0 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way. Each player who didn't choose the lowest number discards their hand, then draws three cards."
+      }
+    ],
+    "counterExamples": [
+      "Each player secretly chooses a number 1 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way.",
+      "Each opponent secretly chooses a number 0 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way.",
+      "Each player chooses a number 0 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way."
+    ]
+  },
+  {
+    "id": "eff.edhn120.damage.highestNumber.toChoseIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 120.3",
+      "CR 101.4"
+    ],
+    "pattern": "{src:Obj} deal[s] damage equal to the highest number to each player who chose that number",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": {
+        "ref": "choseNumber",
+        "link": "secretNumber",
+        "extreme": "highest"
+      },
+      "amount": {
+        "q": "chosenNumber",
+        "link": "secretNumber",
+        "extreme": "highest"
+      }
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Each player secretly chooses a number 0 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way. ~ deals damage equal to the highest number to each player who chose that number."
+      },
+      {
+        "text": "Each player secretly chooses a number 0 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way. ~ deals damage equal to the highest number to each player who chose that number. Each player who didn't choose the lowest number discards their hand, then draws two cards."
+      }
+    ],
+    "counterExamples": [
+      "~ deals damage equal to the highest number to each player who chose that number.",
+      "Each player secretly chooses a number 0 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way. ~ deals damage equal to the highest number to each player.",
+      "Each player secretly chooses a number 0 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way. ~ deals damage equal to the highest number to each player who chose the lowest number."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edhn120.didntChooseLowest.discardHand.thenDraw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 101.4"
+    ],
+    "pattern": "each player who didn't choose the lowest number discards their hand , then draws {n:Qty} cards",
+    "build": [
+      {
+        "op": "discard",
+        "who": {
+          "ref": "choseNumber",
+          "link": "secretNumber",
+          "extreme": "lowest",
+          "not": true
+        },
+        "count": "hand"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "choseNumber",
+          "link": "secretNumber",
+          "extreme": "lowest",
+          "not": true
+        },
+        "count": "$n"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player secretly chooses a number 0 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way. Each player who didn't choose the lowest number discards their hand, then draws five cards."
+      },
+      {
+        "text": "Each player secretly chooses a number 0 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way. Each player who didn't choose the lowest number discards their hand, then draws seven cards."
+      }
+    ],
+    "counterExamples": [
+      "Each player who didn't choose the lowest number discards their hand, then draws seven cards.",
+      "Each player secretly chooses a number 0 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way. Each player who didn't choose the highest number discards their hand, then draws seven cards.",
+      "Each player secretly chooses a number 0 or greater, then all players reveal those numbers simultaneously and determine the highest and lowest numbers revealed this way. Each player who didn't choose the lowest number discards their hand."
+    ]
+  },
+  {
+    "id": "eff.edhn120.eachOpponent.secretlyChooses.words.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 101.4"
+    ],
+    "pattern": "each opponent secretly chooses {w:ChoiceWords} , then the choices are revealed",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "what": "option",
+      "options": "$w",
+      "secret": true,
+      "reveal": true,
+      "as": "secretOption",
+      "link": "secretOption"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent secretly chooses fame or fortune, then the choices are revealed. If each opponent chose fame, ~ deals 2 damage to each of them. If each opponent chose fortune, ~ deals 3 damage to each of them. Otherwise, ~ deals 5 damage to each opponent who chose fame."
+      },
+      {
+        "text": "Each opponent secretly chooses money or secrets, then the choices are revealed. If each opponent chose money, ~ deals 1 damage to each of them. If each opponent chose secrets, ~ deals 2 damage to each of them. Otherwise, ~ deals 6 damage to each opponent who chose money."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent secretly chooses fame or fame, then the choices are revealed.",
+      "Each player secretly chooses fame or fortune, then the choices are revealed.",
+      "Each opponent secretly chooses fame or glory, then the choices are revealed."
+    ]
+  },
+  {
+    "id": "eff.edhn120.ifEachOpponentChose.damageEach.otherwise",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 120.3",
+      "CR 101.4"
+    ],
+    "pattern": "if each opponent chose {a:ChoiceWord} , ~ deals {n:Qty} damage to each of them . if each opponent chose {b:ChoiceWord} , ~ deals {m:Qty} damage to each of them . otherwise , ~ deals {k:Qty} damage to each opponent who chose {c:ChoiceWord}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "allChose",
+        "link": "secretOption",
+        "equals": "$a"
+      },
+      "then": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "amount": "$n"
+        }
+      ],
+      "else": [
+        {
+          "op": "if",
+          "cond": {
+            "cond": "allChose",
+            "link": "secretOption",
+            "equals": "$b"
+          },
+          "then": [
+            {
+              "op": "damage",
+              "source": {
+                "ref": "self"
+              },
+              "to": {
+                "ref": "each",
+                "who": "opponent"
+              },
+              "amount": "$m"
+            }
+          ],
+          "else": [
+            {
+              "op": "damage",
+              "source": {
+                "ref": "self"
+              },
+              "to": {
+                "ref": "chose",
+                "link": "secretOption",
+                "value": "$c"
+              },
+              "amount": "$k"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "if",
+      "otherwise"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent secretly chooses fame or fortune, then the choices are revealed. If each opponent chose fortune, ~ deals 3 damage to each of them. If each opponent chose fame, ~ deals 6 damage to each of them. Otherwise, ~ deals 9 damage to each opponent who chose fortune."
+      },
+      {
+        "text": "Each opponent secretly chooses money or friends, then the choices are revealed. If each opponent chose money, ~ deals 2 damage to each of them. If each opponent chose friends, ~ deals 4 damage to each of them. Otherwise, ~ deals 10 damage to each opponent who chose money."
+      }
+    ],
+    "counterExamples": [
+      "If each opponent chose fame, ~ deals 2 damage to each of them. If each opponent chose fortune, ~ deals 3 damage to each of them. Otherwise, ~ deals 5 damage to each opponent who chose fame.",
+      "Each opponent secretly chooses fame or fortune, then the choices are revealed. If each opponent chose fame, ~ deals 2 damage to each of them. Otherwise, ~ deals 5 damage to each opponent who chose fame.",
+      "Each opponent secretly chooses fame or fortune, then the choices are revealed. If each opponent chose fame, ~ deals 2 damage to each of them. If each opponent chose fortune, ~ deals 3 damage to each of them."
+    ]
+  },
+  {
+    "id": "eff.edhn120.forEachPlayer.youGainProtectionFromThatPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16k",
+      "CR 702.16b",
+      "CR 702.16c",
+      "CR 702.16e",
+      "CR 608.2c",
+      "CR 615.1"
+    ],
+    "pattern": "for {p:Player} , you gain protection from that player {d:Dur}",
+    "build": {
+      "op": "forEach",
+      "over": "$p",
+      "as": "each",
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "restrict",
+              "subject": {
+                "ref": "you"
+              },
+              "mode": "cant",
+              "action": "beEnchanted",
+              "other": {
+                "controller": {
+                  "ref": "iterating"
+                }
+              }
+            },
+            {
+              "s": "restrict",
+              "subject": {
+                "ref": "you"
+              },
+              "mode": "cant",
+              "action": "beTargeted",
+              "other": {
+                "controller": {
+                  "ref": "iterating"
+                }
+              }
+            },
+            {
+              "s": "replace",
+              "replaces": {
+                "ev": "damage",
+                "source": {
+                  "controller": {
+                    "ref": "iterating"
+                  }
+                },
+                "recipient": {
+                  "player": "you"
+                }
+              },
+              "body": {
+                "b": "prevent",
+                "amount": "all"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each player may put a +1/+1 counter on a creature they control. For each opponent who does, you gain protection from that player until your next turn."
+      },
+      {
+        "text": "At the beginning of your upkeep, each player may draw a card. For each opponent who does, you gain protection from that player until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent who does, you gain protection from that player until your next turn.",
+      "Each player may draw a card. For each opponent who does, you gain protection from that creature until your next turn.",
+      "Each player may draw a card. For each opponent who does, target creature gains protection from that player until your next turn."
+    ]
+  },
+  {
+    "id": "eff.edhn120.thatPlayersNextEnd.drawIfDidntAttackYou.otherwise",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7a",
+      "CR 603.7c",
+      "CR 608.2c",
+      "CR 506.2",
+      "CR 508.1b",
+      "CR 121.1"
+    ],
+    "pattern": "at the beginning of {p:Player} 's next end step , you draw a card if they didn't attack you that turn . otherwise , {e:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "end",
+        "whose": "$p",
+        "next": true
+      },
+      "do": [
+        {
+          "op": "if",
+          "cond": {
+            "cond": "not",
+            "of": {
+              "cond": "happened",
+              "event": {
+                "ev": "attacks",
+                "defender": "you"
+              },
+              "scope": "turn",
+              "by": "$p"
+            }
+          },
+          "then": [
+            {
+              "op": "draw",
+              "who": {
+                "ref": "you"
+              },
+              "count": 1
+            }
+          ],
+          "else": "$e"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "otherwise",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, choose an opponent. At the beginning of that player's next end step, you draw a card if they didn't attack you that turn. Otherwise, create two 1/1 white Soldier creature tokens."
+      },
+      {
+        "text": "When ~ enters, choose an opponent. At the beginning of that player's next end step, you draw a card if they didn't attack you that turn. Otherwise, you gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, choose an opponent. At the beginning of that player's next end step, you draw a card if they attacked you that turn. Otherwise, you gain 3 life.",
+      "At the beginning of your end step, choose an opponent. At the beginning of that player's next end step, you draw a card if they didn't attack you that turn.",
+      "At the beginning of your end step, choose an opponent. At the beginning of that player's next end step, you draw two cards if they didn't attack you that turn. Otherwise, you gain 3 life."
+    ]
+  },
+  {
+    "id": "rep.edhn120.enters.mayExchangeTextBox",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 612.5",
+      "CR 701.12h",
+      "CR 613.1c"
+    ],
+    "pattern": "as ~ enters , you may exchange ( his | her | its | ~ 's ) text box and another creature 's",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "exchangeText": {
+              "with": {
+                "other": true,
+                "types": [
+                  "Creature"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, you may exchange its text box and another creature's."
+      },
+      {
+        "text": "As ~ enters, you may exchange her text box and another creature's."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, you may exchange its text box and another artifact's.",
+      "As ~ enters, exchange its text box and another creature's.",
+      "When ~ enters, you may exchange its text box and another creature's."
+    ]
+  }
+]

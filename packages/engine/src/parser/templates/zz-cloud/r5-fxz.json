@@ -376,8 +376,8 @@
       }
     ],
     "counterExamples": [
-      "Enchant creature or artifact\nEnchanted permanent is a colorless Clue artifact with \"{2}, Sacrifice this artifact: Draw a card\" and loses all other abilities.",
-      "Enchant creature or artifact\nEnchanted permanent is a Clue artifact with \"{2}, Sacrifice this artifact: Draw a card\" and loses all other card types and abilities."
+      "Enchant creature or artifact\nEnchanted permanent is a Clue artifact with \"{2}, Sacrifice this artifact: Draw a card\" and loses all other card types and abilities.",
+      "Enchant creature or artifact\nEnchanted permanent is a colorless Clue artifact with \"{2}, Sacrifice this artifact: Draw a card\" and loses all abilities."
     ]
   },
   {

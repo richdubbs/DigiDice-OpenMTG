@@ -1,0 +1,6 @@
+# edh-zones-16 (Commander effort, lane edh-zones; test/cloud/edh-zones-16, golden edh-zones-16-review.json): choose land or nonland + reveal until a card of the chosen kind (also as the replacement of a draw), another player reveals until a permanent card that shares a card type and puts it onto the battlefield, X can't be greater than the number of players + reveal until X land cards, for each creature exiled this way its controller searches for a basic land card
+Abundance
+Abundant Harvest
+Wild Magic Surge
+Open the Way
+Winds of Abandon

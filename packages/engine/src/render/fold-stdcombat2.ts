@@ -34,14 +34,17 @@ function oneKeyword(step: EffectStep): string | null {
   return nodes(step).some((n) => n['op'] === 'putCounters' && typeof n['kind'] === 'string' && n['kind'] !== kw) ? null : kw;
 }
 
+/** edh-combat-5: a step's JSON without `likeAmong` (the hexproof variants a lowering marks, parser/lower/same-for.ts): the words do not say it. */
+const plainJson = (step: unknown): string => JSON.stringify(step, (k, v: unknown) => (k === 'likeAmong' ? undefined : v));
+
 /** The step's JSON with the keyword `from` (keyword tests and counters of that kind) made `to`. */
 function swapped(step: EffectStep, from: string, to: string): string {
   const copy = JSON.parse(JSON.stringify(step)) as unknown;
   for (const n of nodes(copy)) {
-    if (n['keyword'] === from) n['keyword'] = to;
+    if (n['keyword'] === from) { n['keyword'] = to; if (n['text'] === from) n['text'] = to; }
     if (n['op'] === 'putCounters' && n['kind'] === from) n['kind'] = to;
   }
-  return JSON.stringify(copy);
+  return plainJson(copy);
 }
 
 function sameForKeywords(list: EffectStep[], i: number, st: RenderState): Folded | null {
@@ -53,14 +56,14 @@ function sameForKeywords(list: EffectStep[], i: number, st: RenderState): Folded
   for (let j = i + 1; j < list.length; j++) {
     const b = list[j]!;
     const to = oneKeyword(b);
-    if (to === null || to === from || others.includes(to) || swapped(a, from, to) !== JSON.stringify(b)) break;
+    if (to === null || to === from || others.includes(to) || swapped(a, from, to) !== plainJson(b)) break;
     others.push(to);
   }
   if (others.length === 0) return null;
   const apart = cloneState(st);
   const oneByOne = list.slice(i, i + 1 + others.length).map((s) => K.steps([s], apart)).join('. ');
   const first = K.steps([a], st);
-  return { clauses: [plain(alt(`${first}. do the same for ${joinList(others, 'and')}`, oneByOne), { standalone: true })], consumed: 1 + others.length };
+  return { clauses: [plain(alt(`${first}. do the same for ${joinList(others, 'and')}`, `${first}. the same is true for ${joinList(others, 'and')}`, oneByOne), { standalone: true })], consumed: 1 + others.length }; // edh-combat-5: also "The same is true for ..." (Odric, Lunarch Marshal)
 }
 
 export function foldStdCombat2(list: EffectStep[], i: number, st: RenderState): Folded | null {

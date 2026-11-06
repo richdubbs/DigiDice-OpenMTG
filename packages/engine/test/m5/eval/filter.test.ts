@@ -221,13 +221,13 @@ describe('ObjectFilter: status (CR 110.5, 111.1, 708, 712)', () => {
     expect(m(b, delver, { transformed: false })).toBe(false);
     expect(m(b, 'Grizzly Bears', { transformed: true })).toBe(false);
   });
-  it('transformed (W3b audit, CR 701.27g, 712.1): a modal double-faced card is a double-faced card too; a melded permanent never is transformed', () => {
+  it('transformed (W3b audit, CR 701.27g, 712.1): a modal double-faced card is never transformed; a melded permanent never is transformed', () => {
     const b = board();
     const delver = b.obj('Delver of Secrets // Insectile Aberration');
     delver.face = 1;
     const def = b.s.defs[delver.defId]!;
     b.s.defs = { ...b.s.defs, [delver.defId]: { ...def, layout: 'modal_dfc' } };
-    expect(m(b, 'Delver of Secrets // Insectile Aberration', { transformed: true })).toBe(true); // a modal card played as its back face
+    expect(m(b, 'Delver of Secrets // Insectile Aberration', { transformed: true })).toBe(false); // edh-d-55 (Scryfall rulings 2023-04-14 of Corruption of Towashi / Invasion of Pyrulea): a modal double-faced permanent is never transformed
     b.s.defs = { ...b.s.defs, [delver.defId]: { ...def, layout: 'double_faced_token' } };
     expect(m(b, 'Delver of Secrets // Insectile Aberration', { transformed: true })).toBe(true);
     b.s.defs = { ...b.s.defs, [delver.defId]: { ...def, layout: 'meld' } };
@@ -260,6 +260,7 @@ describe('ObjectFilter: combat (CR 506-509)', () => {
       ],
       blockers: [{ id: giant, blocking: [bears], defendingPlayer: 'p2' }],
     };
+    b.s.turn.step = 'declareBlockers'; // blockers have been declared (CR 509.1h): only then is an attacker unblocked (edh-c-60)
     return b;
   }
   it('attacking (a boolean) and blocking', () => {

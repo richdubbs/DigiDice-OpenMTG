@@ -1,0 +1,336 @@
+[
+  {
+    "id": "sta.edhv108.equipped.pump.insteadAslong",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "( equipped | enchanted ) creature gets {pt:PT} . it gets {pt2:PT} instead as long as {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt2.p",
+              "toughness": "$pt2.t"
+            }
+          ]
+        }
+      ],
+      "otherwise": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "instead",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +1/+0. It gets +3/+1 instead as long as you control an Elf."
+      },
+      {
+        "text": "Enchanted creature gets +2/+2. It gets +4/+4 instead as long as it is your turn."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +1/+0. It gets +3/+1 as long as you control an Elf.",
+      "Equipped creature gets +1/+0. It gets +3/+1 instead until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhv108.enchanted.has.aslongIs.otherwise.preventDamageBy",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 615.1",
+      "CR 702.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature has {a:Abilities} as long as it's ( a | an ) {f:Filter} . otherwise , prevent all damage that would be dealt by ( enchanted | equipped ) creature",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "attachedTo"
+        },
+        "filter": "$f"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ],
+      "otherwise": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "attachedToSource": true
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "otherwise",
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature has first strike as long as it's an Elf. Otherwise, prevent all damage that would be dealt by enchanted creature."
+      },
+      {
+        "text": "Equipped creature has trample as long as it's a land. Otherwise, prevent all damage that would be dealt by equipped creature."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature has first strike as long as it's an Elf. Then, prevent all damage that would be dealt by enchanted creature.",
+      "Enchanted creature has first strike as long as it's an Elf. Otherwise, prevent all damage that would be dealt to enchanted creature."
+    ]
+  },
+  {
+    "id": "eff.edhv108.youChoose.fromGraveyardOrHand.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 608.2d",
+      "CR 406.3",
+      "CR 400.3"
+    ],
+    "pattern": "you choose {f:Filter} and exile it",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "Target player reveals their hand. You choose an artifact card from that player's graveyard or hand and exile it."
+      },
+      {
+        "text": "Target opponent reveals their hand. You choose a creature card from that player's graveyard or hand and exile it."
+      }
+    ],
+    "counterExamples": [
+      "You choose a nonland card from that player's graveyard or hand and exile it.",
+      "Target opponent reveals their hand. You choose a nonland card from that player's graveyard or library and exile it.",
+      "Target opponent reveals their hand. You choose a nonland card from that player's graveyard or hand and put it into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhv108.eachPlayerMay.search.reveal.hand.shuffle",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 701.24a",
+      "CR 101.4",
+      "CR 608.2c"
+    ],
+    "pattern": "each player may search their library for ( a | an ) {f:Filter} card , reveal it , put it into their hand , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "iterating"
+          },
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "reveal": true,
+          "as": "playerSearch"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "playerSearch"
+          },
+          "to": {
+            "zone": "hand",
+            "owner": {
+              "ref": "iterating"
+            }
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "iterating"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each player may search their library for a basic Plains card, reveal it, put it into their hand, then shuffle."
+      },
+      {
+        "text": "Draw a card. Each player may search their library for an artifact card, reveal it, put it into their hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent may search their library for a basic Plains card, reveal it, put it into their hand, then shuffle.",
+      "Each player may search their library for a basic Plains card, reveal it, put it onto the battlefield, then shuffle.",
+      "Each player may search their library for a basic Plains card, put it into their hand, then shuffle."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv108.exile.otherRevealed.loseLifeEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.13a",
+      "CR 406.1",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "exile all other cards revealed this way , and you lose 1 life for each of the exiled cards",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "hit"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "exiledOthers"
+      },
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": {
+          "q": "count",
+          "of": {
+            "ref": "bound",
+            "name": "exiledOthers"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "other",
+      "this way",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal a land card, then put that card into your hand. Exile all other cards revealed this way, and you lose 1 life for each of the exiled cards."
+      },
+      {
+        "text": "Reveal cards from the top of your library until you reveal an artifact card, then put that card into your hand. Exile all other cards revealed this way, and you lose 1 life for each of the exiled cards."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal a land card, then put that card into your hand. Exile all other cards revealed this way, and you lose 2 life for each of the exiled cards.",
+      "Reveal cards from the top of your library until you reveal a land card, then put that card into your hand. Exile all other cards revealed this way, and each opponent loses 1 life for each of the exiled cards.",
+      "Exile all other cards revealed this way, and you lose 1 life for each of the exiled cards."
+    ]
+  }
+]

@@ -1,0 +1,284 @@
+[
+  {
+    "id": "eff.edhn54.player.gain.control",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1b",
+      "CR 108.4",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} gain control of {o:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "{T}: ~ deals 2 damage to target opponent. They gain control of ~."
+      },
+      {
+        "text": "Target opponent chooses a land they control. You gain control of it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: ~ deals 2 damage to target opponent. They gain control of ~ until end of turn.",
+      "{T}: ~ deals 2 damage to target opponent. They gains control of ~."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhn54.sacrifice.nextEnd.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7a",
+      "CR 603.4",
+      "CR 608.2c",
+      "CR 701.21a"
+    ],
+    "pattern": "^ sacrifice {o:Obj} at the beginning of the next end step if {c:Cond}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "end",
+        "next": true
+      },
+      "do": [
+        {
+          "op": "if",
+          "cond": "$c",
+          "then": [
+            {
+              "op": "sacrifice",
+              "what": "$o"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Gain control of target creature until end of turn. Untap it. Sacrifice it at the beginning of the next end step if it has mana value 3 or less."
+      },
+      {
+        "text": "Target creature gets +2/+0 until end of turn. Sacrifice it at the beginning of the next end step if it has power 4 or greater."
+      }
+    ],
+    "counterExamples": [
+      "Gain control of target creature until end of turn. Untap it. Sacrifice it at the beginning of your next end step if it has mana value 3 or less.",
+      "Gain control of target creature until end of turn. Untap it. Exile it at the beginning of the next end step if it has mana value 3 or less."
+    ]
+  },
+  {
+    "id": "eff.edhn54.player.gainControl.targets.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1b",
+      "CR 115.1",
+      "CR 108.4"
+    ],
+    "pattern": "{p:Player} gains control of {o:Targets} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player gains control of up to three target creatures until end of turn."
+      },
+      {
+        "text": "Target opponent gains control of two target artifacts you control until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target player gains control of up to three target creatures.",
+      "Target player gains control of up to three target creatures for as long as you control ~ and ~ remains tapped."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhn54.they.block.ifAble",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1c",
+      "CR 611.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "they block {d:Dur} if able",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "set",
+              "number": "plural",
+              "text": "they"
+            }
+          },
+          "mode": "mustIfAble",
+          "action": "block"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if able",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Tap two target creatures. They block this turn if able."
+      },
+      {
+        "text": "Target player gains control of two target creatures until end of turn. They block this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "They block this turn.",
+      "They can't block this turn if able."
+    ]
+  },
+  {
+    "id": "eff.edhn54.you.cantAttack.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 506.2",
+      "CR 611.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "you can't attack {p:Player} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you"
+            }
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": "$p"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Gain control of all creatures target opponent controls until end of turn. You can't attack that player this turn."
+      },
+      {
+        "text": "Target opponent loses 2 life. You can't attack that player this turn."
+      }
+    ],
+    "counterExamples": [
+      "You can't attack that player.",
+      "You can't attack planeswalkers that player controls this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn54.you.cantSacrifice.objs",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 611.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "you can't sacrifice {o:Objs} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "sacrifice",
+          "other": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Gain control of all creatures target opponent controls until end of turn. You can't sacrifice those creatures this turn."
+      },
+      {
+        "text": "Gain control of target creature until end of turn. You can't sacrifice it this turn."
+      }
+    ],
+    "counterExamples": [
+      "You can't sacrifice those creatures.",
+      "Those creatures can't be sacrificed this turn."
+    ]
+  }
+]

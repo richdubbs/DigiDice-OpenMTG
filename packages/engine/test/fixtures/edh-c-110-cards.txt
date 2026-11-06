@@ -1,0 +1,9 @@
+# edh-c-110 (Commander EDHREC ranks 23,001-23,500, fourth pass): return ~ to ~'s owner's hand, a noncreature artifact becomes a 0/0 artifact creature for good, protection from the color of its controller's choice, ~ taxed per +1/+1 counter, shuffle a player's library (stable), attack as though no defender (self), power-up mana restriction, controlled since the beginning of your most recent turn. After editing: npm run cards -- fixtures
+Bob, Reluctant HYDRA Agent
+Kenku Artificer
+Wishmonger
+Myr Prototype
+Boggart Forager
+Roving Keep
+Quinjet Technician
+Rocket Launcher

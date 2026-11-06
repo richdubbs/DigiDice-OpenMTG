@@ -1,0 +1,281 @@
+[
+  {
+    "id": "rep.edhd8.kicked.enters.forEach",
+    "kind": "static",
+    "since": 8,
+    "status": "experimental",
+    "cr": [
+      "CR 702.33d",
+      "CR 702.33e",
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "if ~ was kicked , it enters with ( a | an ) +1/+1 counter on it for each {f:Filter}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "wasCast",
+        "kicked": true
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "+1/+1",
+                "count": {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": "$f"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "If ~ was kicked, it enters with a +1/+1 counter on it for each artifact your opponents control."
+      },
+      {
+        "text": "If ~ was kicked, it enters with a +1/+1 counter on it for each other creature you control."
+      }
+    ],
+    "counterExamples": [
+      "If ~ wasn't kicked, it enters with a +1/+1 counter on it for each artifact your opponents control.",
+      "If ~ was kicked, it enters with a +1/+1 counter on target creature for each artifact your opponents control.",
+      "If ~ was kicked, it enters with a charge counter on it for each artifact your opponents control."
+    ]
+  },
+  {
+    "id": "rep.edhd8.enters.counters.among",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "~ enters with ( a | an ) +1/+1 counter on it for each +1/+1 counter among {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "+1/+1",
+                "count": {
+                  "q": "counters",
+                  "on": {
+                    "ref": "each",
+                    "filter": "$f"
+                  },
+                  "kind": "+1/+1"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "among"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a +1/+1 counter on it for each +1/+1 counter among artifacts you control."
+      },
+      {
+        "text": "~ enters with a +1/+1 counter on it for each +1/+1 counter among Elves you control."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a +1/+1 counter on it for each +1/+1 counter among artifacts you control unless it is blue.",
+      "~ enters with a +1/+1 counter on target creature for each +1/+1 counter among artifacts you control.",
+      "~ enters with a +1/+1 counter on it for each +1/+1 counter on target artifact."
+    ]
+  },
+  {
+    "id": "sta.edhd8.aslong.basept.and.abilities",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 702.9"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} has base power and toughness {pt:BasePT} ( , | and ) {a:Abilities}",
+    "weak": 1,
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as it's your turn, ~ has base power and toughness 6/6 and trample."
+      },
+      {
+        "text": "As long as you control seven or more lands, ~ has base power and toughness 8/8 and flying."
+      },
+      {
+        "text": "As long as it's your turn, ~ has base power and toughness 6/6, flying, and trample."
+      }
+    ],
+    "counterExamples": [
+      "As long as it's your turn, ~ has base power 6 and trample.",
+      "As long as it's your turn, ~ gets +6/+6 and trample.",
+      "As long as it's your turn, ~ gets +6/+6, flying, and trample."
+    ]
+  },
+  {
+    "id": "sta.edhd8.damage.double.toSelf.anySource",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 120.1a"
+    ],
+    "pattern": "if a source would deal damage to ~ , it deals double that damage to ~ instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "mul": 2
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "double",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to this creature, it deals double that damage to this creature instead."
+      },
+      {
+        "text": "Haste\nIf a source would deal damage to this creature, it deals double that damage to this creature instead."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to ~, it deals triple that damage to ~ instead.",
+      "If a source would deal damage to ~, it deals double that damage to you instead.",
+      "If a source you control would deal damage to ~, it deals double that damage to ~ instead."
+    ]
+  },
+  {
+    "id": "dl.edhd8.nextCleanup.tail",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 514.1",
+      "CR 514.3a",
+      "CR 603.7a"
+    ],
+    "pattern": "{e:Effects} at the beginning of the next cleanup step",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "cleanup",
+        "next": true
+      },
+      "do": "$e"
+    },
+    "consumes": [
+      "at the beginning of",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Return ~ to its owner's hand at the beginning of the next cleanup step."
+      },
+      {
+        "text": "Exile target creature you control at the beginning of the next cleanup step."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card at the beginning of the next end step.",
+      "Draw a card at the beginning of your next cleanup step.",
+      "Draw a card at the beginning of the cleanup step."
+    ]
+  }
+]

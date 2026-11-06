@@ -204,12 +204,13 @@ describe('CR 201.5c: the short name "Q" (parser/front/selfref.ts#shortNames)', (
     expect(shortNames(ctx('Q, Stacking the Deck', 'Legendary Creature — Q'), ix)).toEqual(['Q']);
     expect(shortNames(ctx('Z, Test of Names', 'Legendary Creature — Z'), ix)).toEqual(['Z']);
   });
-  it('not on a card that is not legendary, and not a short name that is not the card\'s own creature type (X, Me, Ao, MJ, Uh keep their words)', () => {
+  it('not on a card that is not legendary, and not a short name that is not the card\'s own creature type (X, Me, Uh keep their words; Ao and MJ are known by their letters since edh-zones-19)', () => {
     expect(shortNames(ctx('Q, Stacking the Deck', 'Creature — Q'), ix)).toEqual([]);
     expect(shortNames(ctx('X, Mystery Racer', 'Legendary Creature — Human Spy'), ix)).toEqual([]);
     expect(shortNames(ctx('Me, the Immortal', 'Legendary Creature — Human Rogue'), ix)).toEqual([]);
-    expect(shortNames(ctx('Ao, the Dawn Sky', 'Legendary Creature — Dragon Spirit'), ix)).toEqual([]);
-    expect(shortNames(ctx('MJ, Rising Star', 'Legendary Creature — Human Performer'), ix)).toEqual([]);
+    expect(shortNames(ctx('Ao, the Dawn Sky', 'Legendary Creature — Dragon Spirit'), ix)).toEqual(['Ao']); // edh-zones-19 (CR 201.5c): no English word, no rules word
+    expect(shortNames(ctx('MJ, Rising Star', 'Legendary Creature — Human Performer'), ix)).toEqual(['MJ']);
+    expect(shortNames(ctx('Ao, the Dawn Sky', 'Creature — Dragon Spirit'), ix)).toEqual([]); // not legendary
     expect(shortNames(ctx('Uh, Squen & Cragg Made a Card', 'Enchantment'), ix)).toEqual([]);
   });
   it('"When Q enters" is the card itself; a type position of the word stays a type', () => {

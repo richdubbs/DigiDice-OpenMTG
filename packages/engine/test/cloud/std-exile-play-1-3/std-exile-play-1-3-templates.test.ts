@@ -162,7 +162,9 @@ describe('std-exile-play-1-3 parser, lowering, renderer and engine support', () 
     expect(isObjectPermit(base)).toBe(true);
     expect(isObjectPermit({ ...base, costChange: { kind: 'increase', mana: [{ kind: 'generic', amount: 1 }] } })).toBe(true);
     expect(isObjectPermit({ ...base, costChange: { kind: 'increase', mana: [{ kind: 'colored', color: 'W' } as never] } })).toBe(false);
-    expect(isObjectPermit({ ...base, costChange: { kind: 'reduce', mana: [{ kind: 'generic', amount: 1 }] } as never })).toBe(false);
+    // edh-d-100 (CR 601.2f, 118.7; Urianger Augurelt): a generic reduction is now a permission's cost too ("Spells you cast this way cost {2} less", statics/play-permits.ts#namedPermitReduce); a colored one still fails closed
+    expect(isObjectPermit({ ...base, costChange: { kind: 'reduce', mana: [{ kind: 'generic', amount: 1 }] } as never })).toBe(true);
+    expect(isObjectPermit({ ...base, costChange: { kind: 'reduce', mana: [{ kind: 'colored', color: 'W' }] } as never })).toBe(false);
     expect(isObjectPermit({ ...base, ownOnly: true })).toBe(true);
     expect(isObjectPermit({ ...base, landsEnterTapped: true })).toBe(true);
     expect(isObjectPermit({ ...base, action: 'cast', landsEnterTapped: true })).toBe(false);

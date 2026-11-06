@@ -1,0 +1,16 @@
+{
+  "id": "d17",
+  "player": "p1",
+  "prompt": "Choose a creature type.",
+  "rules": [
+    "CR 205.3m"
+  ],
+  "kind": "chooseName",
+  "what": "creatureType",
+  "options": [
+    "Elf",
+    "Goblin",
+    "Human",
+    "Zombie"
+  ]
+}

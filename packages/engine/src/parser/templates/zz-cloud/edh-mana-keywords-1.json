@@ -6,7 +6,7 @@
     "status": "stable",
     "cr": [
       "CR 105.2",
-      "CR 106.1",
+      "CR 106.1b",
       "CR 106.5",
       "CR 605.1a"
     ],
@@ -128,7 +128,6 @@
     "cr": [
       "CR 603.2d",
       "CR 603.10a",
-      "CR 109.4",
       "CR 205.3m"
     ],
     "pattern": "if a triggered ability of a {s:Subtypes} or another {t:Subtypes} you control triggers , that ability triggers an additional time",
@@ -181,7 +180,7 @@
     "cr": [
       "CR 614.15",
       "CR 608.2c",
-      "CR 106.1",
+      "CR 106.1b",
       "CR 106.7"
     ],
     "pattern": "if {c:Cond} , add {n:Qty} mana of that type instead",
@@ -234,7 +233,7 @@
     "status": "stable",
     "priority": -1,
     "cr": [
-      "CR 106.1",
+      "CR 106.1b",
       "CR 106.4",
       "CR 605.1a"
     ],
@@ -269,7 +268,7 @@
     "since": 8,
     "status": "stable",
     "cr": [
-      "CR 106.1",
+      "CR 106.1b",
       "CR 106.4",
       "CR 605.1a"
     ],
@@ -310,7 +309,7 @@
     "since": 8,
     "status": "stable",
     "cr": [
-      "CR 106.1",
+      "CR 106.1b",
       "CR 106.4",
       "CR 107.3"
     ],
@@ -350,7 +349,7 @@
     "since": 8,
     "status": "stable",
     "cr": [
-      "CR 106.1",
+      "CR 106.1b",
       "CR 106.4",
       "CR 605.1a"
     ],

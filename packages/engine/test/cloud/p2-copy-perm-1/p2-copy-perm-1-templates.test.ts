@@ -53,11 +53,21 @@ describe('p2-copy-perm-1 template file (design 6.3, 6.9; CONTRIBUTING "Adding a 
       expect(t.since, t.id).toBe(8);
     }
   });
-  it('design 6.9: a stable template has three or more hand-verified golden cards; the others stay experimental (no deviation)', () => {
-    for (const t of MECH.filter((x) => x.status === 'stable')) expect(evidence(t.id).length, t.id).toBeGreaterThanOrEqual(3);
-    expect(MECH.filter((x) => x.status === 'experimental').map((t) => t.id).sort()).toEqual([
-      'eff.p2copyperm1.becomeCopy.except', 'eff.p2copyperm1.copyToken.except', 'eff.p2copyperm1.eachOther.becomeCopy.dur.except',
-    ]);
+  it('design 6.9: a stable template has three or more hand-verified golden cards; the others stay experimental (no deviation, except the one named narrow wording)', () => {
+    // edh-misc-1 (Commander effort) made eff.p2copyperm1.copyToken.except stable on five golden cards (Helm of the Host, Irenicus's Vile Duplication, Miirym, Ratadrabik of
+    // Urborg, Endless Evil) and eff.p2copyperm1.becomeCopy.except on the two cards of the EDHREC top 5,000 that print it (Saheeli, Sublime Artificer and Irma, Part-Time
+    // Mutant; a 6.9 narrow-wording deviation named in the round record, guide section 5)
+    const NARROW = new Set(['eff.p2copyperm1.becomeCopy.except']);
+    // edh-misc-5 (Commander effort) made eff.p2copyperm1.eachOther.becomeCopy.dur.except stable on the one card of the EDHREC top 5,000 that prints it, Nanogene Conversion (a 6.9
+    // narrow-wording deviation named in the round record; its golden entry is in edh-misc-5-review.json, checked by test/cloud/edh-misc-5)
+    const ELSEWHERE = new Set(['eff.p2copyperm1.eachOther.becomeCopy.dur.except']);
+    for (const t of MECH.filter((x) => x.status === 'stable' && !NARROW.has(x.id) && !ELSEWHERE.has(x.id))) expect(evidence(t.id).length, t.id).toBeGreaterThanOrEqual(3);
+    for (const id of NARROW) {
+      expect(MECH.find((x) => x.id === id)?.status, id).toBe('stable');
+      expect(evidence(id).sort(), id).toEqual(['Irma, Part-Time Mutant', 'Saheeli, Sublime Artificer']);
+    }
+    expect(MECH.filter((x) => x.status === 'experimental').map((t) => t.id).sort()).toEqual([]);
+    for (const id of ELSEWHERE) expect(MECH.find((x) => x.id === id)?.status, id).toBe('stable');
     for (const g of golden) expect(g.expect, g.card).toBe('full');
   });
   it('guard G3: a critical word a pattern spells out is listed in `consumes`', () => {
@@ -172,7 +182,7 @@ describe('p2-copy-perm-1 hole CopyExcept (parser/holes/p2copyperm1.ts; CR 707.9b
     expect(hole('CopyExcept', "it isn't legendary, it's 1/1 and it has flying")).toEqual([]);
     expect(hole('CopyExcept', "it's 1/1 and it's 2/2")).toEqual([]);
     expect(hole('CopyExcept', "it's an artifact")).toEqual([]);
-    expect(hole('CopyExcept', "it's an artifact and it loses all other card types")).toEqual([]);
+    expect(hole('CopyExcept', "it's an artifact and it loses all other card types")).not.toEqual([]); // edh-next-57: the bare type with "loses all other card types" is read for "it" now (types SET, CR 205.1a)
   });
   it('number: "the token isn\'t legendary" is said of one token only; "they\'re 1/1 Thopter artifacts in addition to their other types" of several only', () => {
     expect(hole('CopyExceptToken', "the token isn't legendary").length).toBe(1);

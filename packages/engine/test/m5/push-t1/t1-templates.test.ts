@@ -21,7 +21,7 @@ const TEST_DIR = dirname(fileURLToPath(import.meta.url));
 const GOLDEN = loadGolden().filter((e) => e.source === 'push-t1-review.json');
 /** An entry whose `verified` note names the template id: "(eff.action.populate)", "(kw.typecycling.swamp, kw.typecycling.mountain)". */
 /** p2-promote-2 (6.9 deviation, narrow wordings printed on one or two cards): stable on the card that prints it (push-t1-review.json), played in test/cloud/p2-promote-2. */
-const NARROW: Readonly<Record<string, string>> = { 'kw.typecycling.wizard': 'Step Through' };
+const NARROW: Readonly<Record<string, string>> = { 'kw.typecycling.wizard': 'Step Through', 'kw.typecycling.sliver': 'Homing Sliver' /* edh-next-142 (6.9 deviation, owner standing rule 2026-10-27): stable on the one card that prints it, played in test/cloud/edh-next-142 */ };
 const cites = (id: string) => (e: GoldenEntry): boolean => (e.verified ?? '').includes(`${id})`) || (e.verified ?? '').includes(`${id},`);
 /** What the template's output always contains: its action step, or the typecycling keyword. */
 const signature = (t: Template): string => (t.id.startsWith('eff.action.') ? `"action":"${t.id.split('.')[2]}"` : '"keyword":"typecycling"');
@@ -57,7 +57,7 @@ describe('PUSH1 T1: zz-push/t1.json is well formed and loaded last (design 6.3, 
       else if (t.status === 'stable') expect(cards.length, `${t.id}: ${cards.map((c) => c.card).join(', ')}`).toBeGreaterThanOrEqual(3);
     }
     // fewer than three cards in the whole corpus: experimental (cards capped at partial)
-    expect(T1_TEMPLATES.filter((t) => t.status === 'experimental').map((t) => t.id).sort()).toEqual(['kw.typecycling.sliver']);
+    expect(T1_TEMPLATES.filter((t) => t.status === 'experimental').map((t) => t.id).sort()).toEqual([]); // edh-next-142: kw.typecycling.sliver made stable on Homing Sliver (NARROW)
   });
   it.skipIf(localIndex() === null)('design 6.9, G10: each golden card of a T1 template parses WITH that template, and the golden abilities it produces are fully understood', () => {
     const opts = goldenOptions();

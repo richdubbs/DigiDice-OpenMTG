@@ -1,0 +1,571 @@
+[
+  {
+    "id": "sta.trek13.spells.cast.replicate",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 601.2b",
+      "CR 702.56a",
+      "CR 707.10"
+    ],
+    "pattern": "{f:Filter} you cast have replicate {m:ManaCost}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "replicate",
+              "cost": {
+                "mana": "$m"
+              },
+              "text": "replicate"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Artifact spells you cast have replicate {2}{U}."
+      },
+      {
+        "text": "Creature spells you cast have replicate {1}{R}."
+      }
+    ],
+    "counterExamples": [
+      "Artifact spells you control have replicate {2}{U}.",
+      "Artifact spells your opponents cast have replicate {2}{U}.",
+      "Artifact spells you cast have replicate."
+    ]
+  },
+  {
+    "id": "eff.trek13.nextSpell.has.undaunted",
+    "kind": "effect",
+    "since": 9,
+    "status": "experimental",
+    "cr": [
+      "CR 601.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.125a"
+    ],
+    "pattern": "the next {f:Filter} you cast this turn has undaunted",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "keyword",
+      "keyword": {
+        "kind": "keyword",
+        "keyword": "undaunted",
+        "text": "undaunted"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: The next spell you cast this turn has undaunted."
+      },
+      {
+        "text": "{1}, {T}: Scry 1. The next artifact spell you cast this turn has undaunted."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: The next spell you cast has undaunted.",
+      "{1}, {T}: The next spell an opponent casts this turn has undaunted.",
+      "{1}, {T}: Spells you cast this turn have undaunted."
+    ]
+  },
+  {
+    "id": "eff.trek13.nextSpell.two.have.undaunted",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.125a"
+    ],
+    "pattern": "the next {f:Filter} and the next {g:Filter} you cast this turn have undaunted",
+    "build": [
+      {
+        "op": "nextSpell",
+        "who": {
+          "ref": "you"
+        },
+        "filter": "$f",
+        "rider": "keyword",
+        "keyword": {
+          "kind": "keyword",
+          "keyword": "undaunted",
+          "text": "undaunted"
+        }
+      },
+      {
+        "op": "nextSpell",
+        "who": {
+          "ref": "you"
+        },
+        "filter": "$g",
+        "rider": "keyword",
+        "keyword": {
+          "kind": "keyword",
+          "keyword": "undaunted",
+          "text": "undaunted"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: The next artifact spell and the next enchantment spell you cast this turn have undaunted."
+      },
+      {
+        "text": "{1}, {T}: Scry 1. The next creature spell and the next land spell you cast this turn have undaunted."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: The next artifact spell and the next enchantment spell you cast this turn have storm.",
+      "{1}, {T}: The next artifact spell or the next enchantment spell you cast this turn have undaunted.",
+      "{1}, {T}: The next artifact spell and the next enchantment spell you cast have undaunted."
+    ]
+  },
+  {
+    "id": "eff.trek13.group.protection.choice",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.16a",
+      "CR 608.2d",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 105.1"
+    ],
+    "pattern": "{o:Objs} gain protection from the color of your choice {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "protectionColor",
+        "link": "protectionColor"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "W"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:W",
+                        "text": "protection from white"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "U"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:U",
+                        "text": "protection from blue"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "B"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:B",
+                        "text": "protection from black"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "R"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:R",
+                        "text": "protection from red"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "G"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:G",
+                        "text": "protection from green"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{1}{W}: Creatures you control gain protection from the color of your choice until end of turn."
+      },
+      {
+        "text": "Artifact creatures you control gain protection from the color of your choice until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control gain protection from the color of your choice.",
+      "Creatures you control gain protection from colorless or from the color of your choice until end of turn.",
+      "Creatures you control gain protection from the colors of your choice until end of turn."
+    ]
+  },
+  {
+    "id": "eff.trek13.forEachOpponent.assimilate",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 110.2a",
+      "CR 122.6",
+      "CR 400.7"
+    ],
+    "pattern": "for each opponent , assimilate {o:OppTarget}",
+    "build": {
+      "op": "action",
+      "action": "assimilate",
+      "who": {
+        "ref": "you"
+      },
+      "subject": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "For each opponent, assimilate up to one target creature card from that player's graveyard."
+      },
+      {
+        "text": "For each opponent, assimilate up to one target creature card from that player's graveyard that was put there from the battlefield this turn."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent, assimilate up to one target creature that player controls.",
+      "For each opponent, assimilate up to one target creature card from your graveyard.",
+      "For each opponent, assimilate up to one target creature card from an opponent's graveyard."
+    ],
+    "priority": 1,
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.trek13.they.revealUntil",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 401.1",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "{p:Player} reveals cards from the top of their library until they reveal {f:DiscardDesc}",
+    "build": {
+      "op": "revealUntil",
+      "who": "$p",
+      "filter": "$f",
+      "as": "hit",
+      "revealed": "revealed"
+    },
+    "subject": "player",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent reveals cards from the top of their library until they reveal a creature card. Assimilate one of the creature cards revealed this way. Then each opponent puts the other cards they revealed this way on the bottom of their library in a random order."
+      },
+      {
+        "text": "Each opponent reveals cards from the top of their library until they reveal an artifact card. Assimilate one of the artifact cards revealed this way. Then each opponent puts the other cards they revealed this way on the bottom of their library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent reveals cards from the top of their library until they reveal two creature cards. Assimilate one of the creature cards revealed this way. Then each opponent puts the other cards they revealed this way on the bottom of their library in a random order.",
+      "Each opponent reveals cards from the top of your library until they reveal a creature card. Assimilate one of the creature cards revealed this way. Then each opponent puts the other cards they revealed this way on the bottom of their library in a random order.",
+      "Each opponent exiles cards from the top of their library until they exile a creature card. Assimilate one of the creature cards revealed this way. Then each opponent puts the other cards they revealed this way on the bottom of their library in a random order."
+    ]
+  },
+  {
+    "id": "eff.trek13.assimilate.oneOfRevealed",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 122.6",
+      "CR 400.7"
+    ],
+    "pattern": "assimilate one of the {f:CardsDesc} revealed this way",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "hit"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "pick"
+      },
+      {
+        "op": "action",
+        "action": "assimilate",
+        "who": {
+          "ref": "you"
+        },
+        "subject": {
+          "ref": "bound",
+          "name": "pick"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Each opponent reveals cards from the top of their library until they reveal a creature card. Assimilate one of the creature cards revealed this way. Then each opponent puts the other cards they revealed this way on the bottom of their library in a random order."
+      },
+      {
+        "text": "Each opponent reveals cards from the top of their library until they reveal an artifact card. Assimilate one of the artifact cards revealed this way. Then each opponent puts the other cards they revealed this way on the bottom of their library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent reveals cards from the top of their library until they reveal a creature card. Assimilate one of the creature cards. Then each opponent puts the other cards they revealed this way on the bottom of their library in a random order.",
+      "Each opponent reveals cards from the top of their library until they reveal a creature card. Put one of the creature cards revealed this way into your hand. Then each opponent puts the other cards they revealed this way on the bottom of their library in a random order.",
+      "Each opponent reveals cards from the top of their library until they reveal a creature card. Assimilate each of the creature cards revealed this way. Then each opponent puts the other cards they revealed this way on the bottom of their library in a random order."
+    ],
+    "consumes": [
+      "this way"
+    ]
+  },
+  {
+    "id": "eff.trek13.then.eachOpponent.putOtherBottomRandom",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 701.20a",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "then each opponent puts the other cards they revealed this way on the bottom of their library in a random order",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "revealed"
+          },
+          "not": {
+            "is": {
+              "ref": "bound",
+              "name": "pick"
+            }
+          },
+          "zone": "library"
+        }
+      },
+      "to": {
+        "zone": "library",
+        "position": "bottom",
+        "order": "random"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "other",
+      "this way",
+      "random",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent reveals cards from the top of their library until they reveal a creature card. Assimilate one of the creature cards revealed this way. Then each opponent puts the other cards they revealed this way on the bottom of their library in a random order."
+      },
+      {
+        "text": "Each opponent reveals cards from the top of their library until they reveal an artifact card. Assimilate one of the artifact cards revealed this way. Then each opponent puts the other cards they revealed this way on the bottom of their library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent reveals cards from the top of their library until they reveal a creature card. Assimilate one of the creature cards revealed this way. Then each opponent puts the other cards they revealed this way on the top of their library in a random order.",
+      "Each opponent reveals cards from the top of their library until they reveal a creature card. Assimilate one of the creature cards revealed this way. Then each opponent puts the other cards they revealed this way on the bottom of their library in any order.",
+      "Each opponent reveals cards from the top of their library until they reveal a creature card. Assimilate one of the creature cards revealed this way. Then each opponent puts the cards they revealed this way on the bottom of their library in a random order."
+    ]
+  }
+]

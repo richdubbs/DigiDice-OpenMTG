@@ -12,5 +12,63 @@
   ],
   "reminder": "When a creature is put into your graveyard from the battlefield, you may pay {cost}. If you do, return this card from your graveyard to your hand. Otherwise, exile this card.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When a creature is put into your graveyard from the battlefield, you may pay {pay}. If you do, return ~ to your hand. Otherwise, exile ~.",
+      "zone": [
+        "graveyard"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "types": [
+                "Creature"
+              ],
+              "owner": "you"
+            },
+            "from": "battlefield",
+            "to": "graveyard"
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "pay",
+            "who": {
+              "ref": "you"
+            },
+            "cost": "$cost",
+            "then": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "self"
+                },
+                "to": {
+                  "zone": "hand"
+                }
+              }
+            ],
+            "else": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "self"
+                },
+                "to": {
+                  "zone": "exile"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }

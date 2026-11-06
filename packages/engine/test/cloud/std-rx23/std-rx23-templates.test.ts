@@ -219,9 +219,9 @@ describe('std-rx23 renderer (CR 120.3, 608.2h): "deals damage to each opponent e
   it('r4-fxb\'s each-player form is unchanged', () => {
     expect(fullFace(face('Sorcery', '~ deals damage to each player equal to the number of creatures that player controls.'))).toBe(true);
   });
-  it('"twice" with "each opponent", or "they control" after "each opponent", is not read', () => {
-    expect(fullFace(face('Sorcery', '~ deals damage to each opponent equal to twice the number of creatures that player controls.'))).toBe(false);
-    expect(fullFace(face('Sorcery', '~ deals damage to each opponent equal to the number of creatures they control.'))).toBe(false);
+  it('"twice" with "each opponent" and "they control" after "each opponent" are read for each opponent in turn (edh-players-12)', () => {
+    expect(fullFace(face('Sorcery', '~ deals damage to each opponent equal to twice the number of creatures that player controls.'))).toBe(true); // edh-players-12: twice each opponent's own count
+    expect(fullFace(face('Sorcery', '~ deals damage to each opponent equal to the number of creatures they control.'))).toBe(true); // edh-players-12 (anaphora.ts#groupChooser): "they" of a group's damage amount is each opponent in turn
   });
 });
 

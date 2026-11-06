@@ -1,0 +1,367 @@
+[
+  {
+    "id": "rep.edhr7.loseGame.instead",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 104.3",
+      "CR 104.3b",
+      "CR 614.6"
+    ],
+    "pattern": "if you would lose the game , instead {e:Effects}",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "loseGame",
+        "player": "you"
+      },
+      "body": {
+        "b": "instead",
+        "do": "$e"
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would lose the game, instead exile ~ and your life total becomes 5."
+      },
+      {
+        "text": "If you would lose the game, instead you gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "If you would lose the game, exile ~ and your life total becomes 5.",
+      "If an opponent would lose the game, instead you gain 3 life.",
+      "If you would win the game, instead you gain 3 life."
+    ]
+  },
+  {
+    "id": "rep.edhr7.enters.loyalty.forEachCommanderCast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 306.5b",
+      "CR 903.8"
+    ],
+    "pattern": "~ enters with a loyalty counter on ~ for each time you've cast ( your | a ) commander from the command zone this game",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "loyalty",
+                "count": {
+                  "q": "commanderCasts"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a loyalty counter on ~ for each time you've cast a commander from the command zone this game."
+      },
+      {
+        "text": "~ enters with a loyalty counter on ~ for each time you've cast your commander from the command zone this game."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a loyalty counter on ~ for each time you've cast a commander this game.",
+      "~ enters with a charge counter on ~ for each time you've cast a commander from the command zone this game.",
+      "~ enters with a loyalty counter on ~ for each time an opponent has cast a commander from the command zone this game."
+    ]
+  },
+  {
+    "id": "eff.edhr7.combatDamageToOpponent.triple.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 611.2a",
+      "CR 510.2",
+      "CR 120.1"
+    ],
+    "pattern": "{d:Dur} , if {o:Obj} would deal combat damage to one of your opponents , it deals triple that damage to that player instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            },
+            "recipient": {
+              "player": "opponent"
+            },
+            "combat": true
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "mul": 3
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "triple"
+    ],
+    "examples": [
+      {
+        "text": "Choose target creature. Until your next turn, if that creature would deal combat damage to one of your opponents, it deals triple that damage to that player instead."
+      },
+      {
+        "text": "Choose target creature you control. Until end of turn, if that creature would deal combat damage to one of your opponents, it deals triple that damage to that player instead."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature. Until your next turn, if that creature would deal combat damage to one of your opponents, it deals double that damage to that player instead.",
+      "Choose target creature. Until your next turn, if that creature would deal damage to one of your opponents, it deals triple that damage to that player instead.",
+      "Choose target creature. Until your next turn, if that creature would deal combat damage to you, it deals triple that damage to you instead."
+    ]
+  },
+  {
+    "id": "sta.edhr7.must.attackOrBlock",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 508.1d",
+      "CR 509.1c"
+    ],
+    "pattern": "{o:Obj} attacks or blocks each combat if able",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "block"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "if",
+      "if able",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature attacks or blocks each combat if able."
+      },
+      {
+        "text": "Enchanted permanent attacks or blocks each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "~ attacks or blocks each combat.",
+      "~ attacks or blocks this combat if able.",
+      "~ attacks and blocks each combat if able."
+    ]
+  },
+  {
+    "id": "trg.edhr7.loseControlOfSelf",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 108.4",
+      "CR 603.2",
+      "CR 603.10a",
+      "CR 613.1b"
+    ],
+    "pattern": "when you lose control of ~",
+    "build": {
+      "on": [
+        {
+          "ev": "controlChange",
+          "object": {
+            "self": true
+          },
+          "from": "you"
+        },
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "self": true
+          },
+          "from": "battlefield"
+        }
+      ]
+    },
+    "consumes": [
+      "when",
+      "lose control"
+    ],
+    "examples": [
+      {
+        "text": "When you lose control of ~, draw a card."
+      },
+      {
+        "text": "When you lose control of ~, each opponent loses 2 life."
+      }
+    ],
+    "counterExamples": [
+      "When you gain control of ~, draw a card.",
+      "Whenever you lose control of a creature, draw a card.",
+      "When an opponent loses control of ~, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhr7.prevent.toYouAnd.bySources.thenBackToSource",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 615.7",
+      "CR 120.3",
+      "CR 608.2h",
+      "CR 109.4"
+    ],
+    "pattern": "prevent all damage that would be dealt to you and {f:Filter} {d:Dur} by {g:Filter} . if damage from a creature source is prevented this way , ~ deals that much damage to that creature . if damage from a noncreature source is prevented this way , ~ deals that much damage to the source 's controller",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$g",
+            "recipient": {
+              "player": "you",
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "if",
+                "cond": {
+                  "cond": "matches",
+                  "object": {
+                    "ref": "event",
+                    "role": "source"
+                  },
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ]
+                  }
+                },
+                "then": [
+                  {
+                    "op": "damage",
+                    "source": {
+                      "ref": "self"
+                    },
+                    "to": {
+                      "ref": "event",
+                      "role": "source"
+                    },
+                    "amount": {
+                      "q": "preventedAmount"
+                    }
+                  }
+                ],
+                "else": [
+                  {
+                    "op": "damage",
+                    "source": {
+                      "ref": "self"
+                    },
+                    "to": {
+                      "ref": "controllerOf",
+                      "object": {
+                        "ref": "event",
+                        "role": "source"
+                      }
+                    },
+                    "amount": {
+                      "q": "preventedAmount"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "this way",
+      "if",
+      "would",
+      "that much"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to you and artifacts you control this turn by red sources. If damage from a creature source is prevented this way, ~ deals that much damage to that creature. If damage from a noncreature source is prevented this way, ~ deals that much damage to the source's controller."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to you and planeswalkers you control this turn by sources an opponent controls. If damage from a creature source is prevented this way, ~ deals that much damage to that creature. If damage from a noncreature source is prevented this way, ~ deals that much damage to the source's controller."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt to you and artifacts you control this turn by red sources. If damage from a creature source is prevented this way, ~ deals that much damage to that creature.",
+      "Prevent all damage that would be dealt to you and artifacts you control this turn by red sources. If damage from a creature source is prevented this way, ~ deals that much damage to that creature. If damage from a noncreature source is prevented this way, ~ deals that much damage to you.",
+      "Prevent all damage that would be dealt to you and artifacts you control this turn by red sources. If damage from a creature source is prevented this way, ~ deals twice that much damage to that creature. If damage from a noncreature source is prevented this way, ~ deals that much damage to the source's controller."
+    ]
+  }
+]

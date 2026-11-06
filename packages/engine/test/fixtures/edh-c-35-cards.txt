@@ -1,0 +1,12 @@
+# edh-c-35 (Commander lane edh-c, ranks 25,501-26,000). After editing: npm run cards -- fixtures
+Heart of Light
+Traitor's Clutch
+Stupor
+Gutwrencher Oni
+Rusted Relic
+Short Circuit
+Hobble
+Consecrate Land
+Marrow Chomper
+Tar Fiend
+Skullmulcher

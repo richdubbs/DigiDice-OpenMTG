@@ -13,7 +13,7 @@
  */
 import { charsOfObject, hasKeyword } from '../../rules/characteristics';
 import { cantDo } from '../../rules/cant';
-import { regenerationShieldIndex } from '../../rules/destroy';
+import { regenerationAvailable } from '../../rules/destroy';
 import { proposeNested } from '../nested';
 import { performRemoveAllDamage } from '../perform-events';
 import type { BodyKinds } from '../registries';
@@ -30,7 +30,7 @@ export const UMBRA_ARMOR_BODY_KINDS: Pick<BodyKinds, 'umbraArmor'> = {
       if (e.ev !== 'destroy') return e;
       const id = e.object.id;
       // CR 616.1: a regeneration shield replaces the same destruction; the affected permanent's controller chooses which applies
-      if (e.canRegenerate && !cantDo(g.s, 'beRegenerated', id) && regenerationShieldIndex(g.s, id) >= 0) {
+      if (e.canRegenerate && !cantDo(g.s, 'beRegenerated', id) && regenerationAvailable(g.s, id)) {
         const pick = g.choose({
           kind: 'chooseOption', player: g.obj(id).controller, prompt: `${g.nameOf(id)} would be destroyed. Which effect applies first?`,
           options: [{ id: 'umbra', label: `Umbra armor of ${c.sourceName}` }, { id: 'regenerate', label: 'Use the regeneration shield' }], min: 1, max: 1, rules: ['CR 616.1', 'CR 702.89a', 'CR 701.19a'],

@@ -1,0 +1,1028 @@
+[
+  {
+    "card": "Squee, Dubious Monarch",
+    "expect": "full",
+    "verified": "edh-next-68 review (rank 5,297 of the EDHREC top 20,000, lane graveyard; half: see the record), by hand against the Oracle text, the Scryfall rulings and the rules cited (cm.edhn68.alt.fromGraveyard.mana.exile) : \"You may cast ~ from your graveyard by paying {3}{R} and exiling four other cards from your graveyard rather than paying its mana cost.\" is an alternative cost (CR 118.9) usable from the graveyard (CR 601.3), the four other cards exiled as part of the total cost (CR 601.2h); CR cites checked against the 2026-09-25 text where marked in the record",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "haste",
+            "text": "Haste",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "keyword",
+              "id": "haste"
+            }
+          },
+          {
+            "kind": "triggered",
+            "text": "Whenever ~ attacks, create a 1/1 red Goblin creature token that's tapped and attacking.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "trigger": {
+              "on": [
+                {
+                  "ev": "attacks",
+                  "attacker": {
+                    "self": true
+                  }
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "createToken",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1,
+                  "token": {
+                    "colors": [
+                      "R"
+                    ],
+                    "types": [
+                      "Creature"
+                    ],
+                    "subtypes": [
+                      "Goblin"
+                    ],
+                    "power": 1,
+                    "toughness": 1
+                  },
+                  "tapped": true,
+                  "attacking": true
+                }
+              ]
+            }
+          },
+          {
+            "kind": "static",
+            "text": "You may cast ~ from your graveyard by paying {3}{R} and exiling four other cards from your graveyard rather than paying its mana cost.",
+            "src": [
+              2
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "zone": [
+              "graveyard"
+            ],
+            "effects": [
+              {
+                "s": "alternativeCost",
+                "cost": {
+                  "mana": [
+                    {
+                      "kind": "generic",
+                      "amount": 3
+                    },
+                    {
+                      "kind": "colored",
+                      "color": "R"
+                    }
+                  ],
+                  "other": [
+                    {
+                      "kind": "exileFrom",
+                      "zone": "graveyard",
+                      "count": 4,
+                      "filter": {
+                        "other": true
+                      }
+                    }
+                  ]
+                },
+                "from": "graveyard",
+                "name": "alternative"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Scourge of Nel Toth",
+    "expect": "full",
+    "verified": "edh-next-68 review (rank 9,241 of the EDHREC top 20,000, lane graveyard; half: see the record), by hand against the Oracle text, the Scryfall rulings and the rules cited (cm.edhn68.alt.fromGraveyard.mana.sacrifice) : \"by paying {B}{B} and sacrificing two creatures rather than paying its mana cost\" is an alternative cost from the graveyard (CR 118.9, 601.2h); the creatures are sacrificed as the cost is paid; CR cites checked against the 2026-09-25 text where marked in the record",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "flying",
+            "text": "Flying",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "keyword",
+              "id": "flying"
+            }
+          },
+          {
+            "kind": "static",
+            "text": "You may cast ~ from your graveyard by paying {B}{B} and sacrificing two creatures rather than paying its mana cost.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "zone": [
+              "graveyard"
+            ],
+            "effects": [
+              {
+                "s": "alternativeCost",
+                "cost": {
+                  "mana": [
+                    {
+                      "kind": "colored",
+                      "color": "B"
+                    },
+                    {
+                      "kind": "colored",
+                      "color": "B"
+                    }
+                  ],
+                  "other": [
+                    {
+                      "kind": "sacrifice",
+                      "filter": {
+                        "types": [
+                          "Creature"
+                        ]
+                      },
+                      "count": 2
+                    }
+                  ]
+                },
+                "from": "graveyard",
+                "name": "alternative"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Glimpse the Cosmos",
+    "expect": "full",
+    "verified": "edh-next-68 review (rank 15,447 of the EDHREC top 20,000, lane graveyard; half: see the record), by hand against the Oracle text, the Scryfall rulings and the rules cited (cm.edhn68.alt.fromGraveyard.mana.asLongAs.graveyardInstead) : while you control a Giant the card may be cast from the graveyard for {U} rather than its mana cost (CR 118.9); a spell cast this way is exiled instead of put into a graveyard, and only then (CR 614.1a); CR cites checked against the 2026-09-25 text where marked in the record",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "spell",
+            "text": "Look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order.",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": 3
+                  },
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 1,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "hand"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "library",
+                    "position": "bottom",
+                    "order": "chosen"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "kind": "static",
+            "text": "As long as you control a Giant, you may cast ~ from your graveyard by paying {U} rather than paying its mana cost. If you cast ~ this way and it would be put into your graveyard, exile it instead.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "zone": [
+              "graveyard"
+            ],
+            "effects": [
+              {
+                "s": "alternativeCost",
+                "cost": {
+                  "mana": [
+                    {
+                      "kind": "colored",
+                      "color": "U"
+                    }
+                  ]
+                },
+                "from": "graveyard",
+                "name": "alternative",
+                "when": {
+                  "cond": "exists",
+                  "of": {
+                    "ref": "each",
+                    "filter": {
+                      "subtypes": [
+                        "Giant"
+                      ],
+                      "controller": "you"
+                    }
+                  }
+                },
+                "graveyardInstead": true
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Gerrard's Hourglass Pendant",
+    "expect": "full",
+    "verified": "edh-next-68 review (rank 7,604 of the EDHREC top 20,000, lane graveyard; half: see the record), by hand against the Oracle text, the Scryfall rulings and the rules cited (eff.edhn68.return.bf.tapped.first) : the activated ability returns, tapped, every artifact, creature, enchantment and land card in your graveyard that was put there from the battlefield this turn (CR 400.3, 614.1c); the destination is said before the group; CR cites checked against the 2026-09-25 text where marked in the record",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "flash",
+            "text": "Flash",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "keyword",
+              "id": "flash"
+            }
+          },
+          {
+            "kind": "static",
+            "text": "If a player would begin an extra turn, that player skips that turn instead.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "effects": [
+              {
+                "s": "replace",
+                "replaces": {
+                  "ev": "beginTurn",
+                  "whose": "any",
+                  "extra": true
+                },
+                "body": {
+                  "b": "skip"
+                }
+              }
+            ]
+          },
+          {
+            "kind": "activated",
+            "text": "{4}, {T}, Exile ~: Return to the battlefield tapped all artifact, creature, enchantment, and land cards in your graveyard that were put there from the battlefield this turn.",
+            "src": [
+              2
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 4
+                }
+              ],
+              "tap": true,
+              "other": [
+                {
+                  "kind": "exileFrom",
+                  "zone": "battlefield",
+                  "count": 1,
+                  "self": true
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "types": [
+                        "Artifact",
+                        "Creature",
+                        "Enchantment",
+                        "Land"
+                      ],
+                      "zone": "graveyard",
+                      "owner": "you",
+                      "putThereThisTurn": true,
+                      "putThereFrom": "battlefield",
+                      "isCard": true
+                    }
+                  },
+                  "to": {
+                    "zone": "battlefield",
+                    "controller": {
+                      "ref": "you"
+                    },
+                    "tapped": true
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Oskar, Rubbish Reclaimer",
+    "expect": "full",
+    "verified": "edh-next-68 review (rank 10,686 of the EDHREC top 20,000, lane graveyard; half: see the record), by hand against the Oracle text, the Scryfall rulings and the rules cited (eff.edhn68.cast.obj.fromGraveyard) : the trigger lets you cast the card you discarded from the graveyard it is in (CR 601.3, 400.7); the first line is the existing cost reduction; CR cites checked against the 2026-09-25 text where marked in the record",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "static",
+            "text": "~ costs {1} less to cast for each different mana value among cards in your graveyard.",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "zone": [
+              "stack"
+            ],
+            "effects": [
+              {
+                "s": "costMod",
+                "applies": {
+                  "self": true,
+                  "caster": "you"
+                },
+                "change": {
+                  "kind": "reduce",
+                  "generic": {
+                    "q": "math",
+                    "op": "*",
+                    "args": [
+                      1,
+                      {
+                        "q": "distinct",
+                        "what": "manaValues",
+                        "among": {
+                          "ref": "each",
+                          "filter": {
+                            "zone": "graveyard",
+                            "owner": "you",
+                            "isCard": true
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "floor": "zero"
+                }
+              }
+            ]
+          },
+          {
+            "kind": "triggered",
+            "text": "Whenever you discard a nonland card, you may cast it from your graveyard.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "trigger": {
+              "on": [
+                {
+                  "ev": "action",
+                  "verb": "discard",
+                  "actor": "you",
+                  "object": {
+                    "notTypes": [
+                      "Land"
+                    ],
+                    "isCard": true
+                  }
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "cast",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "what": {
+                    "ref": "event",
+                    "role": "subject"
+                  },
+                  "optional": true,
+                  "from": "graveyard"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Brokkos, Apex of Forever",
+    "expect": "full",
+    "verified": "edh-next-68 review (rank 8,142 of the EDHREC top 20,000, lane graveyard; half: see the record), by hand against the Oracle text, the Scryfall rulings and the rules cited (sta.edhn68.castWith.graveyard.mutate) : the card may be cast from the graveyard using its mutate ability only (CR 601.3, 702.140a, 113.6f), as p2-graveyard-1 does for bestow; CR cites checked against the 2026-09-25 text where marked in the record",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "mutate",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 2
+                },
+                {
+                  "kind": "hybrid",
+                  "colors": [
+                    "U",
+                    "B"
+                  ]
+                },
+                {
+                  "kind": "colored",
+                  "color": "G"
+                },
+                {
+                  "kind": "colored",
+                  "color": "G"
+                }
+              ]
+            },
+            "text": "Mutate {2}{U/B}{G}{G}",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "keyword",
+              "id": "mutate"
+            }
+          },
+          {
+            "kind": "keyword",
+            "keyword": "trample",
+            "text": "Trample",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "keyword",
+              "id": "trample"
+            }
+          },
+          {
+            "kind": "static",
+            "text": "You may cast ~ from your graveyard using its mutate ability.",
+            "src": [
+              2
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "zone": [
+              "stack"
+            ],
+            "effects": [
+              {
+                "s": "castWith",
+                "method": "mutate",
+                "from": "graveyard"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Haakon, Stromgald Scourge",
+    "expect": "full",
+    "verified": "edh-next-68 review (rank 7,066 of the EDHREC top 20,000, lane graveyard; half: see the record), by hand against the Oracle text, the Scryfall rulings and the rules cited (sta.edhn68.castSelf.onlyFromGraveyard, sta.edhn68.asLongAs.cast.gy) : the card may be cast from the graveyard and from no other zone (CR 601.3, 113.6b); while it is on the battlefield you may cast Knight spells from the graveyard; CR cites checked against the 2026-09-25 text where marked in the record",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "static",
+            "text": "You may cast ~ from your graveyard, but not from anywhere else.",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "zone": [
+              "hand",
+              "graveyard",
+              "library",
+              "exile",
+              "command"
+            ],
+            "effects": [
+              {
+                "s": "permit",
+                "who": {
+                  "ref": "you"
+                },
+                "action": "cast",
+                "of": {
+                  "self": true
+                },
+                "from": "graveyard"
+              },
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "each",
+                  "who": "player"
+                },
+                "mode": "cant",
+                "action": "castFromZone",
+                "fromZones": [
+                  "hand",
+                  "library",
+                  "exile",
+                  "command"
+                ],
+                "other": {
+                  "self": true
+                }
+              }
+            ]
+          },
+          {
+            "kind": "static",
+            "text": "As long as ~ is on the battlefield, you may cast Knight spells from your graveyard.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "condition": {
+              "cond": "exists",
+              "of": {
+                "ref": "self"
+              }
+            },
+            "effects": [
+              {
+                "s": "permit",
+                "who": {
+                  "ref": "you"
+                },
+                "action": "cast",
+                "of": {
+                  "subtypes": [
+                    "Knight"
+                  ],
+                  "stackKind": "spell",
+                  "zone": "stack"
+                },
+                "from": "graveyard"
+              }
+            ]
+          },
+          {
+            "kind": "triggered",
+            "text": "When ~ dies, you lose 2 life.",
+            "src": [
+              2
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "from": "battlefield",
+                  "to": "graveyard"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "loseLife",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "amount": 2
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Edgar, Master Machinist",
+    "expect": "full",
+    "verified": "edh-next-68 review (rank 9,385 of the EDHREC top 20,000, lane graveyard; half: see the record), by hand against the Oracle text, the Scryfall rulings and the rules cited (sta.edhn68.once.cast.gy.entersTapped) : once during each of your turns an artifact spell may be cast from the graveyard and the artifact enters tapped (CR 601.3, 614.1c); CR cites checked against the 2026-09-25 text where marked in the record",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "static",
+            "text": "Once during each of your turns, you may cast an artifact spell from your graveyard. If you cast a spell this way, that artifact enters tapped.",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "condition": {
+              "cond": "turnOf",
+              "whose": "you"
+            },
+            "effects": [
+              {
+                "s": "permit",
+                "who": {
+                  "ref": "you"
+                },
+                "action": "cast",
+                "of": {
+                  "types": [
+                    "Artifact"
+                  ],
+                  "stackKind": "spell",
+                  "zone": "stack"
+                },
+                "from": "graveyard",
+                "oncePerTurn": true,
+                "entersTapped": true
+              }
+            ]
+          },
+          {
+            "kind": "triggered",
+            "text": "Whenever ~ attacks, it gets +X/+0 until end of turn, where X is the greatest mana value among artifacts you control.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "trigger": {
+              "on": [
+                {
+                  "ev": "attacks",
+                  "attacker": {
+                    "self": true
+                  }
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "effect",
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "s": "continuous",
+                      "affects": {
+                        "ref": "event",
+                        "role": "attacker"
+                      },
+                      "mods": [
+                        {
+                          "layer": "7c",
+                          "power": {
+                            "q": "stat",
+                            "stat": "manaValue",
+                            "of": {
+                              "ref": "each",
+                              "filter": {
+                                "types": [
+                                  "Artifact"
+                                ],
+                                "controller": "you"
+                              }
+                            },
+                            "agg": "max"
+                          },
+                          "toughness": 0
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "label": "Tools"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Solemn Doomguide",
+    "expect": "full",
+    "verified": "edh-next-68 review (rank 11,468 of the EDHREC top 20,000, lane graveyard; half: see the record), by hand against the Oracle text, the Scryfall rulings and the rules cited (sta.each.grant, no new template; filter hole thatsKinds and/or list, render np.ts thatAreForm) : each creature card in your graveyard that is a Cleric, Rogue, Warrior or Wizard has unearth {1}{B} (CR 702.84a, 205.3m); CR cites checked against the 2026-09-25 text where marked in the record",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "flying",
+            "text": "Flying",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "keyword",
+              "id": "flying"
+            }
+          },
+          {
+            "kind": "static",
+            "text": "Each creature card in your graveyard that's a Cleric, Rogue, Warrior, and/or Wizard has unearth {1}{B}.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "zone": "graveyard",
+                    "owner": "you",
+                    "anyOf": [
+                      {
+                        "subtypes": [
+                          "Cleric"
+                        ]
+                      },
+                      {
+                        "subtypes": [
+                          "Rogue"
+                        ]
+                      },
+                      {
+                        "subtypes": [
+                          "Warrior"
+                        ]
+                      },
+                      {
+                        "subtypes": [
+                          "Wizard"
+                        ]
+                      }
+                    ],
+                    "isCard": true
+                  }
+                },
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "unearth",
+                        "cost": {
+                          "mana": [
+                            {
+                              "kind": "generic",
+                              "amount": 1
+                            },
+                            {
+                              "kind": "colored",
+                              "color": "B"
+                            }
+                          ]
+                        },
+                        "text": "unearth {1}{B}"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Welcome the Dead",
+    "expect": "full",
+    "verified": "edh-next-68 review (rank 7,342 of the EDHREC top 20,000, lane graveyard; half: see the record), by hand against the Oracle text, the Scryfall rulings and the rules cited (no new template; qty.ts historyCounts phrase) : X is the number of cards that were put into your graveyard from your hand or library this turn, counted from this turn history (CR 400.7, 404.1); CR cites checked against the 2026-09-25 text where marked in the record",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "spell",
+            "text": "Draw two cards, then discard a card and you lose 2 life. Create X tapped 2/2 black Zombie Druid creature tokens, where X is the number of cards that were put into your graveyard from your hand or library this turn.",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "draw",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 2
+                },
+                {
+                  "op": "discard",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": 1
+                },
+                {
+                  "op": "loseLife",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "amount": 2
+                },
+                {
+                  "op": "createToken",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "count": {
+                    "q": "happenedCount",
+                    "event": {
+                      "ev": "zoneChange",
+                      "subject": {
+                        "isCard": true,
+                        "owner": "you"
+                      },
+                      "from": [
+                        "hand",
+                        "library"
+                      ],
+                      "to": "graveyard"
+                    },
+                    "scope": "turn"
+                  },
+                  "token": {
+                    "colors": [
+                      "B"
+                    ],
+                    "types": [
+                      "Creature"
+                    ],
+                    "subtypes": [
+                      "Zombie",
+                      "Druid"
+                    ],
+                    "power": 2,
+                    "toughness": 2
+                  },
+                  "tapped": true
+                }
+              ]
+            }
+          },
+          {
+            "kind": "keyword",
+            "keyword": "flashback",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 5
+                },
+                {
+                  "kind": "colored",
+                  "color": "B"
+                }
+              ]
+            },
+            "text": "Flashback {5}{B}",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "keyword",
+              "id": "flashback"
+            }
+          }
+        ]
+      }
+    ]
+  }
+]

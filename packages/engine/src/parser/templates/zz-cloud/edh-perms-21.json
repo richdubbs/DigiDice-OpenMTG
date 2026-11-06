@@ -1,0 +1,284 @@
+[
+  {
+    "id": "sta.edhpm21.grant.protection.keepsAura",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16c",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} has {a:Abilities} . this effect doesn't remove ~",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": {
+                "$mergeEach": [
+                  "$a",
+                  {
+                    "exceptAttached": {
+                      "ref": "grantor"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "doesn't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature has protection from artifacts. This effect doesn't remove ~."
+      },
+      {
+        "text": "Enchanted creature has protection from multicolored. This effect doesn't remove ~."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature has protection from artifacts. This effect doesn't remove other Auras.",
+      "Enchanted creature has protection from artifacts until end of turn. This effect doesn't remove ~.",
+      "Enchanted creature has flying. This effect doesn't remove ~."
+    ]
+  },
+  {
+    "id": "eff.edhpm21.copyToken.except.noComma",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.2",
+      "CR 707.2",
+      "CR 707.9a",
+      "CR 707.9b"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} except {x:CopyExceptToken}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": "$x",
+      "as": "made",
+      "link": "created"
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control except the token isn't legendary."
+      },
+      {
+        "text": "Create a token that's a copy of target creature you control except it's 1/1 and has deathtouch."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature you control except the token is legendary.",
+      "Create a token that's a copy of target creature you control except it's 1/1 and has deathtouch if it's a Rat."
+    ]
+  },
+  {
+    "id": "sta.edhpm21.enters.becomes.creature",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 205.1b",
+      "CR 613.4b"
+    ],
+    "pattern": "as ( a | an ) {f:Filter} enters , it becomes ( a | an ) {pt:BasePT} {st:Subtypes} creature in addition to its other types",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "becomes": {
+              "types": [
+                "Creature"
+              ],
+              "subtypes": "$st",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As a red permanent you control enters, it becomes a 3/3 Elf creature in addition to its other types."
+      },
+      {
+        "text": "As an artifact you control enters, it becomes a 5/5 Golem creature in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "As a red permanent you control enters, it becomes a 3/3 Elf creature.",
+      "As a red permanent you control enters, it becomes a 3/3 Elf artifact in addition to its other types.",
+      "As a red permanent you control enters, it becomes a 3/3 Elf creature in addition to its other types until end of turn."
+    ],
+    "consumes": [
+      "in addition",
+      "other"
+    ]
+  },
+  {
+    "id": "rid.edhpm21.onlyFilter.canBeEnchantedThisWay",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 303.4f",
+      "CR 303.4g",
+      "CR 608.2c"
+    ],
+    "pattern": "only {f:Filter} can be enchanted this way",
+    "build": {
+      "$patchPrevious": {
+        "to": {
+          "enchantOnly": {
+            "@new": "$f"
+          }
+        }
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "only",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Put each Aura card from your hand onto the battlefield. Only lands can be enchanted this way."
+      },
+      {
+        "text": "Put target Aura card from a graveyard onto the battlefield under your control. Only artifacts you control can be enchanted this way."
+      }
+    ],
+    "counterExamples": [
+      "Put each Aura card from your hand onto the battlefield. Only lands can be enchanted.",
+      "Put each Aura card from your hand onto the battlefield. Only lands can be enchanted that way.",
+      "Draw a card. Only lands can be enchanted this way."
+    ]
+  },
+  {
+    "id": "eff.edhpm21.exile.otherTokensCreatedWithSelf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2c",
+      "CR 608.2c",
+      "CR 111.7",
+      "CR 701.13a"
+    ],
+    "pattern": "exile all other tokens created with ~",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "created",
+        "except": {
+          "ref": "bound",
+          "name": "made"
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature an opponent controls enters, create a token that's a copy of that creature except it's an artifact in addition to its other types. Then exile all other tokens created with ~."
+      },
+      {
+        "text": "Whenever you cast a spell, create a token that's a copy of target creature you control except it isn't legendary. Exile all other tokens created with ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature an opponent controls enters, create a token that's a copy of that creature except it's an artifact in addition to its other types. Then exile all tokens created with ~.",
+      "Whenever a creature an opponent controls enters, create a token that's a copy of that creature except it's an artifact in addition to its other types. Then exile all other tokens.",
+      "Whenever a creature an opponent controls enters, create a token that's a copy of that creature except it's an artifact in addition to its other types. Then destroy all other tokens created with ~."
+    ]
+  },
+  {
+    "id": "eff.edhpm21.copyToken.ofOneYouControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.2",
+      "CR 707.2",
+      "CR 608.2d"
+    ],
+    "pattern": "create a token that's a copy of ( a | an ) {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "copy",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "result": "token",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your end step, create a token that's a copy of a red artifact you control."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may create a token that's a copy of a nonlegendary creature you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, create a token that's a copy of a red artifact.",
+      "At the beginning of your end step, create a token that's a copy of target red artifact you control.",
+      "At the beginning of your end step, create two tokens that are copies of a red artifact you control."
+    ]
+  }
+]

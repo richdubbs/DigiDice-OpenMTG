@@ -32,15 +32,19 @@ import type { ObjectId, PlayerId } from '../types/ids';
 import type { Color, ManaCost, ManaSymbol } from '../types/mana';
 import type { GameObject, GameState, TargetChoice } from '../types/state';
 import type { Chars } from '../rules/characteristics';
-import { evalCondition, evalQuantity, STATIC_QUANTITY_KINDS, type EvalCx } from './match';
+import { commanderOfCard } from './commander';
+import { readLink } from './links';
+import { isFirstTypedActivation } from './typed-activations';
+import { evalCondition, evalQuantity, objectsOf, STATIC_QUANTITY_KINDS, type EvalCx } from './match';
 import { objectMatches, ruleFilterEvaluable, spellActor, type Actor } from './rule-match';
 import { charsViewOf, defHasRuleEffects, overlayAsSpell, overlayZone, playerPredIncludes, ruleContext, spellFaceChars, type CharsView } from './rule-sources';
+import { namedPermitSpellKeyword } from './play-permits'; // edh-d-91
 
 /**
  * The quantity kinds a cost modifier's amount may use (design 5.2: `rq:cost.<kind>`): what statics/match.ts evaluates, `spellTargetCount` (below) and
  * `happenedCount`, which actions/cast.ts#modifiedPlan supplies from the history (the only caller that applies modifiers).
  */
-export const COST_QUANTITY_KINDS: ReadonlySet<string> = new Set([...STATIC_QUANTITY_KINDS, 'spellTargetCount', 'happenedCount']);
+export const COST_QUANTITY_KINDS: ReadonlySet<string> = new Set([...STATIC_QUANTITY_KINDS, 'spellTargetCount', 'happenedCount', 'happenedDistinct' /* edh-next-58 */, 'happenedPlayers', 'lifeGainedThisTurn', 'opponentsAttacked', 'casterSpellsCastThisTurn', 'casterControlledCount', 'chosenColorsOf' /* edh-d-45 */, 'sharedCardTypes' /* edh-d-90 */]);
 
 /** One cost modifier that applies to a spell, with what evaluating it needs. */
 export interface CostModHit {
@@ -54,6 +58,10 @@ export interface CostModHit {
   text: string;
   /** The evaluation context (the spell seen as a spell on the stack). */
   cx: EvalCx;
+  /** edh-next-58 (CR 601.2c, 601.2f): the spell the modifier is applied to (for `spellTargetCount` of another object's modifier of spells); absent for an ability's cost. */
+  spell?: ObjectId;
+  /** edh-next-107 (CR 601.2c, 602.2b): the modifier applies only to an ability whose announced targets include the modifier's own source (`applies.abilities.source.targets: {ref:'self'}`). */
+  abilityTargetsSelf?: true;
   /** The modifier's `applies.spells` filter can't be evaluated (statics/rule-match.ts): the cost is unknown, the cast is refused (never a guess). */
   unknown?: true;
   /**
@@ -68,30 +76,46 @@ export interface CostModHit {
  * The cost modifiers that apply to `spell` (a stack object, or the card being cast) cast by `player`, in timestamp order (design 5.3). `chars` are the
  * characteristics of the face being cast when the card is not on the stack yet (castCheck passes them).
  */
-export function applicableCostMods(s: GameState, spell: ObjectId, player: PlayerId, chars?: Chars): CostModDef[] {
-  return costModsFor(s, spell, player, chars).map((h) => h.def);
+export function applicableCostMods(s: GameState, spell: ObjectId, player: PlayerId, chars?: Chars, via?: string): CostModDef[] {
+  return costModsFor(s, spell, player, chars, false, via).map((h) => h.def); // edh-next-48's `via` after the face-down flag another round added (merge of both)
 }
 
 /** `applicableCostMods` with the context each modifier is evaluated in. */
-export function costModsFor(s: GameState, spell: ObjectId, player: PlayerId, chars?: Chars): CostModHit[] {
+export function costModsFor(s: GameState, spell: ObjectId, player: PlayerId, chars?: Chars, faceDown = false, via0?: string): CostModHit[] {
   const ctx = ruleContext(s);
   const o = s.objects[spell];
   const def = o ? s.defs[o.defId] : undefined;
   if (!o || !def) return [];
   const onStack = o.zone === 'stack';
+  // edh-next-48 (CR 601.2f, 118.9; Visions of Dominance): the alternative cost the spell is cast for ("This spell costs {X} less to cast this way"): the one the caller names, else the one a spell on the stack paid
+  const via = via0 ?? (onStack ? o.stack?.costsPaid.alternative : undefined);
   // A card that is not a spell yet has its own modifiers too (affinity): they are read from the card even when nothing else in the game has a rule effect.
   // std-rx26: or a keyword a waiting "the next spell you cast this turn has affinity for artifacts" would give it (statics/rule-sources.ts#overlayAsSpell)
-  const rider = !onStack && (s.turn.nextSpell ?? []).some((r) => r.rider === 'keyword' && r.player === player);
-  if (!ctx && (onStack || !defHasRuleEffects(def)) && !rider) return [];
+  const rider = (!onStack && (s.turn.nextSpell ?? []).some((r) => r.rider === 'keyword' && r.player === player)) || (s.turn.nextSpell ?? []).some((r) => r.rider === 'reduce' && r.player === player); // edh-c-53: and a waiting "the next spell you cast costs {1} less"
+  if (!ctx && (onStack || !defHasRuleEffects(def)) && !rider && o.castReduce === undefined) return [];
   // The spell as CR 601.2f sees it: on the stack, with the characteristics of the face being cast.
   const own = onStack ? undefined : chars ? { ...chars, controller: player } : spellFaceChars(s, o, 0, player);
   // P1: the overlay (a copy of the whole object map) is built the first time a modifier needs it; most spells meet none
   let at: { s2: GameState; view: CharsView } | undefined;
   const spellEnv = (): { s2: GameState; view: CharsView } => {
     if (at) return at;
-    const s2 = onStack ? s : overlayZone(s, spell, 'stack');
+    // edh-d-12 (CR 708.4, 601.2f; Kadena, Slinking Sorcerer): a card about to be cast face down is a face-down spell from the moment it is announced, so a modifier of "face-down creature spells" sees it so
+    const s2 = onStack ? s : faceDown ? { ...s, objects: { ...s.objects, [spell]: { ...o, zone: 'stack' as const, faceDown: true } } } : overlayZone(s, spell, 'stack');
     const base = ctx?.view ?? charsViewOf(s);
-    return (at = { s2, view: own ? base.with(s2, new Map([[spell, own]])) : s2 === s ? base : base.with(s2, new Map()) });
+    // edh-cast-2 (CR 604.3, 601.2f, 208.2a; Goreclaw): a card's characteristic-defining ability works in every zone, so a "*" power or toughness of the face being cast
+    // ("Ulvenwald Hydra") is the number the ability gives it as the spell; a "*" that no ability evaluates stays "*" (the modifier then fails closed)
+    const star = (v: string | undefined): boolean => v !== undefined && !/^-?\d+$/.test(v);
+    let seen = own;
+    if (own && !onStack && (star(own.power) || star(own.toughness))) {
+      const c = charsViewOf(s2).get(spell);
+      if (c) seen = { ...own, ...(star(own.power) && c.power !== undefined ? { power: c.power } : {}), ...(star(own.toughness) && c.toughness !== undefined ? { toughness: c.toughness } : {}) };
+    }
+    // edh-c-24 (CR 702.73a, 205.3m, 604.3; Mistform Warchief): changeling works in every zone, so the spell has every creature type: "share a creature type" reads them from the view
+    if (own && !onStack && own.keywords.some((k) => (typeof k === 'string' ? k : (k as { keyword?: string }).keyword) === 'changeling')) {
+      const c = charsViewOf(s2).get(spell);
+      if (c) seen = { ...(seen ?? own), subtypes: c.subtypes };
+    }
+    return (at = { s2, view: seen ? base.with(s2, new Map([[spell, seen]])) : s2 === s ? base : base.with(s2, new Map()) });
   };
   const actor = spellActor(o); // CR 601.2a: a spell, cast from where the card is
   const out: CostModHit[] = [];
@@ -101,11 +125,29 @@ export function costModsFor(s: GameState, spell: ObjectId, player: PlayerId, cha
     const { s2, view } = spellEnv();
     const cx: EvalCx = { s: s2, all: view, source: src.source, controller: src.controller };
     if (e.applies.self === true) {
+      if (e.applies.via !== undefined && e.applies.via !== via) continue;
       if (src.source === spell) out.push({ def: e, source: spell, controller: player, name: src.name, text: src.text, cx: { ...cx, controller: player } });
       continue;
     }
+    if (e.applies.via !== undefined && e.applies.via !== via) continue; // edh-d-45 (CR 702.34a, 601.2f; Catalyst Stone): "Flashback costs you pay cost {2} less" changes only the spell cast for that alternative cost
     const applies = appliesToSpell(cx, e, spell, player, actor);
     if (applies !== false) out.push({ def: e, source: src.source, controller: src.controller, name: src.name, text: src.text, cx, ...(applies === undefined ? { unknown: true as const } : {}) });
+  }
+  // edh-c-53 (CR 601.2f, 118.7, 611.2; Hardened Berserker): a waiting "the next spell you cast this turn costs {1} less" rider of the caster, for a spell its filter matches;
+  // core/turn-effects.ts#takeNextSpellRiders uses it up as that spell is cast
+  for (const r of s.turn.nextSpell ?? []) {
+    if (r.rider !== 'reduce' || r.mana === undefined || r.player !== player) continue;
+    const { s2, view } = spellEnv();
+    const cx: EvalCx = { s: s2, all: view, source: r.sourceId ?? null, controller: r.controller };
+    const rdef: CostModDef = { s: 'costMod', applies: { spells: r.filter ?? {}, caster: 'you' }, change: { kind: 'reduce', mana: r.mana } };
+    const applies = appliesToSpell(cx, rdef, spell, player, actor);
+    if (applies !== false) out.push({ def: rdef, source: r.sourceId ?? null, controller: r.controller, name: r.sourceId !== undefined ? (s.defs[s.objects[r.sourceId]?.defId ?? '']?.name ?? 'an effect') : 'an effect', text: 'the next spell you cast this turn costs less to cast', cx, ...(applies === undefined ? { unknown: true as const } : {}) });
+  }
+  // edh-next-132 (CR 601.2f, 707.12; God-Eternal Kefnet): the reduction a copy of a card was created with ("That copy costs {2} less to cast"), of its own cost only
+  if (o.castReduce !== undefined) { // (also once the spell is on the stack, as its total cost is paid: CR 601.2a, 601.2f)
+    const { s2, view } = spellEnv();
+    const rdef: CostModDef = { s: 'costMod', applies: { self: true, caster: 'you' }, change: { kind: 'reduce', mana: o.castReduce } };
+    out.push({ def: rdef, source: spell, controller: player, name: 'the effect that created the copy', text: 'that copy costs less to cast', cx: { s: s2, all: view, source: spell, controller: player } });
   }
   if (!onStack) {
     // CR 604.5, 601.2f: the card's own modifiers function once it is a spell on the stack; read them from the face being cast (keyword expansions included).
@@ -125,13 +167,23 @@ export function costModsFor(s: GameState, spell: ObjectId, player: PlayerId, cha
         if (!evalCondition({ s: s2, all: view, source: spell, controller: player }, d.condition)) continue;
       }
       for (const e of d.effects) {
-        if (e.s !== 'costMod' || e.applies.self !== true) continue;
+        if (e.s !== 'costMod' || e.applies.self !== true || (e.applies.via !== undefined && e.applies.via !== via)) continue;
         const { s2, view } = spellEnv();
         out.push({ def: e, source: spell, controller: player, name: c?.name ?? '', text: d.text, cx: { s: s2, all: view, source: spell, controller: player } });
       }
     }
   }
-  return out;
+  // edh-d-91 (CR 601.2f, 702.41a; Chiss-Goria): a card not yet cast that a permission for named objects lets the player cast with affinity ("If you do, it has affinity for artifacts"): the
+  // spell will have the keyword from the moment it is put on the stack (actions/cast.ts gives it), so its cost is determined with that reduction, read as the keyword library expands affinity
+  if (!onStack) {
+    const k = namedPermitSpellKeyword(s, player, spell);
+    if (k !== null && k.keyword === 'affinity' && k.filter !== undefined) {
+      const { s2, view } = spellEnv();
+      const e: CostModDef = { s: 'costMod', applies: { self: true, caster: 'you' }, change: { kind: 'reduce', generic: { q: 'count', of: { ref: 'each', filter: { controller: 'you', anyOf: [k.filter] } } } } };
+      out.push({ def: e, source: spell, controller: player, name: def.name, text: 'affinity, from the permission it is cast with', cx: { s: s2, all: view, source: spell, controller: player } });
+    }
+  }
+  return out.map((h) => (h.spell === undefined ? { ...h, spell } : h)); // edh-next-58: every hit knows the spell it is applied to
 }
 
 /**
@@ -141,7 +193,7 @@ export function costModsFor(s: GameState, spell: ObjectId, player: PlayerId, cha
  * matches (relative to the modifier's own source: "other permanents you control"). A source filter the rule hooks can't evaluate makes the hit `unknown`, so the
  * activation is refused with an explanation, never charged a guessed amount.
  */
-export function abilityCostModsFor(s: GameState, player: PlayerId, source: GameObject, def: ActivatedAbilityDef): CostModHit[] {
+export function abilityCostModsFor(s: GameState, player: PlayerId, source: GameObject, def: ActivatedAbilityDef, planning = false): CostModHit[] {
   const ctx = ruleContext(s);
   if (!ctx) return [];
   const kind = def.isMana === true ? 'mana' : def.isLoyalty === true ? 'loyalty' : 'activated';
@@ -151,6 +203,7 @@ export function abilityCostModsFor(s: GameState, player: PlayerId, source: GameO
     if (e.s !== 'costMod' || e.applies.abilities === undefined || e.applies.self === true || e.applies.spells !== undefined) continue;
     const a = e.applies.abilities;
     if (a.kind !== undefined && a.kind !== kind) continue;
+    if (a.exceptMana === true && kind === 'mana') continue; // edh-cast-6 (CR 605.1a): "abilities you activate that aren't mana abilities"
     // p2-cost-statics-2 (CR 605.1a, 115.1): a change by what the ability targets ("Abilities your opponents activate that target a Merfolk you control cost {2} more")
     // never applies to a mana ability, which has no targets
     if (kind === 'mana' && targetCounted(e.change.times)) continue;
@@ -158,20 +211,60 @@ export function abilityCostModsFor(s: GameState, player: PlayerId, source: GameO
     if (a.keyword !== undefined && a.keyword !== def.keyword && !(def.prov?.by === 'keyword' && def.prov.id === a.keyword)) continue;
     // std-rx27 (CR 602.2b, 118.9): "the first equip ability you activate each turn": none with that keyword activated by the player this turn, and a cost of mana alone
     // (an optional alternative the player may decline: not applied to another cost)
-    if (e.applies.firstEachTurn === true) {
+    if (e.applies.firstEachTurn !== undefined) {
+      if (e.applies.firstEachTurn === 'yourTurns' && s.turn.activePlayer !== src.controller) continue; // edh-mana-keywords-8: "during each of your turns"
+      // edh-next-124 (CR 602.2, 601.2f, 605.1a; Tezzeret, Betrayer of Flesh, rulings 2022-02-18): "the first activated ability of an artifact you activate each turn": with no keyword and a
+      // source of one card type, the first activation this turn by the player of an ability (a mana ability too) of a permanent of that type (rules/typed-activations.ts)
+      const firstType = firstOfTypeKind(e.applies);
+      if (firstType !== null) {
+        // (`planning`: the auto-payer plans several mana abilities before it activates any, so which one is the first is not known yet: it plans without this reduction, never
+        // counting on mana it may not get; the reduction still applies to the one activated first, CR 601.2f)
+        if (planning || e.applies.firstEachTurn !== true || !isFirstTypedActivation(s, player, firstType, source.id)) continue;
+      } else {
       if (a.keyword === undefined || (s.turnActivations[`kw:${player}:${a.keyword}`] ?? 0) > 0) continue;
       const c = def.cost as unknown as Record<string, unknown>;
-      if (Object.keys(c).some((k) => c[k] !== undefined && k !== 'mana')) continue;
+      // edh-next-117 (CR 702.29a, 118.9; Gavi, Nest Warden): the cycling cost is the mana of "Cycling {2}"; the discard of this card is part of the ability's cost but not of the cycling cost
+      const discardSelfOnly = a.keyword === 'cycling' && Array.isArray(c['other']) && (c['other'] as { kind?: string; self?: boolean }[]).every((o) => o.kind === 'discard' && o.self === true);
+      if (Object.keys(c).some((k) => c[k] !== undefined && k !== 'mana' && !(k === 'other' && discardSelfOnly))) continue;
+      }
     }
     const cx: EvalCx = { s, all: ctx.view, source: src.source, controller: src.controller };
     if (!playerPredIncludes(cx, e.applies.caster, player)) continue;
     // r3-cost (CR 109.2): "activated abilities of creatures" are those of creature permanents: a source filter that names no zone is the battlefield
     // (objectMatches reads such a filter in any zone, so a creature card's ability in a graveyard would match)
-    const m = a.source === undefined ? true : objectMatches(cx, source.id, a.source.zone === undefined ? { ...a.source, zone: 'battlefield' } : a.source);
+    // edh-next-107 (CR 115.1, 601.2c, 601.2f, 602.2b; Bladegraft Aspirant: "Activated abilities of Equipment you control that target this creature cost {1} less to activate"): the ability's
+    // announced targets include the modifier's own source (`targets: {ref:'self'}` of the source filter); actions/activate.ts#costChangeOf reads them (CostModHit.abilityTargetsSelf).
+    // Any other reference makes the cost unknown (refused with an explanation, never a guess)
+    const { targets: viaTargets, ...srcRest } = a.source ?? {};
+    const selfTarget = viaTargets !== undefined && viaTargets.ref === 'self';
+    if (selfTarget && kind === 'mana') continue; // a mana ability has no targets (CR 605.1a, 115.1): a modifier of abilities that target ~ never applies to it (reviewer finding)
+    const srcFilter: ObjectFilter | undefined = a.source === undefined ? undefined : viaTargets === undefined ? a.source : srcRest;
+    const m = srcFilter === undefined ? true : objectMatches(cx, source.id, srcFilter.zone === undefined ? { ...srcFilter, zone: 'battlefield' } : srcFilter);
     if (m === false) continue;
-    out.push({ def: e, source: src.source, controller: src.controller, name: src.name, text: src.text, cx, ...(m === undefined ? { unknown: true as const } : {}) });
+    out.push({ def: e, source: src.source, controller: src.controller, name: src.name, text: src.text, cx, ...(m === undefined || (viaTargets !== undefined && !selfTarget) ? { unknown: true as const } : {}), ...(selfTarget ? { abilityTargetsSelf: true as const } : {}) });
   }
   return out;
+}
+
+/**
+ * edh-next-124 (Tezzeret, Betrayer of Flesh): the card type of "the first activated ability of an <type> you activate each turn": `firstEachTurn` with no keyword and no kind, and a
+ * source filter that is exactly one card type (a zone of the battlefield allowed); null for any other shape.
+ */
+export function firstOfTypeKind(applies: CostModDef['applies']): string | null {
+  const a = applies.abilities;
+  if (applies.firstEachTurn === undefined || a === undefined || a.keyword !== undefined || a.kind !== undefined || a.exceptMana !== undefined || a.source === undefined) return null;
+  const f = a.source as Record<string, unknown>;
+  const keys = Object.keys(f).filter((k) => f[k] !== undefined);
+  if (!keys.every((k) => k === 'types' || (k === 'zone' && f[k] === 'battlefield'))) return null;
+  return Array.isArray(f['types']) && f['types'].length === 1 && typeof f['types'][0] === 'string' ? f['types'][0] : null;
+}
+
+/**
+ * edh-next-106 (CR 601.2f, 602.2b, 605.1a, 119.4; capability `feature:costMod.abilities.manaLife`): the life other objects' static abilities (or the object's own) make `player` pay to
+ * activate this MANA ability ("Mana abilities of this land cost an additional 1 life to activate"); 0 for none. Only increases count, once for each modifier.
+ */
+export function abilityLifeCost(s: GameState, player: PlayerId, source: GameObject, def: ActivatedAbilityDef): number {
+  return abilityCostModsFor(s, player, source, def).reduce((n, h) => n + (h.def.change.kind === 'increase' && typeof h.def.change.life === 'number' ? h.def.change.life : 0), 0);
 }
 
 /** p2-cost-statics-2: an amount counted from the targets of the spell or ability (`spellTargetCount`, alone or in arithmetic). */
@@ -203,8 +296,8 @@ export function plotCostModsFor(s: GameState, player: PlayerId): CostModHit[] {
  * modifier applies; null when an amount can't be worked out (the caller does not offer the ability, never a guessed cost). Reductions never take a cost below
  * {0} (CR 118.7, statics/costmods.ts#modifyMana).
  */
-export function abilityManaCost(s: GameState, player: PlayerId, source: GameObject, def: ActivatedAbilityDef, mana: readonly ManaSymbol[]): ManaSymbol[] | null {
-  const hits = abilityCostModsFor(s, player, source, def);
+export function abilityManaCost(s: GameState, player: PlayerId, source: GameObject, def: ActivatedAbilityDef, mana: readonly ManaSymbol[], planning = false): ManaSymbol[] | null {
+  const hits = abilityCostModsFor(s, player, source, def, planning);
   if (hits.length === 0) return [...mana];
   const r = modifyMana(mana, hits);
   return 'unknown' in r ? null : r.mana;
@@ -243,7 +336,13 @@ function appliesToSpell(cx: EvalCx, e: CostModDef, spell: ObjectId, player: Play
   if (a.spells !== undefined && a.spells.targets !== undefined) {
     const { targets, ...rest } = a.spells;
     const m = objectMatches(cx, spell, rest, actor);
-    return m !== true ? m : spellTargetsSource(cx, e, spell, targets);
+    if (m !== true) return m;
+    const r = spellTargetsSource(cx, e, spell, targets);
+    // edh-next-58 (CR 115.1, 601.2c, 601.2f; Monastery Siege): or one of its targets is the modifier's controller
+    if (r === true || a.orTargetsYou !== true) return r;
+    const st = cx.s.objects[spell]?.stack;
+    if (st === undefined) return r; // castCheck: no targets chosen yet, as for an object target (a reduction is the most it could be, an increase the least)
+    return st.targets.flat().some((t) => t.kind === 'player' && t.id === cx.controller) ? true : r;
   }
   if (a.spells !== undefined) return objectMatches(cx, spell, a.spells, actor);
   return a.abilities === undefined && a.unlock !== true && a.plot === undefined; // a modifier of abilities only (std-rh: or of unlock costs; std-rx26: or of plotting) is not about spells
@@ -296,9 +395,56 @@ export function costQuantity(hit: CostModHit, q: Quantity, extra?: ExtraQuantity
       return evalQuantity(hit.cx, { ...q, args });
     }
     case 'live': return costQuantity(hit, q.value, extra);
+    // edh-next-75 (CR 903.8, 601.2f; Myth Unbound): "for each time it's been cast from the command zone this game": the casts of the commander card the cost is being determined for, this
+    // one not yet counted (actions/cast.ts counts it once the spell is cast); a spell that is not a commander card, and an ability's cost, count 0 / are unknown
+    case 'commanderCasts': if (q.costSpell === true) {
+      const o = hit.spell !== undefined ? hit.cx.s.objects[hit.spell] : undefined;
+      return o?.kind === 'card' ? commanderOfCard(hit.cx.s, o.cardId)?.rec.casts ?? 0 : hit.spell === undefined ? undefined : 0;
+    } break;
     // r4-cost (CR 601.2c, 601.2f, 105.2): "for each color of the creature it targets", "for each +1/+1 counter on the creature it targets"
+    // edh-d-45 (CR 105.1, 601.2f, 607.2d; Seal of the Guildpact): "for each of the chosen colors it is": the colors the source kept under the link that the spell has
+    case 'chosenColorsOf': {
+      const chars = hit.spell !== undefined ? hit.cx.all.get(hit.spell) : undefined;
+      const src = hit.source !== null ? hit.cx.s.objects[hit.source] : undefined;
+      if (chars === undefined || src === undefined) return undefined;
+      return (readLink(src, q.link)?.values ?? []).filter((v) => (chars.colors as readonly string[]).includes(v)).length;
+    }
+    // edh-d-90 (CR 601.2f, 205.2a, 607.2a; Cemetery Prowler): "for each card type they share with cards exiled with ~": the card types of the spell the cost is being determined for that at
+    // least one object of the group has (each type counted once, however many of the group have it: ruling 2021-11-19); an ability's cost (no spell) or a group the statics can't read is unknown
+    case 'sharedCardTypes': {
+      const chars = hit.spell !== undefined ? hit.cx.all.get(hit.spell) : undefined;
+      if (chars === undefined) return undefined;
+      if (q.among.ref === 'each' && 'filter' in q.among && !ruleFilterEvaluable(q.among.filter)) return undefined;
+      const theirs = new Set<string>();
+      for (const id of objectsOf(hit.cx, q.among)) for (const t of hit.cx.all.get(id)?.types ?? []) theirs.add(t);
+      return new Set(chars.types.filter((t) => theirs.has(t))).size;
+    }
     case 'distinct': if (q.what === 'colors' && q.among.ref === 'target' && hit.targets !== undefined) return targetValue(hit, q.among.id, (id) => hit.cx.all.get(id)?.colors.length ?? 0); break;
     case 'counters': if (q.on.ref === 'target' && hit.targets !== undefined) { const kind = q.kind; return targetValue(hit, (q.on as { id: string }).id, (id) => countersOf(hit.cx.s, id, kind)); } break;
+    // edh-next-49 (CR 208.1, 601.2c, 601.2f; Belt of Giant Strength): "costs {X} less to activate, where X is the power of the creature it targets": the power it has when the total cost is determined
+    // (before the targets are chosen: the greatest power on the battlefield, as for the counters above); an undetermined power ("*" not yet defined) leaves the cost unknown
+    case 'stat': if (q.of.ref === 'target' && q.stat === 'power' && !q.sum && q.agg === undefined && hit.targets !== undefined) {
+      let unknown = false;
+      const v = targetValue(hit, (q.of as { id: string }).id, (id) => { const raw: unknown = hit.cx.all.get(id)?.power; const x = typeof raw === 'number' ? raw : typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : raw === undefined || raw === null ? 0 /* no power: not a creature */ : Number.NaN; if (Number.isNaN(x)) unknown = true; return Number.isNaN(x) ? 0 : x; });
+      return unknown ? undefined : v;
+    } break;
+    // edh-next-67 (CR 601.2f, 201.2, 404.1; Locket of Yesterdays): "for each card with the same name as that spell in your graveyard": the cards of the filter that share the NAME of the
+    // spell the modifier is applied to (`sharesWith` the subject), counted as the total cost is determined
+    case 'count': {
+      const of = q.of;
+      if (of.ref !== 'each' || !('filter' in of) || of.filter.sharesWith === undefined || of.filter.sharesWith.with.ref !== 'subject') break;
+      const { sharesWith, ...rest } = of.filter;
+      if (sharesWith.quality !== 'name' || sharesWith.other !== undefined || hit.spell === undefined || !ruleFilterEvaluable(rest)) return undefined;
+      const names = (hit.cx.all.get(hit.spell)?.names ?? []).filter((n) => n !== ''); // CR 201.2a: objects share a name when they have at least one name in common (split cards, Rooms)
+      if (names.length === 0) return 0; // a nameless object shares no name (CR 201.2)
+      let n = 0;
+      for (const id of objectsIn(hit.cx.s, rest.zone ?? 'battlefield')) {
+        const m = objectMatches(hit.cx, id, rest);
+        if (m === undefined) return undefined;
+        if (m && (hit.cx.all.get(id)?.names ?? []).some((x) => names.includes(x))) n++;
+      }
+      return n;
+    }
     case 'spellTargetCount': {
       // r4-cost (CR 602.2b): an activated ability's targets ("This ability costs {1} less to activate if it targets a creature with power 3 or less")
       if (hit.targets !== undefined) {
@@ -306,8 +452,10 @@ export function costQuantity(hit: CostModHit, q: Quantity, extra?: ExtraQuantity
         if (q.filter === undefined) return t !== undefined ? t.flat().length : 0;
         return filteredTargetCount(hit, q.filter, t, true);
       }
-      const st = hit.source !== null ? hit.cx.s.objects[hit.source]?.stack : undefined;
-      if (q.filter === undefined) return st ? st.targets.flat().length : 0; // CR 601.2c, 601.2f: the targets announced so far (none before the spell is on the stack)
+      const st = hit.spell !== undefined ? hit.cx.s.objects[hit.spell]?.stack : hit.source !== null ? hit.cx.s.objects[hit.source]?.stack : undefined; // edh-next-58: the spell the modifier is applied to (a self modifier: the same object)
+      // edh-next-58 (CR 601.2c, 601.2f): before the spell is cast (castCheck) a reduction counts the most its targets could make it, so no spell is refused for a cost its targets could still lower
+      // edh-next-58 (CR 601.2c, 115.3; Hinata ruling 2022-02-18): a modifier of OTHER spells counts the different players and objects the spell targets, not the times its text says "target"
+      if (q.filter === undefined) return st ? (hit.def.applies.self === true ? st.targets.flat().length : new Set(st.targets.flat().map((t) => `${t.kind}:${t.id}`)).size) : hit.def.change.kind === 'reduce' && hit.def.applies.self !== true ? maxTargetsOf(hit) : 0; // CR 601.2c, 601.2f: the targets announced so far (none before the spell is on the stack)
       return filteredTargetCount(hit, q.filter, st?.targets);
     }
     default:
@@ -338,23 +486,50 @@ function targetValue(hit: CostModHit, id: string, value: (id: ObjectId) => numbe
   return hit.cx.s.zones.battlefield.reduce((m, o) => Math.max(m, value(o)), 0);
 }
 
+/** `dealtDamageThisTurn` (rules/history.ts reads it the same way): this object was dealt damage this turn, an amount of 0 being no event (CR 614.7a). Read from the
+ * game's history here, as statics/hooks.ts does, because statics import types, keywords and rules/base-chars only (design 5.4; edh-d-10's Bitter Downfall). */
+const dealtDamageThisTurn = (s: GameState, id: ObjectId): boolean =>
+  s.history.some((e) => e.turn === s.turn.number && e.ev === 'damage' && e.subject === id && e.facts['amount'] !== 0);
+
 /**
  * FAST4 T21: the spell's targets that are objects matching `filter` ("if it targets a tapped creature"), as they are when the total cost is determined
  * (CR 601.2c: targets are chosen before CR 601.2f). Before the spell is cast (actions/cast.ts#castCheck, no stack record yet) nothing is chosen, and castCheck
  * asks whether SOME choice leaves the cost payable: a reduction then counts every object on the battlefield that matches (the most it could be), an increase
  * none (the least), so a spell is never refused for a cost its targets could still lower. `undefined` (cost unknown) when the filter can't be evaluated.
  */
-function filteredTargetCount(hit: CostModHit, filter: ObjectFilter, targets: readonly (readonly TargetChoice[])[] | undefined, ability = false): number | undefined {
-  if (!ruleFilterEvaluable(filter)) return undefined;
+function filteredTargetCount(hit: CostModHit, filterIn: ObjectFilter, targets: readonly (readonly TargetChoice[])[] | undefined, ability = false): number | undefined {
+  // edh-cast-15 (CR 115.9b, 601.2c; Not of This World): "if it targets a spell or ability that targets a creature you control with power 7 or greater": the object the spell targets is
+  // judged by the objects IT targets, which `targets` names as a group of a filter (the rule hooks read no `targets` field themselves): one of them must match that filter
+  // edh-d-10 (CR 120.1, 601.2c, 601.2f; Bitter Downfall): "if it targets a creature that was dealt damage this turn": the history of the turn is read from the game state
+  // (rules/history.ts#dealtDamageThisTurn) for each target, as it is when the total cost is determined; the rest of the filter goes to the rule hooks' evaluator
+  const { targets: viaRef, dealtDamageThisTurn: needDealt, ...rest } = filterIn;
+  if (viaRef !== undefined && (viaRef.ref !== 'each' || !('filter' in viaRef))) return undefined;
+  const via: ObjectFilter | undefined = viaRef !== undefined && viaRef.ref === 'each' ? { ...viaRef.filter, ...(viaRef.filter.zone === undefined ? { zone: 'battlefield' as const } : {}) } : undefined;
+  const filter: ObjectFilter = viaRef !== undefined || needDealt !== undefined ? rest : filterIn;
+  if (!ruleFilterEvaluable(filter) || (via !== undefined && !ruleFilterEvaluable(via))) return undefined;
   // "a tapped creature", "a blue permanent" are on the battlefield (a filter's default zone, statics/match.ts#filterMatches); "a blue spell" says the stack.
   // objectMatches reads a filter without a zone in any zone, so the default is written out (a blue spell is not "a blue permanent", CR 110.1)
-  const where: ObjectFilter = filter.zone === undefined ? { ...filter, zone: 'battlefield' } : filter;
+  // edh-c-8 (CR 601.2c, 108.2; Revoke Demise): "if it targets a creature card with mana value 3 or less" says a card, which is in no zone of the battlefield: a filter of cards (`isCard`) without a zone reads every zone
+  const where: ObjectFilter = filter.zone === undefined ? { ...filter, zone: filter.isCard === true ? (targets === undefined ? 'graveyard' : 'any') : 'battlefield' } : filter; // before targets are chosen the most the cost could be reduced counts cards in graveyards only (the cast menu is not over-offered by libraries or hands)
   // CR 115.5: a spell never targets itself; an ability's source may be its target (r4-cost: "Equip abilities you activate that target ~")
-  const ids = targets !== undefined ? targets.flat().flatMap((t) => (t.kind === 'object' ? [t.id] : [])) : hit.def.change.kind === 'reduce' ? objectsIn(hit.cx.s, where.zone!).filter((id) => ability || id !== hit.source) : [];
+  // edh-next-58 (CR 601.2c, 115.3; Battlefield Thaumaturge ruling 2014-04-26): a modifier of other spells counts each object the spell targets once, even when its text targets it more than once
+  const once = (ids: ObjectId[]): ObjectId[] => (hit.def.applies.spells !== undefined && hit.def.applies.self !== true ? [...new Set(ids)] : ids);
+  const ids = targets !== undefined ? once(targets.flat().flatMap((t) => (t.kind === 'object' ? [t.id] : []))) : hit.def.change.kind === 'reduce' ? objectsIn(hit.cx.s, where.zone!).filter((id) => ability || id !== hit.source) : [];
   let n = 0;
   for (const id of ids) {
-    const m = objectMatches(hit.cx, id, where);
+    let m = objectMatches(hit.cx, id, where);
     if (m === undefined) return undefined;
+    if (m && needDealt !== undefined && dealtDamageThisTurn(hit.cx.s, id) !== needDealt) m = false;
+    if (m && via !== undefined) {
+      // the objects that spell or ability targets (an ability's targets are on its stack record too), as they are now (CR 608.2h: not their targets' last known state, the cost is set as the spell is cast)
+      const aimed = (hit.cx.s.objects[id]?.stack?.targets ?? []).flat().flatMap((t) => (t.kind === 'object' ? [t.id] : []));
+      m = false;
+      for (const t of aimed) {
+        const v = objectMatches(hit.cx, t, via);
+        if (v === undefined) return undefined;
+        if (v) { m = true; break; }
+      }
+    }
     if (m) n++;
   }
   return n;
@@ -453,6 +628,7 @@ export function modifyMana(mana: readonly ManaSymbol[], hits: readonly CostModHi
 
   // Increases (and additional mana) first (CR 601.2f).
   for (const h of byKind('increase')) {
+    if (h.def.change.loyalty !== undefined && h.def.change.mana === undefined && h.def.change.generic === undefined) continue; // edh-next-142: a loyalty increase alone changes no mana (actions/activate.ts#costChangeOf)
     const n = amountOf(h);
     const t = timesOf(h);
     if (n === undefined || t === undefined) return { unknown: h };
@@ -476,8 +652,12 @@ export function modifyMana(mana: readonly ManaSymbol[], hits: readonly CostModHi
     const one = h.def.change.floor === 'one';
     if (one && manaOf(h, t).some((m) => m.kind !== 'generic')) return { unknown: h };
     const before = generic + rest.length; // the mana in the cost: each symbol other than generic is one mana (a hybrid symbol is paid with one)
+    // edh-cast-4 (CR 601.2f, 118.7): "This effect reduces only the amount of colored mana you pay": a colored symbol takes off the cost's mana of its own color and nothing else
+    // (never the generic part, which CR 118.7b would reduce); anything but colored symbols in such a reduction is unknown
+    const only = h.def.change.coloredOnly === true;
+    if (only && (n !== null || h.def.change.kind !== 'reduce' || manaOf(h, t).some((m) => m.kind !== 'colored'))) return { unknown: h };
     for (const m of manaOf(h, t)) {
-      const g = subtractSymbol(rest, generic, m);
+      const g = only && m.kind === 'colored' ? (takeColor(rest, m.color), generic) : subtractSymbol(rest, generic, m);
       if (g === undefined) return { unknown: h };
       generic = g;
     }
@@ -494,6 +674,24 @@ export function modifyMana(mana: readonly ManaSymbol[], hits: readonly CostModHi
     applied.push(`${h.name}: costs ${describe(h.def.change.mana, n)}`);
   }
   generic = Math.max(0, generic); // CR 601.2f, 118.7: never less than {0}
+  // edh-next-12 (CR 601.2f, 118.7; Trinisphere, ruling 2020-08-07): "costs three mana to cast" is applied after everything else: generic mana is added up to that many mana. A symbol whose
+  // mana can't be counted here (a Phyrexian symbol may be paid with life, a monoHybrid or variable one varies) makes the cost unknown (fail closed); a hybrid symbol is one mana
+  for (const h of byKind('floor')) {
+    const n = h.def.change.generic;
+    if (typeof n !== 'number' || h.def.change.mana !== undefined || h.def.change.times !== undefined) return { unknown: h };
+    if (rest.some((m) => m.kind === 'variable')) return { unknown: h };
+    // a Phyrexian symbol paid with life adds no mana and paid with mana adds one, a {2/W} symbol adds one mana or two: when even the fewest mana the cost can need is the floor or more, nothing changes
+    // (Birthing Pod, Spectral Procession); otherwise the cost depends on a choice made later and is unknown (the cast is refused, never a guess)
+    const flexible = rest.some((m) => m.kind === 'phyrexian' || m.kind === 'hybridPhyrexian' || m.kind === 'monoHybrid');
+    const total = generic + rest.length;
+    if (flexible) {
+      const least = generic + rest.filter((m) => m.kind !== 'phyrexian' && m.kind !== 'hybridPhyrexian').length;
+      if (least >= n) continue;
+      return { unknown: h };
+    }
+    if (total < n) generic += n - total;
+    applied.push(`${h.name}: costs at least ${n} mana`);
+  }
   return { mana: generic > 0 ? [{ kind: 'generic', amount: generic }, ...rest] : rest, applied };
 }
 
@@ -504,3 +702,24 @@ function describe(mana: ManaCost | undefined, n: number | null, times = 1): stri
   return parts.join('') || '{0}';
 }
 
+
+/**
+ * edh-next-58 (CR 601.2c, 601.2f): before the spell is cast (castCheck) the most targets it could have, so a reduction per target is never counted beyond what the spell can aim at: the
+ * target specs of its spell abilities (a modal one: no bound but 20; an Aura aims at one), the greatest over its faces.
+ */
+function maxTargetsOf(hit: CostModHit): number {
+  const o = hit.spell !== undefined ? hit.cx.s.objects[hit.spell] : undefined;
+  const def = o ? hit.cx.s.defs[o.defId] : undefined;
+  if (!def) return 20;
+  let best = 0;
+  for (const face of def.faces) {
+    let n = (face.subtypes ?? []).includes('Aura') ? 1 : 0;
+    for (const a of face.abilities as unknown as { kind: string; modes?: unknown; effect?: { targets?: { max?: unknown }[] } }[]) {
+      if (a.kind !== 'spell') continue;
+      if (a.modes !== undefined) return 20;
+      for (const t of a.effect?.targets ?? []) n += typeof t.max === 'number' ? t.max : 20;
+    }
+    best = Math.max(best, n);
+  }
+  return Math.min(20, best);
+}

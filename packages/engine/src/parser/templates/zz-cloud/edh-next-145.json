@@ -1,0 +1,494 @@
+[
+  {
+    "id": "eff.edhn145.eachGets.perListedKeyword.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 611.2c",
+      "CR 608.2h",
+      "CR 613.4c",
+      "CR 702.1",
+      "CR 702.16a",
+      "CR 702.124a"
+    ],
+    "pattern": "until end of turn , each {f:Filter} gets +1/+1 if it has flying , +1/+1 if it has first strike , and so on for double strike , deathtouch , haste , hexproof , indestructible , lifelink , menace , protection , reach , trample , vigilance , and partner",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "keywordsHad",
+                "of": {
+                  "ref": "subject"
+                },
+                "keywords": [
+                  "flying",
+                  "first strike",
+                  "double strike",
+                  "deathtouch",
+                  "haste",
+                  "hexproof",
+                  "indestructible",
+                  "lifelink",
+                  "menace",
+                  "protection",
+                  "reach",
+                  "trample",
+                  "vigilance",
+                  [
+                    "partner",
+                    "partner with"
+                  ]
+                ]
+              },
+              "toughness": {
+                "q": "keywordsHad",
+                "of": {
+                  "ref": "subject"
+                },
+                "keywords": [
+                  "flying",
+                  "first strike",
+                  "double strike",
+                  "deathtouch",
+                  "haste",
+                  "hexproof",
+                  "indestructible",
+                  "lifelink",
+                  "menace",
+                  "protection",
+                  "reach",
+                  "trample",
+                  "vigilance",
+                  [
+                    "partner",
+                    "partner with"
+                  ]
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "other",
+      "until",
+      "if",
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, until end of turn, each other creature you control gets +1/+1 if it has flying, +1/+1 if it has first strike, and so on for double strike, deathtouch, haste, hexproof, indestructible, lifelink, menace, protection, reach, trample, vigilance, and partner."
+      },
+      {
+        "text": "{2}{W}: Until end of turn, each creature you control gets +1/+1 if it has flying, +1/+1 if it has first strike, and so on for double strike, deathtouch, haste, hexproof, indestructible, lifelink, menace, protection, reach, trample, vigilance, and partner."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, each other creature you control gets +1/+1 if it has flying, +1/+1 if it has first strike, and so on for double strike, deathtouch, haste, hexproof, indestructible, lifelink, menace, protection, reach, and trample.",
+      "Each other creature you control gets +1/+1 if it has flying, +1/+1 if it has first strike, and so on for double strike, deathtouch, haste, hexproof, indestructible, lifelink, menace, protection, reach, trample, vigilance, and partner.",
+      "Until end of turn, each other creature you control gets +2/+2 if it has flying, +1/+1 if it has first strike, and so on for double strike, deathtouch, haste, hexproof, indestructible, lifelink, menace, protection, reach, trample, vigilance, and partner."
+    ]
+  },
+  {
+    "id": "eff.edhn145.whenever.objIsDealtDamage.thisTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 120.1",
+      "CR 120.3",
+      "CR 514.2"
+    ],
+    "pattern": "whenever {o:Obj} is dealt damage this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "damage",
+          "recipient": {
+            "object": {
+              "is": "$o"
+            }
+          }
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "consumes": [
+      "whenever",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Choose target creature. Whenever that creature is dealt damage this turn, you gain that much life."
+      },
+      {
+        "text": "Target creature gets +2/+2 until end of turn. Whenever it is dealt damage this turn, you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature. Whenever that creature is dealt damage, you gain that much life.",
+      "Choose target creature. Whenever that creature deals damage this turn, you gain that much life.",
+      "Choose target creature. Whenever that creature is dealt combat damage by a Dragon this turn, you gain that much life."
+    ]
+  },
+  {
+    "id": "eff.edhn145.reflexive.powerBecomes",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 603.12",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 613.4c"
+    ],
+    "pattern": "when its power becomes {n:Count} this way , {e:Effects}",
+    "build": {
+      "op": "reflexive",
+      "when": {
+        "cond": "did",
+        "step": "",
+        "$step": "previous"
+      },
+      "@becomes": {
+        "stat": "power",
+        "value": "$n"
+      },
+      "targets": [],
+      "do": "$e"
+    },
+    "consumes": [
+      "when",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "{1}{R}: ~ gets +2/+0 until end of turn. When its power becomes 10 this way, it deals 10 damage to target player."
+      },
+      {
+        "text": "{G}: Target creature gets +1/+0 until end of turn. When its power becomes 7 this way, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{R}: ~ gets +1/+0 until end of turn. When its power becomes 20, it deals 20 damage to any target.",
+      "{R}: ~ gets +1/+0 until end of turn. When its toughness becomes 20 this way, it deals 20 damage to any target.",
+      "{R}: Draw a card. When its power becomes 20 this way, it deals 20 damage to any target."
+    ]
+  },
+  {
+    "id": "rid.edhn145.instead.youChooseKeptForEachPlayer",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.21a"
+    ],
+    "pattern": "if {c:Cond} , you choose the permanents for each player instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "@require": {
+          "op": "sacrificeChoice",
+          "mode": "keepEachType"
+        },
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "sacrificeChoice",
+            "who": "@previous.who",
+            "filter": "@previous.filter",
+            "count": "@previous.count",
+            "mode": "keepEachType",
+            "keepTypes": "@previous.keepTypes",
+            "chooser": {
+              "ref": "you"
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "sacrificeChoice",
+    "consumes": [
+      "if",
+      "instead",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest. If ~ was kicked, you choose the permanents for each player instead."
+      },
+      {
+        "text": "Each player chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest. If you control a Demon, you choose the permanents for each player instead."
+      }
+    ],
+    "counterExamples": [
+      "Each player chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest. If ~ was kicked, you choose the permanents for each opponent instead.",
+      "Each player chooses an artifact, a creature, an enchantment, and a planeswalker from among the nonland permanents they control, then sacrifices the rest. If ~ was kicked, you choose the permanents for each player.",
+      "Draw a card. If ~ was kicked, you choose the permanents for each player instead."
+    ]
+  },
+  {
+    "id": "eff.edhn145.youCanCastOnlyOneMore.thisTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 601.2i",
+      "CR 611.2c",
+      "CR 101.2"
+    ],
+    "pattern": "you can cast only one more spell this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "cast",
+          "max": 1,
+          "countFrom": {
+            "q": "spellsCastThisTurn"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Add {R}{R}{R}{R}. You can cast only one more spell this turn."
+      },
+      {
+        "text": "Draw three cards. You can cast only one more spell this turn."
+      }
+    ],
+    "counterExamples": [
+      "Add {R}{R}{R}{R}. You can cast only one spell this turn.",
+      "Add {R}{R}{R}{R}. You can cast only one more creature spell this turn.",
+      "Add {R}{R}{R}{R}. Each opponent can cast only one more spell this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn145.sacrifice.upTo",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "priority": -1,
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 107.1c"
+    ],
+    "pattern": "sacrifice up to {n:Count} {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "controller": "you",
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "toSacrifice"
+      },
+      {
+        "op": "sacrifice",
+        "what": {
+          "ref": "bound",
+          "name": "toSacrifice"
+        }
+      }
+    ],
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, sacrifice up to two Goblins. Draw a card for each Goblin sacrificed this way."
+      },
+      {
+        "text": "Sacrifice up to three lands. You gain 3 life for each land sacrificed this way."
+      }
+    ],
+    "counterExamples": [
+      "Sacrifice two lands. You gain 3 life for each land sacrificed this way.",
+      "Each player sacrifices up to three lands. You gain 3 life for each land sacrificed this way.",
+      "Sacrifice up to three lands. You gain 3 life for each land destroyed this way."
+    ]
+  },
+  {
+    "id": "sta.edhn145.lethalDamage.byPower",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.6",
+      "CR 704.5g",
+      "CR 702.19b",
+      "CR 613.11"
+    ],
+    "pattern": "lethal damage dealt to {f:Filter} is determined by their power rather than their toughness",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "lethalDamageUsesPower",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "Lethal damage dealt to Dinosaurs you control is determined by their power rather than their toughness."
+      },
+      {
+        "text": "Lethal damage dealt to artifact creatures you control is determined by their power rather than their toughness."
+      }
+    ],
+    "counterExamples": [
+      "Lethal damage dealt to creatures you control is determined by their toughness rather than their power.",
+      "Damage dealt to creatures you control is determined by their power rather than their toughness.",
+      "Lethal damage dealt to creatures you control is determined by their power."
+    ]
+  },
+  {
+    "id": "eff.edhn145.equippedOrNamed.getsX.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 301.5a",
+      "CR 201.2",
+      "CR 608.2d",
+      "CR 608.2h",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "equipped creature or a creature you control named vecna gets +x/+x until end of turn , where x is {q:Qty}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "is": {
+                  "ref": "attachedTo"
+                }
+              },
+              {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "you",
+                "name": "Vecna"
+              }
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "vecnaChosen"
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "endOfTurn"
+        },
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": {
+              "ref": "bound",
+              "name": "vecnaChosen"
+            },
+            "mods": [
+              {
+                "layer": "7c",
+                "power": "$q",
+                "toughness": "$q"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of combat on your turn, equipped creature or a creature you control named Vecna gets +X/+X until end of turn, where X is the number of artifacts you control.\nEquip--Discard three cards."
+      },
+      {
+        "text": "Whenever you cast a spell, equipped creature or a creature you control named Vecna gets +X/+X until end of turn, where X is the number of cards in your graveyard.\nEquip--Sacrifice two lands."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of combat on your turn, equipped creature or a creature you control named Vecna gets +X/+X, where X is the number of artifacts you control.\nEquip--Discard three cards.",
+      "At the beginning of combat on your turn, equipped creature and each creature you control named Vecna gets +X/+X until end of turn, where X is the number of artifacts you control.\nEquip--Discard three cards.",
+      "At the beginning of combat on your turn, enchanted creature or a creature you control named Vecna gets +X/+X until end of turn, where X is the number of artifacts you control.\nEquip--Discard three cards."
+    ]
+  }
+]

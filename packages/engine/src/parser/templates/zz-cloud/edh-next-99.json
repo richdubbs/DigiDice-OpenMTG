@@ -1,0 +1,147 @@
+[
+  {
+    "id": "eff.edhn99.token.forEach.qty.lead.you.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 110.5b",
+      "CR 608.2h"
+    ],
+    "pattern": "for each {n:Qty} , you create ( a | an ) tapped {t:TokenDesc}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t",
+      "tapped": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player reveals the top card of their library. For each nonland card revealed this way, you create a tapped Treasure token."
+      },
+      {
+        "text": "Each player reveals the top card of their library. For each land card revealed this way, you create a tapped 1/1 white Spirit creature token."
+      }
+    ],
+    "counterExamples": [
+      "Each player reveals the top card of their library. For each nonland card revealed this way, target opponent creates a tapped Treasure token.",
+      "Each player reveals the top card of their library. For each nonland card revealed this way, you create two tapped Treasure tokens.",
+      "Each player reveals the top card of their library. For each nonland card revealed this way, you create a tapped and attacking Treasure token."
+    ]
+  },
+  {
+    "id": "sta.edhn99.aslong.cantLoseGame.oppsCantWin",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 104.3",
+      "CR 104.2",
+      "CR 101.2"
+    ],
+    "pattern": "as long as {c:Cond} , you can't lose the game and your opponents can't win the game",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "lose"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "mode": "cant",
+          "action": "win"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "can't",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Gideon planeswalker, you can't lose the game and your opponents can't win the game."
+      },
+      {
+        "text": "As long as you have 40 or more life, you can't lose the game and your opponents can't win the game."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Gideon planeswalker, you can't lose the game.",
+      "As long as you control a Gideon planeswalker, you can't lose the game and your opponents can't win the game this turn.",
+      "If you control a Gideon planeswalker, you can't lose the game and your opponents can't win the game."
+    ]
+  },
+  {
+    "id": "eff.edhn99.lead.prevent.all.objWouldDeal.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 120.1",
+      "CR 510.2"
+    ],
+    "pattern": "{d:Dur} , prevent all damage {o:Obj} would deal",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Until your next turn, prevent all damage target permanent would deal."
+      },
+      {
+        "text": "Until end of turn, prevent all damage target blue creature would deal. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, prevent all combat damage target permanent would deal.",
+      "Until your next turn, prevent all damage that would be dealt to target permanent.",
+      "Until your next turn, prevent all damage target permanent would deal to you."
+    ]
+  }
+]

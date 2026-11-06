@@ -1,0 +1,317 @@
+[
+ {
+  "id": "sta.edhv99.self.attackNoDefender",
+  "kind": "static",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 702.3b",
+   "CR 604.1",
+   "CR 609.4"
+  ],
+  "pattern": "~ can attack as though it didn't have defender",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "permit",
+     "who": {
+      "ref": "you"
+     },
+     "action": "attackAsThoughNoDefender"
+    }
+   ]
+  },
+  "consumes": [
+   "as though",
+   "not"
+  ],
+  "examples": [
+   {
+    "text": "~ can attack as though it didn't have defender."
+   },
+   {
+    "text": "~ can attack as though it didn't have defender.\n~ can't be blocked as long as defending player controls an artifact land."
+   }
+  ],
+  "counterExamples": [
+   "~ can block as though it didn't have defender.",
+   "~ can attack as though it didn't have flying."
+  ]
+ },
+ {
+  "id": "sta.edhv99.each.unblockable.defendingControls",
+  "kind": "static",
+  "since": 9,
+  "status": "stable",
+  "cr": [
+   "CR 509.1b",
+   "CR 506.2",
+   "CR 604.1",
+   "CR 611.3a"
+  ],
+  "pattern": "each {f:Filter} can't be blocked as long as defending player controls ( a | an ) {g:Filter}",
+  "build": {
+   "s": "restrict",
+   "subject": {
+    "ref": "each",
+    "filter": "$f"
+   },
+   "mode": "cant",
+   "action": "beBlocked",
+   "when": {
+    "cond": "exists",
+    "of": {
+     "ref": "each",
+     "filter": {
+      "controller": {
+       "ref": "defending"
+      },
+      "anyOf": [
+       "$g"
+      ]
+     }
+    }
+   }
+  },
+  "consumes": [
+   "as long as",
+   "can't",
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Each Elf you control can't be blocked as long as defending player controls an artifact land."
+   },
+   {
+    "text": "Each Goblin you control can't be blocked as long as defending player controls a Swamp."
+   }
+  ],
+  "counterExamples": [
+   "Each creature you control can't be blocked as long as you control an artifact land.",
+   "Each creature you control can't block as long as defending player controls an artifact land.",
+   "Each creature you control can't be blocked as long as defending player controls two artifact lands."
+  ]
+ },
+ {
+  "id": "eff.edhv99.becomes.enchantment.permanent",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "subject": "object",
+  "cr": [
+   "CR 205.1a",
+   "CR 611.2a",
+   "CR 613.1d"
+  ],
+  "pattern": "{o:Obj} becomes an enchantment",
+  "build": {
+   "op": "effect",
+   "duration": {
+    "d": "permanent"
+   },
+   "effects": [
+    {
+     "s": "continuous",
+     "affects": "$o",
+     "mods": [
+      {
+       "layer": 4,
+       "types": {
+        "set": [
+         "Enchantment"
+        ]
+       },
+       "subtypes": {
+        "set": []
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "examples": [
+   {
+    "text": "Whenever a player casts a spell, if ~ is a creature, it becomes an enchantment."
+   },
+   {
+    "text": "Whenever you play a land, if ~ is an artifact, it becomes an enchantment."
+   }
+  ],
+  "counterExamples": [
+   "Whenever a player casts a spell, if ~ is a creature, it becomes an enchantment until end of turn.",
+   "Whenever a player casts a spell, if ~ is a creature, it becomes an artifact.",
+   "Whenever a player casts a spell, if ~ is a creature, it becomes an enchantment creature."
+  ],
+  "weak": 1
+ },
+ {
+  "id": "eff.edhv99.kicked.itDamages",
+  "priority": 1,
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 702.33a",
+   "CR 608.2c",
+   "CR 120.3",
+   "CR 115.1"
+  ],
+  "pattern": "if ~ was kicked , it deals {n:Qty} damage to {o:Obj}",
+  "build": {
+   "op": "if",
+   "cond": {
+    "cond": "wasCast",
+    "kicked": true
+   },
+   "then": [
+    {
+     "op": "damage",
+     "source": {
+      "ref": "self"
+     },
+     "to": "$o",
+     "amount": "$n"
+    }
+   ]
+  },
+  "consumes": [
+   "if"
+  ],
+  "examples": [
+   {
+    "text": "Return target creature to its owner's hand. If ~ was kicked, it deals 3 damage to another target creature."
+   },
+   {
+    "text": "Tap target creature. If ~ was kicked, it deals 3 damage to another target creature."
+   }
+  ],
+  "counterExamples": [
+   "Return target creature to its owner's hand. If ~ wasn't kicked, it deals 2 damage to another target creature.",
+   "Return target creature to its owner's hand. If ~ was kicked, it deals 2 damage to each creature.x"
+  ]
+ },
+ {
+  "id": "eff.edhv99.youSacrifice.self",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 701.21a",
+   "CR 109.5"
+  ],
+  "pattern": "you sacrifice ~",
+  "build": {
+   "op": "sacrifice",
+   "what": {
+    "ref": "self"
+   }
+  },
+  "consumes": [
+   "you"
+  ],
+  "examples": [
+   {
+    "text": "Target player draws a card. You sacrifice ~."
+   },
+   {
+    "text": "At the beginning of your upkeep, each opponent loses 2 life and you sacrifice ~."
+   }
+  ],
+  "counterExamples": [
+   "Target player draws a card. You sacrifice target creature.",
+   "Target player draws a card. You sacrifice ~ at random."
+  ]
+ },
+ {
+  "id": "eff.edhv99.seen.oneToGraveyard",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 701.20e",
+   "CR 608.2d",
+   "CR 404.1"
+  ],
+  "pattern": "put one of {g:Seen} into their graveyard",
+  "build": [
+   {
+    "op": "chooseObjects",
+    "who": {
+     "ref": "you"
+    },
+    "from": {
+     "ref": "each",
+     "filter": {
+      "is": "$g",
+      "zone": "library"
+     }
+    },
+    "min": 1,
+    "max": 1,
+    "as": "toGy"
+   },
+   {
+    "op": "move",
+    "what": {
+     "ref": "bound",
+     "name": "toGy"
+    },
+    "to": {
+     "zone": "graveyard"
+    }
+   }
+  ],
+  "consumes": [
+   "their"
+  ],
+  "examples": [
+   {
+    "text": "When ~ enters, look at the top three cards of target player's library. Put one of them into their graveyard."
+   },
+   {
+    "text": "{2}, {T}: Look at the top three cards of target opponent's library. Put one of them into their graveyard."
+   }
+  ],
+  "counterExamples": [
+   "When ~ enters, look at the top two cards of target player's library. Put two of them into their graveyard.",
+   "When ~ enters, look at the top two cards of target player's library. Put one of them into your graveyard."
+  ]
+ },
+ {
+  "id": "eff.edhv99.destroy.andNoRegen",
+  "kind": "effect",
+  "since": 9,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 701.8a",
+   "CR 701.19c",
+   "CR 608.2c"
+  ],
+  "pattern": "destroy {o:Obj} and it can't be regenerated",
+  "build": {
+   "op": "destroy",
+   "what": "$o",
+   "regeneration": "cant"
+  },
+  "consumes": [
+   "can't"
+  ],
+  "examples": [
+   {
+    "text": "When ~ enters, destroy target Knight and it can't be regenerated."
+   },
+   {
+    "text": "Destroy target nonblack creature and it can't be regenerated."
+   }
+  ],
+  "counterExamples": [
+   "Destroy target creature and it can be regenerated.",
+   "Destroy target creature and it can't be blocked."
+  ]
+ }
+]

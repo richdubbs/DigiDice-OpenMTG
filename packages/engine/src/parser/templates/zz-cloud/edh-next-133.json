@@ -1,0 +1,461 @@
+[
+  {
+    "id": "sta.edhn133.spells.cast.fromHand.gain.evoke.asCast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.74a",
+      "CR 611.3d",
+      "CR 400.7b",
+      "CR 601.2a",
+      "CR 601.2b",
+      "CR 613.1f"
+    ],
+    "pattern": "{f:Filter} you cast from your hand gain evoke {m:ManaCost} as you cast them",
+    "build": {
+      "s": "continuous",
+      "asCast": true,
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "castFrom": "hand",
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "evoke",
+              "cost": {
+                "mana": "$m"
+              },
+              "text": "evoke"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as",
+      "them"
+    ],
+    "examples": [
+      {
+        "text": "Goblin permanent spells you cast from your hand gain evoke {3} as you cast them."
+      },
+      {
+        "text": "Creature spells you cast from your hand gain evoke {1}{G} as you cast them."
+      }
+    ],
+    "counterExamples": [
+      "Goblin permanent spells you cast from your hand have evoke {3}.",
+      "Goblin permanent spells you cast gain evoke {3} as you cast them.",
+      "Goblin permanent spells you cast from your hand gain dash {3} as you cast them."
+    ]
+  },
+  {
+    "id": "sta.edhn133.spells.cast.gain.offspring.asCast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.175a",
+      "CR 611.3d",
+      "CR 400.7b",
+      "CR 601.2a",
+      "CR 601.2b",
+      "CR 613.1f"
+    ],
+    "pattern": "{f:Filter} you cast gain offspring {m:ManaCost} as you cast them",
+    "build": {
+      "s": "continuous",
+      "asCast": true,
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "offspring",
+              "cost": {
+                "mana": "$m"
+              },
+              "text": "offspring"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as",
+      "them"
+    ],
+    "examples": [
+      {
+        "text": "Goblin spells you cast gain offspring {1} as you cast them."
+      },
+      {
+        "text": "Artifact creature spells you cast gain offspring {2}{W} as you cast them."
+      }
+    ],
+    "counterExamples": [
+      "Goblin spells you cast have offspring {1}.",
+      "Goblin spells your opponents cast gain offspring {1} as you cast them.",
+      "Goblin spells you cast gain squad {1} as you cast them."
+    ]
+  },
+  {
+    "id": "rid.edhn133.token.entersWith.halfThatMany",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7a",
+      "CR 707.2",
+      "CR 122.6",
+      "CR 107.1a",
+      "CR 608.2h"
+    ],
+    "pattern": "the token enters with half that many {k:CounterKind} counters on it , rounded down",
+    "build": {
+      "$patchPrevious": {
+        "counters": [
+          {
+            "kind": "$k",
+            "count": {
+              "q": "math",
+              "op": "floorDiv",
+              "args": [
+                {
+                  "q": "counters",
+                  "on": "@previous.what",
+                  "kind": "$k"
+                },
+                2
+              ]
+            }
+          }
+        ],
+        "@into": true,
+        "@require": {
+          "result": "token",
+          "what.ref": "event",
+          "what.role": "subject",
+          "count": null,
+          "counters": null,
+          "except": null
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "half",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, if it had two or more +1/+1 counters on it, create a token that's a copy of it at the beginning of the next end step. The token enters with half that many +1/+1 counters on it, rounded down."
+      },
+      {
+        "text": "When ~ dies, if it had two or more charge counters on it, create a token that's a copy of it. The token enters with half that many charge counters on it, rounded down."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, if it had two or more +1/+1 counters on it, create a token that's a copy of it at the beginning of the next end step. The token enters with half that many +1/+1 counters on it, rounded up.",
+      "When ~ dies, if it had two or more +1/+1 counters on it, create a token that's a copy of it at the beginning of the next end step. The token enters with that many +1/+1 counters on it.",
+      "When ~ dies, create a 1/1 green Ooze creature token. The token enters with half that many +1/+1 counters on it, rounded down."
+    ]
+  },
+  {
+    "id": "rep.edhn133.enters.mayExileTwo.copyOne.countersPowerOther",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 707.5",
+      "CR 707.9e",
+      "CR 122.6"
+    ],
+    "pattern": "as ~ enters , you may exile two {f:Filter} from graveyards . if you do , it enters as a copy of one of those cards with a number of additional {k:CounterKind} counters on it equal to the power of the other card",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": {
+                "anyOf": [
+                  "$f"
+                ],
+                "zone": "graveyard",
+                "isCard": true
+              },
+              "optional": true,
+              "exilePair": {
+                "counters": "$k"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if",
+      "additional",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, you may exile two creature cards from graveyards. If you do, it enters as a copy of one of those cards with a number of additional +1/+1 counters on it equal to the power of the other card."
+      },
+      {
+        "text": "As ~ enters, you may exile two creature cards from graveyards. If you do, it enters as a copy of one of those cards with a number of additional charge counters on it equal to the power of the other card."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, you may exile two creature cards from graveyards. If you do, it enters as a copy of one of those cards with a number of additional +1/+1 counters on it equal to the toughness of the other card.",
+      "As ~ enters, you may exile three creature cards from graveyards. If you do, it enters as a copy of one of those cards with a number of additional +1/+1 counters on it equal to the power of the other card.",
+      "As ~ enters, exile two creature cards from graveyards. It enters as a copy of one of those cards with a number of additional +1/+1 counters on it equal to the power of the other card."
+    ]
+  },
+  {
+    "id": "eff.edhn133.copySpell.ifTargetsPermanentOrPlayer.mayNewTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 115.9b",
+      "CR 608.2c"
+    ],
+    "pattern": "copy {o:Obj} if it targets a permanent or player , and you may choose new targets for the copy",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "matches",
+        "object": "$o",
+        "filter": {
+          "anyOf": [
+            {
+              "targets": {
+                "ref": "each",
+                "filter": {}
+              }
+            },
+            {
+              "targets": {
+                "ref": "each",
+                "who": "player"
+              }
+            }
+          ]
+        }
+      },
+      "then": [
+        {
+          "op": "copy",
+          "what": "$o",
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          },
+          "newTargets": "may"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast your second spell each turn, copy that spell if it targets a permanent or player, and you may choose new targets for the copy."
+      },
+      {
+        "text": "Whenever you cast an instant spell, copy that spell if it targets a permanent or player, and you may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant spell, copy that spell if it targets a creature, and you may choose new targets for the copy.",
+      "Whenever you cast an instant spell, copy that spell if it targets a permanent or player.",
+      "Whenever you cast an instant spell, copy that spell unless it targets a permanent or player, and you may choose new targets for the copy."
+    ]
+  },
+  {
+    "id": "rid.edhn133.ifYouDontCopyThisWay.else",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2e",
+      "CR 707.10"
+    ],
+    "pattern": "if you don't copy a spell this way , {e:Effects}",
+    "build": {
+      "$patchPrevious": {
+        "else": {
+          "@new": "$e"
+        },
+        "@require": {
+          "op": "if",
+          "then.0.op": "copy",
+          "then.0.result": "spell",
+          "then.1": null
+        }
+      }
+    },
+    "attachTo": "if",
+    "consumes": [
+      "if",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast your second spell each turn, copy that spell if it targets a permanent or player, and you may choose new targets for the copy. If you don't copy a spell this way, draw a card."
+      },
+      {
+        "text": "Whenever you cast an instant spell, copy that spell if it targets a permanent or player, and you may choose new targets for the copy. If you don't copy a spell this way, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant spell, copy that spell if it targets a permanent or player, and you may choose new targets for the copy. If you copy a spell this way, draw a card.",
+      "Whenever you cast an instant spell, you may copy that spell. If you don't copy a spell this way, draw a card.",
+      "Whenever you cast an instant spell, draw a card. If you don't copy a spell this way, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhn133.mayCopyOneExiled",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 707.12",
+      "CR 707.10a",
+      "CR 608.2d",
+      "CR 608.2g",
+      "CR 607.2a"
+    ],
+    "pattern": "you may copy a card exiled with ~",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "optional": true,
+      "copyIn": "exile",
+      "select": {
+        "max": 1
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{X}, {T}: You may exile an instant or sorcery card with mana value X from your hand.\nAt the beginning of your upkeep, you may copy a card exiled with ~. If you do, you may cast the copy without paying its mana cost."
+      },
+      {
+        "text": "{2}, {T}: You may exile an instant card from your hand.\nAt the beginning of your end step, you may copy a card exiled with ~. If you do, you may cast the copy without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: You may exile an instant card from your hand.\nAt the beginning of your end step, you may copy each card exiled with ~. If you do, you may cast the copies without paying their mana costs.",
+      "{2}, {T}: You may exile an instant card from your hand.\nAt the beginning of your end step, copy a card exiled with ~. If you do, you may cast the copy without paying its mana cost.",
+      "{2}, {T}: You may exile an instant card from your hand.\nAt the beginning of your end step, you may copy a card exiled with ~."
+    ]
+  },
+  {
+    "id": "rid.edhn133.ifYouDo.castCopy.free",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.12",
+      "CR 608.2g",
+      "CR 118.9",
+      "CR 601.2"
+    ],
+    "pattern": "if you do , you may cast the copy without paying its mana cost",
+    "build": {
+      "$patchPrevious": {
+        "free": true,
+        "@require": {
+          "op": "cast",
+          "copyIn": "exile",
+          "select.max": 1,
+          "free": null,
+          "what.ref": "linked"
+        }
+      }
+    },
+    "attachTo": "cast",
+    "consumes": [
+      "if",
+      "do",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{X}, {T}: You may exile an instant or sorcery card with mana value X from your hand.\nAt the beginning of your upkeep, you may copy a card exiled with ~. If you do, you may cast the copy without paying its mana cost."
+      },
+      {
+        "text": "{2}, {T}: You may exile an instant card from your hand.\nAt the beginning of your end step, you may copy a card exiled with ~. If you do, you may cast the copy without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: You may exile an instant card from your hand.\nAt the beginning of your end step, you may copy a card exiled with ~. If you do, you may cast the copy.",
+      "{2}, {T}: You may exile an instant card from your hand.\nAt the beginning of your end step, you may copy a card exiled with ~. If you do, you may cast the copy by paying {1}.",
+      "{2}, {T}: You may exile an instant card from your hand.\nAt the beginning of your end step, draw a card. If you do, you may cast the copy without paying its mana cost."
+    ]
+  }
+]

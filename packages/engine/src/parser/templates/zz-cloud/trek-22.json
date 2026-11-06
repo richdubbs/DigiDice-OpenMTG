@@ -1,0 +1,240 @@
+[
+  {
+    "id": "sta.trek22.obj.cantBeTargeted.abilitiesFromArtifactSourcesByOpponents",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 115.1",
+      "CR 113.7a",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be the target of abilities from artifact sources your opponents control",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beTargeted",
+      "other": {
+        "controller": "opponent",
+        "stackKind": "ability",
+        "types": [
+          "Artifact"
+        ]
+      }
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature can't be the target of abilities from artifact sources your opponents control."
+      },
+      {
+        "text": "Enchanted creature can't be the target of abilities from artifact sources your opponents control."
+      }
+    ],
+    "counterExamples": [
+      "~ can't be the target of abilities from artifact sources you control.",
+      "~ can't be the target of abilities from artifact sources.",
+      "~ can't be the target of spells or abilities from artifact sources your opponents control.",
+      "~ can't be the target of abilities from creature sources your opponents control."
+    ]
+  },
+  {
+    "id": "eff.trek22.linked.returnEachCreature.youOwn.battlefield",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 400.7",
+      "CR 108.3",
+      "CR 608.2c"
+    ],
+    "pattern": "return each creature card you own exiled with ( it | ~ ) to the battlefield",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "exile",
+          "isCard": true,
+          "owner": "you",
+          "types": [
+            "Creature"
+          ]
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "examples": [
+      {
+        "text": "{2}: Each opponent exiles a card from their graveyard.\nWhenever ~ attacks, return each creature card you own exiled with it to the battlefield."
+      },
+      {
+        "text": "{3}: Exile target creature card from a graveyard.\nWhen ~ leaves the battlefield, return each creature card you own exiled with ~ to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ leaves the battlefield, return each artifact card you own exiled with it to the battlefield.",
+      "When ~ leaves the battlefield, return each creature card you own exiled with it to the battlefield under your control.",
+      "When ~ leaves the battlefield, return each creature card exiled with it to the battlefield.",
+      "When ~ leaves the battlefield, return each creature card you control exiled with it to the battlefield."
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "you",
+      "own"
+    ]
+  },
+  {
+    "id": "eff.trek22.mayHave.chosenFightEachOther",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.14a",
+      "CR 701.14b",
+      "CR 115.1",
+      "CR 608.2c"
+    ],
+    "pattern": "you may have {o:Them} fight each other",
+    "build": {
+      "lower": "fightEachOther",
+      "what": "$o",
+      "may": true
+    },
+    "consumes": [
+      "may",
+      "each other",
+      "each",
+      "other"
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "When ~ enters, choose target creature you control and target creature an opponent controls. You may have the chosen creatures fight each other."
+      },
+      {
+        "text": "When ~ enters, choose another target creature you control and target creature an opponent controls. You may have the chosen creatures fight each other. Tap the creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose target creature you control and target creature an opponent controls. The chosen creatures fight each other.",
+      "When ~ enters, choose target creature you control and target creature an opponent controls. You may have the chosen creatures fight."
+    ]
+  },
+  {
+    "id": "eff.trek22.whenever.fought.dies.thisTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 603.10a",
+      "CR 700.4",
+      "CR 701.14a"
+    ],
+    "pattern": "whenever a creature that fought this way dies this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "types": [
+              "Creature"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "set",
+                "number": "plural",
+                "participle": "fought this way",
+                "text": "fought this way"
+              }
+            }
+          },
+          "from": "battlefield",
+          "to": "graveyard"
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "whenever",
+      "this turn",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, choose target creature you control and target creature an opponent controls. You may have the chosen creatures fight each other. Whenever a creature that fought this way dies this turn, you gain 2 life."
+      },
+      {
+        "text": "When ~ enters, choose target creature you control and target creature an opponent controls. You may have the chosen creatures fight each other. Whenever a creature that fought this way dies this turn, create a 1/1 white Soldier creature token."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose target creature you control and target creature an opponent controls. You may have the chosen creatures fight each other. Whenever a creature that fought this way dies, you draw a card.",
+      "When ~ enters, choose target creature you control and target creature an opponent controls. You may have the chosen creatures fight each other. When a creature that fought this way dies this turn, you draw a card.",
+      "Whenever a creature that fought this way dies this turn, you draw a card."
+    ]
+  },
+  {
+    "id": "eff.trek22.phaseOut.objAndObj",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 702.26b",
+      "CR 702.26g",
+      "CR 506.4",
+      "CR 608.2c"
+    ],
+    "pattern": "{a:Obj} and {b:Obj} phase out",
+    "build": {
+      "op": "phaseOut",
+      "what": {
+        "ref": "union",
+        "of": [
+          "$a",
+          "$b"
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, it and up to one target creature you control phase out."
+      },
+      {
+        "text": "When ~ enters, it and target creature phase out."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it and up to one target creature you control phase in.",
+      "When ~ enters, it and up to one target creature you control phase out until end of turn.",
+      "When ~ enters, target creature phases out."
+    ]
+  }
+]

@@ -62,6 +62,12 @@ export interface ChooseObjectsDecision extends DecisionBase {
    * rejected (core/validate.ts); a bot or UI picks a set that keeps it (`chooseObjectsLimitHolds`).
    */
   limit?: { stat: 'power' | 'toughness' | 'manaValue'; op: '<=' | '>=' | '==' | '!=' | '<' | '>'; value: number; values: Record<ObjectId, number> };
+  /**
+   * edh-d-85 INTERFACE CHANGE (additive): a nonempty set of objects chosen together must have at least `n` different card types among them ("any number of cards ... with four or
+   * more card types among them", CR 205.2a, 608.2d): `types` is each option's card types, read as the choice is offered. Choosing none is always allowed. An answer that breaks it is
+   * rejected (core/validate.ts#chooseObjectsTypesHold).
+   */
+  typesAtLeast?: { n: number; types: Record<ObjectId, string[]> };
 }
 
 export interface YesNoDecision extends DecisionBase { kind: 'yesNo'; yesLabel?: string; noLabel?: string }
@@ -72,6 +78,8 @@ export interface ChooseOptionDecision extends DecisionBase {
   min: number;
   max: number;
   allowRepeat?: boolean;
+  /** edh-players-19 (CR 700.2, 603.3c): "you may choose two": the answer is no option at all or exactly `max` of them, never a number in between (`min` is 0). */
+  noneOrAll?: true;
 }
 
 export interface ChooseNumberDecision extends DecisionBase { kind: 'chooseNumber'; min: number; max: number }
@@ -109,6 +117,11 @@ export interface PayCostDecision extends DecisionBase {
    * life, and no X was announced. A client may answer `auto` at once without asking. Absent otherwise.
    */
   onlyWay?: true;
+  /**
+   * edhc5 INTERFACE CHANGE (additive), CR 118.1: the indices (in `costText` order) of symbols that are not Phyrexian but may be paid with 2 life because of "For each {B} in a cost,
+   * you may pay 2 life rather than pay that mana" or a Defiler (rules/life-for.ts). Answer `lifeForPhyrexian` with them like a Phyrexian symbol's. Absent when none.
+   */
+  lifeSymbols?: number[];
   /** Who pays: "unless that player pays" (CR 118.12a) is paid by a player other than the controller of the spell or ability. */
   forPlayer?: PlayerId;
   /** Why the cost is being paid. */
@@ -122,7 +135,7 @@ export interface DeclareAttackersDecision extends DecisionBase {
    * unless their controller pays ..."); the declaring player is asked to pay after declaring (core/combat-tax.ts).
    */
   /** Creatures that may attack and what each may attack (CR 508.1a-b). `mustAttack`: an attack requirement applies to it (R1, from `requirements`). FAST5 T37: `onlyWithOthers`: "can't attack alone" (CR 506.5): a declaration in which it is the only attacker is refused. */
-  candidates: { id: ObjectId; defenders: (PlayerId | ObjectId)[]; mustAttack?: boolean; onlyWithOthers?: boolean; taxed?: true; /** M12 gaps: the defenders an attack on which has a cost (with `taxed`) */ taxedDefenders?: (PlayerId | ObjectId)[] }[];
+  candidates: { id: ObjectId; defenders: (PlayerId | ObjectId)[]; mustAttack?: boolean; onlyWithOthers?: boolean; /** edh-combat-6 (CR 506.5, 508.1c): "~ can only attack alone": declared with another attacker the declaration is illegal. */ onlyAlone?: true; taxed?: true; /** M12 gaps: the defenders an attack on which has a cost (with `taxed`) */ taxedDefenders?: (PlayerId | ObjectId)[] }[];
   /**
    * R1 (M6-7a) INTERFACE CHANGE (design m6 2.3), CR 508.1d: the requirements that apply to creatures that can attack ("attacks each combat if able"), so a
    * client or bot can obey them. The declaration is checked against them (rules/requirements.ts) when `mustObey` is present. Absent when none applies.
@@ -142,6 +155,11 @@ export interface DeclareAttackersDecision extends DecisionBase {
    * attacker) may be declared. Absent when no such limit applies.
    */
   limits?: { max: number; pairs: { attacker: ObjectId; defender: PlayerId | ObjectId }[] }[];
+  /**
+   * edh-d-89 INTERFACE CHANGE (additive), CR 508.1b, 723.1 (Master Warcraft, ruling 2008-04-01): every candidate attacks (another player chose them, `turn.attacksBy`); the active player's answer
+   * only chooses which player, planeswalker or battle each one attacks, and must list every candidate. `obeying` is then a legal choice (the one the other player declared). Absent: a normal declaration.
+   */
+  allAttack?: true;
 }
 
 export interface DeclareBlockersDecision extends DecisionBase {
@@ -186,6 +204,20 @@ export interface CombatRequirement {
   creature: ObjectId;
   kind: 'attack' | 'block' | 'beBlocked';
   among?: (ObjectId | PlayerId)[];
+  /** edh-d-38 (CR 509.1c; Gorm the Great): `beBlocked` only, "must be blocked by two or more creatures if able": obeyed by at least this many blockers (absent: one). */
+  min?: number;
+  /**
+   * edh-d-75 (CR 508.1d; Seeker of Slaanesh, Trove of Temptation): `attack` only, "must attack with at least one creature each combat if able": a requirement of the player's whole group of
+   * creatures, obeyed when any creature of `group` attacks (a defender of `among` when it has them). `creature` is the first of the group (the one a pre-selected declaration attacks with).
+   */
+  group?: ObjectId[];
+  /** edh-d-75 (CR 509.1c; Nacatl War-Pride): `beBlocked` only, "must be blocked by exactly one creature if able": obeyed by exactly this many blockers (neither fewer nor more). */
+  exactly?: number;
+  /**
+   * edh-d-88 (CR 508.1d; War's Toll): `attack` only, with `group`: "if a creature that player controls attacks, all creatures that player controls attack if able": obeyed when
+   * `creature` attacks or when no creature of `group` attacks (then the requirement does not apply).
+   */
+  allIfAny?: true;
   by?: ObjectFilter;
   sourceName: string;
   /** R1: the requirement in words, for explanations ("Goblin Brigand attacks each combat if able."). */
@@ -207,7 +239,12 @@ export interface AssignDamageDecision extends DecisionBase {
    * `trampleTarget` marks the player / planeswalker / battle the attacker attacks: it may only be assigned damage once every
    * other recipient is assigned at least its `lethal` amount.
    */
-  recipients: { id: ObjectId | PlayerId; lethal: number; trampleTarget?: boolean }[];
+  /**
+   * edh-d-90 ADDITION (optional): `attacked` marks, for an attacker with trample over planeswalkers (CR 702.19c), the planeswalker it attacks: it may be assigned damage once every blocker
+   * is assigned its `lethal` amount, and its own `lethal` is its loyalty (less the damage other creatures assign it in this step); the `trampleTarget` is then that planeswalker's
+   * controller, who may be assigned damage once the blockers and the planeswalker are.
+   */
+  recipients: { id: ObjectId | PlayerId; lethal: number; trampleTarget?: boolean; attacked?: true }[];
   canTrample: boolean;
 }
 
@@ -257,13 +294,15 @@ export interface ChooseDivisionDecision extends DecisionBase {
   kind: 'chooseDivision';
   what: 'damage' | 'counters' | 'other';
   total: number;
+  /** edh-perms-22 (CR 601.2d): the amounts add up to `total` or to less ("up to that many"), each target still gets at least 1. */
+  upTo?: true;
   targets: { id: ObjectId | PlayerId; label: string }[];
 }
 
 /** CR 607.2d, 608.2d: name a card, a creature type, a basic land type ... from a searchable list. */
 export interface ChooseNameDecision extends DecisionBase {
   kind: 'chooseName';
-  what: 'cardName' | 'creatureType' | 'cardType' | 'landType';
+  what: 'cardName' | 'creatureType' | 'cardType' | 'landType' | 'planeswalkerType'; // edh-d-94: 'planeswalkerType' (CR 205.3j)
   /** Closed list for types; for card names the whole local Oracle name index (the UI searches it). */
   options?: string[];
   /**
@@ -271,7 +310,8 @@ export interface ChooseNameDecision extends DecisionBase {
    * ('nonland': "choose a nonland card name", Skyseer's Chariot; CR 201.3). The UI searches only such names; the engine refuses a name that the game's own cards
    * show to be of the other kind (core/validate.ts; a card that is not in the game has no object the choice could affect).
    */
-  cardKind?: 'land' | 'nonland';
+  /** edh-next-146 (CR 201.3): 'creature', "choose a creature card name" (Psychic Paper): the name of a creature card (checked as 'land' is). */
+  cardKind?: 'land' | 'nonland' | 'creature';
 }
 
 /**
@@ -293,6 +333,20 @@ export interface CommanderZoneDecision extends DecisionBase {
   zone: 'hand' | 'library' | 'graveyard' | 'exile';
 }
 
+/**
+ * Shortcuts INTERFACE CHANGE (additive; docs/design/shortcuts.md 3): CR 727.2b (cited from memory, unverified), another player answers a proposed shortcut
+ * (`Action` 'shortcut'). Asked of each other player still in the game, in turn order after the proposer; never cancellable. Answer
+ * `{ kind: 'shortcut' }` to let it run (the shortcut passes for this player wherever it would), or `{ kind: 'shortcut', stop: { pass, step } }` to take
+ * priority the first time this player would receive it at or after step `step` of pass `pass` (`1 <= pass <= times`, `1 <= step <= steps.length`).
+ */
+export interface ShortcutDecision extends DecisionBase {
+  kind: 'shortcut';
+  proposer: PlayerId;
+  times: number;
+  /** The proposer's steps of one pass, in words, in order (public: each is an action everybody saw happen). */
+  steps: string[];
+}
+
 export type Decision =
   | PriorityDecision
   | PlayFirstDecision
@@ -312,7 +366,8 @@ export type Decision =
   | ManualResolveDecision
   | ChooseDivisionDecision
   | ChooseNameDecision
-  | CommanderZoneDecision;
+  | CommanderZoneDecision
+  | ShortcutDecision;
 
 export type DecisionKind = Decision['kind'];
 
@@ -369,7 +424,8 @@ export type DecisionAnswer =
     /** Indices into the mana pool (after the activations) that may be spent; the rest stays. Omit to let the engine choose (CR 601.2h). */
     spendPool?: number[];
   }
-  | { kind: 'declareAttackers'; attacks: { attacker: ObjectId; defender: PlayerId | ObjectId }[] }
+  /** edhv31 (CR 702.22c): `bands`: the attacking bands (creatures with banding and up to one without, all attacking the same defender); absent = no band. */
+  | { kind: 'declareAttackers'; attacks: { attacker: ObjectId; defender: PlayerId | ObjectId }[]; bands?: ObjectId[][] }
   | { kind: 'declareBlockers'; blocks: { blocker: ObjectId; attacker: ObjectId }[] }
   | { kind: 'assignDamage'; amounts: { id: ObjectId | PlayerId; amount: number }[] }
   | { kind: 'chooseReplacement'; id: string }
@@ -381,6 +437,8 @@ export type DecisionAnswer =
   | { kind: 'chooseDivision'; amounts: number[] }
   | { kind: 'chooseName'; name: string }
   /** M11-0: CR 903.9a-b: `command: true` puts the commander into the command zone; false lets it stay in (903.9a) or go to (903.9b) `zone`. */
-  | { kind: 'commanderZone'; command: boolean };
+  | { kind: 'commanderZone'; command: boolean }
+  /** Shortcuts (CR 727.2b, unverified): accept the proposed shortcut, or name the point where this player wants priority instead of being passed for. */
+  | { kind: 'shortcut'; stop?: { pass: number; step: number } };
 
 export type AnswerFor<K extends DecisionKind> = Extract<DecisionAnswer, { kind: K }>;

@@ -236,6 +236,7 @@ export function variableCounterAbilities(face: Pick<FaceBase, 'types' | 'loyalty
   ];
   for (const { type, printed, counter, rule } of rows) {
     if (!face.types.includes(type as never) || printed === undefined || /^\d+$/.test(printed)) continue;
+    if (counter === 'loyalty' && printed === 'X') continue; // edh-next-137 (CR 107.3m, 306.5b): loyalty X is the X the spell was cast with (core/zones.ts#enterWithPrintedCounters)
     out.push({
       kind: 'manual', text: variableCounterText(counter, printed), shape: 'static', prov: { by: 'fallback' },
       reason: `variable ${counter} (${rule}): the engine can't set it yet; as the permanent enters, its controller puts the ${counter} counters on it by hand`,
@@ -246,13 +247,15 @@ export function variableCounterAbilities(face: Pick<FaceBase, 'types' | 'loyalty
 
 /** Is an ObjectFilter's zone the battlefield (or unstated, which means the battlefield for an Aura, CR 303.4a)? */
 const battlefieldOnly = (zone: unknown): boolean => zone === undefined || zone === 'battlefield' || (Array.isArray(zone) && zone.length === 1 && zone[0] === 'battlefield');
+/** edh-perms-4 (CR 303.4a, 702.5a, 303.4f; capability `feature:enchant.zone`): "Enchant creature card in a graveyard" is read by rules/attachment.ts#auraRestriction (cast, resolve, 704.5m). */
+const graveyardOnly = (zone: unknown): boolean => zone === 'graveyard' || (Array.isArray(zone) && zone.length === 1 && zone[0] === 'graveyard');
 
 /**
  * Structures the model can say but the engine does not implement and the capability walker does not name: an enchant keyword that names another zone
  * (CR 702.5a, 303.4a; Animate Dead's "Enchant creature card in a graveyard"): rules/attachment.ts attaches Auras to permanents only.
  */
 function engineStructure(def: AbilityDef, requires: Set<string>): AbilityDef {
-  if (def.kind === 'keyword' && def.keyword === 'enchant' && def.player === undefined && !battlefieldOnly(def.filter?.zone)) {
+  if (def.kind === 'keyword' && def.keyword === 'enchant' && def.player === undefined && !battlefieldOnly(def.filter?.zone) && !(graveyardOnly(def.filter?.zone) && def.filter?.types?.length === 1 && def.filter.isCard === true && Object.keys(def.filter).length === 3 /* exactly "<type> card in a graveyard" */)) {
     requires.add('feature:enchant.zone');
     return demote(def, 'needs-engine: feature:enchant.zone; an Aura that enchants a card outside the battlefield is not implemented (CR 702.5a, 303.4a)');
   }

@@ -1,0 +1,138 @@
+[
+ {
+  "id": "eff.edhd77.linked.mayReturnOne.ownersHand",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 607.2a",
+   "CR 608.2d",
+   "CR 400.3"
+  ],
+  "pattern": "you may return ( a | an ) {f:Filter} card exiled with ~ to its owner 's hand",
+  "build": [
+   {
+    "op": "chooseObjects",
+    "who": {
+     "ref": "you"
+    },
+    "from": {
+     "ref": "each",
+     "filter": {
+      "is": {
+       "ref": "linked",
+       "link": "exiled"
+      },
+      "zone": "any",
+      "isCard": true,
+      "anyOf": [
+       "$f"
+      ]
+     }
+    },
+    "min": 0,
+    "max": 1,
+    "as": "linkedReturned"
+   },
+   {
+    "op": "move",
+    "what": {
+     "ref": "bound",
+     "name": "linkedReturned"
+    },
+    "to": {
+     "zone": "hand"
+    }
+   }
+  ],
+  "consumes": [
+   "may"
+  ],
+  "examples": [
+   {
+    "text": "Whenever ~ attacks, exile the top card of your library.\nWhenever ~ deals combat damage to a player, you may return a creature card exiled with ~ to its owner's hand."
+   },
+   {
+    "text": "When ~ enters, exile up to two target cards from your graveyard.\nWhenever ~ attacks, you may return an artifact or land card exiled with ~ to its owner's hand."
+   }
+  ],
+  "counterExamples": [
+   "Whenever ~ attacks, exile the top card of your library.\nWhenever ~ deals combat damage to a player, you may return a creature card exiled with ~ to your hand.",
+   "Whenever ~ attacks, exile the top card of your library.\nWhenever ~ deals combat damage to a player, you may return two creature cards exiled with ~ to their owner's hand."
+  ]
+ },
+ {
+  "id": "sta.edhd77.entersWith.counterPerLinkedExiled",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 607.2a",
+   "CR 607.2q",
+   "CR 614.1c",
+   "CR 122.6"
+  ],
+  "pattern": "~ enters with ( a | an ) {k:CounterKind} counter on it for each {f:Filter} card exiled with it",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "stack",
+    "battlefield"
+   ],
+   "effects": [
+    {
+     "s": "replace",
+     "replaces": {
+      "ev": "zoneChange",
+      "subject": {
+       "self": true
+      },
+      "to": "battlefield"
+     },
+     "body": {
+      "b": "enters",
+      "counters": [
+       {
+        "kind": "$k",
+        "count": {
+         "q": "count",
+         "of": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "linked",
+            "link": "exiled"
+           },
+           "zone": "any",
+           "isCard": true,
+           "anyOf": [
+            "$f"
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Delve\n~ enters with a +1/+1 counter on it for each instant card exiled with it."
+   },
+   {
+    "text": "Delve\n~ enters with a +1/+1 counter on it for each creature card exiled with it."
+   }
+  ],
+  "counterExamples": [
+   "Delve\n~ enters with two +1/+1 counters on it for each instant card exiled with it.",
+   "Delve\n~ enters with a +1/+1 counter on it for each card exiled with it.",
+   "Delve\n~ enters with a +1/+1 counter on it for each creature card exiled with ~."
+  ]
+ }
+]

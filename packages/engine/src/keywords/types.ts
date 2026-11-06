@@ -108,6 +108,11 @@ export type KeywordModifier =
    */
   | { kind: 'modal'; chooseAll: { when: Condition } }
   /**
+   * edh-mana-keywords-2 (escalate, CR 702.120a): the keyword's cost param is paid for each mode chosen beyond the first. Like `modal` it comes with no `expand`: actions/cast.ts#
+   * withModalKeywords reads it from the registry and sets `ModeSpec.escalate` (capability `feature:modes.escalate`).
+   */
+  | { kind: 'escalate' }
+  /**
    * FAST5X-4 ADDITION: a keyword that grants the ability written after its dash while a condition holds: "Max speed -- [Ability]" is "As long as your speed is
    * 4, this object has [Ability]" (CR 702.178a). The parser (segment.ts, lower/ability.ts#grantLine) makes the line a static ability with this condition, one
    * continuous effect on the object itself that adds the ability in layer 6, the zones the granted ability states (CR 702.178b, 113.6c), and `keyword` set

@@ -1,0 +1,176 @@
+[
+  {
+    "id": "sta.edhd66.linked.eachPlayer.castNotOwn.anyType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.3",
+      "CR 108.3",
+      "CR 609.4b",
+      "CR 611.3a"
+    ],
+    "pattern": "during each player 's turn , that player may cast a spell from among the cards they don't own exiled with ~ , and mana of any type can be spent to cast it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "active"
+          },
+          "action": "cast",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "anyManaType": true,
+          "notOwn": true
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "each",
+      "may",
+      "any"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player draws their second card each turn, that player exiles the top card of their library.\nDuring each player's turn, that player may cast a spell from among the cards they don't own exiled with ~, and mana of any type can be spent to cast it."
+      },
+      {
+        "text": "Whenever a player casts a spell, that player exiles the top card of their library.\nDuring each player's turn, that player may cast a spell from among the cards they don't own exiled with ~, and mana of any type can be spent to cast it."
+      }
+    ],
+    "counterExamples": [
+      "During each player's turn, that player may cast a spell from among the cards they own exiled with ~, and mana of any type can be spent to cast it.",
+      "During each player's turn, that player may cast a spell from among the cards they don't own exiled with ~."
+    ]
+  },
+  {
+    "id": "eff.edhd66.anyPlayer.mayPayLife.ifDoes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 119.4",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 101.4"
+    ],
+    "pattern": "any player may pay {n:Qty} life . if a player does , {e:Effects}",
+    "build": {
+      "op": "pay",
+      "everyPlayer": true,
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "payLife",
+            "amount": "$n"
+          }
+        ]
+      },
+      "then": "$e"
+    },
+    "consumes": [
+      "any player",
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "When you cast this spell, any player may pay 5 life. If a player does, counter it."
+      },
+      {
+        "text": "When ~ enters, any player may pay 3 life. If a player does, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, any player may pay 3 life. If you do, draw a card.",
+      "When ~ enters, each player may pay 3 life. If a player does, draw a card.",
+      "When ~ enters, any opponent may pay 3 life. If a player does, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhd66.token.forEachDiedUnderYourControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 700.4",
+      "CR 111.1",
+      "CR 111.2",
+      "CR 608.2h"
+    ],
+    "pattern": "create ( a | an ) {t:TokenDesc} for each {f:Filter} that died under your control this turn",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "controller": "you",
+            "attacking": "$f.attacking",
+            "blocking": "$f.blocking",
+            "tapped": "$f.tapped",
+            "token": "$f.token",
+            "faceDown": "$f.faceDown",
+            "types": "$f.types",
+            "allTypes": "$f.allTypes",
+            "notTypes": "$f.notTypes",
+            "subtypes": "$f.subtypes",
+            "notSubtypes": "$f.notSubtypes",
+            "supertypes": "$f.supertypes",
+            "notSupertypes": "$f.notSupertypes",
+            "colors": "$f.colors",
+            "notColors": "$f.notColors",
+            "colorless": "$f.colorless",
+            "multicolored": "$f.multicolored",
+            "keyword": "$f.keyword",
+            "notKeyword": "$f.notKeyword",
+            "name": "$f.name",
+            "notName": "$f.notName",
+            "power": "$f.power",
+            "toughness": "$f.toughness",
+            "manaValue": "$f.manaValue",
+            "counters": "$f.counters",
+            "zone": "$f.zone"
+          },
+          "from": "battlefield",
+          "to": "graveyard"
+        },
+        "scope": "turn"
+      },
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Create a 2/2 black Zombie creature token for each nontoken creature that died under your control this turn."
+      },
+      {
+        "text": "When ~ enters, create a 1/1 white Spirit creature token for each creature that died under your control this turn."
+      }
+    ],
+    "counterExamples": [
+      "Create a 1/1 colorless Eldrazi Scion creature token for each creature that died this turn.",
+      "Create a 1/1 colorless Eldrazi Scion creature token for each creature that left the battlefield under your control this turn."
+    ]
+  }
+]

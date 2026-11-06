@@ -10,10 +10,11 @@ import type { ObjectId, PlayerId } from '../types/ids';
 import { FACE_DOWN_DEF_IDS } from '../types/card';
 import { nextUint32, seedRng } from '../rng';
 import { VIEW_PARTS } from './registries';
-import { faceDownVisibleTo, topCardRevealed, topCardVisibleTo } from '../statics/play-permits';
+import { faceDownVisibleTo, handRevealed, exileLookVisibleTo, topCardRevealed, topCardVisibleTo } from '../statics/play-permits';
 import { controllerOfPlayer, playersControlledBy } from './player-control';
 import { readingStable } from '../rules/characteristics';
 import { viewCharsFor, type ViewChars } from './view-chars';
+import { shortcutViewOf } from './shortcut';
 
 export const HIDDEN_DEF = '__hidden__';
 
@@ -46,7 +47,7 @@ export function adaptRecordedView<V extends object>(view: V, schema: number): V 
   return view;
 }
 
-export interface GameView extends Omit<GameState, 'rng' | 'suspended' | 'seed'> {
+export interface GameView extends Omit<GameState, 'rng' | 'suspended' | 'seed' | 'turnActions'> {
   /** The player this view is for; null = spectator (sees only public information). */
   viewer: PlayerId | null;
   /** True if the game is in the middle of an action waiting for a decision. */
@@ -59,6 +60,14 @@ export interface GameView extends Omit<GameState, 'rng' | 'suspended' | 'seed'> 
    * Absent from the open view of a replay and from the views of a schema-1 recording.
    */
   chars?: Record<ObjectId, ViewChars>;
+  /**
+   * Shortcuts (additive, optional; docs/design/shortcuts.md 4; CR 727, unverified): the viewer's own settled actions of this turn since another player last
+   * did something but pass, in words, oldest first (at most `SHORTCUT_MAX_STEPS`): the steps a `shortcut` action may repeat. Only for a seated viewer, absent
+   * when there is none. The state's `turnActions` itself is never in a view (its answers may name hidden objects).
+   */
+  repeatable?: string[];
+  /** Shortcuts (CR 727): when the viewer's last `loop` steps were just done twice in a row (the engine noticed a loop), that number. Absent otherwise. */
+  loop?: number;
 }
 
 export function canSee(state: GameState, o: GameObject, viewer: PlayerId | null): boolean {
@@ -74,13 +83,16 @@ function canSeeAs(state: GameState, o: GameObject, viewer: PlayerId | null): boo
       // FAST5X E14 (CR 401.5): "You may look at the top card of your library any time": that card, for that player only (statics/play-permits.ts)
       // p2-dig-1 (CR 401.2, 401.5): "Play with the top card of your library revealed": that card, for every player (topCardRevealed)
       if (o.kind === 'card' && topCardRevealed(state, o.id, o.owner)) return true;
-      return viewer !== null && viewer === o.owner && o.kind === 'card' && topCardVisibleTo(state, o.id, o.owner, viewer);
+      // edh-next-143 (CR 401.5; Xanathar, Guild Kingpin): or another player's top card, for a player a permission lets look at it (topCardVisibleTo reads `ofLibrary`)
+      return viewer !== null && o.kind === 'card' && topCardVisibleTo(state, o.id, o.owner, viewer);
     case 'hand':
-      return viewer === o.owner;
+      // edh-next-12 (CR 402.3, 604.1; Telepathy): "Your opponents play with their hands revealed": the cards of that hand, for every player (handRevealed)
+      return viewer === o.owner || (o.kind === 'card' && handRevealed(state, o.owner));
     default:
       // FAST5X E25 (CR 406.3): a card exiled face down can't be examined by any player, except the players who may keep looking at it (`revealedTo`, above: the
       // ones who saw it as it was exiled face down, effects/handlers/zones-move.ts, or an instruction lets look at it, core/zones.ts#showCards)
-      if (o.faceDown && o.zone === 'exile') return false;
+      // edh-next-62 (CR 607.2a; Colfenor's Plans): ... and the players a static "you may look at the cards exiled with ~" lets look at the cards its linked ability exiled (exileLookVisibleTo)
+      if (o.faceDown && o.zone === 'exile') return viewer !== null && exileLookVisibleTo(state, o.id, viewer);
       // Face-down objects: only their controller may look at them (CR 708.5), and a player an effect lets look at it (FAST5X E25, CR 609.4: "you may look at
       // face-down creatures your opponents control any time", statics/play-permits.ts#faceDownVisibleTo)
       if (o.faceDown) return (viewer !== null && (viewer === o.controller || faceDownVisibleTo(state, o.id, viewer))) || revealedFaceDown(state, o);
@@ -146,7 +158,8 @@ function hiddenObject(o: GameObject): GameObject {
     // morph (CR 702.37b-c); a spell keeps its targets, its controller and where it was cast from, and its alternative cost is the public method.
     const profile = o.faceDownInfo?.profile ?? 'plain';
     return {
-      ...seen, defId: FACE_DOWN_DEF_IDS[profile], face: 0, flipped: false, counters: o.zone === 'battlefield' ? { ...o.counters } : {},
+      // edh-mana-keywords-12: a profile with set characteristics shows the plain pseudo-definition; its characteristics come from the profile kept below
+      ...seen, defId: FACE_DOWN_DEF_IDS[profile === 'ward2' ? 'ward2' : 'plain'], face: 0, flipped: false, counters: o.zone === 'battlefield' ? { ...o.counters } : {},
       ...(o.faceDownInfo ? { faceDownInfo: { by: publicMethod(o.faceDownInfo.by), profile } } : {}),
       ...(o.stack ? { stack: publicStack(o.stack) } : {}),
       ...(o.components ? { components: o.components.map((c) => (c.faceDown ? { kind: c.kind, defId: FACE_DOWN_DEF_IDS.plain, owner: c.owner, faceDown: true } : { ...c })) } : {}),
@@ -452,7 +465,7 @@ export function unaliasAction<A extends object>(state: GameState, action: A): A 
 function hideSecretLinks(o: GameObject, viewer: PlayerId | null): GameObject {
   for (const [k, v] of Object.entries(o.links ?? {})) {
     if (v.secret === undefined || (viewer !== null && v.secret.includes(viewer))) continue;
-    const { values: _values, ...rest } = v;
+    const { values: _values, players: _players, ...rest } = v; // edh-next-135: a secretly chosen player too
     o.links![k] = rest;
   }
   return o;
@@ -466,7 +479,7 @@ function hideSecretLinks(o: GameObject, viewer: PlayerId | null): GameObject {
  * policy allows (design 6, D4: a game against the computer, or every person agreed); it is a separate function, so `viewFor` is the same as before.
  */
 export function openView(state: GameState): GameView {
-  const { rng: _rng, suspended, seed: _seed, log, ...rest } = state;
+  const { rng: _rng, suspended, seed: _seed, log, turnActions: _turnActions, ...rest } = state; // shortcuts: `turnActions` is never in a view
   return { ...clone(rest), log: log.map(openLog), viewer: null, midAction: suspended !== null, open: true };
 }
 
@@ -546,7 +559,8 @@ function viewOf(full: GameState, state: GameState, viewer: PlayerId | null): Gam
   for (const o of Object.values(objects)) if (o.stack?.event) o.stack.event = redactEvent(state, o.stack.event, viewer);
 
   // The parts that are replaced below (objects, lki, defs, log, history, pendingTriggers) are left out of the deep clone of the rest.
-  const { rng: _rng, suspended, seed: _seed, objects: _objects, lki: _lki, defs: _defs, log: _log, history, pendingTriggers, ...rest } = state;
+  // Shortcuts (docs/design/shortcuts.md 4): `turnActions` is left out too; a seated viewer gets `repeatable` and `loop` from it (no object id in either).
+  const { rng: _rng, suspended, seed: _seed, objects: _objects, lki: _lki, defs: _defs, log: _log, history, pendingTriggers, turnActions: _turnActions, ...rest } = state;
   const shown = clone(rest);
   // FAST5 MX7: another player's sideboard is hidden (CR 400.11a; tournament practice keeps it private): a view holds only the viewer's own entry
   if (shown.outside) shown.outside = viewer !== null && shown.outside[viewer] ? { [viewer]: shown.outside[viewer]! } : {};
@@ -578,6 +592,7 @@ function viewOf(full: GameState, state: GameState, viewer: PlayerId | null): Gam
     viewer,
     midAction: suspended !== null,
     chars,
+    ...(viewer !== null ? shortcutViewOf(state, viewer) : {}),
   };
   reader.deps = null; // the rest of the view is made anew on every call: what it reads is no part of the memo
   return blankUnshownIds(view, hide);

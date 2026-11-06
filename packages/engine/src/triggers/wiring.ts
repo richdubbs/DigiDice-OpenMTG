@@ -19,6 +19,8 @@ export interface TriggerAnnounceEnv {
   sourceId: ObjectId;
   costsPaid: CostsPaid;
   x?: number;
+  /** edh-d-97 (CR 107.3f, 603.3d): the controller chooses X as the ability resolves (types/x-on-resolution.ts); target filters read X relaxed. */
+  xOnResolution?: true;
   /** r3-choose (CR 700.2, 603.3c): the ability whose modes are remembered for "choose one that hasn't been chosen" (`AnnounceEnv.modeMemory`). */
   modeMemory?: { key: string; triggered: boolean };
   /** r3-choose (CR 603.3d): the triggering event's amount, read by a calculated number of targets (`AnnounceEnv.eventAmount`). */

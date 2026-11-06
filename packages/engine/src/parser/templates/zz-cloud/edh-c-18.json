@@ -1,0 +1,368 @@
+[
+  {
+    "id": "eff.edhv18.player.discard.mill.loselife",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 701.17a",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard[s] {n:Qty} card[s] , mill[s] {m:Qty} card[s] , and lose[s] {l:Qty} life",
+    "build": [
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "mill",
+        "who": "$p",
+        "count": "$m"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$l"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent discards three cards, mills one card, and loses 4 life."
+      },
+      {
+        "text": "Each opponent discards a card, mills two cards, and loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent discards three cards, mills one card, and gains 4 life.",
+      "Target opponent mills one card, discards three cards, and loses 4 life.",
+      "Target opponent discards three cards, mills one card, and you lose 4 life."
+    ]
+  },
+  {
+    "id": "eff.edhv18.group.nountap.theirNext",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{f:Filter} {p:Player} control[s] don't untap during their next untap step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap",
+        "whose": "$p"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "controller": "$p"
+            }
+          },
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "not",
+      "next",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Artifacts and enchantments target opponent controls don't untap during their next untap step."
+      },
+      {
+        "text": "Creatures target player controls don't untap during their next untap step."
+      }
+    ],
+    "counterExamples": [
+      "Artifacts and enchantments target opponent controls don't untap during their untap step.",
+      "Artifacts and enchantments target opponent controls untap during their next untap step.",
+      "Artifacts and enchantments target opponent controls don't untap during their next end step.",
+      "Lands each opponent controls don't untap during their next untap step."
+    ]
+  },
+  {
+    "id": "eff.edhv18.player.untaps.one.theyControl",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.26b",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} untap[s] ( a | an ) {f:Filter} they control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "untap"
+      },
+      {
+        "op": "untap",
+        "what": {
+          "ref": "bound",
+          "name": "untap"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player untaps a Forest they control."
+      },
+      {
+        "text": "Target opponent untaps an artifact they control. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target player untaps all Forests they control.",
+      "Target player untaps a Forest you control.",
+      "Target player untaps up to one Forest they control."
+    ]
+  },
+  {
+    "id": "eff.edhv18.you.skip.drawStep.thisTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 504.1",
+      "CR 500.11"
+    ],
+    "pattern": "you skip your draw step this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "step",
+            "step": "draw",
+            "whose": "you"
+          },
+          "body": {
+            "b": "skip"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "skip"
+    ],
+    "needs": [
+      "feature:shield.skip"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. You skip your draw step this turn."
+      },
+      {
+        "text": "Scry 2. You skip your draw step this turn."
+      }
+    ],
+    "counterExamples": [
+      "You skip your next draw step.",
+      "You skip your upkeep step this turn.",
+      "Target opponent skips their draw step this turn."
+    ]
+  },
+  {
+    "id": "eff.edhv18.becomes.creatureType.choice.permanent",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.3m",
+      "CR 608.2d",
+      "CR 611.2a",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:Obj} becomes the creature type of your choice",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "creatureType",
+        "as": "chosenCreatureType",
+        "link": "chosenCreatureType"
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "permanent"
+        },
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 4,
+                "subtypes": {
+                  "chosen": "chosenCreatureType",
+                  "chosenSets": true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "When ~ is turned face up, it becomes the creature type of your choice."
+      },
+      {
+        "text": "Target creature becomes the creature type of your choice."
+      }
+    ],
+    "counterExamples": [
+      "Target creature becomes the creature type of your choice until end of turn.",
+      "Target creature becomes the creature type of an opponent's choice.",
+      "Target creature becomes the creature type of your choice and gains flying."
+    ]
+  },
+  {
+    "id": "eff.edhv18.draw.perColorOf.imp",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 105.2",
+      "CR 121.1",
+      "CR 608.2h"
+    ],
+    "pattern": "draw a card for each of {o:Obj} 's colors",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "distinct",
+        "what": "colors",
+        "among": "$o"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, draw a card for each of that spell's colors."
+      },
+      {
+        "text": "Whenever you cast a creature spell, you may draw a card for each of that spell's colors."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, draw two cards for each of that spell's colors.",
+      "Whenever you cast a spell, draw a card for each of that spell's targets.",
+      "Whenever you cast a spell, discard a card for each of that spell's colors."
+    ]
+  },
+  {
+    "id": "eff.edhv18.damage.unlessTheyHaveExactlyEither",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 402.1",
+      "CR 109.5"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {p:Player} unless they have exactly {a:Qty} or exactly {b:Qty} cards in hand",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$p",
+      "amount": "$n",
+      "guard": {
+        "cond": "not",
+        "of": {
+          "cond": "any",
+          "of": [
+            {
+              "cond": "compare",
+              "left": {
+                "q": "zoneSize",
+                "zone": "hand",
+                "of": "$p"
+              },
+              "op": "==",
+              "right": "$a"
+            },
+            {
+              "cond": "compare",
+              "left": {
+                "q": "zoneSize",
+                "zone": "hand",
+                "of": "$p"
+              },
+              "op": "==",
+              "right": "$b"
+            }
+          ]
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each opponent's upkeep, ~ deals 3 damage to that player unless they have exactly two or exactly five cards in hand."
+      },
+      {
+        "text": "~ deals 1 damage to target player unless they have exactly one or exactly six cards in hand."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 3 damage to target player unless they have exactly two cards in hand.",
+      "~ deals 3 damage to target player if they have exactly two or exactly five cards in hand.",
+      "~ deals 3 damage to target player unless you have exactly two or exactly five cards in hand."
+    ]
+  }
+]

@@ -1,0 +1,19 @@
+# edh-players-4 (Commander lane edh-players; test/cloud/edh-players-4, golden edh-players-4-review.json)
+# sacrificed creature and milled cards named by "that creature" / "those cards"; untap all ... they; target opponent may have you draw; n additional cards; two times X; becomes a color and gains; target creature can attack despite defender
+Disciple of Bolas
+Karlach, Fury of Avernus
+Insurrection
+Combustible Gearhulk
+Palantír of Orthanc
+Crimson Wisps
+Font of Mythos
+Vraska's Fall
+Debt to the Deathless
+Assault Formation
+Necra Sanctuary
+Bulwark
+Shakedown Heavy
+Doomgape
+Curse of Obsession
+Rupture
+Aphotic Wisps

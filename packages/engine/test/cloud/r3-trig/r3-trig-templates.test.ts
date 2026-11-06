@@ -177,7 +177,9 @@ describe('r3-trig hole and lowering readings (no template of their own)', () => 
     const f = face('Creature — Giant', 'When you discard this card, you gain 3 life.');
     expect(fullyAutomated(f)).toBe(true);
     expect(f.abilities[0]).toMatchObject({ kind: 'triggered', zone: ['graveyard', 'exile'] });
-    expect(fullyAutomated(face('Creature — Giant', 'When you discard this card, you may pay {1}. If you do, draw a card.'))).toBe(false);
+    // edh-next-90 (changed on purpose, Edgar's Awakening): a payment of a fixed mana cost is made as the trigger resolves; {X}, life and other payments stay manual
+    expect(fullyAutomated(face('Creature — Giant', 'When you discard this card, you may pay {1}. If you do, draw a card.'))).toBe(true);
+    expect(fullyAutomated(face('Creature — Giant', 'When you discard this card, you may pay {X}. If you do, draw a card.'))).toBe(false);
   });
   it('CR 113.6k, 707.10: "When you cast this spell, copy this spell." is automated (the words "copy ~" end before a period)', () => {
     expect(fullyAutomated(face('Creature — Bird', 'When you cast this spell, copy this spell.'))).toBe(true);

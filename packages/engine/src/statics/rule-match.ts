@@ -52,9 +52,19 @@ export function staticallyEvaluable(v: unknown, extraQ: ReadonlySet<string> = ne
   if (typeof r['q'] === 'string' && !STATIC_QUANTITY_KINDS.has(r['q']) && !extraQ.has(r['q'])) return false;
   for (const [k, x] of Object.entries(r)) {
     const filter = k === 'filter' && x !== null && typeof x === 'object' && !Array.isArray(x) && !('ref' in x);
+    // edh-cast-15 (CR 115.9b, 601.2c; Not of This World): the filter of a `spellTargetCount` may name what the objects it counts target (statics/costmods.ts#filteredTargetCount)
+    if (filter && r['q'] === 'spellTargetCount') { if (!spellTargetFilterEvaluable(x as ObjectFilter)) return false; continue; }
     if (filter ? !layerFilterEvaluable(x as ObjectFilter) : !staticallyEvaluable(x, extraQ, depth + 1)) return false;
   }
   return true;
+}
+
+/** edh-cast-15: the filter of a `spellTargetCount`: the fields the rule hooks evaluate, and `targets` as "each <such object>" (the objects the counted spell or ability targets). */
+function spellTargetFilterEvaluable(f: ObjectFilter): boolean {
+  // edh-d-10 (Bitter Downfall): `dealtDamageThisTurn` is read from the game state by statics/costmods.ts#filteredTargetCount
+  const { targets, dealtDamageThisTurn: _dealt, ...rest } = f;
+  if (targets !== undefined && !(targets.ref === 'each' && 'filter' in targets && ruleFilterEvaluable(targets.filter))) return false;
+  return ruleFilterEvaluable(rest);
 }
 
 /** The object as a spell or an ability, read from where it is: a spell (or a copy, CR 707.10) or an ability on the stack; anything else is neither. */
@@ -72,6 +82,7 @@ function stackKindIs(a: Actor | undefined, k: NonNullable<ObjectFilter['stackKin
     case 'ability': return a.kind !== 'spell';
     case 'activatedAbility': return a.kind === 'activated';
     case 'triggeredAbility': return a.kind === 'triggered';
+    case 'finalChapterAbility': return false; // edhn78: a rule restriction never names a final chapter ability (fails closed)
   }
 }
 
@@ -98,8 +109,8 @@ export function objectMatches(cx: EvalCx, id: ObjectId | PlayerId, f: ObjectFilt
 }
 
 /** A card about to be cast or a spell on the stack, as a spell (CR 601.2a): where it is cast from. */
-export function spellActor(o: GameObject): Actor {
-  return o.zone === 'stack' ? actorOf(o) ?? { kind: 'spell' } : { kind: 'spell', castFrom: castOriginOf(o) }; // trek-11 (CR 400.11): a card from outside the game is cast from no zone
+export function spellActor(o: GameObject, caster?: PlayerId): Actor {
+  return o.zone === 'stack' ? actorOf(o) ?? { kind: 'spell' } : { kind: 'spell', castFrom: castOriginOf(o, caster) }; // edh-next-143: `caster`, 'otherHand' for a card in another player's hand; // trek-11 (CR 400.11): a card from outside the game is cast from no zone
 }
 
 /**

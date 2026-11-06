@@ -99,7 +99,10 @@ export function verifyAbility(input: AbilityDef, oracleLines: string[], ctx: Ren
   // (wave 7, CR 113.6k, 603.4: an ability that functions only while its card is a spell on the stack, r3-trig's "When you cast this spell, if you've cast
   // another spell this turn, copy this spell." (Sage of the Skies), has that spell as its source: its own cast is not "another", so it is not refused)
   const onStackOnly = 'zone' in def && Array.isArray(def.zone) && def.zone.length > 0 && def.zone.every((z) => z === 'stack');
-  if (!onStackOnly && (def.kind !== 'spell' || !(ctx.selfTypes ?? []).some((t) => t === 'Instant' || t === 'Sorcery')) && /"cond":"happened","event":\{"ev":"cast"[^{}]*"spell":\{[^{}]*"other":true/.test(JSON.stringify(def))) {
+  // edh-c-53 (CR 400.7, 601.2i; Dream Thief): the enters trigger of a permanent ("When this creature enters, draw a card if you've cast another blue spell this turn"): the history
+  // reader leaves out the spell the permanent was (rules/history.ts#formerIds through effects/eval.ts#factsEnv), so its own spell is not "another"
+  const entersSelf = def.kind === 'triggered' && def.trigger.on.length === 1 && JSON.stringify(def.trigger.on[0]) === '{"ev":"zoneChange","subject":{"self":true},"to":"battlefield"}';
+  if (!onStackOnly && !entersSelf && (def.kind !== 'spell' || !(ctx.selfTypes ?? []).some((t) => t === 'Instant' || t === 'Sorcery')) && /"cond":"happened","event":\{"ev":"cast"[^{}]*"spell":\{[^{}]*"other":true/.test(JSON.stringify(def))) {
     const reason = '"another spell" in the turn\'s history of an object that is not that spell: its own spell would count (CR 400.7, 601.2i)';
     return { def: demote(def, reason), gate: NOT_GATED, diagnostics: [{ level: 'manual', code: 'lint', message: `${reason}: "${def.text}"` }] };
   }

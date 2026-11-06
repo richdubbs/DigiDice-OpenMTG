@@ -1,0 +1,274 @@
+[
+  {
+    "id": "eff.edhn70.castSpell.entersWith.mvMinus",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 611.2c",
+      "CR 122.6",
+      "CR 202.3"
+    ],
+    "pattern": "that creature enters with X additional {k:CounterKind} counters on it , where X is its mana value minus {m:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "is": {
+                "ref": "event",
+                "role": "spell"
+              }
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "math",
+                  "op": "-",
+                  "args": [
+                    {
+                      "q": "stat",
+                      "stat": "manaValue",
+                      "of": {
+                        "ref": "subject"
+                      }
+                    },
+                    "$m"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a creature spell with mana value 6 or greater, that creature enters with X additional +1/+1 counters on it, where X is its mana value minus 5."
+      },
+      {
+        "text": "Whenever you cast a creature spell, that creature enters with X additional +1/+1 counters on it, where X is its mana value minus 1."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a creature spell, that creature enters with X additional +1/+1 counters on it, where X is its mana value plus 1.",
+      "Whenever you cast a creature spell, that creature enters with X additional +1/+1 counters on it, where X is its power minus 1.",
+      "Whenever you cast a creature spell, target creature enters with X additional +1/+1 counters on it, where X is its mana value minus 1."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "rep.edhn70.cond.others.enter.additionalCounter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , each {f:Filter} enters with an additional {k:CounterKind} counter on it",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "other",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "As long as an opponent gained life this turn, each other Elf you control enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "As long as you control a Dragon, each Elf you control enters with an additional +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "As long as an opponent lost life this turn, each Elf you control enters tapped.",
+      "As long as an opponent lost life this turn, each Elf you control enters with an additional +1/+1 counter on it for each Goblin you control.",
+      "Each Elf you control enters with an additional +1/+1 counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhn70.distribute.numberEqual.anyNumber",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 601.2d"
+    ],
+    "pattern": "distribute a number of {k:CounterKind} counters equal to {q:Qty} among any number of {f:Filter}",
+    "build": {
+      "op": "putCounters",
+      "on": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "kind": "$k",
+      "count": "$q",
+      "distribute": true
+    },
+    "subject": "none",
+    "consumes": [
+      "distribute",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Distribute a number of +1/+1 counters equal to the number of cards in your hand among any number of creatures you control."
+      },
+      {
+        "text": "Distribute a number of +1/+1 counters equal to the number of creatures you control among any number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Distribute a number of +1/+1 counters equal to the number of cards in your hand among target creatures.",
+      "Distribute three +1/+1 counters among any number of creatures you control.",
+      "Distribute a number of +1/+1 counters equal to the number of cards in your hand among creatures you control."
+    ]
+  },
+  {
+    "id": "rid.edhn70.eachOfThem.entersWithAdditional",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 608.2c",
+      "CR 122.6"
+    ],
+    "pattern": "each of them enters with ( an | a ) additional {k:CounterKind} counter on it",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to.zone": "battlefield"
+        },
+        "to": {
+          "countersIf": {
+            "@new": [
+              {
+                "if": {},
+                "counters": [
+                  {
+                    "kind": "$k",
+                    "count": 1
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "each",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Put up to two target creature cards from graveyards onto the battlefield under your control. Each of them enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "Return up to three target creature cards from your graveyard to the battlefield. Each of them enters with an additional -1/-1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Put up to two target creature cards from graveyards onto the battlefield under your control. Each of them enters with two additional -1/-1 counters on it.",
+      "Put up to two target creature cards from graveyards into your hand. Each of them enters with an additional -1/-1 counter on it.",
+      "Each of them enters with an additional -1/-1 counter on it."
+    ]
+  },
+  {
+    "id": "rep.edhn70.group.enter.withCounter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6"
+    ],
+    "pattern": "{f:Filter} enter with ( a | an ) {k:CounterKind} counter on them",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": 1
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "enter"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control enter with a +1/+1 counter on them."
+      },
+      {
+        "text": "Face-down creatures you control enter with a shield counter on them."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control enter with a +1/+1 counter on them unless they are blue.",
+      "Creatures you control enter tapped.",
+      "Creatures you control enter with two +1/+1 counters on them."
+    ]
+  }
+]

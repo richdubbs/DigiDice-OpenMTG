@@ -1,0 +1,976 @@
+[
+ {
+  "card": "Sliver Gravemother",
+  "expect": "full",
+  "verified": "edh-next-59 review (rank 6,327 of the EDHREC top 20,000, lane graveyard; held-out half cards opened by the owner (commander request 2026-10-27, more cards 2026-10-30)), by hand against the Oracle text and the rules cited (CR 113.6, 601.3, 702, 400.7) (sta.edhn59.each.encore.manavalue) : each Sliver creature card in your graveyard (yours, a card) gets encore with generic mana equal to its mana value (CR 702.141a, 202.3); the card's own encore {5} is a keyword; CR cites from memory (cloud session), unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effects": [
+       {
+        "s": "rule",
+        "rule": "legendRuleExempt",
+        "of": {
+         "subtypes": [
+          "Sliver"
+         ],
+         "controller": "you"
+        }
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "subtypes": [
+           "Sliver"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "encore",
+            "costIsManaValue": true
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "encore",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 5
+        }
+       ]
+      },
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "encore"
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Graywater's Fixer",
+  "expect": "full",
+  "verified": "edh-next-59 review (rank 9,931 of the EDHREC top 20,000, lane graveyard; held-out half cards opened by the owner (commander request 2026-10-27, more cards 2026-10-30)), by hand against the Oracle text and the rules cited (CR 113.6, 601.3, 702, 400.7) (sta.edhn59.each.encore.manavalue) : each outlaw creature card (Assassin, Mercenary, Pirate, Rogue, Warlock, CR 700.9) in your graveyard gets encore {X}, X its mana value; CR cites from memory (cloud session), unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "subtypes": [
+           "Assassin",
+           "Mercenary",
+           "Pirate",
+           "Rogue",
+           "Warlock"
+          ],
+          "types": [
+           "Creature"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "encore",
+            "costIsManaValue": true
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Young Deathclaws",
+  "expect": "full",
+  "verified": "edh-next-59 review (rank 11,720 of the EDHREC top 20,000, lane graveyard; held-out half cards opened by the owner (commander request 2026-10-27, more cards 2026-10-30)), by hand against the Oracle text and the rules cited (CR 113.6, 601.3, 702, 400.7) (sta.edhn59.each.scavenge.manacost) : each creature card in your graveyard has scavenge with its mana cost as the cost (CR 702.97a); menace is the keyword; CR cites from memory (cloud session), unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "menace",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "menace"
+      }
+     },
+     {
+      "kind": "static",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "scavenge",
+            "costIsManaCost": true
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Return the Past",
+  "expect": "full",
+  "verified": "edh-next-59 review (rank 9,440 of the EDHREC top 20,000, lane graveyard; held-out half cards opened by the owner (commander request 2026-10-27, more cards 2026-10-30)), by hand against the Oracle text and the rules cited (CR 113.6, 601.3, 702, 400.7) (sta.stdtla.duringturn.each.flashback.manacost (extended to 'its flashback cost')) : during your turn only (condition turnOf you), instant and sorcery cards in your graveyard have flashback with their mana cost (CR 702.34a); CR cites from memory (cloud session), unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "condition": {
+       "cond": "turnOf",
+       "whose": "you"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Instant",
+           "Sorcery"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "flashback",
+            "costIsManaCost": true
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Raul, Trouble Shooter",
+  "expect": "full",
+  "verified": "edh-next-59 review (rank 5,633 of the EDHREC top 20,000, lane graveyard; held-out half cards opened by the owner (commander request 2026-10-27, more cards 2026-10-30)), by hand against the Oracle text and the rules cited (CR 113.6, 601.3, 702, 400.7) (sta.edhn59.once.cast.among.milled) : once during each of your turns, you may cast a spell from among cards in your graveyard that were milled this turn (history entry 'milled', CR 701.17a); the second ability is each player mills a card; CR cites from memory (cloud session), unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "condition": {
+       "cond": "turnOf",
+       "whose": "you"
+      },
+      "effects": [
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "cast",
+        "of": {
+         "stackKind": "spell",
+         "zone": "stack",
+         "putThereThisTurn": true,
+         "putThereFrom": "mill"
+        },
+        "from": "graveyard",
+        "oncePerTurn": true
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "mill",
+         "who": {
+          "ref": "each",
+          "who": "player"
+         },
+         "count": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Banon, the Returners' Leader",
+  "expect": "full",
+  "verified": "edh-next-59 review (rank 6,537 of the EDHREC top 20,000, lane graveyard; held-out half cards opened by the owner (commander request 2026-10-27, more cards 2026-10-30)), by hand against the Oracle text and the rules cited (CR 113.6, 601.3, 702, 400.7) (sta.edhn59.once.cast.among.notBattlefield) : once each turn, a creature spell from your graveyard whose card was put there this turn from any zone but the battlefield; the attack trigger is {1} + discard: draw; CR cites from memory (cloud session), unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "condition": {
+       "cond": "turnOf",
+       "whose": "you"
+      },
+      "effects": [
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "cast",
+        "of": {
+         "types": [
+          "Creature"
+         ],
+         "stackKind": "spell",
+         "zone": "stack",
+         "putThereThisTurn": true,
+         "putThereFrom": "notBattlefield"
+        },
+        "from": "graveyard",
+        "oncePerTurn": true
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "controller": "you"
+         },
+         "count": {
+          "op": ">=",
+          "value": 1
+         }
+        }
+       ],
+       "batch": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "pay",
+         "who": {
+          "ref": "you"
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "generic",
+            "amount": 1
+           }
+          ],
+          "other": [
+           {
+            "kind": "discard",
+            "count": 1
+           }
+          ]
+         },
+         "then": [
+          {
+           "op": "draw",
+           "who": {
+            "ref": "you"
+           },
+           "count": 1
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Phoenix Chick",
+  "expect": "full",
+  "verified": "edh-next-59 review (rank 6,094 of the EDHREC top 20,000, lane graveyard; held-out half cards opened by the owner (commander request 2026-10-27, more cards 2026-10-30)), by hand against the Oracle text and the rules cited (CR 113.6, 601.3, 702, 400.7) (eff.edhn59.return.self.fromGraveyard.tappedAttacking.counter) : whenever you attack with three or more creatures, you may pay {R}{R}; if you do, return it from your graveyard tapped and attacking with a +1/+1 counter (CR 508.4, 614.1c); CR cites from memory (cloud session), unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "flying"
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "haste",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "haste"
+      }
+     },
+     {
+      "kind": "static",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "self"
+        },
+        "mode": "cant",
+        "action": "block"
+       }
+      ]
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "attacks",
+         "attacker": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         },
+         "count": {
+          "op": ">=",
+          "value": 3
+         }
+        }
+       ],
+       "batch": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "pay",
+         "who": {
+          "ref": "you"
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "colored",
+            "color": "R"
+           },
+           {
+            "kind": "colored",
+            "color": "R"
+           }
+          ]
+         },
+         "then": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "self"
+           },
+           "to": {
+            "zone": "battlefield",
+            "controller": {
+             "ref": "you"
+            },
+            "tapped": true,
+            "attacking": true,
+            "counters": [
+             {
+              "kind": "+1/+1",
+              "count": 1
+             }
+            ]
+           }
+          }
+         ]
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Sword of the Meek",
+  "expect": "full",
+  "verified": "edh-next-59 review (rank 7,432 of the EDHREC top 20,000, lane graveyard; held-out half cards opened by the owner (commander request 2026-10-27, more cards 2026-10-30)), by hand against the Oracle text and the rules cited (CR 113.6, 601.3, 702, 400.7) (eff.edhn59.return.self.fromGraveyard.thenAttachEventCreature) : whenever a 1/1 creature you control enters, you may return it from your graveyard, then attach the Equipment to THAT creature (the creature of the event), CR 301.5c; CR cites from memory (cloud session), unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 2
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "equip"
+      }
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "power": {
+           "op": "==",
+           "value": 1
+          },
+          "toughness": {
+           "op": "==",
+           "value": 1
+          },
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "self"
+           },
+           "to": {
+            "zone": "battlefield",
+            "controller": {
+             "ref": "you"
+            }
+           },
+           "as": "moved"
+          },
+          {
+           "op": "attach",
+           "what": {
+            "ref": "bound",
+            "name": "moved"
+           },
+           "to": {
+            "ref": "event",
+            "role": "subject"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Kami of Transience",
+  "expect": "full",
+  "verified": "edh-next-59 review (rank 11,433 of the EDHREC top 20,000, lane graveyard; held-out half cards opened by the owner (commander request 2026-10-27, more cards 2026-10-30)), by hand against the Oracle text and the rules cited (CR 113.6, 601.3, 702, 400.7) (the 'an enchantment was put into your graveyard from the battlefield this turn' condition reading (no template)) : intervening if at each end step: an enchantment you own went from the battlefield to your graveyard this turn; the card returns to hand (CR 603.4); CR cites from memory (cloud session), unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "trample",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "keyword",
+       "id": "trample"
+      }
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "cast",
+         "player": "you",
+         "spell": {
+          "types": [
+           "Enchantment"
+          ]
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "+1/+1",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "src": [
+       2
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "trigger": {
+       "on": [
+        {
+         "ev": "step",
+         "step": "end"
+        }
+       ]
+      },
+      "interveningIf": {
+       "cond": "happened",
+       "event": {
+        "ev": "zoneChange",
+        "subject": {
+         "types": [
+          "Enchantment"
+         ],
+         "owner": "you"
+        },
+        "from": "battlefield",
+        "to": "graveyard"
+       },
+       "scope": "turn"
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "self"
+           },
+           "to": {
+            "zone": "hand"
+           }
+          }
+         ]
+        }
+       ]
+      },
+      "zone": [
+       "graveyard"
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Arcade Gannon",
+  "expect": "full",
+  "verified": "edh-next-59 review (rank 11,122 of the EDHREC top 20,000, lane graveyard; held-out half cards opened by the owner (commander request 2026-10-27, more cards 2026-10-30)), by hand against the Oracle text and the rules cited (CR 113.6, 601.3, 702, 400.7) (sta.edhn59.once.cast.gy.mvAtMost.qty) : once each turn an artifact or Human spell from your graveyard with mana value at most the quest counters on it (CR 202.3); CR cites from memory (cloud session), unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "discard",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "putCounters",
+         "on": {
+          "ref": "self"
+         },
+         "kind": "quest",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "condition": {
+       "cond": "turnOf",
+       "whose": "you"
+      },
+      "effects": [
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "cast",
+        "of": {
+         "anyOf": [
+          {
+           "types": [
+            "Artifact"
+           ]
+          },
+          {
+           "subtypes": [
+            "Human"
+           ]
+          }
+         ],
+         "stackKind": "spell",
+         "zone": "stack",
+         "manaValue": {
+          "op": "<=",
+          "value": {
+           "q": "counters",
+           "on": {
+            "ref": "self"
+           },
+           "kind": "quest"
+          }
+         }
+        },
+        "from": "graveyard",
+        "oncePerTurn": true
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Varolz, the Scar-Striped",
+  "expect": "full",
+  "verified": "edh-next-59 review (rank 12,836 of the EDHREC top 20,000 held-out half, opened by the owner (commander request 2026-10-27, more cards 2026-10-30)), by hand against the Oracle text and the rules cited (CR 113.6, 601.3, 702, 400.7) (sta.edhn59.each.scavenge.manacost) : each creature card in your graveyard has scavenge with its mana cost as the cost (CR 702.97a); the second ability sacrifices another creature to regenerate it; CR cites from memory (cloud session), unverified",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "static",
+      "src": [
+       0
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "scavenge",
+            "costIsManaCost": true
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "src": [
+       1
+      ],
+      "prov": {
+       "by": "template"
+      },
+      "cost": {
+       "other": [
+        {
+         "kind": "sacrifice",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "other": true
+         },
+         "count": 1
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "regenerate",
+         "what": {
+          "ref": "self"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

@@ -15,6 +15,7 @@
  */
 import type { Game } from '../../core/game';
 import type { EffectStep } from '../../types/ability';
+import type { ManaCost } from '../../types/mana';
 import type { PlayerId } from '../../types/ids';
 import type { ObjHandle } from '../../types/state';
 import { resolutionCaster, resolutionLandPlayer } from '../cast-hook';
@@ -49,10 +50,15 @@ function uncancellable(g: Game): Game {
  * M6-12 (m6 design 7, `OP_FORMS`): the value form of `cast` this handler runs, as the walker writes it (model/cap-walk.ts): an alternative cost paid instead of
  * the mana cost (CR 118.9, 702.35b). Read by model/capabilities.ts.
  */
-export const OP_FORMS: readonly string[] = ['op:cast.costChange', 'op:cast.copy' /* FAST5X E26: a copy of the card created in exile and cast (CR 707.12) */, 'op:cast.play' /* FAST5X E26: a land is played (CR 305.9) */, 'op:cast.anyManaType' /* FAST5X E29: CR 609.4b */,
+export const OP_FORMS: readonly string[] = ['op:cast.costChange', 'op:cast.lifeManaValue' /* edh-next-49: CR 118.9, 202.3 */, 'op:cast.copy' /* FAST5X E26: a copy of the card created in exile and cast (CR 707.12) */, 'op:cast.play' /* FAST5X E26: a land is played (CR 305.9) */, 'op:cast.anyManaType' /* FAST5X E29: CR 609.4b */,
   'op:cast.graveyardInstead' /* Cloud r4-repl: "If that spell would be put into a graveyard, exile it instead", CR 614.1a */,
   'op:cast.maxManaValue' /* std-rq: "if that spell's mana value is 8 or less", CR 601.2, 202.3 */,
-  'op:cast.select' /* std-cardcopy-7: "cast up to three of the copies", "... with total mana value 6 or less from among the copies", CR 608.2d */];
+  'op:cast.exactManaValue' /* edh-cast-9: "if the two spells have the same mana value", CR 601.2, 202.3 */,
+  'op:cast.dropUncast' /* trek-21: a chosen card that can't be cast leaves its binding, CR 601.2, 608.2g */,
+  'op:cast.select' /* std-cardcopy-7: "cast up to three of the copies", "... with total mana value 6 or less from among the copies", CR 608.2d */,
+  'op:cast.copyCount' /* trek-14: "Copy that card X times ... You may cast the copies", CR 707.12, 707.10 */,
+  'op:cast.from' /* edh-next-50: "you may cast ~ from your graveyard" (only a card still in that graveyard), CR 601.2, 113.6m */, 'op:cast.copy.hand' /* edh-next-132: CR 707.12, a copy created in the hand */, 'op:cast.costChange.reduce.copy' /* edh-next-132: CR 601.2f, the copy's own reduction */,
+  'op:cast.energyManaValue' /* edh-d-100: CR 118.9, 202.3, 107.14 */];
 
 /**
  * FAST5X E26 (CR 707.12, 702.192a): "create a copy of [it] in exile. You may cast the copy without paying its mana cost": a copy of the card each handle stands
@@ -72,16 +78,20 @@ const hasLandFace = (g: Game, id: string): boolean => playableFaces(g, id).some(
 /** CR 712.12: has this card a face that is not a land (a modal double-faced card that is a spell on one face)? */
 const hasNonlandFace = (g: Game, id: string): boolean => playableFaces(g, id).some((f) => !f.types.includes('Land'));
 
-function copiesIn(cx: Parameters<StepHandler<Cast>>[0], st: Cast, zone: 'exile', who: PlayerId): ObjHandle[] {
+function copiesIn(cx: Parameters<StepHandler<Cast>>[0], st: Cast, zone: 'exile' | 'hand', who: PlayerId, reduce?: ManaCost): ObjHandle[] {
   const g = cx.g;
   const out: ObjHandle[] = [];
   for (const h of resolveObjs(cx, st.what)) {
     const info = readInfo(cx, h);
     const o = info?.object;
     if (!o || o.kind === 'ability' || o.kind === 'emblem' || !g.s.defs[o.defId]) continue;
-    const copy = performCreateCardCopy(g, o, who, zone);
-    g.log(`${g.player(who).name} creates a copy of ${g.nameOf(copy)} in exile.`, { rules: ['CR 707.12', 'CR 702.192a'], level: 'action' });
-    out.push({ id: copy, zone });
+    // trek-14 (CR 707.12, 707.10): several copies of each card ("Copy that card X times"); an amount that fails to determine creates none (CR 608.2b)
+    const n = st.count === undefined ? 1 : Math.floor(evalQty(cx, st.count) ?? 0);
+    for (let i = 0; i < n; i++) {
+      const copy = performCreateCardCopy(g, o, who, zone, reduce);
+      g.log(`${g.player(who).name} creates a copy of ${g.nameOf(copy)} in ${zone === 'hand' ? 'their hand' : 'exile'}.`, { rules: ['CR 707.12', 'CR 702.192a'], level: 'action' });
+      out.push({ id: copy, zone });
+    }
   }
   return out;
 }
@@ -89,21 +99,38 @@ function copiesIn(cx: Parameters<StepHandler<Cast>>[0], st: Cast, zone: 'exile',
 export const cast: StepHandler<Cast> = (cx, st) => {
   const ch = st.costChange;
   const alternative = ch && ch.kind === 'set' && ch.cost !== undefined && ch.mana === undefined && ch.generic === undefined && !st.free ? { name: ch.name ?? 'alternative', cost: ch.cost } : undefined;
-  if (ch && !alternative) return byHand(cx, st, 'casting with a changed cost during a resolution is not automated yet (CR 601.2f)');
+  // edh-next-49 (CR 118.9, 202.3): "by paying life equal to its mana value rather than paying its mana cost" (`costChange: {kind: 'set', life: 'manaValue'}`)
+  const lifeMV = ch !== undefined && ch.kind === 'set' && ch.life === 'manaValue' && ch.energy === undefined && ch.cost === undefined && ch.mana === undefined && ch.generic === undefined && !st.free;
+  // edh-next-132 (CR 601.2f, 707.12): a copy created to be cast with a reduction of its own ("That copy costs {2} less to cast"): the copy carries the reduction (GameObject.castReduce)
+  const copyReduce = ch !== undefined && ch.kind === 'reduce' && ch.mana !== undefined && ch.generic === undefined && ch.cost === undefined && st.copyIn === 'hand' && !st.free ? ch.mana : undefined;
+  // edh-d-100 (CR 118.9, 202.3, 107.14; Amped Raptor): "by paying an amount of {E} equal to its mana value rather than paying its mana cost" (`costChange: {kind: 'set', energy: 'manaValue'}`)
+  const energyMV = ch !== undefined && JSON.stringify(ch) === '{"kind":"set","energy":"manaValue"}' && !st.free;
+  if (ch && !alternative && !lifeMV && copyReduce === undefined && !energyMV) return byHand(cx, st, 'casting with a changed cost during a resolution is not automated yet (CR 601.2f)');
   const caster = resolutionCaster();
   if (!caster) return byHand(cx, st, 'the casting rules are not loaded in this module graph (CR 608.2g)');
   const g = cx.g;
   const who = firstPlayer(cx, st.who);
   if (who === undefined) return NOTHING;
   const opts = {
-    free: st.free === true, ...(st.transformed === true ? { transformed: true } : {}), ...(alternative ? { alternative } : {}), // CR 712.11a; M6-12: CR 118.9
+    free: st.free === true, ...(st.transformed === true ? { transformed: true } : {}), ...(alternative ? { alternative } : {}), ...(lifeMV ? { lifeManaValue: true as const } : {}), ...(energyMV ? { energyManaValue: true as const } : {}), // CR 712.11a; M6-12: CR 118.9; edh-d-100
     ...(st.copyIn !== undefined ? { copy: true as const } : {}), // FAST5X E26
     ...(st.anyManaType === true ? { anyManaType: true } : {}), // FAST5X E29: CR 609.4b
     // std-rq: only a resulting spell of at most that mana value (CR 601.2, 202.3); std-rx31: a quantity is read as the step runs (CR 608.2h)
     ...(st.maxManaValue !== undefined ? { maxManaValue: evalQty(cx, st.maxManaValue) ?? -1 } /* an unknown amount casts nothing */ : {}),
+    ...(st.exactManaValue !== undefined ? { exactManaValue: evalQty(cx, st.exactManaValue) ?? -1 } /* edh-cast-9: an unknown amount casts nothing */ : {}),
   };
   const spells: ObjHandle[] = [];
-  let objects = st.copyIn !== undefined ? copiesIn(cx, st, st.copyIn, who) : actOn(cx, st.what); // FAST5X E26: cast a copy (CR 707.12)
+  let objects = st.copyIn !== undefined ? copiesIn(cx, st, st.copyIn, who, copyReduce) : actOn(cx, st.what); // FAST5X E26: cast a copy (CR 707.12)
+  // edh-zones-12 (CR 608.2g, 707.12; Scryfall ruling of Arcane Bombardment/Mizzix's Mastery: "you choose the order of copies as you cast them"): several copies to cast one by one
+  // (no choice among them): the caster orders them first, as a loop over objects does (CR 608.2f)
+  if (st.copyIn !== undefined && st.select === undefined && objects.length > 1) {
+    const byId = new Map(objects.map((h) => [h.id, h]));
+    const ids = g.choose({
+      kind: 'order', player: who, prompt: 'Choose the order in which to cast the copies.',
+      items: objects.map((h) => ({ id: h.id, label: g.nameOf(h.id) })), rules: ['CR 608.2g'],
+    }).ids;
+    objects = ids.flatMap((id) => { const h = byId.get(id); return h ? [h] : []; });
+  }
   // std-cardcopy-7 (CR 608.2d, 202.3): "cast up to three of the copies", "any number of spells with total mana value 6 or less from among the copies": one choice of
   // the objects to cast among those that can be cast now, with the limits read once (CR 608.2h); each chosen one is then cast without asking again
   let chosenAll = false;
@@ -116,15 +143,17 @@ export const cast: StepHandler<Cast> = (cx, st) => {
     const limit = total === undefined ? undefined : { stat: 'manaValue' as const, op: '<=' as const, value: total, values: Object.fromEntries(ids.map((id) => [id, groupStat(g.s, { kind: 'object', id }, 'manaValue')])) };
     const picked = max === 0 ? [] : g.choose({
       kind: 'chooseObjects', player: who, prompt: `Choose the spells to cast${opts.free ? ' without paying their mana costs' : ''}${total !== undefined ? ` (total mana value ${total} or less)` : ''}.`,
-      options: ids, min: st.optional === false ? max : 0, max, ...(limit !== undefined ? { limit } : {}), rules: ['CR 608.2d', 'CR 608.2g'],
+      options: ids, min: st.optional === false ? max : 0, max, ...(limit !== undefined ? { limit } : {}), ...(st.copyIn === undefined ? { ordered: true } : {}), rules: ['CR 608.2d', 'CR 608.2g'],
     }).ids;
     objects = picked.map((id) => castable.find((h) => h.id === id)!);
     chosenAll = true;
   }
+  let landsPlayed = 0;
   for (const h of objects) {
     const o = g.s.objects[h.id];
     // only cards that aren't spells or permanents can be cast (CR 601.2a); FAST5X E26: or the copy of a card this step just created (CR 707.12)
     if (!o || (o.kind !== 'card' && !(st.copyIn !== undefined && o.kind === 'spellCopy')) || o.zone === 'stack' || o.zone === 'battlefield') continue;
+    if (st.from !== undefined && o.zone !== st.from) continue; // edh-next-50 (CR 601.2, 400.7): "cast ~ from your graveyard": a card that is no longer there is not cast
     const name = g.nameOf(o.id);
     // FAST5X E26 (CR 305.9, 702.75a): "play" a land card: it is played as a land (never cast) as part of this resolution, if the player can play one now
     if (st.play === true && hasLandFace(g, o.id)) {
@@ -145,7 +174,7 @@ export const cast: StepHandler<Cast> = (cx, st) => {
         if (choice === undefined) continue;
         if (choice === 'land') {
           const id = lands.play(g, who, o.id);
-          if (id) rebase(cx, h.id, { id, zone: 'battlefield' }); // CR 400.7h
+          if (id) { rebase(cx, h.id, { id, zone: 'battlefield' }); landsPlayed++; } // CR 400.7h; edh-c-114 (CR 608.2c, 305.1): a land played this way is "done" for "If you don't, ..." (Djinn of Wishes)
           continue;
         }
         // 'cast': below, without asking again
@@ -160,6 +189,8 @@ export const cast: StepHandler<Cast> = (cx, st) => {
     const denial = caster.check(g, who, o.id, opts);
     if (denial) {
       g.log(`${g.player(who).name} can't cast ${name} now: ${denial.message}`, { rules: ['CR 608.2g', ...denial.rules], level: 'info' });
+      // trek-21 (CR 601.2, 608.2g; Lieutenant Nyota Uhura review): a card that could not be cast is not cast: a later "the rest" counts it (the binding keeps only the spells cast)
+      if (st.dropUncast === true && st.what.ref === 'bound') { const own = cx.bindings.get(st.what.name); if (own) own.objects = own.objects.filter((x) => x.id !== h.id); } // (only the choice's own binding: the group it was chosen from keeps the card)
       continue;
     }
     if (st.optional && !chosenAll) {
@@ -185,5 +216,5 @@ export const cast: StepHandler<Cast> = (cx, st) => {
       effects: [{ s: 'replace', replaces: { ev: 'zoneChange', subject: { is: { ref: 'fixed', objects: [{ id: h.id, zone: h.zone }] }, ...(gi.yours === true ? { owner: 'you' } : {}), ...(gi.types !== undefined ? { types: [...gi.types] } : {}) }, from: 'stack', to: 'graveyard' }, body: { b: 'modify', destination: gi.to } }],
     })));
   }
-  return did(spells.length);
+  return did(spells.length + landsPlayed);
 };

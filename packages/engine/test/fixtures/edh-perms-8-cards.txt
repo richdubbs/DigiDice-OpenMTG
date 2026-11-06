@@ -1,0 +1,10 @@
+# edh-perms-8 (Commander lane edh-perms; test/cloud/edh-perms-8, golden edh-perms-8-review.json)
+# an Aura that returns attached at the next end step, a list of exact mana values, counters put then doubled, the tokens created this turn, a {T}-cost ability filter,
+# the sacrificed creature's power and toughness, counters equal to each creature's own toughness
+Canopy Gargantuan
+Fangs of Kalonia
+Gift of Immortality
+Kozilek's Unsealing
+Magewright's Stone
+Momentous Fall
+Thalisse, Reverent Medium

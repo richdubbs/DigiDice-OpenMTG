@@ -16,6 +16,8 @@ export interface Clause {
   have?: string;
   /** The verb phrase without its subject, third person ("loses 1 life"): what follows "and" when the same player did the step before ("draws a card and loses 1 life"). */
   pred?: string;
+  /** edhd36: the predicate said with the singular "they" (plural verb), "they tap all lands they control and lose all unspent mana" (steps-util.ts#byPlayer, joined by steps.ts). */
+  predThey?: string;
   /** Display preference: start a sentence here (Oracle writes "An opponent separates them into two piles. Put one pile ..."). */
   breakBefore?: boolean;
   /** The clause carries sentence breaks or conditionals of its own and must not be joined by "and" or a comma. */
@@ -47,6 +49,21 @@ export interface Clause {
    * said "... and you <this text>" ("that player discards a card and you untap all lands you control", Sword of Feast and Famine). The text without "you".
    */
   andYou?: string;
+  /**
+   * edh-players-8 (CR 608.2c; family comma-and-until-lead): a plain instruction that opens with its duration ("until your next turn, your life total can't change and ...") that
+   * Oracle also joins to the instruction before it by ", and" ("all permanents you control phase out, and until your next turn, ..." Perch Protection).
+   */
+  commaAnd?: boolean;
+  /**
+   * edh-players-11 (CR 608.2c, 608.2d; family may-group-then): the `may` of a group of players whose doers a later instruction names ("Each player may draw a card, then each
+   * player who drew a card this way gains 1 life", Kwain): the next instruction may follow it after ", then" as well as after a sentence break.
+   */
+  thenGroup?: boolean;
+  /**
+   * edh-players-14 (CR 608.2c, 701.9a; family discard-then-who-didnt): a sentence of its own about the players who did not do what the instruction before made them do
+   * ("each opponent discards a card, then each opponent who didn't discard a nonland card this way loses 3 life", Kroxa) that Oracle also joins to it after ", then".
+   */
+  commaThenWho?: boolean;
 }
 
 export const EMPTY_CLAUSE: Clause = { imp: '', sub: '', actor: null, empty: true };

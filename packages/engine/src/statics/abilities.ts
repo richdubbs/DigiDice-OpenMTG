@@ -15,7 +15,7 @@
  */
 import type { AbilityDef, ActivatedAbilityDef, KeywordAbilityDef } from '../types/ability';
 import type { Color } from '../types/mana';
-import { MANA_COST_OF_FACE_CAST } from '../keywords/expand';
+import { ofFaceCast } from '../keywords/expand';
 import { keywordRegistry } from '../keywords/registry';
 import type { ExpandContext } from '../keywords/types';
 import type { BaseChars, Chars } from '../rules/characteristics';
@@ -198,8 +198,10 @@ export function grantedAbilities(effectId: string, timestamp: number, defs: read
     out.push({ key, origin: 'granted', face: c.face, index: -1, def, grantedBy: effectId, grantedAt: timestamp });
     if (def.kind !== 'keyword') return;
     // r5-cost: for costIsManaCost; trek-7: except where the cost is that of the face cast (keywords/expand.ts#MANA_COST_OF_FACE_CAST: nothing is expanded here, castOptionsOf does it)
-    const ofFace = def.costIsManaCost === true && def.cost === undefined && MANA_COST_OF_FACE_CAST.has(def.keyword);
-    const ctx: ExpandContext = { granted: true, faceName: c.names[c.face] ?? c.name, types: c.types, keyPrefix: key, ...(c.manaCost !== undefined && !ofFace ? { manaCost: c.manaCost } : {}) };
+    const ofFace = ofFaceCast(def);
+    // edh-next-65 (CR 702.56b; Djinn Illuminatus ruling 2006-02-01): every replicate instance is paid and copies on its own, so a granted one has a name of its own (cost and trigger share it)
+    const own = def.keyword === 'replicate' ? { ordinal: 1000 + timestamp * 8 + n } : {};
+    const ctx: ExpandContext = { granted: true, faceName: c.names[c.face] ?? c.name, types: c.types, keyPrefix: key, ...own, ...(c.manaCost !== undefined && !ofFace ? { manaCost: c.manaCost } : {}) };
     expansionOf(def, ctx).forEach((x, j) => out.push({ key: `${key}:${j}`, origin: 'granted', face: c.face, index: -1, def: x, grantedBy: effectId, grantedAt: timestamp, parent: key }));
   });
   return out;

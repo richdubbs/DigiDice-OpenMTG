@@ -51,6 +51,7 @@ Thumbs.db
 /docs/research/
 /docs/design/*
 !/docs/design/m5-ability-model.md
+!/docs/design/shortcuts.md
 /docs/coverage/*
 !/docs/coverage/backlog-R1.txt
 

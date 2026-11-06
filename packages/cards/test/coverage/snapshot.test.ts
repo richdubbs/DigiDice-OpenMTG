@@ -31,13 +31,13 @@ const g10 = (before: CardDef, after: CardDef): ReturnType<typeof diffSnapshots> 
 
 // M12F (STATUS "Wave M12" gap 9): whole-fixture work (compiling, the CLI, the smoke run) sits near Vitest's 5 s default under load: an explicit
 // timeout for every test here (a test's own longer one still applies).
-describe('WP25 G10: the automated parts of manual units are protected (design 10.2)', { timeout: 60_000 }, () => {
+describe('WP25 G10: the automated parts of manual units are protected (design 10.2)', { timeout: 240_000 }, () => {
   const tap4 = { mana: [{ kind: 'generic', amount: 4 }], tap: true };
   const manualActivated = (cost: object, extra: object = {}) => ({ kind: 'manual', shape: 'activated', text: 'Do the thing.', reason: 'no template matches the sentence', cost, ...extra });
   it('CR 602.1, 118.3: a manual activated ability whose cost goes from {4},{T} to {4} is a violation (the engine charges that cost)', () => {
     const d = g10(withAbility(manualActivated(tap4)), withAbility(manualActivated({ mana: [{ kind: 'generic', amount: 4 }] })));
     expect(d.violations.map((v) => [v.kind, v.before])).toEqual([['changed', 'm']]);
-  }, 60_000); // the first test compiles the fixture set (fixtureRuns, cached for the file): about 5 s alone, more on a loaded machine
+  }, 240_000); // the first test compiles the fixture set (fixtureRuns, cached for the file): about 5 s alone, more on a loaded machine
   it('CR 602.5d: a manual ability that loses its sorcery-speed restriction is a violation', () => {
     const d = g10(withAbility(manualActivated(tap4, { sorcerySpeed: true })), withAbility(manualActivated(tap4)));
     expect(d.violations.map((v) => v.kind)).toEqual(['changed']);
@@ -61,7 +61,7 @@ describe('WP25 G10: the automated parts of manual units are protected (design 10
   });
 });
 
-describe('WP25 G10: masks are placed on the canonical form (canonicalize sorts the operands of all/any)', { timeout: 60_000 }, () => {
+describe('WP25 G10: masks are placed on the canonical form (canonicalize sorts the operands of all/any)', { timeout: 240_000 }, () => {
   const guarded = (types: string[]) => ({
     kind: 'spell', text: 'If you control a creature and the moon is full, draw a card.',
     effect: { targets: [], steps: [{ op: 'if', cond: { cond: 'all', of: [{ cond: 'exists', filter: { types, controller: 'you' } }, { cond: 'ask', text: 'the moon is full' }] }, then: [{ op: 'draw', who: { ref: 'you' }, count: 1 }] }] },
@@ -82,7 +82,7 @@ describe('WP25 G10: masks are placed on the canonical form (canonicalize sorts t
   });
 });
 
-describe('WP25 snapshot header: what produced it', { timeout: 60_000 }, () => {
+describe('WP25 snapshot header: what produced it', { timeout: 240_000 }, () => {
   it('records content hashes of the template set and the capability set, and the revision; a different template set has a different hash', () => {
     const e = createCoverageEngine({ templates: BOOTSTRAP_TEMPLATES });
     const runs = fixtureCards().slice(0, 5).map((c) => e.run(c));
@@ -105,7 +105,7 @@ function snap(templates: readonly Template[], cards: readonly OracleCard[]): { s
 const without = (id: string): Template[] => BOOTSTRAP_TEMPLATES.filter((t) => t.id !== id);
 const live = (runs: readonly CardRun[]): Map<string, CardRun> => new Map(runs.map((r) => [cardKey(r), r]));
 
-describe('WP25 snapshot format', { timeout: 60_000 }, () => {
+describe('WP25 snapshot format', { timeout: 240_000 }, () => {
   it('keys are sorted at every level; serialize and parse round-trip; one card per line; no Oracle text', () => {
     expect(stableJson({ b: 1, a: { d: [2, { z: 1, y: 2 }], c: null } })).toBe('{"a":{"c":null,"d":[2,{"y":2,"z":1}]},"b":1}');
     const { snapshot } = snap(BOOTSTRAP_TEMPLATES, fixtureCards().slice(0, 40));
@@ -200,7 +200,7 @@ describe('WP25 snapshot format', { timeout: 60_000 }, () => {
   });
 });
 
-describe('WP25 guard G10 on the fixture set', { timeout: 60_000 }, () => {
+describe('WP25 guard G10 on the fixture set', { timeout: 240_000 }, () => {
   const cards = fixtureCards();
   it('adding a template changes only formerly-manual units: no violation, some cards move up (eff.draw.you)', () => {
     const before = snap(without('eff.draw.you'), cards);
@@ -210,7 +210,7 @@ describe('WP25 guard G10 on the fixture set', { timeout: 60_000 }, () => {
     expect(d.improvedUnits).toBeGreaterThan(0);
     expect(d.up.length).toBeGreaterThan(0);
     expect(d.down).toEqual([]);
-  }, 60_000); // two compiles of the fixture set: well over vitest's 5 s default when the suite runs in parallel
+  }, 240_000); // two compiles of the fixture set: well over vitest's 5 s default when the suite runs in parallel
   it('removing it is caught: every formerly automated unit that used it is a violation (changed, removed or demoted)', () => {
     const before = snap(BOOTSTRAP_TEMPLATES, cards);
     const after = snap(without('eff.draw.you'), cards);
@@ -218,7 +218,7 @@ describe('WP25 guard G10 on the fixture set', { timeout: 60_000 }, () => {
     expect(d.violations.length).toBeGreaterThan(0);
     expect(d.down.length).toBeGreaterThan(0);
     expect(d.fullChanged.length).toBeGreaterThan(0);
-  }, 60_000);
+  }, 240_000);
   it('the same inputs give an identical snapshot and an empty diff', () => {
     const a = snap(BOOTSTRAP_TEMPLATES, cards).snapshot;
     const b = snap(BOOTSTRAP_TEMPLATES, cards).snapshot;
@@ -226,10 +226,10 @@ describe('WP25 guard G10 on the fixture set', { timeout: 60_000 }, () => {
     const d = diffSnapshots(a, b);
     expect(d.violations).toEqual([]);
     expect(d.up.length + d.down.length + d.improvedUnits).toBe(0);
-  }, 60_000);
+  }, 240_000);
 });
 
-describe('WP25 guard G10 for partial units: only the formerly manual nodes may change', { timeout: 60_000 }, () => {
+describe('WP25 guard G10 for partial units: only the formerly manual nodes may change', { timeout: 240_000 }, () => {
   // invented wording (design 6.10): the second sentence has no template in the bootstrap set and no modifier word, so the unit is partial (design 6.7)
   const card = synthetic('Quiet Bargain', 'Sorcery', 'Draw two cards. You gain 3 life.');
   const gain = tpl('test.wp25.gainlife', 'effect', '{p:Player} gain[s] {n:Qty} life', { op: 'gainLife', who: '$p', amount: '$n' });

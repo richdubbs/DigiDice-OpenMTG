@@ -293,6 +293,8 @@ describe('IssueCode live-position, fixed-in-card-data, spell-target-count', () =
     const mod = (self: boolean): AbilityDef => stat([{ s: 'costMod', applies: { self, caster: 'you' }, change: { kind: 'increase', generic: { q: 'spellTargetCount' } } }]);
     clean(mod(true));
     only(mod(false), 'spell-target-count');
+    // edh-next-58 (CR 601.2c, 601.2f; Hinata, Dawn-Crowned): also in a modifier of other spells (`applies.spells`), which reads the targets of the spell it is applied to
+    clean(stat([{ s: 'costMod', applies: { spells: {}, caster: 'you' }, change: { kind: 'reduce', mana: [{ kind: 'generic', amount: 1 }], times: { q: 'spellTargetCount' } } }]));
     only(spell([draw({ count: { q: 'spellTargetCount' } })]), 'spell-target-count');
   });
 });
@@ -329,7 +331,12 @@ describe('abilities nested in a node are their own scope', () => {
     const granted = { kind: 'triggered', text: 'x', trigger: { on: [{ ev: 'step', step: 'upkeep' }] }, effect: { targets: [], steps: [{ op: 'tap', what: { ref: 'bound', name: 'c' } }] } };
     const pick = { op: 'chooseObjects', who: { ref: 'you' }, from: { ref: 'each', filter: {} }, min: 0, max: 1, as: 'c' };
     const grant = { op: 'effect', duration: { d: 'permanent' }, effects: [cont([{ layer: 6, add: [granted] }], { affects: { ref: 'bound', name: 'c' } })] };
-    const issues = validateAbility(spell([pick, grant]));
+    // combined copy: edh-d-91 (Timothar, Baron of Bats; model/lint-flow.ts `outer`) lets a granted ability name what the granting resolution bound (effects/handlers/lasting-fix.ts
+    // fixes it then), so `c` is accepted; a name nobody binds is still reported at its nested path
+    expect(validateAbility(spell([pick, grant]))).toEqual([]);
+    const strange = { ...granted, effect: { targets: [], steps: [{ op: 'tap', what: { ref: 'bound', name: 'nobody' } }] } };
+    const grant2 = { op: 'effect', duration: { d: 'permanent' }, effects: [cont([{ layer: 6, add: [strange] }], { affects: { ref: 'bound', name: 'c' } })] };
+    const issues = validateAbility(spell([pick, grant2]));
     expect(issues.map((i) => [i.code, i.path])).toEqual([['unbound-name', '/effect/steps/1/effects/0/mods/0/add/0/effect/steps/0/what']]);
   });
 });

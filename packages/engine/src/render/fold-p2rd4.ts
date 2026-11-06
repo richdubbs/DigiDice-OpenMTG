@@ -12,6 +12,8 @@ import type { RenderState } from './state';
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 /** render/fold.ts#SOURCE_CHOICE_ZONES (FAST5 T36, CR 609.7a), said again here: a value import of fold.ts would be an import cycle (design 5.4). */
 const SOURCE_CHOICE_ZONES = ['battlefield', 'stack'];
+/** edhd67 (CR 609.7a): the zones of the newer source choices (render/fold.ts#SOURCE_CHOICE_ZONES, with the command zone and the `damageSource` reading). */
+const SOURCE_CHOICE_ZONES_CMD = ['battlefield', 'stack', 'command'];
 
 /**
  * "The next time an artifact source of your choice would deal damage to you this turn, prevent that damage." (Rune of Protection: Artifacts), "... a black or red
@@ -26,16 +28,21 @@ function describedSourceOfChoiceShield(list: EffectStep[], i: number, st: Render
   if (c.from.ref !== 'each' || !('filter' in c.from)) return null;
   const f = c.from.filter;
   const desc = f.anyOf?.length === 1 ? f.anyOf[0]! : undefined;
-  if (desc === undefined || !same(f, { zone: SOURCE_CHOICE_ZONES, anyOf: [desc] })) return null;
+  // edhd67: with the command zone and `damageSource` (Penance), the choice of the newer templates; without them, the older (Rune of Protection: Artifacts)
+  const newer = c.damageSource === true;
+  if (desc === undefined || !same(f, { zone: newer ? SOURCE_CHOICE_ZONES_CMD : SOURCE_CHOICE_ZONES, anyOf: [desc] })) return null;
+  if (!newer && c.damageSource !== undefined) return null;
   if (e?.op !== 'effect' || e.guard !== undefined || e.as !== undefined || e.effects.length !== 1 || e.duration === undefined) return null;
   const r = e.effects[0]!;
   if (r.s !== 'replace' || r.condition !== undefined || r.optional !== undefined || r.selfReplacement !== undefined || !same(r.shield, { uses: 1 })) return null;
   if (!same(r.body, { b: 'prevent', amount: 'all' })) return null;
-  if (!same(r.replaces, { ev: 'damage', source: { is: { ref: 'bound', name: c.as }, anyOf: [desc] }, recipient: { player: 'you' } })) return null;
+  // edhd67 (CR 609.7a, 615.1; Penance): the newer choice has no recipient, "would deal damage this turn" (to anything)
+  const source = { is: { ref: 'bound', name: c.as }, anyOf: [desc] };
+  if (!same(r.replaces, newer ? { ev: 'damage', source } : { ev: 'damage', source, recipient: { player: 'you' } })) return null;
   if (list.slice(i + 2).some((x) => JSON.stringify(x).includes(`"name":${JSON.stringify(c.as)}`))) return null;
   const dur = K.dur(e.duration, st);
   const which = K.np(desc as ObjectFilter, st, { det: 'a', head: 'source' });
-  return { clauses: [plain(`the next time ${which} of your choice would deal damage to you${dur ? ` ${dur}` : ''}, prevent that damage`)], consumed: 2 };
+  return { clauses: [plain(`the next time ${which} of your choice would deal damage${newer ? '' : ' to you'}${dur ? ` ${dur}` : ''}, prevent that damage`)], consumed: 2 };
 }
 
 /** The folds of p2-replace-damage-4 (render/fold.ts#foldAt). */

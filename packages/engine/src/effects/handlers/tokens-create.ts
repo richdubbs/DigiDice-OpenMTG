@@ -17,10 +17,11 @@ import { propose } from '../propose';
 import { resolvePlayers } from '../refs';
 import { tokenAttachment } from './tokens-attach';
 import { tokenCardDef, type TokenSpec } from './token-defs';
-import { actOn, addToLink, bindAs, byHand, did, enterAttacking, enteringAttacking, NOTHING, wholeNumber } from './zones-util';
+import { readFor, readsEachPlayer } from './cards-util';
+import { actOn, addToLink, bindAs, byHand, did, enterAttacking, enteringAttacking, enterBlocking, NOTHING, wholeNumber } from './zones-util';
 
 /** cmd1: the `feature:` names of this handler: a token put onto the battlefield attacking a named player (`attacking: {defender}`, CR 508.4). */
-export const TOKEN_FEATURES: readonly string[] = ['createToken.attackingWhom', 'createToken.exceptReplaced'];
+export const TOKEN_FEATURES: readonly string[] = ['createToken.attackingWhom', 'createToken.exceptReplaced', 'createToken.blocking' /* edh-combat-4 */, 'createToken.perPlayerCount' /* edh-c-27 */, 'createToken.manaCost' /* edh-next-64 */];
 
 type CreateToken = Extract<EffectStep, { op: 'createToken' }>;
 
@@ -52,8 +53,11 @@ const createTokenStep: StepHandler<CreateToken> = (cx, st) => {
     bindAs(cx, st.as, []);
     return NOTHING;
   };
-  const n = wholeNumber(cx, st.count);
-  if (n === undefined || n === 0) return none();
+  // edh-c-27 (CR 608.2e, 101.4; Waiting in the Weeds): "Each player creates a 1/1 Cat token for each untapped Forest they control": the count is read for each player of the group
+  // (feature:createToken.perPlayerCount), as draw and discard read theirs
+  const perPlayer = readsEachPlayer(st.who, st.count);
+  const n0 = perPlayer ? 0 : wholeNumber(cx, st.count);
+  if (!perPlayer && (n0 === undefined || n0 === 0)) return none();
 
   // The token's characteristics, evaluated now (CR 608.2h). A power or toughness that fails to determine creates nothing (CR 608.2b).
   const { power, toughness, ...rest } = st.token;
@@ -71,12 +75,18 @@ const createTokenStep: StepHandler<CreateToken> = (cx, st) => {
   const def = tokenCardDef(spec);
   if ('reason' in def) return byHand(cx, st, def.reason);
   // pc-tokens-2 (CR 614.5, 111.1; Academy Manufactor): inside the replacement of a token creation, the step that would make the very token being replaced is skipped (it is made by the event itself)
+  // edh-next-46 (CR 614.5, 111.10b; Bilbo, Fellow Conspirator): a token copy of a Food that is being replaced is the Food of "a Food token and a Treasure token" too: the step skips a token that has every subtype of the predefined token it would make
   if (st.exceptReplaced === true && cx.event?.token === def.id) return none();
+  if (st.exceptReplaced === true && cx.event?.token !== undefined) {
+    const evFace = cx.g.s.defs[cx.event.token]?.faces[0];
+    const mine = def.faces[0]?.subtypes ?? [];
+    if (evFace !== undefined && mine.length > 0 && mine.every((t) => (evFace.subtypes ?? []).includes(t))) return none();
+  }
 
   // How each token enters (CR 111.4, 614.1c): tapped, with counters, attached to an object.
   const enter: DestinationFacts = {};
   if (st.tapped || cx.insteadTapped === true) enter.tapped = true;
-  const counters = (st.counters ?? []).map((c) => ({ kind: c.kind, count: wholeNumber(cx, c.count) ?? 0 })).filter((c) => c.count > 0);
+  const counters = [...(st.counters ?? []).map((c) => ({ kind: c.kind, count: wholeNumber(cx, c.count) ?? 0 })), ...(cx.insteadCounters ?? [])].filter((c) => c.count > 0); // edh-fix-1
   if (counters.length > 0) enter.counters = counters;
 
   // What each player's token enters attached to, decided before any token is created (design 8.6 stage 3). The token's controller is the player who creates
@@ -101,6 +111,8 @@ const createTokenStep: StepHandler<CreateToken> = (cx, st) => {
   g.addDef(def); // copy-on-write, frozen (ARCHITECTURE "Engine principles" 2); the performer finds it by id
   const created: ObjHandle[] = [];
   for (const [p, where] of attachTo) {
+    const n = perPlayer ? readFor(cx, p, () => wholeNumber(cx, st.count)) ?? 0 : n0!;
+    if (n === 0) continue;
     const mark = g.events.length;
     const facts: DestinationFacts = { ...enter, ...(where !== null ? { attachTo: where } : {}) };
     const ok = propose(g, { ev: 'createToken', player: p, count: n, token: def.id, ...(Object.keys(facts).length > 0 ? { enter: facts } : {}) }); // CR 111.2: the creator owns and controls it
@@ -111,6 +123,11 @@ const createTokenStep: StepHandler<CreateToken> = (cx, st) => {
   }
   // CR 508.4: "tapped and attacking"; cmd1: "... attacking that opponent" names the player they attack (zones-util.ts#enterAttacking)
   if (st.attacking) enterAttacking(cx, created.map((h) => h.id), st.attacking);
+  // edh-combat-4 (CR 506.3e, 509.3a): "that's blocking that creature" (Brimaz): the tokens block the attacker the step names, if it is still attacking their controller
+  if (st.blocking) {
+    const attacker = actOn(cx, st.blocking).find((h) => h.zone === 'battlefield');
+    if (attacker) enterBlocking(cx, created.map((h) => h.id), attacker.id);
+  }
   addToLink(cx, st.link, created); // CR 607.2a: added to what earlier resolutions created
   // Merge wave 8 (audit D1, CR 111.1, 608.2c, 122.1): the name a token creation binds ("it", "that token", "them") stands for the tokens it created, never for
   // the players who created them: bound with them, "Put X +1/+1 counters on it" also put the counters on the player (effects/refs.ts#resolveRecipients)

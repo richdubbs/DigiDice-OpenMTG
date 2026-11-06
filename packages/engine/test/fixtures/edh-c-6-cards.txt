@@ -1,0 +1,11 @@
+# edh-c-6 (Commander effort, EDHREC ranks 18,126-18,750): see docs in the round record. After editing: npm run cards -- fixtures
+Street Spasm
+Unified Will
+Evasive Action
+Pack Attack
+Torrent of Souls
+Vigor Mortis
+Necromantic Summons
+Incremental Growth
+Sigil Captain
+Chittering Rats

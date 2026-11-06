@@ -34,8 +34,10 @@ export interface IndexedReplacement {
   /** The ability's key (statics/abilities.ts: `p:` printed, `k:` keyword expansion, `g:` granted). */
   key: string;
   ability: StaticAbilityDef;
-  /** Index of the effect in `ability.effects`. */
+  /** Index of the effect in `ability.effects` (or, for an `otherwise` effect, `effects.length` plus its index in `ability.otherwise`). */
   index: number;
+  /** edh-c-108 (CR 611.3a): the effect is one of the ability's `otherwise` effects, which exist while its condition is false. */
+  otherwise?: true;
   effect: ReplacementDef;
 }
 
@@ -71,17 +73,26 @@ function entriesOf(o: GameObject, c: Chars, out: IndexedReplacement[]): void {
     ability.effects.forEach((effect, index) => {
       if (effect.s === 'replace' && isForeign(effect)) out.push({ object: o.id, zone: o.zone, key: a.key, ability, index, effect });
     });
+    // edh-c-108 (CR 611.3a; Armament of Nyx): and the effects the ability has while its condition is false
+    (ability.otherwise ?? []).forEach((effect, i) => {
+      if (effect.s === 'replace' && isForeign(effect)) out.push({ object: o.id, zone: o.zone, key: a.key, ability, index: ability.effects.length + i, effect, otherwise: true });
+    });
   }
 }
 
 /** The entries bucketed by the event kind of their pattern; frozen (a memo hands the same value to every caller). */
 const bucket = (entries: readonly IndexedReplacement[]): ReplacementBuckets => {
   const m = new Map<EventPattern['ev'], IndexedReplacement[]>();
+  const put = (ev: EventPattern['ev'], e: IndexedReplacement): void => {
+    const list = m.get(ev);
+    if (list) list.push(e);
+    else m.set(ev, [e]);
+  };
   for (const e of entries) {
     Object.freeze(e);
-    const list = m.get(e.effect.replaces.ev);
-    if (list) list.push(e);
-    else m.set(e.effect.replaces.ev, [e]);
+    put(e.effect.replaces.ev, e);
+    // edh-d-86 (CR 119.4, 614.1a; Enduring Angel): "your life total would be reduced to 0 or less" also replaces a payment of life (the `payLife` proposal reads as an `action`)
+    if (e.effect.replaces.ev === 'life' && e.effect.replaces.toAtMost !== undefined) put('action', e);
   }
   for (const list of m.values()) Object.freeze(list);
   return m;
@@ -107,7 +118,7 @@ const KW_CTX = { granted: false, faceName: '', types: [] as string[], keyPrefix:
 
 /** Is this ability (or, for a keyword, what the keyword library expands it into: dredge, CR 702.52a) a static with a foreign replacement effect? */
 const hasForeign = (a: AbilityDef): boolean =>
-  a.kind === 'static' ? a.effects.some((e) => e.s === 'replace' && isForeign(e)) : a.kind === 'keyword' ? expansionOf(a, KW_CTX).some(hasForeign) : false;
+  a.kind === 'static' ? [...a.effects, ...(a.otherwise ?? [])].some((e) => e.s === 'replace' && isForeign(e)) : a.kind === 'keyword' ? expansionOf(a, KW_CTX).some(hasForeign) : false;
 
 /** Does any face of the definition have a foreign replacement static (printed or a keyword's expansion)? Pure in the immutable definition. */
 function defHas(def: CardDef): boolean {

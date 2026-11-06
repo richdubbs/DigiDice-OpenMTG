@@ -1,0 +1,45 @@
+[
+  {
+    "id": "eff.edhd84.player.token.tapped.forEach.counterKind",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 110.5b",
+      "CR 122.1",
+      "CR 608.2h",
+      "CR 603.10a"
+    ],
+    "pattern": "{p:Player} create[s] ( a | an ) tapped {t:TokenDesc} for each {k:CounterKind} counter on {o:Obj}",
+    "build": {
+      "op": "createToken",
+      "who": "$p",
+      "count": {
+        "q": "counters",
+        "on": "$o",
+        "kind": "$k"
+      },
+      "token": "$t",
+      "tapped": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, its owner creates a tapped 2/2 black Zombie creature token for each fate counter on it."
+      },
+      {
+        "text": "When ~ dies, target opponent creates a tapped Treasure token for each time counter on it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, its owner creates a tapped 2/2 black Zombie creature token for each counter on it.",
+      "When ~ dies, its owner creates two tapped 2/2 black Zombie creature tokens for each fate counter on it.",
+      "When ~ dies, its owner creates a tapped 2/2 black Zombie creature token for each fate counter on target creature."
+    ]
+  }
+]

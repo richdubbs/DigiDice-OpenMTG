@@ -1,0 +1,1 @@
+{"name":"refused_03","before":{"a":{"b":[1,2]},"s":"x"},"ops":[{"op":"set","path":["a","b","k"],"value":1}],"error":"No element k to set at [\"a\",\"b\",\"k\"]."}

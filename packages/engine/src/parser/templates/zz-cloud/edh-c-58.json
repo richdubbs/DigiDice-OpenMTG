@@ -1,0 +1,292 @@
+[
+ {
+  "id": "eff.edhv58.pump.gains.choice4.leadDur",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 608.2d",
+   "CR 611.2c",
+   "CR 613.4c",
+   "CR 613.1f",
+   "CR 702.1"
+  ],
+  "pattern": "{d:Dur} , {o:Obj} gets {pt:PT} and gains your choice of {k1:Keyword} , {k2:Keyword} , {k3:Keyword} , or {k4:Keyword}",
+  "build": [
+   {
+    "op": "chooseValue",
+    "who": {
+     "ref": "you"
+    },
+    "what": "option",
+    "as": "keywordChoice",
+    "link": "keywordChoice",
+    "options": [
+     "$k1.text",
+     "$k2.text",
+     "$k3.text",
+     "$k4.text"
+    ]
+   },
+   {
+    "op": "if",
+    "cond": {
+     "cond": "chosen",
+     "link": "keywordChoice",
+     "equals": "$k1.text"
+    },
+    "then": [
+     {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": "$o",
+        "mods": [
+         {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+         },
+         {
+          "layer": 6,
+          "add": [
+           "$k1"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "op": "if",
+    "cond": {
+     "cond": "chosen",
+     "link": "keywordChoice",
+     "equals": "$k2.text"
+    },
+    "then": [
+     {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": "$o",
+        "mods": [
+         {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+         },
+         {
+          "layer": 6,
+          "add": [
+           "$k2"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "op": "if",
+    "cond": {
+     "cond": "chosen",
+     "link": "keywordChoice",
+     "equals": "$k3.text"
+    },
+    "then": [
+     {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": "$o",
+        "mods": [
+         {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+         },
+         {
+          "layer": 6,
+          "add": [
+           "$k3"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   },
+   {
+    "op": "if",
+    "cond": {
+     "cond": "chosen",
+     "link": "keywordChoice",
+     "equals": "$k4.text"
+    },
+    "then": [
+     {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": "$o",
+        "mods": [
+         {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+         },
+         {
+          "layer": 6,
+          "add": [
+           "$k4"
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "subject": "object",
+  "examples": [
+   {
+    "text": "Until end of turn, ~ gets -1/-1 and gains your choice of flying, reach, trample, or haste."
+   },
+   {
+    "text": "Until end of turn, target creature gets +1/+0 and gains your choice of lifelink, menace, vigilance, or deathtouch."
+   }
+  ],
+  "counterExamples": [
+   "Until end of turn, ~ gets -1/-1 and gains your choice of flying, reach, or haste.",
+   "Until end of turn, ~ gets -1/-1 and gains flying, reach, trample, or haste.",
+   "Until end of turn, ~ gets -1/-1 and gains your choice of flying, reach, trample, and haste."
+  ]
+ },
+ {
+  "id": "rep.edhv58.enters.counter.manaSpent",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 601.2h",
+   "CR 614.1c",
+   "CR 614.12",
+   "CR 122.6",
+   "CR 400.7d",
+   "CR 107.4"
+  ],
+  "pattern": "~ enters with (a | an) {k:CounterKind} counter on it for each mana spent to cast it",
+  "build": {
+   "kind": "static",
+   "zone": [
+    "stack",
+    "battlefield"
+   ],
+   "effects": [
+    {
+     "s": "replace",
+     "replaces": {
+      "ev": "zoneChange",
+      "subject": {
+       "self": true
+      },
+      "to": "battlefield"
+     },
+     "body": {
+      "b": "enters",
+      "counters": [
+       {
+        "kind": "$k",
+        "count": {
+         "q": "manaSpent"
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "~ enters with a charge counter on it for each mana spent to cast it."
+   },
+   {
+    "text": "~ enters with a +1/+1 counter on it for each mana spent to cast it."
+   }
+  ],
+  "counterExamples": [
+   "~ enters with a charge counter on it for each color of mana spent to cast it.",
+   "~ enters with a charge counter on it for each mana you control.",
+   "Target creature enters with a charge counter on it for each mana spent to cast it."
+  ]
+ },
+ {
+  "id": "eff.edhv58.base.each.whereX",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 608.2h",
+   "CR 611.2c",
+   "CR 613.4b",
+   "CR 107.3",
+   "CR 611.2a"
+  ],
+  "pattern": "{o:Objs} have base power and toughness {pt:BasePT} {d:Dur} , where X is {q:Qty}",
+  "build": {
+   "lower": "whereX",
+   "value": "$q",
+   "steps": [
+    {
+     "op": "effect",
+     "duration": "$d",
+     "effects": [
+      {
+       "s": "continuous",
+       "affects": "$o",
+       "mods": [
+        {
+         "layer": "7b",
+         "power": "$pt.p",
+         "toughness": "$pt.t"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  "subject": "object",
+  "priority": -1,
+  "examples": [
+   {
+    "text": "Creatures you control have base power and toughness X/X until end of turn, where X is the number of Clues you control."
+   },
+   {
+    "text": "Elves you control have base power and toughness X/X until end of turn, where X is the number of cards in your hand."
+   }
+  ],
+  "counterExamples": [
+   "Creatures you control have base power and toughness X/X, where X is the number of Clues you control.",
+   "Creatures you control have base power and toughness 2/2 until end of turn, where X is the number of Clues you control.",
+   "Elves you control have base power and toughness X/X until end of turn."
+  ]
+ }
+]

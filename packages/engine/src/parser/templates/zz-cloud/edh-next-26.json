@@ -1,0 +1,149 @@
+[
+  {
+    "id": "eff.edhn26.tap.andGoadIt",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 701.26a",
+      "CR 701.15a",
+      "CR 608.2c"
+    ],
+    "pattern": "tap {o:Obj} and goad it",
+    "build": [
+      {
+        "op": "tap",
+        "what": "$o"
+      },
+      {
+        "op": "action",
+        "action": "goad",
+        "who": {
+          "ref": "you"
+        },
+        "subject": "$o"
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "action:goad"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, tap up to one target creature and goad it."
+      },
+      {
+        "text": "Whenever you attack, tap target creature an opponent controls and goad it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, tap up to one target creature and goad ~.",
+      "When ~ enters, untap up to one target creature and goad it.",
+      "When ~ enters, tap up to one target creature and goad another target creature."
+    ]
+  },
+  {
+    "id": "eff.edhn26.token.virtuousRole.attached",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 111.10p",
+      "CR 303.4f",
+      "CR 303.7",
+      "CR 701.7a"
+    ],
+    "pattern": "create a virtuous role token attached to {o:Obj}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": {
+        "predefined": "Virtuous Role"
+      },
+      "attachTo": "$o"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, create a Virtuous Role token attached to target creature you control."
+      },
+      {
+        "text": "Whenever ~ attacks, create a Virtuous Role token attached to another target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, create two Virtuous Role tokens attached to target creature you control.",
+      "When ~ enters, create a Virtuous Role token.",
+      "When ~ enters, create a Wicked Role token attached to target creature you control."
+    ]
+  },
+  {
+    "id": "eff.edhn26.rollDie.d10",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2"
+    ],
+    "pattern": "roll a d10",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 10
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, roll a d10. You gain life equal to the result."
+      },
+      {
+        "text": "Whenever ~ attacks, roll a d10. Draw cards equal to the result."
+      }
+    ],
+    "counterExamples": [
+      "Roll a d12.",
+      "Roll two d10.",
+      "Roll a d10 and add 1."
+    ]
+  },
+  {
+    "id": "sta.edhn26.self.has.bushidoX.where",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.45a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "~ has bushido x , where x is {n:Qty}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "bushido",
+      "amount": "$n"
+    },
+    "consumes": [
+      "has"
+    ],
+    "examples": [
+      {
+        "text": "~ has bushido X, where X is the number of attacking creatures."
+      },
+      {
+        "text": "~ has bushido X, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "~ has bushido 2, where X is the number of attacking creatures.",
+      "~ has bushido X.",
+      "Creatures you control have bushido X, where X is the number of attacking creatures."
+    ]
+  }
+]

@@ -1,0 +1,11 @@
+# edh-c-51 (Commander effort, coordinator C, EDHREC ranks 23,501-24,000): see packages/engine/src/parser/templates/zz-cloud/edh-c-51.json. After editing: npm run cards -- fixtures
+Mu Yanling, Celestial Wind
+Ashen-Skin Zubera
+Final Punishment
+Persecute
+Tsabo's Decree
+Alaborn Zealot
+Jace's Defeat
+Imaginary Threats
+Display of Dominance
+Burrenton Forge-Tender

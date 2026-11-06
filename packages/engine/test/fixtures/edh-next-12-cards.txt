@@ -1,0 +1,7 @@
+# edh-next-12 (Commander lane edh-next, EDHREC ranks 5,001-6,500, fourth pass: engine statics): triple damage this turn, cast only during their own turns, flip two coins and ignore one, hands revealed, a spell cost floor, Damping Sphere. After editing: npm run cards -- fixtures
+Isengard Unleashed
+Dosan the Falling Leaf
+Krark's Thumb
+Telepathy
+Trinisphere
+Damping Sphere

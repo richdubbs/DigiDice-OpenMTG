@@ -132,7 +132,7 @@ describe('CR 702.190a-b: casting for the sneak cost; the permanent enters tapped
     s = resolveTop(castWith(s, 'Splinter, Hamato Yoshi', 'sneak'));
     const splinter = fieldId(s, 'Splinter, Hamato Yoshi');
     expect(s.objects[splinter]!.tapped).toBe(true);
-    expect(s.combat!.attackers).toEqual([{ id: splinter, defender: jace, defendingPlayer: 'p2', blockedBy: [], blocked: false }]);
+    expect(s.combat!.attackers).toEqual([{ id: splinter, defender: jace, defendingPlayer: 'p2', blockedBy: [], blocked: false, atPlaneswalker: true /* edh-d-90 (CR 506.4, 508.4): put onto the battlefield attacking a planeswalker */ }]);
   });
 
   it('CR 508.4a: when that planeswalker has left the battlefield, the creature enters tapped but is never attacking', () => {

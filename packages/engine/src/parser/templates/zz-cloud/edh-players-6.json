@@ -1,0 +1,672 @@
+[
+  {
+    "id": "sta.edhp6.loyalty.twiceEachTurn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.3",
+      "CR 602.5b",
+      "CR 606.1"
+    ],
+    "pattern": "you may activate the loyalty abilities of {f:Filter} twice each turn rather than only once",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "additionalActivation",
+          "keyword": "loyalty:twice",
+          "of": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "only",
+      "twice",
+      "each",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "You may activate the loyalty abilities of Jaces you control twice each turn rather than only once."
+      },
+      {
+        "text": "You may activate the loyalty abilities of legendary planeswalkers you control twice each turn rather than only once."
+      }
+    ],
+    "counterExamples": [
+      "You may activate the loyalty abilities of Jaces you control three times each turn rather than only once.",
+      "You may activate the loyalty abilities of Jaces you control twice each turn.",
+      "You may activate the loyalty abilities of Jaces you control twice each turn rather than only once unless you pay {2}."
+    ]
+  },
+  {
+    "id": "eff.edhp6.loyalty.onceMoreEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.3",
+      "CR 602.5b",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "for each {f:Filter} , you may activate one of its loyalty abilities once this turn as though none of its loyalty abilities have been activated this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "additionalActivation",
+          "keyword": "loyalty",
+          "of": "$f"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: For each Jace you control, you may activate one of its loyalty abilities once this turn as though none of its loyalty abilities have been activated this turn."
+      },
+      {
+        "text": "{T}: For each legendary planeswalker you control, you may activate one of its loyalty abilities once this turn as though none of its loyalty abilities have been activated this turn."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: For each Jace you control, you may activate one of its loyalty abilities twice this turn as though none of its loyalty abilities have been activated this turn.",
+      "{3}, {T}: For each Jace you control, you may activate one of its loyalty abilities once this turn.",
+      "{3}, {T}: For each Jace you control, you may activate one of its loyalty abilities once this turn as though none of its loyalty abilities have been activated this turn unless you pay {2}."
+    ]
+  },
+  {
+    "id": "sta.edhp6.loyalty.cantActivate",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.1",
+      "CR 602.5"
+    ],
+    "pattern": "( players can't activate planeswalkers' loyalty abilities | players can't activate loyalty abilities | loyalty abilities can't be activated )",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {}
+          },
+          "mode": "cant",
+          "action": "activate",
+          "abilityKeyword": "loyalty"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Players can't activate loyalty abilities."
+      },
+      {
+        "text": "Loyalty abilities can't be activated."
+      }
+    ],
+    "counterExamples": [
+      "Players can't activate planeswalkers' exhaust abilities.",
+      "Loyalty abilities can be activated.",
+      "Players can't activate planeswalkers' loyalty abilities unless they pay {2}."
+    ]
+  },
+  {
+    "id": "eff.edhp6.draw.anAdditionalCard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 504.1",
+      "CR 504.2"
+    ],
+    "pattern": "draw an additional card",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each of your draw steps, draw an additional card."
+      },
+      {
+        "text": "At the beginning of your draw step, draw an additional card, then discard a card."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your draw step, draw an additional land.",
+      "At the beginning of your draw step, draw an additional card unless you pay {3}.",
+      "At the beginning of your upkeep, draw an additional card."
+    ]
+  },
+  {
+    "id": "eff.edhp6.eachOpponent.mill.equalHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2f",
+      "CR 608.2h"
+    ],
+    "pattern": "each opponent mills cards equal to the number of cards in their hand",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "eachOpponent",
+      "do": [
+        {
+          "op": "mill",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": {
+            "q": "zoneSize",
+            "zone": "hand",
+            "of": {
+              "ref": "iterating"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Each opponent mills cards equal to the number of cards in their hand."
+      },
+      {
+        "text": "When ~ enters, each opponent mills cards equal to the number of cards in their hand."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Each opponent mills cards equal to the number of cards in your hand.",
+      "{2}, {T}: Each player mills cards equal to the number of cards in their hand.",
+      "{2}, {T}: Each opponent mills two cards equal to the number of cards in their hand."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhp6.eachOpponent.loseLife.forEachInTheirGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2f",
+      "CR 608.2h"
+    ],
+    "pattern": "each opponent loses {n:Qty} life for each {f:Filter}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "eachOpponent",
+      "do": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "iterating"
+          },
+          "amount": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$n",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, each opponent loses 2 life for each land card in that player's graveyard."
+      },
+      {
+        "text": "When ~ enters, each opponent loses 1 life for each artifact card in that player's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent loses 1 life for each land card in your graveyard.",
+      "When ~ enters, each player loses 1 life for each land card in that player's graveyard.",
+      "When ~ enters, each opponent loses 1 life for each land card in that player's hand."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhp6.damage.eachOpponent.thatOpponentControls",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2f",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage to each opponent equal to the number of {f:Filter} that opponent controls",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "eachOpponent",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": {
+            "ref": "bound",
+            "name": "eachOpponent"
+          },
+          "amount": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "anyOf": [
+                  "$f"
+                ],
+                "controller": {
+                  "ref": "iterating"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, it deals damage to each opponent equal to the number of tapped Goblins that opponent controls."
+      },
+      {
+        "text": "{2}{R}, {T}: ~ deals damage to each opponent equal to the number of artifacts that opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it deals damage to each opponent equal to the number of tapped Goblins you control.",
+      "When ~ enters, it deals 2 damage to each opponent equal to the number of tapped Goblins that opponent controls.",
+      "When ~ enters, it deals damage to each player equal to the number of tapped Goblins that opponent controls."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhp6.mayPay.x.atMostLifeGained",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 107.3",
+      "CR 118.12",
+      "CR 608.2h"
+    ],
+    "pattern": "you may pay {x} , where x is less than or equal to the amount of life you gained",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "mana": [
+          {
+            "kind": "variable",
+            "name": "X"
+          }
+        ]
+      },
+      "xMax": {
+        "q": "eventAmount"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you gain life, you may pay {X}, where X is less than or equal to the amount of life you gained. If you do, you gain X life."
+      },
+      {
+        "text": "Whenever you gain life, you may pay {X}, where X is less than or equal to the amount of life you gained. If you do, create X 1/1 white Soldier creature tokens."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you gain life, you may pay {X}, where X is more than the amount of life you gained. If you do, you gain X life.",
+      "Whenever you gain life, you may pay {X}. If you do, you gain X life.",
+      "Whenever you gain life, you may pay {X}, where X is less than or equal to the amount of life you gained, unless an opponent pays {2}."
+    ]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "eff.edhp6.eachOpponent.mayDiscard.elseLoseLife",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 701.9a",
+      "CR 119.3",
+      "CR 101.4"
+    ],
+    "pattern": "each opponent may discard a card . ( if they don't , they lose | each opponent who doesn't loses ) {n:Qty} life",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "do": [
+        {
+          "op": "discard",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": 1
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "iterating"
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent may discard a card. If they don't, they lose 4 life."
+      },
+      {
+        "text": "At the beginning of your upkeep, each opponent may discard a card. Each opponent who doesn't loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent may discard a card. If they do, they lose 4 life.",
+      "Each opponent may discard two cards. If they don't, they lose 4 life.",
+      "Each opponent may discard a card. If they don't, you lose 4 life.",
+      "Target opponent may discard a card. If they don't, they lose 4 life and you gain 4 life."
+    ]
+  },
+  {
+    "since": 8,
+    "status": "stable",
+    "id": "eff.edhp6.eachOpponent.maySacrifice.whoDoesnt.loseLifeForEach",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 701.21a",
+      "CR 119.3",
+      "CR 101.4"
+    ],
+    "pattern": "each opponent may sacrifice {f:Filter} of their choice . each opponent who doesn't loses {n:Qty} life for each {g:Filter}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "do": [
+        {
+          "op": "sacrificeChoice",
+          "who": {
+            "ref": "iterating"
+          },
+          "count": 1,
+          "filter": "$f"
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "iterating"
+          },
+          "amount": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$n",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$g"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, each opponent may sacrifice a nontoken creature of their choice. Each opponent who doesn't loses 3 life for each artifact card in your graveyard."
+      },
+      {
+        "text": "At the beginning of your end step, each opponent may sacrifice a land of their choice. Each opponent who doesn't loses 1 life for each creature card in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, each opponent may sacrifice a land of their choice. Each opponent who does loses 1 life for each creature card in your graveyard.",
+      "At the beginning of your end step, each opponent may sacrifice two lands of their choice. Each opponent who doesn't loses 1 life for each creature card in your graveyard.",
+      "At the beginning of your end step, each opponent may sacrifice a land of their choice. Each player who doesn't loses 1 life for each creature card in your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhp6.sacrifice.eachOpponentMaySameType",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 701.21a",
+      "CR 205.2a",
+      "CR 119.3",
+      "CR 101.4",
+      "CR 608.2h"
+    ],
+    "pattern": "you may sacrifice an artifact , creature , enchantment , land , or planeswalker . if you do , each opponent may sacrifice a permanent of their choice that shares a card type with it . for each opponent who doesn't , that player loses {n:Qty} life and you draw a card",
+    "build": [
+      {
+        "op": "may",
+        "who": {
+          "ref": "you"
+        },
+        "do": [
+          {
+            "op": "sacrificeChoice",
+            "who": {
+              "ref": "you"
+            },
+            "filter": {
+              "types": [
+                "Artifact",
+                "Creature",
+                "Enchantment",
+                "Land",
+                "Planeswalker"
+              ]
+            },
+            "count": 1,
+            "as": "sacrificed"
+          }
+        ],
+        "as": "did"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "did",
+          "step": "did"
+        },
+        "then": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "each",
+              "who": "opponent"
+            },
+            "do": [
+              {
+                "op": "sacrificeChoice",
+                "who": {
+                  "ref": "iterating"
+                },
+                "filter": {
+                  "sharesWith": {
+                    "with": {
+                      "ref": "bound",
+                      "name": "sacrificed"
+                    },
+                    "quality": "cardType"
+                  }
+                },
+                "count": 1
+              }
+            ],
+            "otherwise": [
+              {
+                "op": "loseLife",
+                "who": {
+                  "ref": "iterating"
+                },
+                "amount": "$n"
+              },
+              {
+                "op": "draw",
+                "who": {
+                  "ref": "you"
+                },
+                "count": 1
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, you may sacrifice an artifact, creature, enchantment, land, or planeswalker. If you do, each opponent may sacrifice a permanent of their choice that shares a card type with it. For each opponent who doesn't, that player loses 3 life and you draw a card."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may sacrifice an artifact, creature, enchantment, land, or planeswalker. If you do, each opponent may sacrifice a permanent of their choice that shares a card type with it. For each opponent who doesn't, that player loses 1 life and you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, you may sacrifice an artifact, creature, enchantment, land, or planeswalker. If you do, each opponent may sacrifice a permanent of their choice that shares a card type with it. For each opponent who does, that player loses 3 life and you draw a card.",
+      "At the beginning of your end step, you may sacrifice an artifact, creature, enchantment, land, or planeswalker. If you do, each opponent may sacrifice a creature of their choice that shares a card type with it. For each opponent who doesn't, that player loses 3 life and you draw a card.",
+      "At the beginning of your end step, you may sacrifice an artifact, creature, enchantment, land, or planeswalker. If you do, each opponent may sacrifice a permanent of their choice that shares a card type with it. For each opponent who doesn't, that player loses 3 life and you draw two cards."
+    ]
+  },
+  {
+    "id": "sta.edhp6.maxhand.eachOpponent.reduced",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 402.2",
+      "CR 514.1",
+      "CR 101.4"
+    ],
+    "pattern": "each opponent 's maximum hand size is reduced by {n:Qty}",
+    "build": {
+      "s": "rule",
+      "rule": "maxHandSize",
+      "player": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "value": "$n",
+      "delta": "reduce"
+    },
+    "consumes": [
+      "each",
+      "reduced"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent's maximum hand size is reduced by three."
+      },
+      {
+        "text": "Each opponent's maximum hand size is reduced by four."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent's maximum hand size is reduced to two.",
+      "Each opponent's minimum hand size is reduced by two.",
+      "Each player's maximum hand size is reduced by two."
+    ]
+  }
+]

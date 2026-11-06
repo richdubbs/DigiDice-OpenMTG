@@ -1,0 +1,10 @@
+# edh-c-59 (Commander lane edh-c, EDHREC ranks 20,001-20,500, second pass): a kicked-spell cost cut, a cost cut for an ability when cards were drawn, an equip ability cost cut when it targets a colorless creature, a spell cost cut for creatures that share a type, protection from each of its own colors, a death during combat, a sacrifice unless an Ogre, a redirect of the target of an opponent's spell, a largest-hand power, a random discard of a chosen number. After editing: npm run cards -- fixtures
+Vine Gecko
+Kami of Jealous Thirst
+Ghostfire Blade
+Synchronized Eviction
+Earnest Fellowship
+Mongrel Pack
+Painwracker Oni
+Captured by the Consulate
+Adamaro, First to Desire

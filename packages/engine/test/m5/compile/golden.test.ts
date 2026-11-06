@@ -54,5 +54,5 @@ describe('golden: no regression of what milestone 4 automated (keyword lines, va
     expect(M4_FULL.length + GATE_PENDING.length).toBe(76);
     expect(full.length).toBeGreaterThanOrEqual(M4_FULL.length);
     expect(full).toEqual(expect.arrayContaining(M4_FULL));
-  }, 60_000); // compiles every fixture card: over 5 s on a loaded machine (FAST5 batch 1 integration)
+  }, 1_800_000); // compiles every fixture card: over 5 s on a loaded machine (FAST5 batch 1 integration), over 60 s since the Commander rounds grew the fixtures (raised to 30 min 2026-11-05: about 320-420 s alone, more in whole-engine runs, at 6,610 fixture cards after the 60th merge's rounds)
 });

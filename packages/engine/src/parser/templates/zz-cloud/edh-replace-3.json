@@ -1,0 +1,348 @@
+[
+  {
+    "id": "rep.edhr3.enters.choose.player",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2d"
+    ],
+    "pattern": "as ~ enters , choose a player",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "player",
+                "link": "opponent"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, choose a player."
+      },
+      {
+        "text": "Flying\nAs ~ enters, choose a player."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a player at random.",
+      "When ~ enters, choose a player.",
+      "As ~ enters, you choose a player."
+    ]
+  },
+  {
+    "id": "eff.edhr3.damage.itself",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 120.1"
+    ],
+    "pattern": "~ deal[s] 1 damage to itself",
+    "build": {
+      "op": "damage",
+      "source": {
+        "ref": "self"
+      },
+      "to": {
+        "ref": "self"
+      },
+      "amount": 1
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}, {T}: ~ deals 1 damage to itself."
+      },
+      {
+        "text": "At the beginning of your upkeep, ~ deals 1 damage to itself."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: ~ deals 2 damage to itself.",
+      "{2}, {T}: ~ deals 1 damage to you.",
+      "{2}, {T}: ~ deals 1 damage to itself and 1 damage to you."
+    ]
+  },
+  {
+    "id": "eff.edhr3.damage.eachOtherOpponent.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 102.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to each other opponent if {c:Cond}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": {
+        "ref": "otherOpponents",
+        "than": {
+          "ref": "event",
+          "role": "recipient"
+        }
+      },
+      "amount": "$n",
+      "guard": "$c"
+    },
+    "subject": "object",
+    "consumes": [
+      "each other",
+      "each",
+      "other",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to an opponent, it deals that much damage to each other opponent if ~'s power is 7 or greater."
+      },
+      {
+        "text": "Whenever ~ deals damage to an opponent, it deals 2 damage to each other opponent if you control three or more creatures."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to an opponent, it deals that much damage to each other opponent unless ~'s power is 7 or greater.",
+      "Whenever ~ deals combat damage to an opponent, it deals that much damage to each opponent if ~'s power is 7 or greater.",
+      "Whenever ~ deals combat damage to a creature, it deals that much damage to each other opponent if ~'s power is 7 or greater."
+    ]
+  },
+  {
+    "id": "rep.edhr3.enters.notCast.exile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 601.2a",
+      "CR 400.7"
+    ],
+    "pattern": "if ( a | an ) {f:Filter} would enter and it wasn't cast , exile it instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": "$f",
+        "to": "battlefield"
+      },
+      "condition": {
+        "cond": "not",
+        "of": {
+          "cond": "wasCast",
+          "object": {
+            "ref": "event",
+            "role": "subject"
+          }
+        }
+      },
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "exile"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a nontoken artifact creature would enter and it wasn't cast, exile it instead."
+      },
+      {
+        "text": "If a nontoken Goblin would enter and it wasn't cast, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "If a nontoken artifact creature would enter and it was cast, exile it instead.",
+      "If a nontoken Goblin would enter and it wasn't cast, return it to its owner's hand instead.",
+      "If a nontoken Goblin would enter, exile it instead."
+    ]
+  },
+  {
+    "id": "rep.edhr3.prevent.toSelf.whenPrevented.damageAnyOther",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 603.12",
+      "CR 120.3"
+    ],
+    "pattern": "if damage would be dealt to ~ , prevent that damage . when damage is prevented this way , ~ deals that much damage to any other target",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "as": "prevented",
+            "then": [
+              {
+                "op": "reflexive",
+                "when": {
+                  "did": "prevented"
+                },
+                "targets": [
+                  {
+                    "id": "t0",
+                    "kind": "anyTarget",
+                    "min": 1,
+                    "max": 1,
+                    "text": "any other target",
+                    "filter": {
+                      "other": true
+                    }
+                  }
+                ],
+                "do": [
+                  {
+                    "op": "damage",
+                    "source": {
+                      "ref": "self"
+                    },
+                    "to": {
+                      "ref": "target",
+                      "id": "t0"
+                    },
+                    "amount": {
+                      "q": "preventedAmount"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent",
+      "other",
+      "when",
+      "this way",
+      "that much"
+    ],
+    "examples": [
+      {
+        "text": "If damage would be dealt to ~, prevent that damage. When damage is prevented this way, ~ deals that much damage to any other target."
+      },
+      {
+        "text": "Flying\nIf damage would be dealt to ~, prevent that damage. When damage is prevented this way, ~ deals that much damage to any other target."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to ~, prevent that damage. When damage is prevented this way, ~ deals that much damage to target creature.",
+      "If damage would be dealt to ~, prevent that damage. When damage is prevented this way, ~ deals 2 damage to any other target.",
+      "If damage would be dealt to ~, prevent that damage. If damage is prevented this way, ~ deals that much damage to any other target.",
+      "If damage would be dealt to you, prevent that damage. When damage is prevented this way, ~ deals that much damage to any other target."
+    ]
+  },
+  {
+    "id": "rep.edhr3.prevent.toFilter.counterPerPrevented",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 122.1",
+      "CR 120.3"
+    ],
+    "pattern": "if damage would be dealt to {f:Filter} , prevent that damage . put a {k:CounterKind} counter on that creature for each 1 damage prevented this way",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "putCounters",
+                "on": {
+                  "ref": "event",
+                  "role": "object"
+                },
+                "kind": "$k",
+                "count": {
+                  "q": "preventedAmount"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent",
+      "this way",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "If damage would be dealt to another Goblin you control, prevent that damage. Put a +1/+1 counter on that creature for each 1 damage prevented this way."
+      },
+      {
+        "text": "If damage would be dealt to a Goblin you control, prevent that damage. Put a +1/+1 counter on that creature for each 1 damage prevented this way."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to another Goblin you control, prevent that damage. Put a +1/+1 counter on that creature for each 2 damage prevented this way.",
+      "If damage would be dealt to another Goblin you control, prevent that damage. Put a +1/+1 counter on it for each 1 damage prevented this way.",
+      "If damage would be dealt to you, prevent that damage. Put a +1/+1 counter on that creature for each 1 damage prevented this way."
+    ]
+  }
+]

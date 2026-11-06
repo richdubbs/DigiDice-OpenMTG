@@ -110,10 +110,10 @@ describe('E27 review 2 (CR 114.4, 113.6): an emblem with an activated ability is
     expect(minus!.kind).toBe('activated');
     const step = (minus as Extract<AbilityDef, { kind: 'activated' }>).effect.steps[0] as { op: string; abilities: AbilityDef[] };
     expect(step.op).toBe('createEmblem');
-    expect(step.abilities.map((a) => a.kind)).toEqual(['manual']);
-    expect(isManual(minus!)).toBe(true);
-    expect(d.automation.level).not.toBe('full');
-    expect(d.automation.requiresEngine).toContain('feature:emblem.activated');
+    // edh-next-100 (CR 114.4, 113.6p, 602.2): core/legal.ts lists the activated abilities of emblems now (feature:emblem.activated is advertised), so the ability is understood and the -7 is full
+    expect(step.abilities.map((a) => a.kind)).toEqual(['activated']);
+    expect(isManual(minus!)).toBe(false);
+    expect(d.automation.level).toBe('full');
   });
   it('the walker names the gap on the parsed ability (written JSON), and an emblem with a static or triggered ability needs nothing more', () => {
     const written = {
@@ -122,7 +122,7 @@ describe('E27 review 2 (CR 114.4, 113.6): an emblem with an activated ability is
           effect: { targets: [{ id: 't0', kind: 'anyTarget', min: 1, max: 1 }], steps: [{ op: 'damage', source: { ref: 'self' }, to: { ref: 'target', id: 't0' }, amount: 1 }] } },
       ] }] },
     } as unknown as AbilityDef;
-    expect(missingCapabilities(written, ENGINE_CAPABILITIES)).toContain('feature:emblem.activated');
+    expect(missingCapabilities(written, ENGINE_CAPABILITIES)).not.toContain('feature:emblem.activated'); // edh-next-100: advertised now (played in test/cloud/edh-next-100)
     const anthem = card('Example Walker', 'Legendary Planeswalker — Testa', '-2: You get an emblem with "Creatures you control get +1/+1."', '{3}', undefined, '5');
     expect(anthem.automation.level).toBe('full');
   });

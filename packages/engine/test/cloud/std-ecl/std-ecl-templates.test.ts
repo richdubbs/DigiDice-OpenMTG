@@ -17,6 +17,7 @@ import { ENGINE_CAPABILITIES } from '../../../src/model/capabilities';
 import stdEcl from '../../../src/parser/templates/zz-cloud/std-ecl.json';
 import review from '../../m5/golden/cards/cloud-std-ecl-review.json';
 import r4FxbReview from '../../m5/golden/cards/cloud-r4-fxb-review.json'; // Standard round 4 r4-fxb: Bard's Company, the conditional flash's third golden card
+import edhp10Review from '../../m5/golden/cards/edh-players-10-review.json'; // edh-players-10: Amoeboid Changeling, the one card of the corpus whose line "{T}: Target creature gains all creature types until end of turn" is read
 import { automated, bare, card, fullyAutomated, jsonKey } from '../../m5/templates/support';
 import { localIndex } from '../../m5/parser/support';
 import { accepts, bound, rejects, spell, you } from '../../m5/render/build';
@@ -37,6 +38,8 @@ const WHOLE_CORPUS: Readonly<Record<string, { cards: readonly string[]; line: Re
   'eff.stdecl.mill.thenPutEach.milledThisWay.hand': { cards: ["Grub's Command"], line: /mills? \w+ cards, then puts? each [^.]* card milled this way into (your|their) hand/ },
   // the sentence with no duration ("Up to one target creature gains all creature types. (This effect doesn't end.)"), not "... and gains all creature types."
   'eff.stdecl.gains.allCreatureTypes': { cards: ['Oko, Lorwyn Liege // Oko, Shadowmoor Scion'], line: /(?<!and )gains all creature types\.(?: \(|$)/m },
+  // edh-players-10 (narrow wording promoted to stable on its one golden card, the 6.9 deviation; Velis Vel's "Whenever chaos ensues, ..." and Snazzy Aether Homunculus's ticket-cost ability print the sentence behind another trigger or a cost no template reads, so the line is anchored on the {T} cost)
+  'eff.stdecl.gains.allCreatureTypes.dur': { cards: ['Amoeboid Changeling'], line: /^\{T\}: Target creature gains all creature types until end of turn\.$/m },
   'eff.stdecl.copy.token.tappedAttacking.except.has': { cards: ['Grub, Storied Matriarch // Grub, Notorious Auntie'], line: /create a tapped and attacking token that's a copy of [^.]*, except it has/ },
   // p2-coinflip-2 (lane p2-promote's Mirror Entity, after std-promote-4): the one card of the corpus that prints the plain line (Mirror Entity Avatar says "of the chosen type")
   'eff.stdecl.durFirst.group.basept.gain.allCreatureTypes': { cards: ['Mirror Entity'], line: /Until end of turn, creatures you control have base power and toughness X\/X and gain all creature types/ },
@@ -83,19 +86,19 @@ describe('std-ecl template file (design 6.3, 6.9; CONTRIBUTING "Adding a templat
     }
   });
   it('design 6.9: a stable template has its evidence: three hand-verified golden cards, or every card of the corpus that prints the sentence', () => {
-    const golden = [...review, ...r4FxbReview] as { card: string; verified: string; expect?: string }[];
+    const golden = [...review, ...r4FxbReview, ...edhp10Review] as { card: string; verified: string; expect?: string }[];
     for (const t of ECL.filter((x) => x.status === 'stable')) {
       const cards = golden.filter((g) => g.verified.includes(`(${t.id})`)).map((g) => g.card);
       const whole = WHOLE_CORPUS[t.id];
       if (whole) expect(cards.slice().sort(), t.id).toEqual([...whole.cards].sort());
       else expect(cards.length, `${t.id}: ${cards.join(', ')}`).toBeGreaterThanOrEqual(3);
     }
-    // the experimental ones: three all-creature-types wordings whose few cards are not golden yet (Glamer Gifter waits on another slice's "choose up to one
+    // the experimental ones: all-creature-types wordings whose few cards were not golden yet (the plain duration one is stable since edh-players-10) (Glamer Gifter waits on another slice's "choose up to one
     // other target creature"; Amoeboid Changeling, Velis Vel and Mirror Entity Avatar have other sentences not read) and "then if C, create <token>" (two
     // golden cards; Tend the Sprigs is the third once its "lands and/or Treefolk" is read). The plain tapped and attacking token copy is stable since std-promote-4
     // on three golden cards (Calamity, Galloping Inferno; Sandstorm Crasher; Satya, Aetherflux Genius; cloud-std-ecl-review.json)
     expect(ECL.filter((t) => t.status === 'experimental').map((t) => t.id).sort()).toEqual([
-      'eff.stdecl.gains.allCreatureTypes.dur', 'eff.stdecl.thenIf.token',
+      'eff.stdecl.thenIf.token',
       // the conditional flash (sta.stdecl.cast.self.flash.ifCond) is stable since Standard round 4 r4-fxb: its third golden card, Bard's Company, is in
       // test/m5/golden/cards/cloud-r4-fxb-review.json
     ]);

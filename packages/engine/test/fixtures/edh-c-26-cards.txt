@@ -1,0 +1,11 @@
+# edh-c-26 (Commander lane edh-c, EDHREC ranks 21,001-21,500): creatures that can't be targeted by spells, draw/lose life/energy, destroy that creature and ~, damage redirected to the enchanted creature's controller, destroy all of a chosen creature type, loyalty abilities that cost more, can't attack if another creature is on the battlefield, damage unless two basic lands, a kicked creature with a trample counter, a creature that is a Bear on its controller's turn. After editing: npm run cards -- fixtures
+Dense Foliage
+Live Fast
+Loyal Sentry
+Treacherous Link
+Extinction
+Eidolon of Obstruction
+Shauku, Endbringer
+Furnace Punisher
+Voidpouncer
+Circle of the Moon Druid

@@ -360,7 +360,10 @@ class Segmenter {
       const body = L.body;
 
       // Dice rows belong to the ability above (design 6.2 row 4).
-      const dice = dicePrefix(this.parse, this.pre.normalized, body);
+      // edh-next-55: a line that follows a die roll (or another result row) may start its result with a dash instead of a bar (front/shapes.ts#dicePrefix)
+      const above = p > 0 ? this.lines[idxs[p - 1]!]! : undefined;
+      const afterRoll = above !== undefined && (prev?.rollTable !== undefined || /\broll(?:s|ed)? (?:a|an|one|two|three|x)\b[^.]*\b(?:d\d+|die|dice)\b/i.test(this.parse.slice(above.body[0], above.body[1])));
+      const dice = dicePrefix(this.parse, this.pre.normalized, body, afterRoll);
       if (dice) {
         const target = prev ?? (prev = add('unknown'));
         this.claim(dice.range, 'diceRow');
@@ -446,7 +449,7 @@ class Segmenter {
         }
       }
     }
-    return joinCaseLines(out).map((s) => this.finish(s));
+    return joinCaseLines(out).map((s) => this.finish(s)).flatMap((s) => this.splitSecondLeavesTrigger(s)).flatMap((s) => this.splitRevealedThisWay(s));
   }
 
   /**
@@ -497,6 +500,47 @@ class Segmenter {
   private endsWithDash(L: PreLine): boolean {
     const t = trimRange(this.parse, L.body);
     return t[1] - t[0] >= 2 && this.parse.slice(t[1] - 2, t[1]) === '--';
+  }
+
+  /**
+   * edh-perms-4 (CR 603.2, 607.2; Animate Dead, Dance of the Dead, Necromancy): Oracle prints a linked pair of triggered abilities in ONE paragraph, "When ~ enters, [...]. When ~ leaves the
+   * battlefield, [...]": the second trigger is an ability of its own, with the same Oracle line (`lines`, so the units of the abilities printed after it keep their keys, G10). Only that
+   * pair: the first sentence begins "When ~ enters" and a later sentence that is no continuation begins "When ~ leaves the battlefield," (a delayed trigger a spell or ability creates is
+   * never worded so). Sentences inside quotes are not sentences here (front/sentences.ts).
+   */
+  private splitSecondLeavesTrigger(seg: AbilitySegment): AbilitySegment[] {
+    const words = (t: Sentence['tokens']): string => t.slice(0, 6).map((x) => x.norm).join(' ');
+    if (seg.shape !== 'triggered' || seg.lines.length !== 1 || seg.modal !== undefined || seg.sentences.length < 2 || !words(seg.sentences[0]!.tokens).startsWith('when ~ enters')) return [seg];
+    const at = seg.sentences.findIndex((x, i) => i > 0 && !x.continuation && words(x.tokens) === 'when ~ leaves the battlefield ,');
+    if (at < 0) return [seg];
+    const mk = (sentences: Sentence[], range: Range): AbilitySegment => {
+      const part: AbilitySegment = { ...seg, ranges: [range], sentences };
+      return this.finish(part);
+    };
+    const first = mk(seg.sentences.slice(0, at), [seg.range[0], seg.sentences[at - 1]!.range[1]]);
+    const second = mk(seg.sentences.slice(at), [seg.sentences[at]!.range[0], seg.range[1]]);
+    return [first, ...this.splitSecondLeavesTrigger(second)];
+  }
+
+  /**
+   * edh-next-144 (CR 603.2, 607.2; Keranos, God of Storms, Primitive Etchings, Rowen): Oracle prints a static ability and the triggered abilities linked to it in ONE paragraph, "Reveal the
+   * first card you draw each turn. Whenever you reveal a land card this way, [...]. Whenever you reveal a nonland card this way, [...]": each "Whenever you reveal ... this way" sentence that
+   * is no continuation begins a triggered ability of its own, with the same Oracle line. Only that shape: a static segment of one line whose first sentence begins "reveal the first card
+   * you draw".
+   */
+  private splitRevealedThisWay(seg: AbilitySegment): AbilitySegment[] {
+    const words = (t: Sentence['tokens'], n: number): string => t.slice(0, n).map((x) => x.norm).join(' ');
+    if (seg.shape !== 'static' || seg.lines.length !== 1 || seg.modal !== undefined || seg.sentences.length < 2 || (words(seg.sentences[0]!.tokens, 6) !== 'reveal the first card you draw' && words(seg.sentences[0]!.tokens, 8) !== 'you may reveal the first card you draw' /* edh-next-132: God-Eternal Kefnet */)) return [seg];
+    const starts = seg.sentences.map((x, i) => (i > 0 && !x.continuation && words(x.tokens, 3) === 'whenever you reveal' ? i : -1)).filter((i) => i > 0);
+    if (starts.length === 0) return [seg];
+    const cuts = [0, ...starts, seg.sentences.length];
+    const out: AbilitySegment[] = [];
+    for (let k = 0; k + 1 < cuts.length; k++) {
+      const sentences = seg.sentences.slice(cuts[k], cuts[k + 1]);
+      const part: AbilitySegment = { ...seg, shape: k === 0 ? seg.shape : 'triggered', ranges: [[sentences[0]!.range[0], k === 0 ? sentences[sentences.length - 1]!.range[1] : sentences[sentences.length - 1]!.range[1]]], sentences };
+      out.push(this.finish(part));
+    }
+    return out;
   }
 
   /** An empty segment of a shape; `lines` are added at once (their whole bodies are its ranges) or later with `extend`. */
@@ -725,7 +769,22 @@ class Segmenter {
       const start = toks[0]!.range[0];
       const hit = keywordAt(this.ix, this.lower, start);
       // std-craft-1 (CR 702.167a): so is "Craft with a Dinosaur, a Merfolk, a Pirate, and a Vampire {4}", whose materials are a list
-      if (hit && (hit.name.toLowerCase() === 'enchant' || hit.name.toLowerCase() === 'craft')) {
+      // edh-next-27 (CR 702.6a, 702.6c; Robe of the Archmagi): and "Equip Shaman, Warlock, or Wizard {1}", whose quality is a list of subtypes (the word after Equip is a subtype word, not a cost)
+      if (hit && (hit.name.toLowerCase() === 'enchant' || hit.name.toLowerCase() === 'craft' || (hit.name.toLowerCase() === 'equip' && toks[1]?.kind === 'WORD'))) {
+        const end = toks[toks.length - 1]!.range[1];
+        const nameRange: Range = [start, start + hit.length];
+        const paramStart = trimRange(this.parse, [nameRange[1], end])[0];
+        return [{ name: hit.name, range: [start, end], nameRange, ...(paramStart < end ? { paramRange: [paramStart, end] as Range } : {}), dash: false, tokens: toks }];
+      }
+    }
+    // edh-c-45 (CR 702.11b; Nevinyrral): "Hexproof from artifacts, creatures, and enchantments" is ONE keyword item whose quality is a list (parser/holes/edhv45.ts#hexFromTypes):
+    // the commas belong to it when no later part of the line starts another keyword
+    if (toks.length > 4 && toks[0]!.kind === 'WORD' && toks[0]!.norm === 'hexproof' && toks[1]!.kind === 'WORD' && toks[1]!.norm === 'from' && toks.some((t) => t.kind === 'PUNCT' && t.norm === ',')
+      && !toks.some((t) => t.kind === 'PUNCT' && (t.norm === ';' || t.norm === '.' || t.norm === ':' || t.norm === '--'))) {
+      const start = toks[0]!.range[0];
+      const hit = keywordAt(this.ix, this.lower, start);
+      const later = toks.slice(2).some((t, i, rest) => t.kind === 'WORD' && (i === 0 || rest[i - 1]!.norm === ',' || rest[i - 1]!.norm === 'and') && keywordAt(this.ix, this.lower, t.range[0]) !== undefined);
+      if (hit && hit.name.toLowerCase() === 'hexproof' && !later) {
         const end = toks[toks.length - 1]!.range[1];
         const nameRange: Range = [start, start + hit.length];
         const paramStart = trimRange(this.parse, [nameRange[1], end])[0];

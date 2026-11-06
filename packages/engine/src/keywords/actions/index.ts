@@ -13,7 +13,7 @@ import type { KeywordActionName } from '../../types/ability';
 import type { ActionMacro } from '../types';
 import { ADAPT, BLIGHT, DOUBLE_COUNTERS, SUPPORT } from './counters';
 import { CONNIVE, EXPLORE, RECRUIT } from './library';
-import { AIRBEND, ANOTHER_OF_EACH_KIND, BEHOLD, BOLSTER, CASCADE, DISCOVER, DOUBLE_EACH_KIND, GIVE_GIFT, GOAD, LEARN, MONSTROSITY, RENOWN, OPEN_ATTRACTION, PROLIFERATE, VENTURE, VOTE } from './native';
+import { AIRBEND, ANOTHER_OF_EACH_KIND, BEHOLD, BOLSTER, CASCADE, DISCOVER, DOUBLE_EACH_KIND, GIVE_GIFT, GOAD, LEARN, MONSTROSITY, RENOWN, OPEN_ATTRACTION, PROLIFERATE, TIME_TRAVEL, VENTURE, VOTE } from './native';
 import { DETAIN } from './restrictions';
 import { AMASS, INCUBATE, INVESTIGATE, POPULATE } from './tokens';
 import { FACE_DOWN_MACROS } from './face-down';
@@ -21,6 +21,7 @@ import { MELD_MACROS } from './meld';
 import { MELD_PAIR_MACROS } from './meld-pair';
 import { EARTHBEND, EMPOWER, ENDURE } from './bending';
 import { RING_MACROS } from './ring';
+import { PLANECHASE_MACROS } from './planechase';
 import { EVIDENCE_MACROS } from './evidence';
 import { EXERT, FORAGE } from './exert-forage';
 import { ASSIMILATE } from './assimilate';
@@ -35,6 +36,7 @@ const MACROS: readonly ActionMacro[] = [
   ...MELD_PAIR_MACROS, // MX2: "exile them, then meld them into ..." (CR 701.42a)
   GIVE_GIFT, // FAST5X E1: "gives a gift" (CR 702.174c)
   ENDURE, EARTHBEND, EMPOWER, // FAST5 MX6: CR 701.63, 701.66, "empower <type> N" (bending.ts)
+  ...PLANECHASE_MACROS, // edhd19: planeswalk, chaos ensues (no Planechase game, no effect)
   ...RING_MACROS, // MX3: the Ring tempts you (CR 701.54)
   BLIGHT, // FAST5X E9: blight N (CR 701.68a); as a cost it is rules/cost.ts's putCounters part
   AIRBEND, // FAST5X E10: airbend (CR 701.65), effects/handlers/airbend.ts
@@ -46,6 +48,7 @@ const MACROS: readonly ActionMacro[] = [
   DOUBLE_EACH_KIND, // cloud std-spm: "double the number of each kind of counter on X" (CR 701.10e), effects/handlers/actions-native-counters.ts
   ANOTHER_OF_EACH_KIND, // r5-refs: "for each kind of counter on X, give that permanent or player another counter of that kind" (CR 122.6)
   ASSIMILATE, // trek-1: assimilate (Star Trek reminder text; CR 701, number unverified), keywords/actions/assimilate.ts
+  TIME_TRAVEL, // edh-next-3: time travel (CR 701.56a), effects/handlers/actions-native-counters.ts
 ];
 
 export const ACTION_MACROS: Readonly<Partial<Record<KeywordActionName, ActionMacro>>> = Object.fromEntries(MACROS.map((m) => [m.name, m]));

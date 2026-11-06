@@ -1,0 +1,2 @@
+# edh-top-3 (Commander lane edh-top): 'target creature it's blocking' (Agadeem's Awakening and Shatterskull Smashing are in test-cards.txt already). After editing: npm run cards -- fixtures
+Tinder Wall

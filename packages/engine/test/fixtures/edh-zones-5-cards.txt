@@ -1,0 +1,8 @@
+# edh-zones-5 (Commander effort, lane edh-zones; test/cloud/edh-zones-5, golden edh-zones-5-review.json): optional process repeat, shares a color with a described set, search reveal that card, that card from a graveyard, discard up to N, granted escape with the mana cost plus the rest, third from the top
+Ad Nauseam
+Captain Sisay
+Ringsight
+Tergrid, God of Fright // Tergrid's Lantern
+Fable of the Mirror-Breaker // Reflection of Kiki-Jiki
+Underworld Breach
+Long-Term Plans

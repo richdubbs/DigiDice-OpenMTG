@@ -1,0 +1,450 @@
+[
+  {
+    "id": "sta.edhn140.devotionBonus",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 700.5",
+      "CR 700.5a",
+      "CR 604.1"
+    ],
+    "pattern": "your devotion to each color and each combination of colors is increased by {n:Qty}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "devotionBonus",
+          "value": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "devotion",
+      "each",
+      "combination",
+      "increased"
+    ],
+    "examples": [
+      {
+        "text": "Your devotion to each color and each combination of colors is increased by two."
+      },
+      {
+        "text": "Your devotion to each color and each combination of colors is increased by three."
+      }
+    ],
+    "counterExamples": [
+      "Your devotion to each color is increased by one.",
+      "Your devotion to each color and each combination of colors is reduced by one.",
+      "Each opponent's devotion to each color and each combination of colors is increased by one."
+    ]
+  },
+  {
+    "id": "eff.edhn140.delay.nextFirstMain.addAnyCombination.whereX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 505.1a",
+      "CR 608.2h",
+      "CR 106.1b",
+      "CR 107.3"
+    ],
+    "pattern": "at the beginning of your next first main phase , add x mana in any combination of colors , where x is {o:Obj} 's mana value",
+    "build": [
+      {
+        "op": "let",
+        "name": "delayedMana",
+        "value": {
+          "q": "stat",
+          "stat": "manaValue",
+          "of": "$o"
+        }
+      },
+      {
+        "op": "delay",
+        "when": {
+          "at": "step",
+          "step": "main1",
+          "whose": "you",
+          "next": true
+        },
+        "do": [
+          {
+            "op": "addMana",
+            "who": {
+              "ref": "you"
+            },
+            "dynamic": {
+              "kind": "anyColor",
+              "count": {
+                "q": "var",
+                "name": "delayedMana"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "next",
+      "first",
+      "combination",
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "Counter target creature spell. At the beginning of your next first main phase, add X mana in any combination of colors, where X is that spell's mana value."
+      },
+      {
+        "text": "Exile target creature. At the beginning of your next first main phase, add X mana in any combination of colors, where X is that creature's mana value."
+      }
+    ],
+    "counterExamples": [
+      "Counter target spell. At the beginning of your next main phase, add X mana in any combination of colors, where X is that spell's mana value.",
+      "Counter target spell. At the beginning of your next first main phase, add X mana of any one color, where X is that spell's mana value.",
+      "Counter target spell. At the beginning of the next first main phase, add X mana in any combination of colors, where X is that spell's mana value.",
+      "Draw a card. At the beginning of your next first main phase, add X mana in any combination of colors, where X is the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "sta.edhn140.self.spendTypeAsAnyColor.ownActivationCosts",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 609.4b",
+      "CR 602.2b",
+      "CR 106.1"
+    ],
+    "pattern": "you may spend {m:Color} mana as though it were mana of any color to pay the activation costs of ~ 's abilities",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "spendMana",
+          "asThough": "any color",
+          "of": {
+            "self": true
+          },
+          "abilities": true,
+          "spentType": "$m"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "You may spend green mana as though it were mana of any color to pay the activation costs of ~'s abilities."
+      },
+      {
+        "text": "You may spend red mana as though it were mana of any color to pay the activation costs of ~'s abilities."
+      }
+    ],
+    "counterExamples": [
+      "You may spend blue mana as though it were mana of any type to pay the activation costs of ~'s abilities.",
+      "You may spend blue mana as though it were mana of any color to cast ~.",
+      "You may spend blue mana as though it were mana of any color to pay the activation costs of abilities you activate."
+    ]
+  },
+  {
+    "id": "eff.edhn140.self.gainsActivatedOf.target.eot",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 613.1f",
+      "CR 611.2c",
+      "CR 608.2h",
+      "CR 602.1",
+      "CR 115.1"
+    ],
+    "pattern": "~ gains all activated abilities of {t:Obj} until end of turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "addActivatedOf": "$t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "activated",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{2}{U}: ~ gains all activated abilities of target creature until end of turn."
+      },
+      {
+        "text": "{1}, {T}: ~ gains all activated abilities of target artifact until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}{U}: ~ gains all activated abilities of target creature.",
+      "{2}{U}: ~ gains all triggered abilities of target creature until end of turn.",
+      "{2}{U}: Target creature gains all activated abilities of ~ until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhn140.rule.tappedLandManaOneOfType",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.12",
+      "CR 614.1a",
+      "CR 106.1b"
+    ],
+    "pattern": "if a land is tapped for mana , it produces {m:ManaSym} instead of any other type and amount",
+    "build": {
+      "s": "rule",
+      "rule": "tappedLandManaColorless",
+      "value": 1,
+      "manaType": "$m",
+      "player": {
+        "ref": "each",
+        "who": "player"
+      }
+    },
+    "consumes": [
+      "if",
+      "instead",
+      "other",
+      "amount"
+    ],
+    "examples": [
+      {
+        "text": "If a land is tapped for mana, it produces {R} instead of any other type and amount. Creatures you control get +1/+1."
+      },
+      {
+        "text": "If a land is tapped for mana, it produces {G} instead of any other type and amount."
+      }
+    ],
+    "counterExamples": [
+      "If a land is tapped for two or more mana, it produces {R} instead of any other type and amount.",
+      "If a land is tapped for mana, it produces {R} instead of any other type.",
+      "If a land you control is tapped for mana, it produces {R} instead of any other type and amount."
+    ]
+  },
+  {
+    "id": "eff.edhn140.becomes.colorOrColorsOfChoice.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 105.1",
+      "CR 105.3",
+      "CR 608.2d",
+      "CR 611.2c",
+      "CR 613.1e"
+    ],
+    "pattern": "{o:Obj} becomes the color or colors of your choice {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "min": 1,
+        "max": 5,
+        "as": "chosenColors",
+        "link": "chosenColors"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 5,
+                "colors": {
+                  "chosen": "chosenColors"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "or",
+      "colors",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Target creature becomes the color or colors of your choice until end of turn."
+      },
+      {
+        "text": "Whenever ~ attacks, target permanent becomes the color or colors of your choice until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Target creature becomes the color of your choice until end of turn.",
+      "{1}, {T}: Target creature becomes the color or colors of its controller's choice until end of turn.",
+      "{1}, {T}: Target creature becomes colorless until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn140.removeAllCounters.recipient",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "weak": 1,
+    "cr": [
+      "CR 122.1",
+      "CR 122.8",
+      "CR 115.1"
+    ],
+    "pattern": "remove all counters from {o:Recipient}",
+    "build": {
+      "op": "removeCounters",
+      "from": "$o",
+      "kind": "any",
+      "count": "all"
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Remove all counters from target permanent or player."
+      },
+      {
+        "text": "When ~ enters, remove all counters from up to one target creature or opponent."
+      }
+    ],
+    "counterExamples": [
+      "Remove all counters from target spell or player.",
+      "Remove all but one counter from target permanent or player."
+    ]
+  },
+  {
+    "id": "eff.edhn140.nextSpell.reduce.forEach",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 611.2",
+      "CR 608.2h"
+    ],
+    "pattern": "the next spell you cast this turn costs {1} less to cast for each {n:Qty}",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": {
+        "stackKind": "spell",
+        "zone": "stack"
+      },
+      "rider": "reduce",
+      "amount": "$n"
+    },
+    "consumes": [
+      "next",
+      "less",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Remove all counters from target permanent. The next spell you cast this turn costs {1} less to cast for each counter removed this way."
+      },
+      {
+        "text": "Remove all counters from each artifact you control. The next spell you cast this turn costs {1} less to cast for each counter removed this way."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. The next spell you cast this turn costs {2} less to cast for each creature you control.",
+      "Draw a card. The next spell you cast costs {1} less to cast for each creature you control.",
+      "Draw a card. The next creature spell you cast this turn costs {1} less to cast for each creature you control."
+    ]
+  },
+  {
+    "id": "eff.edhn140.return.bf.asAura.losesOthers",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 303.4f",
+      "CR 303.4g",
+      "CR 614.1c",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "return {o:Obj} to the battlefield . it's an aura enchantment with enchant {f:Filter} and {a:Abilities} ~ loses all other abilities",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "asAura": {
+          "enchant": "$f",
+          "abilities": "$a",
+          "losesOthers": true
+        }
+      }
+    },
+    "consumes": [
+      "aura",
+      "enchant",
+      "loses",
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, if it was a creature, return it to the battlefield. It's an Aura enchantment with enchant Swamp you control and \"Enchanted Swamp has '{T}: Add {B}{B}.'\" ~ loses all other abilities."
+      },
+      {
+        "text": "When ~ dies, return it to the battlefield. It's an Aura enchantment with enchant creature you control and \"Enchanted creature gets +2/+2.\" ~ loses all other abilities."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, return it to the battlefield. It's an Aura enchantment with enchant creature you control and \"Enchanted creature gets +2/+2.\"",
+      "When ~ dies, return it to its owner's hand. It's an Aura enchantment with enchant creature you control and \"Enchanted creature gets +2/+2.\" ~ loses all other abilities.",
+      "When ~ dies, return it to the battlefield. It's an Equipment artifact with equip {2} and \"Equipped creature gets +2/+2.\" ~ loses all other abilities."
+    ]
+  }
+]

@@ -1,0 +1,375 @@
+[
+  {
+    "id": "eff.edhv110.return.self.ownerHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 108.3"
+    ],
+    "pattern": "return ~ to ~ 's owner 's hand",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks alone, return ~ to ~'s owner's hand."
+      },
+      {
+        "text": "Whenever ~ blocks, return ~ to ~'s owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks alone, return ~ to ~'s controller's hand.",
+      "Whenever ~ attacks alone, return ~ to ~'s owner's library."
+    ]
+  },
+  {
+    "id": "eff.edhv110.becomes.basept.subtype.artifactCreature.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 301.5c"
+    ],
+    "pattern": "{o:Obj} becomes a {pt:BasePT} {st:Subtypes} artifact creature with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "When ~ enters, untap up to one target noncreature artifact. That artifact becomes a 0/0 Homunculus artifact creature with flying."
+      },
+      {
+        "text": "When ~ enters, tap up to one target noncreature artifact. That artifact becomes a 0/0 Golem artifact creature with trample."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, untap up to one target noncreature artifact. That artifact becomes a 0/0 Homunculus artifact creature with flying until end of turn.",
+      "When ~ enters, untap up to one target noncreature artifact. That artifact becomes a 0/0 Homunculus creature with flying.",
+      "When ~ enters, untap up to one target noncreature artifact. That artifact becomes a +0/+0 Homunculus artifact creature with flying."
+    ]
+  },
+  {
+    "id": "eff.edhv110.protection.controllersChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16a",
+      "CR 608.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 105.1",
+      "CR 109.4"
+    ],
+    "pattern": "{o:Obj} gains protection from the color of its controller 's choice {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "controllerOf",
+          "object": "$o"
+        },
+        "what": "color",
+        "as": "protectionColor",
+        "link": "protectionColor"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "W"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:W",
+                        "text": "protection from white"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "U"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:U",
+                        "text": "protection from blue"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "B"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:B",
+                        "text": "protection from black"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "R"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:R",
+                        "text": "protection from red"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "protectionColor",
+          "equals": "G"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "protection",
+                        "quality": "color:G",
+                        "text": "protection from green"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}: Target creature gains protection from the color of its controller's choice until end of turn."
+      },
+      {
+        "text": "Target artifact or creature gains protection from the color of its controller's choice until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gains protection from the color of its controller's choice.",
+      "Target artifact gains protection from the color of your choice until end of turn.",
+      "Target creature gains protection from colorless or from the color of its controller's choice until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhv110.self.cantAttackOrBlock.unlessPay.perCounter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1h",
+      "CR 509.1d",
+      "CR 122.1",
+      "CR 604.1"
+    ],
+    "pattern": "~ can't attack or block unless you pay {1} for each +1/+1 counter on it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "attackTax",
+          "of": {
+            "is": {
+              "ref": "self"
+            }
+          },
+          "defenders": "any",
+          "value": {
+            "q": "counters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "+1/+1"
+          }
+        },
+        {
+          "s": "rule",
+          "rule": "blockTax",
+          "of": {
+            "is": {
+              "ref": "self"
+            }
+          },
+          "value": {
+            "q": "counters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "+1/+1"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "unless",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "~ can't attack or block unless you pay {1} for each +1/+1 counter on it."
+      },
+      {
+        "text": "Vigilance, reach, haste\n~ can't attack or block unless you pay {1} for each +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "~ can't attack or block unless you pay {2} for each +1/+1 counter on it.",
+      "~ can't attack or block unless you pay {1} for each -1/-1 counter on it.",
+      "~ can't attack unless you pay {1} for each +1/+1 counter on it."
+    ]
+  }
+]

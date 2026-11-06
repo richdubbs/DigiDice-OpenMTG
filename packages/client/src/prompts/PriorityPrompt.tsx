@@ -21,9 +21,14 @@
  *
  * Resolve all (RES-ALL, owner 2026-10-25): shown while the stack holds something. It passes now and keeps passing for this player until the stack is
  * empty (the engine's `pass` with `resolveAll`), unless another player casts a spell or activates an ability, which asks them again.
+ *
+ * Shortcuts (CR 727, docs/design/shortcuts.md 6): "Repeat..." is shown when the view lists the player's own settled actions of this turn
+ * (`view.repeatable`). It opens a panel with those steps, oldest first: the player picks where the loop starts (the last `view.loop` steps are preselected
+ * when the engine noticed a loop, else the last step) and how many times to repeat it, and proposes it (the engine's `shortcut` action). The other players
+ * are asked first (the `shortcut` decision, ShortcutPrompt.tsx); the engine then really plays every pass.
  */
 import { useEffect, useRef, useState } from 'react';
-import { faceChars, hasType, isByHandKind, type Action, type GameView, type LegalAction, type ObjectId, type PlayerId, type PlayerState } from '@openmtg/engine';
+import { faceChars, hasType, isByHandKind, SHORTCUT_MAX_TIMES, type Action, type GameView, type LegalAction, type ObjectId, type PlayerId, type PlayerState } from '@openmtg/engine';
 import { gameSfx } from '../game/sound';
 import { Chips } from './Chips';
 import { useEscape, usePrimary } from './keys';
@@ -146,10 +151,80 @@ export function landPlayHint(view: GameView, player: PlayerId, id: ObjectId, act
   return `You can't play it as a land right now: ${why} (CR 305.1, 305.2).`;
 }
 
+/** Shortcuts (design 6): the number of the player's last steps preselected as the loop: the loop the engine noticed (`view.loop`), else the last step. */
+export function defaultLoopSteps(view: Pick<GameView, 'repeatable' | 'loop'>): number {
+  const n = view.repeatable?.length ?? 0;
+  return Math.max(1, Math.min(n, view.loop ?? 1));
+}
+
+/** Shortcuts (design 6): how many times a proposal repeats by default: 100 for a loop the engine noticed, else 10. */
+export const defaultShortcutTimes = (view: Pick<GameView, 'loop'>): number => (view.loop !== undefined ? 100 : 10);
+
+/**
+ * Shortcuts (CR 727.2a): the panel of "Repeat...": the player's steps of this turn, oldest first, a choice of where the loop starts (its last `steps` steps),
+ * the number of times, and "Propose", which sends the `shortcut` action. Only whole numbers from 1 to `SHORTCUT_MAX_TIMES` are sent.
+ */
+function RepeatPanel({ player, repeatable, initialSteps, initialTimes, act, busy }: {
+  player: PlayerId;
+  repeatable: readonly string[];
+  initialSteps: number;
+  initialTimes: number;
+  act: (a: Action) => void;
+  busy: boolean;
+}) {
+  const n = repeatable.length;
+  const [steps, setSteps] = useState(initialSteps);
+  const [times, setTimes] = useState(initialTimes);
+  const ok = Number.isInteger(times) && times >= 1 && times <= SHORTCUT_MAX_TIMES && steps >= 1 && steps <= n;
+  const first = n - steps; // the index of the loop's first step
+  const propose = () => {
+    if (ok) act({ type: 'shortcut', player, steps, times });
+  };
+  return (
+    <div className="prompt-menu prompt-repeat" role="group" aria-label="Repeat your steps">
+      <p className="prompt-hint">Your steps this turn. Choose the step the loop starts from: it repeats from there to your last step.</p>
+      <ol className="prompt-list" aria-label="Your steps this turn">
+        {repeatable.map((label, i) => (
+          <li key={i} className={i < first ? 'prompt-repeat-out' : undefined}>
+            <label className="prompt-option">
+              <input type="radio" name="shortcut-from" checked={i === first} disabled={busy} onChange={() => setSteps(n - i)} aria-label={`Repeat from step ${i + 1}: ${label}`} />
+              <span className="prompt-order-pos">{i + 1}.</span>
+              <span>{label}</span>
+            </label>
+          </li>
+        ))}
+      </ol>
+      <label className="prompt-number">
+        Times
+        <input
+          type="number"
+          aria-label="Times"
+          min={1}
+          max={SHORTCUT_MAX_TIMES}
+          step={1}
+          value={Number.isNaN(times) ? '' : times}
+          disabled={busy}
+          onChange={(e) => setTimes(e.target.value === '' ? NaN : Number(e.target.value))}
+        />
+        <span className="prompt-hint">1 to {SHORTCUT_MAX_TIMES}</span>
+      </label>
+      <p className="prompt-hint">
+        The other players are asked first; they can let it run or stop it at a pass. The game really plays every pass and stops when a step no longer goes the
+        same way (CR 727).
+      </p>
+      <button type="button" className="button-primary" disabled={busy || !ok} onClick={propose} title={ok ? `Repeat the last ${steps} step${steps === 1 ? '' : 's'} ${times} time${times === 1 ? '' : 's'}` : undefined}>
+        Propose
+      </button>
+    </div>
+  );
+}
+
 export function PriorityPrompt({ d, view, legal, act, busy }: PromptProps<'priority'>) {
   const [open, setOpen] = useState<ObjectId | null>(null);
   const [showMana, setShowMana] = useState(false);
   const [showByHand, setShowByHand] = useState(false);
+  const [showRepeat, setShowRepeat] = useState(false);
+  const repeatable = view.viewer === d.player ? (view.repeatable ?? []) : [];
   const byObject = actionsByObject(legal);
   const playable = [...byObject.keys()];
   const manaOnly = playable.filter((id) => byObject.get(id)!.every((a) => a.isMana));
@@ -248,6 +323,20 @@ export function PriorityPrompt({ d, view, legal, act, busy }: PromptProps<'prior
             By hand ({byHandOnly.length})
           </button>
         )}
+        {repeatable.length > 0 && (
+          <button
+            type="button"
+            aria-expanded={showRepeat}
+            disabled={busy}
+            onClick={() => {
+              if (!showRepeat) gameSfx('ui.select');
+              setShowRepeat((v) => !v);
+            }}
+            title="Repeat your last steps of this turn a number of times (a shortcut, CR 727)"
+          >
+            Repeat…
+          </button>
+        )}
       </PromptActions>
       {top !== undefined && <p className="prompt-detail">Top of the stack: {objectName(view, top)}. It resolves when all players pass in succession (CR 117.4).</p>}
       {cards.length > 0 ? (
@@ -262,6 +351,9 @@ export function PriorityPrompt({ d, view, legal, act, busy }: PromptProps<'prior
       )}
       {showByHand && byHandOnly.length > 0 && (
         <Chips view={view} ids={byHandOnly} selected={open ? [open] : []} marks={marks} onClick={click} disabled={busy} label="By-hand tools" />
+      )}
+      {showRepeat && repeatable.length > 0 && (
+        <RepeatPanel player={d.player} repeatable={repeatable} initialSteps={defaultLoopSteps(view)} initialTimes={defaultShortcutTimes(view)} act={act} busy={busy} />
       )}
       {actions && open !== null && (
         <div className="prompt-menu" role="group" aria-label={`Actions of ${objectName(view, open)}`}>

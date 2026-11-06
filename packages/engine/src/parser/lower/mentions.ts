@@ -8,8 +8,8 @@
  */
 import type { ObjectFilter, TargetSpec } from '../../types/ability';
 import { shieldShape } from '../taint';
-import { controlledGroup, drawnPerObject, grantedGroup, looksAtOneCard, namesOnePlayer } from '../../model/focus';
-import { DEALT_DAMAGE_THIS_WAY, EXILED_THIS_WAY, PUT_INTO_GRAVEYARD_THIS_WAY, REVEALED_THIS_WAY } from '../holes/filter';
+import { controlledGroup, damagedGroup, drawnPerObject, grantedGroup, lockedGroup, looksAtOneCard, namesOnePlayer } from '../../model/focus';
+import { DEALT_DAMAGE_THIS_WAY, EXILED_THIS_WAY, FOUGHT_THIS_WAY, PUT_INTO_GRAVEYARD_THIS_WAY, REVEALED_THIS_WAY } from '../holes/filter';
 import { headsOfFilter, OPAQUE, whereOf } from './scope';
 import type { Draft, Mention, Rec, Unit } from './types';
 import { clone, isRec, visit } from './util';
@@ -29,7 +29,8 @@ export interface StepMention extends Mention {
 
 /** Ops whose result can be counted by "that many" (`{q:'resultCount'}`, design 6.5 pass 5). */
 export const COUNTED_OPS: ReadonlySet<string> = new Set(['draw', 'discard', 'mill', 'destroy', 'sacrifice', 'sacrificeChoice', 'move', 'createToken', 'counter', 'putCounters', 'removeCounters', 'search', 'chooseObjects',
-  'flipCoin']); // std-rx30: the coins a flip of several coins came up heads (CR 705.1)
+  'flipCoin', 'phaseOut']); // edh-d-39: the permanents a phase-out phased out (CR 702.26b)
+// (std-rx30: 'flipCoin') // std-rx30: the coins a flip of several coins came up heads (CR 705.1)
 
 const VERB_OF_OP: Readonly<Record<string, string>> = {
   destroy: 'destroyed', sacrifice: 'sacrificed', reveal: 'revealed', discard: 'discarded', counter: 'countered', createToken: 'created', mill: 'milled', chooseObjects: 'chosen',
@@ -39,7 +40,7 @@ export function targetMention(t: TargetSpec, unit: number): Mention {
   // STD-FRA (CR 115.1, 601.2c): one target for each opponent is a set of as many targets as there are opponents: "those creatures" names it, and a singular pronoun may too (`alsoSingular`)
   const plural = !(t.max === 1) || t.perOpponent === true || t.perPlayer === true || t.perCardType === true; // r5-fxb: one for each player too; std-cardcopy-7: one of each card type
   const number = plural ? 'plural' : 'singular';
-  if (t.kind === 'player') return { sort: 'player', number, heads: t.players?.who === 'opponent' ? ['player', 'opponent'] : ['player'], ref: { ref: 'target', id: t.id }, origin: 'target', unit };
+  if (t.kind === 'player') return { sort: 'player', number, heads: t.players?.who === 'opponent' ? ['player', 'opponent'] : ['player'], ref: { ref: 'target', id: t.id }, origin: 'target', unit, ...(t.max !== 1 && !(t.perOpponent === true || t.perPlayer === true) ? { eachOne: true } : {}) };
   if (t.kind === 'anyTarget' || t.kind === 'objectOrPlayer') {
     const heads = t.kind === 'anyTarget' ? ['creature', 'planeswalker', 'battle', 'permanent', 'player', 'opponent'] : [...headsOfFilter(t.filter, 'battlefield'), 'player', 'opponent'];
     return { sort: 'any', number, heads, ref: { ref: 'target', id: t.id }, origin: 'target', unit };
@@ -51,7 +52,7 @@ export function targetMention(t: TargetSpec, unit: number): Mention {
   // r3-copy (CR 110.1, 110.4b): a target permanent of no stated card type ("up to one other target permanent you control") is on the battlefield, never "that spell"
   const notSpell = t.kind === 'object' && where === 'battlefield' && heads.includes('*');
   const controls = controlsOf(t.filter);
-  return { sort: 'object', number, heads, ref: { ref: 'target', id: t.id }, origin: 'target', unit, ...(t.perOpponent === true || t.perPlayer === true || t.perCardType === true ? { alsoSingular: true } : {}), ...(notSpell ? { notHeads: ['spell'] } : {}), ...(controls ? { controls } : {}) };
+  return { sort: 'object', number, heads, ref: { ref: 'target', id: t.id }, origin: 'target', unit, ...(t.perOpponent === true || t.perPlayer === true || t.perCardType === true ? { alsoSingular: true } : {}), ...(notSpell ? { notHeads: ['spell'] } : {}), ...(controls ? { controls } : {}), ...(where === 'battlefield' ? { onBattlefield: true } : {}) };
 }
 
 /**
@@ -64,13 +65,27 @@ function announcedGroup(u: Unit, d: Draft): Mention | null {
   const what = isRec(step) ? step['what'] : undefined;
   if (!isRec(what) || what['ref'] !== 'union' || !Array.isArray(what['of']) || what['of'].length < 2) return null;
   const members: Mention[] = [];
+  let allUpToOne = false;
   for (const r of what['of']) {
     const spec = isRec(r) && r['ref'] === 'target' ? d.targets.find((t) => t.id === r['id']) : undefined;
-    if (spec === undefined || spec.kind !== 'object' || spec.min !== 1 || spec.max !== 1 || spec.perOpponent === true || spec.perPlayer === true) return null;
+    // edh-mana-keywords-9 (CR 115.1, 115.4, 601.2c, 702.33c; Comet Storm): "Choose any target, then choose another target for each time this spell was kicked.": any targets (an
+    // object or a player), the second as many as the spell was kicked (`{q:'kickCount'}`), one group of targets
+    const kicked = spec !== undefined && spec.kind === 'anyTarget' && isRec(spec.min) && isRec(spec.max) && spec.min['q'] === 'kickCount' && spec.max['q'] === 'kickCount';
+    const one = spec !== undefined && (spec.kind === 'object' || spec.kind === 'anyTarget') && spec.min === 1 && spec.max === 1;
+    // edh-next-124 (CR 115.1, 601.2c, 608.2b; Teferi, Who Slows the Sunset): "Choose up to one target artifact, up to one target creature, and up to one target land. Untap the chosen
+    // permanents you control.": objects announced "up to one" each are a group too (the targets chosen, none for one not chosen), only when every member is "up to one" (below)
+    const upToOne = spec !== undefined && spec.kind === 'object' && spec.min === 0 && spec.max === 1;
+    if (spec === undefined || !(one || kicked || upToOne) || spec.perOpponent === true || spec.perPlayer === true) return null;
+    if (upToOne !== (members.length === 0 ? upToOne : allUpToOne)) return null;
+    allUpToOne = upToOne;
     members.push(targetMention(spec, u.index));
   }
   const heads = members.slice(1).reduce((acc, m) => acc.filter((h) => m.heads.includes(h)), members[0]!.heads);
   if (heads.length === 0) return null;
+  if (members.some((m) => m.sort === 'any')) {
+    if (!members.every((m) => m.sort === 'any')) return null; // objects and any targets are not mixed
+    return { sort: 'any', number: 'plural', heads, ref: { ref: 'union', of: members.map((m) => m.ref) }, origin: 'target', unit: u.index, verbs: ['chosen'] };
+  }
   return { sort: 'object', number: 'plural', heads, ref: { ref: 'union', of: members.map((m) => m.ref) }, origin: 'target', unit: u.index, verbs: ['chosen'] };
 }
 
@@ -112,6 +127,25 @@ function controlsOf(f: ObjectFilter | undefined): Mention['controls'] {
 /** r3-refs: the card types of permanents (CR 110.4), as head nouns. */
 const PERMANENT_HEADS: ReadonlySet<string> = new Set(['artifact', 'battle', 'creature', 'enchantment', 'land', 'planeswalker']);
 
+/**
+ * edh-c-98 (CR 608.2c, 205.2; Killer Instinct): the card types an enclosing `if` of the step at `path` says the object `what` has ("If it's a creature card, put it onto the
+ * battlefield."): the heads (lower case) of a `matches` condition on that very object, whose filter is only card types. Empty for any other guard.
+ */
+function typeGuardOf(steps: readonly Rec[], path: string, what: Rec): string[] {
+  const out: string[] = [];
+  let cur: unknown = steps;
+  for (const k of path.split('/').slice(1)) {
+    cur = isRec(cur) ? cur[k] : Array.isArray(cur) ? cur[Number(k)] : undefined;
+    if (!isRec(cur) || cur['op'] !== 'if' || cur['else'] !== undefined) continue;
+    const c = cur['cond'];
+    if (!isRec(c) || c['cond'] !== 'matches' || !isRec(c['object']) || !sameRef(what, c['object']) || !isRec(c['filter'])) continue;
+    const f = c['filter'];
+    if (!Array.isArray(f['types']) || Object.keys(f).some((x) => x !== 'types' && x !== 'isCard')) continue;
+    for (const t of f['types']) if (typeof t === 'string' && PERMANENT_HEADS.has(t.toLowerCase())) out.push(t.toLowerCase());
+  }
+  return out;
+}
+
 /** The verb and the new nouns a step gives the object it acts on. */
 function effectOn(step: Rec): { verb?: string; heads: string[] } {
   const op = step['op'] as string;
@@ -124,7 +158,8 @@ function effectOn(step: Rec): { verb?: string; heads: string[] } {
   return { ...(verb ? { verb } : {}), heads: op === 'destroy' || op === 'sacrifice' ? ['card'] : [] };
 }
 
-const sameRef = (a: Rec, b: unknown): boolean => isRec(b) && a['ref'] === b['ref'] && (a['id'] === undefined || a['id'] === b['id']) && (a['name'] === undefined || a['name'] === b['name']);
+// edh-c-96 (CR 603.2, 608.2c; Furnace Scamp): two roles of one event are two things (the damage event's source creature and the player it damaged), so `role` counts too
+const sameRef = (a: Rec, b: unknown): boolean => isRec(b) && a['ref'] === b['ref'] && (a['id'] === undefined || a['id'] === b['id']) && (a['name'] === undefined || a['name'] === b['name']) && (a['role'] === undefined || b['role'] === undefined || a['role'] === b['role']);
 
 /** Object fields of a step that name what it acts on ("tap enchanted creature", "put a counter on ~", "attach ~ to ..."). */
 // FAST5 T39: `attachTo` (createToken, CR 303.4f): "Return target creature card ... to the battlefield. Create a Young Hero Role token attached to it" names the returned creature
@@ -138,6 +173,9 @@ export const ACTED_ON = ['what', 'on', 'from', 'to', 'a', 'b', 'attachTo'] as co
 export function actedOn(step: Rec): [string, unknown][] {
   const out: [string, unknown][] = [];
   for (const k of ACTED_ON) if (step[k] !== undefined) out.push([`/${k}`, step[k]]);
+  // edh-d-59 (CR 400.7, 608.2c; Call of the Death-Dweller): "Return up to two target creature cards ... to the battlefield. Put a deathtouch counter on either of them.": the group the
+  // controller then chooses one of is the permanents the earlier step made of the targets, not the cards that were targeted (a new object in a new zone)
+  if (step['op'] === 'chooseObjects' && isRec(step['from']) && isRec(step['from']['filter']) && step['from']['filter']['is'] !== undefined) out.push(['/from/filter/is', step['from']['filter']['is']]);
   // FAST5 T41: a token created attached to "it" ("return it to the battlefield, then create a Role token attached to it") is attached to the new object the earlier step made of it (CR 400.7, 303.7)
   if (step['op'] === 'createToken' && step['attachTo'] !== undefined) out.push(['/attachTo', step['attachTo']]);
   // FAST5X E12 (CR 701.60a, 400.7j): "suspect it" acts on the permanent ("Return target creature card ... to the battlefield. Suspect it." suspects the
@@ -145,7 +183,12 @@ export function actedOn(step: Rec): [string, unknown][] {
   if (step['op'] === 'action' && step['action'] === 'suspect' && step['subject'] !== undefined) out.push(['/subject', step['subject']]);
   // std-lci (CR 701.44a, 400.7): "Return target creature card from your graveyard to the battlefield. That creature explores" explores with the permanent it
   // became (the counter goes on it); reviewed for explore alone, the other keyword actions keep the reading above
-  if (step['op'] === 'action' && step['action'] === 'explore' && step['subject'] !== undefined) out.push(['/subject', step['subject']]);
+  // edh-c-14 (CR 701.50a, 400.7): the same for "it connives" (the permanent does it, never a spell on the stack that targeted it: Illuminator Virtuoso)
+  if (step['op'] === 'action' && (step['action'] === 'explore' || step['action'] === 'connive') && step['subject'] !== undefined) out.push(['/subject', step['subject']]);
+  // edh-c-7 (CR 400.7, 611.2a, 611.2b): "For as long as that creature has a mannequin counter on it, it has ..." after "Return target creature card from your graveyard to the
+  // battlefield ...": the object whose state the duration judges is the permanent the earlier step made, as the object the effect applies to is
+  const dur = step['duration'];
+  if (step['op'] === 'effect' && isRec(dur) && dur['d'] === 'whileObject' && dur['object'] !== undefined) out.push(['/duration/object', dur['object']]);
   const effects = step['effects'];
   if (step['op'] === 'effect' && Array.isArray(effects)) {
     effects.forEach((e, i) => {
@@ -170,6 +213,12 @@ function pushNamed(out: Rec[], v: unknown): void {
   if (isRec(v) && NAMED_REFS.has(v['ref']) && !out.some((x) => x['ref'] === v['ref'])) out.push({ ref: v['ref'] });
 }
 
+/** edh-d-96: a condition counts the cards exiled with the object (`{q:'count', of:{ref:'linked', link:'exiled'}}`, `ever` or not). */
+function linkedCountIn(c: unknown): boolean {
+  const walk = (v: unknown): boolean => Array.isArray(v) ? v.some(walk) : isRec(v) ? ((v['q'] === 'count' && isRec(v['of']) && v['of']['ref'] === 'linked' && v['of']['link'] === 'exiled') || Object.values(v).some(walk)) : false;
+  return walk(c);
+}
+
 /** p2-refs-2: the `{ref:'self'}` records namedIn made for a `wasCast` condition alone (namedMention marks them Mention.condSelf). */
 const CAST_SELF = new WeakSet<Rec>();
 
@@ -179,9 +228,30 @@ export function namedIn(value: unknown, out: Rec[] = []): Rec[] {
     if (Array.isArray(v)) { v.forEach(walk); return; }
     if (!isRec(v) || isAbility(v)) return;
     pushNamed(out, v);
+    // edh-c-33 (CR 508.1, 509.1, 603.4; Air Nomad Student): "if this creature didn't attack this turn, put a +1/+1 counter on it" / "if ~ attacked or blocked this turn, its owner shuffles it ...": the
+    // history of the object itself (an attacker or blocker `{self:true}`) names ~, so "it" after it may be ~ (only adds a candidate, as the wasCast reading below)
+    if (v['cond'] === 'happened' && isRec(v['event']) && (v['event']['ev'] === 'attacks' || v['event']['ev'] === 'blocks')) {
+      const who = v['event']['ev'] === 'attacks' ? v['event']['attacker'] : v['event']['blocker'];
+      if (isRec(who) && who['self'] === true && Object.keys(who).length === 1) pushNamed(out, { ref: 'self' });
+    }
     // p2-refs-2 (CR 702.33d, 601.2, 603.4; Aggressive Sabotage, Skizzik): "if this spell was kicked" / "if this creature wasn't kicked" names ~ (a `wasCast` with no
     // `object` is about the object itself), so "it deals 3 damage" / "sacrifice it" after it may be ~
     if (v['cond'] === 'wasCast' && v['object'] === undefined && !out.some((x) => x['ref'] === 'self')) {
+      const me = { ref: 'self' };
+      CAST_SELF.add(me);
+      out.push(me);
+    }
+    // edh-c-67 (CR 603.4, 120.1; Dunerider Outlaw): "if ~ dealt damage to an opponent this turn, put a +1/+1 counter on it": a `happened` condition whose event is the object's own
+    // damage names ~ (the event's source is the object itself), so "it" after it may be ~. Only the damage the object itself dealt, as `wasCast` above
+    const evSrc = v['cond'] === 'happened' && isRec(v['event']) && v['event']['ev'] === 'damage' && isRec(v['event']['source']) ? v['event']['source'] : undefined;
+    if (evSrc !== undefined && evSrc['self'] === true && Object.keys(evSrc).length === 1 && !out.some((x) => x['ref'] === 'self')) {
+      const me = { ref: 'self' };
+      CAST_SELF.add(me);
+      out.push(me);
+    }
+    // edh-d-96 (CR 607.2a, 603.4; Colfenor's Urn): "if three or more cards have been exiled with ~, sacrifice it": a count of the cards exiled with the object names ~ (the object the link is
+    // on), so "it" after it may be ~ (only a candidate when nothing else is, as the wasCast reading above)
+    if (v['q'] === 'count' && isRec(v['of']) && v['of']['ref'] === 'linked' && v['of']['link'] === 'exiled' && !out.some((x) => x['ref'] === 'self')) {
       const me = { ref: 'self' };
       CAST_SELF.add(me);
       out.push(me);
@@ -214,6 +284,9 @@ function conditionObjects(step: Rec): Rec[] {
 function namedObjects(step: Rec): Rec[] {
   const out: Rec[] = [];
   for (const [, v] of actedOn(step)) pushNamed(out, v);
+  // edh-d-94 (CR 400.7j, 608.2c; Jhoira of the Ghitu): the one card a cost exiled, once an earlier instruction acted on it by its participle ("Put four time counters on the exiled card."),
+  // is "it" of a later sentence ("If it doesn't have suspend, it gains suspend."): the card in exile the instruction found (lower/anaphora.ts#actsOnCostExiled)
+  for (const [, v] of actedOn(step)) if (isRec(v) && v['ref'] === 'costExiled' && v['self'] === undefined && Object.keys(v).length === 1 && !out.some((x) => x['ref'] === 'costExiled')) out.push({ ref: 'costExiled' });
   for (const r of conditionObjects(step)) pushNamed(out, r);
   for (const r of possessorObjects(step)) pushNamed(out, r);
   // p2-refs-2 (CR 702.3b, 609.4; Dark Maze): "~ can attack this turn as though it didn't have defender" names ~ (the permission is the object's own, so the step
@@ -237,6 +310,7 @@ function possessorObjects(step: Rec): Rec[] {
   return out;
 }
 
+const COST_PARTICIPLE_REFS: ReadonlySet<string> = new Set(['costSacrificed', 'costExiled', 'costDiscarded']); // edh-d-53
 const namedMention = (ref: Rec, unit: number, d?: Draft): Mention => ({ sort: 'object', number: 'singular', heads: ['*'], ref: CAST_SELF.has(ref) ? { ref: 'self' } : ref, origin: 'event', unit, ...(CAST_SELF.has(ref) ? { condSelf: true } : {}), ...(d !== undefined && selfNeverSpell(ref, d) ? { notHeads: ['spell', 'card'] } : {}), ...(ref['ref'] === 'self' ? { namedSelf: true } : {}) });
 
 /**
@@ -259,7 +333,7 @@ function selfNeverSpell(ref: Rec, d: Draft): boolean {
 }
 
 /** The mention a step makes, or null (it acts on something already mentioned, or produces nothing nameable). */
-function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown) => string[] = () => []): StepMention | null {
+function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown) => string[] = () => [], wholeBatch = false): StepMention | null {
   const op = step['op'];
   const base = { origin: 'step' as const, unit: unit.index, unitRef: unit, path, ref: typeof step['as'] === 'string' ? { ref: 'bound', name: step['as'] } : { ref: 'bound', name: '' } };
   const verb = typeof op === 'string' ? VERB_OF_OP[op] : undefined;
@@ -272,8 +346,22 @@ function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown)
   // candidates, ownerSubject / ownerNamed)
   const actor = step['who'];
   const ofTarget = isRec(actor) && actor['ref'] === 'controllerOf' && isRec(actor['object']) && actor['object']['ref'] === 'target';
-  if ((op === 'may' || (op === 'pay' && ofTarget)) && isRec(actor) && (actor['ref'] === 'controllerOf' || actor['ref'] === 'ownerOf') && isRec(actor['object']) && (actor['object']['ref'] === 'event' || ofTarget)) {
-    return { ...base, ref: actor, sort: 'player', number: 'singular', heads: ['player'] };
+  // edh-b-11 (CR 701.21a, 608.2c, 109.4; Arcum Dagsson): and the controller of a target who sacrifices it ("Target artifact creature's controller sacrifices it. That player may search ...")
+  if ((op === 'may' || op === 'pay' || (op === 'sacrificeChoice' && ofTarget)) && isRec(actor) && (actor['ref'] === 'controllerOf' || actor['ref'] === 'ownerOf') && isRec(actor['object']) && (actor['object']['ref'] === 'event' || ofTarget)) {
+    return { ...base, ref: actor, sort: 'player', number: 'singular', heads: ['player'], ...(actor['object'] !== undefined && isRec(actor['object']) && actor['object']['ref'] === 'event' ? { optionActor: true } : {}) };
+  }
+  // edh-next-34 (CR 608.2c, 109.4, 400.7; Declaration in Stone): "Exile target creature and all other creatures its controller controls with the same name as that creature. That player
+  // investigates for each nontoken creature exiled this way.": the group names one player, the controller of the target (read as last known information), "that player" afterwards
+  if (op === 'move' && isRec(step['what']) && step['what']['ref'] === 'union' && Array.isArray(step['what']['of'])) {
+    const group = (step['what']['of'] as unknown[]).find((x) => isRec(x) && x['ref'] === 'each' && isRec(x['filter']) && isRec(x['filter']['controller']) && x['filter']['controller']['ref'] === 'controllerOf'
+      && isRec(x['filter']['controller']['object']) && x['filter']['controller']['object']['ref'] === 'target') as Rec | undefined;
+    if (group !== undefined) return { ...base, ref: (group['filter'] as Rec)['controller'] as Rec, sort: 'player', number: 'singular', heads: ['player'] };
+  }
+  // edh-next-131 (CR 601.2, 608.2c, 707.10; Finale of Promise): the spells one cast of two targets cast ("You may cast up to one target instant card and/or up to one target sorcery card ...
+  // If X is 10 or more, copy each of those spells twice."): the step binds the spells it cast under its `as` (effects/handlers/tokens-cast.ts); "those spells" afterwards. Only that shape (a
+  // union of targets, a named result), so no other cast gives a pronoun a new candidate
+  if (op === 'cast' && typeof step['as'] === 'string' && isRec(step['what']) && step['what']['ref'] === 'union' && Array.isArray(step['what']['of']) && (step['what']['of'] as unknown[]).every((x) => isRec(x) && x['ref'] === 'target')) {
+    return { ...base, sort: 'object', number: 'plural', heads: ['spell'], verbs: ['cast'] };
   }
   // std-hob (CR 701.47c, 608.2c): "the Army you amassed" is the Army chosen by an amass action ("amass Goblins 1, then attach ~ to the amassed Army"); it is named only by
   // the participle "amassed", so no pronoun gets a new candidate
@@ -283,6 +371,17 @@ function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown)
     const f = step['subject']['filter'] as ObjectFilter;
     return { ...base, sort: 'object', number: 'plural', heads: headsOfFilter(f, whereOf(f)) };
   }
+  // edh-perms-15 (CR 701.36a, 111.1, 608.2c; Determined Iteration): the token a populate created ("Populate. The token gains haste ... Sacrifice it ..."): the step records it under its `as`
+  if (op === 'action' && step['action'] === 'populate' && step['n'] === undefined) return { ...base, sort: 'object', number: 'singular', heads: ['token', 'permanent', 'creature'], verbs: ['created'] };
+  // edh-c-64 (CR 701.40a, 608.2c; Wildcall): the permanent one manifest of the top card makes, "Manifest the top card of your library, then put X +1/+1 counters on it": the step records it under its `as`
+  // (effects/handlers/face-ops.ts binds every card manifested); "it" names the one permanent of a single manifest
+  if (op === 'action' && step['action'] === 'manifest' && step['n'] === undefined && step['arg'] === undefined && step['subject'] === undefined) return { ...base, sort: 'object', number: 'singular', heads: ['permanent', 'creature', 'card'], verbs: ['manifested'] };
+  // edh-next-136 (CR 121.1, 701.20a, 608.2c; Jace, Mirror Mage): the one card "Draw a card and reveal it." drew and revealed, "that card" afterwards (effects/handlers/cards-draw.ts#drawAndReveal binds it)
+  if (op === 'draw' && step['revealDrawn'] === true) return { ...base, sort: 'object', number: 'singular', heads: ['card'], verbs: ['drawn', 'revealed'] };
+  // edh-d-89 (CR 701.39a, 608.2c; Optimus Prime, Autobot Leader): the creature a bolster chose ("Bolster 2. The chosen creature gains trample until end of turn."): the step records it under
+  // its `as` (effects/handlers/actions-native-counters.ts#bolster binds the one creature); named by the participle "chosen" and then "that creature"
+  if (op === 'action' && step['action'] === 'bolster' && step['subject'] === undefined) return { ...base, sort: 'object', number: 'singular', heads: ['creature', 'permanent'], verbs: ['chosen'] };
+  // edh-next-136 (CR 121.1, 701.20a, 608.2c; Jace, Mirror Mage): the one card "Draw a card and reveal it." drew and revealed, "that card" afterwards (effects/handlers/cards-draw.ts#drawAndReveal binds it)
   if (op === 'action' && step['action'] === 'amass') {
     const sub = typeof step['arg'] === 'string' ? [step['arg'].toLowerCase()] : [];
     return { ...base, sort: 'object', number: 'singular', heads: ['army', 'creature', 'permanent', ...sub], verbs: ['amassed'], participleOnly: true };
@@ -304,15 +403,21 @@ function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown)
     const tok = isRec(step['token']) ? step['token'] : {};
     const heads = ['token', 'permanent', ...((tok['types'] as string[] | undefined) ?? []).map((x) => x.toLowerCase()), ...((tok['subtypes'] as string[] | undefined) ?? []).map((x) => x.toLowerCase())];
     if (tok['predefined']) heads.push(String(tok['predefined']).toLowerCase(), 'artifact');
-    return { ...base, sort: 'object', number: step['count'] === 1 ? 'singular' : 'plural', heads, verbs: ['created'] };
+    // edhn95 (CR 111.1, 608.2c; Life of the Party): every player of a group makes a token, so the tokens are several, whatever the count each makes (the step binds all of them, effects/handlers/tokens-create.ts)
+    const group = isRec(step['who']) && step['who']['ref'] === 'each';
+    return { ...base, sort: 'object', number: step['count'] === 1 && !group ? 'singular' : 'plural', heads, verbs: ['created'] };
   }
   // CR 707.2, 111.1: a token copy is a new object ("Sacrifice that token"); it has the copied object's nouns too, so a bare "it" after a copy has two
   // candidates (the copied object and the token) and the unique-candidate rule leaves it manual (design 6.4). A spell copy is a new object on the stack
   // (CR 707.10). WP23 review.
   if (op === 'copy') {
-    const number = step['count'] === undefined || step['count'] === 1 ? 'singular' : 'plural';
+    const number = (step['count'] === undefined || step['count'] === 1) && !(isRec(step['who']) && step['who']['ref'] === 'each' /* edhn95: one copy for each player of a group */) ? 'singular' : 'plural';
     const copied = headsOf(step['what']).filter((h) => h !== 'card');
-    if (step['result'] === 'token') return { ...base, sort: 'object', number, heads: [...new Set(['token', 'permanent', 'copy', ...copied])], verbs: ['created'] };
+    // edh-next-130 (CR 608.2c, 707.2; Tempt with Reflections): a token copy of a TARGET is not named by the target's own nouns ("Create a token that's a copy of that creature. Each opponent may
+    // create a token that's a copy of that creature.": "that creature" is the target again; Oracle names the token "the token" / "that token")
+    // combined copy: never "token" (the copy IS a token): with a target token ("a copy of target token you control. That token ...") both stay candidates (edh-perms-23)
+    const ofTarget = isRec(step['what']) && step['what']['ref'] === 'target';
+    if (step['result'] === 'token') return { ...base, sort: 'object', number, heads: [...new Set(['token', 'permanent', 'copy', ...copied])], verbs: ['created'], ...(ofTarget && copied.filter((h) => h !== 'permanent' && h !== 'token').length > 0 ? { notHeads: copied.filter((h) => h !== 'permanent' && h !== 'token') } : {}) };
     return { ...base, sort: 'object', number, heads: [...new Set(['copy', 'spell', ...copied])] };
   }
   // FAST5 T76 (CR 608.2c, 122.1): the creatures a counters step put counters on as a group ("Put a +1/+1 counter on each creature you control. Untap those creatures."):
@@ -334,6 +439,10 @@ function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown)
   // the step locked, bound under its `as` (the description no longer fits them once they changed controller)
   const taken = controlledGroup(step);
   if (taken !== null) return { ...base, sort: 'object', number: 'plural', heads: headsOfFilter(taken['filter'] as ObjectFilter, whereOf(taken['filter'] as ObjectFilter)) };
+  // edh-replace-6 (CR 611.2c, 608.2c; Mutational Advantage): the group a grant took whose description can change ("Permanents you control with counters on them gain hexproof
+  // ... Prevent all damage that would be dealt to those permanents this turn."): the objects the step locked, bound under its `as`
+  const locked = lockedGroup(step);
+  if (locked !== null) return { ...base, sort: 'object', number: 'plural', heads: headsOfFilter(locked['filter'] as ObjectFilter, whereOf(locked['filter'] as ObjectFilter)) };
   // "For each opponent, that player ..." / "For each creature, ... it": the object or player of the current iteration (CR 608.2f; WP23)
   if (op === 'forEach' && typeof step['as'] === 'string' && isRec(step['over'])) {
     const over = step['over'];
@@ -342,13 +451,21 @@ function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown)
     }
     if (over['ref'] === 'each' && isRec(over['filter'])) {
       const f = over['filter'] as ObjectFilter;
-      return { ...base, sort: 'object', number: 'singular', heads: headsOfFilter(f, whereOf(f)) };
+      // edh-next-131 (CR 301.5c, 303.4d, 608.2c; Arna Kennerüd, Skycaptain): a permanent attached to an object is never a creature (an Equipment or Aura that is a creature is never attached), so
+      // the element of "for each nontoken permanent attached to it" is "that permanent", never "that creature"
+      const attachedOnly = f.attachedToObject !== undefined && f.types === undefined && f.anyOf === undefined;
+      const heads = headsOfFilter(f, whereOf(f));
+      return { ...base, sort: 'object', number: 'singular', heads: attachedOnly ? heads.filter((h) => h !== '*' && h !== 'creature') : heads };
     }
+    // edh-players-13 (CR 608.2f, 608.2d): "For each player who chose fame, ... that player ...": the player of the current iteration
+    if (over['ref'] === 'chose') return { ...base, sort: 'player', number: 'singular', heads: ['player'], iterates: 'player' };
     return null;
   }
   // FAST4 T19: what a damage step actually dealt damage to (effects/handlers/lifedamage.ts binds exactly those, CR 120.3), named only by "a creature dealt
   // damage this way" (parser/holes/filter.ts): a participle-only mention, so no pronoun, "that creature" or "that many" changes its antecedents
   if (op === 'damage') return { ...base, sort: 'object', number: 'plural', heads: ['*'], verbs: [DEALT_DAMAGE_THIS_WAY], participleOnly: true };
+  // trek-22 (CR 701.14a, 608.2c; T'Pring, Never Parted): the creatures a fight step made fight (effects/handlers/lifedamage.ts#fightBetween binds exactly those), named only by "a creature that fought this way" (parser/templates/zz-cloud/trek-22.json)
+  if ((op === 'fight' && step['pairs'] !== true) || (step['lower'] === 'fightEachOther' && step['by'] !== 'toughness')) return { ...base, sort: 'object', number: 'plural', heads: ['*'], verbs: [FOUGHT_THIS_WAY], participleOnly: true };
   // FAST5 T75 (CR 701.23a, 701.17a, 608.2c): the cards a search found are "found" (the `Found` hole: "Put one of them onto the battlefield tapped"); the cards a mill put into
   // a graveyard are "milled" (the `Milled` hole: "You may put a land card from among them into your hand"), a participle-only mention so no other pronoun gets a candidate
   // CLOUD C9 (CR 701.23a): a search for a card of each of several descriptions ("a basic land card and a Shrine card", `and`) finds several cards
@@ -363,8 +480,10 @@ function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown)
   // std-ry6 (CR 701.17a, 608.2c, 608.2h): ONE player's mill of ONE card is also "the milled card" ("Mill a card, then draw cards equal to the milled card's mana
   // value"), bound by the step's `as` (effects/handlers/cards-draw.ts#millHandler): the group stays plural for "milled this way" and may also be named singular
   // (`alsoSingular`); a mill of several cards or by several players has no "the milled card"
-  const millsOne = step['count'] === 1 && isRec(step['who']) && (step['who']['ref'] === 'you' || step['who']['ref'] === 'target');
-  if (op === 'mill') return { ...base, sort: 'object', number: 'plural', heads: ['card'], verbs: ['milled'], participleOnly: true, ...(millsOne ? { alsoSingular: true } : {}) };
+  const millsOne = step['count'] === 1 && isRec(step['who']) && (step['who']['ref'] === 'you' || step['who']['ref'] === 'target' || (step['who']['ref'] === 'event' && step['who']['role'] === 'player' /* edh-c-48 (CR 701.17a; Infernal Genesis): the one player of the trigger's event, "that player mills a card" */));
+  // (edh-players-4: "those cards" also names the cards YOU milled; several players' mills are no one group, and a later "choose ... Put those cards" is about the cards chosen)
+  const youMill = isRec(step['who']) && step['who']['ref'] === 'you';
+  if (op === 'mill') return { ...base, sort: 'object', number: 'plural', heads: ['card'], verbs: ['milled'], participleOnly: true, ...(youMill ? { demonstrative: true } : {}), ...(millsOne ? { alsoSingular: true } : {}) };
   // r5-moved (CR 701.25a, 608.2c, 400.7): the ONE card a surveil 1 of yours may have put into your graveyard ("Surveil 1. If you put a creature card into your graveyard this
   // way, put that card into your hand"), bound by the step's `as` (effects/handlers/cards-library.ts#surveilHandler binds what it put there): named only by the participle
   // `surveilled` (template eff.r5moved.surveil.putThisWay.hand), so no pronoun gets a new candidate. Several cards (surveil 2) are no "that card": no mention
@@ -373,12 +492,18 @@ function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown)
   // card's mana value"), bound by the step's `as` where the discard put it (effects/handlers/cards-draw.ts#discardHandler): named only by the participle "the discarded
   // card", so no pronoun gets a new candidate (Cloud C8 names a cost's discard the same way; with both, the reference is not unique and stays manual)
   if (op === 'discard' && step['count'] === 1 && isRec(step['who']) && (step['who']['ref'] === 'you' || step['who']['ref'] === 'target') && step['mode'] === undefined) {
-    return { ...base, sort: 'object', number: 'singular', heads: ['card'], verbs: ['discarded'], participleOnly: true };
+    // edh-c-32 (Hellhole Rats): "that card" names it too (`demonstrative`, as the mill's "those cards"; only a TARGET player's discard: Party Thrasher's "you may discard a card ... choose one of them. You may play that card" keeps its two candidates): "target player discards a card. ~ deals damage to that player equal to that card's mana value"
+    return { ...base, sort: 'object', number: 'singular', heads: ['card'], verbs: ['discarded'], participleOnly: true, ...(step['who']['ref'] === 'target' ? { demonstrative: true } : (path.includes('/do/') ? { demonstrative: true, soleOnly: true } : {}) /* edh-next-98 (Disciple of Deceit): your own optional discard (inside a "you may") is "that card" when nothing else fits; an unconditional one keeps only "the discarded card" (Silvan Reveler's "put it" stays as it was) */) };
+  }
+  // edh-c-106 (CR 701.9a, 701.9b, 608.2c; Kindle the Carnage): the ONE card you discarded at random is also "that card" ("Discard a card at random. If you do, ~ deals damage equal to that
+  // card's mana value to each creature"): the card the discard put in the graveyard, bound by the step's `as` (Mention.demonstrative)
+  if (op === 'discard' && step['count'] === 1 && isRec(step['who']) && step['who']['ref'] === 'you' && step['mode'] === 'random') {
+    return { ...base, sort: 'object', number: 'singular', heads: ['card'], verbs: ['discarded'], participleOnly: true, demonstrative: true };
   }
   // Cloud std-woe (CR 608.2c-d): the player a choice of the resolution named, "Choose another player. That player gains control of target Treasure you control."
   // (bound by the step's `as`, effects/handlers/choose.ts); a choice made by several players names no one player
   if (op === 'chooseValue' && (step['what'] === 'player' || step['what'] === 'opponent') && isRec(step['who']) && step['who']['ref'] === 'you') {
-    return { ...base, sort: 'player', number: 'singular', heads: step['what'] === 'opponent' ? ['player', 'opponent'] : ['player'] };
+    return { ...base, sort: 'player', number: 'singular', heads: step['what'] === 'opponent' ? ['player', 'opponent'] : ['player'], rebinds: 'chosenPlayer' };
   }
   // CLOUD std-fdn (CR 701.21a, 608.2c, 400.7): what "<player> sacrifices a <filter> of their choice" sacrificed (effects/handlers/zones-remove.ts binds it with
   // `as`): "You gain life equal to that creature's toughness" (its last known information, CR 608.2h). One object only when one player sacrifices one; "each
@@ -398,7 +523,16 @@ function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown)
     // std-rx4 (CR 701.21a, 608.2c, 608.2h; The Gitrog, Ravenous Ride): what YOUR sacrifice of one permanent sacrificed, "You may sacrifice a creature that saddled it
     // this turn. If you do, draw X cards, ..., where X is the sacrificed creature's power" (its last known information): a participle-only mention, as paidSacrificed
     // gives for a cost, so only "the sacrificed <noun>" names it and no pronoun gets a new candidate (the target's reference above stays unique)
-    if (who['ref'] === 'you') return one ? { ...base, sort: 'object', number: 'singular', heads: headsOfFilter(f, 'battlefield'), verbs: ['sacrificed'], participleOnly: true } : null;
+    // edh-players-4 (CR 608.2c, 608.2h): "Sacrifice another creature. You gain X life and draw X cards, where X is that creature's power" (Disciple of Bolas): the
+    // demonstrative with the head noun names the one permanent THIS step sacrificed (Mention.demonstrative, as paidSacrificed for an optional payment); a bare "it" still never does
+    if (who['ref'] === 'you') {
+      if (!one) return null;
+      // (a description by card types only: "sacrifice a Food" / "sacrifice a Forest" says no noun a later "that creature" could use, so the target there stays the only "that creature")
+      const parts = Array.isArray(f?.anyOf) ? (f!.anyOf as ObjectFilter[]) : f !== undefined ? [f] : [];
+      const heads = parts.length > 0 ? [...new Set(parts.flatMap((x) => headsOfFilter(x, 'battlefield')))] : headsOfFilter(f, 'battlefield');
+      // edh-c-48 (CR 701.21a, 400.7, 608.2c; Heart-Shaped Herb): a creature the sacrifice put into the graveyard is also "that card" (a card there), said of a card the same ability returns
+      return { ...base, sort: 'object', number: 'singular', heads: heads.includes('*') ? heads : [...new Set([...heads, 'card'])], verbs: ['sacrificed'], participleOnly: true, ...(heads.includes('*') ? {} : { demonstrative: true }) };
+    }
     if (who['ref'] !== 'target') return null;
     return { ...base, sort: 'object', number: one ? 'singular' : 'plural', heads: [...new Set([...headsOfFilter(f, 'battlefield'), 'card'])], verbs: ['sacrificed'] };
   }
@@ -408,6 +542,11 @@ function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown)
   // std-exile-play-2-1 (CR 608.2c, 400.7): and they are the "cards exiled this way" ("Until end of turn, you may cast cards exiled this way without paying their mana
   // costs": every card it exiled, the step's binding)
   if (op === 'exileUntil' && step['total'] !== undefined) return { ...base, sort: 'object', number: 'plural', heads: ['card'], verbs: ['exiled', EXILED_THIS_WAY] };
+  // edh-d-102 (CR 406.1, 608.2c; Auspicious Starrix): "until you exile X permanent cards" names the X matching cards it exiled, "those permanent cards"
+  if (op === 'exileUntil' && step['count'] !== undefined) {
+    const f = step['filter'] as ObjectFilter;
+    return { ...base, sort: 'object', number: 'plural', heads: [...new Set(['card', ...headsOfFilter(f, 'other'), ...(f.types !== undefined && f.types.length > 0 && f.types.every((t) => ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'].includes(t)) ? ['permanent'] : [])])], verbs: ['exiled'] };
+  }
   // std-rs (CR 608.2c): "target opponent exiles cards ... until they exile a nonland card" stops at one card; "each opponent exiles ..." at one card for each of
   // them, several cards (the step binds every one)
   if (op === 'exileUntil') return { ...base, sort: 'object', number: namesOnePlayer(step['who']) ? 'singular' : 'plural', heads: [...new Set(['card', ...headsOfFilter(step['filter'] as ObjectFilter, 'other')])], verbs: ['exiled'] };
@@ -415,7 +554,8 @@ function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown)
   // card into your hand", "Put those land cards onto the battlefield tapped"); the other revealed cards are "the rest" (revealedRestOf)
   if (op === 'revealUntil') {
     const one = step['count'] === undefined || step['count'] === 1;
-    return { ...base, sort: 'object', number: one ? 'singular' : 'plural', heads: [...new Set(['card', ...headsOfFilter(step['filter'] as ObjectFilter, 'other')])], verbs: ['revealed'] };
+    // edh-zones-22 (CR 701.20a, 608.2c; Old Stickfingers): the X cards a counted reveal until stopped at are also "<cards> revealed this way" (parser/holes/object.ts#revealedThisWay)
+    return { ...base, sort: 'object', number: one ? 'singular' : 'plural', heads: [...new Set(['card', ...headsOfFilter(step['filter'] as ObjectFilter, 'other')])], verbs: one ? ['revealed'] : ['revealed', REVEALED_THIS_WAY] };
   }
   if (op === 'chooseObjects') {
     const from = isRec(step['from']) && isRec(step['from']['filter']) ? (step['from']['filter'] as ObjectFilter) : undefined;
@@ -434,6 +574,18 @@ function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown)
   if (op === 'look' && isRec(step['at']) && step['at']['ref'] === 'topCards' && step['at']['count'] !== 1) {
     return { ...base, sort: 'object', number: 'plural', heads: ['card'], verbs: ['seen'] };
   }
+  // edh-cast-10 (CR 701.20e, 402.3, 608.2c; Silent-Blade Oni): the cards of ONE player's hand a player looked at ("Look at that player's hand. You may cast a spell from among
+  // those cards"): a group only the `SeenInHand` hole names (participle "seen-in-hand"), never the library groups of "seen"
+  if (op === 'look' && isRec(step['at']) && step['at']['ref'] === 'each' && isRec(step['at']['filter']) && step['at']['filter']['zone'] === 'hand'
+    && Object.keys(step['at']['filter']).sort().join() === 'owner,zone') {
+    return { ...base, sort: 'object', number: 'plural', heads: ['card'], verbs: ['seen-in-hand'], participleOnly: true }; // (participleOnly: only the `SeenInHand` anaphor, which has a participle, can name it)
+  }
+  // edh-next-41 (CR 701.20a, 402.3, 608.2c; Mindclaw Shaman): the hand a player REVEALS is the same group, "Target opponent reveals their hand. You may cast an instant or sorcery spell from among those
+  // cards without paying its mana cost." (the cards of that one hand; the `SeenInHand` anaphor only)
+  if (op === 'reveal' && isRec(step['what']) && step['what']['ref'] === 'each' && isRec(step['what']['filter']) && step['what']['filter']['zone'] === 'hand'
+    && Object.keys(step['what']['filter']).sort().join() === 'owner,zone') {
+    return { ...base, sort: 'object', number: 'plural', heads: ['card'], verbs: ['seen-in-hand'], participleOnly: true };
+  }
   // LOOK1 (CR 701.20e, 608.2c): ... but the one card a player looked at on top of one library is what the next sentence's "it" or "that card" names ("Look at the top card
   // of your library. If it's a land card, you may put it onto the battlefield tapped."), a candidate beside the trigger's object, as a revealed top card is (below);
   // the focus rule (model/focus.ts#looksAtOneCard) says which of them a bare "it" right after the look means (reviewed; Cloud std-fin wrote the same
@@ -444,13 +596,18 @@ function producedBy(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown)
   const exiled = op === 'move' && isRec(step['to']) && step['to']['zone'] === 'exile' ? [EXILED_THIS_WAY] : [];
   if (isRec(what) && (what['ref'] === 'each' || what['ref'] === 'topCards')) {
     const fx = effectOn(step);
-    const heads = what['ref'] === 'each' ? headsOfFilter(what['filter'] as ObjectFilter, whereOf(what['filter'] as ObjectFilter)) : ['card'];
+    const heads = what['ref'] === 'each' ? headsOfFilter(what['filter'] as ObjectFilter, whereOf(what['filter'] as ObjectFilter)) : isRec(what['matching']) && Array.isArray(what['matching']['types']) ? ['card', ...(what['matching']['types'] as string[]).map((t) => t.toLowerCase())] /* edhn78: "the top creature card of your graveyard" is also "that creature" */ : ['card'];
     // r5-cost (CR 608.2c): the top card of EACH player's library is several cards ("those cards", "them": Etali, Primal Storm), one for each player
-    const eachPlayer = what['ref'] === 'topCards' && isRec(what['player']) && what['player']['ref'] === 'each';
+    const eachPlayer = what['ref'] === 'topCards' && isRec(what['player']) && (what['player']['ref'] === 'each' || (what['player']['ref'] === 'event' && what['player']['role'] === 'recipient' && wholeBatch) /* edh-top-6: each opponent the damage of a whole batch was dealt to */);
     const single = what['ref'] === 'topCards' && what['count'] === 1 && !eachPlayer;
     // FAST5 T43: the top cards of a library revealed stay in it and are "seen" as the cards looked at are (the `Seen` hole: "put one of them into your hand")
     // std-ro (CR 701.20a, 608.2c): ... and, revealed (not only looked at), they are "<cards> revealed this way" (parser/holes/object.ts#revealedThisWay)
-    const seen = op === 'reveal' && what['ref'] === 'topCards' ? ['seen', REVEALED_THIS_WAY] : [];
+    // edh-players-11 (CR 406.1, 608.2c, 400.7j; Tezzeret, Master of the Bridge): and the cards "Exile the top ten cards of your library" exiled are "seen" too ("Put all artifact cards from
+    // among them onto the battlefield", the `ExiledTop` hole, never `Seen`: those templates read the library): only your own library, two or more cards, into exile (one card is the impulse idiom's, lower/anaphora.ts#impulseIdiom)
+    // trek-21 (CR 406.1, 608.2c; Lieutenant Nyota Uhura): or the cards a TARGET player exiled from the top of their own library, a counted quantity too ("Target opponent exiles the top X cards of their library, where X is ...")
+    const topExiledByTarget = op === 'move' && what['ref'] === 'topCards' && !eachPlayer && isRec(what['player']) && what['player']['ref'] === 'target' && (isRec(what['count']) || (typeof what['count'] === 'number' && what['count'] > 1)) && isRec(step['to']) && step['to']['zone'] === 'exile';
+    const topExiled = topExiledByTarget || (op === 'move' && what['ref'] === 'topCards' && !single && !eachPlayer && isRec(what['player']) && what['player']['ref'] === 'you' && (typeof what['count'] === 'number' || isRec(what['count'])) /* edh-next-82 (Neriv): a counted quantity */ && isRec(step['to']) && step['to']['zone'] === 'exile');
+    const seen = op === 'reveal' && what['ref'] === 'topCards' ? ['seen', REVEALED_THIS_WAY] : topExiled ? ['exiledTop'] : [];
     const verbs = [...(fx.verb ?? verb ? [fx.verb ?? verb!] : []), ...seen, ...exiled];
     // Cloud std-eoe (CR 400.7): a group a destroy or sacrifice step put into graveyards is no group of permanents afterwards (Mention.leftBattlefield)
     // ... and it is what "a creature card put into a graveyard this way" names (parser/holes/filter.ts#PUT_INTO_GRAVEYARD_THIS_WAY)
@@ -475,6 +632,18 @@ function exiledTargetsOf(step: Rec, unit: Unit, path: string): StepMention | nul
 }
 
 /**
+ * edh-zones-22 (CR 608.2c, 701.8a, 400.7; Sorin, Lord of Innistrad): the targets (or a union of them, or a bound group) a destroy step destroyed are "put into a graveyard this way"
+ * ("Destroy up to three target creatures and/or other planeswalkers. Return each card put into a graveyard this way to the battlefield under your control."), a participle-only
+ * mention as exiledTargetsOf's is (no pronoun, "that card" or "those cards" gets a new candidate). The group is what the step destroyed (`as`): a target that regenerated or was
+ * indestructible is not in it; a token ceases to exist in the graveyard, so the filter of the anaphor (`isCard`, parser/holes/filter.ts) finds only cards there.
+ */
+function destroyedTargetsOf(step: Rec, unit: Unit, path: string): StepMention | null {
+  const what = step['what'];
+  if (step['op'] !== 'destroy' || !isRec(what) || (what['ref'] !== 'target' && what['ref'] !== 'union' && what['ref'] !== 'bound')) return null;
+  return { origin: 'step', unit: unit.index, unitRef: unit, path, ref: typeof step['as'] === 'string' ? { ref: 'bound', name: step['as'] } : { ref: 'bound', name: '' }, sort: 'object', number: 'plural', heads: ['*'], verbs: [PUT_INTO_GRAVEYARD_THIS_WAY], participleOnly: true, viaDestroy: true };
+}
+
+/**
  * FAST5 T77 (CR 608.2c, 115.1, 400.7): the objects several targets of ONE move stand for together, "Return up to one target artifact card, up to one target land card, and up
  * to one target non-Aura enchantment card from your graveyard to the battlefield. They are 5/5 Elemental creatures in addition to their other types." The step moves a union
  * of targets (parser/holes/object.ts#unions); "they" is the group of what it moved (a plural mention, bound by the step's `as`), never one target alone. The targets keep
@@ -489,7 +658,10 @@ function groupOf(step: Rec, unit: Unit, path: string, headsOf: (ref: unknown) =>
   const topPart = (r: Rec): boolean => r['ref'] === 'topCards' && r['count'] === 1 && to['zone'] === 'exile';
   // std-exile-play-2-4 (CR 608.2c, 406.1, 400.7): or the choices of several earlier instructions exiled together ("For each of those colors, you may exile a card of
   // that color from among the revealed cards. ... You may cast the exiled cards this turn.", Sanar): what the one move exiled, cards in exile
-  if (to['zone'] === 'exile' && what['of'].every((r) => isRec(r) && r['ref'] === 'bound' && typeof r['name'] === 'string')) {
+  // edh-next-127 (CR 608.2c, 406.1, 401.1; Crabomination): or such choices together with the top card of a library ("target opponent exiles the top card of their library, a card at random from
+  // their graveyard, and a card at random from their hand. You may cast a spell from among cards exiled this way"): what the one move exiled, cards in exile
+  const boundOrTop = (r: unknown): boolean => isRec(r) && ((r['ref'] === 'bound' && typeof r['name'] === 'string') || topPart(r));
+  if (to['zone'] === 'exile' && (what['of'].every((r) => isRec(r) && r['ref'] === 'bound' && typeof r['name'] === 'string') || (what['of'].every(boundOrTop) && what['of'].some((r) => isRec(r) && r['ref'] === 'bound')))) {
     return { origin: 'step', unit: unit.index, unitRef: unit, path, ref: typeof step['as'] === 'string' ? { ref: 'bound', name: step['as'] } : { ref: 'bound', name: '' }, sort: 'object', number: 'plural', heads: ['card'], verbs: ['exiled'] };
   }
   if (!what['of'].every((r) => isRec(r) && (r['ref'] === 'target' || topPart(r))) || !what['of'].some((r) => isRec(r) && r['ref'] === 'target')) return null;
@@ -532,6 +704,20 @@ function paidDiscarded(step: Rec, unit: number): Mention | null {
 }
 
 /**
+ * edh-next-131 (CR 118.12, 400.7j, 608.2c; God-Pharaoh's Gift): what an optional cost of the effect exiled from a graveyard ("you may exile a creature card from your graveyard. If you do, create a
+ * token that's a copy of that card, ..."), as a mention only "that card" or "the exiled card" can name (Mention.participleOnly with `demonstrative`: a bare pronoun never means it, so no other
+ * reading changes). Written `{ref:'costExiled'}`: the `pay` handler remembers what it exiled under that reference (effects/handlers/pay.ts). Only a payment with ONE exile part of one card from a
+ * graveyard, other than ~, and no other way to pay.
+ */
+function paidExiled(step: Rec, unit: number): Mention | null {
+  if (step['op'] !== 'pay' || step['else'] !== undefined || !isRec(step['cost']) || !Array.isArray(step['cost']['other']) || (step['cost']['other'] as unknown[]).length !== 1) return null;
+  const p = (step['cost']['other'] as unknown[])[0];
+  if (!isRec(p) || p['kind'] !== 'exileFrom' || p['zone'] !== 'graveyard' || p['self'] === true || p['count'] !== 1 || p['link'] !== undefined || p['orGraveyard'] !== undefined) return null;
+  // (only "card": a card in exile is "that card" or "the exiled card", never "that creature", which names a permanent the text spoke of: Heated Argument's target)
+  return { sort: 'object', number: 'singular', heads: ['card'], verbs: ['exiled'], ref: { ref: 'costExiled' }, origin: 'event', unit, participleOnly: true, demonstrative: true };
+}
+
+/**
  * T46 (CR 701.20a, 701.20e, 402.3): the hand a step revealed or looked at, "Target opponent reveals their hand. You choose a nonland card from it." The pronoun
  * "it" is the hand: all of its cards as one set (the step binds them with `as`, effects/handlers/cards-reveal.ts). Only the anaphor with the head `hand` names
  * it (Mention.handOnly), so no other reference gets a candidate from it.
@@ -566,6 +752,93 @@ function cantOf(step: Rec, unit: Unit, path: string): StepMention | null {
 }
 
 /**
+ * edh-top-15 (CR 701.3d, 608.2c; Akiri): the permanent an unattach let go of ("You may unattach an Equipment from a creature you control. If you do, tap that creature"): the step
+ * binds the objects the unattached ones were attached to under its `hostAs` (effects/handlers/zones-status.ts#attach); named by the noun of the host's description.
+ */
+function hostOf(step: Rec, unit: Unit, path: string): StepMention | null {
+  if (step['op'] !== 'attach' || step['to'] !== null || typeof step['hostAs'] !== 'string' || step['guard'] !== undefined) return null;
+  return { origin: 'step', unit: unit.index, unitRef: unit, path, ref: { ref: 'bound', name: step['hostAs'] }, sort: 'object', number: 'singular', heads: ['creature', 'permanent'], verbs: ['unattachedFrom'], bindKey: 'hostAs' };
+}
+
+/**
+ * edh-d-97 (CR 608.2c, 608.2d, 101.4; Sin Prodder ruling 2016-04-08: "Once a player does so, Sin Prodder deals damage ... to that player immediately"): the ONE player of "any opponent may
+ * ..." who did it (effects/handlers/control.ts#anyOneMay binds that player under the step's `as`): "that player" after "If a player does, ...". Only a `may` of any opponent with one
+ * instruction and no `otherwise`; the mention is singular, a player, and named by "that player" (no participle).
+ */
+function anyOneDidOf(step: Rec, unit: Unit, path: string): StepMention | null {
+  if (step['op'] !== 'may' || step['anyOne'] !== true || step['otherwise'] !== undefined || step['guard'] !== undefined || step['villainous'] !== undefined) return null;
+  const who = step['who'];
+  if (!isRec(who) || who['ref'] !== 'each' || who['who'] !== 'opponent' || !Array.isArray(step['do']) || step['do'].length !== 1) return null;
+  const ref = typeof step['as'] === 'string' ? { ref: 'bound', name: step['as'] } : { ref: 'bound', name: '' };
+  return { origin: 'step', unit: unit.index, unitRef: unit, path, ref, sort: 'player', number: 'singular', heads: ['player', 'opponent'], verbs: [], bindKey: 'didAs' };
+}
+
+/**
+ * edh-players-11 (CR 608.2c, 608.2d, 101.4): the players of a group who DID an optional action, "Each player may draw a card, then each player who drew a card this way
+ * gains 1 life." / "Each player may put two +1/+1 counters on a creature they control. If a player does, ..." / "Each opponent who does can't attack you ...": a `may`
+ * of each opponent or each player (no `otherwise`, not "any opponent", not villainous). The engine binds the players who did it under the step's `as`
+ * (effects/handlers/control.ts#bindDoers). Only the participle phrases name it (parser/holes/player.ts: `did` = "who does", "who did", "a player who does"; `drewThisWay`
+ * = "who drew a card this way", only when the option is one draw): "each opponent who does" after "each player may ..." is the players who did it other than the
+ * controller (`bindKey: 'didOpp'`).
+ */
+function didOf(step: Rec, unit: Unit, path: string): StepMention[] {
+  return didOfImpl(step, unit, path);
+}
+
+/**
+ * edh-next-127 (CR 701.21a, 608.2c, 608.2h, 400.7; Danse Macabre): "Each player sacrifices a nontoken creature of their choice. Roll a d20 and add the toughness of the creature you sacrificed this way.
+ * ... Return a creature card put into a graveyard this way ...": what the sacrifice of one permanent by EACH player put into graveyards is "<cards> put into a graveyard this way" (the group, bound under
+ * the step's `as`, a participle-only mention as the sacrifice of all of a group is), and the same group is what "the toughness of the creature you sacrificed this way" reads, only the one whose
+ * controller as it last existed is you (parser/holes/qty.ts: `{q:'stat', by: you}`, the mechanism of edh-players-21). Only one permanent each, chosen by its own controller (no other chooser).
+ */
+function sacrificedByEachOf(step: Rec, unit: Unit, path: string): StepMention[] {
+  if (step['op'] !== 'sacrificeChoice' || step['count'] !== 1 || (step['mode'] !== undefined && step['mode'] !== 'choose') || step['chooser'] !== undefined || step['guard'] !== undefined) return [];
+  const who = step['who'];
+  if (!isRec(who) || who['ref'] !== 'each' || who['who'] !== 'player') return [];
+  const f = isRec(step['filter']) ? (step['filter'] as ObjectFilter) : undefined;
+  const heads = headsOfFilter(f, 'battlefield');
+  const ref = typeof step['as'] === 'string' ? { ref: 'bound', name: step['as'] } : { ref: 'bound', name: '' };
+  return [
+    { origin: 'step', unit: unit.index, unitRef: unit, path, ref, sort: 'object', number: 'plural', heads, verbs: [PUT_INTO_GRAVEYARD_THIS_WAY], participleOnly: true, leftBattlefield: true } as StepMention,
+    { origin: 'step', unit: unit.index, unitRef: unit, path, ref, sort: 'object', number: 'plural', heads, verbs: ['sacrificedByEach'], participleOnly: true, leftBattlefield: true } as StepMention,
+  ];
+}
+
+/**
+ * edh-next-127 (CR 608.2d, 608.2c; Thunderwave: "You may choose a creature. Thunderwave deals 3 damage to each creature not chosen this way."): what an optional choice of at most ONE object chose is also
+ * the group "<objects> chosen this way" (none or one of them), so "each creature not chosen this way" is every creature but the chosen one (every creature when none was chosen). A participle-only
+ * mention (only "chosen this way" names it; the singular mention of the choice stays as it was). Only your own choice of up to one, not at random.
+ */
+function chosenOneAsGroupOf(step: Rec, unit: Unit, path: string): StepMention[] {
+  if (step['op'] !== 'chooseObjects' || step['min'] !== 0 || step['max'] !== 1 || step['random'] !== undefined || step['guard'] !== undefined || !isRec(step['who']) || step['who']['ref'] !== 'you') return [];
+  const from = isRec(step['from']) && isRec(step['from']['filter']) ? (step['from']['filter'] as ObjectFilter) : undefined;
+  if (from === undefined || (step['from'] as Rec)['ref'] !== 'each' || from.zone !== undefined) return [];
+  const ref = typeof step['as'] === 'string' ? { ref: 'bound', name: step['as'] } : { ref: 'bound', name: '' };
+  return [{ origin: 'step', unit: unit.index, unitRef: unit, path, ref, sort: 'object', number: 'plural', heads: headsOfFilter(from, whereOf(from)), verbs: ['chosen'], participleOnly: true } as StepMention];
+}
+
+function didOfImpl(step: Rec, unit: Unit, path: string): StepMention[] {
+  const one = anyOneDidOf(step, unit, path); // edh-d-97
+  if (one !== null) return [one];
+  if (step['op'] !== 'may' || step['otherwise'] !== undefined || step['guard'] !== undefined || step['anyOne'] !== undefined || step['villainous'] !== undefined) return [];
+  const who = step['who'];
+  if (!isRec(who) || who['ref'] !== 'each' || (who['who'] !== 'opponent' && who['who'] !== 'player')) return [];
+  const doList = Array.isArray(step['do']) ? step['do'] as Rec[] : [];
+  const draws = doList.length === 1 && doList[0]!['op'] === 'draw' && doList[0]!['guard'] === undefined && isRec(doList[0]!['who']) && doList[0]!['who']['ref'] === 'iterating';
+  // edh-players-14 (CR 701.9a, 608.2c; Snort): "who discarded their hand this way" names the doers of an option that begins with discarding the whole hand
+  const first = doList[0];
+  const discardsHand = first !== undefined && first['op'] === 'discard' && first['count'] === 'hand' && first['filter'] === undefined && first['guard'] === undefined && isRec(first['who']) && first['who']['ref'] === 'iterating';
+  // edh-next-43 (CR 701.9a, 608.2c; Borderland Explorer): "who discarded a card this way" names the doers of an option that is discarding one card
+  const discardsOne = doList.length === 1 && first !== undefined && first['op'] === 'discard' && first['count'] === 1 && first['filter'] === undefined && first['mode'] === undefined && first['guard'] === undefined && isRec(first['who']) && first['who']['ref'] === 'iterating';
+  const verbs = draws ? ['did', 'drewThisWay'] : discardsHand ? ['did', 'discardedHandThisWay'] : discardsOne ? ['did', 'discardedThisWay'] : ['did'];
+  const ref = typeof step['as'] === 'string' ? { ref: 'bound', name: step['as'] } : { ref: 'bound', name: '' };
+  const base = { origin: 'step' as const, unit: unit.index, unitRef: unit, path, ref, sort: 'player' as const, number: 'plural' as const, verbs, participleOnly: true };
+  const own: StepMention = { ...base, heads: [String(who['who'])], bindKey: 'didAs' };
+  // "each opponent who does" after "each player may ...": the players who did it other than you (CR 102.3)
+  return who['who'] === 'player' ? [own, { ...base, heads: ['opponent'], bindKey: 'didOpp' }] : [own];
+}
+
+/**
  * FAST5 T43 (CR 608.2c, 701.20e): "the rest" (or "the other") of a group after a choice among it: the cards of the group the choice did not pick ("Look at the
  * top four cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library"). Made
  * by a `chooseObjects` whose pool is one bound group (`from.filter.is`, written once "them" is resolved) and whose own `as` names the choice; it is named by
@@ -573,26 +846,38 @@ function cantOf(step: Rec, unit: Unit, path: string): StepMention | null {
  * the group is not among the chosen ones. The group's cards are read in the library (`zone: 'library'`, where they were looked at); one that left it for a public zone follows the
  * binding (CR 400.7j) and is excluded by the choice, one that went to a hand is a new object and no longer part of the group (CR 400.7).
  */
-function restOf(step: Rec, unit: Unit, path: string): StepMention | null {
+/** edh-d-96 (CR 608.2c, 406.1, 601.2a; Epic Experiment): a step of the units casts the cards this choice picked (`cast` of `{ref:'bound', name}`), so the cards of the group left in exile are those that weren't cast. */
+function castsChoice(units: readonly Unit[], name: unknown): boolean {
+  const own = JSON.stringify({ ref: 'bound', name });
+  const seen = (v: unknown): boolean => Array.isArray(v) ? v.some(seen) : isRec(v) ? ((v['op'] === 'cast' && JSON.stringify(v['what']) === own) || Object.values(v).some(seen)) : false;
+  return typeof name === 'string' && units.some((u) => seen(u.steps));
+}
+
+function restOf(step: Rec, unit: Unit, path: string, units: readonly Unit[] = [unit]): StepMention | null {
   if (step['op'] !== 'chooseObjects' || typeof step['as'] !== 'string') return null;
   const from = step['from'];
   const f = isRec(from) && from['ref'] === 'each' && isRec(from['filter']) ? from['filter'] : null;
   // std-rx30 (CR 608.2c, 115.1): or the objects of one spec of several targets on the battlefield ("Choose two target creatures controlled by the same opponent. That
   // player chooses one of those creatures. ~ deals 5 damage to that creature, and the other can't block this turn.", Trial of Agony): the targets not chosen
-  const targets = f !== null && isRec(f['is']) && f['is']['ref'] === 'target' && Object.keys(f).length === 1 ? f['is'] : null;
+  // edh-d-28 (CR 608.2c, 400.7; Sinister Waltz): or targets in the graveyard (`zone: 'graveyard'` beside `is`), "Return two of them at random to the battlefield and put the other on the bottom of your library."
+  const targets = f !== null && isRec(f['is']) && f['is']['ref'] === 'target' && Object.keys(f).every((k) => k === 'is' || (k === 'zone' && f['zone'] === 'graveyard')) ? f['is'] : null;
   if (targets !== null) {
     return {
       origin: 'step', unit: unit.index, unitRef: unit, path, sort: 'object', number: 'plural', heads: ['rest'], headOnly: true, verbs: ['left'],
-      ref: { ref: 'each', filter: { is: clone(targets), not: { is: { ref: 'bound', name: step['as'] } } } },
+      ref: { ref: 'each', filter: { is: clone(targets), not: { is: { ref: 'bound', name: step['as'] } }, ...(f!['zone'] === 'graveyard' ? { zone: 'graveyard' } : {}) } },
     };
   }
   const group = f !== null && isRec(f['is']) && f['is']['ref'] === 'bound' && typeof f['is']['name'] === 'string' && f['is']['name'] !== '' ? f['is'] : null;
   if (group === null) return null;
+  // edh-zones-7 (CR 608.2c, 701.20e; Planar Genesis): a choice inside a branch ("If you don't, put a card from among them into your hand.") of a group an earlier choice
+  // of the unit made too is no group of its own: "the rest" is what the first choice left in the library (the cards this one put into a hand are no longer in it)
+  if (/\/(then|else)\//.test(path) && units.some((v) => v.index <= unit.index && v.steps.some((x) => isRec(x) && x !== step && x['op'] === 'chooseObjects' && isRec(x['from']) && isRec(x['from']['filter'])
+    && isRec(x['from']['filter']['is']) && x['from']['filter']['is']['ref'] === 'bound' && x['from']['filter']['is']['name'] === group['name']))) return null;
   // std-library-3 (CR 608.2c, 406.1): a choice among a group of cards in exile ("You may cast a spell from among the exiled cards ... Then put the rest of the exiled
   // cards into your hand", Portent of Calamity): the cards of the group the choice did not pick, still in exile; only "the rest of the exiled cards" names them
   if (f!['zone'] === 'exile') {
     return {
-      origin: 'step', unit: unit.index, unitRef: unit, path, sort: 'object', number: 'plural', heads: ['rest-exiled'], headOnly: true, verbs: ['left'],
+      origin: 'step', unit: unit.index, unitRef: unit, path, sort: 'object', number: 'plural', heads: ['rest-exiled', 'exiled-other', 'rest', ...(castsChoice(units, step['as']) ? ['rest-exiled-notcast'] : [])], headOnly: true, verbs: ['left'], // edh-d-96: "all cards exiled this way that weren't cast" only after a cast of the chosen cards (castsChoice) // trek-21: and "the rest" (Lieutenant Nyota Uhura: "Then that player puts the rest on the bottom of their library") // edh-top-9: "the other cards exiled this way" (head "exiled-other") is this choice's rest only, never exiledRestOf's
       ref: { ref: 'each', filter: { is: { ref: 'bound', name: group['name'] }, not: { is: { ref: 'bound', name: step['as'] } }, zone: 'exile' } },
     };
   }
@@ -604,7 +889,7 @@ function restOf(step: Rec, unit: Unit, path: string): StepMention | null {
   // std-rx30 (CR 608.2c, 701.20e): a choice among what earlier choices left, still in the library (`not.is` a union of those choices, Memories Returning's
   // alternating picks): its rest leaves out this choice too ("Then they put one on the bottom of your library. Put the other into your hand.")
   const before = isRec(f!['not']) && Object.keys(f!['not']).length === 1 && isRec(f!['not']['is']) && f!['not']['is']['ref'] === 'union' && Array.isArray(f!['not']['is']['of'])
-    && f!['zone'] === 'library' && Object.keys(f!).length === 3 ? (f!['not']['is']['of'] as Rec[]) : [];
+    && f!['zone'] === 'library' && Object.keys(f!).filter((k) => k !== 'anyOf').length === 3 ? (f!['not']['is']['of'] as Rec[]) : []; // edh-b-1: a described pick (`anyOf`) among what earlier ones left
   const not = before.length === 0 ? { ref: 'bound', name: step['as'] } : { ref: 'union', of: [...before.map((x) => clone(x)), { ref: 'bound', name: step['as'] }] };
   return {
     origin: 'step', unit: unit.index, unitRef: unit, path, sort: 'object', number: 'plural', heads: before.length === 0 && chosenAllPutOntoBattlefield(step, unit) ? ['rest', 'rest-not-put'] : ['rest'], headOnly: true, verbs: ['left'],
@@ -684,6 +969,19 @@ function revealedRestOf(step: Rec, unit: Unit, path: string): StepMention | null
 }
 
 /**
+ * edh-next-96 (CR 701.20a, 608.2c; Mind Funeral, Trepanation Blade): "all cards revealed this way" / "the revealed cards" after "<player> reveals cards from the top of their library until
+ * ...": every card the reveal revealed (`revealed`), the cards it stopped at included, still in the library. Both names are written by the template (as revealedRestOf's). Named by the
+ * head "revealed-all" (hole Rest). A step that may not run (`guard`) names no group.
+ */
+function revealedAllOf(step: Rec, unit: Unit, path: string): StepMention | null {
+  if (step['op'] !== 'revealUntil' || typeof step['as'] !== 'string' || typeof step['revealed'] !== 'string' || step['guard'] !== undefined) return null;
+  return {
+    origin: 'step', unit: unit.index, unitRef: unit, path, sort: 'object', number: 'plural', heads: ['revealed-all'], headOnly: true, verbs: ['left'],
+    ref: { ref: 'each', filter: { is: { ref: 'bound', name: step['revealed'] }, zone: 'library' } },
+  };
+}
+
+/**
  * pc-zones-1 (CR 608.2c, 701.20a; Genesis Storm): "all cards revealed this way that weren't put onto the battlefield" after "reveal cards from the top of your library until
  * you reveal a nonland permanent card. You may put that card onto the battlefield": every card the reveal revealed that is still in the library, the card it stopped at
  * included when it was not put (hole Rest, head "rest-not-put"). Only when the card it stopped at is moved onto the battlefield and nowhere else (any move of it to
@@ -709,6 +1007,20 @@ function revealedNotPutOf(step: Rec, unit: Unit, path: string, units: readonly U
 }
 
 /**
+ * edh-d-35 (CR 701.20a, 601.2a, 608.2c; Treasure Keeper, Neera, Plargg): "Put all revealed cards not cast this way on the bottom of your library in a random order" after "reveal
+ * cards from the top of your library until you reveal ... You may cast that card without paying its mana cost.": every card the reveal revealed that is still in the library (the card
+ * it stopped at included when it was not cast; a card that was cast left the library for the stack). Your own reveal only (hole Rest, head "rest-notcast-revealed").
+ */
+function revealedNotCastOf(step: Rec, unit: Unit, path: string): StepMention | null {
+  if (step['op'] !== 'revealUntil' || typeof step['as'] !== 'string' || typeof step['revealed'] !== 'string' || step['count'] !== undefined || step['guard'] !== undefined) return null;
+  if (!isRec(step['who']) || step['who']['ref'] !== 'you') return null;
+  return {
+    origin: 'step', unit: unit.index, unitRef: unit, path, sort: 'object', number: 'plural', heads: ['rest-notcast-revealed'], headOnly: true, verbs: ['left'],
+    ref: { ref: 'each', filter: { is: { ref: 'bound', name: step['revealed'] }, zone: 'library' } },
+  };
+}
+
+/**
  * trek-7 (CR 406.1, 608.2c; The Borg Queen): "the rest" after "target opponent exiles cards from the top of their library until they exile a creature card": the cards that
  * step exiled other than the one it stopped at, still in exile ("Assimilate that card. They put the rest on the bottom in a random order."). One player only. The step's
  * names (`as` for the card it stopped at, `exiled` for every card) are given when a reference to this mention is bound (lower/anaphora.ts#bind: the step is not named
@@ -723,14 +1035,43 @@ function exiledRestOf(step: Rec, unit: Unit, path: string): StepMention | null {
 }
 
 /**
+ * edh-zones-15 (CR 406.1, 608.2c, 601.2a; Chaos Wand, Gríma Saruman's Footman): "the exiled cards that weren't cast this way" after "<player> exiles cards from the top of their
+ * library until they exile ... You may cast that card without paying its mana cost.": every card that exile step exiled (`exiled`) that is still in exile (a card that was cast
+ * left exile for the stack, CR 601.2a). Unlike "the rest" (exiledRestOf) the card it stopped at is among them when it was not cast. One player only; the step's name `exiled` is
+ * given when a reference to this mention is bound (lower/anaphora.ts#bind).
+ */
+function exiledNotCastOf(step: Rec, unit: Unit, path: string): StepMention | null {
+  if (step['op'] !== 'exileUntil' || step['total'] !== undefined || !namesOnePlayer(step['who']) || step['guard'] !== undefined) return null;
+  return {
+    origin: 'step', unit: unit.index, unitRef: unit, path, sort: 'object', number: 'plural', heads: ['rest-notcast'], headOnly: true, verbs: ['left'], bindKey: 'exiledNotCast',
+    ref: { ref: 'each', filter: { is: { ref: 'bound', name: '' }, zone: 'exile' } },
+  };
+}
+
+/**
+ * edh-top-9 (CR 406.1, 608.2c; fixes edh-top-8's finding 1, Plargg and Nassari): "a nonland card exiled this way" after "<players> exile cards from the top of their library until
+ * they exile ...": every card that exile step exiled (`exiled`, whatever its filter stopped at and however many players exiled), never only the cards each player stopped at (`as`).
+ * Named by the head "exiled-all" (the group of the edh-top-8 template), bound by name: the `exiled` name is given when a reference to this mention is bound
+ * (lower/anaphora.ts#bind). A step that may not run (`guard`) names no group.
+ */
+function exiledAllOf(step: Rec, unit: Unit, path: string): StepMention | null {
+  if (step['op'] !== 'exileUntil' || step['guard'] !== undefined) return null;
+  return {
+    origin: 'step', unit: unit.index, unitRef: unit, path, sort: 'object', number: 'plural', heads: ['exiled-all'], headOnly: true, verbs: ['left'], bindKey: 'exiledAll',
+    ref: { ref: 'bound', name: '' },
+  };
+}
+
+/**
  * LNK1: the player a target phrase names by "an opponent" ("destroy target creature an opponent controls. That player loses 3 life."): the controller (or
  * owner) of that one target, a candidate for "that player" (CR 608.2c; Oracle's "that player" is the opponent the phrase named). Read from the target, so
  * its last known information once it has left (CR 608.2h). Null for any other target: "you control" is "you", "you don't control" names no player.
  */
 export function namedPlayerOf(t: TargetSpec, unit: number): Mention | null {
   // std-rx30 (CR 115.1, 110.2): or several targets controlled by the same opponent (`sameController`), "that player" being their one controller
-  if (t.kind !== 'object' || (t.max !== 1 && t.sameController !== true) || t.filter === undefined) return null;
-  const by = t.filter.controller === 'opponent' ? 'controllerOf' : t.filter.owner === 'opponent' ? 'ownerOf' : null;
+  if ((t.kind !== 'object' && t.kind !== 'spell') || (t.max !== 1 && t.sameController !== true) || t.filter === undefined) return null; // trek-21: or a target spell (Brazen Bluff: "target noncreature spell an opponent controls. That player may ...")
+  // edh-c-74 (Incriminate): several targets controlled by the same player, whoever it is, are as well (their one controller)
+  const by = t.filter.controller === 'opponent' || (t.sameController === true && t.filter.controller === undefined && t.filter.owner === undefined) ? 'controllerOf' : t.filter.owner === 'opponent' ? 'ownerOf' : null;
   if (by === null || (t.filter.controller === 'opponent' && t.filter.owner === 'opponent')) return null;
   // r4-refs (CR 608.2c): the opponent who controls the target is also "they" ("... target permanent an opponent controls. They create a Treasure token.")
   return { sort: 'player', number: 'singular', heads: ['player', 'opponent'], ref: { ref: by, object: { ref: 'target', id: t.id } }, origin: 'target', unit, headOnly: true, ...(by === 'controllerOf' ? { alsoThey: true } : {}) };
@@ -749,10 +1090,41 @@ function ownerSubject(d: Draft, u: Unit, beforeStep: number): Mention | null {
   if (whos.length === 0 || new Set(whos.map(({ step }) => JSON.stringify(step['who']))).size !== 1) return null;
   const who = whos[0]!.step['who'] as Rec;
   const obj = who['object'];
-  if (!isRec(obj) || obj['ref'] !== 'target' || d.targets.find((t) => t.id === obj['id'])?.max !== 1) return null;
+  // edh-next-142 (CR 108.3, 608.2c; Pendant of Prosperity): or the owner of ~ itself ("This artifact's owner draws a card, then that player may put ..."): one player, whoever controls ~
+  if (!isRec(obj) || (obj['ref'] !== 'self' && (obj['ref'] !== 'target' || d.targets.find((t) => t.id === obj['id'])?.max !== 1))) return null;
   // edh-zones-1 (CR 608.2c; Chaos Warp): the owner who acts is also Oracle's singular "they" ("..., then reveals the top card of their library. If it's a permanent card, they
   // put it onto the battlefield."), as the opponent who controls a target is (namedPlayerOf, r4-refs)
   return { sort: 'player', number: 'singular', heads: ['player'], ref: who, origin: 'target', unit: u.index, headOnly: true, alsoThey: true };
+}
+
+/**
+ * edh-zones-26 (CR 608.2c, 608.2d; Tibalt's Trickery): "Its controller mills that many cards, then exiles cards from the top of their library until they exile a nonland card. They may
+ * cast that card ...": the one player a sentence names as "its controller" (of one target) and has mill or exile cards from their library by themselves (`who` the controller of that
+ * target) is Oracle's singular "they" afterwards, as the owner who acts is (ownerSubject). `beforeStep` as for ownerNamed.
+ */
+function controllerSubject(d: Draft, u: Unit, beforeStep: number): Mention | null {
+  const words = u.tokens.map((t) => t.norm.toLowerCase());
+  if (!words.some((w, i) => w === 'its' && words[i + 1] === 'controller')) return null;
+  // edh-d-35 (CR 608.2c, 608.2f, 701.20a; Divergent Transformations, Chaos Mutation): and a reveal until, whose player may be the controller of the object a `forEach` of this sentence
+  // goes over ("For each creature exiled this way, its controller reveals cards from the top of their library until they reveal a creature card, puts ..."): "they"/"their" are that player
+  const items = new Set(stepsInOrder(u.steps).filter(({ step }) => step['op'] === 'forEach' && typeof step['as'] === 'string').map(({ step }) => step['as'] as string));
+  const whos = stepsInOrder(u.steps).filter(({ step, path }) => (Number(path.split('/')[1]) < beforeStep || (path.includes('/do/') && Number(path.split('/')[1]) <= beforeStep && step['op'] === 'revealUntil')) && (step['op'] === 'exileUntil' || step['op'] === 'mill' || step['op'] === 'revealUntil') && isRec(step['who']) && step['who']['ref'] === 'controllerOf');
+  if (whos.length === 0 || new Set(whos.map(({ step }) => JSON.stringify(step['who']))).size !== 1) return null;
+  const who = whos[0]!.step['who'] as Rec;
+  const obj = who['object'];
+  const eachItem = isRec(obj) && obj['ref'] === 'bound' && typeof obj['name'] === 'string' && items.has(obj['name']);
+  if (!isRec(obj) || (!eachItem && (obj['ref'] !== 'target' || d.targets.find((t) => t.id === obj['id'])?.max !== 1))) return null;
+  return { sort: 'player', number: 'singular', heads: ['player'], ref: who, origin: 'target', unit: u.index, headOnly: true, alsoThey: true };
+}
+
+/**
+ * edh-zones-26: the optional repeat of "As many times as you choose, you may exile the top card of your library": a repeat the player may stop at any run (`optional`, not "this process") whose body is one exile of
+ * the top card of the player's library. Its runs' cards are gathered (effects/handlers/control.ts).
+ */
+export function isGatheringRepeat(step: Rec): boolean {
+  const body = Array.isArray(step['do']) && step['do'].length === 1 ? step['do'][0] : undefined;
+  return step['op'] === 'repeat' && step['optional'] === true && step['process'] !== true && step['again'] !== true && step['until'] === undefined && isRec(body) && body['op'] === 'move'
+    && isRec(body['to']) && body['to']['zone'] === 'exile' && isRec(body['what']) && body['what']['ref'] === 'topCards';
 }
 
 /** Zones a move with no owner puts an object into ITS OWNER's (CR 400.3): "to its owner's hand", "into its owner's library". */
@@ -855,7 +1227,7 @@ export function mentionsInside(u: Unit, top: number, relPath: string, known: rea
     for (let j = 0; j + 1 < steps.length; j++) {
       const st = steps[j];
       if (!isRec(st)) continue;
-      const made = producedBy(st, u, `${path}/steps/${j}`, (ref) => [...known, ...out].find((m) => m.sort !== 'number' && sameRef(m.ref as Rec, ref))?.heads ?? []);
+      const made = producedBy(st, u, `${path}/steps/${j}`, (ref) => [...known, ...out].find((m) => m.sort !== 'number' && sameRef(m.ref as Rec, ref))?.heads ?? [], d?.trigger?.wholeBatch === true);
       if (made) out.push(made);
     }
     return out;
@@ -869,8 +1241,16 @@ export function mentionsInside(u: Unit, top: number, relPath: string, known: rea
       const s = list[j];
       if (!isRec(s)) continue;
       if (j === idx - 1 && joinedAfter(s, list[idx])) continue; // std-rx14
-      const made = producedBy(s, u, `${path}/${key}/${j}`, (ref) => [...known, ...out].find((m) => m.sort !== 'number' && sameRef(m.ref as Rec, ref))?.heads ?? []);
+      const made = producedBy(s, u, `${path}/${key}/${j}`, (ref) => [...known, ...out].find((m) => m.sort !== 'number' && sameRef(m.ref as Rec, ref))?.heads ?? [], d?.trigger?.wholeBatch === true);
       if (made) out.push(made);
+      // edh-players-4 (CR 608.2c, 107.3): the instructions of a "where X is" node of the list are earlier instructions of it too ("If they don't, you mill X cards, where X is ..., and that
+      // player loses life equal to the total mana value of those cards": the milled cards), as stepsInOrder reads them across sentences
+      if (isRec(s) && s['lower'] === 'whereX' && Array.isArray(s['steps'])) {
+        (s['steps'] as unknown[]).forEach((inner, m) => {
+          const madeInner = isRec(inner) ? producedBy(inner, u, `${path}/${key}/${j}/steps/${m}`, (ref) => [...known, ...out].find((x) => x.sort !== 'number' && sameRef(x.ref as Rec, ref))?.heads ?? []) : null;
+          if (madeInner) out.push(madeInner);
+        });
+      }
       // std-rx4 (CR 701.20a, 402.3; Thought-Stalker Warlock): the hand an earlier instruction of the same list revealed ("If they lost life this turn, they reveal
       // their hand, you choose a nonland card from it, and they discard that card."), as handOf gives it across sentences
       const hand = handOf(s, u, `${path}/${key}/${j}`);
@@ -949,22 +1329,57 @@ export function movedCondMention(u: Unit, i: number, seq: readonly Unit[], at: n
   const cond = s['op'] === 'if' ? s['cond'] : s['op'] === 'reflexive' ? s['when'] : undefined;
   if (!isRec(cond) || cond['cond'] !== 'did' || cond['$step'] !== 'previous' || cond['not'] === true || cond['$op'] !== 'discard' || !isRec(cond['which'])) return null;
   let unitRef: Unit;
-  let path: string;
+  let upTo: number; // the steps of the unit before the condition (exclusive)
   if (i > 0) {
     unitRef = u;
-    path = `/${i - 1}`;
+    upTo = i;
   } else {
     const p = seq[at - 1];
     if (p === undefined || p.manual !== undefined || p.rider !== undefined || prefix.length > 0 || p.steps.length === 0) return null;
     unitRef = p;
-    path = `/${p.steps.length - 1}`;
+    upTo = p.steps.length;
   }
-  const step = unitRef.steps[Number(path.slice(1))];
+  // edh-next-77 (CR 608.2c, 603.12, 701.9a; Summon: Kujata, Narset of the Ancient Way): the discard is the ONE discard of the steps right before the condition, whether the instruction
+  // right before it ("Draw a card, then discard a card.") or an earlier one of the same sentence ("Discard a card, then draw two cards. When you discard a card this way, ..."),
+  // or wrapped in "you may" ("you may discard a card. When you discard a card this way, ..."): the card is the discard's own (bound by its `as`), not the trigger's event object
+  const isDiscard = (x: unknown): x is Rec => isRec(x) && x['op'] === 'discard';
+  const discardOf = (x: unknown): { step: Rec; sub: string } | null => {
+    if (isDiscard(x)) return { step: x, sub: '' };
+    if (isRec(x) && x['op'] === 'may' && isRec(x['who']) && x['who']['ref'] === 'you' && Array.isArray(x['do']) && x['do'].length === 1 && isDiscard(x['do'][0])) return { step: x['do'][0], sub: '/do/0' };
+    return null;
+  };
+  const found: { k: number; step: Rec; sub: string }[] = [];
+  for (let k = 0; k < upTo; k++) {
+    const hit = discardOf(unitRef.steps[k]);
+    if (hit !== null) found.push({ k, ...hit });
+    else if (JSON.stringify(unitRef.steps[k]).includes('"op":"discard"') && k >= upTo - 1) return null; // a discard nested in the last instruction: not this reading
+  }
+  // (review: when the instruction right before the condition is itself a discard, it is the one, as before this round)
+  const lastHit = upTo >= 1 ? found.find((f) => f.k === upTo - 1) : undefined;
+  if (lastHit !== undefined && found.length > 1) found.splice(0, found.length, lastHit);
+  if (found.length !== 1) {
+    // the plain reading as before: the instruction right before the condition is the discard
+    if (!(upTo >= 1 && found.length === 0)) return null;
+  }
+  const hit = found.length === 1 ? found[0]! : { k: upTo - 1, step: unitRef.steps[upTo - 1] as Rec, sub: '' };
+  const step = hit.step;
+  const path = `/${hit.k}${hit.sub}`;
   if (!isRec(step)) return null;
   const made = producedBy(step, unitRef, path);
   if (made === null || made.number !== 'singular' || !(made.verbs ?? []).includes('discarded')) return null;
   const { participleOnly: _p, ...rest } = made;
   return { ...rest, heads: [...new Set([...headsOfFilter(cond['which'] as ObjectFilter, 'other'), 'card'])] };
+}
+
+/** edh-next-132: the description of the objects an intervening "if" says the cast event's spell targets ("if it targets one or more other permanents you control"); else null. */
+function interveningTargets(d: Draft): ObjectFilter | null {
+  const c = d.condition;
+  if (!isRec(c) || c['cond'] !== 'matches' || d.trigger === undefined || d.trigger.on.length !== 1 || d.trigger.on[0]!.ev !== 'cast' || d.trigger.batch === true) return null;
+  if (JSON.stringify(c['object']) !== JSON.stringify({ ref: 'event', role: 'spell' }) || !isRec(c['filter']) || Object.keys(c['filter']).length !== 1) return null;
+  const t = c['filter']['targets'];
+  if (!isRec(t) || t['ref'] !== 'each' || !isRec(t['filter']) || Object.keys(t).length !== 2) return null;
+  const f = t['filter'] as ObjectFilter;
+  return f.zone !== undefined || f.self !== undefined || f.targetedBy !== undefined ? null : f;
 }
 
 /**
@@ -977,6 +1392,13 @@ export function mentionsAt(d: Draft, seq: readonly Unit[], upTo: number, beforeS
   const out: Mention[] = [...d.mentions];
   // the intervening "if" of a trigger (CR 603.4) comes before every sentence of the effect: what it names is a candidate everywhere (WP21 review)
   for (const ref of namedIn(d.condition)) if (!out.some((m) => m.sort !== 'number' && sameRef(m.ref, ref))) out.push(namedMention(ref, -1, d));
+  // edh-next-132 (CR 115.9b, 603.4, 608.2c; Orvar, the All-Form): "Whenever you cast a spell, if it targets one or more other permanents you control, ... one of those permanents": the
+  // objects of that description the cast spell targets, a group (`targetedBy` the event's spell), as std-rx28's "a spell that targets one or more creatures, those creatures" (scope.ts)
+  const tg = interveningTargets(d);
+  if (tg !== null) out.push({ sort: 'object', number: 'plural', heads: headsOfFilter(tg, 'battlefield'), ref: { ref: 'each', filter: { ...tg, targetedBy: { ref: 'event', role: 'spell' } } }, origin: 'event', unit: -1 });
+  // edh-d-96 (CR 607.2a, 603.4; Colfenor's Urn): "if three or more cards have been exiled with ~, ... return those cards to the battlefield": the cards a count of the intervening "if" names are "those
+  // cards" (the cards exiled with ~ that are still in exile, CR 400.7: the ones that left exile can't be returned)
+  if (linkedCountIn(d.condition)) out.push({ sort: 'object', number: 'plural', heads: ['card'], ref: { ref: 'linked', link: 'exiled' }, origin: 'event', unit: -1, verbs: ['exiled'] });
   const units = [...prefix, ...seq.slice(0, upTo + 1)];
   const targetIds = new Set<string>();
   for (const u of units) {
@@ -1001,10 +1423,12 @@ export function mentionsAt(d: Draft, seq: readonly Unit[], upTo: number, beforeS
       if (targetIds.has(id)) continue;
       const spec = d.targets.find((t) => t.id === id);
       const pos = own ? u.targetPos?.[id] : undefined;
+      // edh-mana-keywords-9 (Comet Storm): the targets announced for each time the spell was kicked are named only as the group they make with the first ("each of them", announcedGroup)
+      if (spec && announced && isRec(spec.min) && spec.min['q'] === 'kickCount') { targetIds.add(id); continue; }
       if (spec) {
         targetIds.add(id);
         const m = targetMention(spec, u.index);
-        out.push({ ...m, ...(announced ? { verbs: [...(m.verbs ?? []), 'chosen'] } : {}), ...(pos !== undefined ? { pos } : {}) });
+        out.push({ ...m, ...(announced ? { verbs: [...(m.verbs ?? []), 'chosen'] } : {}), ...(pos !== undefined ? { pos, ...(u.targetLen?.[id] ? { len: u.targetLen[id] } : {}) } : {}) });
         const named = namedPlayerOf(spec, u.index);
         if (named) out.push({ ...named, ...(pos !== undefined ? { pos } : {}) });
       }
@@ -1023,7 +1447,7 @@ export function mentionsAt(d: Draft, seq: readonly Unit[], upTo: number, beforeS
       if (group !== null) out.push(group);
     }
     // LNK1: "return target permanent to its owner's hand, then that player discards a card": the owner the sentence named (CR 400.3, 608.2c)
-    const owner = ownerNamed(d, u, own ? beforeStep : Infinity) ?? ownerSubject(d, u, own ? beforeStep : Infinity) ?? searchedPlayer(d, u, own ? beforeStep : Infinity);
+    const owner = ownerNamed(d, u, own ? beforeStep : Infinity) ?? ownerSubject(d, u, own ? beforeStep : Infinity) ?? searchedPlayer(d, u, own ? beforeStep : Infinity) ?? controllerSubject(d, u, own ? beforeStep : Infinity);
     if (owner) out.push(owner);
     // FAST5 T50 (CR 603.7): what the instructions of an event-timed delayed trigger do happens when it triggers, in a resolution of its own: no antecedent of a later sentence
     const inDelay: string[] = [];
@@ -1032,58 +1456,142 @@ export function mentionsAt(d: Draft, seq: readonly Unit[], upTo: number, beforeS
       if (own && top > beforeStep) break;
       if (inDelay.some((p) => path.startsWith(`${p}/`))) continue;
       if (step['op'] === 'delay' && isRec(step['when']) && step['when']['at'] === 'event') inDelay.push(`${path}/do`);
+      // edh-zones-26 (CR 608.2c, 406.1; Dance with Calamity): "As many times as you choose, you may exile the top card of your library.": the cards the runs exiled are ONE group, "the cards exiled this way"
+      // / "those cards" (the repeat's `gather`, anaphora.ts#bind); the exile of one run is no mention of its own (a run's card is a card of the group)
+      if (isGatheringRepeat(step)) {
+        inDelay.push(`${path}/do`);
+        out.push({ origin: 'step', unit: u.index, unitRef: u, path, sort: 'object', number: 'plural', heads: ['card'], verbs: ['exiled', EXILED_THIS_WAY], ref: { ref: 'bound', name: '' }, bindKey: 'repeatGather' } as StepMention);
+        continue;
+      }
       // std-copy-1 (CR 603.12, 705.2): so do those of "When you win / lose the flip, X" (a reflexive trigger of one result of the flip, parser/lower/coin-flip.ts):
       // "that spell" after "When you win the flip, copy that spell." is still the spell the ability names, never the copy of the other result
       if (step['op'] === 'reflexive' && isRec(step['when']) && step['when']['cond'] === 'flip') inDelay.push(`${path}/do`);
       if (own && top === beforeStep) {
         // the step being resolved: what its own conditions name comes before its body ("if enchanted creature is red, tap it"); WP21 review
-        for (const ref of conditionObjects(step)) if (!out.some((m) => m.sort !== 'number' && sameRef(m.ref, ref))) out.push(namedMention(ref, u.index, d));
+        // edh-d-53 (CR 608.2h; Soul Exchange): what a cost moved is named by its participle only ("the exiled creature", the cost mention is participleOnly), so "if the exiled creature was a Thrull" gives "that creature" of the sentence no second candidate
+        for (const ref of conditionObjects(step)) if (!COST_PARTICIPLE_REFS.has(String(ref['ref'])) && !out.some((m) => m.sort !== 'number' && m.fallback !== true && sameRef(m.ref, ref))) out.push(namedMention(ref, u.index, d)); // edh-mana-keywords-4: beside the cost's fallback ~ ("{T}, Remove a mining counter from ~: Add ... If there are no mining counters on ~, sacrifice it."): a fallback is a candidate only when nothing else is, and withoutFallback would leave "it" none
         // Standard round 6: so does the object its actor is named through ("enchanted creature's owner shuffles it into their library")
         for (const ref of possessorObjects(step)) if (isRec(ref) && NAMED_REFS.has(ref['ref']) && !out.some((m) => m.sort !== 'number' && sameRef(m.ref, ref))) out.push(namedMention({ ref: ref['ref'] }, u.index, d));
+        // edh-c-12 (CR 608.2c, 109.4; Roiling Terrain): the player a damage step names through the controller of the one target ("deals damage to that land's controller equal to the number of land
+        // cards in that player's graveyard") is "that player" inside the same instruction ("that land" is read as the target while the sentence is lowered: one single-object target only)
+        const hit = step['op'] === 'damage' ? step['to'] : undefined;
+        const hitObj = isRec(hit) && hit['ref'] === 'controllerOf' && isRec(hit['object']) ? hit['object'] : undefined;
+        const only = d.targets.length === 1 && d.targets[0]!.max === 1 && d.targets[0]!.kind === 'object' ? d.targets[0]! : undefined;
+        if (hitObj !== undefined && only !== undefined && (hitObj['ref'] === 'target' ? hitObj['id'] === only.id : hitObj['ref'] === 'bound' && hitObj['$anaphor'] !== undefined)
+          && u.tokens.some((t, i) => t.norm.toLowerCase() === 'controller' && u.tokens[i - 1]?.norm === "'s")) {
+          out.push({ sort: 'player', number: 'singular', heads: ['player'], ref: { ref: 'controllerOf', object: { ref: 'target', id: only.id } }, origin: 'target', unit: u.index, headOnly: true });
+        }
         // CR 608.2f: inside a "for each" step its own iteration variable can be named ("For each opponent, that player ..."; WP23)
-        if (path === `/${top}` && step['op'] === 'forEach') { const it = producedBy(step, u, path); if (it) out.push(it); }
+        if (path === `/${top}` && step['op'] === 'forEach') {
+          const it = producedBy(step, u, path);
+          if (it) out.push(it);
+          // edh-next-132 (CR 608.2f, 608.2c; Hunted by The Family): "Choose up to four target creatures you don't control. For each of them, that creature's controller faces a villainous
+          // choice -- That creature becomes ...": inside the loop over the targets one sentence announced, the target of the current iteration is "that creature" / "it" (only a loop whose
+          // body is a villainous choice: an older loop over targets keeps its readings)
+          const ov = step['over'];
+          // (the group may still be the pronoun "them" while the body is read: then the one group of object targets the ability announced, as anaphora.ts resolves it)
+          const groups = d.targets.filter((t) => t.kind === 'object' && (typeof t.max !== 'number' || t.max > 1));
+          const spec = isRec(ov) && ov['ref'] === 'target' && typeof ov['id'] === 'string' ? d.targets.find((t) => t.id === ov['id'])
+            : isRec(ov) && isRec(ov['$anaphor']) && ov['$anaphor']['text'] === 'them' && groups.length === 1 ? groups[0] : undefined;
+          const villain = Array.isArray(step['do']) && step['do'].length === 1 && isRec(step['do'][0]) && step['do'][0]['op'] === 'may' && step['do'][0]['villainous'] === true;
+          if (!it && villain && spec?.filter !== undefined && spec.kind === 'object' && typeof step['as'] === 'string') {
+            out.push({ origin: 'step', unit: u.index, unitRef: u, path, ref: { ref: 'bound', name: step['as'] }, sort: 'object', number: 'singular', heads: headsOfFilter(spec.filter, 'battlefield') } as StepMention);
+          }
+        }
         continue;
       }
-      for (const ref of namedObjects(step)) if (!out.some((m) => m.sort !== 'number' && sameRef(m.ref, ref))) out.push(namedMention(ref, u.index, d));
+      for (const ref of namedObjects(step)) {
+        // edh-d-94 (CR 400.7j, 608.2c; Jhoira of the Ghitu): the one card a cost exiled, which an earlier instruction acted on by its participle ("Put four time counters on the exiled card."),
+        // is from then on "it" too ("If it doesn't have suspend, it gains suspend."): its one singular cost mention is no longer participle-only (the cost's group mention stays as it is)
+        if (ref['ref'] === 'costExiled') {
+          const cost = out.filter((m) => m.sort === 'object' && m.number === 'singular' && isRec(m.ref) && m.ref['ref'] === 'costExiled' && m.ref['self'] === undefined && (m.verbs ?? []).includes('exiled'));
+          if (cost.length === 1) out[out.indexOf(cost[0]!)] = { ...cost[0]!, participleOnly: false };
+          continue;
+        }
+        if (!out.some((m) => m.sort !== 'number' && sameRef(m.ref, ref))) out.push(namedMention(ref, u.index, d));
+      }
       const hand = handOf(step, u, path);
       if (hand) out.push(hand);
+      const host = hostOf(step, u, path); // edh-top-15
+      if (host) out.push(host);
       const cant = cantOf(step, u, path); // C6
       if (cant) out.push(cant);
+      // edh-next-114 (CR 101.3, 608.2c, 102.3; Liliana, Waker of the Dead): "Each player discards a card. Each opponent who can't loses 3 life.": the opponents among the players who can't (`bindKey: 'cantOpp'`)
+      if (cant && isRec(step['who']) && step['who']['who'] === 'player') out.push({ ...cant, heads: ['opponent'], bindKey: 'cantOpp' });
+      out.push(...didOf(step, u, path)); // edh-players-11
+      out.push(...sacrificedByEachOf(step, u, path)); // edh-next-127
+      out.push(...chosenOneAsGroupOf(step, u, path)); // edh-next-127
       const grp = groupOf(step, u, path, (ref) => out.find((m) => m.sort !== 'number' && sameRef(m.ref as Rec, ref))?.heads ?? []); // FAST5 T77
       if (grp) out.push(grp);
+      // edh-next-137 (CR 727.4, 608.2c; Karn Liberated): "Restart the game, leaving in exile all non-Aura permanent cards exiled with ~. Then put those cards onto the battlefield ...":
+      // "those cards" are the cards the restart leaves in exile (a plural card mention of the step itself; the rider rid.edhn137.restartGame.thenThoseToBattlefield is its only reader)
+      if (step['op'] === 'restartGame') out.push({ origin: 'step', unit: u.index, unitRef: u, path, ref: step['keep'] as Rec, sort: 'object', number: 'plural', heads: ['card'] } as StepMention);
+      // edh-next-31 (CR 608.2c; Thundermaw Hellkite): the group a damage step dealt damage to, named by a noun again ("Tap those creatures"), the same description read again
+      const hurt = damagedGroup(step);
+      if (hurt !== null) out.push({ origin: 'step', unit: u.index, unitRef: u, path, ref: hurt, sort: 'object', number: 'plural', heads: headsOfFilter(hurt['filter'] as ObjectFilter, whereOf(hurt['filter'] as ObjectFilter)), headOnly: true } as StepMention);
       const paidSac = paidSacrificed(step, u.index);
       if (paidSac) out.push(paidSac);
       const exiledTargets = exiledTargetsOf(step, u, path); // std-lci
       if (exiledTargets) out.push(exiledTargets);
+      const destroyedTargets = destroyedTargetsOf(step, u, path); // edh-zones-22
+      if (destroyedTargets) out.push(destroyedTargets);
       const paidDis = paidDiscarded(step, u.index); // CLOUD C8
       if (paidDis) out.push(paidDis);
+      const paidEx = paidExiled(step, u.index); // edh-next-131
+      if (paidEx) out.push(paidEx);
       // Cloud std-eoe (CR 608.2c): an instruction on the very group a pump, grant or control change named before it ("Gain control of all creatures until end of
       // turn. Untap them. They gain haste until end of turn.": "them" was written as that group) adds no second mention of the same group
       const acts = step['what'];
       if (isRec(acts) && acts['ref'] === 'each' && out.some((m) => m.origin === 'step' && JSON.stringify(m.ref) === JSON.stringify(acts))) continue;
       // p2-damage-3 (joinedAfter): a random choice the next step's recipient names is said after that step's source: no antecedent of the step being resolved
       if (own && path === `/${top}` && top === beforeStep - 1 && joinedAfter(step, u.steps[beforeStep])) continue;
-      const made = producedBy(step, u, path, (ref) => out.find((m) => m.sort !== 'number' && sameRef(m.ref as Rec, ref))?.heads ?? []);
+      const made = producedBy(step, u, path, (ref) => out.find((m) => m.sort !== 'number' && sameRef(m.ref as Rec, ref))?.heads ?? [], d.trigger?.wholeBatch === true);
       if (made) {
-        out.push(made);
+        // edh-players-13 (CR 608.2f): "that player" of a later "For each player who chose money, ... that player ..." is the player of ITS iteration, never of an earlier sentence's
+        // (Master of Ceremonies has three): the iteration mention of an earlier unit's loop over the players who chose a word names no one any more
+        const earlierChose = !own && step['op'] === 'forEach' && isRec(step['over']) && step['over']['ref'] === 'chose';
+        out.push(earlierChose ? { ...made, iterates: undefined } : made);
         // std-rx32 (CR 608.2f): the tokens a "for each" made, one per iteration, are also "those tokens" after the loop (StepMention.gathered)
         const loop = /^(.*)\/do\/\d+$/.exec(path)?.[1];
         const parent = loop === undefined ? undefined : stepsInOrder(u.steps).find((s) => s.path === loop)?.step;
-        if (parent?.['op'] === 'forEach' && made.sort === 'object' && made.number === 'singular' && made.heads.includes('token') && (step['op'] === 'copy' || step['op'] === 'createToken')) {
-          const all: StepMention = { ...(made as StepMention), number: 'plural', gathered: loop!, headOnly: true };
+        // edh-players-13 (CR 608.2f, 608.2c; Seize the Spotlight): ... and so are the creatures a "for each player who chose ..." loop CHOSE one at a time ("gain control of a creature that player
+        // controls ... Untap those creatures"): the group of what the loop's choice picked, in every run
+        // edh-next-134 (CR 701.38a, 608.2f; Elrond of the White Council): ... and a "for each <word> vote, the voter chooses a creature they control" loop (over the votes cast for a word)
+        const loopChoice = parent?.['op'] === 'forEach' && isRec(parent['over']) && (parent['over']['ref'] === 'chose' || parent['over']['ref'] === 'votedFor') && step['op'] === 'chooseObjects' && step['max'] === 1 && made.heads.length > 0;
+        if (parent?.['op'] === 'forEach' && made.sort === 'object' && made.number === 'singular' && ((made.heads.includes('token') && (step['op'] === 'copy' || step['op'] === 'createToken')) || loopChoice)) {
+          // edh-next-57 (CR 608.2c; Hate Mirage, Kindred Charge): "For each of those creatures, create a token that's a copy of it. Those tokens gain haste. Exile them at the beginning of the next end step.": the tokens are
+          // the most recent group, so a bare "them" names them too (`alsoThey`/`alsoThem`)
+          const all: StepMention = { ...(made as StepMention), number: 'plural', gathered: loop!, ...(loopChoice ? {} : { headOnly: true, alsoThey: true, alsoThem: true }) };
           out.push(all);
         }
-        const rest = restOf(step, u, path);
+        // edh-d-102 (CR 608.2f, 608.2c, 406.1; Soulfire Eruption): "For each of them, exile the top card of your library, then ... You may play the exiled cards until ...": the cards a
+        // "for each" loop exiled from the top of a library, one per iteration, are "the exiled cards" after the loop (the participle only, never a bare pronoun)
+        if (parent?.['op'] === 'forEach' && made.sort === 'object' && made.number === 'singular' && step['op'] === 'move' && isRec(step['to']) && step['to']['zone'] === 'exile' && isRec(step['what']) && step['what']['ref'] === 'topCards' && step['what']['count'] === 1) {
+          out.push({ ...(made as StepMention), number: 'plural', gathered: loop!, heads: ['card'], verbs: ['exiled', EXILED_THIS_WAY], participleOnly: true } as StepMention);
+        }
+        const rest = restOf(step, u, path, units);
         if (rest) {
           supersededRests(out, rest);
           out.push(rest);
         }
         const revealedRest = revealedRestOf(step, u, path); // r3-dig
         if (revealedRest) out.push(revealedRest);
+        const revealedAll = revealedAllOf(step, u, path); // edh-next-96
+        if (revealedAll) out.push(revealedAll);
+        // edh-zones-16 (CR 608.2c, 701.20a; Wild Magic Surge): and the one player (the controller or owner of a target) a reveal until is the instruction of, "they" afterwards:
+        // "Its controller reveals cards from the top of their library until they reveal a creature card. They put that card onto the battlefield ..."
+        const revealer = step['op'] === 'revealUntil' && isRec(step['who']) && (step['who']['ref'] === 'controllerOf' || step['who']['ref'] === 'ownerOf') && isRec(step['who']['object']) && step['who']['object']['ref'] === 'target' ? step['who'] : null;
+        if (revealer !== null) out.push({ origin: 'step', unit: u.index, unitRef: u, path, ref: revealer, sort: 'player', number: 'singular', heads: ['player'] } as StepMention);
         const exiledRest = exiledRestOf(step, u, path); // trek-7
         if (exiledRest) out.push(exiledRest);
+        const exiledNotCast = exiledNotCastOf(step, u, path); // edh-zones-15
+        if (exiledNotCast) out.push(exiledNotCast);
+        const exiledAll = exiledAllOf(step, u, path); // edh-top-9
+        if (exiledAll) out.push(exiledAll);
         const notPut = revealedNotPutOf(step, u, path, units); // pc-zones-1
         if (notPut) out.push(notPut);
+        const notCastRevealed = revealedNotCastOf(step, u, path); // edh-d-35
+        if (notCastRevealed) out.push(notCastRevealed);
         continue;
       }
       const what = step['what'];
@@ -1095,12 +1603,22 @@ export function mentionsAt(d: Draft, seq: readonly Unit[], upTo: number, beforeS
       const dest = isRec(to) && typeof to['zone'] === 'string' ? to['zone'] : step['op'] === 'move' ? undefined : 'graveyard';
       const rebased = what['ref'] === 'bound' && dest !== undefined && PUBLIC_ZONES.has(dest);
       const moves = MOVING_OPS.has(String(step['op'])) && !rebased;
+      // edh-next-76 (CR 701.20a, 701.20e, 608.2c; Delver of Secrets): "look at the top card of your library. You may reveal that card. If an instant or sorcery card is revealed this way, ...":
+      // the card THIS reveal revealed (the step binds it with `as` only when the reveal happened, so a reveal not taken revealed nothing), named only by "<noun> revealed this way"
+      // (participle-only: a bare "it" or "that card" keeps the card the look saw as its one candidate); only a reveal of the one card an earlier look at one top card saw
+      if (step['op'] === 'reveal' && what['ref'] === 'bound' && step['to'] === undefined && isRec(step['who']) && step['who']['ref'] === 'you'
+        && out.some((m) => m.origin === 'step' && m.sort === 'object' && m.number === 'singular' && (m.verbs ?? []).includes('seen') && sameRef(m.ref, what))) {
+        out.push({ origin: 'step', unit: u.index, unitRef: u, path, ref: typeof step['as'] === 'string' ? { ref: 'bound', name: step['as'] } : { ref: 'bound', name: '' }, sort: 'object', number: 'singular', heads: ['card'], verbs: ['revealed', REVEALED_THIS_WAY], participleOnly: true } as StepMention);
+      }
       for (let k = 0; k < out.length; k++) {
         const m = out[k]!;
         if (m.sort === 'number' || !sameRef(m.ref, what)) continue;
         // r3-refs (CR 110.1, 400.7j): a card a step put onto the battlefield is a permanent there ("You may put an artifact or creature card from your hand onto the
         // battlefield. That permanent gains haste ..."): a card of a permanent type is also named "that permanent"
-        const perm = dest === 'battlefield' && m.sort === 'object' && m.heads.some((h) => h === '*' || PERMANENT_HEADS.has(h)) ? ['permanent'] : [];
+        // edh-c-98 (CR 608.2c, 110.4; Killer Instinct): "If it's a creature card, put it onto the battlefield. That creature gains haste ...": the `if` that guards the move says what
+        // card it is, so the permanent it becomes is also named by that card type
+        const guardTypes = dest === 'battlefield' && m.sort === 'object' ? typeGuardOf(u.steps, path, what) : [];
+        const perm = dest === 'battlefield' && m.sort === 'object' && [...m.heads, ...guardTypes].some((h) => h === '*' || PERMANENT_HEADS.has(h)) ? ['permanent', ...guardTypes] : [];
         // std-rx1 (CR 701.20a, 608.2c): the cards chosen from among cards in a library and revealed there ("You may reveal up to two creature and/or land cards from among
         // them") are also "<cards> revealed this way" (parser/holes/object.ts#revealedThisWay, Zimone's Experiment), as the revealed top cards of a library are
         const shown = step['op'] === 'reveal' && what['ref'] === 'bound' && m.verbs?.includes('chosen') === true ? [REVEALED_THIS_WAY] : [];

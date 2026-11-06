@@ -63,9 +63,10 @@ describe('MX3: capabilities and the cards on the game path', () => {
       expect(compileCard(getCard(n)).automation.level, n).toBe('full');
     }
     // Nazgûl is full since Standard merge wave 5: r3-static reads its deck rule ("A deck can have up to nine cards named Nazgûl", a deck-construction
-    // rule with no effect in the game, CR 100.2a); chapter III of One Ring, outside CR 701.54, keeps it partial
+    // rule with no effect in the game, CR 100.2a); chapter III of One Ring kept it partial (outside CR 701.54) until edh-players-6 read "Each opponent loses 1 life for each
+    // creature card in that player's graveyard" (eff.edhp6.eachOpponent.loseLife.forEachInTheirGraveyard: a loop over the opponents, each counting its own graveyard, CR 608.2c, 120.3, 101.4)
     expect(compileCard(getCard('Nazgûl')).automation.level).toBe('full');
-    expect(compileCard(getCard('One Ring to Rule Them All')).automation.level).toBe('partial');
+    expect(compileCard(getCard('One Ring to Rule Them All')).automation.level).toBe('full');
     const call = compileCard(getCard('Call of the Ring')).faces[0]!.abilities;
     expect(call[1]).toMatchObject({ kind: 'triggered', trigger: { on: [{ ev: 'action', verb: 'ringTempts', actor: 'you', object: { types: ['Creature'] } }] } });
     expect(call[1]).toMatchObject({ effect: { steps: [{ op: 'pay', who: { ref: 'you' }, cost: { other: [{ kind: 'payLife', amount: 2 }] }, then: [{ op: 'draw', who: { ref: 'you' }, count: 1 }] }] } });

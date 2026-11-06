@@ -29,13 +29,13 @@ import { countersOn } from './counters';
 import { proposeMeasured, recordActed } from './lifedamage';
 import { modifiedByManualText } from './manual-text';
 import { proposeResult } from '../propose';
-import { bindAs, did, firstPlayer, NOTHING, permanentsOf } from './zones-util';
+import { actOn, bindAs, did, firstPlayer, NOTHING, permanentsOf } from './zones-util';
 
 type ActionStep = Extract<EffectStep, { op: 'action' }>;
 type Holder = ObjHandle | PlayerId;
 
 /** Capability names (`feature:action.native.<name>`): the native actions of this module. */
-export const COUNTER_FEATURES: readonly string[] = ['action.native.proliferate', 'action.native.bolster', 'action.native.monstrosity', 'action.native.renown' /* std-ry8 */, 'action.native.doubleEachKind' /* cloud std-spm */, 'action.native.anotherOfEachKind' /* r5-refs */];
+export const COUNTER_FEATURES: readonly string[] = ['action.native.proliferate', 'action.native.bolster', 'action.native.monstrosity', 'action.native.renown' /* std-ry8 */, 'action.native.doubleEachKind' /* cloud std-spm */, 'action.native.anotherOfEachKind' /* r5-refs */, 'action.native.timeTravel' /* edh-next-3 */];
 
 const textOf = (st: ActionStep, fallback: string): string => st.span ?? fallback;
 
@@ -64,8 +64,11 @@ function proliferateCandidates(cx: ExecCtx): Holder[] {
   return out;
 }
 
-/** One proliferate (CR 701.34a): returns the number of permanents and players that got at least one counter. */
-function proliferateOnce(cx: ExecCtx, player: PlayerId, st: ActionStep): number {
+/**
+ * One proliferate (CR 701.34a): returns the number of permanents and players that got at least one counter. edh-misc-4 (CR 608.2c; Ripples of Potential): the permanents
+ * that got one are added to `gotCounter`, for the name the step binds (`as`: "permanents that had a counter put on them this way").
+ */
+function proliferateOnce(cx: ExecCtx, player: PlayerId, st: ActionStep, gotCounter: ObjHandle[]): number {
   const g = cx.g;
   const candidates = proliferateCandidates(cx);
   if (candidates.length === 0) {
@@ -92,7 +95,10 @@ function proliferateOnce(cx: ExecCtx, player: PlayerId, st: ActionStep): number 
         g.log(`${put} ${kind} counter${put === 1 ? '' : 's'} put on ${holderName(cx, on)}.`, { rules: ['CR 701.34a', 'CR 122.6'], level: 'action' });
       }
     }
-    if (got > 0) acted++;
+    if (got > 0) {
+      acted++;
+      if (typeof on !== 'string' && !gotCounter.some((h) => h.id === on.id)) gotCounter.push(on);
+    }
   }
   // p2-counters-move-1 (CR 701.34a, 603.2; cites unverified): "whenever you proliferate" triggers once per proliferate, after the whole action, whatever was chosen
   performAction(g, { verb: 'proliferate', actor: player });
@@ -109,12 +115,21 @@ const proliferate: StepHandler<ActionStep> = (cx, st) => {
   const times = amount(cx, st);
   if (player === undefined || times === undefined) return NOTHING; // fails to determine (CR 608.2b)
   let acted = 0;
+  const gotCounter: ObjHandle[] = [];
+  // edh-misc-4 (CR 614.1a, 608.2c; review): a replaced proliferate ("proliferate twice instead", Tekuthal) is still this proliferate: what got counters through it is read from the
+  // counters before and after
+  const total = (id: string): number => Object.values(g.s.objects[id]?.counters ?? {}).reduce((a, b) => a + b, 0);
+  const before = new Map<string, number>(g.s.zones.battlefield.map((id) => [id, total(id)]));
   for (let i = 0; i < times; i++) {
     // p2-replace-events-2 (CR 701.34a, 614.1a): each proliferate is proposed first, so "If you would proliferate, proliferate twice instead" replaces it
     // (effects/proposal-kinds/proliferate.ts); replaced, this proliferate does not run (the replacement's instructions did instead)
     if (proposeResult(g, { ev: 'proliferate', player }) === null) continue;
-    acted += proliferateOnce(cx, player, st);
+    acted += proliferateOnce(cx, player, st, gotCounter);
   }
+  for (const id of g.s.zones.battlefield) {
+    if (before.has(id) && total(id) > before.get(id)! && !gotCounter.some((h) => h.id === id)) gotCounter.push({ id, zone: 'battlefield' });
+  }
+  bindAs(cx, st.as, gotCounter); // edh-misc-4: the permanents that got a counter, whatever else they are
   return did(acted);
 };
 
@@ -188,7 +203,7 @@ const monstrosity: StepHandler<ActionStep> = (cx, st) => {
   if (after === undefined || after.zone !== 'battlefield') return NOTHING; // it left meanwhile (CR 400.7): it does not become monstrous
   after.monstrous = true;
   g.log(`${g.nameOf(me.id)} becomes monstrous.`, { rules: ['CR 701.37a', 'CR 701.37b'], level: 'action' });
-  performAction(g, { verb: 'monstrosity', actor: player, objectId: me.id }); // "becomes monstrous" (triggers/normalize.ts)
+  performAction(g, { verb: 'monstrosity', actor: player, objectId: me.id, x: n }); // edh-perms-16 (CR 701.37a): N rides on the event, the X of "When ~ becomes monstrous, ... X ..." // "becomes monstrous" (triggers/normalize.ts)
   return did(1);
 };
 
@@ -268,5 +283,57 @@ function eachKind(cx: ExecCtx, st: ActionStep, how: 'double' | 'another'): Retur
   return recordActed(cx, st.as, acted);
 }
 
+/**
+ * edh-next-3, CR 701.56a: time travel. "Choose any number of permanents you control with one or more time counters on them and/or suspended cards you own in exile with
+ * one or more time counters on them and, for each of those objects, put a time counter on it or remove a time counter from it." The player picks, one object at a
+ * time, to add one, to remove one, or to leave it (choosing no object is the same); each counter is proposed (CR 122.6), so a replacement that changes counters
+ * applies and removing the last counter of a suspended card triggers its play (CR 702.62a). A suspended card is a card in exile with suspend and a time counter
+ * (CR 702.62b); a permanent that is phased out does not exist (CR 702.26b). Step: `{op:'action', action:'timeTravel', who}`; the action event `timeTravel` is
+ * emitted once per time travel, even when nothing could be chosen. Fail closed: text that changes the action is resolved by hand.
+ */
+const timeTravel: StepHandler<ActionStep> = (cx, st) => {
+  const g = cx.g;
+  bindAs(cx, st.as, []);
+  const modified = modifiedByManualText(g, /(?<!whenever you )\btime travel(s|ed|ing)?\b/i);
+  if (modified) return askManual(cx, textOf(st, 'Time travel.'), `time travel is modified by an ability the engine does not run, ${modified}`);
+  const player = firstPlayer(cx, st.who);
+  if (player === undefined) return NOTHING;
+  if (player !== cx.controller) return askManual(cx, textOf(st, 'Time travel.'), 'another player time travels: "you control" is read for the controller of the effect (CR 701.56a)');
+  const mine = actOn(cx, { ref: 'each', filter: { controller: 'you', counters: { kind: 'time' } } }).filter((h) => h.zone === 'battlefield');
+  const suspended = actOn(cx, { ref: 'each', filter: { zone: 'exile', owner: 'you', isCard: true, keyword: 'suspend', counters: { kind: 'time' } } }).filter((h) => h.zone === 'exile');
+  const candidates = [...mine, ...suspended];
+  // all the choices first (the Scryfall ruling of 2023-10-13: "you choose ... Then those changes all happen simultaneously"), then the changes, each one proposed (CR 122.6)
+  const plan: { h: ObjHandle; pick: string }[] = [];
+  for (const h of candidates) {
+    spend(cx, 1);
+    const name = g.nameOf(h.id);
+    const n = countersOn(cx, h).time ?? 0;
+    const ans = g.choose({
+      kind: 'chooseOption', player, min: 0, max: 1, rules: ['CR 701.56a'],
+      prompt: `Time travel (${textOf(st, 'Time travel.')}): ${name} (${n} time counter${n === 1 ? '' : 's'}): add a time counter, remove one, or leave it.`,
+      options: [{ id: 'add', label: `Put a time counter on ${name}` }, { id: 'remove', label: `Remove a time counter from ${name}` }],
+    });
+    const pick = ans.ids[0];
+    if (pick === 'add' || pick === 'remove') plan.push({ h, pick });
+  }
+  let changed = 0;
+  for (const { h, pick } of plan) {
+    spend(cx, 1);
+    if (!isCurrent(cx, h)) continue; // it left the zone meanwhile (CR 400.7)
+    const name = g.nameOf(h.id);
+    if (pick === 'add') {
+      const put = proposeMeasured(cx, { ev: 'counters', change: 'put', on: h, kind: 'time', count: 1, by: player });
+      if (put > 0) { changed++; g.log(`${name} gets a time counter (time travel).`, { rules: ['CR 701.56a', 'CR 122.6'], level: 'action' }); }
+    } else if ((countersOn(cx, h).time ?? 0) > 0) {
+      const took = proposeMeasured(cx, { ev: 'counters', change: 'removed', on: h, kind: 'time', count: 1, by: player });
+      if (took > 0) { changed++; g.log(`A time counter is removed from ${name} (time travel).`, { rules: ['CR 701.56a', 'CR 122.6'], level: 'action' }); }
+    }
+  }
+  if (candidates.length === 0) g.log(`${g.player(player).name} time travels: no permanent or suspended card has a time counter.`, { rules: ['CR 701.56a'], level: 'info' });
+  performAction(g, { verb: 'timeTravel', actor: player }); // "whenever you time travel" (CR 603.2)
+  return did(changed);
+};
+
+
 /** The native actions of this module by `ActionMacro.native` name (keywords/actions/native.ts). */
-export const COUNTER_NATIVES: Readonly<Record<string, StepHandler<ActionStep>>> = { proliferate, bolster, monstrosity, renown, doubleEachKind, anotherOfEachKind };
+export const COUNTER_NATIVES: Readonly<Record<string, StepHandler<ActionStep>>> = { proliferate, bolster, monstrosity, renown, doubleEachKind, anotherOfEachKind, timeTravel };

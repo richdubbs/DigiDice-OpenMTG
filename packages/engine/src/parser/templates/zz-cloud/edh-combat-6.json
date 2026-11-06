@@ -1,0 +1,267 @@
+[
+  {
+    "id": "eff.edhcb6.draw.player.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 121.1"
+    ],
+    "pattern": "{p:Player} draw[s] {n:Qty} card[s] if {c:Cond}",
+    "build": {
+      "op": "draw",
+      "who": "$p",
+      "count": "$n",
+      "guard": "$c"
+    },
+    "subject": "player",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent attacks with three or more creatures, they draw a card if none of those creatures attacked you."
+      },
+      {
+        "text": "Whenever an opponent attacks with two or more creatures, that player draws two cards if you control four or more lands."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent attacks with three or more creatures, they draw a card unless none of those creatures attacked you.",
+      "Whenever an opponent attacks with three or more creatures, they draw a card if.",
+      "Whenever an opponent attacks with three or more creatures, they draw a land card if none of those creatures attacked you."
+    ]
+  },
+  {
+    "id": "eff.edhcb6.eachOpponent.cantBlockMoreThan",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 611.2a",
+      "CR 101.2"
+    ],
+    "pattern": "each opponent can't block with more than {n:Qty} creature[s] {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "opponent"
+            }
+          },
+          "mode": "cant",
+          "action": "block",
+          "max": "$n",
+          "perPlayer": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, each opponent can't block with more than one creature this combat."
+      },
+      {
+        "text": "When ~ enters, each opponent can't block with more than two creatures this turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, each opponent can't block with more than one creature.",
+      "Whenever ~ attacks, each opponent can't attack with more than one creature this combat.",
+      "Whenever ~ attacks, target opponent can't block with more than one creature this combat."
+    ]
+  },
+  {
+    "id": "sta.edhcb6.attack.noDefender.attackedYouLastTurn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.4",
+      "CR 702.3b",
+      "CR 508.1b",
+      "CR 500.1"
+    ],
+    "pattern": "~ can attack ( players | opponents ) who attacked you during their last turn as though it didn't have defender",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "attackAsThoughNoDefender",
+          "attackedYouLastTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "as though",
+      "who",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "~ can attack opponents who attacked you during their last turn as though it didn't have defender."
+      },
+      {
+        "text": "Defender, reach, deathtouch, flash\n~ can attack opponents who attacked you during their last turn as though it didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "~ can attack opponents who attacked you during their last turn as though it had defender.",
+      "~ can attack opponents who attacked you this turn as though it didn't have defender.",
+      "~ can block opponents who attacked you during their last turn as though it didn't have defender.",
+      "~ can attack creatures who attacked you during their last turn as though it didn't have defender."
+    ]
+  },
+  {
+    "id": "eff.edhcb6.whenever.thatCreature.combatDamage.thisCombat",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 510.2",
+      "CR 511.3"
+    ],
+    "pattern": "whenever {o:Obj} deals combat damage to a player this combat , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "damage",
+          "source": {
+            "is": "$o"
+          },
+          "combat": true,
+          "recipient": {
+            "player": "any"
+          }
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfCombat"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "whenever",
+      "this combat"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage to a player this combat, you draw a card."
+      },
+      {
+        "text": "Target creature gets +1/+1 until end of turn. Whenever it deals combat damage to a player this combat, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage to a player, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals damage to a player this combat, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage to a creature this combat, you draw a card."
+    ]
+  },
+  {
+    "id": "sta.edhcb6.attack.onlyAlone",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 506.5",
+      "CR 508.1c",
+      "CR 604.1"
+    ],
+    "pattern": "~ can only attack alone",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "attack",
+          "onlyAlone": true
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "alone"
+    ],
+    "examples": [
+      {
+        "text": "Example Relic can only attack alone."
+      },
+      {
+        "text": "This permanent can only attack alone."
+      }
+    ],
+    "counterExamples": [
+      "~ can only block alone.",
+      "~ can't attack or block alone, either.",
+      "~ can only attack alone, too.",
+      "Enchanted creature can only attack alone."
+    ]
+  },
+  {
+    "id": "eff.edhcb6.obj.assignsNoCombatDamage",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1",
+      "CR 611.2a",
+      "CR 614.1"
+    ],
+    "pattern": "{o:Obj} assign[s] no combat damage {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "assignsNoCombatDamage",
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, it assigns no combat damage this combat."
+      },
+      {
+        "text": "When ~ enters, target creature assigns no combat damage this turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, it assigns no combat damage.",
+      "Whenever ~ attacks, it assigns combat damage equal to its toughness this combat.",
+      "Whenever ~ attacks, it deals no combat damage this combat."
+    ]
+  }
+]

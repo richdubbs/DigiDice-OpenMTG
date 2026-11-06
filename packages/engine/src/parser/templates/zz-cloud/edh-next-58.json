@@ -1,0 +1,687 @@
+[
+  {
+    "id": "cm.edhn58.additional.tapAny.lessForEach",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 118.8",
+      "CR 604.1",
+      "CR 701.26a"
+    ],
+    "pattern": "as an additional cost to cast ~ , you may tap any number of untapped {f:Filter} . ~ costs {m:ManaCost} less to cast for each creature tapped this way",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "tapUntapped",
+                "filter": "$f",
+                "count": "any"
+              }
+            ]
+          },
+          "optional": true,
+          "name": "tapped",
+          "announceCount": true
+        },
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "costCount",
+                  "name": "tapped"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "needs": [
+      "feature:additionalCost.announceCount"
+    ],
+    "consumes": [
+      "additional",
+      "may",
+      "any number",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, you may tap any number of untapped creatures you control. ~ costs {2} less to cast for each creature tapped this way."
+      },
+      {
+        "text": "As an additional cost to cast ~, you may tap any number of untapped creatures you control. ~ costs {3} less to cast for each creature tapped this way."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, you may tap any number of untapped creatures you control. ~ costs {1} more to cast for each creature tapped this way.",
+      "As an additional cost to cast ~, you may tap any number of creatures you control. ~ costs {1} less to cast for each creature tapped this way.",
+      "As an additional cost to cast ~, you may tap any number of untapped creatures you control. ~ costs {1} less to cast for each card exiled this way."
+    ]
+  },
+  {
+    "id": "cm.edhn58.spells.less.you.cantBeCountered",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 101.2",
+      "CR 701.6a",
+      "CR 604.1",
+      "CR 707.10"
+    ],
+    "pattern": "{f:Filter} you cast cost {m:ManaCost} less to cast and can't be countered",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "types": "$f.types",
+              "subtypes": "$f.subtypes",
+              "supertypes": "$f.supertypes",
+              "colors": "$f.colors",
+              "colorless": "$f.colorless",
+              "keyword": "$f.keyword",
+              "stackKind": "spell",
+              "zone": "stack"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                {
+                  "types": "$f.types",
+                  "subtypes": "$f.subtypes",
+                  "supertypes": "$f.supertypes",
+                  "colors": "$f.colors",
+                  "colorless": "$f.colorless",
+                  "keyword": "$f.keyword",
+                  "stackKind": "spell",
+                  "zone": "stack"
+                }
+              ],
+              "controller": "you",
+              "not": {
+                "stackKind": "copy",
+                "zone": "stack"
+              },
+              "zone": "stack"
+            }
+          },
+          "mode": "cant",
+          "action": "beCountered"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Spells with flash you cast cost {2} less to cast and can't be countered."
+      },
+      {
+        "text": "Creature spells you cast cost {2} less to cast and can't be countered."
+      }
+    ],
+    "counterExamples": [
+      "Spells with flash you cast cost {1} more to cast and can't be countered.",
+      "Spells with flash you cast cost {1} less to cast and can't be copied.",
+      "Spells with flash your opponents cast cost {1} less to cast and can't be countered."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "cm.edhn58.keywordAbilities.you.ofOther.less",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7a",
+      "CR 604.1",
+      "CR 702.6a"
+    ],
+    "pattern": "{k:Keyword} abilities you activate of other {f:Filter} cost {m:ManaCost} less to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": {
+                "other": true,
+                "types": "$f.types",
+                "subtypes": "$f.subtypes"
+              },
+              "kind": "activated",
+              "keyword": "$k.keyword"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Equip abilities you activate of other Equipment cost {2} less to activate."
+      },
+      {
+        "text": "Equip abilities you activate of other Equipment cost {3} less to activate."
+      }
+    ],
+    "counterExamples": [
+      "Equip abilities you activate of other Equipment cost {1} more to activate.",
+      "Equip abilities you activate of Equipment cost {1} less to activate.",
+      "Equip abilities your opponents activate of other Equipment cost {1} less to activate."
+    ]
+  },
+  {
+    "id": "cm.edhn58.keywordAbilities.you.less.forEach",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7a",
+      "CR 604.1",
+      "CR 702.142a"
+    ],
+    "pattern": "{k:Keyword} abilities you activate cost {m:ManaCost} less to activate for each {g:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "kind": "activated",
+              "keyword": "$k.keyword"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": "$g"
+              }
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Boast abilities you activate cost {1} less to activate for each Goblin you control."
+      },
+      {
+        "text": "Equip abilities you activate cost {1} less to activate for each creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Boast abilities you activate cost {1} more to activate for each Dragon you control.",
+      "Boast abilities your opponents activate cost {1} less to activate for each Dragon you control.",
+      "Boast abilities you activate cost {1} less to activate."
+    ]
+  },
+  {
+    "id": "sta.edhn58.aura.activatedAbilities.costLess.floorOne",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.1",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 303.4",
+      "CR 604.1"
+    ],
+    "pattern": "enchanted artifact 's activated abilities cost {m:ManaCost} less to activate . this effect can't reduce the mana in that cost to less than one mana",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": {
+                "attachedToSource": true
+              }
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "one"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted artifact's activated abilities cost {3} less to activate. This effect can't reduce the mana in that cost to less than one mana."
+      },
+      {
+        "text": "Enchanted artifact's activated abilities cost {1} less to activate. This effect can't reduce the mana in that cost to less than one mana."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted artifact's activated abilities cost {2} more to activate. This effect can't reduce the mana in that cost to less than one mana.",
+      "Enchanted artifact's activated abilities cost {2} less to activate.",
+      "Enchanted land's activated abilities cost {2} less to activate. This effect can't reduce the mana in that cost to less than one mana."
+    ]
+  },
+  {
+    "id": "cm.edhn58.spells.you.less.forEachTarget",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 115.1",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} you cast cost {m:ManaCost} less to cast for each target",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "spellTargetCount"
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Spells you cast cost {2} less to cast for each target."
+      },
+      {
+        "text": "Creature spells you cast cost {2} less to cast for each target."
+      }
+    ],
+    "counterExamples": [
+      "Spells you cast cost {1} more to cast for each target.",
+      "Spells your opponents cast cost {1} less to cast for each target.",
+      "Spells you cast cost {1} less to cast for each opponent."
+    ]
+  },
+  {
+    "id": "cm.edhn58.spells.opp.more.forEachTarget",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 115.1",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} your opponents cast cost {m:ManaCost} more to cast for each target",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m",
+            "times": {
+              "q": "spellTargetCount"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Spells your opponents cast cost {2} more to cast for each target."
+      },
+      {
+        "text": "Creature spells your opponents cast cost {2} more to cast for each target."
+      }
+    ],
+    "counterExamples": [
+      "Spells your opponents cast cost {1} less to cast for each target.",
+      "Spells you cast cost {1} more to cast for each target.",
+      "Spells your opponents cast cost {1} more to cast for each creature."
+    ]
+  },
+  {
+    "id": "cm.edhn58.spells.you.less.forEachTargetOfKind",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 118.7a",
+      "CR 115.1",
+      "CR 604.1"
+    ],
+    "pattern": "each {f:Filter} you cast costs {m:ManaCost} less to cast for each {g:Filter} it targets",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "spellTargetCount",
+              "filter": "$g"
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each instant and sorcery spell you cast costs {2} less to cast for each creature it targets."
+      },
+      {
+        "text": "Each instant and sorcery spell you cast costs {1} less to cast for each artifact it targets."
+      }
+    ],
+    "counterExamples": [
+      "Each instant and sorcery spell you cast costs {1} more to cast for each creature it targets.",
+      "Each instant and sorcery spell your opponents cast costs {1} less to cast for each creature it targets.",
+      "Each instant and sorcery spell you cast costs {1} less to cast for each creature it controls."
+    ]
+  },
+  {
+    "id": "cm.edhn58.spells.opp.more.targetYouOrPermanent",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 115.9b",
+      "CR 118.7",
+      "CR 604.1"
+    ],
+    "pattern": "spells your opponents cast that target you or ( a | an ) {f:Filter} you control cost {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "targets": {
+                "ref": "each",
+                "filter": {
+                  "types": "$f.types",
+                  "subtypes": "$f.subtypes",
+                  "controller": "you"
+                }
+              }
+            },
+            "caster": "opponent",
+            "orTargetsYou": true
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "needs": [
+      "feature:costMod.spellTargets.each",
+      "feature:costMod.spellTargets.orYou"
+    ],
+    "examples": [
+      {
+        "text": "Spells your opponents cast that target you or a permanent you control cost {2} more to cast."
+      },
+      {
+        "text": "Spells your opponents cast that target you or a creature you control cost {1} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "Spells your opponents cast that target you or a permanent you control cost {2} less to cast.",
+      "Spells you cast that target you or a permanent you control cost {2} more to cast.",
+      "Spells your opponents cast that target a permanent you control cost {2} more to cast."
+    ]
+  },
+  {
+    "id": "sta.edhn58.abilities.less.floorOne.asLongAs",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.1",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 605.1a",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , activated abilities of {f:Filter} cost {m:ManaCost} less to activate . this effect can't reduce the mana in that ability 's activation cost to less than one mana",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": "$f"
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "one"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a creature, activated abilities of cards in your graveyard cost {2} less to activate. This effect can't reduce the mana in that ability's activation cost to less than one mana."
+      },
+      {
+        "text": "As long as you control an artifact, activated abilities of artifacts you control cost {1} less to activate. This effect can't reduce the mana in that ability's activation cost to less than one mana."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a creature, activated abilities of cards in your graveyard cost {2} more to activate. This effect can't reduce the mana in that ability's activation cost to less than one mana.",
+      "As long as you control a creature, activated abilities of cards in your graveyard cost {2} less to activate."
+    ]
+  },
+  {
+    "id": "sta.edhn58.duringYourTurn.oppSpellsAndAbilities.more",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 605.1a",
+      "CR 118.7",
+      "CR 604.1",
+      "CR 102.1"
+    ],
+    "pattern": "during your turn , spells your opponents cast cost {m:ManaCost} more to cast and abilities your opponents activate cost {a:ManaCost} more to activate unless they're mana abilities",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {},
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        },
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "exceptMana": true
+            },
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$a"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "unless",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, spells your opponents cast cost {2} more to cast and abilities your opponents activate cost {2} more to activate unless they're mana abilities."
+      },
+      {
+        "text": "During your turn, spells your opponents cast cost {2} more to cast and abilities your opponents activate cost {1} more to activate unless they're mana abilities."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, spells your opponents cast cost {1} less to cast and abilities your opponents activate cost {1} more to activate unless they're mana abilities.",
+      "During your turn, spells your opponents cast cost {1} more to cast and abilities your opponents activate cost {1} more to activate.",
+      "During your turn, spells you cast cost {1} more to cast and abilities your opponents activate cost {1} more to activate unless they're mana abilities."
+    ]
+  }
+]

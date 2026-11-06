@@ -76,7 +76,7 @@
       "Whenever ~ or another creature you control dies and whenever you fully unlock a Room, draw a card.",
       "Whenever ~ or another creature you control enters and whenever you unlock a Room, draw a card."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {

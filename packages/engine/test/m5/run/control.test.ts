@@ -152,7 +152,7 @@ describe('the flattened program has the targets in the order announcement stored
 
 describe('capabilities (design 5.2): WP10 registers its control ops', () => {
   it('op:<op> for each control op (handler and renderer); any other op only with its handler package (WP12-WP15)', () => {
-    const ops = ['chooseObjects', 'chooseValue', 'forEach', 'if', 'let', 'manual', 'may', 'pay', 'repeat'];
+    const ops = ['auction' /* edh-next-135 (Thieves' Auction, CR 608.2d): a choice-driven control op */, 'chooseObjects', 'chooseValue', 'forEach', 'if', 'let', 'manual', 'may', 'pay', 'repeat'];
     expect(Object.keys(CONTROL_HANDLERS).sort()).toEqual(ops);
     for (const op of ops) expect(ENGINE_CAPABILITIES.has(`op:${op}`), op).toBe(true);
     // an op value form (`op:<op>.<form>`, M6-2's copy forms, M6-3's changeFace forms) is registered by its op's handler module

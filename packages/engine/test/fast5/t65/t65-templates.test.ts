@@ -183,7 +183,9 @@ describe.skipIf(index === null)('T65 design 6.9, 6.10 (local index): synthetic e
 
   // the try step on real cards: each card's T65 line is read by the named template and passes the render gate, never manual on that line
   const REAL: Readonly<Record<string, readonly string[]>> = {
-    'eff.t65.counters.put.nAndKeyword': ['Kheru Goldkeeper', 'Sagu Pummeler', 'Guide of Souls', 'Donald Blake, Guise of Thor', 'Experimental Lab // Staff Room'],
+    // edh-d-88: Experimental Lab // Staff Room left this list: its "manifest dread, then put two +1/+1 counters and a trample counter on that creature" is now read whole by eff.edhd88.manifestDread.twoCounterKinds
+    // (priority 1, as eff.e25.manifestDread.counters: the generic reading's "that creature" has no antecedent there), and the card is full (golden: edh-d-88-review.json)
+    'eff.t65.counters.put.nAndKeyword': ['Kheru Goldkeeper', 'Sagu Pummeler', 'Guide of Souls', 'Donald Blake, Guise of Thor'],
     'rep.t65.enters.counters.keyword.ifControl': ['Dust Animus'],
     'eff.t65.counters.put.self.cantBeBlocked': ['Sahagin'],
     'eff.t65.counters.distribute.thenDouble': ['Biogenic Upgrade'],

@@ -1,0 +1,274 @@
+[
+  {
+    "id": "eff.edhp21.choose.ownPerPlayer.opponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 109.4"
+    ],
+    "pattern": "each opponent choose[s] ( a | an ) {f:Filter}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "iterating"
+      },
+      "from": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "min": 1,
+      "max": 1,
+      "perPlayer": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "chosen"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Each opponent chooses an artifact they control. Destroy each artifact not chosen this way."
+      },
+      {
+        "text": "Each opponent chooses a Goblin they control. Return those Goblins to their owners' hands."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent chooses two artifacts they control. Destroy each artifact not chosen this way.",
+      "Each opponent chooses an artifact you control. Destroy each artifact not chosen this way.",
+      "For each opponent, you choose an artifact they control. Destroy each artifact not chosen this way."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edhp21.choose.ownPerPlayer.player",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 109.4"
+    ],
+    "pattern": "each player choose[s] ( a | an ) {f:Filter}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "iterating"
+      },
+      "from": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "min": 1,
+      "max": 1,
+      "perPlayer": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "chosen"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Each player chooses a Goblin they control. Return those Goblins to their owners' hands."
+      },
+      {
+        "text": "Each player chooses an artifact they control. Destroy each artifact not chosen this way."
+      }
+    ],
+    "counterExamples": [
+      "Each player chooses two artifacts they control. Destroy each artifact not chosen this way.",
+      "Each player chooses an artifact you control. Destroy each artifact not chosen this way.",
+      "For each player, you choose an artifact they control. Destroy each artifact not chosen this way."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edhp21.draw.forEach.qty",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 121.1",
+      "CR 402.1",
+      "CR 102.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} draw[s] a card for each {n:Qty}",
+    "build": {
+      "op": "draw",
+      "who": "$p",
+      "count": "$n"
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target artifact. Then you draw a card for each opponent who has more cards in hand than you."
+      },
+      {
+        "text": "Destroy target artifact. You draw a card for each opponent who has more cards in their hand than you."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target artifact. Then you draw a card for each opponent who has more cards in hand than each other player.",
+      "Destroy target artifact. You draw two cards for each opponent who has more cards in their hand than you.",
+      "Destroy target artifact. You draw a card for each opponent who has more cards in their hand than that player."
+    ],
+    "priority": -2
+  },
+  {
+    "id": "eff.edhp21.pump.minus.forEachPoisonItsController",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1f",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2h",
+      "CR 109.4"
+    ],
+    "pattern": "each {f:Filter} get[s] -1/-1 {d:Dur} for each poison counter its controller has",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  -1,
+                  {
+                    "q": "counters",
+                    "on": {
+                      "ref": "controllerOf",
+                      "object": {
+                        "ref": "subject"
+                      }
+                    },
+                    "kind": "poison"
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  -1,
+                  {
+                    "q": "counters",
+                    "on": {
+                      "ref": "controllerOf",
+                      "object": {
+                        "ref": "subject"
+                      }
+                    },
+                    "kind": "poison"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each Elf your opponents control gets -1/-1 until end of turn for each poison counter its controller has."
+      },
+      {
+        "text": "Each artifact creature gets -1/-1 until your next turn for each poison counter its controller has."
+      }
+    ],
+    "counterExamples": [
+      "Each Elf your opponents control gets -1/-1 until end of turn for each poison counter you have.",
+      "Each Elf your opponents control gets -2/-2 until end of turn for each poison counter its controller has.",
+      "Each Elf your opponents control gets -1/-1 until end of turn for each experience counter its controller has."
+    ]
+  },
+  {
+    "id": "eff.edhp21.exile.ownPerPlayer.opponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 406.1",
+      "CR 109.4"
+    ],
+    "pattern": "each opponent exile[s] ( a | an ) {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "perPlayer": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "as": "ownExiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "ownExiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent exiles an artifact they control."
+      },
+      {
+        "text": "Each opponent exiles a Goblin with the greatest power among Goblins that player controls."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent exiles two artifacts they control.",
+      "Each opponent exiles an artifact you control.",
+      "Each opponent exiles an artifact."
+    ],
+    "priority": 1
+  }
+]

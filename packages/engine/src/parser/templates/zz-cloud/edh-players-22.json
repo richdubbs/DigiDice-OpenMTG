@@ -1,0 +1,140 @@
+[
+  {
+    "id": "rst.edhp22.stun.cant.beRemoved",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1d",
+      "CR 614.17",
+      "CR 101.2"
+    ],
+    "pattern": "stun counters can't be removed from {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mode": "cant",
+      "action": "haveStunCountersRemoved"
+    },
+    "consumes": [
+      "can't",
+      "stun"
+    ],
+    "examples": [
+      {
+        "text": "Stun counters can't be removed from artifacts you control."
+      },
+      {
+        "text": "Stun counters can't be removed from tapped creatures."
+      }
+    ],
+    "counterExamples": [
+      "Stun counters can be removed from creatures.",
+      "Stun counters can't be put on creatures.",
+      "Counters can't be removed from creatures.",
+      "Stun counters can't be removed from creatures this turn."
+    ]
+  },
+  {
+    "id": "trg.edhp22.opponentSpellDestroys",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 603.2",
+      "CR 109.5",
+      "CR 603.10a"
+    ],
+    "pattern": "whenever a spell or ability an opponent controls destroys {f:Filter}",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "destroy",
+          "object": "$f",
+          "by": "opponent"
+        }
+      ]
+    },
+    "needs": [
+      "feature:ev.action.destroy.by"
+    ],
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a spell or ability an opponent controls destroys a creature you control, draw a card."
+      },
+      {
+        "text": "Whenever a spell or ability an opponent controls destroys an artifact you control, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a spell or ability you control destroys a creature an opponent controls, draw a card.",
+      "Whenever a creature you control is destroyed, draw a card.",
+      "Whenever a spell an opponent controls destroys a creature you control, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhp22.hexproofWaiver.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.11b",
+      "CR 702.11c",
+      "CR 115.1",
+      "CR 609.4",
+      "CR 611.2a"
+    ],
+    "pattern": "until end of turn , your opponents and {f:Filter} can be the targets of spells and abilities you control as though they didn't have hexproof",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "targetableThroughHexproof",
+          "of": "$f",
+          "ofPlayers": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "player": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "until",
+      "not",
+      "as though"
+    ],
+    "needs": [
+      "feature:rulemod.targetableThroughHexproof.players",
+      "feature:rulemod.targetableThroughHexproof.player"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Until end of turn, your opponents and artifacts your opponents control can be the targets of spells and abilities you control as though they didn't have hexproof."
+      },
+      {
+        "text": "Draw a card. Until end of turn, your opponents and enchantments your opponents control can be the targets of spells and abilities you control as though they didn't have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, your opponents and creatures your opponents control can be the targets of spells and abilities your opponents control as though they didn't have hexproof.",
+      "Until end of turn, your opponents and creatures your opponents control can be the targets of spells and abilities you control as though they didn't have shroud.",
+      "Until your next turn, your opponents and creatures your opponents control can be the targets of spells and abilities you control as though they didn't have hexproof.",
+      "Until end of turn, you and creatures you control can be the targets of spells and abilities you control as though they didn't have hexproof."
+    ]
+  }
+]

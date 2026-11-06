@@ -1,0 +1,207 @@
+[
+  {
+    "id": "sta.edhn37.obj.pump.andCanOnlyAttackAlone",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 506.5",
+      "CR 508.1c"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} and can only attack alone",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "attack",
+          "onlyAlone": true
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "alone"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +2/+1 and can only attack alone."
+      },
+      {
+        "text": "Enchanted creature gets +4/+0 and can only attack alone."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +3/+2 and can only block alone.",
+      "Enchanted creature gets +3/+2 and can only attack alone unless it's tapped.",
+      "Enchanted creature gets +3/+2 and can attack alone."
+    ]
+  },
+  {
+    "id": "eff.edhn37.prevent.next.toYouAndPerms.thenDamage",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.5",
+      "CR 615.7",
+      "CR 120.3",
+      "CR 608.2h"
+    ],
+    "pattern": "prevent the next {n:Qty} damage that would be dealt to you and/or permanents you control {d:Dur} . if damage is prevented this way , ~ deals that much damage to {t:Recipient}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you",
+              "object": {
+                "controller": "you"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "$n",
+            "then": [
+              {
+                "op": "damage",
+                "source": {
+                  "ref": "self"
+                },
+                "to": "$t",
+                "amount": {
+                  "q": "preventedAmount"
+                }
+              }
+            ]
+          },
+          "shield": {
+            "uses": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "next",
+      "would",
+      "this way",
+      "if",
+      "that much"
+    ],
+    "examples": [
+      {
+        "text": "Prevent the next 4 damage that would be dealt to you and/or permanents you control this turn. If damage is prevented this way, ~ deals that much damage to any target."
+      },
+      {
+        "text": "Prevent the next 3 damage that would be dealt to you and/or permanents you control this turn. If damage is prevented this way, ~ deals that much damage to target creature."
+      }
+    ],
+    "counterExamples": [
+      "Prevent the next 4 damage that would be dealt to you and/or permanents you control this turn. If damage is prevented this way, ~ deals that much damage to you.",
+      "Prevent the next 4 damage that would be dealt to you this turn. If damage is prevented this way, ~ deals that much damage to any target.",
+      "Prevent the next 4 damage that would be dealt to you and/or permanents you control this turn. ~ deals that much damage to any target."
+    ]
+  },
+  {
+    "id": "eff.edhn37.prevent.next.obj.whereX.thenDamage",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.5",
+      "CR 615.7",
+      "CR 120.3",
+      "CR 608.2h",
+      "CR 107.3"
+    ],
+    "pattern": "prevent the next {n:Qty} damage that would be dealt to {o:Obj} {d:Dur} , where X is {q:Qty} . if damage is prevented this way , ~ deals that much damage to {t:Recipient}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "replace",
+              "replaces": {
+                "ev": "damage",
+                "recipient": {
+                  "object": {
+                    "is": "$o"
+                  }
+                }
+              },
+              "body": {
+                "b": "prevent",
+                "amount": "$n",
+                "then": [
+                  {
+                    "op": "damage",
+                    "source": {
+                      "ref": "self"
+                    },
+                    "to": "$t",
+                    "amount": {
+                      "q": "preventedAmount"
+                    }
+                  }
+                ]
+              },
+              "shield": {
+                "uses": "all"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "next",
+      "would",
+      "this way",
+      "if",
+      "that much"
+    ],
+    "examples": [
+      {
+        "text": "Prevent the next X damage that would be dealt to target creature this turn, where X is the number of Elves you control. If damage is prevented this way, ~ deals that much damage to any target."
+      },
+      {
+        "text": "Prevent the next X damage that would be dealt to target creature this turn, where X is your devotion to white. If damage is prevented this way, ~ deals that much damage to target player."
+      }
+    ],
+    "counterExamples": [
+      "Prevent the next X damage that would be dealt to target creature this turn, where X is your devotion to white. ~ deals that much damage to any target.",
+      "Prevent the next X damage that would be dealt to target creature, where X is your devotion to white. If damage is prevented this way, ~ deals that much damage to any target.",
+      "Prevent the next X damage that would be dealt to target creature this turn, where X is your devotion to white. If damage is prevented this way, ~ deals twice that much damage to any target."
+    ]
+  }
+]

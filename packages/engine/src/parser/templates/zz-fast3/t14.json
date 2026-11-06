@@ -125,6 +125,7 @@
       "CR 400.7"
     ],
     "pattern": "{p:Player} exiles {n:Qty} cards from their hand",
+    "weak": 1,
     "build": [
       {
         "op": "chooseObjects",

@@ -1,0 +1,434 @@
+[
+  {
+    "id": "sta.edhd86.once.playLandOrPermanent.among.fromLibrary",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 305.1",
+      "CR 305.2",
+      "CR 601.3",
+      "CR 404.1",
+      "CR 400.7",
+      "CR 611.3a"
+    ],
+    "pattern": "once during each of your turns , you may ( play a land or cast a permanent spell | cast a permanent spell or play a land ) from among cards in your graveyard that were put there from your library this turn",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "types": [
+              "Artifact",
+              "Battle",
+              "Creature",
+              "Enchantment",
+              "Land",
+              "Planeswalker"
+            ],
+            "putThereThisTurn": true,
+            "putThereFrom": "library"
+          },
+          "from": "graveyard",
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "each",
+      "may",
+      "or",
+      "this"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast a permanent spell or play a land from among cards in your graveyard that were put there from your library this turn."
+      },
+      {
+        "text": "Whenever ~ attacks, mill three cards.\nOnce during each of your turns, you may cast a permanent spell or play a land from among cards in your graveyard that were put there from your library this turn."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may play a land or cast a permanent spell from among cards in your graveyard that were put there from your hand this turn.",
+      "Once during each of your turns, you may play a land or cast an instant spell from among cards in your graveyard that were put there from your library this turn.",
+      "Once during each of your turns, you may play a land or cast a permanent spell from among cards in your hand that were put there from your library this turn."
+    ]
+  },
+  {
+    "id": "sta.edhd86.spells.cast.have.freerunning",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.173a",
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 601.2b",
+      "CR 118.9"
+    ],
+    "pattern": "{f:Filter} you cast have freerunning {m:ManaCost}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "controller": "you",
+              "not": {
+                "stackKind": "copy",
+                "zone": "stack"
+              },
+              "zone": "stack"
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "freerunning",
+                  "cost": {
+                    "mana": "$m"
+                  },
+                  "text": "freerunning"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Rogue spells you cast have freerunning {1}{B}."
+      },
+      {
+        "text": "Ninja spells you cast have freerunning {U}."
+      }
+    ],
+    "counterExamples": [
+      "Rogue spells your opponents cast have freerunning {1}{B}.",
+      "Rogue spells you cast have freerunning.",
+      "Rogue spells you cast have prowl {1}{B}."
+    ]
+  },
+  {
+    "id": "eff.edhd86.damageEqual.unlessControllerHasThatMuch",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 608.2d",
+      "CR 120.3",
+      "CR 115.1",
+      "CR 608.2h"
+    ],
+    "pattern": "~ deal[s] damage equal to {n:Qty} to {o:Obj} unless that creature 's controller has ~ deal that much damage to them",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "controllerOf",
+        "object": "$o"
+      },
+      "do": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": {
+            "ref": "controllerOf",
+            "object": "$o"
+          },
+          "amount": "$n"
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": "$o",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless",
+      "that much"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, ~ deals damage equal to the number of cards in your hand to target creature unless that creature's controller has ~ deal that much damage to them."
+      },
+      {
+        "text": "{3}, {T}: ~ deals damage equal to its power to up to one target creature unless that creature's controller has ~ deal that much damage to them."
+      }
+    ],
+    "counterExamples": [
+      "~ deals damage equal to its power to target creature unless that creature's controller pays {2}.",
+      "~ deals damage equal to its power to target creature unless that creature's controller has ~ deal twice that much damage to them.",
+      "~ deals damage equal to its power to target creature unless you have ~ deal that much damage to you."
+    ]
+  },
+  {
+    "id": "eff.edhd86.choose.creature.any",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 608.2c",
+      "CR 700.2a",
+      "CR 115.10",
+      "CR 109.2"
+    ],
+    "pattern": "choose a creature",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, choose a creature. Whenever that creature deals combat damage to a player this turn, you gain 3 life."
+      },
+      {
+        "text": "Choose a creature. It gains trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Choose a creature card in your graveyard. It gains trample until end of turn.",
+      "Choose a creature type. Creatures of the chosen type get +1/+1 until end of turn.",
+      "Choose target creature. It gains trample until end of turn."
+    ]
+  },
+  {
+    "id": "rid.edhd86.foretold.costIsManaCostLess",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.143a",
+      "CR 702.143d",
+      "CR 118.9"
+    ],
+    "pattern": "its foretell cost is its mana cost reduced by {2}",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "designation": "foretold"
+        },
+        "foretellLess": 2
+      }
+    },
+    "attachTo": "designateObject",
+    "needs": [
+      "op:designateObject.foretold.less"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile a card from your hand face down. It becomes foretold. Its foretell cost is its mana cost reduced by {2}."
+      },
+      {
+        "text": "Whenever ~ attacks, exile a card from your hand face down. It becomes foretold. Its foretell cost is its mana cost reduced by {2}."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile a card from your hand face down. It becomes foretold. Its foretell cost is its mana cost reduced by {1}.",
+      "When ~ enters, exile a card from your hand face down. It becomes foretold. Its foretell cost is its mana cost.",
+      "When ~ enters, exile a card from your hand face down. It becomes plotted. Its foretell cost is its mana cost reduced by {2}."
+    ]
+  },
+  {
+    "id": "rep.edhd86.lifeReducedToZero.insteadTransformSetLife",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 119.3",
+      "CR 119.4",
+      "CR 119.5",
+      "CR 701.27a",
+      "CR 104.3a"
+    ],
+    "pattern": "if your life total would be reduced to {n:Qty} or less , instead transform ~ and your life total becomes {m:Qty} . then if ~ didn't transform this way , you lose the game",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "life",
+            "change": "loss",
+            "player": "you",
+            "toAtMost": "$n"
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "changeFace",
+                "what": {
+                  "ref": "self"
+                },
+                "to": "transform",
+                "as": "transformed"
+              },
+              {
+                "op": "setLife",
+                "who": {
+                  "ref": "you"
+                },
+                "value": "$m"
+              },
+              {
+                "op": "if",
+                "cond": {
+                  "cond": "did",
+                  "step": "transformed",
+                  "not": true
+                },
+                "then": [
+                  {
+                    "op": "loseGame",
+                    "who": {
+                      "ref": "you"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "then",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "If your life total would be reduced to 0 or less, instead transform ~ and your life total becomes 5. Then if ~ didn't transform this way, you lose the game."
+      },
+      {
+        "text": "If your life total would be reduced to 0 or less, instead transform ~ and your life total becomes 7. Then if ~ didn't transform this way, you lose the game."
+      }
+    ],
+    "counterExamples": [
+      "If your life total would be reduced to 0 or less, instead transform ~ and your life total becomes 5.",
+      "If your life total would be reduced to 0 or less, transform ~ and your life total becomes 5. Then if ~ didn't transform this way, you lose the game.",
+      "If an opponent's life total would be reduced to 0 or less, instead transform ~ and your life total becomes 5. Then if ~ didn't transform this way, you lose the game."
+    ]
+  },
+  {
+    "id": "eff.edhd86.put.bf.thenShuffleRest",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.24a",
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 401.2"
+    ],
+    "pattern": "put {o:Obj} onto the battlefield , then shuffle the rest into your library",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "not": {
+              "is": "$o"
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "consumes": [
+      "then",
+      "rest"
+    ],
+    "examples": [
+      {
+        "text": "Reveal cards from the top of your library until you reveal an artifact card. Put that card onto the battlefield, then shuffle the rest into your library."
+      },
+      {
+        "text": "Whenever ~ attacks, reveal cards from the top of your library until you reveal a land card. Put that card onto the battlefield, then shuffle the rest into your library."
+      }
+    ],
+    "counterExamples": [
+      "Reveal cards from the top of your library until you reveal an artifact card. Put that card into your hand, then shuffle the rest into your library.",
+      "Reveal cards from the top of your library until you reveal an artifact card. Put that card onto the battlefield, then put the rest into your library.",
+      "Reveal cards from the top of your library until you reveal an artifact card. Put that card onto the battlefield tapped, then shuffle the rest into your library."
+    ]
+  }
+]

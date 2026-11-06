@@ -1,0 +1,7 @@
+# edh-replace-6 (Commander lane edh-replace; test/cloud/edh-replace-6, golden edh-replace-6-review.json)
+# protection from Ring-bearers, transform all + creatures other than kinds, draw replacement that can lose the game, grant to a locked group + prevention, combat damage to a player as a trigger doubler cause
+Lord of the Nazgûl
+Moonmist
+Out of the Tombs
+Mutational Advantage
+Felix Five-Boots

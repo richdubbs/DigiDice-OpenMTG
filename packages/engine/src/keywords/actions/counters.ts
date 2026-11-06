@@ -1,4 +1,5 @@
 /** CR 701 actions that put counters: double counters (701.10e), adapt (701.46), support (701.41). Pure macros over primitive ops. Owner: WP3. */
+import type { Condition, ObjRef, Quantity } from '../../types/ability';
 import type { ActionMacro } from '../types';
 import { carry, manualAction, subjectOf } from './common';
 
@@ -17,19 +18,30 @@ export const DOUBLE_COUNTERS: ActionMacro = {
   },
 };
 
-/** CR 701.46a: "Adapt N" means "If this permanent has no +1/+1 counters on it, put N +1/+1 counters on it." */
+/**
+ * CR 701.46a: "Adapt N" means "If this permanent has no +1/+1 counters on it, put N +1/+1 counters on it." The permanent adapts whether or not the counters were put, so the
+ * action is reported either way (`reportAction` 'adapt', the turn history). edh-next-110 (Biomancer's Familiar, ruling 2019-01-25: "doesn't add or remove any counters, it just lets
+ * the creature adapt despite already having +1/+1 counters"): "The next time target creature adapts this turn, it adapts as though it had no +1/+1 counters on it" is recorded as
+ * a mark in this turn's history (`reportAction` 'adaptAsNoCounters' of that creature); an adapt of the permanent itself counts the counters as absent while this turn holds more
+ * marks of it than adapts of it (each mark covers the next adapt only, and the turn's history ends with the turn). Only the permanent itself adapting reads marks.
+ */
 export const ADAPT: ActionMacro = {
   name: 'adapt',
   rule: 'CR 701.46',
   expand: (step) => {
     if (step.n === undefined) return manualAction(step, 'adapt needs its number N');
     const me = subjectOf(step);
+    const noCounters: Condition = { cond: 'compare', left: { q: 'counters', on: me, kind: '+1/+1' }, op: '==', right: 0 };
+    const own = me.ref === 'self';
+    const history = (verb: 'adapt' | 'adaptAsNoCounters'): Quantity => ({ q: 'happenedCount', event: { ev: 'action', verb, object: { is: { ref: 'self' } } }, scope: 'turn' });
+    const marked: Condition = { cond: 'compare', left: history('adaptAsNoCounters'), op: '>', right: history('adapt') };
     return carry(step, [
       {
         op: 'if',
-        cond: { cond: 'compare', left: { q: 'counters', on: me, kind: '+1/+1' }, op: '==', right: 0 },
+        cond: own ? { cond: 'any', of: [noCounters, marked] } : noCounters,
         then: [{ op: 'putCounters', on: me, kind: '+1/+1', count: step.n }],
       },
+      { op: 'reportAction', who: step.who ?? { ref: 'you' }, verb: 'adapt', object: me as ObjRef },
     ]);
   },
 };

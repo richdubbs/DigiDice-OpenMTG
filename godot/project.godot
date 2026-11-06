@@ -1,0 +1,55 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="OpenMTG"
+config/version="0.3.0"
+config/description="The OpenMTG table. Talks to the local OpenMTG server; the rules engine runs there."
+run/main_scene="res://scenes/Boot.tscn"
+config/features=PackedStringArray("4.4", "GL Compatibility")
+config/icon="res://assets/brand/digidice-mark-transparent.png"
+config/windows_native_icon="res://assets/brand/app-icon.ico"
+
+[autoload]
+
+Settings="*res://autoload/Settings.gd"
+Server="*res://autoload/Server.gd"
+GameClient="*res://autoload/GameClient.gd"
+Pictures="*res://autoload/Pictures.gd"
+Sound="*res://autoload/Sound.gd"
+UiSounds="*res://autoload/UiSounds.gd"
+Nav="*res://autoload/Nav.gd"
+Slabs="*res://autoload/Slabs.gd"
+Glyphs="*res://autoload/Glyphs.gd"
+Errors="*res://autoload/Errors.gd"
+Online="*res://autoload/Online.gd"
+Updater="*res://autoload/Updater.gd"
+
+[debug]
+
+gdscript/warnings/untyped_declaration=2
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[gui]
+
+theme/custom="res://theme/neon_grid.tres"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.0196078, 0.0431373, 0.0941176, 1)

@@ -1,0 +1,140 @@
+[
+  {
+    "id": "eff.edhr5.mayPay.anyAmount",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 608.2d"
+    ],
+    "pattern": "you may pay any amount of {m:ManaCost}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "mana": "$m"
+      },
+      "anyAmount": true
+    },
+    "consumes": [
+      "may",
+      "any"
+    ],
+    "examples": [
+      {
+        "text": "When this creature dies, you may pay any amount of {R}. When you do, it deals that much damage to target creature."
+      },
+      {
+        "text": "Whenever this creature attacks, you may pay any amount of {R}. When you do, it deals that much damage to target player."
+      }
+    ],
+    "counterExamples": [
+      "When this creature dies, you may pay any amount of {R}. When you do, it deals 2 damage to any target.",
+      "When this creature dies, each opponent may pay any amount of {R}. When you do, it deals that much damage to any target.",
+      "When this creature dies, you may pay any amount of life. When you do, it deals that much damage to any target.",
+      "When this creature dies, you may pay any amount of {R}{R}. When you do, it deals that much damage to any target.",
+      "When this creature dies, you may pay any amount of {2}. When you do, it deals that much damage to any target."
+    ]
+  },
+  {
+    "id": "eff.edhr5.token.you.forEachOpponentDealtDamage",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2c",
+      "CR 111.2",
+      "CR 102.3",
+      "CR 608.2h"
+    ],
+    "pattern": "you create ( a | an ) {t:TokenDesc} for each opponent dealt damage",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "countPlayers",
+        "of": {
+          "ref": "event",
+          "role": "recipient"
+        }
+      },
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "opponent"
+    ],
+    "examples": [
+      {
+        "text": "Whenever one or more Elves you control deal combat damage to your opponents, you create a Food token for each opponent dealt damage."
+      },
+      {
+        "text": "Whenever one or more Rogues you control deal damage to your opponents, you create a Treasure token for each opponent dealt damage."
+      }
+    ],
+    "counterExamples": [
+      "Whenever one or more Elves you control deal damage to your opponents, you create a Food token for each opponent.",
+      "Whenever one or more Elves you control deal damage to your opponents, you create two Food tokens for each opponent dealt damage.",
+      "Whenever one or more Elves you control deal damage to one or more players, you create a Food token for each opponent dealt damage."
+    ]
+  },
+  {
+    "id": "rep.edhr5.counters.energy.youGetPlusOne",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 107.14",
+      "CR 122.1"
+    ],
+    "pattern": "if you would get one or more {e} , you get that many plus one {e} instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "counters",
+            "change": "put",
+            "kind": "energy",
+            "on": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "modify",
+            "count": {
+              "add": 1
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If you would get one or more {E}, you get that many plus one {E} instead.\nHaste"
+      },
+      {
+        "text": "If you would get one or more {E}, you get that many plus one {E} instead.\nFlying"
+      }
+    ],
+    "counterExamples": [
+      "If you would get one or more {E}, you get that many plus two {E} instead.",
+      "If an opponent would get one or more {E}, you get that many plus one {E} instead.",
+      "If you would get one or more {E}, you get that many plus one {E}."
+    ]
+  }
+]

@@ -411,6 +411,7 @@
         "copyIn": "exile",
         "optional": true,
         "free": true,
+        "@into": true,
         "@require": {
           "what.ref": "bound",
           "result": "spell",

@@ -1,0 +1,143 @@
+[
+  {
+    "id": "eff.edhp20.drawLose.youAndPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 119.3",
+      "CR 101.4",
+      "CR 608.2c"
+    ],
+    "pattern": "you and {p:Player} each draw {n:Qty} card[s] and lose {l:Qty} life",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": "$l"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$l"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You and target opponent each draw two cards and lose 3 life."
+      },
+      {
+        "text": "{2}, {T}: You and target player each draw a card and lose 1 life."
+      }
+    ],
+    "counterExamples": [
+      "You and target opponent each draw two cards and gain 3 life.",
+      "You and target opponent each draw two cards and lose all life.",
+      "You and target opponent each draw two cards and discard a card."
+    ]
+  },
+  {
+    "id": "eff.edhp20.then.draw.another.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "then draw another card if {c:Cond}",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "another",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, draw a card. Then draw another card if you control a Rabbit."
+      },
+      {
+        "text": "When ~ enters, you may sacrifice another creature. If you do, draw two cards, then draw another card if the sacrificed creature was legendary."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, draw a card. Then draw another card unless you control a Rabbit.",
+      "Whenever ~ attacks, draw a card. Then draw two cards if you control a Rabbit.",
+      "Whenever ~ attacks, draw a card. Then target player draws another card if you control a Rabbit."
+    ]
+  },
+  {
+    "id": "eff.edhp20.grant.eachOfThose",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 608.2c"
+    ],
+    "pattern": "each of {o:Objs} gains {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Choose any number of target creatures. Each of those creatures gains haste until end of turn."
+      },
+      {
+        "text": "Choose up to two target artifact creatures. Each of those creatures gains flying and vigilance until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Choose any number of target creatures. Each of those creatures gains haste.",
+      "Choose any number of target creatures. Each of those creatures loses haste until end of turn.",
+      "Choose any number of target creatures. Each of those creatures gain haste until end of turn."
+    ]
+  }
+]

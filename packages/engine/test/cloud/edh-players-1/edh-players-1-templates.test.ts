@@ -253,7 +253,9 @@ describe('edh-players-1: "during their turn" for the Nth card or spell and "firs
     expect(isFull(card('Example Rune', 'Enchantment', 'Whenever an opponent loses life for the first time during each of their turns, you gain 2 life.'))).toBe(true);
     expect(isFull(card('Example Rune', 'Enchantment', 'Whenever a player draws their second card during your turn, you gain 2 life.'))).toBe(false);
     expect(isFull(card('Example Rune', 'Enchantment', 'Whenever you draw their second card during their turn, you gain 2 life.'))).toBe(false);
-    expect(isFull(card('Example Rune', 'Enchantment', 'Whenever an opponent loses life for the first time during each of your turns, you gain 2 life.'))).toBe(false);
+    // edh-next-95: "during each of your turns" is now read too (trg.edhn95.event.firstEachOfYourTurns, `while` it is your turn, CR 500.1): no longer a negative
+    expect(isFull(card('Example Rune', 'Enchantment', 'Whenever an opponent loses life for the first time during each of your turns, you gain 2 life.'))).toBe(true);
+    expect(isFull(card('Example Rune', 'Enchantment', 'Whenever an opponent loses life for the second time during each of your turns, you gain 2 life.'))).toBe(false);
   });
 });
 

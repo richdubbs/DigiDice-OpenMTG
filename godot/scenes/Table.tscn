@@ -1,0 +1,159 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scenes/Table.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/Backdrop.tscn" id="2_backdrop"]
+[ext_resource type="PackedScene" path="res://scenes/Stack.tscn" id="3_stack"]
+[ext_resource type="PackedScene" path="res://scenes/PhaseBar.tscn" id="4_phase"]
+[ext_resource type="PackedScene" path="res://scenes/Log.tscn" id="5_log"]
+[ext_resource type="Script" path="res://scenes/PromptLayer.gd" id="6_prompts"]
+[ext_resource type="PackedScene" path="res://scenes/PassCover.tscn" id="7_cover"]
+[ext_resource type="PackedScene" path="res://scenes/GameOver.tscn" id="8_over"]
+[ext_resource type="Script" path="res://fx/Animator.gd" id="9_animator"]
+
+[node name="Table" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Backdrop" parent="." instance=ExtResource("2_backdrop")]
+
+[node name="Camera" type="Camera2D" parent="."]
+position = Vector2(800, 450)
+ignore_rotation = false
+
+[node name="Board" type="Node2D" parent="."]
+
+[node name="FxUnder" type="Node2D" parent="Board"]
+
+[node name="Sides" type="Node2D" parent="Board"]
+
+[node name="Stack" parent="Board" instance=ExtResource("3_stack")]
+offset_left = 1330.0
+offset_top = 300.0
+offset_right = 1590.0
+offset_bottom = 360.0
+
+[node name="Fx" type="Node2D" parent="."]
+z_index = 100
+
+[node name="Animator" type="Node" parent="."]
+script = ExtResource("9_animator")
+
+[node name="UI" type="CanvasLayer" parent="."]
+layer = 1
+
+[node name="Flash" type="ColorRect" parent="UI"]
+unique_name_in_owner = true
+modulate = Color(1, 1, 1, 0)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(1, 0.86, 0.72, 0.35)
+
+[node name="PhaseBar" parent="UI" instance=ExtResource("4_phase")]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -540.0
+offset_top = 4.0
+offset_right = 540.0
+offset_bottom = 74.0
+grow_horizontal = 2
+
+[node name="TopRight" type="HBoxContainer" parent="UI"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -300.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 46.0
+grow_horizontal = 0
+alignment = 2
+theme_override_constants/separation = 8
+
+[node name="Undo" type="Button" parent="UI/TopRight"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Take back your last action (Z)"
+text = "Undo"
+
+[node name="Concede" type="Button" parent="UI/TopRight"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Concede"
+
+[node name="Home" type="Button" parent="UI/TopRight"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Back to Home; the game stays open (Continue)"
+text = "Home"
+
+[node name="Status" type="Label" parent="UI"]
+unique_name_in_owner = true
+offset_left = 12.0
+offset_top = 12.0
+offset_right = 260.0
+offset_bottom = 70.0
+theme_override_colors/font_color = Color(1, 0.75, 0.5, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="Hint" type="Label" parent="UI"]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 80.0
+offset_right = 400.0
+offset_bottom = 110.0
+grow_horizontal = 2
+theme_override_font_sizes/font_size = 16
+horizontal_alignment = 1
+
+[node name="Log" parent="UI" instance=ExtResource("5_log")]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -48.0
+offset_right = 388.0
+offset_bottom = -8.0
+grow_vertical = 0
+
+[node name="Zoom" type="Control" parent="UI"]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 20.0
+offset_top = -190.0
+offset_right = 260.0
+offset_bottom = 150.0
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PromptLayer" type="Control" parent="UI"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("6_prompts")
+
+[node name="ActionMenu" type="PopupMenu" parent="UI"]
+unique_name_in_owner = true
+
+[node name="ConcedeDialog" type="ConfirmationDialog" parent="UI"]
+unique_name_in_owner = true
+title = "Concede"
+dialog_text = "Concede this game? (CR 104.3a)"
+
+[node name="PassCover" parent="UI" instance=ExtResource("7_cover")]
+
+[node name="GameOver" parent="UI" instance=ExtResource("8_over")]

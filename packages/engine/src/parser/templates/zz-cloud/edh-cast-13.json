@@ -1,0 +1,265 @@
+[
+  {
+    "id": "eff.edhc13.cost.spells.opp.more.yourTurn",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.1",
+      "CR 500.1"
+    ],
+    "pattern": "{f:Filter} your opponents cast during your turn cost {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Creature spells your opponents cast during your turn cost {2} more to cast."
+      },
+      {
+        "text": "Artifact spells your opponents cast during your turn cost {1} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "Creature spells your opponents cast during your turn cost {2} less to cast.",
+      "Creature spells you cast during your turn cost {2} more to cast.",
+      "Creature spells your opponents cast cost {2} more to cast.",
+      "Creature spells your opponents cast during their turn cost {2} more to cast."
+    ],
+    "consumes": [
+      "during"
+    ]
+  },
+  {
+    "id": "eff.edhc13.lead.player.cantCast.filter",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 101.2"
+    ],
+    "pattern": "{d:Dur} , {p:Player} can't cast {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$p",
+          "mode": "cant",
+          "action": "cast",
+          "other": "$f"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "can't"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Until your next turn, target player can't cast noncreature spells."
+      },
+      {
+        "text": "Until end of turn, each opponent can't cast artifact spells."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, target player can cast noncreature spells.",
+      "Until your next turn, target player can't cast spells from graveyards."
+    ]
+  },
+  {
+    "id": "sta.edhc13.copy.spell.extra",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 614.1a",
+      "CR 616.1"
+    ],
+    "pattern": "if you would copy a spell one or more times , instead copy it that many times plus an additional time . you may choose new targets for the additional copy",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "extraSpellCopy"
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "additional",
+      "that many",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Echo Surge -- If you would copy a spell one or more times, instead copy it that many times plus an additional time. You may choose new targets for the additional copy."
+      },
+      {
+        "text": "Double Vision -- If you would copy a spell one or more times, instead copy it that many times plus an additional time. You may choose new targets for the additional copy."
+      }
+    ],
+    "counterExamples": [
+      "Echo Surge -- If you would copy a spell one or more times, instead copy it that many times plus an additional time.",
+      "Echo Surge -- If you would copy a spell one or more times, instead copy it that many times plus two additional times. You may choose new targets for the additional copy.",
+      "Echo Surge -- If an opponent would copy a spell one or more times, instead copy it that many times plus an additional time. You may choose new targets for the additional copy."
+    ]
+  },
+  {
+    "id": "eff.edhc13.lead.pumpForEach.target.grant",
+    "kind": "effect",
+    "cr": [
+      "CR 109.2",
+      "CR 115.3",
+      "CR 608.2c",
+      "CR 611.2a",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , {o:Targets} gets +1/+1 for each other {f:Filter} and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "other": true,
+                    "attacking": "$f.attacking",
+                    "blocking": "$f.blocking",
+                    "tapped": "$f.tapped",
+                    "token": "$f.token",
+                    "faceDown": "$f.faceDown",
+                    "types": "$f.types",
+                    "allTypes": "$f.allTypes",
+                    "notTypes": "$f.notTypes",
+                    "subtypes": "$f.subtypes",
+                    "notSubtypes": "$f.notSubtypes",
+                    "supertypes": "$f.supertypes",
+                    "notSupertypes": "$f.notSupertypes",
+                    "colors": "$f.colors",
+                    "notColors": "$f.notColors",
+                    "colorless": "$f.colorless",
+                    "multicolored": "$f.multicolored",
+                    "keyword": "$f.keyword",
+                    "notKeyword": "$f.notKeyword",
+                    "name": "$f.name",
+                    "notName": "$f.notName",
+                    "power": "$f.power",
+                    "toughness": "$f.toughness",
+                    "manaValue": "$f.manaValue",
+                    "counters": "$f.counters",
+                    "zone": "$f.zone",
+                    "controller": "$f.controller"
+                  }
+                }
+              },
+              "toughness": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "other": true,
+                    "attacking": "$f.attacking",
+                    "blocking": "$f.blocking",
+                    "tapped": "$f.tapped",
+                    "token": "$f.token",
+                    "faceDown": "$f.faceDown",
+                    "types": "$f.types",
+                    "allTypes": "$f.allTypes",
+                    "notTypes": "$f.notTypes",
+                    "subtypes": "$f.subtypes",
+                    "notSubtypes": "$f.notSubtypes",
+                    "supertypes": "$f.supertypes",
+                    "notSupertypes": "$f.notSupertypes",
+                    "colors": "$f.colors",
+                    "notColors": "$f.notColors",
+                    "colorless": "$f.colorless",
+                    "multicolored": "$f.multicolored",
+                    "keyword": "$f.keyword",
+                    "notKeyword": "$f.notKeyword",
+                    "name": "$f.name",
+                    "notName": "$f.notName",
+                    "power": "$f.power",
+                    "toughness": "$f.toughness",
+                    "manaValue": "$f.manaValue",
+                    "counters": "$f.counters",
+                    "zone": "$f.zone",
+                    "controller": "$f.controller"
+                  }
+                }
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "other",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target attacking creature gets +1/+1 for each other attacking creature and gains menace."
+      },
+      {
+        "text": "Until end of turn, target attacking Goblin gets +1/+1 for each other attacking Goblin and gains trample."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target attacking creature gets +2/+2 for each other attacking creature and gains menace.",
+      "Until end of turn, target creature gets +1/+1 for each creature and gains menace.",
+      "Until end of turn, it gets +1/+1 for each other attacking creature and gains menace.",
+      "Until end of turn, target attacking creature gets +1/+1 for each other attacking creature or gains menace."
+    ],
+    "status": "stable",
+    "since": 9,
+    "priority": 1
+  }
+]

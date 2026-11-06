@@ -1,0 +1,15 @@
+# edh-c-31 (Commander EDHREC ranks 23,501-24,000): banding (bands, a band is blocked as a group, the other side divides the damage), protection from legendary creatures / non-Spirit creatures, a granted cumulative upkeep, nonblack attacking creature, can block creatures with shadow as though they didnt have shadow, enchanted or equipped, gets +2/+2 and gains X with no duration, instead damage that cant be prevented. After editing: npm run cards -- fixtures
+Benalish Infantry
+Cooperation
+Formation
+Kjeldoran Knight
+Teremko Griffin
+Wall of Shields
+Harbinger of Spring
+Tsabo Tavoc
+Mana Chains
+Assassin's Blade
+Aetherflame Wall
+Novice Knight
+Riding the Dilu Horse
+Arrow Storm

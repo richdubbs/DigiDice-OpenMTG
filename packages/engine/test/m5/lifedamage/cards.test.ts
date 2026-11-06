@@ -184,7 +184,7 @@ describe('Blood Artist: "Whenever this creature or another creature dies, target
     const r = resolveAbility(board(), 'triggered', { name: 'Blood Artist', targets: [[chosenPlayer('p2')]] });
     expect([lifeOf(r.state, 'p1'), lifeOf(r.state, 'p2')]).toEqual([21, 19]);
     expect(r.results).toMatchObject([{ performed: true, count: 1 }, { performed: true, count: 1 }]);
-    expect(pipeline.proposals).toEqual([{ ev: 'life', change: 'loss', player: 'p2', amount: 1 }, { ev: 'life', change: 'gain', player: 'p1', amount: 1 }]);
+    expect(pipeline.proposals).toEqual([{ ev: 'life', change: 'loss', player: 'p2', amount: 1 }, { ev: 'life', change: 'gain', player: 'p1', amount: 1, effectController: 'p1' }]); // edh-d-54 (CR 119.3): a gain carries its effect's controller (Rain of Gore)
   });
 
   it('CR 603.10a, 113.7a: when Blood Artist itself died, its ability still resolves and "you" is its controller', () => {

@@ -1,0 +1,324 @@
+[
+  {
+    "id": "eff.edhcb7.reselect.target",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.7",
+      "CR 508.7a",
+      "CR 508.7b",
+      "CR 508.7c",
+      "CR 508.7d",
+      "CR 115.1",
+      "CR 608.2d"
+    ],
+    "pattern": "you may reselect which player or permanent {o:Obj} is attacking",
+    "build": {
+      "op": "reselectAttack",
+      "what": "$o"
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may reselect which player or permanent target attacking creature is attacking."
+      },
+      {
+        "text": "{1}{W}: You may reselect which player or permanent target attacking creature is attacking."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, reselect which player or permanent target attacking creature is attacking.",
+      "When ~ enters, you may reselect which player target attacking creature is attacking.",
+      "When ~ enters, you may reselect which player or permanent target creature is attacking, then untap it."
+    ]
+  },
+  {
+    "id": "eff.edhcb7.put.bf.attacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.4",
+      "CR 508.4a",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "put {o:Obj} onto the battlefield attacking",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "attacking": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put target Warrior card from your graveyard onto the battlefield attacking."
+      },
+      {
+        "text": "Put target Elf card from your graveyard onto the battlefield attacking."
+      }
+    ],
+    "counterExamples": [
+      "Put target Warrior card from your graveyard onto the battlefield tapped and attacking.",
+      "Put target Warrior card from your graveyard onto the battlefield blocking.",
+      "Put target Warrior card from your graveyard onto the battlefield attacking target opponent."
+    ]
+  },
+  {
+    "id": "kw.edhcb7.artifactOffering",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.48a",
+      "CR 702.48b",
+      "CR 702.48c",
+      "CR 118.9"
+    ],
+    "pattern": "artifact offering",
+    "build": {
+      "kind": "keyword",
+      "keyword": "offering",
+      "quality": "Artifact",
+      "costIsManaCost": true
+    },
+    "examples": [
+      {
+        "text": "Flying, artifact offering"
+      },
+      {
+        "text": "Haste, artifact offering"
+      }
+    ],
+    "counterExamples": [
+      "Artifact offerings",
+      "Artifact offering {1}",
+      "Creature offering"
+    ]
+  },
+  {
+    "id": "eff.edhcb7.removeAttackersExtraCombat",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 506.4",
+      "CR 500.8",
+      "CR 508.1d",
+      "CR 508.1b",
+      "CR 506.3",
+      "CR 603.7a",
+      "CR 608.2c",
+      "CR 701.26b"
+    ],
+    "pattern": "remove {o:Objs} from combat and untap them . after this phase , there is an additional combat phase . each of those creatures attacks that combat if able . they can't attack you or planeswalkers you control that combat",
+    "build": [
+      {
+        "op": "removeFromCombat",
+        "what": "$o",
+        "as": "those"
+      },
+      {
+        "op": "untap",
+        "what": {
+          "ref": "bound",
+          "name": "those"
+        }
+      },
+      {
+        "op": "extraPhase",
+        "phase": "combat"
+      },
+      {
+        "op": "delay",
+        "when": {
+          "at": "step",
+          "step": "beginCombat",
+          "phase": "added"
+        },
+        "duration": {
+          "d": "endOfTurn"
+        },
+        "once": true,
+        "do": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfCombat"
+            },
+            "effects": [
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "bound",
+                  "name": "those"
+                },
+                "mode": "mustIfAble",
+                "action": "attack"
+              },
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "bound",
+                  "name": "those"
+                },
+                "mode": "cant",
+                "action": "attackPlayer",
+                "otherPlayer": {
+                  "ref": "you"
+                }
+              },
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "bound",
+                  "name": "those"
+                },
+                "mode": "cant",
+                "action": "attack",
+                "other": {
+                  "types": [
+                    "Planeswalker"
+                  ],
+                  "controller": "you"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "needs": [
+      "feature:delayed.step.addedPhase"
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "them",
+      "additional",
+      "if",
+      "if able",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Remove all attacking Soldier creatures from combat and untap them. After this phase, there is an additional combat phase. Each of those creatures attacks that combat if able. They can't attack you or planeswalkers you control that combat."
+      },
+      {
+        "text": "Remove all attacking green creatures from combat and untap them. After this phase, there is an additional combat phase. Each of those creatures attacks that combat if able. They can't attack you or planeswalkers you control that combat."
+      }
+    ],
+    "counterExamples": [
+      "Remove all attacking Soldier creatures from combat and untap them. After this phase, there is an additional combat phase. Each of those creatures attacks that combat if able.",
+      "Remove all attacking Soldier creatures from combat and untap them. After this phase, there is an additional combat phase. Each of those creatures attacks that combat if able. They can't attack you that combat.",
+      "Remove all attacking Soldier creatures from combat. After this phase, there is an additional combat phase. Each of those creatures attacks that combat if able. They can't attack you or planeswalkers you control that combat.",
+      "Remove all attacking Soldier creatures from combat and untap them. After this phase, there is an additional main phase. Each of those creatures attacks that combat if able. They can't attack you or planeswalkers you control that combat."
+    ]
+  },
+  {
+    "id": "rst.edhcb7.cast.self.declareBlockersOpponentsTurn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 101.2",
+      "CR 506.1",
+      "CR 509.1",
+      "CR 500.1"
+    ],
+    "pattern": "cast ~ only during the declare blockers step on an opponent 's turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "opponent",
+            "step": [
+              "declareBlockers"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Cast Example Subject only during the declare blockers step on an opponent's turn."
+      },
+      {
+        "text": "Cast Example Subject only during the declare blockers step on an opponent's turn.\nExample Subject deals 2 damage to any target."
+      }
+    ],
+    "counterExamples": [
+      "Cast Example Subject only during the declare blockers step on your turn.",
+      "Cast Example Subject only during the declare blockers step.",
+      "Cast Example Subject only during the declare attackers step on an opponent's turn."
+    ]
+  },
+  {
+    "id": "eff.edhcb7.youChooseBlocks",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1",
+      "CR 509.1a",
+      "CR 509.1c",
+      "CR 509.1d",
+      "CR 723.1",
+      "CR 601.2"
+    ],
+    "pattern": "you choose which creatures block this combat and how those creatures block",
+    "build": {
+      "op": "controlBlocks",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "needs": [
+      "op:controlBlocks"
+    ],
+    "consumes": [
+      "choose",
+      "block"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you choose which creatures block this combat and how those creatures block."
+      },
+      {
+        "text": "Whenever ~ attacks alone, you choose which creatures block this combat and how those creatures block."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you choose which creatures block this combat.",
+      "Whenever ~ attacks, each opponent chooses which creatures block this combat and how those creatures block.",
+      "Whenever ~ attacks, you choose which creatures attack this combat and how those creatures block."
+    ]
+  }
+]

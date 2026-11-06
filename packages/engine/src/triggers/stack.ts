@@ -20,7 +20,8 @@ import type { ObjectId, PlayerId } from '../types/ids';
 import type { EventContext, ObjHandle, PendingTrigger, SemEvent, TargetChoice } from '../types/state';
 import { pendingTriggerDef } from '../rules/abilities';
 import { emitCrime } from '../rules/crime';
-import { programHasTargets } from '../rules/targets';
+import { programFiltersMentionX, programHasTargets } from '../rules/targets';
+import { choosesXOnResolution } from '../types/x-on-resolution';
 import { resolutionX } from '../rules/filter-env';
 import type { PutPendingTriggersOnStack } from './api';
 import { collectTriggers } from './collect';
@@ -31,6 +32,7 @@ import { normalize, splitBatches, turnAt } from './normalize';
 import { checkStateTriggers, suppressStateTrigger } from './state';
 import { announcer } from './wiring';
 import './miracle'; // FAST5X E26: installs miracle's reveal as a card is drawn (CR 702.94a, core/zones.ts#drawCard)
+import './reveal-draw'; // edh-next-144: installs "reveal the first card you draw each turn" (CR 701.20a, core/zones.ts#drawCard)
 
 
 /** r3-choose: the name under which the modes an ability chose are remembered (`ModeSpec.unchosen`): which ability of its object it is. */
@@ -181,6 +183,16 @@ function turnsFaceUpSelf(def: AbilityDef): boolean {
   return p.ev === 'becomes' && p.what === 'turnedFaceUp' && JSON.stringify(p.object) === JSON.stringify({ self: true });
 }
 
+/**
+ * edh-perms-16 (CR 701.37a, 107.3): "When this creature becomes monstrous, create X X/X ...": the one event of the trigger is the source itself becoming monstrous; its
+ * X is the N of the monstrosity. The same shape model/lint-nodes.ts#becomesMonstrousSelf lets an X through (the layers may not share the function).
+ */
+function becomesMonstrousSelf(def: AbilityDef): boolean {
+  if (def.kind !== 'triggered' || def.trigger.batch === true || def.trigger.on.length !== 1) return false;
+  const p = def.trigger.on[0]!;
+  return p.ev === 'becomes' && p.what === 'monstrous' && JSON.stringify(p.object) === JSON.stringify({ self: true });
+}
+
 /** wave 7 merge: "When you cast this spell, ...": every event of the trigger is the cast of the ability's own source (a spell with or without an X). */
 function castsSelf(def: { trigger: { on: readonly EventPattern[]; batch?: boolean } }): boolean {
   const on = def.trigger.batch === true ? [] : def.trigger.on;
@@ -258,9 +270,11 @@ export function putTriggerOnStack(g: Game, t: PendingTrigger): ObjectId | null {
   const castX = t.context.ev === 'cast' && def.kind === 'triggered' && (castsSpellWithX(def) || castsSelf(def)) ? (t.context.x ?? 0) : undefined;
   // std-rx30 (CR 702.37f, 702.168e): "When this creature is turned face up, exile up to X other target creatures": the X chosen as it was turned face up (model/lint-nodes.ts#turnsFaceUpSelf)
   const faceUpX = cycleX === undefined && castX === undefined && turnsFaceUpSelf(def) ? (g.s.objects[t.sourceId]?.faceUpX ?? 0) : undefined;
+  // edh-perms-16 (CR 701.37a): the N the permanent became monstrous with, carried by the event
+  const monstrousX = cycleX === undefined && castX === undefined && faceUpX === undefined && t.context.ev === 'becomes' && becomesMonstrousSelf(def) ? (t.context.x ?? 0) : undefined;
   obj.stack = {
-    kind: 'triggered', sourceId: t.sourceId, sourceName: t.sourceName, abilityRef: t.abilityRef, targets: [], costsPaid: {}, event: t.context, ...(inline ? { inline } : {}), pendingId: t.id, // std-copy-6: "that ability" (effects/refs.ts)
-    ...(cycleX !== undefined ? { x: cycleX } : castX !== undefined ? { x: castX } : faceUpX !== undefined ? { x: faceUpX } : {}),
+    kind: 'triggered', sourceId: t.sourceId, sourceName: t.sourceName, abilityRef: t.abilityRef, targets: [], costsPaid: {}, event: t.context, ...(inline ? { inline } : {}), pendingId: t.id, ...(t.finalChapter === true ? { finalChapter: true as const } : {}), // std-copy-6: "that ability" (effects/refs.ts)
+    ...(cycleX !== undefined ? { x: cycleX } : castX !== undefined ? { x: castX } : faceUpX !== undefined ? { x: faceUpX } : monstrousX !== undefined ? { x: monstrousX } : {}),
   };
   g.s.objects[obj.id] = obj;
   g.s.zones.stack.push(obj.id);
@@ -274,7 +288,10 @@ export function putTriggerOnStack(g: Game, t: PendingTrigger): ObjectId | null {
   // A triggered ability has announced and paid nothing: no kicker (CR 603.3c, 601.2b), and no X of its own: X is what its resolution will read, the X its
   // source was cast with (CR 107.3m), else 0 (WP30 review: its targets and conditions read the same X now as when it resolves, CR 603.3d, 608.2b).
   // r3-choose (CR 603.3c, 700.2): the modes this ability of the object already had chosen ("choose one that hasn't been chosen"), remembered under its key
-  const aenv = { s: g.s, player: t.controller, sourceId: t.sourceId, costsPaid: {}, x: resolutionX(g.s, t.controller, t.sourceId, obj.id), modeMemory: { key: abilityMemoryKey(t.abilityRef), triggered: true }, ...(t.context.amount !== undefined ? { eventAmount: t.context.amount } : {}), ...(t.context.modesChosen !== undefined ? { modesChosen: t.context.modesChosen } : {}) };
+  // edh-d-97 (CR 107.3f, 603.3d; Relentless Dead): an ability whose controller chooses X as it resolves ("you may pay {X}. If you do, return another target ... with mana value X") has
+  // no X yet: its target filters read X relaxed (types/x-on-resolution.ts)
+  const xOnResolution = def.kind === 'triggered' && obj.stack.x === undefined && choosesXOnResolution(program) && programFiltersMentionX(program);
+  const aenv = { s: g.s, player: t.controller, sourceId: t.sourceId, costsPaid: {}, x: resolutionX(g.s, t.controller, t.sourceId, obj.id), ...(xOnResolution ? { xOnResolution: true as const } : {}), modeMemory: { key: abilityMemoryKey(t.abilityRef), triggered: true }, ...(t.context.amount !== undefined ? { eventAmount: t.context.amount } : {}), ...(t.context.modesChosen !== undefined ? { modesChosen: t.context.modesChosen } : {}), event: t.context };
   // CR 603.3c: modes. A mode that would be illegal can't be chosen; no mode, no ability.
   if (program.modes) {
     if (!programHasTargets(g.s, program, t.controller, t.sourceId, obj.id, undefined, aenv.x)) return remove('no mode can be chosen.', 'CR 603.3c');
@@ -361,13 +378,17 @@ export const putPendingTriggersOnStack: PutPendingTriggersOnStack = (g) => {
   collectPendingTriggers(g);
   if (g.s.pendingTriggers.length === 0) return false;
   let any = false;
-  for (const player of g.apnap()) {
-    const mine = g.s.pendingTriggers.filter((t) => t.controller === player);
-    if (mine.length === 0) continue;
-    for (const t of mine.length > 1 ? orderTriggers(g, player, mine) : mine) {
-      g.s.pendingTriggers = g.s.pendingTriggers.filter((x) => x.id !== t.id);
-      putTriggerOnStack(g, t);
-      any = true;
+  // edh-next-74 (CR 603.3b, 603.2; Aboleth Spawn, Scryfall ruling 2022-06-10; std-copy-6's Firebender Ascension): the triggers of "a triggered ability triggers" (`abilityTriggered`) are put on the stack
+  // after the abilities they are about, so each goes on top of its own: first the others in APNAP order, then these in APNAP order
+  for (const meta of [false, true]) {
+    for (const player of g.apnap()) {
+      const mine = g.s.pendingTriggers.filter((t) => t.controller === player && (t.context.ev === 'abilityTriggered') === meta);
+      if (mine.length === 0) continue;
+      for (const t of mine.length > 1 ? orderTriggers(g, player, mine) : mine) {
+        g.s.pendingTriggers = g.s.pendingTriggers.filter((x) => x.id !== t.id);
+        putTriggerOnStack(g, t);
+        any = true;
+      }
     }
   }
   if (g.s.pendingTriggers.length > 0) {
@@ -377,3 +398,17 @@ export const putPendingTriggersOnStack: PutPendingTriggersOnStack = (g) => {
   }
   return any;
 };
+
+/**
+ * edh-d-100 (CR 603.2, 603.3, 607.2a; Share the Spoils): a player played a land or cast a spell with a permission that says "When they do, <effect>" (PermissionDef.onUse): the
+ * triggered ability of the permission's source triggers, controlled by the source's controller, the player who did it the event's player; it goes on the stack the next time a player
+ * would receive priority (CR 603.3). Its `link` steps are the source's (CR 607.2a). Called by actions/cast.ts and actions/land.ts.
+ */
+export function permitOnUseTrigger(g: Game, use: { readonly steps: EffectStep[]; readonly sourceId: ObjectId; readonly controller: PlayerId; readonly text: string }, player: PlayerId, context: EventContext): void {
+  const source = g.s.objects[use.sourceId];
+  putReflexiveTrigger(g, {
+    source: { id: use.sourceId, zone: source?.zone ?? g.s.lki[use.sourceId]?.leftZone ?? 'battlefield' }, controller: use.controller,
+    text: use.text, targets: [], steps: structuredClone(use.steps), context,
+  });
+  g.log(`${g.player(player).name} used ${g.nameOf(use.sourceId)}'s permission: its triggered ability triggers.`, { rules: ['CR 603.2'], level: 'info' });
+}

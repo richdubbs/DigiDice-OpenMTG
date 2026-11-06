@@ -7,12 +7,9 @@
   ],
   "reminder": "Activate only during your upkeep and only once each turn.",
   "multiple": "independent",
-  "status": "planned",
+  "status": "implemented",
   "modifies": {
     "kind": "activated",
-    "zone": [
-      "hand"
-    ],
     "limit": {
       "per": "turn",
       "max": 1

@@ -307,7 +307,7 @@
     "id": "eff.stdlci.put.anyNumber.bf.tapped",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 608.2d",
       "CR 110.2",

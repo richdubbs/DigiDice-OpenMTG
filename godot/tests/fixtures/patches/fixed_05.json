@@ -1,0 +1,1 @@
+{"name":"a key added in the middle of the order","before":{"a":1,"c":3},"ops":[{"op":"set","path":["b"],"value":2},{"op":"keys","path":[],"keys":["a","b","c"]}],"after":{"a":1,"b":2,"c":3}}

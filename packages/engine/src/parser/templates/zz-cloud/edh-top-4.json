@@ -1,0 +1,283 @@
+[
+  {
+    "id": "sta.edht4.youAndObjs.protection.chosenCardType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16a",
+      "CR 702.16b",
+      "CR 702.16e",
+      "CR 607.2d",
+      "CR 604.1"
+    ],
+    "pattern": "you and {f:Filter} have protection from the chosen card type",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "receiveDamage",
+          "other": {
+            "chosen": {
+              "link": "cardType",
+              "quality": "cardType"
+            }
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "chosen": {
+              "link": "cardType",
+              "quality": "cardType"
+            }
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beEnchanted",
+          "other": {
+            "chosen": {
+              "link": "cardType",
+              "quality": "cardType"
+            }
+          }
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "protection",
+                  "quality": "chosen:cardType",
+                  "text": "protection from the chosen card type"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "You and other creatures you control have protection from the chosen card type."
+      },
+      {
+        "text": "You and Angels you control have protection from the chosen card type."
+      }
+    ],
+    "counterExamples": [
+      "You and creatures you control have protection from the chosen color.",
+      "You have protection from the chosen card type.",
+      "Creatures you control have protection from the chosen card type."
+    ]
+  },
+  {
+    "id": "sta.edht4.cast.self.flash.ifTargets",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 601.2c",
+      "CR 702.8a",
+      "CR 604.1"
+    ],
+    "pattern": "you may cast ~ as though it had flash if it targets {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand",
+        "graveyard"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "haveFlash",
+          "of": {
+            "self": true
+          },
+          "ifTargets": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may cast this spell as though it had flash if it targets a legendary creature."
+      },
+      {
+        "text": "You may cast ~ as though it had flash if it targets an artifact."
+      }
+    ],
+    "counterExamples": [
+      "You may cast this spell as though it had flash if it targets a legendary creature you control.",
+      "You may cast this spell as though it had flash.",
+      "You may cast this spell as though it had flash if you control a legendary creature."
+    ]
+  },
+  {
+    "id": "eff.edht4.obj.gains.protection.cardTypeOfYourChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16a",
+      "CR 702.16b",
+      "CR 608.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 205.2a"
+    ],
+    "pattern": "{o:Obj} gains protection from the card type of your choice {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "cardType",
+        "as": "protectionCardType",
+        "link": "cardType"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 6,
+                "add": [
+                  {
+                    "kind": "keyword",
+                    "keyword": "protection",
+                    "quality": "chosen:cardType",
+                    "text": "protection from the chosen card type"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Another target creature you control gains protection from the card type of your choice until end of turn."
+      },
+      {
+        "text": "When ~ enters, target creature gains protection from the card type of your choice until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Another target creature you control gains protection from the card type of your choice.",
+      "Another target creature you control gains protection from the color of your choice until end of turn.",
+      "Another target creature you control gains protection from each card type until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edht4.spells.cast.fromHand.manaValueAtLeast.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 707.10",
+      "CR 702.85a",
+      "CR 202.3"
+    ],
+    "pattern": "{f:Filter} you cast from your hand with mana value {n:Qty} or greater have {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            {
+              "types": "$f.types",
+              "subtypes": "$f.subtypes",
+              "supertypes": "$f.supertypes",
+              "colors": "$f.colors",
+              "colorless": "$f.colorless",
+              "manaValue": {
+                "op": ">=",
+                "value": "$n"
+              },
+              "stackKind": "spell",
+              "zone": "stack"
+            }
+          ],
+          "castFrom": "hand",
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "consumes": [
+      "or greater"
+    ],
+    "examples": [
+      {
+        "text": "Colorless spells you cast from your hand with mana value 7 or greater have \"Cascade, cascade.\""
+      },
+      {
+        "text": "Goblin spells you cast from your hand with mana value 5 or greater have flying."
+      }
+    ],
+    "counterExamples": [
+      "Colorless spells you cast from your graveyard with mana value 7 or greater have \"Cascade, cascade.\"",
+      "Colorless spells you cast from your hand with mana value 7 or less have \"Cascade, cascade.\"",
+      "Colorless spells your opponents cast from their hands with mana value 7 or greater have \"Cascade, cascade.\""
+    ]
+  }
+]

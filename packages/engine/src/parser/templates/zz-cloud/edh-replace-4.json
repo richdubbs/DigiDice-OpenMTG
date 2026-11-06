@@ -1,0 +1,277 @@
+[
+  {
+    "id": "rid.edhr4.instead.excessToController.trample",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 120.10",
+      "CR 120.4a"
+    ],
+    "pattern": "if the creature you control has trample , excess damage is dealt to that creature 's controller instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "@require": {
+          "source.ref": "target"
+        },
+        "op": "if",
+        "cond": {
+          "cond": "matches",
+          "object": "@previous.source",
+          "filter": {
+            "keyword": "trample"
+          }
+        },
+        "then": [
+          {
+            "op": "damage",
+            "source": "@previous.source",
+            "to": "@previous.to",
+            "amount": "@previous.amount",
+            "excessToController": true
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "if",
+      "excess",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you control deals damage equal to its toughness to target creature an opponent controls. If the creature you control has trample, excess damage is dealt to that creature's controller instead."
+      },
+      {
+        "text": "Target creature you control deals damage equal to its power to target creature an opponent controls. If the creature you control has trample, excess damage is dealt to that creature's controller instead."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you control deals damage equal to its power to target creature you don't control. If the creature you control has flying, excess damage is dealt to that creature's controller instead.",
+      "Target creature you control deals damage equal to its power to target creature you don't control. If the creature you control has trample, excess damage is dealt to you instead.",
+      "~ deals 3 damage to target creature. If the creature you control has trample, excess damage is dealt to that creature's controller instead."
+    ]
+  },
+  {
+    "id": "eff.edhr4.emblem.eachOpponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 114.1",
+      "CR 114.2",
+      "CR 114.4",
+      "CR 603.2"
+    ],
+    "pattern": "each opponent gets an emblem with {a:Abilities}",
+    "build": {
+      "op": "createEmblem",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "abilities": "$a"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "emblem"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent gets an emblem with \"Creatures you control get -1/-1.\""
+      },
+      {
+        "text": "Each opponent gets an emblem with \"Whenever you cast a spell, you lose 1 life.\""
+      }
+    ],
+    "counterExamples": [
+      "Target opponent gets an emblem with \"Creatures you control get -1/-1.\"",
+      "Each player gets an emblem with \"Creatures you control get -1/-1.\"",
+      "Each opponent gets a counter with \"Creatures you control get -1/-1.\""
+    ]
+  },
+  {
+    "id": "eff.edhr4.ifPlayerDealtDamageThisWay.cantGainLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 119.7",
+      "CR 611.2a"
+    ],
+    "pattern": "if a player is dealt damage this way , they can't gain life for the rest of the game",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "set",
+              "number": "plural",
+              "participle": "dealt damage this way",
+              "text": "dealt damage this way"
+            }
+          },
+          "mode": "cant",
+          "action": "gainLife"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "this way",
+      "can't",
+      "for the rest of the game"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, it deals 3 damage to any target. If a player is dealt damage this way, they can't gain life for the rest of the game."
+      },
+      {
+        "text": "~ deals 2 damage to any target and you gain 2 life. If a player is dealt damage this way, they can't gain life for the rest of the game."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it deals 3 damage to any target. If a creature is dealt damage this way, they can't gain life for the rest of the game.",
+      "When ~ enters, it deals 3 damage to any target. If a player is dealt damage this way, they can't gain life this turn.",
+      "If a player is dealt damage this way, they can't gain life for the rest of the game."
+    ]
+  },
+  {
+    "id": "sta.edhr4.damage.preventAllButN.toYouOrFilter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.6",
+      "CR 120.3"
+    ],
+    "pattern": "if a source would deal damage to you or {f:Filter} , prevent all but {n:Qty} of that damage",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "recipient": {
+          "player": "you",
+          "object": "$f"
+        }
+      },
+      "body": {
+        "b": "prevent",
+        "amount": {
+          "q": "math",
+          "op": "-",
+          "args": [
+            {
+              "q": "eventAmount"
+            },
+            "$n"
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent",
+      "all",
+      "but"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to you or a planeswalker you control, prevent all but 1 of that damage."
+      },
+      {
+        "text": "If a source would deal damage to you or a Goblin you control, prevent all but 2 of that damage."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to you or a planeswalker you control, prevent all of that damage.",
+      "If a source would deal damage to you or a planeswalker you control, prevent all but 1 of that damage, rounded up.",
+      "If a source would deal damage to a planeswalker you control, prevent all but 1 of that damage."
+    ]
+  },
+  {
+    "id": "sta.edhr4.damage.plus.coloredOrArtifactSource",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 609.7",
+      "CR 105.2"
+    ],
+    "pattern": "if a {c:Color} or artifact source you control would deal damage to an opponent or a permanent an opponent controls , it deals that much damage plus {n:Qty} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "anyOf": [
+            {
+              "colors": [
+                "$c"
+              ]
+            },
+            {
+              "types": [
+                "Artifact"
+              ]
+            }
+          ],
+          "controller": "you"
+        },
+        "recipient": {
+          "player": "opponent",
+          "object": {
+            "controller": "opponent"
+          }
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a green or artifact source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 3 instead."
+      },
+      {
+        "text": "If a blue or artifact source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 1 instead."
+      }
+    ],
+    "counterExamples": [
+      "If a green or artifact source you control would deal damage to an opponent or a permanent an opponent controls, it deals triple that damage instead.",
+      "If a green or artifact source you control would deal damage to a permanent or player, it deals that much damage plus 3 instead.",
+      "If a green or artifact source an opponent controls would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus 3 instead."
+    ]
+  }
+]

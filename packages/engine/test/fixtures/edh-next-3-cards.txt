@@ -1,0 +1,11 @@
+# edh-next-3 (Commander lane edh-next): time travel, "you lose half your life, rounded up", each player loses half or a third then discards and sacrifices (rounded up), a self cost change of colored mana with a condition ("if an opponent cast two or more spells this turn", "has drawn four or more cards"), "other than your first spell each turn". After editing: npm run cards -- fixtures
+Time Beetle
+Wibbly-wobbly, Timey-wimey
+Rotating Fireplace
+All of History, All at Once
+Ebonblade Reaper
+Fraying Omnipotence
+Pox
+Ertai's Scorn
+Even the Score
+Arcbound Tracker

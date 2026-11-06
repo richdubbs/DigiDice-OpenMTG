@@ -1,0 +1,6 @@
+# edh-zones-17 (Commander effort, lane edh-zones; test/cloud/edh-zones-17, golden edh-zones-17-review.json): mill + if you do + pick from among them (Barrowgoyf), fewer than N cards in your graveyard and target player adds mana (The Warring Triad), a player was dealt combat damage by a Zombie (Lost Monarch of Ifnir), sacrifice any number of other permanents and put ~ third from the top (God-Eternal Bontu), choose an instant or sorcery card in your graveyard to cast (Mission Briefing)
+Barrowgoyf
+The Warring Triad
+Lost Monarch of Ifnir
+God-Eternal Bontu
+Mission Briefing

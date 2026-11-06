@@ -630,7 +630,7 @@
     "id": "eff.r5fxb.forEachPlayer.exile",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 115.1",
       "CR 601.2c",
@@ -668,7 +668,7 @@
     "id": "eff.r5fxb.forEachPlayer.counters",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 115.1",
       "CR 601.2c",

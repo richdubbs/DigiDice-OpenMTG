@@ -159,11 +159,13 @@ describe('CR 707.10, 707.10c: "Then if it has four or more quest counters on it,
     s = settle(yes(upTo(s, () => false), false));
     expect(lifeOf(s, 'p1')).toBe(life + 1);
   });
-  it('CR 707.10, 400.7: when the attack trigger resolved first it is gone from the stack: nothing is copied', () => {
+  // edh-next-74 (decided by the owner's standing rule 2026-10-27; Scryfall ruling of Firebender Ascension: "will always go on the stack on top of the triggered ability that caused it to trigger"): the
+  // ability-triggered trigger goes on top whatever order the others were put in, so the attack trigger is still on the stack to be copied (this test said it was gone, an order the rules do not allow)
+  it('CR 603.3b, 707.10: the copying trigger always goes on top of the attack trigger, so the copy is made even when the attack trigger was ordered first', () => {
     let s = attackWith(ascBoard(3), ['Test Raider'], false);
     const life = lifeOf(s, 'p1');
     s = settle(s.pending?.kind === 'yesNo' ? yes(s, true) : s);
     s = s.pending?.kind === 'yesNo' ? settle(yes(s, true)) : s;
-    expect(lifeOf(s, 'p1')).toBe(life + 1);
+    expect(lifeOf(s, 'p1')).toBe(life + 2);
   });
 });

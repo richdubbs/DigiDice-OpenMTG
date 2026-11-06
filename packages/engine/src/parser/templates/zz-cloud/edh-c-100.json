@@ -1,0 +1,139 @@
+[
+  {
+    "id": "sta.edhv100.self.power.greatestMV.amongTwo",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.3",
+      "CR 604.3a",
+      "CR 613.4a",
+      "CR 202.3",
+      "CR 109.2"
+    ],
+    "pattern": "~ 's power is equal to the greatest mana value among {f:Filter} and {g:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "cda": true,
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": "7a",
+              "power": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "anyOf": [
+                      "$f",
+                      "$g"
+                    ],
+                    "zone": [
+                      "battlefield",
+                      "graveyard"
+                    ]
+                  }
+                },
+                "agg": "max"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "~'s power is equal to the greatest mana value among noncreature permanents you control and noncreature cards in your graveyard."
+      },
+      {
+        "text": "~'s power is equal to the greatest mana value among artifacts you control and artifact cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "~'s power is equal to the greatest mana value among artifacts you control.",
+      "~'s toughness is equal to the greatest mana value among artifacts you control and artifact cards in your graveyard.",
+      "~'s power is equal to the greatest mana value among artifacts you control and artifact cards in your graveyard and creature cards in your hand."
+    ]
+  },
+  {
+    "id": "sta.edhv100.each.gets.perManaSymbol",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 202.1",
+      "CR 107.4"
+    ],
+    "pattern": "each {f:Filter} gets {pt:PT} for each {c:Color} mana symbol in its mana cost",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "symbolsAmong",
+                    "of": {
+                      "ref": "subject"
+                    },
+                    "color": "$c"
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "symbolsAmong",
+                    "of": {
+                      "ref": "subject"
+                    },
+                    "color": "$c"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each creature you control gets +1/+1 for each white mana symbol in its mana cost."
+      },
+      {
+        "text": "Each Goblin you control gets +1/+0 for each red mana symbol in its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Each creature you control gets +1/+1 for each white mana symbol in your mana cost.",
+      "Each creature you control gets +1/+1 for each white mana symbol in its mana cost until end of turn.",
+      "Each creature you control gets +1/+1 for each mana symbol in its mana cost."
+    ]
+  }
+]

@@ -21,8 +21,8 @@ export interface ModeInstance {
 type Rec = Record<string, unknown>;
 const isRec = (v: unknown): v is Rec => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-/** `program` with the target ids it declares renamed `<id>~<k>` (deep copy of what changes; the rest is shared). */
-function renamed(program: EffectProgram, k: number): EffectProgram {
+/** `program` with the target ids it declares renamed `<id>~<k>` (deep copy of what changes; the rest is shared). edh-next-69: also used for the text spliced onto a spell (actions/cast-splice.ts), whose ids must not meet the spell's own. */
+export function renamed(program: EffectProgram, k: number | string): EffectProgram {
   const own = new Set(program.targets.map((t) => t.id));
   if (own.size === 0) return program;
   const rn = (id: string): string => (own.has(id) ? `${id}~${k}` : id);

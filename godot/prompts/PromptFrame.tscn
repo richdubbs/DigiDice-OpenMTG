@@ -1,0 +1,75 @@
+[gd_scene format=3]
+
+[node name="PromptFrame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Frame" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -436.0
+offset_top = -158.0
+offset_right = -16.0
+offset_bottom = -158.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_type_variation = &"PromptPanel"
+
+[node name="Box" type="VBoxContainer" parent="Frame"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Frame/Box"]
+layout_mode = 2
+theme_type_variation = &"PromptTitle"
+autowrap_mode = 3
+
+[node name="Rules" type="Label" parent="Frame/Box"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"PromptRules"
+autowrap_mode = 3
+
+[node name="Detail" type="Label" parent="Frame/Box"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"PromptDetail"
+autowrap_mode = 3
+
+[node name="Body" type="VBoxContainer" parent="Frame/Box"]
+layout_mode = 2
+
+[node name="Problem" type="Label" parent="Frame/Box"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"PromptWarning"
+autowrap_mode = 3
+
+[node name="Error" type="Label" parent="Frame/Box"]
+visible = false
+layout_mode = 2
+theme_type_variation = &"PromptError"
+autowrap_mode = 3
+
+[node name="Actions" type="HBoxContainer" parent="Frame/Box"]
+layout_mode = 2
+alignment = 1
+
+[node name="Ok" type="Button" parent="Frame/Box/Actions"]
+layout_mode = 2
+theme_type_variation = &"PromptPrimary"
+text = "OK"
+
+[node name="Cancel" type="Button" parent="Frame/Box/Actions"]
+visible = false
+layout_mode = 2
+tooltip_text = "Esc"
+text = "Cancel"

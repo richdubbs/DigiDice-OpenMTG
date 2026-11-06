@@ -1,0 +1,583 @@
+[
+  {
+    "id": "trg.edhp5.opponent.activate.abilityOf.notMana",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.2",
+      "CR 605.1a",
+      "CR 603.2"
+    ],
+    "pattern": "whenever an opponent activates an ability of {f:Filter} that isn't a mana ability",
+    "build": {
+      "on": [
+        {
+          "ev": "activate",
+          "player": "opponent",
+          "source": "$f",
+          "manaAbility": false
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent activates an ability of a creature or land that isn't a mana ability, draw a card."
+      },
+      {
+        "text": "Whenever an opponent activates an ability of an artifact that isn't a mana ability, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent activates an ability of a creature or land, draw a card.",
+      "Whenever you activate an ability of a creature that isn't a mana ability, draw a card.",
+      "Whenever an opponent activates a loyalty ability of a creature that isn't a mana ability, draw a card."
+    ]
+  },
+  {
+    "id": "trg.edhp5.opponent.activate.abilityOf.onBattlefield.ifNotMana",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.2",
+      "CR 605.1a",
+      "CR 603.4"
+    ],
+    "pattern": "whenever an opponent activates an ability of {f:Filter} on the battlefield , if it isn't a mana ability",
+    "build": {
+      "on": [
+        {
+          "ev": "activate",
+          "player": "opponent",
+          "source": "$f",
+          "manaAbility": false
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent activates an ability of an artifact, creature, or land on the battlefield, if it isn't a mana ability, you gain 2 life."
+      },
+      {
+        "text": "Whenever an opponent activates an ability of a creature on the battlefield, if it isn't a mana ability, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent activates an ability of an artifact, creature, or land on the battlefield, you gain 2 life.",
+      "Whenever you activate an ability of a creature on the battlefield, if it isn't a mana ability, draw a card.",
+      "Whenever an opponent activates an ability of a creature on the battlefield, if it is a mana ability, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhp5.draw.halfLibrary.loseHalfLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 119.3",
+      "CR 107.1a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} draw[s] cards equal to half the number of cards in their library and lose[s] half their life . round up each time",
+    "build": [
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+            {
+              "q": "zoneSize",
+              "zone": "library",
+              "of": "$p"
+            },
+            2
+          ]
+        }
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+            {
+              "q": "life",
+              "of": "$p"
+            },
+            2
+          ]
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "half",
+      "each",
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent draws cards equal to half the number of cards in their library and loses half their life. Round up each time."
+      },
+      {
+        "text": "When ~ enters, target player draws cards equal to half the number of cards in their library and loses half their life. Round up each time."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent draws cards equal to half the number of cards in their library and loses half their life. Round down each time.",
+      "Target opponent draws cards equal to half the number of cards in their library and loses half their life.",
+      "Target opponent draws cards equal to half the number of cards in your library and loses half their life. Round up each time."
+    ]
+  },
+  {
+    "id": "eff.edhp5.you.add.units",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 608.2c"
+    ],
+    "pattern": "you add {u:ManaUnits}",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "units": "$u"
+    },
+    "subject": "none",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you add {R}{R}."
+      },
+      {
+        "text": "When ~ enters, you add {G}{G}{G} and draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you add {R}{R} for each artifact you control.",
+      "Whenever ~ attacks, you gain {R}{R}.",
+      "Whenever ~ attacks, you add two mana."
+    ]
+  },
+  {
+    "id": "eff.edhp5.player.loseLife.andSacrificeChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 701.21a",
+      "CR 608.2c",
+      "CR 608.2e"
+    ],
+    "pattern": "{p:Player} lose[s] {m:Qty} life and sacrifice[s] {n:Qty} {f:Filter} of their choice",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$m"
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$f",
+        "count": "$n"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Each opponent loses 2 life and sacrifices a creature of their choice."
+      },
+      {
+        "text": "Target player loses 3 life and sacrifices two artifacts of their choice."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent loses 2 life and sacrifices a creature of your choice.",
+      "Each opponent gains 2 life and sacrifices a creature of their choice.",
+      "Each opponent loses 2 life or sacrifices a creature of their choice."
+    ]
+  },
+  {
+    "id": "eff.edhp5.objAnd.objs.eachGet.pt.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 107.3c",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Obj} and {g:Objs} each get[s] {pt:PT} {d:Dur} , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": {
+                "ref": "union",
+                "of": [
+                  "$o",
+                  "$g"
+                ]
+              },
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "and",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you draw a card, ~ and Goblins you control each get +X/+X until end of turn, where X is the number of cards in your hand."
+      },
+      {
+        "text": "Whenever you gain life, ~ and Elves you control each get +X/+0 until end of turn, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you draw a card, ~ and Goblins you control each get +X/+X until end of turn.",
+      "Whenever you draw a card, ~ or Goblins you control each get +X/+X until end of turn, where X is the number of cards in your hand.",
+      "Whenever you draw a card, ~ and Goblins you control each gain flying until end of turn, where X is the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "eff.edhp5.players.gain.hexproof",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.11b",
+      "CR 702.11c",
+      "CR 611.2a",
+      "CR 101.2"
+    ],
+    "pattern": "players gain hexproof {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "controller": "opponent"
+          },
+          "relativeToSubject": true
+        }
+      ]
+    },
+    "subject": "none",
+    "needs": [
+      "feature:restrict.relativeToSubject.beTargeted"
+    ],
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Players gain hexproof until your next turn."
+      },
+      {
+        "text": "When ~ enters, players gain hexproof until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Players gain hexproof.",
+      "Players gain shroud until end of turn.",
+      "Players gain hexproof from red until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhp5.players.cantLoseLife.cantLoseOrWinGame.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.8",
+      "CR 104.3",
+      "CR 104.2",
+      "CR 101.2",
+      "CR 611.2a"
+    ],
+    "pattern": "players can't lose life this turn and players can't lose the game or win the game this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "loseLife"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "lose"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "win"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Players can't lose life this turn and players can't lose the game or win the game this turn."
+      },
+      {
+        "text": "Flash\nPlayers can't lose life this turn and players can't lose the game or win the game this turn."
+      }
+    ],
+    "counterExamples": [
+      "Players can't lose life and players can't lose the game or win the game this turn.",
+      "Players can't lose life this turn and players can't lose the game this turn.",
+      "Players can't lose life this turn."
+    ]
+  },
+  {
+    "id": "eff.edhp5.player.gainLife.andDraw.equalTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.1",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} gain[s] life and draw[s] cards equal to {n:Qty}",
+    "build": [
+      {
+        "op": "gainLife",
+        "who": "$p",
+        "amount": "$n"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "When ~ dies, you gain life and draw cards equal to its toughness."
+      },
+      {
+        "text": "Whenever another creature you control dies, you gain life and draw cards equal to its power."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, you gain life and draw cards equal to its toughness unless an opponent pays {2}.",
+      "When ~ dies, you gain life and discard cards equal to its toughness.",
+      "When ~ dies, you gain life or draw cards equal to its toughness."
+    ]
+  },
+  {
+    "id": "eff.edhp5.whenever.thatCreature.combatDamage.playerOrPlaneswalker.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 510.2",
+      "CR 120.1",
+      "CR 514.2"
+    ],
+    "pattern": "whenever {o:Obj} deals combat damage to a player or planeswalker this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "damage",
+          "source": {
+            "is": "$o"
+          },
+          "combat": true,
+          "recipient": {
+            "player": "any",
+            "object": {
+              "types": [
+                "Planeswalker"
+              ]
+            }
+          }
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "whenever",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage to a player or planeswalker this turn, you draw a card."
+      },
+      {
+        "text": "Target creature gets +1/+1 until end of turn. Whenever it deals combat damage to a player or planeswalker this turn, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage to a player or planeswalker, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals damage to a player or planeswalker this turn, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature deals combat damage to a creature or planeswalker this turn, you draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhp5.payelse.life",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 119.4",
+      "CR 608.2c"
+    ],
+    "pattern": "{e:Effects} unless {p:Player} pay[s] {n:Qty} life",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "other": [
+          {
+            "kind": "payLife",
+            "amount": "$n"
+          }
+        ]
+      },
+      "else": "$e"
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, return it to your hand unless target opponent pays 2 life."
+      },
+      {
+        "text": "When ~ enters, draw a card unless target opponent pays 4 life."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, return it to your hand unless target opponent pays {2}.",
+      "When ~ dies, return it to your hand if target opponent pays 2 life.",
+      "When ~ dies, return it to your hand unless target opponent gains 2 life."
+    ]
+  },
+  {
+    "id": "eff.edhp5.exile.self.and.objs",
+    "kind": "effect",
+    "since": 8,
+    "weak": 1,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 406.1",
+      "CR 400.7",
+      "CR 608.2c"
+    ],
+    "pattern": "exile ~ and {g:Objs}",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "self"
+          },
+          "$g"
+        ]
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Exile ~ and each Dragon you control."
+      },
+      {
+        "text": "When ~ enters, exile ~ and all creatures."
+      }
+    ],
+    "counterExamples": [
+      "Exile ~ or each Dragon you control.",
+      "Exile ~ and each Dragon you control face down.",
+      "Destroy ~ and each Dragon you control."
+    ]
+  }
+]

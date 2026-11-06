@@ -1,0 +1,17 @@
+# edh-c-67 (Commander effort, EDHREC ranks 27,001-27,500, second pass): see docs in the round record. After editing: npm run cards -- fixtures
+Wei Assassins
+Goblin War Cry
+Painful Memories
+Lurking Informant
+Searing Barb
+Circle of Affliction
+Dunerider Outlaw
+Acolyte of the Inferno
+Steadfast Armasaur
+Wand of Denial
+Imperial Edict
+Eunuchs' Intrigues
+Whirling Dervish
+Flowstone Salamander
+Crashing Boars
+Godo's Irregulars

@@ -1,0 +1,244 @@
+[
+  {
+    "id": "eff.edhp10.choose.anyNumberTargetOpponents",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c",
+      "CR 102.3"
+    ],
+    "pattern": "choose any number of target opponents",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "player",
+          "players": {
+            "who": "opponent"
+          },
+          "min": 0,
+          "max": "any",
+          "text": "any number of target opponents"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Choose any number of target opponents. Those opponents each draw a card."
+      },
+      {
+        "text": "Choose any number of target opponents. Create a Clue token for each creature those opponents control."
+      }
+    ],
+    "counterExamples": [
+      "Choose any number of target opponents.",
+      "Choose two target opponents. Those opponents each draw a card.",
+      "Choose any number of target opponents. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhp10.forEachOpponent.exile",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 102.3",
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 406.1"
+    ],
+    "pattern": "for each opponent , exile {o:OppTarget}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, exile up to one target artifact that player controls."
+      },
+      {
+        "text": "For each opponent, exile up to one target nonland permanent that player controls."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent, exile up to one target nonland permanent you control.",
+      "For each opponent, return up to one target nonland permanent that player controls to its owner's hand.",
+      "For each opponent, exile up to two target nonland permanents that player controls."
+    ]
+  },
+  {
+    "id": "eff.edhp10.forAnyNumberOfOpponents.destroy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 102.3",
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 701.8a"
+    ],
+    "pattern": "for any number of opponents , destroy {o:AnyOppTarget}",
+    "build": {
+      "op": "destroy",
+      "what": "$o"
+    },
+    "subject": "none",
+    "priority": 1,
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "For any number of opponents, destroy target artifact that player controls."
+      },
+      {
+        "text": "When ~ enters, for any number of opponents, destroy target creature that player controls."
+      }
+    ],
+    "counterExamples": [
+      "For any number of opponents, destroy up to one target nonland permanent that player controls.",
+      "For any number of opponents, destroy target nonland permanent you control.",
+      "For any number of opponents, exile target nonland permanent that player controls."
+    ]
+  },
+  {
+    "id": "eff.edhp10.lose.allCreatureTypes.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Objs} lose[s] all creature types {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "removeAll": "creature"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Target creature loses all creature types until end of turn."
+      },
+      {
+        "text": "Creatures target opponent controls lose all creature types until your next turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature loses all creature types.",
+      "Target creature loses all abilities until end of turn.",
+      "Target creature loses all land types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhp10.durFirst.cantBeBlockedBy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} can't be blocked by {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": "$f"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature can't be blocked by creatures with power 3 or less."
+      },
+      {
+        "text": "Whenever you put one or more counters on a creature, until end of turn, that creature can't be blocked by Walls."
+      }
+    ],
+    "counterExamples": [
+      "Target creature can't be blocked by creatures with power 3 or less.",
+      "Until end of turn, target creature can be blocked by creatures with power 3 or less.",
+      "Until end of turn, target creature can't block creatures with power 3 or less."
+    ]
+  },
+  {
+    "id": "eff.edhp10.eachPlayer.loseAllCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} lose[s] all counters",
+    "build": {
+      "op": "removeCounters",
+      "from": "$p",
+      "kind": "any",
+      "count": "all"
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent loses all counters."
+      },
+      {
+        "text": "Target player loses all counters."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent loses all poison counters.",
+      "Each opponent loses all abilities.",
+      "Each opponent loses some counters."
+    ]
+  }
+]

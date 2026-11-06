@@ -1,0 +1,1 @@
+{"name":"a list appended to","before":{"log":[{"t":1},{"t":2}]},"ops":[{"op":"splice","path":["log"],"at":2,"del":0,"add":[{"t":3},{"t":4}]}],"after":{"log":[{"t":1},{"t":2},{"t":3},{"t":4}]}}

@@ -1,0 +1,5 @@
+# edh-zones-18 (Commander effort, lane edh-zones; test/cloud/edh-zones-18, golden edh-zones-18-review.json): a mana ability that reveals each player's top card and counts the nonland ones, reveal a card from the hand or the top of the library, each player looks at five and may reveal a land and/or an instant or sorcery, an artifact with power and toughness equal to its mana value, a card from outside the game or from exile
+Selvala, Explorer Returned
+Eladamri, Korvecdal
+Wandering Archaic // Explore the Vastlands
+Karn, the Great Creator

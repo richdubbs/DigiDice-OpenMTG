@@ -1,0 +1,7 @@
+# edh-c-83 (Commander effort, coordinator C, EDHREC ranks 22,001 to 22,500, third pass). After editing: npm run cards -- fixtures
+Frontline Strategist
+Plated Pegasus
+Grime Gorger
+Favor of the Mighty
+Mob Mentality
+Loathsome Troll

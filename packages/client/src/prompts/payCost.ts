@@ -14,8 +14,9 @@ export function costSymbols(costText: string): string[] {
 }
 
 /** Indices of the Phyrexian symbols (CR 107.4f: "{B/P}", "{W/U/P}"), which may be paid with 2 life each. */
-export function phyrexianIndices(costText: string): number[] {
-  return costSymbols(costText).flatMap((s, i) => (/\/P\}$/.test(s) ? [i] : []));
+export function phyrexianIndices(costText: string, lifeSymbols: readonly number[] = []): number[] {
+  // edhc5: and the symbols the engine says a static ability lets the player pay with life (K'rrik, the Defilers)
+  return costSymbols(costText).flatMap((s, i) => (/\/P\}$/.test(s) || lifeSymbols.includes(i) ? [i] : []));
 }
 
 export const sourceKey = (s: { objectId: string; abilityKey: string }) => `${s.objectId}|${s.abilityKey}`;

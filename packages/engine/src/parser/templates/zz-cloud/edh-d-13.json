@@ -1,0 +1,96 @@
+[
+  {
+    "id": "eff.edhd13.gainlife.twicePerLifeLost",
+    "kind": "effect",
+    "since": 13,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 603.2",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} gain[s] 2 life for each 1 life you lost",
+    "build": {
+      "op": "gainLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          2,
+          {
+            "q": "eventAmount"
+          }
+        ]
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you lose life, you gain 2 life for each 1 life you lost."
+      },
+      {
+        "text": "Whenever you lose life, you gain 2 life for each 1 life you lost.\nWhenever you gain life, scry 3."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you lose life, you gain 3 life for each 1 life you lost.",
+      "Whenever you lose life, you gain 2 life for each 2 life you lost.",
+      "Whenever you gain life, you gain 2 life for each 1 life you lost."
+    ]
+  },
+  {
+    "id": "eff.edhd13.control.objs",
+    "kind": "effect",
+    "since": 13,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 115.1d"
+    ],
+    "pattern": "gain control of {o:Objs} [{d:Dur}]",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "d": "permanent"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Gain control of up to three target creatures."
+      },
+      {
+        "text": "Gain control of up to two target artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Gain control of up to three creatures.",
+      "Gain control of up to three target creatures unless its controller pays {2}."
+    ],
+    "weak": 1
+  }
+]

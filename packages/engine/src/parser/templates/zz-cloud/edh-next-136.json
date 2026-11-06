@@ -1,0 +1,813 @@
+[
+  {
+    "id": "eff.edhn136.exile.untilObjLeaves",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 610.3",
+      "CR 610.3a",
+      "CR 608.2b"
+    ],
+    "pattern": "exile {o:Objs} until {u:Obj} leaves the battlefield",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile"
+      },
+      "until": {
+        "d": "until",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "is": "$u"
+          },
+          "from": "battlefield"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Exile target creature an opponent controls until target artifact you control leaves the battlefield."
+      },
+      {
+        "text": "{T}: Exile target nonland permanent you don't control until target enchantment you control leaves the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature until target enchantment you control attacks.",
+      "Exile target creature unless target enchantment you control leaves the battlefield."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhn136.putThat.hand.exileRest.counter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.13a",
+      "CR 122.1",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:Obj} into your hand and exile {r:Rest} with a silver counter on it",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "exile",
+          "counters": [
+            {
+              "kind": "silver",
+              "count": 1
+            }
+          ]
+        }
+      }
+    ],
+    "consumes": [
+      "and"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Reveal the top two cards of your library. Target opponent chooses one of those cards. Put that card into your hand and exile the other with a silver counter on it."
+      },
+      {
+        "text": "{2}, {T}: Reveal the top two cards of your library. An opponent chooses one of them. Put that card into your hand and exile the other with a silver counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top two cards of your library. An opponent chooses one of them. Put that card into your hand and exile the other.",
+      "Reveal the top two cards of your library. An opponent chooses one of them. Put that card into your graveyard and exile the other with a silver counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhn136.put.ownedWithCounter.fromExile.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 406.1",
+      "CR 400.3"
+    ],
+    "pattern": "put a card you own with a silver counter on it from exile into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "exile",
+            "owner": "you",
+            "counters": {
+              "kind": "silver"
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}, {T}: Put a card you own with a silver counter on it from exile into your hand."
+      },
+      {
+        "text": "Draw a card, then put a card you own with a silver counter on it from exile into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Put a card you own with a silver counter on it from your graveyard into your hand.",
+      "Put a card an opponent owns with a silver counter on it from exile into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn136.pay.anyAmountOfMana",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 608.2d",
+      "CR 106.1"
+    ],
+    "pattern": "pay any amount of mana",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "mana": [
+          {
+            "kind": "generic",
+            "amount": 1
+          }
+        ]
+      },
+      "anyAmount": true
+    },
+    "consumes": [
+      "any"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Pay any amount of mana. Look at that many cards from the top of your library, then put one of those cards into your hand and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Pay any amount of mana. Draw that many cards."
+      }
+    ],
+    "counterExamples": [
+      "Pay any amount of life. Draw that many cards.",
+      "Each opponent pays any amount of mana. Draw that many cards."
+    ]
+  },
+  {
+    "id": "eff.edhn136.mayPut.fromHandOrGraveyard.withCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 122.6",
+      "CR 400.7"
+    ],
+    "pattern": "you may put ( a | an ) {f:CardDesc} onto the battlefield from your hand or graveyard with {n:Qty} +1/+1 counter[s] on it",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "$merge": [
+              "$f",
+              {
+                "zone": [
+                  "hand",
+                  "graveyard"
+                ],
+                "owner": "you",
+                "isCard": true
+              }
+            ]
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "counters": [
+            {
+              "kind": "+1/+1",
+              "count": "$n"
+            }
+          ]
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{4}, {T}: You may put a creature card with mana value less than or equal to the number of lands you control onto the battlefield from your hand or graveyard with two +1/+1 counters on it."
+      },
+      {
+        "text": "You may put an artifact creature card onto the battlefield from your hand or graveyard with a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "You may put a creature card onto the battlefield from your hand or library with two +1/+1 counters on it.",
+      "Put a creature card onto the battlefield from your hand or graveyard with two +1/+1 counters on it.",
+      "You may put a creature card onto the battlefield from your hand or graveyard with two +1/+1 counters on each of them."
+    ]
+  },
+  {
+    "id": "eff.edhn136.copy.token.notLegendary.startingLoyalty",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 306.5b",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj}, except it's not legendary and its starting loyalty is {n:Qty}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "remove": [
+              "Legendary"
+            ]
+          }
+        }
+      ],
+      "startingLoyalty": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, create a token that's a copy of ~, except it's not legendary and its starting loyalty is 2."
+      },
+      {
+        "text": "{3}, {T}: Create a token that's a copy of target planeswalker you control, except it's not legendary and its starting loyalty is 1."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, create a token that's a copy of ~, except its starting loyalty is 1.",
+      "When ~ enters, create two tokens that are copies of ~, except they're not legendary and their starting loyalty is 1."
+    ],
+    "consumes": [
+      "except",
+      "not"
+    ]
+  },
+  {
+    "id": "eff.edhn136.draw.revealIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 701.20a",
+      "CR 614.11"
+    ],
+    "pattern": "draw a card and reveal it",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "revealDrawn": true
+    },
+    "consumes": [
+      "and"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Draw a card and reveal it. Remove a number of loyalty counters equal to that card's mana value from target planeswalker."
+      },
+      {
+        "text": "{T}: Draw a card and reveal it. You lose life equal to that card's mana value."
+      }
+    ],
+    "counterExamples": [
+      "Draw two cards and reveal them.",
+      "Draw a card and discard it."
+    ]
+  },
+  {
+    "id": "eff.edhn136.removeCounters.aNumberEqualTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2h",
+      "CR 107.1"
+    ],
+    "pattern": "remove a number of loyalty counters equal to {n:Qty} from {o:Obj}",
+    "build": {
+      "op": "removeCounters",
+      "from": "$o",
+      "kind": "loyalty",
+      "count": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Draw a card and reveal it. Remove a number of loyalty counters equal to that card's mana value from target planeswalker."
+      },
+      {
+        "text": "Remove a number of loyalty counters equal to the number of cards in your hand from target planeswalker."
+      }
+    ],
+    "counterExamples": [
+      "Remove a number of loyalty counters from target planeswalker.",
+      "Put a number of loyalty counters equal to the number of cards in your hand on target planeswalker."
+    ]
+  },
+  {
+    "id": "eff.edhn136.castUpTo.faceUpOpponentsOwnExile.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 305.9",
+      "CR 406.3",
+      "CR 108.3"
+    ],
+    "pattern": "you may cast up to {n:Qty} spells from among face-up cards your opponents own from exile without paying their mana costs",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "zone": "exile",
+            "owner": "opponent",
+            "faceDown": false,
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "up to",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "{T}: You may cast up to two spells from among face-up cards your opponents own from exile without paying their mana costs."
+      },
+      {
+        "text": "You may cast up to three spells from among face-up cards your opponents own from exile without paying their mana costs. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "You may cast up to three spells from among face-up cards you own from exile without paying their mana costs.",
+      "You may cast up to three spells from among face-up cards your opponents own from exile."
+    ]
+  },
+  {
+    "id": "eff.edhn136.playerOrController.discards.thenSacrifices",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 109.4",
+      "CR 701.9a",
+      "CR 701.21a",
+      "CR 608.2b"
+    ],
+    "pattern": "{p:Player} or {q:Player} discards {n:Qty} card[s] , then sacrifices {m:Qty} permanents of their choice",
+    "build": [
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "discard",
+        "who": "$q",
+        "count": "$n"
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": {},
+        "count": "$m"
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": "$q",
+        "filter": {},
+        "count": "$m"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "their"
+    ],
+    "examples": [
+      {
+        "text": "{T}: ~ deals 7 damage to target player or planeswalker. That player or that planeswalker's controller discards seven cards, then sacrifices seven permanents of their choice."
+      },
+      {
+        "text": "{1}, {T}: ~ deals 3 damage to target player or planeswalker. That player or that planeswalker's controller discards two cards, then sacrifices two permanents of their choice."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 3 damage to target player or planeswalker. That player discards two cards, then sacrifices two permanents of their choice.",
+      "~ deals 3 damage to target player or planeswalker. That player or that planeswalker's controller discards two cards, then sacrifices two creatures of their choice."
+    ]
+  },
+  {
+    "id": "eff.edhn136.piles.hand.bottomAnyOrder",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 700.3",
+      "CR 608.2c",
+      "CR 401.4"
+    ],
+    "pattern": "put one pile into your hand and the other on the bottom of your library in any order",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "keep"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "rest"
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top three cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other on the bottom of your library in any order."
+      },
+      {
+        "text": "{T}: Reveal the top five cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other on the bottom of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top three cards of your library. An opponent separates those cards into two piles. Put one pile into your hand and the other on the bottom of your library.",
+      "Put one pile into your hand and the other on the bottom of your library in any order."
+    ]
+  },
+  {
+    "id": "eff.edhn136.forEachPlayer.searchTheirLibrary.exile.shuffle",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 101.4",
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 406.1"
+    ],
+    "pattern": "for each player , search that player 's library for a nonland card and exile it , then that player shuffles",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "each",
+      "gather": "exiledEach",
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "owner": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "filter": {
+            "notTypes": [
+              "Land"
+            ]
+          },
+          "max": 1,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "exile"
+          },
+          "as": "exiledEach"
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "bound",
+            "name": "each"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "For each player, search that player's library for a nonland card and exile it, then that player shuffles. You may cast those cards without paying their mana costs."
+      },
+      {
+        "text": "{T}: For each player, search that player's library for a nonland card and exile it, then that player shuffles. You may cast those cards without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent, search that player's library for a nonland card and exile it, then that player shuffles.",
+      "For each player, search that player's library for a nonland card and put it into your hand, then that player shuffles."
+    ]
+  },
+  {
+    "id": "eff.edhn136.mayCast.exiledEach.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 608.2f"
+    ],
+    "pattern": "you may cast those cards without paying their mana costs",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "notTypes": [
+              "Land"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "exiledEach"
+            },
+            "zone": "exile"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "For each player, search that player's library for a nonland card and exile it, then that player shuffles. You may cast those cards without paying their mana costs."
+      },
+      {
+        "text": "{T}: For each player, search that player's library for a nonland card and exile it, then that player shuffles. You may cast those cards without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast those cards without paying their mana costs.",
+      "For each player, search that player's library for a nonland card and exile it, then that player shuffles. You may cast those cards."
+    ]
+  },
+  {
+    "id": "sta.edhn136.cantCauseDiscardOrSacrifice.opponents",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 701.21a",
+      "CR 101.2",
+      "CR 109.5"
+    ],
+    "pattern": "spells and abilities ( your opponents control | each opponent controls ) can't cause you to discard cards or sacrifice permanents",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "discard",
+          "causedByOpponents": true
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "sacrifice",
+          "causedByOpponents": true
+        }
+      ]
+    },
+    "consumes": [
+      "and",
+      "each",
+      "can't",
+      "your",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Spells and abilities each opponent controls can't cause you to discard cards or sacrifice permanents."
+      },
+      {
+        "text": "Spells and abilities each opponent controls can't cause you to discard cards or sacrifice permanents.\n{5}, {T}: You gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Spells and abilities you control can't cause you to discard cards or sacrifice permanents.",
+      "Spells and abilities your opponents control can't cause you to discard cards or sacrifice creatures."
+    ]
+  },
+  {
+    "id": "eff.edhn136.creaturesPlayerControls.cantAttackPermanents.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 506.3",
+      "CR 611.2a"
+    ],
+    "pattern": "creatures {p:Player} control[s] can't attack {f:Filter} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "$p"
+            }
+          },
+          "mode": "cant",
+          "action": "attack",
+          "other": "$f"
+        }
+      ]
+    },
+    "subject": "none",
+    "weak": 1,
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of combat on each opponent's turn, they may pay {3}. If they don't, creatures they control can't attack Jaces you control this turn."
+      },
+      {
+        "text": "Creatures target opponent controls can't attack planeswalkers you control this turn."
+      }
+    ],
+    "counterExamples": [
+      "Creatures target opponent controls can't attack you this turn.",
+      "Creatures target opponent controls can't block planeswalkers you control this turn."
+    ]
+  }
+]

@@ -1,0 +1,8 @@
+# edh-c-25 (Commander lane edh-c, EDHREC ranks 20,501-21,000, first pass): sacrifice then life gain, less life or fewer creatures than an opponent, its controller controls another creature, damage to another player, tokens that gain haste in one sentence, defending player can't cast spells, a spell or ability causing a shuffle. After editing: npm run cards -- fixtures
+Devour Flesh
+Warren Weirding
+Timely Reinforcements
+Night Dealings
+Favorable Destiny
+Wardscale Dragon
+Psychogenic Probe

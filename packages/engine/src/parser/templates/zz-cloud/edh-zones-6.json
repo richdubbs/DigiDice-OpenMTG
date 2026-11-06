@@ -1,0 +1,82 @@
+[
+  {
+    "id": "eff.edhz6.return.toHand.lead.target",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.7",
+      "CR 400.3",
+      "CR 402.1",
+      "CR 115.1"
+    ],
+    "pattern": "return to your hand {o:Targets}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return to your hand target Goblin card in your graveyard."
+      },
+      {
+        "text": "Return to your hand target Goblin card in your graveyard. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Return to the battlefield target Goblin card in your graveyard.",
+      "Return to your library target Goblin card in your graveyard.",
+      "Return to your hand all Goblin cards in your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhz6.put.bf.additionalCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 122.6",
+      "CR 614.1c",
+      "CR 400.7"
+    ],
+    "pattern": "put {o:Objs} onto the battlefield [under your control] with {n:Qty} additional {k:CounterKind} counter[s] on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "counters": [
+          {
+            "kind": "$k",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for a Goblin card, put that card onto the battlefield with an additional +1/+1 counter on it, then shuffle."
+      },
+      {
+        "text": "Put target Goblin card from your graveyard onto the battlefield under your control with two additional +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "Put target Goblin card from your graveyard onto the battlefield tapped under your control with two additional +1/+1 counters on it and it gains haste.",
+      "Put target Goblin card from your graveyard into your hand with an additional +1/+1 counter on it.",
+      "Put target Goblin card from your graveyard onto the battlefield under its owner's control with two additional +1/+1 counters on it."
+    ]
+  }
+]

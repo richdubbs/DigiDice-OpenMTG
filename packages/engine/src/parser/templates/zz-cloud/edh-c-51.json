@@ -1,0 +1,359 @@
+[
+  {
+    "id": "eff.edhv51.dur.obj.pump",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} get[s] {pt:PT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until your next turn, up to one target creature gets -3/-0."
+      },
+      {
+        "text": "Until end of turn, target creature gets +2/+2."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, up to one target creature gets -3/-0 and gains flying.",
+      "Until your next turn, up to one target creature gets -3/-0 for each land you control.",
+      "Up to one target creature gets -3/-0."
+    ]
+  },
+  {
+    "id": "eff.edhv51.player.discards.forEach.diedThisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9",
+      "CR 700.4",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} discard[s] a card for each {f:Filter} that died this turn",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": {
+        "q": "happenedCount",
+        "event": {
+          "ev": "zoneChange",
+          "subject": "$f",
+          "from": "battlefield",
+          "to": "graveyard"
+        },
+        "scope": "turn"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, target opponent discards a card for each Goblin that died this turn."
+      },
+      {
+        "text": "When ~ enters, each opponent discards a card for each creature that died this turn."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, target opponent discards a card for each Goblin that died.",
+      "When ~ dies, target opponent discards a card for each Goblin that entered this turn.",
+      "When ~ dies, target opponent discards two cards for each Goblin that died this turn."
+    ]
+  },
+  {
+    "id": "eff.edhv51.player.revealHand.discardAll.filter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.9a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} reveal[s] their hand and discard[s] all {f:CardsOfTemplateZone}",
+    "build": [
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        }
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "hand",
+        "filter": "$f"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Choose a color. Target opponent reveals their hand and discards all cards of that color."
+      },
+      {
+        "text": "Choose a creature type. Target player reveals their hand and discards all creature cards of that type."
+      }
+    ],
+    "counterExamples": [
+      "Choose a color. Target player reveals their hand and discards a card of that color.",
+      "Choose a color. Target player discards all cards of that color.",
+      "Choose a color. Target player reveals their hand and discards all cards of that color at random."
+    ]
+  },
+  {
+    "id": "eff.edhv51.destroy.both.blockerAndAttacker",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 509.1h",
+      "CR 603.2",
+      "CR 608.2c"
+    ],
+    "pattern": "destroy both creatures",
+    "build": {
+      "op": "destroy",
+      "what": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "event",
+            "role": "blocker"
+          },
+          {
+            "ref": "event",
+            "role": "attacker"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "both"
+    ],
+    "examples": [
+      {
+        "text": "When ~ blocks a creature, destroy both creatures. Draw a card."
+      },
+      {
+        "text": "Whenever ~ blocks a creature, destroy both creatures. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "When ~ blocks a creature, destroy all creatures.",
+      "When ~ blocks a creature, destroy that creature.",
+      "When ~ attacks, destroy both creatures."
+    ]
+  },
+  {
+    "id": "eff.edhv51.dur.untapStep.player.objs.dontUntap",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a"
+    ],
+    "pattern": "during {p:Player} 's next untap step , {o:Objs} don't untap",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap",
+        "whose": "$p"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "not",
+      "during",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Tap all creatures target opponent controls. During that player's next untap step, lands they control don't untap."
+      },
+      {
+        "text": "Tap all lands target player controls. During that player's next untap step, artifacts they control don't untap."
+      }
+    ],
+    "counterExamples": [
+      "During that player's untap step, lands they control don't untap.",
+      "During that player's next untap step, lands they control untap.",
+      "During that player's next upkeep, lands they control don't untap."
+    ]
+  },
+  {
+    "id": "eff.edhv51.objs.cantBeTargeted.twoColorSpells.byOpponents.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 101.2",
+      "CR 105.1",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Objs} can't be the targets of {c1:Color} or {c2:Color} spells your opponents control {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "stackKind": "spell",
+            "colors": [
+              "$c1",
+              "$c2"
+            ],
+            "controller": "opponent"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Permanents you control can't be the targets of blue or black spells your opponents control this turn."
+      },
+      {
+        "text": "Creatures you control can't be the targets of white or red spells your opponents control until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Permanents you control can't be the targets of blue or black spells you control this turn.",
+      "Permanents you control can't be the targets of blue or black abilities your opponents control this turn.",
+      "Permanents you control can't be the targets of blue spells your opponents control this turn."
+    ]
+  },
+  {
+    "id": "eff.edhv51.prevent.all.sourceOfChoice.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 609.7a",
+      "CR 615.1",
+      "CR 615.9",
+      "CR 611.2a"
+    ],
+    "pattern": "prevent all damage a {c:Color} source of your choice would deal {d:Dur}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "battlefield",
+              "stack",
+              "command"
+            ],
+            "colors": [
+              "$c"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "damageSource": true,
+        "as": "damageSource"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "replace",
+            "replaces": {
+              "ev": "damage",
+              "source": {
+                "is": {
+                  "ref": "bound",
+                  "name": "damageSource"
+                },
+                "colors": [
+                  "$c"
+                ]
+              }
+            },
+            "body": {
+              "b": "prevent",
+              "amount": "all"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "would",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage a red source of your choice would deal this turn."
+      },
+      {
+        "text": "Prevent all damage a blue source of your choice would deal this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage a red source of your choice would deal to you this turn.",
+      "Prevent the next 2 damage a red source of your choice would deal this turn.",
+      "Prevent all damage a red source you control would deal this turn."
+    ]
+  }
+]

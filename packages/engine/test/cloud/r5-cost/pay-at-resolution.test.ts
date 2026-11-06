@@ -73,8 +73,10 @@ describe('r5-cost: a cost paid while an ability resolves, then a reflexive trigg
     expect(s.zones.library.p1).toHaveLength(s0.zones.library.p1!.length - 2);
   });
 
-  it('CR 603.3d, 107.3: a target that reads X is chosen before X is paid, so "you may pay {X}. If you do, return target card with mana value X" stays manual', () => {
+  it('CR 603.3d, 107.3: a target that reads X is chosen before X is paid: "you may pay {X}. If you do, return target card with mana value X" checks the target on resolution (since edh-d-97, Relentless Dead)', () => {
     const dead = card('Test Grave Caller', 'Creature — Zombie', 'When this creature dies, you may pay {X}. If you do, return another target Zombie creature card with mana value X from your graveyard to the battlefield.', '{0}', PT);
-    expect(full(dead)).toBe(false);
+    // combined copy: edh-d-97 (Relentless Dead; rules/x-on-resolution.ts) reads it: the target is chosen as the ability triggers, X as it resolves, and a target whose mana value is
+    // not X then is illegal and is not returned (CR 107.3f, 603.3d, 608.2b; Relentless Dead ruling)
+    expect(full(dead)).toBe(true);
   });
 });

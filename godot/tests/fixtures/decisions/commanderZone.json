@@ -1,0 +1,13 @@
+{
+  "id": "d18",
+  "player": "p1",
+  "prompt": "Put Krenko, Mob Boss into the command zone instead?",
+  "rules": [
+    "CR 903.9b"
+  ],
+  "kind": "commanderZone",
+  "object": "o80",
+  "card": "c80",
+  "rule": "903.9b",
+  "zone": "hand"
+}

@@ -1,0 +1,699 @@
+[
+  {
+    "id": "eff.edhz4.player.searches.anyCard.top",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.24a",
+      "CR 401.2",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} searches their library for a card , then shuffles and puts that card on top",
+    "build": [
+      {
+        "op": "search",
+        "who": "$p",
+        "zone": "library",
+        "filter": {},
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent searches their library for a card, then shuffles and puts that card on top. You gain 3 life."
+      },
+      {
+        "text": "When this creature enters, target player searches their library for a card, then shuffles and puts that card on top."
+      }
+    ],
+    "counterExamples": [
+      "Target player searches their library for a card, then shuffles and puts that card on the bottom.",
+      "Target player searches their library for a card, reveals it, then shuffles and puts that card on top.",
+      "Target player searches your library for a card, then shuffles and puts that card on top.",
+      "Target player searches their library for two cards, then shuffles and puts those cards on top."
+    ],
+    "consumes": [
+      "then",
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhz4.mill.thenReturn.one.milledThisWay.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 400.7j"
+    ],
+    "pattern": "mill {n:Qty} cards , then return ( a | an ) {f:Filter} card milled this way to your hand",
+    "build": [
+      {
+        "op": "mill",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "as": "milled"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "milled"
+            },
+            "zone": "any"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Mill four cards, then return an artifact card milled this way to your hand. You gain 2 life."
+      },
+      {
+        "text": "Mill three cards, then return a land or creature card milled this way to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Mill five cards, then return each creature card milled this way to your hand.",
+      "Mill five cards, then return a creature card milled this way to the battlefield.",
+      "Mill five cards, then return a creature card to your hand.",
+      "Mill five cards, then you may return a creature card milled this way to your hand."
+    ]
+  },
+  {
+    "id": "eff.edhz4.choose.twoTargetPlayers",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "choose two target players",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "player",
+          "players": {
+            "who": "any"
+          },
+          "min": 2,
+          "max": 2,
+          "text": "two target players"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose two target players. Each of them searches their library for a card, then shuffles and puts that card on top. You gain 2 life."
+      },
+      {
+        "text": "Choose two target players. Each of them searches their library for a card, then shuffles and puts that card on top. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Choose two target players.",
+      "Choose three target players. Each of them searches their library for a card, then shuffles and puts that card on top.",
+      "Choose two target players. Draw a card."
+    ],
+    "consumes": [
+      "two"
+    ]
+  },
+  {
+    "id": "eff.edhz4.eachOfThem.searches.anyCard.top",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "each of them searches their library for a card , then shuffles and puts that card on top",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "player",
+            "number": "plural",
+            "head": "player",
+            "text": "those players"
+          }
+        },
+        "zone": "library",
+        "filter": {},
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "player",
+            "number": "plural",
+            "head": "player",
+            "text": "those players"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose two target players. Each of them searches their library for a card, then shuffles and puts that card on top. You gain 2 life."
+      },
+      {
+        "text": "Choose two target players. Each of them searches their library for a card, then shuffles and puts that card on top. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each of them searches their library for a card, then shuffles and puts that card on top.",
+      "Choose two target players. Each of them searches their library for a card, then shuffles and puts that card on the bottom."
+    ],
+    "consumes": [
+      "each",
+      "then",
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhz4.player.putsHandBottom.anyOrder.drawsThatMany",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 121.1",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} put[s] the cards in their hand on the bottom of their library in any order , then draw[s] that many cards",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "chosen"
+        },
+        "as": "put"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": {
+          "q": "resultCount",
+          "step": "put"
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent puts the cards in their hand on the bottom of their library in any order, then draws that many cards. You gain 2 life."
+      },
+      {
+        "text": "At the beginning of each upkeep, that player puts the cards in their hand on the bottom of their library in any order, then draws that many cards."
+      }
+    ],
+    "counterExamples": [
+      "Target player puts the cards in their hand on the bottom of their library in a random order, then draws that many cards.",
+      "Target player puts the cards in their graveyard on the bottom of their library in any order, then draws that many cards.",
+      "Target player puts the cards in their hand on top of their library in any order, then draws that many cards."
+    ]
+  },
+  {
+    "id": "eff.edhz4.dig.rest.thatLibraryBottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put {r:Rest} on the bottom of that library in a random order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top three cards of target player's library, exile two of them face down, then put the rest on the bottom of that library in a random order. You gain 2 life."
+      },
+      {
+        "text": "When this creature enters, look at the top five cards of target opponent's library, exile one of them face down, then put the rest on the bottom of that library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Look at the top four cards of target player's library, exile one of them face down, then put the rest on top of that library in a random order.",
+      "{T}: Look at the top four cards of target player's library, exile one of them face down, then put the rest into that library in a random order.",
+      "{T}: Look at the top four cards of target player's library, exile one of them face down, then put the rest on the bottom of that library in any order."
+    ]
+  },
+  {
+    "id": "eff.edhz4.search.opponentLibrary.exileFaceDown",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.13a",
+      "CR 406.3",
+      "CR 800.4a",
+      "CR 608.2c"
+    ],
+    "pattern": "search {p:Player} 's library for {f:SearchDesc} and exile it face down",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "owner": "$p",
+        "filter": "$f",
+        "max": 1,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "exile",
+          "faceDown": true
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search target opponent's library for a creature card and exile it face down. Then that player shuffles. You gain 2 life."
+      },
+      {
+        "text": "Search target player's library for a card and exile it face down. Then that player shuffles."
+      }
+    ],
+    "counterExamples": [
+      "Search target opponent's library for a card and exile it. Then that player shuffles.",
+      "Search target opponent's graveyard for a card and exile it face down. Then that player shuffles.",
+      "Search target opponent's library for a card and put it onto the battlefield under your control face down. Then that player shuffles."
+    ],
+    "consumes": [
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhz4.search.anyCards.differentNames.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 201.2b"
+    ],
+    "pattern": "search your library for up to {n:Qty} cards ( that have | with ) different names and reveal them",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": {},
+      "min": 0,
+      "max": "$n",
+      "differentNames": true,
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for up to three cards with different names and reveal them. Target opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest into your hand. Then shuffle."
+      },
+      {
+        "text": "Search your library for up to five cards that have different names and reveal them. Target opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest into your hand. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to four cards with the same name and reveal them. Target opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest into your hand. Then shuffle.",
+      "Search your library for four cards with different names and reveal it. Target opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest into your hand. Then shuffle."
+    ],
+    "consumes": [
+      "up to",
+      "different",
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhz4.search.exactCards.reveal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library for {n:Qty} cards and reveal them",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": {},
+      "min": "$n",
+      "max": "$n",
+      "reveal": true,
+      "as": "search"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for two cards and reveal them. Target opponent chooses one. Put that card into your hand and the rest into your graveyard. Then shuffle."
+      },
+      {
+        "text": "Search your library for four cards and reveal them. Target opponent chooses one. Put that card into your hand and the rest into your graveyard. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for three cards. Target opponent chooses one. Put that card into your hand and the rest into your graveyard. Then shuffle.",
+      "Search your library for three cards and reveal it. Target opponent chooses one. Put that card into your hand and the rest into your graveyard. Then shuffle."
+    ],
+    "consumes": [
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhz4.targetOpponent.chooses.nOfFound",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.23a",
+      "CR 400.7"
+    ],
+    "pattern": "{p:Player} chooses two of {g:Found}",
+    "build": {
+      "op": "chooseObjects",
+      "who": "$p",
+      "from": {
+        "ref": "each",
+        "filter": {
+          "is": "$g",
+          "zone": "library"
+        }
+      },
+      "min": 2,
+      "max": 2,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for up to three cards with different names and reveal them. Target opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest into your hand. Then shuffle."
+      },
+      {
+        "text": "Search your library for up to five cards that have different names and reveal them. Target opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest into your hand. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to four cards with different names and reveal them. Target opponent chooses up to two of those cards. Put the chosen cards into your graveyard and the rest into your hand. Then shuffle.",
+      "Search your library for up to four cards with different names and reveal them. Target opponent chooses three of those cards. Put the chosen cards into your graveyard and the rest into your hand. Then shuffle.",
+      "Search your library for up to four cards with different names and reveal them. Target opponent chooses two of those creatures. Put the chosen cards into your graveyard and the rest into your hand. Then shuffle."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhz4.targetOpponent.chooses.oneFound",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.23a",
+      "CR 400.7"
+    ],
+    "pattern": "{p:Player} chooses one",
+    "build": {
+      "op": "chooseObjects",
+      "who": "$p",
+      "from": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "number": "plural",
+              "text": "those cards",
+              "sort": "set",
+              "head": "card",
+              "participle": "found"
+            }
+          },
+          "zone": "library"
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for two cards and reveal them. Target opponent chooses one. Put that card into your hand and the rest into your graveyard. Then shuffle."
+      },
+      {
+        "text": "Search your library for four cards and reveal them. Target opponent chooses one. Put that card into your hand and the rest into your graveyard. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for three cards and reveal them. Target opponent chooses two. Put that card into your hand and the rest into your graveyard. Then shuffle.",
+      "Search your library for three cards and reveal them. Target opponent chooses up to one. Put that card into your hand and the rest into your graveyard. Then shuffle.",
+      "Exile the top three cards of your library. Target opponent chooses one. Put that card into your hand and the rest into your graveyard. Then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhz4.putChosen.graveyard.restHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 701.24a"
+    ],
+    "pattern": "put the chosen cards into your graveyard and {r:Rest} into your hand",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "object",
+            "number": "plural",
+            "head": "card",
+            "participle": "chosen",
+            "text": "the chosen cards"
+          }
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Search your library for up to three cards with different names and reveal them. Target opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest into your hand. Then shuffle."
+      },
+      {
+        "text": "Search your library for up to five cards that have different names and reveal them. Target opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest into your hand. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to four cards with different names and reveal them. Target opponent chooses two of those cards. Put the chosen cards into your hand and the rest into your graveyard. Then shuffle.",
+      "Put the chosen cards into your graveyard and the rest into your hand."
+    ],
+    "consumes": [
+      "chosen",
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhz4.return.anyNumber.differentNames.graveyard.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 201.2",
+      "CR 400.7"
+    ],
+    "pattern": "return any number of {f:Filter} cards with different names from your graveyard to the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen",
+        "distinct": "name"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "different"
+    ],
+    "examples": [
+      {
+        "text": "Return any number of creature cards with different names from your graveyard to the battlefield. Draw a card."
+      },
+      {
+        "text": "Return any number of artifact and/or enchantment cards with different names from your graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Return any number of creature cards with different powers from your graveyard to the battlefield.",
+      "Return any number of creature cards with different names from your graveyard to your hand.",
+      "Return up to two creature cards with different names from your graveyard to the battlefield.",
+      "Return any number of creature cards with different names from an opponent's graveyard to the battlefield."
+    ]
+  }
+]

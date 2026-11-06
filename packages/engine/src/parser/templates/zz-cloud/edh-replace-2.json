@@ -1,0 +1,162 @@
+[
+  {
+    "id": "eff.edhr2.prevent.combat.toYouAnd.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.2",
+      "CR 120.3"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to you and {f:Filter} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "player": "you",
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all combat damage that would be dealt to you and artifacts you control this turn."
+      },
+      {
+        "text": "Prevent all combat damage that would be dealt to you and Knights you control this turn. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt to you and artifacts you control.",
+      "Prevent all combat damage that would be dealt by you and artifacts you control this turn.",
+      "Prevent all damage that would be dealt to you and artifacts you control this turn by creatures."
+    ]
+  },
+  {
+    "id": "eff.edhr2.ifDealtDamageThisWay.then",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 120.4b"
+    ],
+    "pattern": "if ( a | an ) {f:Filter} is dealt damage this way , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "set",
+                "number": "plural",
+                "participle": "dealt damage this way",
+                "text": "dealt damage this way"
+              }
+            }
+          }
+        }
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "weak": 1,
+    "consumes": [
+      "if",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, it deals 2 damage to any target. If a Vampire is dealt damage this way, ~ gets +2/+0 until end of turn."
+      },
+      {
+        "text": "~ deals 3 damage to target creature. If an artifact creature is dealt damage this way, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it deals 2 damage to any target. If a Vampire is dealt damage this turn, you gain 2 life.",
+      "~ deals 3 damage to target creature. If an artifact creature is dealt damage, you gain 2 life.",
+      "If a Vampire is dealt damage this way, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.edhr2.prevent.bySources.toObjects.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "prevent all damage that {g:Filter} would deal to {f:Filter} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$g",
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that red sources would deal to creatures you control this turn."
+      },
+      {
+        "text": "Prevent all damage that black and/or green sources would deal to artifacts you control this turn. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that red sources would deal to creatures you control.",
+      "Prevent all combat damage that red sources would deal to creatures you control this turn.",
+      "Prevent all damage that red sources would deal this turn."
+    ]
+  }
+]

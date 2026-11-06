@@ -1,0 +1,31 @@
+{
+  "id": "d5",
+  "player": "p1",
+  "prompt": "Choose one or both modes for Kolaghan's Command.",
+  "rules": [
+    "CR 700.2"
+  ],
+  "kind": "chooseOption",
+  "options": [
+    {
+      "id": "0",
+      "label": "Return target creature card from your graveyard to your hand."
+    },
+    {
+      "id": "1",
+      "label": "Target player discards a card."
+    },
+    {
+      "id": "2",
+      "label": "Destroy target artifact.",
+      "disabled": "There is no artifact to target."
+    },
+    {
+      "id": "3",
+      "label": "~ deals 2 damage to any target."
+    }
+  ],
+  "min": 2,
+  "max": 2,
+  "cancellable": true
+}

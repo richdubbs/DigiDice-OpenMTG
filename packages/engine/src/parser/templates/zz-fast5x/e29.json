@@ -505,7 +505,7 @@
     "id": "eff.e29.permit.play.group.dur.anyType",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 611.2a",
       "CR 611.2c",

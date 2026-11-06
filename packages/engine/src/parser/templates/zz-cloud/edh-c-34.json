@@ -1,0 +1,231 @@
+[
+  {
+    "id": "sta.edhv34.group.lose.keyword",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "all {f:Filter} lose {k:Keyword}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "remove": [
+            "$k.keyword"
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "All creatures lose reach."
+      },
+      {
+        "text": "All Elves lose trample."
+      }
+    ],
+    "counterExamples": [
+      "Creatures your opponents control lose trample.",
+      "All creatures lose reach until end of turn.",
+      "All creatures lose reach and can't have or gain reach."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "sta.edhv34.group.lose.keywordAndIslandwalk",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 702.14a",
+      "CR 702.14c"
+    ],
+    "pattern": "all {f:Filter} lose {k:Keyword} and islandwalk",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "remove": [
+            "$k.keyword",
+            "landwalk:island"
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "All creatures lose reach and islandwalk."
+      },
+      {
+        "text": "All Elves your opponents control lose reach and islandwalk."
+      }
+    ],
+    "counterExamples": [
+      "All creatures lose flying and swampwalk.",
+      "All creatures lose flying and islandwalk until end of turn.",
+      "All creatures lose islandwalk."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "eff.edhv34.discard.player.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.9a"
+    ],
+    "pattern": "{p:Player} discard[s] {n:Qty} card[s] if {c:Cond}",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": "$n",
+      "guard": "$c"
+    },
+    "subject": "player",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, target opponent discards two cards if you control the creature with the greatest power or tied for the greatest power."
+      },
+      {
+        "text": "At the beginning of your upkeep, each opponent discards two cards if you control a Forest."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, target opponent discards a card unless you control a Forest.",
+      "At the beginning of your upkeep, target opponent discards a card if.",
+      "At the beginning of your upkeep, target opponent discards a land card if you control a Forest."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.edhv34.activatedAbilitiesOf.costMore",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 602.2b",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 605.1a"
+    ],
+    "pattern": "activated abilities of {f:Filter} cost {m:ManaCost} more to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": "$f"
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Activated abilities of blue artifacts cost {2} more to activate."
+      },
+      {
+        "text": "Activated abilities of artifacts cost {1} more to activate."
+      }
+    ],
+    "counterExamples": [
+      "Activated abilities of white enchantments cost {3} less to activate.",
+      "Activated abilities of white enchantments cost {3} more to cast.",
+      "Activated abilities of white enchantments cost {3} more to activate unless they're mana abilities."
+    ]
+  },
+  {
+    "id": "eff.edhv34.eachOther.gains",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 109.2"
+    ],
+    "pattern": "each other {f:Filter} gains {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "other": true
+            }
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each other",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, each other attacking creature gains fear until end of turn."
+      },
+      {
+        "text": "Whenever ~ attacks, each other creature you control gains trample and haste until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, each other attacking creature gains fear.",
+      "Whenever ~ attacks, each attacking creature gains fear until end of turn.",
+      "Whenever ~ attacks, each other attacking creature loses fear until end of turn."
+    ]
+  }
+]

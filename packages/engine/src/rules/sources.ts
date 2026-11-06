@@ -13,7 +13,7 @@ import { charsOfObject, readingStable, type Chars } from './characteristics';
 import { FACE_DOWN } from './base-chars';
 import { matchesFilter } from './filter';
 import { filterCtxOutside } from './filter-env';
-import { computedManaUnits, inManaCostCheck, manaAbilityDenial, manaCostShapeNow, restrictionOf, unitOptions } from './mana';
+import { computedManaUnits, inManaCostCheck, manaAbilityDenial, manaCostShapeNow, readsCostPaid, restrictionOf, tappedManaCollapseAtNow, tappedManaOnlyColorlessNow, unitOptions } from './mana';
 import { abilityManaCost } from '../statics/costmods';
 
 /**
@@ -33,11 +33,21 @@ import { abilityManaCost } from '../statics/costmods';
 // total cost may be paid with mana of any type (a {S} still needs mana from a snow source, CR 107.4h, which is not a type); read by the solver
 // (rules/solver.ts `SolveInput.anyType`). Set by actions/cast.ts when a permission or a resolving effect says so.
 export type SpendContext =
-  | { kind: 'spell'; id: ObjectId; x?: number; face?: number; faceDown?: true; anyType?: true | 'color' } // 'color': Standard round I, a static's "as though it were mana of any color" (CR 609.4b)
-  | { kind: 'ability'; id: ObjectId; keyword?: string; anyColor?: true } // std-rx32: anyColor, "as though it were mana of any color" (CR 609.4b)
+  | { kind: 'spell'; id: ObjectId; plain?: true; x?: number; onlyX?: 'W' | 'U' | 'B' | 'R' | 'G'; face?: number; faceDown?: true; anyType?: true | 'color' | 'colorless'; viaAlt?: string } // 'color': Standard round I, a static's "as though it were mana of any color" (CR 609.4b); 'colorless': edh-d-97, "spend colorless mana as though it were mana of any color" (Abstruse Appropriation)
+  | { kind: 'ability'; id: ObjectId; x?: number; onlyX?: 'W' | 'U' | 'B' | 'R' | 'G'; keyword?: string; anyColor?: true; anyColorWith?: 'W' | 'U' | 'B' | 'R' | 'G'; xCost?: true; mana?: true } // edh-mana-keywords-11: xCost, the cost being paid contains {X} (CR 107.3, 106.6); std-rx32: anyColor, "as though it were mana of any color" (CR 609.4b)
   | { kind: 'unlock'; id: ObjectId }
   | { kind: 'faceUp'; id: ObjectId }
+  | { kind: 'foretell'; id: ObjectId } // edh-c-48 (CR 116.2h, 702.143a): the {2} of the foretell special action (Karfell Harbinger's mana)
   | { kind: 'special'; id: ObjectId };
+
+/** edh-next-18 (CR 116.2b, 118.3, 601, 602): is this payment the cost of casting a spell or activating an ability (not a special action such as turning a permanent face up)? Restriction `forCosts`. */
+export const isCastOrActivate = (spend: SpendContext | undefined): boolean => spend?.kind === 'spell' || spend?.kind === 'ability';
+/**
+ * edh-d-3 (CR 605.1a, 118.3; Karn's Sylex): what a payment is the cost of, for a restriction's `forCosts`: false (neither), true (a spell or a non-mana ability), or 'mana' (a mana ability:
+ * "Players can't pay life to cast spells or to activate abilities that aren't mana abilities" lets it through, a restriction with no `exceptMana` still applies).
+ */
+export type CostKind = boolean | 'mana';
+export const costKindOf = (spend: SpendContext | undefined): CostKind => (spend?.kind === 'ability' && spend.mana === true ? 'mana' : isCastOrActivate(spend));
 
 /** FAST5X E29 (CR 609.4b): may mana of any type pay for what `spend` is? */
 export const anyTypeSpend = (spend: SpendContext | undefined): boolean => spend?.kind === 'spell' && spend.anyType === true;
@@ -46,10 +56,46 @@ export const anyTypeSpend = (spend: SpendContext | undefined): boolean => spend?
  * std-rx32 (CR 609.4b): the solver options a payment has: `anyType` (above) and `anyColor`, "you may spend mana as though it were mana of any color to activate
  * abilities of creatures you control" (an ability's `SpendContext.anyColor`, set by actions/activate.ts): a colored symbol may be paid with any mana.
  */
-export const spendOptions = (spend: SpendContext | undefined): { anyType?: boolean; anyColor?: boolean } => ({
+export const spendOptions = (spend: SpendContext | undefined, everywhere = false): { anyType?: boolean; anyColor?: boolean; anyColorWith?: string } => ({
+  // edh-next-140 (CR 609.4b; Quicksilver Elemental): "you may spend blue mana as though it were mana of any color to pay the activation costs of this creature's abilities" (an ability's
+  // `SpendContext.anyColorWith`, set by actions/activate.ts via statics/play-permits.ts#staticAnyColorWithForAbility)
+  ...(spend?.kind === 'ability' && spend.anyColorWith !== undefined && spend.anyColor !== true && !everywhere ? { anyColorWith: spend.anyColorWith } : {}),
   ...(anyTypeSpend(spend) ? { anyType: true } : {}),
-  ...((spend?.kind === 'ability' && spend.anyColor === true) || (spend?.kind === 'spell' && spend.anyType === 'color') ? { anyColor: true } : {}), // Standard round I: a spell's 'color'
+  // Standard round I: a spell's 'color'; edh-mana-keywords-4 (CR 609.4b): `everywhere`, the player's static "You may spend mana as though it were mana of any color"
+  // (statics/play-permits.ts#staticAnyColorEverywhere) covers every payment, whatever it is for
+  ...(everywhere || (spend?.kind === 'ability' && spend.anyColor === true) || (spend?.kind === 'spell' && spend.anyType === 'color') ? { anyColor: true } : {}),
+  // edh-d-97 (CR 609.4b, 107.4c): a spell's 'colorless', "you may spend colorless mana as though it were mana of any color to cast that spell": a colored symbol also takes colorless mana
+  // (the solver option of edh-next-140, `anyColorWith`, with colorless mana as its type)
+  ...(!everywhere && spend?.kind === 'spell' && spend.anyType === 'colorless' ? { anyColorWith: 'C' } : {}),
 });
+
+/**
+ * The object a payment is for and its characteristics (spendAllows reads it once per payment check; edhc5's lifeFor reads it for "those spells" filters): a spell is read as
+ * the spell it is or would be (FAST5X E23); an ability's or special action's source as it is. Undefined when the context names no object.
+ */
+export function spendTarget(s: GameState, player: PlayerId, spend: SpendContext | undefined): { o: GameObject; chars?: Chars } | undefined {
+  const o = spend ? s.objects[spend.id] : undefined;
+  if (o === undefined || spend?.kind !== 'spell') return o === undefined ? undefined : { o };
+  // CR 202.3e: on the stack, X is the value chosen for it; while the payment is planned for some X, the spell is read with that X
+  if (o.zone === 'stack' && o.stack) {
+    return (spend.x !== undefined && o.stack.x !== spend.x ? { o: { ...o, stack: { ...o.stack, x: spend.x } }, chars: charsOfObject(s, o) } : { o });
+  }
+  // FAST5X E23 (CR 601.2a, 708.4): not cast yet (the legal actions): the card as the spell it would be, on the stack, cast from its zone, face down (the
+  // face-down 2/2's characteristics, CR 708.2a) if it would be cast face down
+  const spell: GameObject = {
+    ...o, zone: 'stack', ...(spend.faceDown ? { faceDown: true } : {}),
+    stack: { kind: 'spell', face: spend.face ?? o.face ?? 0, targets: [], costsPaid: o.stack?.costsPaid ?? {} /* edh-next-13: the optional costs a hypothetical record announces (actions/cast.ts#optionalCostMakesCastable): kicked, CR 702.33d */, castFrom: castOriginOf(o, player), caster: player, ...(spend.x !== undefined ? { x: spend.x } : {}) },
+  };
+  const own = charsOfObject(s, o);
+  // Review E23 (CR 601.2a, 709.3, 715.3, 712.11): a card with more than one face is, as a spell, only the face being cast (the Adventure or Omen half, one
+  // half of a split card, a back face), never the characteristics it has in its zone (the main face, or both halves combined, CR 709.4): those are read
+  // on the spell as it would be on the stack (a copy computed apart, rules/characteristics.ts#charsOfObject). A one-faced card has the same face there.
+  const multiFace = (s.defs[o.defId]?.faces.length ?? 1) > 1;
+  const chars: Chars = spend.faceDown
+    ? { ...own, ...FACE_DOWN, names: [], colors: [], supertypes: [], types: [...FACE_DOWN.types], subtypes: [], abilities: [], keywords: [], manaValue: 0 }
+    : multiFace ? charsOfObject(s, spell) : own;
+  return { o: spell, chars };
+}
 
 /**
  * Whether mana with restriction `r`, produced by `manaSource`, may pay for `spend`: the spell (or the ability's source) must match the restriction's filter; a
@@ -62,33 +108,9 @@ export const spendOptions = (spend: SpendContext | undefined): { anyType?: boole
  * actions and costs effects ask for, CR 118.12). Every other restriction lists what the mana CAN pay for, and an unknown context spends none of it.
  */
 export function spendAllows(s: GameState, player: PlayerId, spend: SpendContext | undefined): (r: ManaRestriction, manaSource: ObjectId | undefined) => boolean {
-  // The object the mana pays for and its characteristics, read once per payment check. FAST5X E23: a spell is read as the spell it is or would be (the
-  // characteristics are always the real object's, from the cache: a copy of the object is never computed apart).
+  // The object the mana pays for and its characteristics, read once per payment check (spendTarget).
   let target: { o: GameObject; chars?: Chars } | undefined | null = null;
-  const objectOf = (): { o: GameObject; chars?: Chars } | undefined => {
-    if (target !== null) return target;
-    const o = spend ? s.objects[spend.id] : undefined;
-    if (o === undefined || spend?.kind !== 'spell') return (target = o === undefined ? undefined : { o });
-    // CR 202.3e: on the stack, X is the value chosen for it; while the payment is planned for some X, the spell is read with that X
-    if (o.zone === 'stack' && o.stack) {
-      return (target = spend.x !== undefined && o.stack.x !== spend.x ? { o: { ...o, stack: { ...o.stack, x: spend.x } }, chars: charsOfObject(s, o) } : { o });
-    }
-    // FAST5X E23 (CR 601.2a, 708.4): not cast yet (the legal actions): the card as the spell it would be, on the stack, cast from its zone, face down (the
-    // face-down 2/2's characteristics, CR 708.2a) if it would be cast face down
-    const spell: GameObject = {
-      ...o, zone: 'stack', ...(spend.faceDown ? { faceDown: true } : {}),
-      stack: { kind: 'spell', face: spend.face ?? o.face ?? 0, targets: [], costsPaid: {}, castFrom: castOriginOf(o), caster: player, ...(spend.x !== undefined ? { x: spend.x } : {}) },
-    };
-    const own = charsOfObject(s, o);
-    // Review E23 (CR 601.2a, 709.3, 715.3, 712.11): a card with more than one face is, as a spell, only the face being cast (the Adventure or Omen half, one
-    // half of a split card, a back face), never the characteristics it has in its zone (the main face, or both halves combined, CR 709.4): those are read
-    // on the spell as it would be on the stack (a copy computed apart, rules/characteristics.ts#charsOfObject). A one-faced card has the same face there.
-    const multiFace = (s.defs[o.defId]?.faces.length ?? 1) > 1;
-    const chars: Chars = spend.faceDown
-      ? { ...own, ...FACE_DOWN, names: [], colors: [], supertypes: [], types: [...FACE_DOWN.types], subtypes: [], abilities: [], keywords: [], manaValue: 0 }
-      : multiFace ? charsOfObject(s, spell) : own;
-    return (target = { o: spell, chars });
-  };
+  const objectOf = (): { o: GameObject; chars?: Chars } | undefined => (target !== null ? target : (target = spendTarget(s, player, spend)));
   const memo = new Map<string, boolean>();
   return (r, manaSource) => {
     const key = `${manaSource ?? ''}|${JSON.stringify(r)}`;
@@ -100,13 +122,16 @@ export function spendAllows(s: GameState, player: PlayerId, spend: SpendContext 
       return t !== undefined && filter !== undefined && matchesFilter(s, t.o, { ...filter, zone: 'any' }, t.chars ? { ...ctx, chars: t.chars } : ctx);
     };
     const allowed = ((): boolean => {
+      if (r.notGeneric === true) return true; // edh-mana-keywords-7: it pays any cost; the solver keeps it off the generic part (Provider.noGeneric)
+      if (r.costHasX === true) return spend?.kind === 'ability' ? spend.xCost === true : spend?.kind === 'spell' && spend.plain === true && matches({ manaCostHasX: true }); // edh-mana-keywords-11 (CR 106.6, 107.3)
       if (r.notSpells !== undefined) return spend?.kind !== 'spell' || (objectOf() !== undefined && !matches(r.notSpells)); // FAST5X E23
       if (!spend) return false;
       switch (spend.kind) {
         case 'unlock': return r.unlock === true; // FAST5X E8 (CR 106.6, 709.5e): "... and unlock doors"
         case 'faceUp': return r.turnFaceUp !== undefined && matches(r.turnFaceUp); // FAST5X E23 (CR 116.2b): "... or turn a permanent face up"
+        case 'foretell': return r.foretell === true; // edh-c-48 (CR 106.6, 702.143a): "... foretell a card from your hand"
         case 'special': return false; // neither a spell nor an ability (CR 116.2)
-        case 'spell': return matches(r.spells);
+        case 'spell': return matches(r.spells) || (r.viaAlt !== undefined && spend.viaAlt === r.viaAlt); // edh-d-22 (CR 118.9, 702.146a): "... pay a disturb cost"
         case 'ability': return (r.abilityKeyword === undefined || spend.keyword === r.abilityKeyword) && matches(r.abilities); // FAST5X E23 (CR 702.6a)
       }
     })();
@@ -177,12 +202,20 @@ function manaSourcesIn(s: GameState, player: PlayerId, exclude?: ReadonlySet<Obj
     for (const info of activatedAbilities(s, o)) {
       // FAST5X E5: only abilities whose cost is {T}, {Q} or "Sacrifice ~" are ordinary sources; the others are `extraManaModes` (below). "Activate only as a
       // sorcery" never pays a cost: the spell or ability being paid for is on the stack (CR 601.2a, 602.2a, 602.5d), so the player activates it at priority.
-      if (!info.def.isMana || info.def.sorcerySpeed === true || manaCostShapeNow(s, player, o, info) !== 'simple' || manaAbilityDenial(s, player, o, info)) continue; // std-rx28: a cost increase makes it one to pay
+      if (!info.def.isMana || info.def.sorcerySpeed === true || info.def.instantSpeed === true || manaCostShapeNow(s, player, o, info) !== 'simple' || manaAbilityDenial(s, player, o, info)) continue; // std-rx28: a cost increase makes it one to pay
       // PAY1: an amount computed as the ability resolves is read now, as the resolver will read it (CR 106.1, 605.3b); 0 mana is nothing to offer
       // Owner 2026-10-21: a pain land's colored ability is planned too (`painUnits`), so its mana counts for the playable cards and the automatic payment
       const pain = painUnits(info);
       const computed = unitOptions(info).length === 0 && pain === null ? computedManaUnits(s, player, o, info) : null;
-      const units = pain ?? (computed ? computed.units : unitOptions(info));
+      let units = pain ?? (computed ? computed.units : unitOptions(info));
+      // edh-next-12 (CR 106.12, 614.1a; Damping Sphere): a land tapped for two or more mana produces one {C} instead: planned as such (rules/mana.ts#addMana adds it so)
+      if (units.length >= 1 && info.def.cost.tap) { // edh-next-140 (Contamination): from one mana on, of the type the effect names
+        const col = tappedManaCollapseAtNow(s, player, id);
+        if (col !== null && units.length >= col.at) units = [[col.type]];
+      }
+      // edh-c-72 (CR 106.12, 614.1a; Ritual of Subdual): a land tapped for mana produces {C} instead of any other type, the same amount (rules/mana.ts#addMana adds it so)
+      const onlyType = info.def.cost.tap ? tappedManaOnlyColorlessNow(s, player, id) : null; // edh-next-45: {C} or the type of Infernal Darkness's effect
+      if (onlyType !== null && units.some((u) => u.some((t) => t !== onlyType))) units = units.map(() => [onlyType]);
       if (units.length === 0) continue;
       const restriction = restrictionOf(info);
       if (restriction && !allows(restriction, id)) continue; // its mana can't pay for this (Cavern of Souls for a noncreature spell)
@@ -221,6 +254,8 @@ export interface Provider {
    * restriction (floating, or added by a source ability with one), which was checked for the spell or ability being paid, not for the filter ability (CR 106.6).
    */
   innerBan?: true;
+  /** edh-mana-keywords-7 (CR 106.6; Jegantha): the unit "can't be spent to pay generic mana costs" (ManaRestriction.notGeneric): the solver never uses it for a generic atom. */
+  noGeneric?: true;
   /** Index into the player's mana pool, for floating mana. */
   poolIndex?: number;
   source?: {
@@ -265,7 +300,7 @@ export function buildProviders(sources: ManaSource[], pool: readonly { type: Man
     // Mana with a spending restriction is spent only where it allows (CR 106.6); without a context (`allows`) it is never used.
     if ((u.restriction && !(allows && allows(u.restriction, u.sourceId))) || (onlyPool && !onlyPool.has(i))) return;
     // Snow mana is kept when other mana of the same type pays as well (a later {S} needs it, CR 107.4h).
-    out.push({ id: out.length, options: [u.type], snow: u.snow === true, cost: u.snow ? 1 : 0, poolIndex: i });
+    out.push({ id: out.length, options: [u.type], snow: u.snow === true, cost: u.snow ? 1 : 0, poolIndex: i, ...(u.restriction?.notGeneric === true ? { noGeneric: true as const } : {}) });
   });
   const sameColor = new Map<ManaType, number>();
   for (const src of sources) {
@@ -279,7 +314,7 @@ export function buildProviders(sources: ManaSource[], pool: readonly { type: Man
       const m = src.modes[0]!;
       m.units.forEach((options, unitIndex) => {
         out.push({
-          id: out.length, options, snow: src.snow, cost: price(m.sacrifices),
+          id: out.length, options, snow: src.snow, cost: price(m.sacrifices), ...(m.restriction?.notGeneric === true ? { noGeneric: true as const } : {}),
           source: { objectId: src.objectId, keyFor: Object.fromEntries(options.map((t) => [t, m.key])), unitCount: m.units.length, activationCost: price(m.sacrifices), unitIndex, allOptions: m.units, ...(m.oneType ? { oneType: true } : {}) },
         });
       });
@@ -292,14 +327,14 @@ export function buildProviders(sources: ManaSource[], pool: readonly { type: Man
       const options: ManaType[] = [];
       for (const m of src.modes) for (const t of m.units[0]!) if (!(t in keyFor)) { keyFor[t] = m.key; options.push(t); }
       out.push({
-        id: out.length, options, snow: src.snow, cost: price(src.modes.some((m) => m.sacrifices)),
+        id: out.length, options, snow: src.snow, cost: price(src.modes.some((m) => m.sacrifices)), ...(src.modes.some((m) => m.restriction?.notGeneric === true) ? { noGeneric: true as const } : {}), // the units of any of them are banned: fewer payments found, never a wrong one
         source: { objectId: src.objectId, keyFor, unitCount: 1, activationCost: price(src.modes.some((m) => m.sacrifices)), unitIndex: 0, allOptions: [options] },
       });
     } else {
       const m = src.modes[0]!;
       m.units.forEach((options, unitIndex) => {
         out.push({
-          id: out.length, options, snow: src.snow, cost: price(m.sacrifices),
+          id: out.length, options, snow: src.snow, cost: price(m.sacrifices), ...(m.restriction?.notGeneric === true ? { noGeneric: true as const } : {}),
           source: { objectId: src.objectId, keyFor: Object.fromEntries(options.map((t) => [t, m.key])), unitCount: m.units.length, activationCost: price(m.sacrifices), unitIndex, allOptions: m.units, ...(m.oneType ? { oneType: true } : {}) },
         });
       });
@@ -378,8 +413,8 @@ export function painUnits(info: ActivatedInfo): ManaType[][] | null {
   if (unitOptions(info).length > 0 || !steps.some((st) => st.op !== 'addMana')) return null;
   const units: ManaType[][] = [];
   for (const st of steps) {
-    const step = st as { op: string; units?: unknown; dynamic?: unknown; source?: { ref?: string }; to?: { ref?: string }; who?: { ref?: string } };
-    if (step.op === 'addMana' && Array.isArray(step.units) && step.dynamic === undefined && (step.who === undefined || step.who.ref === 'you')) units.push(...(step.units as ManaType[][]));
+    const step = st as { op: string; ofYourChoice?: true; units?: unknown; dynamic?: unknown; source?: { ref?: string }; to?: { ref?: string }; who?: { ref?: string } };
+    if (step.op === 'addMana' && Array.isArray(step.units) && step.dynamic === undefined && step.ofYourChoice !== true && (step.who === undefined || step.who.ref === 'you')) units.push(...(step.units as ManaType[][]));
     else if (step.op === 'damage' && step.source?.ref === 'self' && step.to?.ref === 'you') continue;
     else return null;
   }
@@ -402,6 +437,7 @@ function extraManaModesIn(s: GameState, player: PlayerId, exclude?: ReadonlySet<
     let c: ReturnType<typeof charsOfObject> | undefined;
     for (const info of activatedAbilities(s, o)) {
       if (!info.def.isMana) continue;
+      if (info.def.instantSpeed === true) continue; // edh-mana-keywords-2 (CR 602.5e, 605.3a): only as an instant, so never offered or used to pay a cost
       const shape = manaCostShapeNow(s, player, o, info); // std-rx28: a {T} cost another object increases is paid by hand
       const sorcery = info.def.sorcerySpeed === true; // never activated for a payment (see manaSourcesIn): by hand at priority, CR 602.5d
       const besides = shape === 'simple' && !sorcery && withInstructionBesideMana(info) && painUnits(info) === null; // CMD5; a pain land's is planned now (painUnits)
@@ -410,13 +446,22 @@ function extraManaModesIn(s: GameState, player: PlayerId, exclude?: ReadonlySet<
       if (restriction && !allows(restriction, id)) continue; // its mana can't pay for this (CR 106.6)
       c ??= charsOfObject(s, o);
       if (besides) {
-        out.byHand.push({ objectId: id, name: c.name, key: info.key, info, produces: plainTypesOf(info) });
+        out.byHand.push({ objectId: id, name: c.name, key: info.key, info, produces: (info.def.cost.tap ? tappedManaOnlyColorlessNow(s, player, id) : null) !== null ? [tappedManaOnlyColorlessNow(s, player, id)!] : plainTypesOf(info) });
         continue;
       }
-      const computed = unitOptions(info).length === 0 ? computedManaUnits(s, player, o, info) : null;
-      const units = computed ? computed.units : unitOptions(info);
+      // edh-top-2: what a mana ability reads from its own cost's exile (Food Chain) can't be known before the cost is paid: never planned (produces nothing here)
+      const computed = unitOptions(info).length === 0 && !readsCostPaid(info.def) ? computedManaUnits(s, player, o, info) : null;
+      let units = computed ? computed.units : unitOptions(info);
+      // edh-c-72 (CR 106.12, 614.1a; Ritual of Subdual): a land tapped for mana produces {C} instead of any other type, also with a filter-style ability (mana cost and {T}), the same amount
+      // edh-next-140 (CR 106.12, 614.1a; Contamination, Damping Sphere; review): the tapped-land collapse applies to a filter-style ability too ("{B/R}, {T}: Add {B}{B}, ..." gives one {B})
+      if (units.length >= 1 && info.def.cost.tap) {
+        const col = tappedManaCollapseAtNow(s, player, id);
+        if (col !== null && units.length >= col.at) units = [[col.type]];
+      }
+      const onlyC = info.def.cost.tap ? tappedManaOnlyColorlessNow(s, player, id) : null;
+      if (onlyC !== null) units = units.map(() => [onlyC]);
       // Cloud std-woe (CR 601.2f, 605.1a): the cost the ability has once other objects' cost reductions apply (statics/costmods.ts#abilityManaCost), as rules/pay.ts pays it
-      const cost = shape === 'converter' ? abilityManaCost(s, player, o, info.def, info.def.cost.mana ?? []) : null;
+      const cost = shape === 'converter' ? abilityManaCost(s, player, o, info.def, info.def.cost.mana ?? [], true /* edh-next-124: planned without a first-of-the-turn reduction */) : null;
       if (shape === 'converter' && !sorcery && units.length > 0 && cost !== null) {
         const types = new Set(units.flat());
         const sacrifices = (info.def.cost.other ?? []).some((p) => p.kind === 'sacrifice');

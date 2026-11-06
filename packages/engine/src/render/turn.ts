@@ -29,8 +29,8 @@ export const STEP_NAME: Readonly<Record<TurnStep, string>> = {
  * postcombat main phase is "second main phase" (CR 505.1b: the second main phase of the turn, not every postcombat main phase, CR 505.1a).
  */
 export function possessiveStep(step: TurnStep, whose: PlayerPred | PlayerRef | undefined, st: RenderState, next = false, nth?: number): string {
-  if (nth !== undefined && !(nth === 2 && step === 'main2')) throw new NoRenderer(`the main phase number ${nth} of ${step}`);
-  const name = nth === 2 ? 'second main phase' : STEP_NAME[step];
+  if (nth !== undefined && !(nth === 2 && step === 'main2') && !(nth === 1 && step === 'upkeep')) throw new NoRenderer(`the main phase number ${nth} of ${step}`);
+  const name = nth === 2 ? 'second main phase' : nth === 1 ? 'first upkeep each turn' /* edh-d-71 (CR 503.1): Paradox Haze */ : STEP_NAME[step];
   const nx = next ? 'next ' : '';
   if (step === 'beginCombat' || step === 'endCombat') {
     const label = step === 'beginCombat' ? 'combat' : 'end of combat';
@@ -49,6 +49,8 @@ export function possessiveStep(step: TurnStep, whose: PlayerPred | PlayerRef | u
     const of = K.player(whose, cloneState(st), 'object').text;
     return alt(`${K.player(whose, st, 'possessive').text} ${name}`, `the ${name} of ${of}`);
   }
+  // edh-players-8 (CR 603.7, 108.3; The Eternal Wanderer): "at the beginning of that player's next end step" of the owner of the card just moved (family delayed-owners-next-step)
+  if (typeof whose === 'object' && whose.ref === 'ownerOf' && next) return alt(`${K.player(whose, st, 'possessive').text} ${nx}${name}`, `that player's ${nx}${name}`, `their ${nx}${name}`); // edh-next-79: "... at the beginning of their next upkeep" after "under its owner's control" (Phytotitan)
   return `${K.player(whose, st, 'possessive').text} ${nx}${name}`;
 }
 

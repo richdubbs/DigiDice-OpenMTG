@@ -1,0 +1,8 @@
+# edh-combat-6 (Commander lane edh-combat): the golden cards of the round (test/m5/golden/cards/edh-combat-6-review.json)
+Firemane Commando
+Norn's Decree
+Mirri, Weatherlight Duelist
+Weathered Sentinels
+Neyith of the Dire Hunt
+Stensian Sanguinist // Exsanguinate
+Master of Cruelties

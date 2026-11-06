@@ -1,0 +1,1207 @@
+[
+  {
+    "id": "eff.edhn137.dig.put.mvAtMost.bf.counter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 122.6",
+      "CR 614.1c"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card with mana value {n:Qty} or less from among {g:Seen} onto the battlefield with ( a | an ) {k:CounterKind} counter on it",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            },
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "counters": [
+            {
+              "kind": "$k",
+              "count": 1
+            }
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. You may put a creature card with mana value 2 or less from among them onto the battlefield with a shield counter on it. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "When this creature enters, look at the top six cards of your library. You may put an artifact card with mana value 3 or less from among them onto the battlefield with a +1/+1 counter on it. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. You may put a creature card with mana value 2 or greater from among them onto the battlefield with a shield counter on it. Put the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You may put a creature card with mana value 2 or less from among them onto the battlefield with two shield counters on it. Put the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You may put a creature card with mana value 2 or less from among them into your hand with a shield counter on it. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhn137.counters.put.andChoiceFromAmong4",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1b",
+      "CR 608.2d"
+    ],
+    "pattern": "put ( a | an ) {k0:CounterKind} counter and a counter from among {k1:ListedCounterKind} , {k2:ListedCounterKind} , {k3:ListedCounterKind} , or {k4:ListedCounterKind} on {o:Obj}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k0",
+        "count": 1
+      },
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "counterChoice",
+        "link": "counterChoice",
+        "options": [
+          "$k1",
+          "$k2",
+          "$k3",
+          "$k4"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k1"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k1",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k2"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k2",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k3"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k3",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "counterChoice",
+          "equals": "$k4"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$o",
+            "kind": "$k4",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "among"
+    ],
+    "examples": [
+      {
+        "text": "Choose up to one target creature. Put a +1/+1 counter and a counter from among flying, trample, haste, or reach on it."
+      },
+      {
+        "text": "When ~ enters, put a +1/+1 counter and a counter from among first strike, vigilance, deathtouch, or lifelink on target creature."
+      }
+    ],
+    "counterExamples": [
+      "Put a +1/+1 counter and a counter from among flying, trample, or reach on target creature.",
+      "Put a +1/+1 counter or a counter from among flying, trample, haste, or reach on target creature.",
+      "Put two +1/+1 counters and a counter from among flying, trample, haste, or reach on target creature."
+    ]
+  },
+  {
+    "id": "sta.edhn137.permit.loyaltyAsInstant.self.enteredThisTurn",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.3",
+      "CR 611.3a",
+      "CR 307.1"
+    ],
+    "pattern": "as long as ~ entered this turn , you may activate ~ 's loyalty abilities any time you could cast an instant",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "enteredThisTurn": true
+        }
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "activateLoyaltyAsInstant"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Flash, deathtouch\nAs long as ~ entered this turn, you may activate ~'s loyalty abilities any time you could cast an instant."
+      },
+      {
+        "text": "As long as ~ entered this turn, you may activate ~'s loyalty abilities any time you could cast an instant.\n+1: You gain 3 life. Scry 2."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ entered this turn, you may activate ~'s activated abilities any time you could cast an instant.",
+      "As long as ~ is tapped, you may activate ~'s loyalty abilities any time you could cast an instant.",
+      "As long as ~ entered this turn, each opponent may activate ~'s loyalty abilities any time you could cast an instant."
+    ]
+  },
+  {
+    "id": "eff.edhn137.dur.becomes.color.subtype.creature.andGains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} becomes ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} creature and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "+1: Until end of turn, each planeswalker you control becomes a 3/5 red Dragon creature and gains flying."
+      },
+      {
+        "text": "{2}{G}: Until end of turn, target land you control becomes a 3/3 green Elemental creature and gains haste."
+      }
+    ],
+    "counterExamples": [
+      "+1: Until end of turn, each planeswalker you control becomes a 4/4 red Dragon artifact creature and gains flying.",
+      "+1: Each planeswalker you control becomes a 4/4 red Dragon creature and gains flying.",
+      "+1: Until end of turn, each planeswalker you control becomes a 4/4 red and green Dragon creature and gains flying."
+    ]
+  },
+  {
+    "id": "eff.edhn137.forEachOpponent.exileRevealedCreature.until",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 610.3",
+      "CR 610.3c",
+      "CR 607.2a"
+    ],
+    "pattern": "for each opponent , exile a creature card they revealed this way until ~ leaves the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": {
+              "ref": "iterating"
+            },
+            "isCard": true,
+            "types": [
+              "Creature"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "perPlayer": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "as": "chosenToExile"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosenToExile"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "until": {
+          "d": "until",
+          "event": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "battlefield"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "revealed",
+      "this way",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent reveals their hand. For each opponent, exile a creature card they revealed this way until ~ leaves the battlefield."
+      },
+      {
+        "text": "When this creature enters, each opponent reveals their hand. For each opponent, exile a creature card they revealed this way until this creature leaves the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent reveals their hand. For each opponent, exile a noncreature card they revealed this way until ~ leaves the battlefield.",
+      "When ~ enters, target opponent reveals their hand. For each opponent, exile a creature card they revealed this way until ~ leaves the battlefield.",
+      "When ~ enters, each opponent reveals their hand. For each opponent, exile a creature card they revealed this way."
+    ]
+  },
+  {
+    "id": "eff.edhn137.choose.linkedExiled.creature.mv",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 202.3"
+    ],
+    "pattern": "choose a creature card exiled with ~ with mana value {n:Qty}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "exile",
+            "isCard": true,
+            "types": [
+              "Creature"
+            ],
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "manaValue": {
+              "op": "==",
+              "value": "$n"
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, exile target artifact creature an opponent controls until ~ leaves the battlefield.\n{X}: Choose a creature card exiled with ~ with mana value X. ~ becomes a copy of that card."
+      },
+      {
+        "text": "When this creature enters, exile target creature card from a graveyard.\n{X}{1}: Choose a creature card exiled with ~ with mana value X. ~ becomes a copy of that card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target artifact creature an opponent controls until ~ leaves the battlefield.\n{X}: Choose a creature card exiled with ~ with mana value X. ~ becomes a copy of that card until end of turn.",
+      "When ~ enters, exile target artifact creature an opponent controls until ~ leaves the battlefield.\n{X}: Choose a creature card exiled with ~ with mana value X. Target creature becomes a copy of that card.",
+      "When ~ enters, exile target artifact creature an opponent controls until ~ leaves the battlefield.\n{X}: Choose an artifact card exiled with ~ with mana value X. ~ becomes a copy of that card."
+    ]
+  },
+  {
+    "id": "rep.edhn137.enters.emblem",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 114.2",
+      "CR 607.2a"
+    ],
+    "pattern": "as ~ enters , you get an emblem with {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "emblem": "$a"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, you get an emblem with \"You may play cards exiled with ¤, and you may spend mana as though it were mana of any color to cast those spells.\"\n+1: Exile the top card of each player's library."
+      },
+      {
+        "text": "As ~ enters, you get an emblem with \"Creatures you control get +1/+1.\""
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, target opponent gets an emblem with \"Creatures you control get +1/+1.\"",
+      "When ~ enters, you get two emblems with \"Creatures you control get +1/+1.\"",
+      "As ~ attacks, you get an emblem with \"Creatures you control get +1/+1.\""
+    ]
+  },
+  {
+    "id": "sta.edhn137.play.linkedOfGrantor.anyManaColor",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 114.2",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 609.4b"
+    ],
+    "pattern": "you may play cards exiled with ¤ , and you may spend mana as though it were mana of any color to cast those spells",
+    "build": {
+      "s": "permit",
+      "who": {
+        "ref": "you"
+      },
+      "action": "play",
+      "of": {
+        "is": {
+          "ref": "linked",
+          "link": "exiled"
+        },
+        "zone": "exile"
+      },
+      "anyManaColor": true
+    },
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, you get an emblem with \"You may play cards exiled with ¤, and you may spend mana as though it were mana of any color to cast those spells.\"\n+1: Exile the top card of each player's library."
+      },
+      {
+        "text": "As ~ enters, you get an emblem with \"You may play cards exiled with ¤, and you may spend mana as though it were mana of any color to cast those spells.\"\n−2: Exile target creature."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, you get an emblem with \"You may cast cards exiled with ¤, and you may spend mana as though it were mana of any color to cast those spells.\"\n+1: Exile the top card of each player's library.",
+      "As ~ enters, you get an emblem with \"You may play cards exiled with ¤, and you may spend mana as though it were mana of any color to cast spells.\"\n+1: Exile the top card of each player's library."
+    ]
+  },
+  {
+    "id": "eff.edhn137.loyaltySymbol.plus1",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.1",
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "\\[ +1 \\]",
+    "build": {
+      "op": "putCounters",
+      "on": {
+        "ref": "self"
+      },
+      "kind": "loyalty",
+      "count": 1
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "−1: Roll a six-sided die.\n1 or 2 — [+1], then you gain 1 life.\n3-6 | You gain 2 life, then [+1]."
+      },
+      {
+        "text": "−1: Roll a six-sided die.\n1 or 2 — [+1], then draw a card.\n3-6 | Draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "−1: Roll a six-sided die.\n1 or 2 — [+2] counters, then you gain 1 life.\n3-6 | You gain 2 life.",
+      "−1: Roll a six-sided die.\n1 or 2 — +1, then draw a card.\n3-6 | Draw two cards."
+    ]
+  },
+  {
+    "id": "eff.edhn137.loyaltySymbol.plus2",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.1",
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "\\[ +2 \\]",
+    "build": {
+      "op": "putCounters",
+      "on": {
+        "ref": "self"
+      },
+      "kind": "loyalty",
+      "count": 2
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "−1: Roll a six-sided die.\n1 or 2 — [+2], then you gain 1 life.\n3-6 | You gain 2 life, then [+2]."
+      },
+      {
+        "text": "−1: Roll a six-sided die.\n1 or 2 — [+2], then draw a card.\n3-6 | Draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "−1: Roll a six-sided die.\n1 or 2 — [+3] counters, then you gain 1 life.\n3-6 | You gain 2 life.",
+      "−1: Roll a six-sided die.\n1 or 2 — +2, then draw a card.\n3-6 | Draw two cards."
+    ]
+  },
+  {
+    "id": "eff.edhn137.loyaltySymbol.minus1",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.1",
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "\\[ -1 \\]",
+    "build": {
+      "op": "removeCounters",
+      "from": {
+        "ref": "self"
+      },
+      "kind": "loyalty",
+      "count": 1
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "−1: Roll a six-sided die.\n1 or 2 — [-1], then you gain 1 life.\n3-6 | You gain 2 life, then [-1]."
+      },
+      {
+        "text": "−1: Roll a six-sided die.\n1 or 2 — [-1], then draw a card.\n3-6 | Draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "−1: Roll a six-sided die.\n1 or 2 — [-2] counters, then you gain 1 life.\n3-6 | You gain 2 life.",
+      "−1: Roll a six-sided die.\n1 or 2 — -1, then draw a card.\n3-6 | Draw two cards."
+    ]
+  },
+  {
+    "id": "eff.edhn137.loyaltySymbol.minus2",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.1",
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "\\[ -2 \\]",
+    "build": {
+      "op": "removeCounters",
+      "from": {
+        "ref": "self"
+      },
+      "kind": "loyalty",
+      "count": 2
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "−1: Roll a six-sided die.\n1 or 2 — [-2], then you gain 1 life.\n3-6 | You gain 2 life, then [-2]."
+      },
+      {
+        "text": "−1: Roll a six-sided die.\n1 or 2 — [-2], then draw a card.\n3-6 | Draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "−1: Roll a six-sided die.\n1 or 2 — [-3] counters, then you gain 1 life.\n3-6 | You gain 2 life.",
+      "−1: Roll a six-sided die.\n1 or 2 — -2, then draw a card.\n3-6 | Draw two cards."
+    ]
+  },
+  {
+    "id": "eff.edhn137.damage.toCreatureOrPlayer.chosen",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2d",
+      "CR 115.1"
+    ],
+    "pattern": "~ deals damage equal to {q:Qty} to a creature or player",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "creatureOrPlayer",
+        "link": "creatureOrPlayer",
+        "options": [
+          "a creature",
+          "a player"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "creatureOrPlayer",
+          "equals": "a creature"
+        },
+        "then": [
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "you"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ]
+              }
+            },
+            "min": 1,
+            "max": 1,
+            "as": "damagedCreature"
+          },
+          {
+            "op": "damage",
+            "source": {
+              "ref": "self"
+            },
+            "to": {
+              "ref": "bound",
+              "name": "damagedCreature"
+            },
+            "amount": "$q"
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "creatureOrPlayer",
+          "equals": "a player"
+        },
+        "then": [
+          {
+            "op": "chooseValue",
+            "who": {
+              "ref": "you"
+            },
+            "what": "player",
+            "as": "damagedPlayer",
+            "link": "damagedPlayer"
+          },
+          {
+            "op": "damage",
+            "source": {
+              "ref": "self"
+            },
+            "to": {
+              "ref": "linked",
+              "link": "damagedPlayer"
+            },
+            "amount": "$q"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "−1: Roll a six-sided die.\n1 or 2 — ~ deals damage equal to the number of loyalty counters on ~ to a creature or player, then [-2].\n3-6 | [+1]."
+      },
+      {
+        "text": "{2}: ~ deals damage equal to the number of cards in your hand to a creature or player."
+      }
+    ],
+    "counterExamples": [
+      "{2}: ~ deals damage equal to the number of cards in your hand to a creature or planeswalker.",
+      "{2}: ~ deals damage equal to the number of cards in your hand to target creature or player.",
+      "{2}: ~ deals damage equal to the number of cards in your hand to each creature or player."
+    ]
+  },
+  {
+    "id": "eff.edhn137.loyalty.selfMoreTimesThisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.3",
+      "CR 602.5b",
+      "CR 611.2a"
+    ],
+    "pattern": "you may activate ~ 's loyalty ability two more times this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "additionalActivation",
+          "keyword": "loyalty",
+          "value": 2,
+          "of": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "−1: Roll a six-sided die.\n1 or 2 — [+1].\n3-6 | [+1], and you may activate ~'s loyalty ability two more times this turn."
+      },
+      {
+        "text": "0: You gain 1 life, and you may activate ~'s loyalty ability two more times this turn."
+      }
+    ],
+    "counterExamples": [
+      "0: You gain 1 life, and you may activate ~'s loyalty ability three more times this turn.",
+      "0: You gain 1 life, and you may activate ~'s loyalty ability two more times each turn.",
+      "0: You gain 1 life, and you may activate ~'s activated ability two more times this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn137.they.become.subtype.creatures.with.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:They} become {pt:BasePT} {st:Subtypes} creatures with {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "−5: Untap up to two target lands you control. They become 4/4 Elemental creatures with reach and haste until end of turn. They're still lands."
+      },
+      {
+        "text": "Untap up to three target lands. They become 3/3 Elemental creatures with trample until end of turn. They're still lands."
+      }
+    ],
+    "counterExamples": [
+      "Untap up to two target lands you control. They become 5/5 Elemental creatures with flying and haste. They're still lands.",
+      "Untap up to two target lands you control. They become 5/5 Elemental artifact creatures with flying until end of turn.",
+      "They become 5/5 Elemental creatures with flying until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn137.restartGame.leaveLinkedNonAuraPermanents",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 727.1",
+      "CR 727.1a",
+      "CR 727.4",
+      "CR 727.5",
+      "CR 607.2a"
+    ],
+    "pattern": "restart the game , leaving in exile all non-Aura permanent cards exiled with ~",
+    "build": {
+      "op": "restartGame",
+      "keep": {
+        "ref": "each",
+        "filter": {
+          "zone": "exile",
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "isCard": true,
+          "types": [
+            "Artifact",
+            "Battle",
+            "Creature",
+            "Enchantment",
+            "Land",
+            "Planeswalker"
+          ],
+          "notSubtypes": [
+            "Aura"
+          ]
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "+3: Target opponent exiles a card from their hand. You gain 1 life.\n−4: Exile target nonland permanent an opponent controls.\n−14: Restart the game, leaving in exile all non-Aura permanent cards exiled with ~. Then put those cards onto the battlefield under your control."
+      },
+      {
+        "text": "−4: Exile target nonland permanent an opponent controls.\n−10: Restart the game, leaving in exile all non-Aura permanent cards exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "−4: Exile target nonland permanent an opponent controls.\n−10: Restart the game, leaving in exile all permanent cards exiled with ~.",
+      "−4: Exile target nonland permanent an opponent controls.\n−10: Restart the game, leaving in exile all non-Aura permanent cards.",
+      "−4: Exile target nonland permanent an opponent controls.\n−10: End the game, leaving in exile all non-Aura permanent cards exiled with ~."
+    ]
+  },
+  {
+    "id": "rid.edhn137.restartGame.thenThoseToBattlefield",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 727.4",
+      "CR 110.2"
+    ],
+    "pattern": "then put those cards onto the battlefield under your control",
+    "build": {
+      "$patchPrevious": {
+        "toBattlefield": true
+      }
+    },
+    "attachTo": "restartGame",
+    "examples": [
+      {
+        "text": "−4: Exile target nonland permanent an opponent controls.\n−14: Restart the game, leaving in exile all non-Aura permanent cards exiled with ~. Then put those cards onto the battlefield under your control."
+      },
+      {
+        "text": "−2: Exile target artifact an opponent controls.\n−12: Restart the game, leaving in exile all non-Aura permanent cards exiled with ~. Then put those cards onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. Then put those cards onto the battlefield under your control.",
+      "−4: Exile target nonland permanent an opponent controls.\n−14: Restart the game, leaving in exile all non-Aura permanent cards exiled with ~. Then put those cards onto the battlefield under their owners' control."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.edhn137.return.oneOfThem.ownersHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 603.2c",
+      "CR 400.3"
+    ],
+    "pattern": "return one of them to its owner 's hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "object",
+                "number": "plural",
+                "text": "them"
+              }
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returnedOne"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returnedOne"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever one or more creatures you control deal combat damage to a player, you may return one of them to its owner's hand. If you do, draw a card."
+      },
+      {
+        "text": "Whenever one or more Ninjas you control deal combat damage to a player, return one of them to its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "Whenever one or more creatures you control deal combat damage to a player, you may return two of them to their owners' hands.",
+      "Whenever one or more creatures you control deal combat damage to a player, you may return one of them to your hand.",
+      "Whenever one or more creatures you control deal combat damage to a player, you may return each of them to its owner's hand."
+    ]
+  },
+  {
+    "id": "eff.edhn137.loyalty.selfTwiceThisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.3",
+      "CR 602.5b",
+      "CR 611.2a"
+    ],
+    "pattern": "you may activate loyalty abilities of ~ twice this turn rather than only once",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "additionalActivation",
+          "keyword": "loyalty:twice",
+          "of": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "twice",
+      "rather than",
+      "only"
+    ],
+    "examples": [
+      {
+        "text": "Whenever one or more creatures you control deal combat damage to a player, you may return one of them to its owner's hand. If you do, you may activate loyalty abilities of ~ twice this turn rather than only once."
+      },
+      {
+        "text": "When ~ enters, you may activate loyalty abilities of ~ twice this turn rather than only once."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may activate loyalty abilities of ~ three times this turn rather than only once.",
+      "When ~ enters, you may activate loyalty abilities of ~ twice each turn rather than only once.",
+      "When ~ enters, you may activate activated abilities of ~ twice this turn rather than only once."
+    ]
+  },
+  {
+    "id": "kw.edhn137.casualty.x.copyNotLegendary.startingLoyalty",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.153a",
+      "CR 601.2b",
+      "CR 107.3a",
+      "CR 707.9b",
+      "CR 707.10",
+      "CR 306.5b"
+    ],
+    "pattern": "casualty x . the copy isn't legendary and has starting loyalty x",
+    "build": {
+      "kind": "keyword",
+      "keyword": "casualty",
+      "amount": {
+        "q": "X"
+      },
+      "copyExcept": [
+        {
+          "layer": 4,
+          "supertypes": {
+            "remove": [
+              "Legendary"
+            ]
+          }
+        }
+      ],
+      "copyLoyalty": {
+        "q": "X"
+      }
+    },
+    "examples": [
+      {
+        "text": "Casualty X. The copy isn't legendary and has starting loyalty X.\n+1: You gain 3 life. Scry 2."
+      },
+      {
+        "text": "Casualty X. The copy isn't legendary and has starting loyalty X.\n−2: Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Casualty 2. The copy isn't legendary and has starting loyalty X.\n+1: You gain 3 life. Scry 2.",
+      "Casualty X. The copy isn't legendary.\n+1: You gain 3 life. Scry 2.",
+      "Casualty X. The copy has starting loyalty X.\n+1: You gain 3 life. Scry 2."
+    ]
+  },
+  {
+    "id": "sta.edhn137.yourTurn.self.isCreature.with.stillPlaneswalker",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 205.1b",
+      "CR 306.4"
+    ],
+    "pattern": "during your turn , ~ is ( a | an ) {pt:BasePT} {st:Subtypes} creature with {a:Abilities} that's still a planeswalker",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, ~ is a 3/5 Human Knight creature with indestructible that's still a planeswalker.\n+1: You gain 3 life. Scry 2."
+      },
+      {
+        "text": "During your turn, ~ is a 3/3 Elf Warrior creature with trample that's still a planeswalker.\n−2: Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, ~ is a 4/4 Human Soldier creature with indestructible.\n+1: You gain 3 life. Scry 2.",
+      "During each opponent's turn, ~ is a 4/4 Human Soldier creature with indestructible that's still a planeswalker.\n+1: You gain 3 life. Scry 2.",
+      "During your turn, ~ is a 4/4 Human Soldier artifact creature with indestructible that's still a planeswalker.\n+1: You gain 3 life. Scry 2."
+    ]
+  }
+]

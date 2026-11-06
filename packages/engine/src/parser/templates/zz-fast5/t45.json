@@ -194,8 +194,26 @@
         "newTargets": {
           "@new": "may"
         },
-        "count": "@previous.count",
-        "@into": true
+        "@oneOf": [
+          {
+            "@require": {
+              "exceptThis": true
+            },
+            "@withPrevious": true
+          },
+          {
+            "@require": {
+              "what.ref": "target",
+              "result": "spell",
+              "count": null
+            }
+          },
+          {
+            "count": "@previous.count"
+          }
+        ],
+        "@into": true,
+        "@eachBranch": true
       }
     },
     "attachTo": "copy",

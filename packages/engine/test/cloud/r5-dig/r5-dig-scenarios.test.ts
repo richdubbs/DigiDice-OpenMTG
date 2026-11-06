@@ -338,8 +338,11 @@ describe('CR 715.3, 715.3a, 601.3: the Adventure-only permission beside a gravey
 
 describe('CR 400.7, 120.3, 109.2: "Put target creature card from a graveyard onto the battlefield under your control. That creature deals damage equal to its power to each other creature."', () => {
   const GREED = card('Test Greed', 'Sorcery', 'Put target creature card from a graveyard onto the battlefield under your control. That creature deals damage equal to its power to each other creature.');
-  it('fails closed: a target handle still names the card it was (effects/refs.ts#rebase), so "each other creature" could not leave out the permanent it became', () => {
-    expect(noManual(GREED)).toBe(false);
+  // edh-d-98 (CR 400.7, 608.2c; Too Greedily, Too Deep): the negative is outdated: lower/anaphora.ts#movedSourceExcluded now rebinds the damage step to the permanent the moved card became
+  // (the move's `as`), played in cloud/edh-d-98; it is automated and the moved permanent is no target of "each other creature"
+  it('edh-d-98: automated, the damage step names the permanent the card became (not the target handle)', () => {
+    expect(noManual(GREED)).toBe(true);
+    expect(JSON.stringify(GREED.faces[0]!.abilities)).not.toContain('"source":{"ref":"target"');
   });
 });
 

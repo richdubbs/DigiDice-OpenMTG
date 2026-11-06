@@ -182,8 +182,9 @@ describe('std-rs parser (CR 607.2a): exile-until is the instruction that exiles 
     const steps = (bare(f.abilities) as { effect?: { steps: Record<string, unknown>[] } }[]).flatMap((a) => a.effect?.steps ?? []);
     expect(steps.find((x) => x['op'] === 'exileUntil')?.['link']).toBe('exiled');
   });
-  it('with a second instruction that exiles on the face, the reader does not know which one it reads (manual, CR 607.2a)', () => {
-    expect(isFull(creature('When this creature enters, each opponent exiles cards from the top of their library until they exile a nonland card.\nWhen this creature dies, exile target card from a graveyard.\n{2}: You may cast a card exiled with this creature without paying its mana cost.'))).toBe(false);
+  // edh-d-77 (CR 607.2a): "a card exiled with ~" picks among the group, so every ability that exiles is linked to it: the card is full now
+  it('with a second instruction that exiles on the face, a reader that picks among the group reads both (full, CR 607.2a; edh-d-77 changed this from manual)', () => {
+    expect(isFull(creature('When this creature enters, each opponent exiles cards from the top of their library until they exile a nonland card.\nWhen this creature dies, exile target card from a graveyard.\n{2}: You may cast a card exiled with this creature without paying its mana cost.'))).toBe(true);
   });
 });
 

@@ -1,0 +1,95 @@
+[
+  {
+    "id": "eff.edhv55.eachPlayer.returnAll.graveyard.bf",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 110.2a",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "each player returns all {f:Filter} cards from their graveyard to the battlefield",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "zone": "graveyard",
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player returns all Elf cards from their graveyard to the battlefield."
+      },
+      {
+        "text": "Each player returns all Wizard cards from their graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Each player returns all Elf cards from their graveyard to their hand.",
+      "Each opponent returns all Elf cards from their graveyard to the battlefield.",
+      "You return all Elf cards from your graveyard to the battlefield."
+    ]
+  },
+  {
+    "id": "rep.edhv55.dies.returnHand",
+    "kind": "static",
+    "since": 9,
+    "status": "experimental",
+    "cr": [
+      "CR 614.1a",
+      "CR 700.4",
+      "CR 400.3"
+    ],
+    "pattern": "if {f:Filter} would die , return it to its owner 's hand instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "zoneChange",
+        "subject": "$f",
+        "from": "battlefield",
+        "to": "graveyard"
+      },
+      "body": {
+        "b": "modify",
+        "destination": {
+          "zone": "hand"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a white creature you control would die, return it to its owner's hand instead."
+      },
+      {
+        "text": "If a nontoken creature would die, return it to its owner's hand instead."
+      }
+    ],
+    "counterExamples": [
+      "If a white creature would die, exile it instead.",
+      "If a white creature would die this turn, return it to its owner's hand instead.",
+      "If a white creature would die, return it to its owner's library instead."
+    ]
+  }
+]

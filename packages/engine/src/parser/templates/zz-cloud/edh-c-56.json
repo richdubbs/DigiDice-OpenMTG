@@ -1,0 +1,453 @@
+[
+  {
+    "id": "sta.edhv56.attached.loses",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 702.9"
+    ],
+    "pattern": "( enchanted | equipped ) creature loses {k:Keyword}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "remove": [
+                "$k.keyword"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Enchanted creature loses defender."
+      },
+      {
+        "text": "Equipped creature loses reach."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature loses flying until end of turn.",
+      "Enchanted creature gains flying.",
+      "Enchanted land loses flying.",
+      "Enchanted creature loses all abilities."
+    ]
+  },
+  {
+    "id": "eff.edhv56.loseLife.if",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "^ you lose {n:Qty} life if {c:Cond}",
+    "build": {
+      "op": "loseLife",
+      "who": {
+        "ref": "you"
+      },
+      "amount": "$n",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you lose 2 life if you don't control a Giant."
+      },
+      {
+        "text": "At the beginning of your end step, you lose 3 life if you control an artifact."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you lose 2 life unless you control a Giant.",
+      "At the beginning of your upkeep, target player loses 2 life if you control a Giant.",
+      "At the beginning of your upkeep, you gain 2 life if you control a Giant."
+    ]
+  },
+  {
+    "id": "eff.edhv56.player.exiles.allTypeFromGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 404.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} exile[s] all {f:Filter} cards from their graveyard",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "zone": "graveyard",
+          "owner": "$p"
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent exiles all artifact cards from their graveyard."
+      },
+      {
+        "text": "Target player exiles all creature cards from their graveyard. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target player exiles all land cards from your graveyard.",
+      "Target player exiles all land cards from their hand.",
+      "Target player exiles a land card from their graveyard.",
+      "Each player exiles all land cards from their graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhv56.player.loses.thenRevealsAtRandom",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 701.20a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life , then reveal[s] a card at random from their hand",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$n"
+      },
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "picked"
+      },
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "bound",
+          "name": "picked"
+        },
+        "as": "them"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "random",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent loses 2 life, then reveals a card at random from their hand."
+      },
+      {
+        "text": "Target player loses 3 life, then reveals a card at random from their hand."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent loses 2 life, then reveals a card from their hand.",
+      "Target opponent loses 2 life, then reveals two cards at random from their hand.",
+      "Target opponent loses 2 life and reveals a card at random from their hand.",
+      "Target opponent loses 2 life, then reveals a card at random from your hand.",
+      "Each opponent loses 2 life, then reveals a card at random from their hand."
+    ]
+  },
+  {
+    "id": "eff.edhv56.unless.player.pays.thatLosesYouGain",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 608.2c"
+    ],
+    "pattern": "unless {p:Player} pay[s] {c:Cost} , that player loses {n:Qty} life and you gain {m:Qty} life",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": "$c",
+      "else": [
+        {
+          "op": "loseLife",
+          "who": "$p",
+          "amount": "$n"
+        },
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": "$m"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Unless target opponent pays {4}, that player loses 3 life and you gain 3 life."
+      },
+      {
+        "text": "Unless target player pays {2}, that player loses 1 life and you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Unless target player pays {3}, that player loses 5 life.",
+      "If target player pays {3}, that player loses 5 life and you gain 5 life.",
+      "Unless target player pays {3}, that player loses 5 life and you draw 5 cards.",
+      "Unless target player pays {3} that player loses 5 life and you gain 5 life."
+    ]
+  },
+  {
+    "id": "eff.edhv56.attached.andSelf.bounce",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 303.4",
+      "CR 608.2c"
+    ],
+    "pattern": "return enchanted creature and ~ to their owners' hands",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "attachedTo"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "{1}{U}, {T}: Return enchanted creature and ~ to their owners' hands."
+      },
+      {
+        "text": "{3}: Return enchanted creature and ~ to their owners' hands."
+      }
+    ],
+    "counterExamples": [
+      "{U}: Return enchanted creature and ~ to your hand.",
+      "{U}: Return enchanted land and ~ to their owners' hands.",
+      "{U}: Return target creature and ~ to their owners' hands.",
+      "{U}: Return enchanted creature to its owner's hand."
+    ]
+  },
+  {
+    "id": "sta.edhv56.aslong.exactlyTide.pt",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "as long as there ( is | are ) exactly {n:Qty} tide counter[s] on ~ , it get[s] {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": {
+            "ref": "self"
+          },
+          "kind": "tide"
+        },
+        "op": "==",
+        "right": "$n"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "exactly"
+    ],
+    "examples": [
+      {
+        "text": "As long as there is exactly one tide counter on ~, it gets -2/-0."
+      },
+      {
+        "text": "As long as there are exactly two tide counters on ~, it gets +2/+2."
+      }
+    ],
+    "counterExamples": [
+      "As long as there are three or more tide counters on ~, it gets +1/+1.",
+      "As long as there are exactly three charge counters on ~, it gets +1/+1.",
+      "As long as there are exactly three tide counters on target creature, it gets +1/+1.",
+      "There is exactly one tide counter on ~, it gets -1/-1."
+    ]
+  },
+  {
+    "id": "eff.edhv56.obj.loses.protectionFromBlack.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.16",
+      "CR 613.1f",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} lose[s] protection from black {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "remove": [
+                "protection:color:B"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Target creature loses protection from black until end of turn."
+      },
+      {
+        "text": "{T}: Target creature loses protection from black until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Sacrifice ~: Target creature loses protection from black.",
+      "Sacrifice ~: Target creature loses protection from red until end of turn.",
+      "Sacrifice ~: Target creature loses protection until end of turn.",
+      "Sacrifice ~: Target creature gains protection from black until end of turn."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhv56.destroy.ifAnotherSameName",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.8a",
+      "CR 201.2",
+      "CR 608.2c"
+    ],
+    "pattern": "destroy {o:Obj} if another permanent with the same name is on the battlefield",
+    "build": {
+      "op": "destroy",
+      "what": "$o",
+      "guard": {
+        "cond": "exists",
+        "atLeast": 1,
+        "of": {
+          "ref": "each",
+          "filter": {
+            "zone": "battlefield",
+            "not": {
+              "is": "$o"
+            },
+            "sharesWith": {
+              "with": "$o",
+              "quality": "name"
+            }
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "another",
+      "same"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target artifact if another permanent with the same name is on the battlefield. Draw a card."
+      },
+      {
+        "text": "Destroy target creature if another permanent with the same name is on the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target nonland permanent if another permanent with the same name is on the stack.",
+      "Destroy target nonland permanent unless another permanent with the same name is on the battlefield.",
+      "Destroy target nonland permanent if a permanent with the same name is on the battlefield.",
+      "Destroy target nonland permanent if another permanent with the same controller is on the battlefield."
+    ]
+  }
+]

@@ -1,0 +1,210 @@
+[
+  {
+    "id": "eff.edhv25.sacrifice.theirChoice.thenGainLifeToughness",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2c",
+      "CR 119.1",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} sacrifice[s] {n:Qty} {f:Filter} of their choice , then gain[s] life equal to that creature 's toughness",
+    "build": [
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$f",
+        "count": "$n",
+        "as": "them"
+      },
+      {
+        "op": "gainLife",
+        "who": "$p",
+        "amount": {
+          "q": "stat",
+          "stat": "toughness",
+          "of": {
+            "ref": "bound",
+            "name": "them"
+          }
+        }
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target opponent sacrifices an artifact creature of their choice, then gains life equal to that creature's toughness."
+      },
+      {
+        "text": "Target player sacrifices a nontoken creature of their choice, then gains life equal to that creature's toughness."
+      }
+    ],
+    "counterExamples": [
+      "Target player sacrifices a creature of their choice, then gains life equal to that creature's power.",
+      "Target player sacrifices a creature of their choice, then you gain life equal to that creature's toughness.",
+      "Target player sacrifices a creature, then gains life equal to that creature's toughness."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "sta.edhv25.grant.aslong.itsControllerControlsAnotherCreature",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 303.4e",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Obj} (has | have) {a:Abilities} as long as its controller controls another creature",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "attachedToSource": false,
+            "controller": {
+              "ref": "controllerOf",
+              "object": "$o"
+            }
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature has shroud as long as its controller controls another creature."
+      },
+      {
+        "text": "Enchanted creature has hexproof as long as its controller controls another creature."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature has shroud as long as you control another creature.",
+      "Enchanted creature has shroud as long as its controller controls a creature.",
+      "Enchanted creature has shroud as long as its controller controls another artifact."
+    ]
+  },
+  {
+    "id": "sta.edhv25.defendingCantCastSpells.aslong",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 506.2a",
+      "CR 101.2",
+      "CR 601.2a"
+    ],
+    "pattern": "as long as {o:Obj} is attacking , defending player can't cast spells",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "filter": {
+          "attacking": true
+        },
+        "object": "$o"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "defending"
+          },
+          "mode": "cant",
+          "action": "cast",
+          "other": {
+            "stackKind": "spell",
+            "zone": "stack"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "As long as this artifact is attacking, defending player can't cast spells."
+      },
+      {
+        "text": "As long as enchanted creature is attacking, defending player can't cast spells."
+      }
+    ],
+    "counterExamples": [
+      "As long as it's your turn, defending player can't cast spells.",
+      "As long as you control a Dragon, defending player can't cast spells.",
+      "As long as ~ is attacking, defending player can't cast creature spells.",
+      "As long as ~ is attacking, each opponent can't cast spells.",
+      "As long as ~ is attacking, defending player can't activate abilities.",
+      "As long as this artifact is attacking alone, defending player can't cast spells."
+    ]
+  },
+  {
+    "id": "trg.edhv25.spellOrAbilityCausesShuffle",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 603.2",
+      "CR 603.2c"
+    ],
+    "pattern": "whenever a spell or ability causes a player to shuffle their library",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "shuffle",
+          "actor": "any"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a spell or ability causes a player to shuffle their library, ~ deals 3 damage to that player."
+      },
+      {
+        "text": "Whenever a spell or ability causes a player to shuffle their library, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a spell or ability causes an opponent to shuffle their library, ~ deals 2 damage to that player.",
+      "Whenever a spell or ability causes a player to shuffle their graveyard, ~ deals 2 damage to that player.",
+      "Whenever a spell causes a player to shuffle their library, ~ deals 2 damage to that player."
+    ]
+  }
+]

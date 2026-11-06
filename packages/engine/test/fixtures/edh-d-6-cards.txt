@@ -1,0 +1,11 @@
+# edh-d-6 (Commander EDHREC ranks 10,001-11,250, second pass): cost reductions, a group detain, linked-exile casts, Adventure copies, a dies-or-damages trigger. After editing: npm run cards -- fixtures
+Discontinuity
+Deepwood Denizen
+Tameshi, Reality Architect
+Lucky Clover
+Blade of the Oni
+Spell Queller
+Smuggler's Buggy
+Lavinia of the Tenth
+Millicent, Restless Revenant
+Discreet Retreat

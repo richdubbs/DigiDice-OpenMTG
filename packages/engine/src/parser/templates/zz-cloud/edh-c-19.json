@@ -1,0 +1,307 @@
+[
+  {
+    "id": "eff.edhv19.mayPay.x.draw.xCap",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 107.3",
+      "CR 118.12",
+      "CR 608.2h"
+    ],
+    "pattern": "you may pay {x} . if you do , draw x cards . x can't be greater than {q:Qty}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "mana": [
+          {
+            "kind": "variable",
+            "name": "X"
+          }
+        ]
+      },
+      "xMax": "$q",
+      "then": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "can't",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may pay {X}. If you do, draw X cards. X can't be greater than the amount of life you gained this turn."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may pay {X}. If you do, draw X cards. X can't be greater than the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, you may pay {X}. If you do, draw X cards. X can't be less than the amount of life you gained this turn.",
+      "At the beginning of your end step, you may pay {X}. If you do, gain X life. X can't be greater than the amount of life you gained this turn."
+    ]
+  },
+  {
+    "id": "eff.edhv19.shuffle.upTo.graveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 608.2d",
+      "CR 404.1"
+    ],
+    "pattern": "you shuffle up to {n:Qty} cards from your graveyard into your library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "you"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "library"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Target player mills three cards. You shuffle up to two cards from your graveyard into your library."
+      },
+      {
+        "text": "Draw a card. You shuffle up to two cards from your graveyard into your library."
+      }
+    ],
+    "counterExamples": [
+      "Target player mills four cards. You shuffle up to four cards from your hand into your library.",
+      "Target player mills four cards. You shuffle exactly four cards from your graveyard into your library."
+    ]
+  },
+  {
+    "id": "eff.edhv19.handToBottom.drawThatMany",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 400.3",
+      "CR 401.4",
+      "CR 121.1",
+      "CR 608.2h"
+    ],
+    "pattern": "put the cards in your hand on the bottom of your library in any order , then draw that many cards",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "chosen"
+        },
+        "as": "moved"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "resultCount",
+          "step": "moved"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a creature spell, put the cards in your hand on the bottom of your library in any order, then draw that many cards."
+      },
+      {
+        "text": "At the beginning of your upkeep, put the cards in your hand on the bottom of your library in any order, then draw that many cards."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, put the cards in your graveyard on the bottom of your library in any order, then draw that many cards.",
+      "Whenever you cast a spell, put the cards in your hand on the top of your library in any order, then draw that many cards."
+    ]
+  },
+  {
+    "id": "eff.edhv19.player.revealTop.ifCard.putHand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 401.2",
+      "CR 608.2c",
+      "CR 400.3"
+    ],
+    "pattern": "{p:Player} reveal[s] the top card of their library . if {c:Cond} , that player puts it into their hand",
+    "build": [
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "topCards",
+          "player": "$p",
+          "count": 1
+        },
+        "as": "revealed"
+      },
+      {
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "revealed"
+            },
+            "to": {
+              "zone": "hand"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature attacks, defending player reveals the top card of their library. If it's a creature card, that player puts it into their hand."
+      },
+      {
+        "text": "Whenever this creature attacks, defending player reveals the top card of their library. If it's an artifact card, that player puts it into their hand."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature attacks, defending player reveals the top card of their library. If it's a land card, you put it into your hand.",
+      "Whenever this creature attacks, defending player reveals the top card of their library. If it's a land card, that player puts it onto the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhv19.mayTapHumans.drawPerTapped",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.26a",
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 608.2h"
+    ],
+    "pattern": "you may tap any number of untapped humans you control . draw a card for each human tapped this way",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "subtypes": [
+              "Human"
+            ],
+            "controller": "you",
+            "tapped": false
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "tapCandidates"
+      },
+      {
+        "op": "tap",
+        "what": {
+          "ref": "bound",
+          "name": "tapCandidates"
+        },
+        "as": "tappedThisWay"
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "resultCount",
+          "step": "tappedThisWay"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "any number",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of combat on your turn, you may tap any number of untapped Humans you control. Draw a card for each Human tapped this way."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may tap any number of untapped Humans you control. Draw a card for each Human tapped this way."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may tap any number of untapped Elves you control. Draw a card for each Elf tapped this way.",
+      "Whenever ~ attacks, you may tap any number of untapped Humans you control. Draw two cards for each Human tapped this way."
+    ]
+  }
+]

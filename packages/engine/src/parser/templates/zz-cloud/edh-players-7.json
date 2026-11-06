@@ -1,0 +1,207 @@
+[
+  {
+    "id": "eff.edhp7.player.scries.thenDraws",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.22a",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} scries {n:Qty} , then draws a card",
+    "build": [
+      {
+        "op": "scry",
+        "who": "$p",
+        "count": "$n"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": 1
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "When ~ enters, target player scries 3, then draws a card."
+      },
+      {
+        "text": "When ~ enters, target opponent scries 1, then draws a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target player scries 3, then draws two cards.",
+      "When ~ enters, target player scries 3, then mills a card.",
+      "When ~ enters, target player surveils 3, then draws a card."
+    ]
+  },
+  {
+    "id": "eff.edhp7.choose.nCards.handDrawnThisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "choose {n:Qty} cards in your hand drawn this turn",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "you",
+            "drawnThisTurn": true
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosenDrawn"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, choose three cards in your hand drawn this turn."
+      },
+      {
+        "text": "When ~ enters, you may draw a card. If you do, choose two cards in your hand drawn this turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, choose three cards in your hand.",
+      "At the beginning of your upkeep, choose three cards in your graveyard drawn this turn.",
+      "At the beginning of your upkeep, choose up to three cards in your hand drawn this turn."
+    ]
+  },
+  {
+    "id": "eff.edhp7.forEach.chosen.payLifeOrPutTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 119.4",
+      "CR 608.2c"
+    ],
+    "pattern": "for each of those cards , pay {n:Qty} life or put the card on top of your library",
+    "build": [
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "bound",
+          "name": "chosenDrawn"
+        },
+        "as": "card",
+        "do": [
+          {
+            "op": "pay",
+            "who": {
+              "ref": "you"
+            },
+            "cost": {
+              "other": [
+                {
+                  "kind": "payLife",
+                  "amount": "$n"
+                }
+              ]
+            },
+            "else": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "card"
+                },
+                "to": {
+                  "zone": "library",
+                  "position": "top"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, choose two cards in your hand drawn this turn. For each of those cards, pay 3 life or put the card on top of your library."
+      },
+      {
+        "text": "At the beginning of your upkeep, choose three cards in your hand drawn this turn. For each of those cards, pay 2 life or put the card on top of your library."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, choose two cards in your hand drawn this turn. For each of those cards, pay 3 life or put the card into your graveyard.",
+      "At the beginning of your upkeep, choose two cards in your hand drawn this turn. For each of those cards, pay {3} or put the card on top of your library.",
+      "At the beginning of your upkeep, choose two cards in your hand drawn this turn. For each of those cards, an opponent pays 3 life or puts the card on top of your library."
+    ]
+  },
+  {
+    "id": "eff.edhp7.objs.lose.two.cantHave.two",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1f",
+      "CR 702.11b",
+      "CR 702.18a",
+      "CR 611.2c",
+      "CR 101.2"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} lose {k1:Keyword} and {k2:Keyword} and can't have {k3:Keyword} or {k4:Keyword}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "remove": [
+                "$k1.keyword",
+                "$k2.keyword"
+              ],
+              "cantHave": [
+                "$k3.keyword",
+                "$k4.keyword"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, creatures your opponents control lose flying and menace and can't have flying or menace."
+      },
+      {
+        "text": "Until end of turn, creatures you control lose trample and haste and can't have trample or haste."
+      }
+    ],
+    "counterExamples": [
+      "Creatures your opponents control lose flying and menace and can't have flying or menace.",
+      "Until end of turn, creatures your opponents control lose flying and menace.",
+      "Until end of turn, creatures your opponents control lose flying and menace and can't have flying."
+    ]
+  }
+]

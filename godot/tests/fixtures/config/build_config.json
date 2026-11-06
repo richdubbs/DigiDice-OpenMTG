@@ -1,0 +1,1847 @@
+{
+ "cases": [
+  {
+   "name": "two players, random first",
+   "args": {
+    "players": [
+     {
+      "name": " Ann\u0007 ",
+      "deck": {
+       "main": [
+        {
+         "name": "Alpha Test",
+         "count": 3
+        },
+        {
+         "name": "Beta Test",
+         "count": 2
+        }
+       ],
+       "sideboard": [
+        {
+         "name": "Side Test",
+         "count": 2
+        },
+        {
+         "name": "Pal Test",
+         "count": 1
+        }
+       ],
+       "companion": [
+        {
+         "name": "Pal Test",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "name": "Bob",
+      "deck": {
+       "main": [
+        {
+         "name": "Gamma Test",
+         "count": 4
+        }
+       ],
+       "sideboard": [
+        {
+         "name": "Missing Side",
+         "count": 1
+        }
+       ]
+      }
+     }
+    ],
+    "defs": {
+     "Alpha Test": {
+      "id": "Alpha Test",
+      "name": "Alpha Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Alpha Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Beta Test": {
+      "id": "Beta Test",
+      "name": "Beta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Beta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Gamma Test": {
+      "id": "Gamma Test",
+      "name": "Gamma Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Gamma Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Delta Test": {
+      "id": "Delta Test",
+      "name": "Delta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Delta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Leader Test": {
+      "id": "Leader Test",
+      "name": "Leader Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Leader Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Pal Test": {
+      "id": "Pal Test",
+      "name": "Pal Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Pal Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Side Test": {
+      "id": "Side Test",
+      "name": "Side Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Side Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     }
+    },
+    "seed": "seed-one",
+    "start": {
+     "startingLife": 20,
+     "firstPlayer": "random"
+    },
+    "stops": {
+     "ownTurn": [
+      "main1",
+      "main2"
+     ],
+     "opponentTurn": [
+      "end"
+     ],
+     "fullControl": false
+    }
+   },
+   "config": {
+    "seed": "seed-one",
+    "players": [
+     {
+      "id": "p1",
+      "name": "Ann",
+      "deck": [
+       "Alpha Test",
+       "Alpha Test",
+       "Alpha Test",
+       "Beta Test",
+       "Beta Test"
+      ],
+      "sideboard": [
+       "Side Test",
+       "Side Test"
+      ],
+      "companion": "Pal Test",
+      "stops": {
+       "ownTurn": [
+        "main1",
+        "main2"
+       ],
+       "opponentTurn": [
+        "end"
+       ],
+       "fullControl": false
+      }
+     },
+     {
+      "id": "p2",
+      "name": "Bob",
+      "deck": [
+       "Gamma Test",
+       "Gamma Test",
+       "Gamma Test",
+       "Gamma Test"
+      ],
+      "stops": {
+       "ownTurn": [
+        "main1",
+        "main2"
+       ],
+       "opponentTurn": [
+        "end"
+       ],
+       "fullControl": false
+      }
+     }
+    ],
+    "defs": [
+     {
+      "id": "Alpha Test",
+      "name": "Alpha Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Alpha Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Beta Test",
+      "name": "Beta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Beta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Pal Test",
+      "name": "Pal Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Pal Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Side Test",
+      "name": "Side Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Side Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Gamma Test",
+      "name": "Gamma Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Gamma Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     }
+    ],
+    "options": {
+     "startingLife": 20,
+     "startingPlayer": "p2"
+    }
+   }
+  },
+  {
+   "name": "two players, second first, companion read by the check",
+   "args": {
+    "players": [
+     {
+      "name": "Ann",
+      "deck": {
+       "main": [
+        {
+         "name": "Alpha Test",
+         "count": 3
+        },
+        {
+         "name": "Beta Test",
+         "count": 2
+        }
+       ],
+       "sideboard": [
+        {
+         "name": "Side Test",
+         "count": 2
+        },
+        {
+         "name": "Pal Test",
+         "count": 1
+        }
+       ],
+       "companion": [
+        {
+         "name": "Pal Test",
+         "count": 1
+        }
+       ]
+      },
+      "companion": null
+     },
+     {
+      "name": "Bob",
+      "deck": {
+       "main": [
+        {
+         "name": "Gamma Test",
+         "count": 4
+        }
+       ],
+       "sideboard": [
+        {
+         "name": "Missing Side",
+         "count": 1
+        }
+       ]
+      }
+     }
+    ],
+    "defs": {
+     "Alpha Test": {
+      "id": "Alpha Test",
+      "name": "Alpha Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Alpha Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Beta Test": {
+      "id": "Beta Test",
+      "name": "Beta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Beta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Gamma Test": {
+      "id": "Gamma Test",
+      "name": "Gamma Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Gamma Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Delta Test": {
+      "id": "Delta Test",
+      "name": "Delta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Delta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Leader Test": {
+      "id": "Leader Test",
+      "name": "Leader Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Leader Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Pal Test": {
+      "id": "Pal Test",
+      "name": "Pal Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Pal Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Side Test": {
+      "id": "Side Test",
+      "name": "Side Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Side Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     }
+    },
+    "seed": "seed-two",
+    "start": {
+     "startingLife": 25,
+     "firstPlayer": 1
+    },
+    "stops": {
+     "ownTurn": [
+      "main1",
+      "main2"
+     ],
+     "opponentTurn": [
+      "end"
+     ],
+     "fullControl": false
+    }
+   },
+   "config": {
+    "seed": "seed-two",
+    "players": [
+     {
+      "id": "p1",
+      "name": "Ann",
+      "deck": [
+       "Alpha Test",
+       "Alpha Test",
+       "Alpha Test",
+       "Beta Test",
+       "Beta Test"
+      ],
+      "sideboard": [
+       "Side Test",
+       "Side Test",
+       "Pal Test"
+      ],
+      "stops": {
+       "ownTurn": [
+        "main1",
+        "main2"
+       ],
+       "opponentTurn": [
+        "end"
+       ],
+       "fullControl": false
+      }
+     },
+     {
+      "id": "p2",
+      "name": "Bob",
+      "deck": [
+       "Gamma Test",
+       "Gamma Test",
+       "Gamma Test",
+       "Gamma Test"
+      ],
+      "stops": {
+       "ownTurn": [
+        "main1",
+        "main2"
+       ],
+       "opponentTurn": [
+        "end"
+       ],
+       "fullControl": false
+      }
+     }
+    ],
+    "defs": [
+     {
+      "id": "Alpha Test",
+      "name": "Alpha Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Alpha Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Beta Test",
+      "name": "Beta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Beta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Side Test",
+      "name": "Side Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Side Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Pal Test",
+      "name": "Pal Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Pal Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Gamma Test",
+      "name": "Gamma Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Gamma Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     }
+    ],
+    "options": {
+     "startingLife": 25,
+     "startingPlayer": "p2"
+    }
+   }
+  },
+  {
+   "name": "four players, commander",
+   "args": {
+    "players": [
+     {
+      "name": "P0",
+      "deck": {
+       "main": [
+        {
+         "name": "Delta Test",
+         "count": 2
+        }
+       ],
+       "sideboard": [],
+       "commander": [
+        {
+         "name": "Leader Test",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "name": "P1",
+      "deck": {
+       "main": [
+        {
+         "name": "Delta Test",
+         "count": 2
+        }
+       ],
+       "sideboard": [],
+       "commander": [
+        {
+         "name": "Leader Test",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "name": "P2",
+      "deck": {
+       "main": [
+        {
+         "name": "Delta Test",
+         "count": 2
+        }
+       ],
+       "sideboard": [],
+       "commander": [
+        {
+         "name": "Leader Test",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "name": "P3",
+      "deck": {
+       "main": [
+        {
+         "name": "Delta Test",
+         "count": 2
+        }
+       ],
+       "sideboard": [],
+       "commander": [
+        {
+         "name": "Leader Test",
+         "count": 1
+        }
+       ]
+      }
+     }
+    ],
+    "defs": {
+     "Alpha Test": {
+      "id": "Alpha Test",
+      "name": "Alpha Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Alpha Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Beta Test": {
+      "id": "Beta Test",
+      "name": "Beta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Beta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Gamma Test": {
+      "id": "Gamma Test",
+      "name": "Gamma Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Gamma Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Delta Test": {
+      "id": "Delta Test",
+      "name": "Delta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Delta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Leader Test": {
+      "id": "Leader Test",
+      "name": "Leader Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Leader Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Pal Test": {
+      "id": "Pal Test",
+      "name": "Pal Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Pal Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Side Test": {
+      "id": "Side Test",
+      "name": "Side Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Side Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     }
+    },
+    "seed": "seed-four",
+    "start": {
+     "startingLife": 40,
+     "firstPlayer": "random"
+    },
+    "stops": {
+     "ownTurn": [
+      "main1",
+      "main2"
+     ],
+     "opponentTurn": [
+      "end"
+     ],
+     "fullControl": false
+    },
+    "commander": "commander"
+   },
+   "config": {
+    "seed": "seed-four",
+    "players": [
+     {
+      "id": "p1",
+      "name": "P0",
+      "deck": [
+       "Delta Test",
+       "Delta Test"
+      ],
+      "stops": {
+       "ownTurn": [
+        "main1",
+        "main2"
+       ],
+       "opponentTurn": [
+        "end"
+       ],
+       "fullControl": false
+      },
+      "commanders": [
+       "Leader Test"
+      ]
+     },
+     {
+      "id": "p3",
+      "name": "P2",
+      "deck": [
+       "Delta Test",
+       "Delta Test"
+      ],
+      "stops": {
+       "ownTurn": [
+        "main1",
+        "main2"
+       ],
+       "opponentTurn": [
+        "end"
+       ],
+       "fullControl": false
+      },
+      "commanders": [
+       "Leader Test"
+      ]
+     },
+     {
+      "id": "p4",
+      "name": "P3",
+      "deck": [
+       "Delta Test",
+       "Delta Test"
+      ],
+      "stops": {
+       "ownTurn": [
+        "main1",
+        "main2"
+       ],
+       "opponentTurn": [
+        "end"
+       ],
+       "fullControl": false
+      },
+      "commanders": [
+       "Leader Test"
+      ]
+     },
+     {
+      "id": "p2",
+      "name": "P1",
+      "deck": [
+       "Delta Test",
+       "Delta Test"
+      ],
+      "stops": {
+       "ownTurn": [
+        "main1",
+        "main2"
+       ],
+       "opponentTurn": [
+        "end"
+       ],
+       "fullControl": false
+      },
+      "commanders": [
+       "Leader Test"
+      ]
+     }
+    ],
+    "defs": [
+     {
+      "id": "Delta Test",
+      "name": "Delta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Delta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Leader Test",
+      "name": "Leader Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Leader Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     }
+    ],
+    "options": {
+     "startingLife": 40,
+     "startingPlayer": "p4",
+     "commander": {
+      "variant": "commander",
+      "damageLimit": 21,
+      "tax": 2,
+      "freeMulligan": false
+     },
+     "multiplayer": {
+      "variant": "freeForAll",
+      "attack": "multiple"
+     }
+    }
+   }
+  },
+  {
+   "name": "three players",
+   "args": {
+    "players": [
+     {
+      "name": "A",
+      "deck": {
+       "main": [
+        {
+         "name": "Gamma Test",
+         "count": 4
+        }
+       ],
+       "sideboard": [
+        {
+         "name": "Missing Side",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "name": "B",
+      "deck": {
+       "main": [
+        {
+         "name": "Alpha Test",
+         "count": 3
+        },
+        {
+         "name": "Beta Test",
+         "count": 2
+        }
+       ],
+       "sideboard": [
+        {
+         "name": "Side Test",
+         "count": 2
+        },
+        {
+         "name": "Pal Test",
+         "count": 1
+        }
+       ],
+       "companion": [
+        {
+         "name": "Pal Test",
+         "count": 1
+        }
+       ]
+      }
+     },
+     {
+      "name": "C",
+      "deck": {
+       "main": [
+        {
+         "name": "Gamma Test",
+         "count": 4
+        }
+       ],
+       "sideboard": [
+        {
+         "name": "Missing Side",
+         "count": 1
+        }
+       ]
+      }
+     }
+    ],
+    "defs": {
+     "Alpha Test": {
+      "id": "Alpha Test",
+      "name": "Alpha Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Alpha Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Beta Test": {
+      "id": "Beta Test",
+      "name": "Beta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Beta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Gamma Test": {
+      "id": "Gamma Test",
+      "name": "Gamma Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Gamma Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Delta Test": {
+      "id": "Delta Test",
+      "name": "Delta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Delta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Leader Test": {
+      "id": "Leader Test",
+      "name": "Leader Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Leader Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Pal Test": {
+      "id": "Pal Test",
+      "name": "Pal Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Pal Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Side Test": {
+      "id": "Side Test",
+      "name": "Side Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Side Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     }
+    },
+    "seed": "abc",
+    "start": {
+     "startingLife": 20,
+     "firstPlayer": 2
+    },
+    "stops": {
+     "ownTurn": [
+      "main1",
+      "main2"
+     ],
+     "opponentTurn": [
+      "end"
+     ],
+     "fullControl": false
+    }
+   },
+   "config": {
+    "seed": "abc",
+    "players": [
+     {
+      "id": "p3",
+      "name": "C",
+      "deck": [
+       "Gamma Test",
+       "Gamma Test",
+       "Gamma Test",
+       "Gamma Test"
+      ],
+      "stops": {
+       "ownTurn": [
+        "main1",
+        "main2"
+       ],
+       "opponentTurn": [
+        "end"
+       ],
+       "fullControl": false
+      }
+     },
+     {
+      "id": "p2",
+      "name": "B",
+      "deck": [
+       "Alpha Test",
+       "Alpha Test",
+       "Alpha Test",
+       "Beta Test",
+       "Beta Test"
+      ],
+      "sideboard": [
+       "Side Test",
+       "Side Test"
+      ],
+      "companion": "Pal Test",
+      "stops": {
+       "ownTurn": [
+        "main1",
+        "main2"
+       ],
+       "opponentTurn": [
+        "end"
+       ],
+       "fullControl": false
+      }
+     },
+     {
+      "id": "p1",
+      "name": "A",
+      "deck": [
+       "Gamma Test",
+       "Gamma Test",
+       "Gamma Test",
+       "Gamma Test"
+      ],
+      "stops": {
+       "ownTurn": [
+        "main1",
+        "main2"
+       ],
+       "opponentTurn": [
+        "end"
+       ],
+       "fullControl": false
+      }
+     }
+    ],
+    "defs": [
+     {
+      "id": "Gamma Test",
+      "name": "Gamma Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Gamma Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Alpha Test",
+      "name": "Alpha Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Alpha Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Beta Test",
+      "name": "Beta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Beta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Pal Test",
+      "name": "Pal Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Pal Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     {
+      "id": "Side Test",
+      "name": "Side Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Side Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     }
+    ],
+    "options": {
+     "startingLife": 20,
+     "startingPlayer": "p3",
+     "multiplayer": {
+      "variant": "freeForAll",
+      "attack": "multiple"
+     }
+    }
+   }
+  },
+  {
+   "name": "missing card",
+   "args": {
+    "players": [
+     {
+      "name": "A",
+      "deck": {
+       "main": [
+        {
+         "name": "Nope Test",
+         "count": 1
+        }
+       ],
+       "sideboard": []
+      }
+     },
+     {
+      "name": "B",
+      "deck": {
+       "main": [
+        {
+         "name": "Gamma Test",
+         "count": 4
+        }
+       ],
+       "sideboard": [
+        {
+         "name": "Missing Side",
+         "count": 1
+        }
+       ]
+      }
+     }
+    ],
+    "defs": {
+     "Alpha Test": {
+      "id": "Alpha Test",
+      "name": "Alpha Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Alpha Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Beta Test": {
+      "id": "Beta Test",
+      "name": "Beta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Beta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Gamma Test": {
+      "id": "Gamma Test",
+      "name": "Gamma Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Gamma Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Delta Test": {
+      "id": "Delta Test",
+      "name": "Delta Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Delta Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Leader Test": {
+      "id": "Leader Test",
+      "name": "Leader Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Leader Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Pal Test": {
+      "id": "Pal Test",
+      "name": "Pal Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Pal Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     },
+     "Side Test": {
+      "id": "Side Test",
+      "name": "Side Test",
+      "layout": "normal",
+      "faces": [
+       {
+        "name": "Side Test",
+        "typeLine": "Creature — Test",
+        "abilities": []
+       }
+      ],
+      "isToken": false,
+      "automation": {
+       "level": "full"
+      }
+     }
+    },
+    "seed": "s",
+    "start": {
+     "startingLife": 20,
+     "firstPlayer": 0
+    },
+    "stops": {
+     "ownTurn": [
+      "main1",
+      "main2"
+     ],
+     "opponentTurn": [
+      "end"
+     ],
+     "fullControl": false
+    }
+   },
+   "error": "No card definition for: Nope Test."
+  }
+ ],
+ "helpers": {
+  "randomSeat": [
+   {
+    "seed": "",
+    "seats": 2,
+    "seat": 1
+   },
+   {
+    "seed": "",
+    "seats": 3,
+    "seat": 1
+   },
+   {
+    "seed": "",
+    "seats": 4,
+    "seat": 1
+   },
+   {
+    "seed": "a",
+    "seats": 2,
+    "seat": 0
+   },
+   {
+    "seed": "a",
+    "seats": 3,
+    "seat": 1
+   },
+   {
+    "seed": "a",
+    "seats": 4,
+    "seat": 0
+   },
+   {
+    "seed": "seed-one",
+    "seats": 2,
+    "seat": 1
+   },
+   {
+    "seed": "seed-one",
+    "seats": 3,
+    "seat": 1
+   },
+   {
+    "seed": "seed-one",
+    "seats": 4,
+    "seat": 1
+   },
+   {
+    "seed": "🐉x",
+    "seats": 2,
+    "seat": 1
+   },
+   {
+    "seed": "🐉x",
+    "seats": 3,
+    "seat": 0
+   },
+   {
+    "seed": "🐉x",
+    "seats": 4,
+    "seat": 1
+   },
+   {
+    "seed": "Ünïcode",
+    "seats": 2,
+    "seat": 1
+   },
+   {
+    "seed": "Ünïcode",
+    "seats": 3,
+    "seat": 1
+   },
+   {
+    "seed": "Ünïcode",
+    "seats": 4,
+    "seat": 1
+   }
+  ],
+  "seatAtRandom": [
+   {
+    "seed": "seed-four",
+    "order": [
+     0,
+     2,
+     3,
+     1
+    ]
+   },
+   {
+    "seed": "abc",
+    "order": [
+     2,
+     3,
+     0,
+     1
+    ]
+   },
+   {
+    "seed": "x",
+    "order": [
+     0,
+     2,
+     3,
+     1
+    ]
+   }
+  ],
+  "playerName": [
+   {
+    "typed": " Ann\u0007 ",
+    "name": "Ann"
+   },
+   {
+    "typed": "‮evil‬",
+    "name": "evil"
+   },
+   {
+    "typed": "Tab\there",
+    "name": "Tabhere"
+   },
+   {
+    "typed": "Ok",
+    "name": "Ok"
+   }
+  ],
+  "startingLife": [
+   {
+    "format": "casual",
+    "players": 2,
+    "life": 20
+   },
+   {
+    "format": "casual",
+    "players": 4,
+    "life": 20
+   },
+   {
+    "format": "commander",
+    "players": 2,
+    "life": 40
+   },
+   {
+    "format": "commander",
+    "players": 4,
+    "life": 40
+   },
+   {
+    "format": "duel",
+    "players": 2,
+    "life": 20
+   },
+   {
+    "format": "duel",
+    "players": 4,
+    "life": 20
+   },
+   {
+    "format": "brawl",
+    "players": 2,
+    "life": 25
+   },
+   {
+    "format": "brawl",
+    "players": 4,
+    "life": 30
+   },
+   {
+    "format": "standardbrawl",
+    "players": 2,
+    "life": 25
+   },
+   {
+    "format": "standardbrawl",
+    "players": 4,
+    "life": 30
+   },
+   {
+    "format": "modern",
+    "players": 2,
+    "life": 20
+   },
+   {
+    "format": "modern",
+    "players": 4,
+    "life": 20
+   }
+  ],
+  "offeredFormat": [
+   {
+    "format": "Modern",
+    "offered": "modern"
+   },
+   {
+    "format": "edh",
+    "offered": "commander"
+   },
+   {
+    "format": "freeform",
+    "offered": "casual"
+   },
+   {
+    "format": "none",
+    "offered": "casual"
+   },
+   {
+    "format": "nope",
+    "offered": null
+   },
+   {
+    "format": "",
+    "offered": null
+   }
+  ],
+  "unplayable": [
+   {
+    "deck": {
+     "main": [
+      {
+       "name": "Alpha Test",
+       "count": 3
+      },
+      {
+       "name": "Beta Test",
+       "count": 2
+      }
+     ],
+     "sideboard": [
+      {
+       "name": "Side Test",
+       "count": 2
+      },
+      {
+       "name": "Pal Test",
+       "count": 1
+      }
+     ],
+     "companion": [
+      {
+       "name": "Pal Test",
+       "count": 1
+      }
+     ]
+    },
+    "format": "casual",
+    "reason": null
+   },
+   {
+    "deck": {
+     "main": [
+      {
+       "name": "Delta Test",
+       "count": 2
+      }
+     ],
+     "sideboard": [],
+     "commander": [
+      {
+       "name": "Leader Test",
+       "count": 1
+      }
+     ]
+    },
+    "format": "casual",
+    "reason": "This deck has a commander: choose a Commander format to play it (CR 903.3)."
+   },
+   {
+    "deck": {
+     "main": [
+      {
+       "name": "Alpha Test",
+       "count": 3
+      },
+      {
+       "name": "Beta Test",
+       "count": 2
+      }
+     ],
+     "sideboard": [
+      {
+       "name": "Side Test",
+       "count": 2
+      },
+      {
+       "name": "Pal Test",
+       "count": 1
+      }
+     ],
+     "companion": [
+      {
+       "name": "Pal Test",
+       "count": 1
+      }
+     ]
+    },
+    "format": "commander",
+    "reason": "A Commander game needs a commander: set one in the deckbuilder (CR 903.3)."
+   },
+   {
+    "deck": {
+     "main": [
+      {
+       "name": "Delta Test",
+       "count": 2
+      }
+     ],
+     "sideboard": [],
+     "commander": [
+      {
+       "name": "Leader Test",
+       "count": 1
+      }
+     ]
+    },
+    "format": "brawl",
+    "reason": null
+   },
+   {
+    "deck": {
+     "main": [],
+     "sideboard": []
+    },
+    "format": "casual",
+    "reason": "The deck has no cards in its main deck."
+   }
+  ]
+ }
+}

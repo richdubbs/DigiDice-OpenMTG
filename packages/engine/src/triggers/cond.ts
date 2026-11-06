@@ -16,7 +16,7 @@ import type { ObjectId, PlayerId } from '../types/ids';
 import type { EventContext, GameObject, ObjHandle } from '../types/state';
 import { findObjects } from '../rules/filter';
 import { filterCtxOutside } from '../rules/filter-env';
-import { countHistory } from '../rules/history';
+import { countHistory, resolvedFromSpell } from '../rules/history';
 import { castVia } from './match';
 import { compareNumbers } from '../rules/predicates';
 import { spentAtLeast } from '../types/mana';
@@ -84,7 +84,14 @@ function playersOf(g: Game, ref: PlayerRef, env: CondEnv): PlayerId[] | undefine
     }
     case 'seat': { // M12-1 (m12 design D6): the next / previous player in turn order still in the game (CR 101.4, 103.1), from `of` (you by default)
       const from = ref.of !== undefined ? playersOf(g, ref.of, env) : [env.controller];
+      if (ref.chosen !== undefined) return undefined; // edhd63: a chosen direction is not read here (fail closed)
       return from === undefined ? undefined : [...new Set(from.flatMap((p) => { const n = seatNeighbor(g.s, p, ref.side); return n !== undefined ? [n] : []; }))];
+    }
+    case 'attacked': { // edh-next-82 (CR 508.1b, 603.4; Undercellar Sweep): the players the attackers (those of the controller with `by`) now attack; with `andYou`, the controller too
+      const out = new Set<PlayerId>();
+      for (const a of g.s.combat?.attackers ?? []) if (typeof a.defender === 'string' && g.s.players.some((p) => p.id === a.defender) && (ref.by !== 'you' || g.s.objects[a.id]?.controller === env.controller)) out.add(a.defender as PlayerId);
+      if (ref.andYou === true) out.add(env.controller);
+      return [...out].filter((p) => !g.player(p).hasLost);
     }
     default: return undefined;
   }
@@ -115,6 +122,7 @@ function qty(g: Game, q: Quantity, env: CondEnv): number | undefined {
     case 'lifeGainedThisTurn': return g.player(env.controller).turnStats.lifeGained;
     case 'descendedThisTurn': return g.player(env.controller).turnStats.descended ?? 0; // FAST5X E22 (CR 700.11)
     case 'turnsBegun': return g.player(env.controller).turnsBegun ?? 0; // std-r9 (CR 500.7, 500.11)
+    case 'extraTurnsBegun': return g.player(env.controller).extraTurnsBegun ?? 0; // trek-18 (CR 500.7)
     case 'math': {
       const args = q.args.map((a) => qty(g, a, env));
       if (args.some((a) => a === undefined)) return undefined;
@@ -156,7 +164,8 @@ export function localCondition(g: Game, c: Condition, env: CondEnv): boolean | u
     }
     case 'prime': { const n = qty(g, c.of, env); return n === undefined ? undefined : isPrime(n); } // std-rx1
     case 'exists': {
-      const os = objsOf(g, c.of, env);
+      // edh-perms-4 (CR 400.7, 603.4): "if it's on the battlefield" of an event's object asks about the object NOW, never its last known information (`find` falls back to it)
+      const os = objsOf(g, c.of, env)?.filter((o) => c.of.ref !== 'event' || g.s.objects[o.id] === o);
       const n = c.atLeast === undefined ? 1 : qty(g, c.atLeast, env);
       return os === undefined || n === undefined ? undefined : os.length >= n;
     }
@@ -167,6 +176,7 @@ export function localCondition(g: Game, c: Condition, env: CondEnv): boolean | u
       return os.length > 0 && os.every((o) => objectMatches(g.s, c.filter, o, [o.id], cx));
     }
     case 'turnOf': {
+      if (c.extra === true && g.s.turn.extra !== true) return false; // edh-next-31 (CR 500.7)
       if (c.step !== undefined && !(Array.isArray(c.step) ? c.step : [c.step]).includes(g.s.turn.step)) return false;
       return player(g, c.whose, g.s.turn.activePlayer, env);
     }
@@ -189,7 +199,7 @@ export function localCondition(g: Game, c: Condition, env: CondEnv): boolean | u
       // The reader is WP4's (rules/history.ts) over the entries triggers/history.ts writes. A count that is itself a quantity needs the interpreter.
       const want = c.times === undefined ? 1 : typeof c.times.value === 'number' ? c.times.value : undefined;
       if (want === undefined) return undefined;
-      const n = countHistory(g.s, c.event, c.scope, c.by, { you: env.controller, sourceId: env.source.id });
+      const n = countHistory(g.s, c.event, c.scope, c.by, { you: env.controller, sourceId: env.source.id, sourceWas: resolvedFromSpell(g.s, env.source.id) }); // edh-c-53 (CR 400.7): "another" leaves out the spell the source was, not an earlier cast of the same card
       return c.times === undefined ? n >= 1 : compareNumbers(c.times.op, n, want);
     }
     case 'designation': {
@@ -199,7 +209,14 @@ export function localCondition(g: Game, c: Condition, env: CondEnv): boolean | u
       if (c.what === 'citysBlessing') return undefined;
       if (c.what === 'enduringStory') return who === undefined ? undefined : who.length > 0 && who.every((p) => d.enduringStory?.includes(p) === true); // FAST5X E18
       if (c.what === 'maxSpeed') return who === undefined ? undefined : who.length > 0 && who.every((p) => (d.speed?.[p] ?? 0) >= 4); // FAST5X-4, CR 702.179e-f
+      // edh-next-82: "a player you're attacking has the initiative" is any one of the players the reference names (the others of a group are each read as `every`)
+      if (who !== undefined && c.who.ref === 'attacked') return who.some((p) => d[c.what as 'monarch' | 'initiative'] === p);
+      if (c.asTurnBegan === true) return who === undefined ? undefined : who.length > 0 && who.every((p) => d.monarchAtTurnStart === p); // edh-next-82 (CR 725.1)
       return who === undefined ? undefined : who.length > 0 && who.every((p) => d[c.what as 'monarch' | 'initiative'] === p);
+    }
+    case 'playerIs': { // edh-players-18, CR 102.3
+      const who = playersOf(g, c.who, env);
+      return who === undefined ? undefined : who.length > 0 && who.every((p) => (c.is === 'you') === (p === env.controller));
     }
     case 'completedDungeon': { // MX4, CR 309.7
       const who = playersOf(g, c.who, env);

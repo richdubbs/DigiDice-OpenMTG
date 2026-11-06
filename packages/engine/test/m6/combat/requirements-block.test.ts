@@ -36,13 +36,14 @@ describe('CR 509.1c: block requirements', () => {
     expect(requirementsFor(s, 'block', 'p2')).toEqual(d.requirements); // design m6 3.9: the contract lists what the decision carries
   });
 
-  it('CR 509.1c: Watchdog\'s own manual line ("all creatures attacking you get -1/-0") can change which blocks are legal, so its requirement is a hint', () => {
-    // conservative (design m6 3.9, D13): a manual P/T change of attackers changes skulk (CR 702.118b) and power-based restrictions
-    const s = toBlocks(['Grizzly Bears'], ['Watchdog', 'Hill Giant']);
+  it('CR 509.1c: a blocker\'s own manual line (a manual P/T change of the attackers) can change which blocks are legal, so its requirement is a hint', () => {
+    // conservative (design m6 3.9, D13): a manual P/T change of attackers changes skulk (CR 702.118b) and power-based restrictions. (Watchdog's own line became automated in edh-c-87: its requirement is firm now.)
+    const hound = creature('Test Hound', ['1', '2'], 'This creature blocks each combat if able.\nAs long as this creature is untapped, all creatures attacking you get -1/-0 until end of turn.');
+    const s = toBlocks(['Grizzly Bears'], ['Test Hound', 'Hill Giant'], [hound]);
     const d = decision(s);
-    expect(d.requirements).toEqual([expect.objectContaining({ kind: 'block', text: 'Watchdog blocks each combat if able.' })]);
+    expect(d.requirements).toEqual([expect.objectContaining({ kind: 'block', text: 'Test Hound blocks each combat if able.' })]);
     expect(d.mustObey).toBeUndefined();
-    expect(d.unchecked).toEqual([expect.objectContaining({ sourceName: 'Watchdog', text: expect.stringMatching(/all creatures attacking you get -1\/-0/) })]);
+    expect(d.unchecked).toEqual([expect.objectContaining({ sourceName: 'Test Hound', text: expect.stringMatching(/all creatures attacking you get -1\/-0/) })]);
     expect(act(s, blocks(s, [])).log.some((l) => l.level === 'manual' && l.rules?.includes('CR 509.1c'))).toBe(true);
   });
 

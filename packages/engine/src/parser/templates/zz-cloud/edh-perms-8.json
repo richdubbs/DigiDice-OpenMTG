@@ -1,0 +1,209 @@
+[
+  {
+    "id": "eff.edhpm8.returnSelf.attached",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 303.4f",
+      "CR 303.4g",
+      "CR 400.7",
+      "CR 603.7"
+    ],
+    "pattern": "return ~ to the battlefield attached to {a:Obj}",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "attachedTo": "$a"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When enchanted Elf dies, return that card to the battlefield under its owner's control. Return ~ to the battlefield attached to that creature at the beginning of the next end step."
+      },
+      {
+        "text": "When enchanted Dragon dies, return that card to the battlefield under its owner's control. Return ~ to the battlefield attached to that creature at the beginning of the next end step."
+      }
+    ],
+    "counterExamples": [
+      "When enchanted Elf dies, return that card to the battlefield under its owner's control. Return ~ to the battlefield tapped attached to that creature at the beginning of the next end step.",
+      "When enchanted Elf dies, return that card to the battlefield under its owner's control. Return ~ to your hand attached to that creature at the beginning of the next end step."
+    ]
+  },
+  {
+    "id": "eff.edhpm8.counters.put.thenDoublePut",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 701.10e",
+      "CR 608.2c",
+      "CR 122.6"
+    ],
+    "pattern": "put {n:Qty} {k:CounterKind} counter[s] on {o:Obj} , then double the number of {j:CounterKind} counters on each creature that had ( a | an ) {i:CounterKind} counter put on it this way",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "$k",
+        "count": "$n",
+        "as": "put"
+      },
+      {
+        "op": "action",
+        "action": "doubleCounters",
+        "subject": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "who": {
+          "ref": "you"
+        },
+        "arg": "$j"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "double",
+      "each",
+      "then",
+      "this way",
+      "it"
+    ],
+    "examples": [
+      {
+        "text": "Put two +1/+1 counters on target creature you control, then double the number of +1/+1 counters on each creature that had a +1/+1 counter put on it this way."
+      },
+      {
+        "text": "Put a +1/+1 counter on target Elf, then double the number of +1/+1 counters on each creature that had a +1/+1 counter put on it this way."
+      }
+    ],
+    "counterExamples": [
+      "Put a +1/+1 counter on target creature you control, then double the number of +1/+1 counters on each creature you control.",
+      "Put a +1/+1 counter on target creature you control, then double the number of +1/+1 counters on target creature that had a +1/+1 counter put on it this way."
+    ]
+  },
+  {
+    "id": "eff.edhpm8.sacrificed.drawPowerGainToughness",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 118.8",
+      "CR 121.1",
+      "CR 119.3"
+    ],
+    "pattern": "you draw cards equal to the sacrificed creature 's {a:CharStat} , then you gain life equal to its {b:CharStat}",
+    "build": [
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "stat",
+          "stat": "$a",
+          "of": {
+            "ref": "costSacrificed"
+          }
+        }
+      },
+      {
+        "op": "gainLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": {
+          "q": "stat",
+          "stat": "$b",
+          "of": {
+            "ref": "costSacrificed"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "its",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast this spell, sacrifice a nontoken creature.\nYou draw cards equal to the sacrificed creature's toughness, then you gain life equal to its power."
+      },
+      {
+        "text": "As an additional cost to cast this spell, sacrifice a nontoken creature.\nYou draw cards equal to the sacrificed creature's power, then you gain life equal to its power."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast this spell, sacrifice a nontoken creature.\nYou draw cards equal to the sacrificed creature's power, then you gain life equal to its mana value.",
+      "As an additional cost to cast this spell, sacrifice a nontoken creature.\nYou draw cards equal to the sacrificed creature's power."
+    ],
+    "priority": 5
+  },
+  {
+    "id": "eff.edhpm8.counters.eachOwnToughness",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 208.1",
+      "CR 107.3"
+    ],
+    "pattern": "put a number of {k:CounterKind} counters on {o:Objs} equal to that creature 's toughness",
+    "build": {
+      "op": "forEach",
+      "over": "$o",
+      "as": "each",
+      "do": [
+        {
+          "op": "putCounters",
+          "on": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "kind": "$k",
+          "count": {
+            "q": "stat",
+            "stat": "toughness",
+            "of": {
+              "ref": "bound",
+              "name": "each"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "that creature"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, put a number of +1/+1 counters on each other creature you control equal to that creature's toughness."
+      },
+      {
+        "text": "Put a number of +1/+1 counters on each creature you control equal to that creature's toughness."
+      }
+    ],
+    "counterExamples": [
+      "Put a number of +1/+1 counters on each creature you control equal to that creature's power.",
+      "Put a number of +1/+1 counters on target creature equal to that creature's toughness."
+    ],
+    "priority": 5
+  }
+]

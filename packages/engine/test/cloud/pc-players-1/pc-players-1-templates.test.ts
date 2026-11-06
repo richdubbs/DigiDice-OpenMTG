@@ -99,7 +99,8 @@ describe('pc-players-1 Cond reading "you have more life than an opponent" (parse
   });
   it('fail closed: another comparison or another player is no reading', () => {
     expect(fullyAutomated(parse('If you have more life than target player, draw a card.'))).toBe(false);
-    expect(fullyAutomated(parse('If you have less life than an opponent, draw a card.'))).toBe(false);
+    // (edh-c-25: "you have less life than an opponent" is its reading, an opponent with more life than you exists)
+    expect(fullyAutomated(parse('If you have less life than an opponent, draw a card.'))).toBe(true);
     expect(fullyAutomated(parse('If you have more life than each opponent, draw a card.'))).toBe(false);
   });
 });

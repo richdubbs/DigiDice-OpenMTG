@@ -51,8 +51,8 @@ function sameLegal(a: Action, l: LegalAction): boolean {
 
 /**
  * Steps 3 and 5 of 6.1 on the full state: a priority action must be one of `legalActions(state, player)` (CR 117.1; matched by card, or source and
- * ability, as the seat's `legal` list offered it: the aliases of the seat's own view are its real ids); an answer must name the pending decision of
- * this player; `cancel` only when that decision is cancellable (CR 733.1). Concede (CR 104.3a: at any time) and stops always fit. Null: it fits.
+ * ability, as the seat's `legal` list offered it: the aliases of the seat's own view are its real ids); a `shortcut` proposal needs priority (CR 727.2a);
+ * an answer must name the pending decision of this player; `cancel` only when that decision is cancellable (CR 733.1). Concede (CR 104.3a: at any time) and stops always fit. Null: it fits.
  */
 export function actionLegalityProblem(state: GameState, player: PlayerId, action: Action): HostedError | null {
   if (action.type === 'startGame' || !('player' in action) || action.player !== player) return { code: 'notYourPlayer', message: `You play ${player}; this action is for another player.` };
@@ -64,6 +64,12 @@ export function actionLegalityProblem(state: GameState, player: PlayerId, action
     if (d.kind !== 'priority') return { code: 'stale', message: 'You do not have priority now: answer the pending decision first.', rules: ['CR 117.1'] };
     if (PRIORITY_TOOLS.has(action.type)) return null; // the engine checks the by-hand tools (MRE)
     if (!legalActions(state, player).some((l) => sameLegal(action, l))) return { code: 'illegalAction', message: 'That is not one of your legal actions now.', rules: ['CR 117.1'] };
+    return null;
+  }
+  // Shortcuts (engine docs/design/shortcuts.md 2, 6): proposing one needs priority (CR 727.2a, 117.1), nothing suspended; it is never one of `legalActions`,
+  // so the engine checks the rest (the steps recorded this turn, the bounds, another player's action in the span)
+  if (action.type === 'shortcut') {
+    if (d.kind !== 'priority' || state.suspended) return { code: 'stale', message: 'You do not have priority now: answer the pending decision first.', rules: ['CR 117.1'] };
     return null;
   }
   if (action.type === 'answer') {

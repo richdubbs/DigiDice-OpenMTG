@@ -36,7 +36,7 @@ const face = (text: string, typeLine?: string) => {
   return parseCard(card('Example Relic', type, body, type.startsWith('Creature') ? { power: '1', toughness: '1' } : undefined), OPTS).faces[0]!;
 };
 const understood = (f: ReturnType<typeof face>): boolean => automated(f.abilities) && f.gate.every((g) => g.ok) && f.diagnostics.every((d) => d.level !== 'manual' || d.code === 'experimental');
-const EXPERIMENTAL = new Set(['eff.stdrx28.choose.nonlandCardName']);
+const EXPERIMENTAL = new Set<string>(); // edh-c-38: eff.stdrx28.choose.nonlandCardName is stable (golden card Memoricide)
 
 describe('std-rx28 template file (design 6.3, 6.9; CONTRIBUTING "Adding a template")', () => {
   it('is loaded by the default compiler (zz-cloud/std-rx28.json, after zz-cloud/std-rx19.json, before zz-cloud/std-rx3.json) and its ids are unique in the whole set', () => {
@@ -69,7 +69,7 @@ describe('std-rx28 template file (design 6.3, 6.9; CONTRIBUTING "Adding a templa
     expect(goldenUsing('rep.stdrx28.enters.choose.nonlandCardName')).toEqual(["Skyseer's Chariot"]);
     expect(goldenUsing('sta.stdrx28.costMod.chosenName.more')).toEqual(["Skyseer's Chariot"]);
     expect(goldenUsing('eff.stdrx28.choose.landCardName')).toEqual(['Petrified Hamlet']);
-    // no Standard card prints the one-shot "Choose a nonland card name." in this round: experimental, no golden card
+    // edh-c-38: the one-shot "Choose a nonland card name." is stable on the golden cards of m5/golden/cards/edh-c-38-review.json (Memoricide, Slaughter Games; a 6.9 narrow wording, named in the round record), not of this file
     expect(goldenUsing('eff.stdrx28.choose.nonlandCardName')).toEqual([]);
   });
   it('guard G3: a critical word a pattern spells out is listed in `consumes`', () => {
@@ -151,11 +151,14 @@ const compiled = (name: string, type: string, text: string, pt?: [string, string
 const triggerOf = (d: ReturnType<typeof compiled>): unknown => (d.faces[0]!.abilities.find((a) => a.kind === 'triggered') as { trigger?: unknown } | undefined)?.trigger;
 
 describe('std-rx28 parser support (fail closed)', () => {
-  it('CR 202.3, 601.2i: "with equal or lesser mana value" reads the cast event\'s spell; in a dies trigger (no spell role) the sentence is never automated', () => {
+  it('CR 202.3, 601.2i: "with equal or lesser mana value" reads the cast event\'s spell; in a dies trigger (no spell role) it reads the creature that died (edh-perms-9, parser/lower/ability.ts), never a spell', () => {
     const cast = compiled('Example Imp', 'Creature — Imp', 'Whenever you cast a spell from your graveyard, you may cast a creature spell with equal or lesser mana value from your hand without paying its mana cost.', ['1', '1']);
     expect(JSON.stringify(cast.faces)).toContain('"manaValue":{"op":"<=","value":{"q":"stat","stat":"manaValue","of":{"ref":"event","role":"spell"}}}');
     const dies = compiled('Example Imp', 'Creature — Imp', 'Whenever another creature you control dies, you may cast a creature spell with equal or lesser mana value from your hand without paying its mana cost.', ['1', '1']);
-    expect(dies.automation.level).not.toBe('full');
+    expect(JSON.stringify(dies.faces)).toContain('"manaValue":{"op":"<=","value":{"q":"stat","stat":"manaValue","of":{"ref":"event","role":"subject"}}}'); // edh-perms-9: the dying creature, not a spell
+    expect(JSON.stringify(dies.faces)).not.toContain('"role":"spell"');
+    const ability = compiled('Example Imp', 'Creature — Imp', '{T}: You may cast a creature spell with equal or lesser mana value from your hand without paying its mana cost.', ['1', '1']);
+    expect(ability.automation.level).not.toBe('full'); // an activated ability has no event: still fails closed
   });
   it('CR 120.1, 208.1: "equal to that creature\'s toughness" is read only after a creature recipient', () => {
     const t = compiled('Example Archer', 'Creature — Elf Archer', "Whenever a source you control deals noncombat damage to a creature equal to that creature's toughness, you gain 1 life.", ['1', '1']);

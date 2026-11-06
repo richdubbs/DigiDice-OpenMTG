@@ -98,8 +98,9 @@ describe('CR 603.4: the intervening "if" clause (Felidar Sovereign)', () => {
 
 describe('CR 603.6b: continuous effects apply to a permanent the moment it is on the battlefield', () => {
   it('CR 603.6b example, first half: with "All Forests are 1/1 creatures that are still lands" a Forest played enters as a creature and triggers Soul Warden', () => {
-    // Living Lands' sentence has no template (it is manual on the game path); an equivalent card carries hand-built JSON of the same behavior (layers 4, 7b; the render gate does not accept it yet).
-    expect(gamePath('Living Lands').automation.level).toBe('manual');
+    // Living Lands' sentence is read since edh-next-5 (template sta.edhn5.group.are.sized.creatures.stillLands, "All lands are N/N creatures that are still lands", and the Forest-only form of the
+    // Living Lands card); the equivalent card below keeps the hand-built JSON of the same behavior (layers 4, 7b).
+    expect(gamePath('Living Lands').automation.level).toBe('full');
     const lands = equivalent({ name: 'Living Lands', type_line: 'Enchantment', mana_cost: '{3}{G}' }, [{
       kind: 'static', text: 'All Forests are 1/1 creatures that are still lands.',
       effects: [{ s: 'continuous', affects: { ref: 'each', filter: { subtypes: ['Forest'] } }, mods: [{ layer: 4, types: { add: ['Creature'] } }, { layer: '7b', power: 1, toughness: 1 }] }],

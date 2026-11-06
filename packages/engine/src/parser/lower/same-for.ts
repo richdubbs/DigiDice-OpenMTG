@@ -45,11 +45,28 @@ function onlyKeyword(step: Rec): string | null {
 function withKeyword(step: Rec, from: string, to: string): Rec {
   const out = clone(step);
   visit(out, (n) => {
-    if (n['keyword'] === from) n['keyword'] = to;
+    if (n['keyword'] === from) { n['keyword'] = to; if (n['text'] === from) n['text'] = to; }
     if (n['op'] === 'putCounters' && n['kind'] === from) n['kind'] = to;
   });
   return out;
 }
+
+/**
+ * edh-combat-5 (CR 702.11d-f; Odric, Lunarch Marshal ruling 2020-01-24): "gain hexproof if a creature you control has hexproof" shares the VARIANTS ("hexproof from blue") the
+ * creatures that have it have, not plain hexproof: the granted hexproof is marked `likeAmong` the creatures of the step's own test (effects/handlers/lasting.ts#expandVariants).
+ */
+function shareHexproofVariants(step: Rec): Rec {
+  const out = clone(step);
+  const guard = out['guard'];
+  const filter = isRec(guard) && guard['cond'] === 'exists' && isRec(guard['of']) ? guard['of']['filter'] : undefined;
+  // trek-20 (CR 702.14a, 702.16a; Concerted Effort): and the variants of protection ("protection from red") and of landwalk ("islandwalk") the same way: each quality the creatures have
+  const shared = isRec(filter) && typeof filter['keyword'] === 'string' && VARIANT_KEYWORDS.includes(filter['keyword']) ? filter['keyword'] : undefined;
+  if (!isRec(filter) || shared === undefined) return out;
+  visit(out, (n) => { if (n['kind'] === 'keyword' && n['keyword'] === shared && Object.keys(n).every((k) => k === 'kind' || k === 'keyword' || k === 'text')) n['likeAmong'] = clone(filter); });
+  return out;
+}
+/** The keywords that have variants (qualities) the creatures that have them share (effects/handlers/lasting.ts#expandVariants). */
+const VARIANT_KEYWORDS: readonly string[] = ['hexproof', 'protection', 'landwalk'];
 
 /** The keyword names of the listed abilities (bare keywords only), or null. */
 function listedKeywords(what: unknown): string[] | null {
@@ -88,7 +105,8 @@ export function lowerSameFor(draft: Draft): Draft {
       if (list === null || list.includes(from)) { fail('the list is not of other bare keywords'); return; }
       const counters = JSON.stringify(prev.steps[0]).includes('"op":"putCounters"');
       if (counters && !list.every((k) => KEYWORD_COUNTERS.includes(k))) { fail('a listed keyword is no keyword counter (CR 122.1b)'); return; }
-      u.steps = list.map((k) => withKeyword(prev.steps[0]!, from, k));
+      u.steps = list.map((k) => shareHexproofVariants(withKeyword(prev.steps[0]!, from, k)));
+      if (VARIANT_KEYWORDS.includes(from)) prev.steps = [shareHexproofVariants(prev.steps[0]!)];
     });
   }
   return d;

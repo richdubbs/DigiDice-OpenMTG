@@ -38,6 +38,7 @@ import { PLOT_HANDLERS } from './special/plot';
 import { FORETELL_HANDLERS } from './special/foretell';
 import { SUSPEND_HANDLERS } from './special/suspend';
 import { COMPANION_HANDLERS } from './special/companion';
+import { IGNORE_EFFECT_HANDLERS } from './special/ignore-effect'; // edh-next-143 (CR 116.2d)
 import { PLAY_OUTSIDE_HANDLERS } from './special/play-outside';
 import { ROOM_MOVE_PARTS, ROOM_SPECIAL_HANDLERS } from './rooms';
 import { KEYWORD_SPECIAL_HANDLERS } from './special-actions';
@@ -99,7 +100,7 @@ export interface SpecialActionHandler {
 // FAST5X E6: plot (CR 702.170a-b, 116.2k), core/special/plot.ts, ahead of the adapted keyword stub, which lists nothing; ROOM: FAST5X E8 (CR 116.2m)
 // CMP1: the companion special action (CR 702.139a, 116.2g), core/special/companion.ts; trek-11: playing a card from outside the game (CR 400.11), core/special/play-outside.ts
 // cloud r3-mech: foretell (CR 702.143a-b, 116.2h), core/special/foretell.ts, ahead of the keyword stub, as plot; std-rx22: suspend (CR 702.62a, 116.2f), the same
-export const SPECIAL_ACTION_HANDLERS: readonly SpecialActionHandler[] = [...TURN_FACE_UP_HANDLERS, ...PLOT_HANDLERS, ...FORETELL_HANDLERS, ...SUSPEND_HANDLERS, ...ROOM_SPECIAL_HANDLERS, ...COMPANION_HANDLERS, ...PLAY_OUTSIDE_HANDLERS, ...KEYWORD_SPECIAL_HANDLERS];
+export const SPECIAL_ACTION_HANDLERS: readonly SpecialActionHandler[] = [...TURN_FACE_UP_HANDLERS, ...PLOT_HANDLERS, ...FORETELL_HANDLERS, ...SUSPEND_HANDLERS, ...ROOM_SPECIAL_HANDLERS, ...COMPANION_HANDLERS, ...IGNORE_EFFECT_HANDLERS, ...PLAY_OUTSIDE_HANDLERS, ...KEYWORD_SPECIAL_HANDLERS];
 
 /** View parts (core/view.ts#viewFor). */
 export interface ViewPart {

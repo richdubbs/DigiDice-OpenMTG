@@ -1,5 +1,6 @@
 /** CR 701 actions that restrict a permanent for a while: detain (701.35). A pure macro over the primitive `effect` op. Owner: WP3. */
 import type { ActionMacro } from '../types';
+import type { EffectStep, ObjRef } from '../../types/ability';
 import { carry, manualAction } from './common';
 
 /**
@@ -13,17 +14,21 @@ export const DETAIN: ActionMacro = {
   rule: 'CR 701.35',
   expand: (step) => {
     if (step.subject === undefined) return manualAction(step, 'detain needs the permanent it detains');
-    const subject = step.subject;
-    return carry(step, [
-      {
-        op: 'effect',
-        effects: [
-          { s: 'restrict', subject, mode: 'cant', action: 'attack' },
-          { s: 'restrict', subject, mode: 'cant', action: 'block' },
-          { s: 'restrict', subject, mode: 'cant', action: 'activate' },
-        ],
-        duration: { d: 'untilNextTurn', whose: { ref: 'you' } },
-      },
-    ]);
+    const detainEffect = (subject: ObjRef): EffectStep => ({
+      op: 'effect',
+      effects: [
+        { s: 'restrict', subject, mode: 'cant', action: 'attack' },
+        { s: 'restrict', subject, mode: 'cant', action: 'block' },
+        { s: 'restrict', subject, mode: 'cant', action: 'activate' },
+      ],
+      duration: { d: 'untilNextTurn', whose: { ref: 'you' } },
+    });
+    // edh-d-6 (CR 701.35a, 611.2c; Lavinia of the Tenth): "detain each nonland permanent your opponents control with mana value 4 or less" detains the permanents there are as the
+    // ability resolves, one by one; a permanent that enters (or a creature that comes under their control) afterwards is not detained, which a live `each` filter would do
+    if (step.subject.ref === 'each') {
+      const name = 'detained';
+      return carry(step, [{ op: 'forEach', over: step.subject, as: name, do: [detainEffect({ ref: 'bound', name })] }]);
+    }
+    return carry(step, [detainEffect(step.subject as ObjRef)]);
   },
 };

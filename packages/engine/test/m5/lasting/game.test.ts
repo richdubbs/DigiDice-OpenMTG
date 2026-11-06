@@ -75,7 +75,7 @@ describe('CR 500.8: extra phases', () => {
   it('"After this main phase, there is an additional combat phase followed by an additional main phase."', () => {
     const ASSAULT = sorcery('Assault Test', [{ op: 'extraPhase', phase: 'combat' }, { op: 'extraPhase', phase: 'main', after: 'endCombat' }]);
     const s = castAndResolve(scenario([], { p1: { hand: ['Assault Test'] }, defs: [ASSAULT] }), 'Assault Test');
-    expect(s.turn.extraPhases).toEqual([{ after: 'main', phase: 'combat' }, { after: 'combat', phase: 'main' }]);
+    expect(s.turn.extraPhases).toEqual([{ after: 'main', phase: 'combat', id: 1, seq: 1 }, { after: 'combat', phase: 'main', id: 2, seq: 2 }]); // edh-combat-5: each added phase has an id; edh-misc-5: and its order of creation (CR 500.8)
     expect(stepsUntil(s, 1, 'end')).toEqual([
       'main1', 'beginCombat', 'declareAttackers', 'endCombat', 'main2', // the added combat phase and the added main phase (CR 505.1a: a postcombat main phase)
       'beginCombat', 'declareAttackers', 'endCombat', 'main2', // the turn's own combat and postcombat main phase
@@ -284,7 +284,8 @@ describe('CR 701: keyword actions through the keyword library\'s macros (design 
   it('"Investigate." runs the macro\'s expansion (CR 701.16a: create a Clue token)', () => {
     const CLUE = instant('Clue Test', [{ op: 'action', action: 'investigate', who: { ref: 'you' } }]);
     castAndResolve(scenario([], { p1: { hand: ['Clue Test'] }, defs: [CLUE] }), 'Clue Test');
-    expect(neighbors.ran).toContainEqual([{ op: 'createToken', who: { ref: 'you' }, token: { predefined: 'Clue' }, count: 1 }]);
+    // edh-next-113 (CR 701.16a, 603.2): the expansion ends with one reportAction per investigation ("whenever you investigate")
+    expect(neighbors.ran).toContainEqual([{ op: 'createToken', who: { ref: 'you' }, token: { predefined: 'Clue' }, count: 1 }, { op: 'reportAction', verb: 'investigate', who: { ref: 'you' } }]);
   });
 
   // PUSH1 T1: proliferate has a native handler now (effects/handlers/actions-native-counters.ts); M12-3: goad too (effects/handlers/goad.ts); FAST5X E28: exert

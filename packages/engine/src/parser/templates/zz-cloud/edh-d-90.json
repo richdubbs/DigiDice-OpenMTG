@@ -1,0 +1,491 @@
+[
+  {
+    "id": "sta.edhd90.spells.costLess.perSharedCardType",
+    "kind": "static",
+    "since": 90,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 205.2a",
+      "CR 607.2a"
+    ],
+    "pattern": "spells you cast cost {m:ManaCost} less to cast for each card type they share with cards exiled with ~",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "sharedCardTypes",
+                  "among": {
+                    "ref": "linked",
+                    "link": "exiled"
+                  }
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "{2}, {T}: Exile target card from an opponent's graveyard.\nSpells you cast cost {3} less to cast for each card type they share with cards exiled with ~."
+      },
+      {
+        "text": "When ~ enters, exile up to two target cards from graveyards.\nSpells you cast cost {2} less to cast for each card type they share with cards exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Exile target card from an opponent's graveyard.\nSpells you cast cost {1} more to cast for each card type they share with cards exiled with ~.",
+      "{2}, {T}: Exile target card from an opponent's graveyard.\nSpells your opponents cast cost {1} less to cast for each card type they share with cards exiled with ~.",
+      "{2}, {T}: Exile target card from an opponent's graveyard.\nSpells you cast cost {1} less to cast for each color they share with cards exiled with ~."
+    ],
+    "consumes": [
+      "each"
+    ]
+  },
+  {
+    "id": "eff.edhd90.opponents.blockIfAble.youChooseHow",
+    "kind": "effect",
+    "since": 90,
+    "status": "stable",
+    "cr": [
+      "CR 509.1",
+      "CR 509.1a",
+      "CR 509.1c",
+      "CR 611.2c",
+      "CR 101.1"
+    ],
+    "pattern": "creatures your opponents control block this turn if able , and you choose how those creatures block",
+    "build": [
+      {
+        "op": "effect",
+        "duration": {
+          "d": "endOfTurn"
+        },
+        "effects": [
+          {
+            "s": "restrict",
+            "subject": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "opponent"
+              }
+            },
+            "mode": "mustIfAble",
+            "action": "block"
+          }
+        ]
+      },
+      {
+        "op": "controlBlocks",
+        "who": {
+          "ref": "you"
+        },
+        "turn": true
+      }
+    ],
+    "subject": "none",
+    "needs": [
+      "op:controlBlocks"
+    ],
+    "consumes": [
+      "if able",
+      "if",
+      "choose",
+      "block"
+    ],
+    "examples": [
+      {
+        "text": "{2}{R}: Creatures your opponents control block this turn if able, and you choose how those creatures block."
+      },
+      {
+        "text": "When ~ enters, creatures your opponents control block this turn if able, and you choose how those creatures block."
+      }
+    ],
+    "counterExamples": [
+      "{2}{R}: Creatures your opponents control block this turn if able.",
+      "{2}{R}: Creatures your opponents control attack this turn if able, and you choose how those creatures attack.",
+      "{2}{R}: Creatures you control block this turn if able, and you choose how those creatures block."
+    ]
+  },
+  {
+    "id": "eff.edhd90.untilEndOfDefendersNextTurn.getsCounters.wheneverTheyCast",
+    "kind": "effect",
+    "since": 90,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 611.2a",
+      "CR 122.1",
+      "CR 601.2i"
+    ],
+    "pattern": "until the end of defending player 's next turn , that player gets {n:Qty} rad counters whenever they cast a spell",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": {
+            "ref": "defending"
+          }
+        }
+      },
+      "do": [
+        {
+          "op": "putCounters",
+          "on": {
+            "ref": "event",
+            "role": "player"
+          },
+          "kind": "rad",
+          "count": "$n"
+        }
+      ],
+      "duration": {
+        "d": "endOfNextTurn",
+        "whose": {
+          "ref": "defending"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "whenever",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Whenever equipped creature attacks, until the end of defending player's next turn, that player gets three rad counters whenever they cast a spell."
+      },
+      {
+        "text": "Whenever ~ attacks, until the end of defending player's next turn, that player gets two rad counters whenever they cast a spell."
+      }
+    ],
+    "counterExamples": [
+      "Whenever equipped creature attacks, until the end of defending player's next turn, that player gets two rad counters whenever they cast a creature spell.",
+      "Whenever equipped creature attacks, until end of turn, that player gets two rad counters whenever they cast a spell.",
+      "Whenever equipped creature attacks, until the end of defending player's next turn, you get two rad counters whenever they cast a spell."
+    ]
+  },
+  {
+    "id": "eff.edhd90.you.mayExile.oneOf",
+    "kind": "effect",
+    "since": 90,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2c",
+      "CR 406.1"
+    ],
+    "pattern": "you may exile one of {o:Objs}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "is": "$o"
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "exiled"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "exiled"
+          },
+          "to": {
+            "zone": "exile"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever enchanted creature blocks or becomes blocked by one or more creatures, you may exile one of those creatures."
+      },
+      {
+        "text": "Whenever ~ blocks or becomes blocked by one or more creatures, you may exile one of those creatures."
+      }
+    ],
+    "counterExamples": [
+      "Whenever equipped creature blocks or becomes blocked by one or more creatures, you may exile two of those creatures.",
+      "Whenever equipped creature blocks or becomes blocked by one or more creatures, you may destroy one of those creatures.",
+      "Whenever equipped creature blocks or becomes blocked by one or more creatures, exile one of those creatures."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhd90.dur.playerMayPlay.theyAnyColor",
+    "kind": "effect",
+    "since": 90,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 400.7",
+      "CR 609.4b",
+      "CR 107.4c"
+    ],
+    "pattern": "{d:Dur} , {p:Player} may play {o:Obj} and they may spend mana as though it were mana of any color to cast that spell",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": "$p",
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaColor": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature deals combat damage to one of your opponents, that player exiles the top card of their library. Until end of turn, that creature's controller may play that card and they may spend mana as though it were mana of any color to cast that spell."
+      },
+      {
+        "text": "Whenever a creature deals combat damage to you, you exile the top card of your library. Until end of turn, that creature's controller may play that card and they may spend mana as though it were mana of any color to cast that spell."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature deals combat damage to enchanted player, that player exiles the top card of their library. Until end of turn, that creature's controller may play that card.",
+      "Whenever a creature deals combat damage to enchanted player, that player exiles the top card of their library. Until end of turn, that creature's controller may play that card and they may spend mana as though it were mana of any type to cast that spell.",
+      "Whenever a creature deals combat damage to enchanted player, that player exiles the top card of their library. Until end of turn, that creature's controller may cast that card and they may spend mana as though it were mana of any color to cast that spell."
+    ]
+  },
+  {
+    "id": "eff.edhd90.you.maySacrifice.X",
+    "kind": "effect",
+    "since": 90,
+    "status": "stable",
+    "cr": [
+      "CR 107.3",
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 608.2h"
+    ],
+    "pattern": "you may sacrifice x {f:Filter}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "controller": "you",
+              "anyOf": [
+                "$f"
+              ]
+            }
+          },
+          "min": 0,
+          "max": "any",
+          "as": "toSacrifice"
+        },
+        {
+          "op": "sacrifice",
+          "what": {
+            "ref": "bound",
+            "name": "toSacrifice"
+          },
+          "as": "sacrificedX"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack, you may sacrifice X Foods. When you do, up to X target attacking creatures each get +2/+2 and gain trample and indestructible until end of turn."
+      },
+      {
+        "text": "Whenever you attack, you may sacrifice X Treasures. When you do, up to X target attacking creatures each get +1/+0 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack, sacrifice X Foods. When you do, up to X target attacking creatures each get +3/+3 and gain trample and indestructible until end of turn.",
+      "Whenever you attack, you may sacrifice two Foods. When you do, up to X target attacking creatures each get +3/+3 and gain trample and indestructible until end of turn.",
+      "Whenever you attack, you may exile X Foods. When you do, up to X target attacking creatures each get +3/+3 and gain trample and indestructible until end of turn."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "cm.edhd90.self.less.perOtherSpellThisTurn",
+    "kind": "static",
+    "since": 90,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 601.2i",
+      "CR 118.7",
+      "CR 604.5"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast for each other spell cast this turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "happenedCount",
+                  "event": {
+                    "ev": "cast",
+                    "spell": {
+                      "not": {
+                        "self": true
+                      }
+                    }
+                  },
+                  "scope": "turn"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "This spell costs {2} less to cast for each other spell cast this turn."
+      },
+      {
+        "text": "This spell costs {1} less to cast for each other spell cast this turn."
+      }
+    ],
+    "counterExamples": [
+      "This spell costs {3} more to cast for each other spell cast this turn.",
+      "This spell costs {3} less to cast for each other spell you've cast this turn.",
+      "This spell costs {3} less to cast for each other creature spell cast this turn."
+    ]
+  },
+  {
+    "id": "eff.edhd90.permit.play.oneOfGroup.free.durFirst",
+    "kind": "effect",
+    "since": 90,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 118.9",
+      "CR 400.7"
+    ],
+    "pattern": "{d:Dur} , you may play one of {o:Group} without paying its mana cost",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "single": true,
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{5}: Exile the top card of each opponent's library. Until end of turn, you may play one of those cards without paying its mana cost."
+      },
+      {
+        "text": "{4}, {T}: Exile the top two cards of target player's library. Until end of turn, you may play one of those cards without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "{6}: Exile the top card of each opponent's library. Until end of turn, you may play one of those cards.",
+      "{6}: Exile the top card of each opponent's library. Until end of turn, you may play those cards without paying their mana costs.",
+      "{6}: Exile the top card of each opponent's library. Until end of turn, you may cast one of those cards without paying its mana cost."
+    ]
+  }
+]

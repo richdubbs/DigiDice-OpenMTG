@@ -1,0 +1,6 @@
+# edh-players-21 (Commander lane edh-players; test/cloud/edh-players-21, golden edh-players-21-review.json)
+# each opponent or player chooses or exiles an object they control; opponents with a bigger hand; a per-object poison count; the creature each opponent exiled
+Summon: Valefor
+Consuming Tide
+Phyresis Outbreak
+Olórin's Searing Light

@@ -1,0 +1,349 @@
+[
+  {
+    "id": "eff.edhn114.cast.fromHandGraveyardOrExile.free",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 400.1"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from your hand , from your graveyard , or from among cards you own in exile without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "zone": [
+              "hand",
+              "graveyard",
+              "exile"
+            ],
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "priority": -1,
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may cast a legendary spell from your hand, from your graveyard, or from among cards you own in exile without paying its mana cost."
+      },
+      {
+        "text": "At the beginning of your end step, you may cast a creature spell from your hand, from your graveyard, or from among cards you own in exile without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you may cast a legendary spell from your hand or from your graveyard without paying its mana cost.",
+      "At the beginning of your upkeep, you may cast a legendary spell from your hand, from your graveyard, or from among cards in exile without paying its mana cost.",
+      "At the beginning of your upkeep, you may cast two legendary spells from your hand, from your graveyard, or from among cards you own in exile without paying their mana costs."
+    ]
+  },
+  {
+    "id": "rep.edhn114.enters.copy.counterIfYouControl",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9e",
+      "CR 122.6"
+    ],
+    "pattern": "you may have ~ enter as a copy of any {f:Filter} on the battlefield , except it enters with a {k:CounterKind} counter on it if you control that creature",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "additional": [
+                {
+                  "ifCopiedControlled": true,
+                  "counters": [
+                    {
+                      "kind": "$k",
+                      "count": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it enters with a shield counter on it if you control that creature."
+      },
+      {
+        "text": "You may have ~ enter as a copy of any creature on the battlefield, except it enters with a +1/+1 counter on it if you control that creature."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any creature on the battlefield, except it enters with a shield counter on it if an opponent controls that creature.",
+      "You may have ~ enter as a copy of any creature on the battlefield, except it enters with a shield counter on it if you control that creature and it has flying.",
+      "You may have ~ enter as a copy of any creature on the battlefield, except it enters with two shield counters on it if you control that creature."
+    ]
+  },
+  {
+    "id": "eff.edhn114.copy.token.entersWithCounter",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9e",
+      "CR 122.6",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it enters with an additional {k:CounterKind} counter on it",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "counters": [
+        {
+          "kind": "$k",
+          "count": 1
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Create a token that's a copy of target creature you control, except it enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "Create a token that's a copy of target artifact you control, except it enters with an additional charge counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature you control, except it enters with two additional +1/+1 counters on it.",
+      "Create a token that's a copy of target creature you control, except it enters with an additional +1/+1 counter on it and it has haste.",
+      "Create a token that's a copy of target creature you control, except it enters with a +1/+1 counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhn114.forEach.qty.copyToken",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 608.2c",
+      "CR 707.2",
+      "CR 705.2",
+      "CR 111.1"
+    ],
+    "pattern": "for each {n:Qty} , create a token that's a copy of {o:Obj}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a nontoken creature you control enters, flip a coin until you lose a flip. For each flip you won, create a token that's a copy of that creature."
+      },
+      {
+        "text": "Whenever a creature you control enters, flip a coin until you lose a flip. For each flip you won, create a token that's a copy of that creature."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a nontoken creature you control enters, flip a coin until you lose a flip. For each flip you won, create two tokens that are copies of that creature.",
+      "Whenever a nontoken creature you control enters, flip a coin until you lose a flip. For each flip you won, create a token that's a copy of that creature, except it has haste."
+    ]
+  },
+  {
+    "id": "eff.edhn114.milled.cast.filtered.free",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 305.9"
+    ],
+    "pattern": "you may cast ( a | an ) {f:CastSpell} from among {g:Milled} without paying its mana cost",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "notTypes": [
+              "Land"
+            ],
+            "is": "$g",
+            "zone": "graveyard"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Mill four cards. You may cast a creature spell from among them without paying its mana cost."
+      },
+      {
+        "text": "Mill three cards. You may cast an instant or sorcery spell with mana value 3 or less from among them without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards. You may cast a creature spell from among them.",
+      "Mill four cards. You may cast two creature spells from among them without paying their mana costs.",
+      "You may cast a creature spell from among them without paying its mana cost."
+    ]
+  },
+  {
+    "id": "sta.edhn114.firstSpell.notHand.demonstrate",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 702.144a",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "the first spell you cast from anywhere other than your hand ( each turn | in each turn ) has demonstrate",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "firstCast": "turnNotHand",
+          "controller": "you",
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "demonstrate",
+              "text": "demonstrate"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "The first spell you cast from anywhere other than your hand each turn has demonstrate."
+      },
+      {
+        "text": "The first spell you cast from anywhere other than your hand in each turn has demonstrate."
+      }
+    ],
+    "counterExamples": [
+      "The first spell you cast from anywhere other than your hand each turn has trample.",
+      "The first spell you cast from your hand each turn has demonstrate.",
+      "The first spell you cast from anywhere other than your graveyard each turn has demonstrate."
+    ]
+  }
+]

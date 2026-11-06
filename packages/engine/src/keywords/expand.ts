@@ -13,8 +13,8 @@
  *     "else": Y} is X when the face has one of those card types (ExpandContext.types; CR 702.174b).
  * Anything else that starts with "$" is a data error and throws `KeywordExpandError`, so a typo can never become a silent wrong ability.
  */
-import type { AbilityDef, CostDef, KeywordAbilityDef, ObjectFilter, Quantity } from '../types/ability';
-import { formatManaCost } from '../types/mana';
+import type { AbilityDef, CostDef, EffectStep, KeywordAbilityDef, ObjectFilter, Quantity } from '../types/ability';
+import { formatManaCost, manaValue } from '../types/mana';
 import type { ExpandContext, KeywordDefData } from './types';
 
 export class KeywordExpandError extends Error {
@@ -30,6 +30,13 @@ interface Params {
   amount?: Quantity;
   quality?: string;
   filter?: ObjectFilter;
+  /** edh-mana-keywords-7 (CR 702.165a): the abilities printed below a backup keyword (`KeywordAbilityDef.below`), the placeholder `$below`; not a printed parameter. */
+  below?: AbilityDef[];
+  /** edh-perms-24 (CR 107.3): `KeywordAbilityDef.xMin`, the placeholder `$xMin` (not a printed parameter). */
+  xMin?: number;
+  /** edh-next-137 (CR 702.153a, 707.9b): `KeywordAbilityDef.copyExcept` / `copyLoyalty`, the placeholders `$copyExcept` / `$copyLoyalty` (not printed parameters). */
+  copyExcept?: unknown[];
+  copyLoyalty?: Quantity;
 }
 
 export const PARAM_NAMES = ['cost', 'amount', 'quality', 'filter'] as const;
@@ -45,6 +52,10 @@ function paramsOf(kw: KeywordAbilityDef): Params {
   if (kw.amount !== undefined) p.amount = kw.amount;
   if (kw.quality !== undefined) p.quality = kw.quality;
   if (kw.filter !== undefined) p.filter = kw.filter;
+  if (kw.below !== undefined) p.below = kw.below;
+  if (kw.xMin !== undefined) p.xMin = kw.xMin;
+  if (kw.copyExcept !== undefined) p.copyExcept = kw.copyExcept;
+  if (kw.copyLoyalty !== undefined) p.copyLoyalty = kw.copyLoyalty;
   return p;
 }
 
@@ -53,6 +64,18 @@ function sub(node: unknown, p: Params, who: string, ordinal: number, types: read
   if (typeof node === 'string') {
     if (!node.startsWith('$')) return node;
     const name = node.slice(1);
+    if (name === 'below') {
+      if (p.below === undefined) throw new KeywordExpandError(`${who}: the keyword instance has no abilities printed below it ("${node}")`);
+      return clone(p.below);
+    }
+    if (name === 'xMin') {
+      if (p.xMin === undefined) throw new KeywordExpandError(`${who}: the keyword instance has no xMin ("${node}")`);
+      return p.xMin;
+    }
+    if (name === 'copyExcept' || name === 'copyLoyalty') { // edh-next-137
+      if (p[name] === undefined) throw new KeywordExpandError(`${who}: the keyword instance has no ${name} ("${node}")`);
+      return clone(p[name]);
+    }
     if (!isParamName(name)) throw new KeywordExpandError(`${who}: unknown placeholder "${node}"`);
     const v = p[name];
     if (v === undefined) throw new KeywordExpandError(`${who}: the keyword instance has no ${name} parameter ("${node}")`);
@@ -96,6 +119,7 @@ function sub(node: unknown, p: Params, who: string, ordinal: number, types: read
   }
   if ('$ifParam' in obj) {
     const name = obj['$ifParam'];
+    if (name === 'xMin' || name === 'copyExcept' || name === 'copyLoyalty') return p[name] !== undefined ? (obj['then'] === undefined ? undefined : sub(obj['then'], p, who, ordinal, types)) : (obj['else'] === undefined ? undefined : sub(obj['else'], p, who, ordinal, types)); // edh-next-137: copyExcept, copyLoyalty
     if (!isParamName(name)) throw new KeywordExpandError(`${who}: "$ifParam" names no parameter: ${String(name)}`);
     const branch = p[name] !== undefined ? obj['then'] : obj['else'];
     return branch === undefined ? undefined : sub(branch, p, who, ordinal, types);
@@ -107,6 +131,24 @@ function sub(node: unknown, p: Params, who: string, ordinal: number, types: read
     if (r !== undefined) out[k] = r;
   }
   return out;
+}
+
+/** edh-next-146 (CR 702.21b, 107.3): the X of "ward {X}, where X is ...": ward whose cost is the one symbol {X} and nothing else, with its stated value. */
+function wardCostX(kw: KeywordAbilityDef): Quantity | undefined {
+  const c = kw.cost;
+  const x = c?.mana?.length === 1 ? c.mana[0] : undefined;
+  if (kw.keyword !== 'ward' || c === undefined || x?.kind !== 'variable' || x.name !== 'X' || Object.keys(c).some((k) => k !== 'mana')) return undefined;
+  return kw.costX;
+}
+
+/** edh-next-146: the ward expansion's one pay step pays its cost (the {1} wardCostX's instance gives it) X times; any other shape is a data error, never a payment of {1}. */
+function timesOnPay(ability: AbilityDef, times: Quantity, who: string): void {
+  const steps = ability.kind === 'triggered' ? ability.effect.steps : [];
+  const pays = steps.filter((s) => s.op === 'pay');
+  if (pays.length !== 1 || steps.length !== 1) throw new KeywordExpandError(`${who}: a ward cost {X} needs the expansion's one pay step`);
+  const pay = pays[0] as Extract<EffectStep, { op: 'pay' }>;
+  if (pay.times !== undefined) throw new KeywordExpandError(`${who}: the pay step already has a count`);
+  pay.times = clone(times);
 }
 
 /** What follows the keyword name in the printed text ("Kicker {2}{G}" -> "{2}{G}"; "Ward—Pay 3 life." -> "Pay 3 life"), for display only. */
@@ -134,14 +176,21 @@ function fillText(template: string, kw: KeywordAbilityDef, data: KeywordDefData)
 }
 
 /** r5-cost: the keywords whose "cost is equal to its mana cost" keyword expansion substitutes (CR 702.180a, 702.128a; trek-7: beam me up, "The beam me up cost is equal to that spell's mana cost"). */
-const COST_IS_MANA_COST_EXPANDED: ReadonlySet<string> = new Set(['harmonize', 'embalm', 'beam me up' /* trek-7: Scotty, Miracle Worker */]);
+const COST_IS_MANA_COST_EXPANDED: ReadonlySet<string> = new Set(['harmonize', 'embalm', 'beam me up' /* trek-7: Scotty, Miracle Worker */, 'escape' /* edh-zones-5 */, 'offering' /* edh-combat-7: the cost is the card's own mana cost (CR 702.48a) plus the sacrifice */, 'scavenge' /* edh-next-59: Young Deathclaws (CR 702.97a) */, 'replicate' /* edh-next-65 (CR 702.56a, 118.9): Djinn Illuminatus */, 'blitz' /* edh-next-144 (CR 702.152a, 118.9): Henzie "Toolbox" Torre */, 'emerge' /* edh-d-97 (CR 702.119a, 118.9): Herigast, Erupting Nullkite */]);
 
 /**
  * trek-7 (CR 118.9, 601.2b; Scotty, Miracle Worker): the keywords of COST_IS_MANA_COST_EXPANDED whose cost is the mana cost of the FACE being cast, so a granted instance is
  * not expanded with the object's own mana cost when it is granted (a split card in a graveyard has both halves' costs together, an Adventurer the creature's): actions/cast-options.ts
  * #castOptionsOf expands it with the mana cost of the face cast now, as it reads a granted flashback's.
  */
-export const MANA_COST_OF_FACE_CAST: ReadonlySet<string> = new Set(['beam me up']);
+export const MANA_COST_OF_FACE_CAST: ReadonlySet<string> = new Set(['beam me up', 'escape' /* edh-zones-5: only with the rest of the cost, see ofFaceCast */, 'offering' /* edh-combat-7: the face cast now has the mana cost the offering reduces (CR 702.48a) */]);
+
+/**
+ * trek-7, edh-zones-5 (CR 118.9, 702.138a; Underworld Breach ruling 2020-01-24: the cost of the half or Adventure being cast): a granted keyword whose cost is the mana cost of the face
+ * cast now: beam me up with no cost, or escape whose `cost` holds the rest of the cost and no mana.
+ */
+export const ofFaceCast = (k: { keyword: string; costIsManaCost?: boolean; cost?: { mana?: unknown } }): boolean =>
+  k.costIsManaCost === true && MANA_COST_OF_FACE_CAST.has(k.keyword) && (k.cost === undefined || (k.keyword === 'escape' && k.cost.mana === undefined));
 
 /**
  * The abilities a keyword instance stands for (empty for flag and hook keywords). Throws `KeywordExpandError` when the template needs a parameter the instance
@@ -153,9 +202,21 @@ export function expandKeyword(data: KeywordDefData, kw0: KeywordAbilityDef, ctx:
   // r5-cost (CR 702.180a, 702.128a, 118.9): "Its harmonize cost is equal to its mana cost": the cost is the object's mana cost as it has it now; an object with no
   // mana cost has no such cost to pay (CR 118.6), so the keyword stands for nothing. Harmonize and embalm only: flashback's and mayhem's are read by
   // actions/cast-options.ts, as before (FAST5 T56, cloud r3-mech; merge wave 8 keeps mayhem's own reading)
-  const byManaCost = kw0.costIsManaCost === true && kw0.cost === undefined && COST_IS_MANA_COST_EXPANDED.has(kw0.keyword);
+  // edh-zones-5 (CR 702.138a, 118.9; Underworld Breach): "The escape cost is equal to the card's mana cost plus exile three other cards from your graveyard": an escape whose `cost`
+  // holds the rest of the cost (no mana of its own) is that rest plus the object's mana cost
+  const plusRest = kw0.keyword === 'escape' && kw0.cost !== undefined && kw0.cost.mana === undefined;
+  const byManaCost = kw0.costIsManaCost === true && (kw0.cost === undefined || plusRest) && COST_IS_MANA_COST_EXPANDED.has(kw0.keyword);
   if (byManaCost && (ctx.manaCost === undefined || ctx.manaCost === null)) return [];
-  const kw: KeywordAbilityDef = byManaCost ? { ...kw0, cost: { mana: [...ctx.manaCost!] } } : kw0;
+  // edh-next-59 (CR 702.141a, 202.3): "encore {X}, where X is its mana value": generic mana equal to the mana value of the object (an object with no mana cost has mana value 0)
+  const byManaValue = kw0.costIsManaValue === true && kw0.cost === undefined && kw0.keyword === 'encore';
+  if (byManaValue && ctx.manaCost === undefined) return [];
+  // edh-next-146 (CR 702.21a-b, 107.3; Minthara, Merciless Soul): "ward {X}, where X is <quantity>": the generated payment is {1} paid X times (one payment), X worked out as the
+  // trigger resolves (pay step `times`); only ward, only the cost {X} alone (cap-walk registers nothing else)
+  const wardX = kw0.costX !== undefined ? wardCostX(kw0) : undefined;
+  if (kw0.costX !== undefined && wardX === undefined) throw new KeywordExpandError(`keyword "${data.name}": costX on a keyword other than ward with the cost {X}`);
+  const kw: KeywordAbilityDef = byManaCost ? { ...kw0, cost: { ...(kw0.cost ?? {}), mana: [...ctx.manaCost!] } }
+    : byManaValue ? { ...kw0, cost: { mana: [{ kind: 'generic', amount: manaValue(ctx.manaCost ?? null) }] } }
+      : wardX !== undefined ? { ...kw0, cost: { mana: [{ kind: 'generic', amount: 1 }] } } : kw0;
   const params = paramsOf(kw);
   const out: AbilityDef[] = [];
   data.expand.forEach((template, i) => {
@@ -170,11 +231,12 @@ export function expandKeyword(data: KeywordDefData, kw0: KeywordAbilityDef, ctx:
     const changed = kw.costChange !== undefined && ability.kind === 'activated'
       ? { costChange: JSON.parse(JSON.stringify(kw.costChange)) as typeof kw.costChange, ...(kw.costChangeIf !== undefined ? { costChangeIf: JSON.parse(JSON.stringify(kw.costChangeIf)) as typeof kw.costChangeIf } : {}) } // pc-statics-1: its condition
       : {};
+    if (wardX !== undefined) timesOnPay(ability, wardX, who);
     out.push({
       ...ability,
       ...limited,
       ...changed,
-      text: fillText(ability.text, kw, data),
+      text: fillText(ability.text, wardX !== undefined ? kw0 : kw, data),
       ...(kw.src !== undefined && !ctx.granted ? { src: [...kw.src] } : {}),
       prov: { by: 'keyword', id: data.family ?? data.name, reviewed: true },
     });
@@ -189,4 +251,19 @@ export function expandKeyword(data: KeywordDefData, kw0: KeywordAbilityDef, ctx:
   }
   if (kw.limit !== undefined && !out.some((a) => a.kind === 'activated')) throw new KeywordExpandError(`keyword "${data.name}": an activation limit on a keyword that stands for no activated ability`);
   return out;
+}
+
+
+/**
+ * edh-next-48 (CR 601.2f, 118.9, 702.34a, 604.5; Visions of Dominance): "Flashback {8}{G}{G}. This spell costs {X} less to cast this way, where X is ...": the cost change printed on the
+ * flashback line is a static ability of the spell that functions on the stack and changes the cost of the spell cast for its flashback cost only. The flashback cost itself is read by
+ * actions/cast-options.ts (flashback is a native keyword: its data expands to nothing); `via` names that alternative cost (statics/costmods.ts#costModsFor). Registry.expand calls this
+ * for a flashback keyword that has a `costChange`.
+ */
+export function flashbackCostChange(kw: KeywordAbilityDef, ctx: ExpandContext): AbilityDef[] {
+  if (kw.costChange === undefined) return [];
+  return [{
+    kind: 'static', zone: ['stack'], effects: [{ s: 'costMod', applies: { self: true, via: 'flashback', caster: 'you' }, change: JSON.parse(JSON.stringify(kw.costChange)) as NonNullable<typeof kw.costChange> }],
+    text: 'This spell costs less to cast this way', ...(kw.src !== undefined && !ctx.granted ? { src: [...kw.src] } : {}), prov: { by: 'keyword', id: 'flashback', reviewed: true },
+  } as unknown as AbilityDef];
 }

@@ -17,7 +17,7 @@ import type { ObjectId, PlayerId } from '../types/ids';
 import type { GameObject } from '../types/state';
 import type { Game } from '../core/game';
 import type { BaseChars, Chars } from '../rules/characteristics';
-import { MANA_COST_OF_FACE_CAST } from '../keywords/expand';
+import { ofFaceCast } from '../keywords/expand';
 import { expansionOf, printedKeywordExpansions } from '../statics/abilities';
 import { BACK_FACE_CAST_OPTIONS } from './cast-opt/back-face';
 import { FACE_DOWN_CAST_OPTIONS } from './cast-opt/face-down';
@@ -85,8 +85,12 @@ export interface AdditionalOption {
   chooseType?: { what: 'creatureType'; link: string };
   /** r3-cost (CR 107.3, 601.2b): "X can't be greater than ...": the largest X that may be announced (`AdditionalCostDef.xMax`, actions/cast.ts). */
   xMax?: Quantity;
+  /** edh-perms-24 (CR 107.3, 601.2b): "X can't be 0" on an optional cost with an X: the smallest X that may be announced once it is paid (`AdditionalCostDef.xMin`, actions/cast.ts). */
+  xMin?: number;
   /** std-costs-1 (CR 601.2b, 601.2f): the number of its "any number" part is announced with it (`AdditionalCostDef.announceCount`, actions/cast-costs.ts). */
   announceCount?: true;
+  /** edh-cast-15 (CR 603.12, 707.10): when it is paid, the spell is copied once for each object it took (`AdditionalCostDef.copyForEach`, actions/cast.ts). */
+  copyForEach?: true;
 }
 
 export interface AlternativeOption {
@@ -108,6 +112,8 @@ export interface AlternativeOption {
   tapReduces?: 'power';
   /** FAST5X E6: exile the card any time it would leave the stack (harmonize, CR 702.180a). */
   exileOnLeave?: true;
+  /** edh-next-68 (CR 614.1a): exile the spell instead of putting it into a graveyard (Glimpse the Cosmos; `AlternativeCostDef.graveyardInstead`). */
+  graveyardInstead?: true;
 }
 
 export interface CastOptions {
@@ -151,19 +157,19 @@ export function castOptionsOf(c: Chars): CastOptions {
   // trek-7 (CR 118.9, 601.2b; Scotty, Miracle Worker, "The beam me up cost is equal to that spell's mana cost"): a granted beam me up whose cost is the mana cost has the mana
   // cost of the face cast now (Fire // Ice cast as Fire: {1}{R}; an Adventurer cast as its Adventure: that half's), expanded here and not when it was granted, as a granted
   // flashback's is read below (keywords/expand.ts#MANA_COST_OF_FACE_CAST)
-  const ofFace = c.manaCost === null ? [] : c.keywords.filter((k) => k.costIsManaCost === true && k.cost === undefined && MANA_COST_OF_FACE_CAST.has(k.keyword))
+  const ofFace = c.manaCost === null ? [] : c.keywords.filter((k) => ofFaceCast(k))
     .flatMap((k, i) => expansionOf(k, { granted: true, faceName: c.names[c.face] ?? c.name, types: c.types, keyPrefix: `g:face:${i}`, manaCost: c.manaCost! }));
   for (const def of [...abilities.map((a) => a.def), ...ofFace]) {
     if (def.kind !== 'static') continue;
     for (const e of def.effects) {
-      if (isAdditional(e)) additional.push({ name: e.name, cost: e.cost, optional: e.optional === true, repeatable: e.repeatable === true, ...(e.choiceGroup !== undefined ? { choiceGroup: e.choiceGroup } : {}), ...(e.choosePlayer !== undefined ? { choosePlayer: e.choosePlayer } : {}), ...(e.chooseType !== undefined ? { chooseType: e.chooseType } : {}), ...(e.xMax !== undefined ? { xMax: e.xMax } : {}), ...(e.announceCount === true && e.name !== undefined ? { announceCount: true as const } : {}) });
+      if (isAdditional(e)) additional.push({ name: e.name, cost: e.cost, optional: e.optional === true, repeatable: e.repeatable === true, ...(e.choiceGroup !== undefined ? { choiceGroup: e.choiceGroup } : {}), ...(e.choosePlayer !== undefined ? { choosePlayer: e.choosePlayer } : {}), ...(e.chooseType !== undefined ? { chooseType: e.chooseType } : {}), ...(e.xMax !== undefined ? { xMax: e.xMax } : {}), ...(e.xMin !== undefined ? { xMin: e.xMin } : {}), ...(e.announceCount === true && e.name !== undefined ? { announceCount: true as const } : {}), ...(e.copyForEach === true && e.announceCount === true && e.name !== undefined ? { copyForEach: true as const } : {}) });
       else if (isAlternative(e)) {
         alternatives.push({
           name: uniqueName(alternatives, e.name), cost: e.cost, ...(e.from ? { from: e.from } : {}), ...(e.when ? { when: e.when } : {}), ...(e.delay ? { delay: e.delay } : {}),
           // FAST5X E7: sneak (CR 702.190a-b)
           ...(e.instantSpeed ? { instantSpeed: true as const } : {}), ...(e.entersAttacking ? { entersAttacking: e.entersAttacking } : {}),
           // FAST5X E6: mayhem (CR 702.187b) and harmonize (CR 702.180a-b)
-          ...(e.discardedThisTurn ? { discardedThisTurn: true as const } : {}), ...(e.tapReduces ? { tapReduces: e.tapReduces } : {}), ...(e.exileOnLeave ? { exileOnLeave: true as const } : {}),
+          ...(e.discardedThisTurn ? { discardedThisTurn: true as const } : {}), ...(e.tapReduces ? { tapReduces: e.tapReduces } : {}), ...(e.exileOnLeave ? { exileOnLeave: true as const } : {}), ...(e.graveyardInstead ? { graveyardInstead: true as const } : {}),
         });
       }
       else if (isCastWith(e)) castWith.push(e);

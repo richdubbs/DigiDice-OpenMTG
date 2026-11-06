@@ -17,6 +17,7 @@ import { TEMPLATE_FILES, TEMPLATE_SET } from '../../../src/parser/template-set';
 import { ENGINE_CAPABILITIES } from '../../../src/model/capabilities';
 import p2pt2 from '../../../src/parser/templates/zz-cloud/p2-pt-2.json';
 import ownReview from '../../m5/golden/cards/p2-pt-2-review.json';
+import mk8Review from '../../m5/golden/cards/edh-mana-keywords-8-review.json'; // Bruenor Battlehammer's entry (edh-mana-keywords-8 promoted one template of this file)
 import { automated, bare, card, fullyAutomated, jsonKey } from '../../m5/templates/support';
 import { localIndex } from '../../m5/parser/support';
 
@@ -32,9 +33,11 @@ const NARROW: Readonly<Record<string, string>> = {
   'sta.p2pt2.all.pump.foreach.otherThanSubject': 'Sliver Legion',
   'sta.p2pt2.each.pump.foreach.otherThanSubject': "Heroes' Podium",
   'sta.p2pt2.attached.pump.foreach.equipment.attached': 'Golem-Skin Gauntlets',
+  'sta.p2pt2.each.pump.foreach.equipment.attached': 'Bruenor Battlehammer', // edh-mana-keywords-8: made stable on this one card (held-out, opened by the owner, commander request 2026-10-27)
   'sta.p2pt2.enchanted.pump.foreach.aura.attached.has': "Auramancer's Guise",
   'sta.p2pt2.each.pump.foreach.counter.onIt': 'Clamavus',
   'eff.p2pt2.dur.gains.and.gets.foreach.qty': 'Fists of Flame',
+  'eff.p2pt2.dur.group.get.foreach.and.gain': 'Nissa, Ascended Animist', // edh-top-2: made stable on this one card (the only one that prints the wording; EDHREC top 5,000, compleated is now supported)
 };
 const OPTS = defaultParseOptions({ templates: [...TEMPLATE_SET], capabilities: ENGINE_CAPABILITIES }); // what a decklist card gets (design 5.2; `needs`)
 
@@ -70,7 +73,7 @@ describe('p2-pt-2 template file (design 6.3, 6.9; CONTRIBUTING "Adding a templat
   });
   it('design 6.9: a stable template has its evidence: three or more hand-verified golden cards, or (a recorded deviation) the one card that prints the wording', () => {
     for (const t of MECH.filter((x) => x.status === 'stable')) {
-      const cards = review.filter((g) => g.verified.includes(`(${t.id}`) || g.verified.includes(` ${t.id}`) || g.verified.includes(`${t.id},`)).map((g) => g.card);
+      const cards = [...review, ...(mk8Review as typeof review)].filter((g) => g.verified.includes(`(${t.id}`) || g.verified.includes(` ${t.id}`) || g.verified.includes(`${t.id},`)).map((g) => g.card);
       if (NARROW[t.id] !== undefined) expect(cards, t.id).toContain(NARROW[t.id]);
       else expect(cards.length, t.id).toBeGreaterThanOrEqual(3);
     }
@@ -203,8 +206,10 @@ describe('p2-pt-2 renderer (CR 611.2a, 613.1f, 613.4c; family grant-then-pump-fo
     const f = parseCard(card('Example Rage', 'Instant', "Until end of turn, target creature gains trample and gets +1/+0 for each card you've drawn this turn."), OPTS).faces[0]!;
     expect(fullyAutomated(f)).toBe(true);
   });
-  it('a static ability keeps its own order only (no grant-first reading there)', () => {
+  // edh-next-1 (Glamdring, "Equipped creature has first strike and gets +1/+0 for each instant and sorcery card in your graveyard"): a static ability's grant
+  // said before a counted change is read too, layer 6 then 7c (CR 613.1f, 613.4c), the order the words say nothing about
+  it('a static ability\'s grant said before a counted change is read since edh-next-1 (layer 6 and 7c)', () => {
     const f = parseCard(card('Example Charm', 'Enchantment — Aura', 'Enchant creature\nEnchanted creature has trample and gets +1/+0 for each Forest you control.'), OPTS).faces[0]!;
-    expect(fullyAutomated(f)).toBe(false);
+    expect(fullyAutomated(f)).toBe(true);
   });
 });

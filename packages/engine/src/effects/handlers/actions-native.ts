@@ -29,7 +29,7 @@ import type { ObjectId, PlayerId } from '../../types/ids';
 import type { GameObject, ObjHandle } from '../../types/state';
 import type { ExecCtx, StepHandler } from '../api';
 import { resolutionCaster } from '../cast-hook';
-import { extraVotes } from '../../statics/hooks';
+import { cascadeLandPuts, extraVotes, voteChooser } from '../../statics/hooks';
 import { evalQty } from '../eval';
 import { filterCtxOf, resolvePlayers } from '../refs';
 import { matchesFilter } from '../../rules/filter';
@@ -45,6 +45,7 @@ import { GIFT_NATIVE_FEATURES, GIFT_NATIVES } from './gift';
 import { LEARN_FEATURES, LEARN_NATIVES } from './learn';
 import { VENTURE_FEATURES, VENTURE_NATIVES } from './venture';
 import { RING_FEATURES, RING_NATIVES } from './ring';
+import { PLANECHASE_FEATURES, PLANECHASE_NATIVES } from './planechase';
 import { AIRBEND_FEATURES, AIRBEND_NATIVES } from './airbend';
 import { BEHOLD_FEATURES, BEHOLD_NATIVES } from './behold';
 import { EVIDENCE_FEATURES, EVIDENCE_NATIVES } from './evidence';
@@ -62,7 +63,7 @@ type ActionStep = Extract<EffectStep, { op: 'action' }>;
  * Capability names (`feature:action.native.<name>`, keywords/needs.ts#actionNeeds): the native actions this module implements, and those of
  * actions-native-counters.ts (PUSH1 T1: proliferate, bolster).
  */
-export const FEATURES: readonly string[] = ['action.native.cascade', 'action.native.discover', 'action.native.vote', 'vote.words', 'vote.players' /* M12-3 (CR 701.38b) */, ...EXPLORE_FEATURES /* std-lci: explore.ts */, ...COUNTER_FEATURES, ...FACE_NATIVE_FEATURES, ...DFC_NATIVE_FEATURES, ...MELD_PAIR_FEATURES, ...GIFT_NATIVE_FEATURES, ...VENTURE_FEATURES, ...LEARN_FEATURES, ...RING_FEATURES, ...ATTRACTION_FEATURES, ...AIRBEND_FEATURES, ...BEHOLD_FEATURES, ...EVIDENCE_FEATURES, ...GOAD_FEATURES, ...FORAGE_FEATURES, ...EXERT_FEATURES]; // M12-3: goad (goad.ts); FAST5X E28: forage (forage.ts); M6-3: manifest, cloak, manifest dread (face-ops.ts); M6-4: meld (dfc-ops.ts); MX2: meldPair (meld-pair.ts); FAST5 MX7: learn (learn.ts); MX3: ringTempts (ring.ts); T38: openAttraction (attraction.ts); FAST5X E10: airbend (airbend.ts); FAST5X E11: behold (behold.ts); FAST5X E12: collectEvidence (evidence.ts)
+export const FEATURES: readonly string[] = ['action.native.cascade', 'action.native.discover', 'action.native.vote', 'vote.words', 'vote.players' /* M12-3 (CR 701.38b) */, 'vote.secret' /* edhd19 (CR 701.38a) */, 'vote.notSelf', 'vote.upTo' /* edhd27 (CR 701.38a-b) */, ...EXPLORE_FEATURES /* std-lci: explore.ts */, ...COUNTER_FEATURES, ...FACE_NATIVE_FEATURES, ...DFC_NATIVE_FEATURES, ...MELD_PAIR_FEATURES, ...GIFT_NATIVE_FEATURES, ...VENTURE_FEATURES, ...LEARN_FEATURES, ...RING_FEATURES, ...PLANECHASE_FEATURES, ...ATTRACTION_FEATURES, ...AIRBEND_FEATURES, ...BEHOLD_FEATURES, ...EVIDENCE_FEATURES, ...GOAD_FEATURES, ...FORAGE_FEATURES, ...EXERT_FEATURES]; // M12-3: goad (goad.ts); FAST5X E28: forage (forage.ts); M6-3: manifest, cloak, manifest dread (face-ops.ts); M6-4: meld (dfc-ops.ts); MX2: meldPair (meld-pair.ts); FAST5 MX7: learn (learn.ts); MX3: ringTempts (ring.ts); T38: openAttraction (attraction.ts); FAST5X E10: airbend (airbend.ts); FAST5X E11: behold (behold.ts); FAST5X E12: collectEvidence (evidence.ts)
 
 const textOf = (st: ActionStep, fallback: string): string => st.span ?? fallback;
 
@@ -160,7 +161,7 @@ const isObjRef = (r: NonNullable<ActionStep['subject']>): r is ObjRef => !isPlay
 type ExileUntilStep = Extract<EffectStep, { op: 'exileUntil' }>;
 
 /** std-rx31: the value forms of `exileUntil` this handler runs, as model/cap-walk.ts writes them (model/capabilities.ts). */
-export const EXILE_UNTIL_OP_FORMS: readonly string[] = ['op:exileUntil.total' /* "until you exile cards with total mana value N or greater", CR 202.3 */];
+export const EXILE_UNTIL_OP_FORMS: readonly string[] = ['op:exileUntil.total' /* "until you exile cards with total mana value N or greater", CR 202.3 */, 'op:exileUntil.count' /* edh-d-102: "until you exile X permanent cards", CR 107.3 */];
 
 /**
  * Cloud std-eoe (CR 406.1, 401.1, 608.2c): the `exileUntil` op, "exile cards from the top of your library until you exile a nonland card": the loop of cascade and
@@ -180,9 +181,27 @@ export const exileUntilStep: StepHandler<ExileUntilStep> = (cx, st) => {
   // (each player's own total, std-rs); `as` then names every card exiled this way
   const need = st.total !== undefined ? evalQty(cx, st.total.atLeast) : undefined;
   if (st.total !== undefined && need === undefined) return NOTHING; // fails to determine (CR 608.2b)
+  // edh-d-102 (CR 107.3, 608.2h; Auspicious Starrix): "until you exile X permanent cards": X is worked out once, as the step begins; the loop stops at the X-th matching card
+  const want = st.count !== undefined && st.total === undefined ? evalQty(cx, st.count) : undefined;
+  if (st.count !== undefined && st.total === undefined && (want === undefined || Number.isNaN(want))) return NOTHING; // fails to determine (CR 608.2b)
   const all: ObjHandle[] = [];
   const hits: ObjHandle[] = [];
   for (const player of players) {
+    if (want !== undefined) {
+      const n = Math.max(0, Math.floor(want));
+      if (n === 0) continue; // nothing to find: no card is exiled
+      const found: ObjHandle[] = [];
+      const { exiled } = exileUntil(cx, player, 'exileUntil', (_c, o) => {
+        if (!matchesFilter(g.s, o, st.filter, ctx)) return false;
+        const z = g.s.objects[o.id]?.zone;
+        found.push({ id: o.id, zone: z ?? 'exile' });
+        return found.length >= n;
+      });
+      g.log(`${g.player(player).name} exiles ${exiled.length} card${exiled.length === 1 ? '' : 's'} from the top of their library, ${found.length} of ${n} found.`, { rules: ['CR 406.1', 'CR 608.2c'], level: 'action' });
+      all.push(...exiled);
+      hits.push(...exiled.filter((h) => found.some((f) => f.id === h.id)));
+      continue;
+    }
     if (st.total !== undefined) {
       let sum = 0;
       const { exiled } = exileUntil(cx, player, 'exileUntil', (c, o) => {
@@ -205,6 +224,28 @@ export const exileUntilStep: StepHandler<ExileUntilStep> = (cx, st) => {
   return did(all.length);
 };
 
+/**
+ * edh-d-97 (CR 702.85b, 110.2a, 305.2; Averna, the Chaos Bloom and its rulings 2020-11-10): "As you cascade, you may put a land card from among the exiled cards onto the battlefield tapped":
+ * once the cascade has finished exiling cards and before the cast is chosen, for each such ability of the cascading player (statics/hooks.ts#cascadeLandPuts) they may choose one land
+ * card among the cards this cascade exiled that are still in exile, which enters the battlefield tapped under their control. Not playing a land (no land play is used, any turn).
+ */
+function landsAsYouCascade(cx: ExecCtx, player: PlayerId, exiled: readonly ObjHandle[]): void {
+  const g = cx.g;
+  const times = cascadeLandPuts(g.s, player);
+  for (let i = 0; i < times; i++) {
+    const lands = exiled.filter((h) => { const o = g.s.objects[h.id]; return o !== undefined && o.zone === 'exile' && charsOfObject(g.s, o).types.includes('Land'); });
+    if (lands.length === 0) return;
+    const ids = g.choose({
+      kind: 'chooseObjects', player, prompt: 'As you cascade, you may put a land card from among the exiled cards onto the battlefield tapped.', options: lands.map((h) => h.id), min: 0, max: 1, rules: ['CR 702.85b'],
+    }).ids;
+    const pick = lands.find((h) => h.id === ids[0]);
+    if (pick === undefined) return;
+    spend(cx, 1);
+    const m = proposeMove(cx, pick, 'battlefield', { controller: player, tapped: true, cause: 'cascade' });
+    if (m.ok) g.log(`${g.player(player).name} puts ${g.nameOf(m.to?.id ?? pick.id)} onto the battlefield tapped as they cascade.`, { rules: ['CR 702.85b'], level: 'action' });
+  }
+}
+
 /** CR 702.85a: cascade. */
 const cascade: StepHandler<ActionStep> = (cx, st) => {
   const g = cx.g;
@@ -217,7 +258,8 @@ const cascade: StepHandler<ActionStep> = (cx, st) => {
   if (player === undefined || n === undefined) return NOTHING; // fails to determine (CR 608.2b)
   const { exiled, hit } = exileUntil(cx, player, 'cascade', (c) => isNonland(c) && c.manaValue < n);
   g.log(`${g.player(player).name} cascades (mana value less than ${n}): ${exiled.length} card${exiled.length === 1 ? '' : 's'} exiled${hit ? `, stopping at ${g.nameOf(hit.id)}` : ', no card found'}.`, { rules: ['CR 702.85a'], level: 'action' });
-  const cast = hit !== null && mayCastFree(cx, player, hit, n - 1, 'CR 702.85a');
+  landsAsYouCascade(cx, player, exiled); // edh-d-97 (CR 702.85b): before the cast is chosen
+  const cast = hit !== null && g.s.objects[hit.id]?.zone === 'exile' && mayCastFree(cx, player, hit, n - 1, 'CR 702.85a');
   bottomInRandomOrder(cx, exiled, 'cascade');
   return did(exiled.length + (cast ? 1 : 0));
 };
@@ -307,48 +349,73 @@ const vote: StepHandler<ActionStep> = (cx, st) => {
     return { ...NOTHING, votes: new Map() };
   }
   const tally = new Map<string, number>(keys.map((k) => [k, 0]));
+  const voters = new Map<string, PlayerId[]>(keys.map((k) => [k, []])); // edh-players-17: who cast each vote, in the order cast (ApiStepResult.voters)
   const ballots: { voter: PlayerId; votes: string[] }[] = [];
   const what = textOf(st, 'vote');
   let total = 0;
+  const chooser = voteChooser(g.s); // edh-next-135 (CR 701.38a): "You choose how each player votes this turn." (Illusion of Choice)
   for (const voter of turnOrderFrom(g, first)) {
     const extra = extraVotes(g.s, voter); // CR 701.38d
     const must = 1 + extra.must;
     const max = must + extra.may;
     const rules = extra.must + extra.may > 0 ? ['CR 701.38a', 'CR 701.38d'] : ['CR 701.38a'];
-    const many = max > 1 ? ` You have ${must}${extra.may > 0 ? ` (up to ${max})` : ''} votes; they can be for different choices or the same one.` : '';
-    let picks: string[] = [];
-    if (kind === 'objects') {
-      // one decision per vote (an object decision takes each object once), all of them now (CR 701.38d)
-      for (let i = 0; i < max; i++) {
-        const ans = g.choose({
-          kind: 'chooseObjects', player: voter, prompt: `Vote for one of these (${what}).${many}${max > 1 ? ` Vote ${i + 1} of ${max}.` : ''}`, options: keys, min: i < must ? 1 : 0, max: 1, rules,
-        });
-        const pick = ans.ids.find((id) => tally.has(id));
-        if (pick === undefined) break; // an optional additional vote not cast
-        picks.push(pick);
+    // edhd27 (CR 701.38a-b): "another player" can't be the voter; "up to one creature" may be no vote at all
+    const choosable = st.notSelf === true && kind === 'players' ? keys.filter((k) => k !== voter) : keys;
+    const mustVote = st.upTo === true ? 0 : must;
+    if (choosable.length === 0) { ballots.push({ voter, votes: [] }); continue; }
+    // edh-next-135 (CR 701.38a, 608.2d; Illusion of Choice): `by` makes the decisions of `voter`'s votes, `min` to `max` of them
+    const pickVotes = (by: PlayerId, min: number, upTo: number): string[] => {
+      const whose = by === voter ? '' : ` Choose how ${g.player(voter).name} votes.`;
+      const several = by === voter
+        ? (max > 1 ? ` You have ${must}${extra.may > 0 ? ` (up to ${max})` : ''} votes; they can be for different choices or the same one.` : '')
+        : (upTo > 1 ? ` ${g.player(voter).name} has ${upTo} votes; they can be for different choices or the same one.` : '');
+      if (kind === 'objects') {
+        // one decision per vote (an object decision takes each object once), all of them now (CR 701.38d)
+        const out: string[] = [];
+        for (let i = 0; i < upTo; i++) {
+          const ans = g.choose({
+            kind: 'chooseObjects', player: by, prompt: `Vote for one of these (${what}).${whose}${several}${upTo > 1 ? ` Vote ${i + 1} of ${upTo}.` : ''}`, options: keys, min: i < min ? 1 : 0, max: 1, rules,
+          });
+          const pick = ans.ids.find((id) => tally.has(id));
+          if (pick === undefined) break; // an optional additional vote not cast
+          out.push(pick);
+        }
+        return out;
       }
-    } else {
       const ans = g.choose({
-        kind: 'chooseOption', player: voter, prompt: `Vote for ${kind === 'words' ? 'one of these' : 'a player'} (${what}).${many}`, min: must, max,
-        ...(max > 1 ? { allowRepeat: true } : {}), options: keys.map((k) => ({ id: k, label: nameOf(k) })), rules,
+        kind: 'chooseOption', player: by, prompt: `Vote for ${kind === 'words' ? 'one of these' : 'a player'} (${what}).${whose}${several}`, min, max: upTo,
+        ...(upTo > 1 ? { allowRepeat: true } : {}), options: choosable.map((k) => ({ id: k, label: nameOf(k) })), rules,
       });
-      picks = ans.ids.filter((k) => tally.has(k)).slice(0, max);
+      return ans.ids.filter((k) => choosable.includes(k)).slice(0, upTo);
+    };
+    let picks: string[];
+    if (chooser === undefined || chooser === voter) picks = pickVotes(voter, mustVote, max);
+    else {
+      // the ruling of 2016-08-23 (Ballot Broker): the voter's votes are chosen by the chooser; a voter who MAY vote an additional time decides that themselves, after the normal vote
+      picks = pickVotes(chooser, mustVote, must);
+      if (extra.may > 0) {
+        const n = g.choose({ kind: 'chooseNumber', player: voter, prompt: `How many additional votes do you take? (${g.player(chooser).name} chooses how you vote.)`, min: 0, max: extra.may, rules: ['CR 701.38d'] }).n;
+        if (n > 0) picks.push(...pickVotes(chooser, n, n));
+      }
     }
-    for (const k of picks) tally.set(k, tally.get(k)! + 1);
+    for (const k of picks) { tally.set(k, tally.get(k)! + 1); voters.get(k)!.push(voter); }
     ballots.push({ voter, votes: picks });
     total += picks.length;
-    if (picks.length > 0) g.log(`${g.player(voter).name} votes for ${picks.map(nameOf).join(' and ')}.`, { rules, level: 'action' });
+    // edhd19 (CR 701.38a): a secret vote is said only when the votes are revealed, after every player has voted
+    if (picks.length > 0 && st.secret !== true) g.log(`${g.player(voter).name} votes for ${picks.map(nameOf).join(' and ')}.`, { rules, level: 'action' });
   }
+  if (st.secret === true) for (const b of ballots) if (b.votes.length > 0) g.log(`${g.player(b.voter).name} votes for ${b.votes.map(nameOf).join(' and ')}.`, { rules: ['CR 701.38a'], level: 'action' });
   const most = Math.max(...tally.values());
-  const winners = keys.filter((k) => tally.get(k) === most);
+  // edhd27 (CR 701.38a): when nobody voted at all (every vote was "up to one"), no choice has the most votes
+  const winners = most === 0 && st.upTo === true ? [] : keys.filter((k) => tally.get(k) === most);
   const counts = keys.map((k) => `${nameOf(k)} ${tally.get(k)}`).join(', ');
   g.log(`The votes: ${counts}. Most votes or tied for most (${most}): ${winners.map(nameOf).join(', ')}.`, { rules: ['CR 701.38a'], level: 'info' });
   if (kind === 'objects') bindAs(cx, st.as, objects.filter((h) => winners.includes(h.id)));
   else if (kind === 'players') bindAs(cx, st.as, [], winners);
   g.emit({ type: 'votesFinished', starter: first, ballots }); // M12F: "whenever players finish voting" (CR 701.38a), once per vote, with every ballot
-  return { ...did(total), votes: tally };
+  return { ...did(total), votes: tally, voters };
 };
 
 /** The native actions by `ActionMacro.native` name (keywords/actions/native.ts). */
-export const NATIVE_ACTIONS: Readonly<Record<string, StepHandler<ActionStep>>> = { cascade, discover, vote, ...EXPLORE_NATIVES /* std-lci: explore.ts */, ...COUNTER_NATIVES, ...FACE_NATIVES, ...DFC_NATIVES, ...MELD_PAIR_NATIVES, ...GIFT_NATIVES, ...VENTURE_NATIVES, ...LEARN_NATIVES, ...RING_NATIVES, ...ATTRACTION_NATIVES, ...AIRBEND_NATIVES, ...BEHOLD_NATIVES, ...EVIDENCE_NATIVES, ...GOAD_NATIVES, ...FORAGE_NATIVES, ...EXERT_NATIVES }; // M12-3: goad.ts; FAST5X E28: forage.ts; M6-3: face-ops.ts; M6-4: dfc-ops.ts; MX2: meld-pair.ts; FAST5 MX7: learn.ts; MX3: ring.ts; T38: attraction.ts; FAST5X E10: airbend.ts; FAST5X E11: behold.ts; FAST5X E12: evidence.ts
+export const NATIVE_ACTIONS: Readonly<Record<string, StepHandler<ActionStep>>> = { cascade, discover, vote, ...EXPLORE_NATIVES /* std-lci: explore.ts */, ...COUNTER_NATIVES, ...FACE_NATIVES, ...DFC_NATIVES, ...MELD_PAIR_NATIVES, ...GIFT_NATIVES, ...VENTURE_NATIVES, ...LEARN_NATIVES, ...RING_NATIVES, ...PLANECHASE_NATIVES, ...ATTRACTION_NATIVES, ...AIRBEND_NATIVES, ...BEHOLD_NATIVES, ...EVIDENCE_NATIVES, ...GOAD_NATIVES, ...FORAGE_NATIVES, ...EXERT_NATIVES }; // M12-3: goad.ts; FAST5X E28: forage.ts; M6-3: face-ops.ts; M6-4: dfc-ops.ts; MX2: meld-pair.ts; FAST5 MX7: learn.ts; MX3: ring.ts; T38: attraction.ts; FAST5X E10: airbend.ts; FAST5X E11: behold.ts; FAST5X E12: evidence.ts
 

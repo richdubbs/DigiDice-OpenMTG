@@ -19,8 +19,10 @@ import { npAlts } from './filter';
 
 const W_OPP_HAS_BEEN_DEALT_NONCOMBAT = P('an opponent has been dealt noncombat damage this turn');
 const W_OPP_DEALT_COMBAT_BY = P('an opponent was dealt combat damage by');
+const W_PLAYER_DEALT_COMBAT_BY = P('a player was dealt combat damage by'); // edh-zones-17
 const W_THIS_TURN = P('this turn');
 const W_A_PLAYER_HAS = P('a player has');
+const W_A_PLAYER_HAS_NO_CARDS_IN_HAND = P('a player has no cards in hand'); // edh-b-4 (Lupine Prototype)
 const W_CARDS_IN_HAND = [P('cards in hand'), P('card in hand')];
 const W_THERE_ARE = [P('there are'), P('there is')];
 const W_PERMANENT_TYPES_AMONG = P('permanent types among');
@@ -34,14 +36,17 @@ export function costCondAt(ctx: HoleCtx, pos: number): Alt[] {
   const out: Alt[] = [];
   const nd = phraseAt(ctx, pos, W_OPP_HAS_BEEN_DEALT_NONCOMBAT);
   if (nd >= 0) out.push({ end: nd, value: { cond: 'happened', event: { ev: 'damage', combat: false, recipient: { player: 'opponent' } }, scope: 'turn' } satisfies Condition });
-  const by = phraseAt(ctx, pos, W_OPP_DEALT_COMBAT_BY);
+  // edh-zones-17 (CR 120.1, 510.2, 603.4; Lost Monarch of Ifnir): "a player was dealt combat damage by a Zombie this turn", the same event to any player
+  for (const [w, player] of [[W_OPP_DEALT_COMBAT_BY, 'opponent'], [W_PLAYER_DEALT_COMBAT_BY, 'any']] as const) {
+  const by = phraseAt(ctx, pos, w);
   const art = by >= 0 ? ctx.toks[by]?.norm : undefined;
   if (art === 'a' || art === 'an') for (const n of npAlts(ctx, by + 1)) {
     // a permanent's description only: no zone, owner or controller (the facts of the source answer types, colors, supertypes, subtypes and the like)
     if (n.number !== 'singular' || n.filter.zone !== undefined || n.filter.owner !== undefined || n.filter.controller !== undefined || n.filter.isCard !== undefined) continue;
     if (Object.keys(n.filter).length === 0) continue;
     const th = phraseAt(ctx, n.end, W_THIS_TURN);
-    if (th >= 0) out.push({ end: th, value: { cond: 'happened', event: { ev: 'damage', combat: true, recipient: { player: 'opponent' }, source: n.filter }, scope: 'turn' } satisfies Condition, ...flagsOf(n.flags) });
+    if (th >= 0) out.push({ end: th, value: { cond: 'happened', event: { ev: 'damage', combat: true, recipient: { player }, source: n.filter }, scope: 'turn' } satisfies Condition, ...flagsOf(n.flags) });
+  }
   }
   const ph = phraseAt(ctx, pos, W_A_PLAYER_HAS);
   if (ph >= 0) for (const c of cmpAt(ctx, ph)) {
@@ -53,6 +58,9 @@ export function costCondAt(ctx: HoleCtx, pos: number): Alt[] {
       out.push({ end: e, value: { cond: 'compare', left: players, op: '>=', right: 1 } satisfies Condition });
     }
   }
+  // edh-b-4 (CR 402.1, 102.1; Lupine Prototype): "a player has no cards in hand": at least one player whose hand holds none (hand size 0 or fewer)
+  const noCards = phraseAt(ctx, pos, W_A_PLAYER_HAS_NO_CARDS_IN_HAND);
+  if (noCards >= 0) out.push({ end: noCards, value: { cond: 'compare', left: { q: 'countPlayers', of: { ref: 'each', who: 'player' }, sizeIs: { zone: 'hand', op: '<=', n: 0 } }, op: '>=', right: 1 } satisfies Condition });
   for (const w of W_THERE_ARE) {
     const e = phraseAt(ctx, pos, w);
     if (e < 0) continue;

@@ -134,7 +134,7 @@
       "~ enters with an additional +1/+1 counter on it for each Elf you control.",
       "~ enters with two additional +1/+1 counters on it unless it is blue."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {
@@ -186,7 +186,7 @@
       "Other Elves you control enter with an additional +1/+1 counter on them for each Goblin you control.",
       "Other Elves you control enter with a +1/+1 counter on them unless it is blue."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {
@@ -224,7 +224,7 @@
       "Whenever ~ attacks, draw a card. Draw two cards if you control an Elf.",
       "Whenever ~ attacks, draw a card. Target player draws another card if you control an Elf."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {
@@ -296,7 +296,7 @@
       "Target artifact you control becomes a red Goblin creature with base power and toughness 2/2 in addition to its other colors and types.",
       "Until end of turn, each artifact you control becomes a red Goblin creature with base power and toughness 2/2 in addition to its other colors and types."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {
@@ -336,7 +336,7 @@
       "Investigate once for each opponent.",
       "Target player investigates once for each artifact creature you control."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8,
     "consumes": [
       "each"
@@ -381,7 +381,7 @@
       "Create two 1/1 red Goblin creature tokens that are tapped and attacking.",
       "Create two 1/1 red Goblin creature tokens that are attacking target opponent."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   },
   {
@@ -436,7 +436,7 @@
       "Whenever ~ attacks, you may sacrifice another creature or two enchantments. If you do, draw a card.",
       "Whenever ~ attacks, sacrifice another creature or an enchantment. If you do, draw a card."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 8
   }
 ]

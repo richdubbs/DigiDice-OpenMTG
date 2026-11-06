@@ -1,0 +1,298 @@
+[
+  {
+    "id": "eff.edhb9.attach.all",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.3a",
+      "CR 701.3b",
+      "CR 301.5c"
+    ],
+    "pattern": "attach all {f:Filter} to {to:Obj}",
+    "build": {
+      "op": "attach",
+      "what": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "to": "$to"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, attach all Equipment you control to ~."
+      },
+      {
+        "text": "At the beginning of your upkeep, attach all Auras you control to ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, unattach all Equipment you control.",
+      "When ~ enters, attach Equipment you control to ~.",
+      "When ~ enters, attach each Equipment you control to ~ and draw a card for each."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "eff.edhb9.player.gets.additionalCounter",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1f",
+      "CR 702.164c"
+    ],
+    "pattern": "{p:Player} get[s] an additional {k:CounterKind} counter",
+    "build": {
+      "op": "putCounters",
+      "on": "$p",
+      "kind": "$k",
+      "count": 1
+    },
+    "subject": "player",
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control deals combat damage to a player, that player gets an additional poison counter."
+      },
+      {
+        "text": "Whenever ~ deals damage to an opponent, that player gets an additional experience counter."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control deals combat damage to a player, that player gets two additional poison counters.",
+      "Whenever a creature you control deals combat damage to a player, that creature gets an additional poison counter."
+    ]
+  },
+  {
+    "id": "eff.edhb9.putCounters.eachOfUpTo",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 107.1c"
+    ],
+    "pattern": "put {n:Qty} {k:CounterKind} counter[s] on [each of] up to {m:Qty} {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "$m",
+        "as": "upToChosen"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "upToChosen"
+        },
+        "kind": "$k",
+        "count": "$n"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of combat on your turn, put a +1/+1 counter on each of up to two Soldiers you control."
+      },
+      {
+        "text": "Put two +1/+1 counters on each of up to three creatures you control."
+      },
+      {
+        "text": "Put two +1/+1 counters on up to one creature."
+      }
+    ],
+    "counterExamples": [
+      "Put a +1/+1 counter on each of up to three target creatures you control.",
+      "Put a +1/+1 counter on each of two Soldiers you control.",
+      "Put a +1/+1 counter on up to one target creature you control."
+    ]
+  },
+  {
+    "id": "eff.edhb9.eachPlayer.lifeTotalBecomes.countTheyControl",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.5",
+      "CR 608.2f",
+      "CR 107.1"
+    ],
+    "pattern": "each player 's life total becomes the number of {f:Filter} they control",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "player"
+      },
+      "as": "eachPlayer",
+      "do": [
+        {
+          "op": "setLife",
+          "who": {
+            "ref": "bound",
+            "name": "eachPlayer"
+          },
+          "value": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "anyOf": [
+                  "$f"
+                ],
+                "controller": {
+                  "ref": "iterating"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each player's life total becomes the number of creatures they control."
+      },
+      {
+        "text": "Each player's life total becomes the number of Goblins they control."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent's life total becomes the number of creatures they control.",
+      "Each player's life total becomes the number of creatures you control."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhb9.damage.eachOpponentAndTheirs.whereX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 120.2b",
+      "CR 107.3",
+      "CR 608.2h",
+      "CR 102.3"
+    ],
+    "pattern": "{src:Obj} deal[s] x damage to each opponent and each {f:Filter} they control , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "amount": {
+            "q": "X"
+          },
+          "also": [
+            {
+              "to": {
+                "ref": "each",
+                "filter": {
+                  "anyOf": [
+                    "$f"
+                  ],
+                  "controller": "opponent"
+                }
+              },
+              "amount": {
+                "q": "X"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, it deals X damage to each opponent and each creature they control, where X is the number of cards in your hand."
+      },
+      {
+        "text": "~ deals X damage to each opponent and each planeswalker they control, where X is your life total."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, it deals X damage to each opponent and each creature you control, where X is the number of cards in your hand.",
+      "When ~ dies, it deals X damage to each opponent and each creature they control."
+    ]
+  },
+  {
+    "id": "eff.edhb9.mana.additional.forEach",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.4",
+      "CR 605.1b",
+      "CR 605.4a",
+      "CR 107.1c"
+    ],
+    "pattern": "{p:Player} add[s] an additional {t:ManaSym} for each {f:Filter}",
+    "build": {
+      "op": "addMana",
+      "who": "$p",
+      "dynamic": {
+        "kind": "ofType",
+        "type": "$t",
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        }
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "additional",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever enchanted land is tapped for mana, its controller adds an additional {R} for each Goblin on the battlefield."
+      },
+      {
+        "text": "Whenever enchanted land is tapped for mana, its controller adds an additional {U} for each Island you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever enchanted land is tapped for mana, its controller adds an additional {R}{R} for each Goblin on the battlefield.",
+      "Whenever enchanted land is tapped for mana, its controller adds {R} for each Goblin on the battlefield."
+    ]
+  }
+]

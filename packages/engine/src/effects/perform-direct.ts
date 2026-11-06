@@ -12,13 +12,15 @@ import type { Game } from '../core/game';
 import { addEffectRecord, addUntilMove } from '../core/durations';
 import { syncControl } from '../core/control';
 import type { DefId, ObjectId, PlayerId } from '../types/ids';
-import { bringIntoGame } from '../core/zones';
+import { bringIntoGame, showCards } from '../core/zones';
+import { exileLookVisibleTo } from '../statics/play-permits';
 import type { ContinuousEffectRec, FaceDownInfo, GameObject, TargetChoice, UntilMoveRec } from '../types/state';
+import type { ManaCost } from '../types/mana';
 import { turnPermanentFaceDown, turnPermanentFaceUp } from '../rules/face-down';
-import { makeBlocked, removeFromCombat } from '../rules/combat-state';
-import { phaseOutPermanent } from '../rules/phasing';
+import { makeBlocked, makeBlockedIds, removeFromCombat } from '../rules/combat-state';
+import { phaseInPermanent, phaseOutPermanent } from '../rules/phasing';
 import { createCardCopy, putCopyOnStack, removeFromStack } from '../rules/stack-objects';
-import { addAttacker, attachPermanent, enterAttackingChoosing, entersAttackingAsReturned, flipPermanent, tapPermanent, transformPermanent, unattachPermanent, untapPermanent } from '../rules/status';
+import { addAttacker, attachPermanent, enterAttackingChoosing, enterBlocking, entersAttackingAsReturned, flipPermanent, tapPermanent, transformPermanent, unattachPermanent, untapPermanent } from '../rules/status';
 
 /** CR 701.26a: tap an untapped permanent; whether it changed. */
 export const performTap = (g: Game, id: ObjectId, by?: PlayerId): boolean => tapPermanent(g, id, by); // FAST5X E20: `by`, the player whose effect taps it
@@ -40,17 +42,23 @@ export const performFlip = (g: Game, id: ObjectId): boolean => flipPermanent(g, 
 
 /** CR 702.26b, 702.26g: phase a permanent out with what is attached to it; the ids that phased out. */
 export const performPhaseOut = (g: Game, id: ObjectId): ObjectId[] => phaseOutPermanent(g, id);
+/** edhn102 (CR 702.26b-c): a phased-out permanent phases in now, with what phased out with it; returns the ids that phased in. */
+export const performPhaseIn = (g: Game, id: ObjectId, tapped = false): ObjectId[] => phaseInPermanent(g, id, tapped);
 
 /** CR 506.4: remove a permanent from combat. */
 export const performRemoveFromCombat = (g: Game, id: ObjectId): void => removeFromCombat(g.s, id);
 
 /** p2-combat-flow-2 (CR 509.1h): an unblocked attacking creature becomes blocked, with no blocker; whether it changed. */
 export const performMakeBlocked = (g: Game, id: ObjectId): boolean => makeBlocked(g.s, id);
+export const performMakeBlockedIds = (g: Game, id: ObjectId): ObjectId[] => makeBlockedIds(g.s, id); // edhv31 (CR 702.22i)
 
 /** CR 508.4: a permanent put onto the battlefield attacking becomes an attacking creature (the handler checked CR 506.3, 508.4a). */
 export const performAddAttacker = (g: Game, id: ObjectId, defender: PlayerId | ObjectId, defendingPlayer: PlayerId): void => addAttacker(g, id, defender, defendingPlayer);
 /** trek-8 (CR 508.4): the creatures just put onto the battlefield attacking become attacking creatures; each one's controller chooses what it attacks (rules/status.ts#enterAttackingChoosing). */
 export const performEnterAttacking = (g: Game, ids: readonly ObjectId[], named?: PlayerId, walkersOnly = false): ObjectId[] => enterAttackingChoosing(g, ids, named, walkersOnly);
+
+/** edh-combat-4 (CR 506.3e): the creatures just put onto the battlefield blocking an attacker become blocking creatures (rules/status.ts#enterBlocking). */
+export const performEnterBlocking = (g: Game, ids: readonly ObjectId[], attackerId: ObjectId): ObjectId[] => enterBlocking(g, ids, attackerId);
 
 /** trek-8 review (CR 508.4): run `f` (the proposals of an effect that puts permanents onto the battlefield attacking) with `by` as the way they join the combat. */
 export const performWithEnterAttacking = <T>(g: Game, by: (ids: readonly ObjectId[]) => ObjectId[], f: () => T): T => {
@@ -74,7 +82,12 @@ export const performRemoveFromStack = (g: Game, id: ObjectId): void => removeFro
 export const performCopyOnStack = (g: Game, original: GameObject, controller: PlayerId, targets: TargetChoice[][], defId?: DefId): ObjectId => putCopyOnStack(g, original, controller, targets, defId);
 
 /** CR 707.12, 702.192a (FAST5X E26): a copy of a card created in exile (paradigm), to be cast at once; its id. */
-export const performCreateCardCopy = (g: Game, original: Pick<GameObject, 'defId' | 'face'>, controller: PlayerId, zone: 'exile'): ObjectId => createCardCopy(g, original, controller, zone);
+export const performCreateCardCopy = (g: Game, original: Pick<GameObject, 'defId' | 'face'>, controller: PlayerId, zone: 'exile' | 'hand', castReduce?: ManaCost): ObjectId => {
+  const id = createCardCopy(g, original, controller, zone);
+  // edh-next-132 (CR 601.2f): "That copy costs {2} less to cast" (God-Eternal Kefnet), read by statics/costmods.ts#costModsFor
+  if (castReduce !== undefined) g.s.objects[id]!.castReduce = castReduce;
+  return id;
+};
 
 /** CR 611.2: a resolved continuous effect joins the state (an `until` duration counts events from now on). */
 export const performEffectRecord = (g: Game, rec: ContinuousEffectRec): void => addEffectRecord(g, rec);
@@ -98,6 +111,17 @@ export const performTurnFaceDown = (g: Game, id: ObjectId, info: FaceDownInfo): 
 export const performBringIntoGame = (g: Game, owner: PlayerId, defId: DefId, to: 'hand' | 'library' = 'hand'): ObjectId | null => bringIntoGame(g, owner, defId, to);
 
 /**
+ * edh-next-62 (CR 406.3, 607.2a; rulings of Colfenor's Plans 2013-04-15 and Kheru Mind-Eater 2017-08-25: once a player looks at a face-down exiled card they may look at it any
+ * time later): a card just exiled face down that the source's controller may look at because a static `lookAt` permission names the cards its linked ability exiled is
+ * shown to that player for as long as it stays the same object in exile (core/zones.ts#showCards), also after the permission stops functioning. Hidden information only: no game event.
+ */
+export function performLookedAtExiled(g: Game, source: ObjectId, ids: readonly ObjectId[]): void {
+  const viewer = g.s.objects[source]?.controller;
+  if (viewer === undefined) return;
+  for (const id of ids) if (g.s.objects[id]?.zone === 'exile' && g.s.objects[id]?.faceDown === true && exileLookVisibleTo(g.s, id, viewer)) showCards(g, [id], [viewer]);
+}
+
+/**
  * FAST5X E25 (CR 406.3): who may look at a card exiled face down: the players who could see it as it was exiled (`players`), or nobody (an empty list: "a pile
  * of cards that are shuffled", or no instruction let anyone look). Hidden information only: no game event.
  */
@@ -108,6 +132,18 @@ export function performExiledSeers(g: Game, ids: readonly ObjectId[], players: r
     if (players.length > 0) o.revealedTo = [...players];
     else delete o.revealedTo;
   }
+}
+
+/**
+ * edh-d-101 (CR 406.3, 400.2; The Creation of Avacyn): a face-down card in exile is turned face up where it is (the same object; it is a card, not a permanent, so no "turned face
+ * up" event happens): every player may now see it. False when it is not a face-down card in exile.
+ */
+export function performTurnExiledFaceUp(g: Game, id: ObjectId): boolean {
+  const o = g.s.objects[id];
+  if (!o || o.kind !== 'card' || o.zone !== 'exile' || !o.faceDown) return false;
+  o.faceDown = false;
+  delete o.revealedTo;
+  return true;
 }
 
 /**

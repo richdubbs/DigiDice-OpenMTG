@@ -1,0 +1,43 @@
+[
+  {
+    "id": "eff.edht9.doubleEachKind.yourCounters",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.10e",
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "double the number of each kind of counter you have",
+    "build": {
+      "op": "action",
+      "action": "doubleEachKind",
+      "subject": {
+        "ref": "you"
+      },
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "double",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{4}, {T}: Double the number of each kind of counter you have."
+      },
+      {
+        "text": "When ~ enters, double the number of each kind of counter you have."
+      }
+    ],
+    "counterExamples": [
+      "{4}, {T}: Double the number of each kind of counter you have unless you control an artifact.",
+      "{4}, {T}: Double the number of poison counters you have.",
+      "{4}, {T}: Double the number of each kind of counter each opponent has."
+    ]
+  }
+]

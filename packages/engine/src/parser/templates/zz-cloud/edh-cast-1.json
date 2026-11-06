@@ -266,7 +266,8 @@
    ]
   },
   "consumes": [
-   "each"
+   "each",
+   "each other"
   ],
   "examples": [
    {
@@ -511,8 +512,7 @@
   "status": "stable",
   "subject": "none",
   "cr": [
-   "CR 115.7",
-   "CR 115.7a",
+   "CR 115.7b",
    "CR 115.1",
    "CR 608.2b"
   ],
@@ -548,8 +548,7 @@
   "status": "stable",
   "subject": "none",
   "cr": [
-   "CR 115.7",
-   "CR 115.7a",
+   "CR 115.7b",
    "CR 115.1",
    "CR 608.2b"
   ],

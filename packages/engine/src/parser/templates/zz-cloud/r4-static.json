@@ -573,7 +573,8 @@
             "manaValue": "$f.manaValue",
             "counters": "$f.counters",
             "zone": "$f.zone",
-            "controller": "$f.controller"
+            "controller": "$f.controller",
+            "sharesWith": "$f.sharesWith"
           }
         }
       }

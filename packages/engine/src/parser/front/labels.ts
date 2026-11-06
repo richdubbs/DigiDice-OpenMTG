@@ -26,12 +26,13 @@ const NOT_A_TITLE = new Set(['each', 'you', 'your', 'they', 'them', 'their', 'if
 
 /**
  * r4-mech (CR 207.2d): a flavor word written as an exclamation or a question in title case ("A Test of Your Reflexes!", "Do You Like Squirrels?") is a name even
- * with a word of NOT_A_TITLE in it: rules text never ends in "!" or "?". Every word is capitalized but a few short function words, so "Bring it Down!" stays text.
+ * with a word of NOT_A_TITLE in it: rules text never ends in "!" or "?". Every word is capitalized but a few short function words, (and "it" between them: "Bring it Down!").
  */
 const TITLE_SMALL = new Set(['a', 'an', 'the', 'of', 'to', 'in', 'on', 'for', 'and', 'with', 'up', 'at', 'by']);
 function exclaimedTitle(prefix: string): boolean {
   if (!/[!?]$/.test(prefix)) return false;
-  return prefix.slice(0, -1).split(/\s+/).every((w, i) => /^\p{Lu}/u.test(w) || (i > 0 && TITLE_SMALL.has(w)));
+  // edh-b-1 (CR 207.2c-d): "it" too, said between capitalized words of a title that ends in "!" ("Bring it Down!", Company Commander): rules text never ends in "!"
+  return prefix.slice(0, -1).split(/\s+/).every((w, i) => /^\p{Lu}/u.test(w) || (i > 0 && (TITLE_SMALL.has(w) || (w === 'it' && i < prefix.split(/\s+/).length - 1))));
 }
 
 /**
@@ -60,6 +61,15 @@ function hidesKeyword(ix: LexiconIndex, prefix: string): boolean {
     if (prefix[m.index!] !== prefix[m.index!]!.toUpperCase()) return true;
   }
   return false;
+}
+
+/**
+ * edh-next-141 (CR 207.2d): "Throw ..." and "... Catch": one or two capitalized words with an ellipsis (three full stops or the one character) before or after them, never both, and nothing else.
+ */
+function ellipsisTitle(prefix: string): boolean {
+  const m = prefix.match(/^(?:(?:\.\.\.|\u2026) +)?([^.\u2026]+?)(?: +(?:\.\.\.|\u2026))?$/u);
+  if (m === null || m[1] === prefix || (/^(?:\.\.\.|\u2026)/u.test(prefix) && /(?:\.\.\.|\u2026)$/u.test(prefix))) return false;
+  return /^\p{Lu}[\p{L}'-]*(?: \p{Lu}[\p{L}'-]*)?$/u.test(m[1]!);
 }
 
 /** Index of the first "--" of `text[range]` outside braces and double quotes, or -1. */
@@ -110,7 +120,11 @@ export function detectLead(parse: string, line: Range, ix: LexiconIndex): Lead {
   const words = prefix.split(/\s+/);
   if (words.length > MAX_FLAVOR_WORDS) return { body: trimmed };
   if (!ix.abilityWords.has(lower) && ((/^\p{N}/u.test(prefix) && !NUMBER_TITLE.test(prefix)) || hidesKeyword(ix, prefix) || (!exclaimedTitle(prefix) && !titleCased(prefix) && words.some((w) => NOT_A_TITLE.has(w.toLowerCase().replace(/[^\p{L}']/gu, '')))))) return { body: trimmed };
-  if (!/^[\p{Lu}\p{N}]/u.test(prefix) || /[{}:.;()"~]/.test(prefix) || !/\p{L}/u.test(prefix)) return { body: trimmed };
+  // edh-next-141 (CR 207.2d; Captain America, First Avenger, "Throw ... --" and "... Catch --"): a flavor word split over two lines by an ellipsis is a name when the words beside the
+  // ellipsis are capitalized words (each piece of the title, said on its own line)
+  if (ellipsisTitle(prefix)) return { label: { text: prefix, range: [trimmed[0], bodyStart], kind: 'flavor-word' }, body };
+  // edhd68 (CR 207.2d; The Eleventh Doctor, "I. AM. TALKING! --"): a title with full stops is a name when it is an exclamation in title case (rules text never ends in "!")
+  if (!/^[\p{Lu}\p{N}]/u.test(prefix) || /[{}:;()"~]/.test(prefix) || (prefix.includes('.') && !exclaimedTitle(prefix)) || !/\p{L}/u.test(prefix)) return { body: trimmed };
   const label: LineLabel = { text: prefix, range: [trimmed[0], bodyStart], kind: ix.abilityWords.has(lower) ? 'ability-word' : 'flavor-word' };
   return { label, body };
 }

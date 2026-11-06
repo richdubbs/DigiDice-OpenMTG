@@ -159,9 +159,9 @@ describe('CR 601.3, 101.2: "You can\'t cast creature spells." and "... this turn
   });
 });
 
-describe('CR 400.7, 608.2h: "That creature\'s owner can\'t cast spells with the same name as that creature until your next turn." is not full (fail closed)', () => {
+describe('CR 400.7, 608.2h: "That creature\'s owner can\'t cast spells with the same name as that creature until your next turn." (fail closed until edh-mana-keywords-6 stored the name, Reflector Mage)', () => {
   const MAGE = card('Test Mirror Warden', 'Creature — Human Wizard', "When this creature enters, return target creature an opponent controls to its owner's hand. That creature's owner can't cast spells with the same name as that creature until your next turn.", ['3', '2']);
-  it('is not automated: the returned creature is a new object, whose name the restriction would not read (std-rx21: feature:restrict.other.lastingSharesWith is never registered)', () => expect(full(MAGE)).toBe(false));
+  it('is automated since edh-mana-keywords-6: the restriction stores the creature\'s name as it resolves, so the returned new object (CR 400.7) is still matched by name (played in test/cloud/edh-mana-keywords-6, Reflector Mage)', () => expect(full(MAGE)).toBe(true));
   it('"That creature\'s owner can\'t cast creature spells until your next turn." after the return is automated and stops the owner\'s creature spells on their turn', () => {
     const M = card('Test Probe Mage', 'Creature — Human Wizard', "When this creature enters, return target creature an opponent controls to its owner's hand. That creature's owner can't cast creature spells until your next turn.", ['3', '2']);
     expect(full(M)).toBe(true);

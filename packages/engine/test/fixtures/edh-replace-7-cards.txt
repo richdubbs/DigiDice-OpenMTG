@@ -1,0 +1,9 @@
+# edh-replace-7 (Commander lane edh-replace; test/cloud/edh-replace-7, golden edh-replace-7-review.json)
+# damage dealt to a permanent or player as an event and a reference (exactly N damage, another source), the loss of the game as a replaceable event, loyalty from commander casts + triple damage of a chosen creature,
+# attacks or blocks each combat + lose control of ~ + prevent damage and an opponent gains control, an instead rider that replaces a may step, prevention with damage back at the source
+Ghyrson Starn, Kelermorph
+The Golden Throne
+Jeska, Thrice Reborn
+Khârn the Betrayer
+Emeria Shepherd
+Comeuppance

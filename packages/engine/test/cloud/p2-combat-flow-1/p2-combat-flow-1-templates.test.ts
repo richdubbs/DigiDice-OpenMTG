@@ -34,6 +34,7 @@ const NARROW: Readonly<Record<string, string>> = {
   'rst.p2cf1.cast.self.combatYourTurn': 'Savage Beating',
   'rst.p2cf1.cast.self.combatOpponentTurn': 'Wake the Dead',
   'rst.p2cf1.all.must.block': 'Grand Melee',
+  'rst.p2cf1.cast.self.beforeBlockers': "Berserker's Frenzy", // edh-next-127: promoted on its one golden card (design 6.9 narrow-wording deviation, owner's standing rule 2026-10-27)
 };
 const OPTS = defaultParseOptions({ templates: [...TEMPLATE_SET], capabilities: ENGINE_CAPABILITIES }); // what a decklist card gets (design 5.2; `needs`)
 

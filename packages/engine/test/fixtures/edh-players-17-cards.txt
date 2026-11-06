@@ -1,0 +1,7 @@
+# edh-players-17 (Commander lane edh-players; test/cloud/edh-players-17, golden edh-players-17-review.json)
+# combat damage dealt to a player: you and that player each gain that much life, and the players the creature attacked lose the game; the attacked opponent has more life than another opponent; a vote: an extra turn for each time vote, a permanent owned by the voter for each money vote; each player chooses a color and the permanents not of their controller's color are exiled; an Aura on an opponent
+Angel of Destiny
+Breena, the Demagogue
+Selective Obliteration
+Tenuous Truce
+# (Expropriate is also full here; it is listed once, in test-cards.txt)

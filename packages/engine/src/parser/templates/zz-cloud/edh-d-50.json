@@ -1,0 +1,211 @@
+[
+  {
+    "id": "eff.edhd50.nextCast.gains.rebound",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 611.2",
+      "CR 702.88a",
+      "CR 603.7"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:Filter} from your hand this turn , ( it | that spell ) gains rebound",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": {
+        "anyOf": [
+          "$f"
+        ],
+        "castFrom": "hand"
+      },
+      "rider": "keyword",
+      "keyword": {
+        "kind": "keyword",
+        "keyword": "rebound",
+        "text": "rebound"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "from your hand",
+      "it"
+    ],
+    "examples": [
+      {
+        "text": "{T}: When you next cast an instant or sorcery spell from your hand this turn, it gains rebound."
+      },
+      {
+        "text": "{T}: When you next cast a creature spell from your hand this turn, that spell gains rebound."
+      }
+    ],
+    "counterExamples": [
+      "-2: When you next cast an instant or sorcery spell this turn, it gains rebound.",
+      "-2: When you next cast an instant or sorcery spell from your hand, it gains rebound.",
+      "-2: When you next cast an instant or sorcery spell from your graveyard this turn, it gains rebound."
+    ]
+  },
+  {
+    "id": "eff.edhd50.castSpells.fromHand.gain.cascade",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 611.2",
+      "CR 702.85a",
+      "CR 613.1f"
+    ],
+    "pattern": "as you cast spells from your hand this turn , they gain cascade",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": {
+        "castFrom": "hand"
+      },
+      "rider": "keyword",
+      "lasting": true,
+      "keyword": {
+        "kind": "keyword",
+        "keyword": "cascade",
+        "text": "cascade"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "as",
+      "they"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature deals combat damage to a player, as you cast spells from your hand this turn, they gain cascade."
+      },
+      {
+        "text": "{2}{R}, {T}: As you cast spells from your hand this turn, they gain cascade."
+      }
+    ],
+    "counterExamples": [
+      "{2}{R}, {T}: As you cast spells this turn, they gain cascade.",
+      "{2}{R}, {T}: As you cast spells from your hand, they gain cascade.",
+      "{2}{R}, {T}: As you cast spells from your hand this turn, they gain storm."
+    ]
+  },
+  {
+    "id": "eff.edhd50.nextCast.thenEffects",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 603.3d",
+      "CR 601.2i"
+    ],
+    "pattern": "when you next cast ( a | an ) {f:CastSpell} this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "cast",
+          "player": "you",
+          "spell": "$f"
+        }
+      },
+      "targets": [],
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "{T}: When you next cast a creature spell this turn, put X +1/+1 counters on up to one target creature, where X is the mana value of that spell."
+      },
+      {
+        "text": "{T}: When you next cast an artifact spell this turn, you gain 3 life."
+      }
+    ],
+    "counterExamples": [
+      "-2: When you next cast a creature spell, put a +1/+1 counter on up to one target creature.",
+      "-2: When an opponent next casts a creature spell this turn, put a +1/+1 counter on up to one target creature."
+    ]
+  },
+  {
+    "id": "eff.edhd50.nextActivate.manaSpent.copy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 602.2b",
+      "CR 707.10",
+      "CR 106.3"
+    ],
+    "pattern": "when you next activate an ability that isn't a mana ability this turn by spending four or more mana to activate it , copy that ability",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "activate",
+          "player": "you",
+          "manaAbility": false,
+          "manaSpentAtLeast": 4
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "{T}: When you next activate an ability that isn't a mana ability this turn by spending four or more mana to activate it, copy that ability."
+      },
+      {
+        "text": "When this creature enters, when you next activate an ability that isn't a mana ability this turn by spending four or more mana to activate it, copy that ability."
+      }
+    ],
+    "counterExamples": [
+      "{T}: When you next activate an ability that isn't a mana ability by spending four or more mana to activate it, copy that ability.",
+      "{T}: When you next activate an ability that isn't a mana ability this turn by spending four mana to activate it, copy that ability.",
+      "{T}: When an opponent next activates an ability that isn't a mana ability this turn by spending four or more mana to activate it, copy that ability."
+    ]
+  }
+]

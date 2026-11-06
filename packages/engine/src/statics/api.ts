@@ -33,6 +33,16 @@ export interface CharsAdditions {
   /** P/T after layers 7a-7d as decimal strings ('*' only when a CDA could not be evaluated: then the card is manual). */
   power?: string;
   toughness?: string;
+  /** edh-mana-keywords-10 (CR 111.1, 601.2a; rules/quality.ts): the object is a spell on the stack (never an ability); absent otherwise. */
+  isSpell?: true;
+  /** edh-top-9 (CR 113.1, 702.11d; rules/quality.ts): the object is an activated or triggered ability on the stack; absent otherwise. */
+  isAbility?: true;
+  /** edh-mana-keywords-10 (CR 601.2a; rules/quality.ts): the object is a permanent that was cast this turn; absent otherwise. */
+  castThisTurn?: true;
+  /** edh-replace-6 (CR 701.54e; rules/quality.ts): the object is a player's Ring-bearer now; absent otherwise. */
+  ringBearer?: true;
+  /** edh-next-88 (CR 122.1; rules/quality.ts `counter:<kind>`): the kinds of counter this permanent has on it now (battlefield only); absent otherwise. */
+  counterKinds?: string[];
 }
 
 export interface CharAbility {
@@ -76,6 +86,8 @@ export interface LiveEffect {
   // ---- M6-0 ADDITIONS (m6 design 2.5; nothing sets them before their owners land) ----
   /** M6-2: for a 1a effect, the copiable values it applies (from ContinuousEffectRec.copy via statics/live.ts#resolvedEffects, or built by the rules for a merged permanent). */
   copy?: CopiableValues;
+  /** edh-next-120 (CR 612.5): for a `rulesTextOf` effect, the snapshot whose rules text it gives (from ContinuousEffectRec.textOf). */
+  textOf?: CopiableValues;
   /** M6-2: an `asEntry` record (CR 613.2a): its mods are applied in layer 1a. */
   asEntry?: true;
   /** M6-3: the face-down profile of a rule-generated 1b effect (one per face-down permanent or spell, timestamp = the object's, CR 613.7f). */
@@ -101,8 +113,12 @@ export interface ModContext {
   timestamp: number;
   /** M6-0 (m6 design 2.5): the copiable values of the 1a effect being applied (M6-2). */
   copy?: CopiableValues;
+  /** edh-next-120 (CR 612.5): the snapshot of a `rulesTextOf` layer 3 effect. */
+  textOf?: CopiableValues;
   /** M6-0 (m6 design 2.5): the face-down profile of the 1b effect being applied (M6-3). */
   faceDown?: FaceDownProfile;
+  /** edh-next-146 (CR 613.2a): the effect being applied in layer 1a is an `asEntry` record: its modifications are copiable values of the object. */
+  asEntry?: true;
 }
 
 /** M6-0 (m6 design 2.5), M6-2 (statics/copy.ts): the copiable values of an object now (CR 613.2c, 707.2-707.3): all of layer 1. Pure. */
@@ -127,6 +143,17 @@ export interface RuleQuery {
   subject: ObjectId | PlayerId;
   /** The other object/player of the action (the blocker for beBlocked, the spell for cast). */
   other?: ObjectId | PlayerId;
+  /**
+   * edh-fix-4 (CR 614.12; Solemnity ruling 2017-07-14): the objects entering the battlefield in the same event as the subject. They are not on the battlefield yet, so the
+   * effects of their static abilities do not apply to it (effects/entering-together.ts); a restriction whose source is one of them is not asked.
+   */
+  ignoreSources?: ReadonlySet<ObjectId>;
+  /** edh-b-2 (CR 122.6): the kind of counter put (`haveCountersPut`), for a restriction's `counter`; undefined when it is not known. */
+  counter?: string;
+  /** edh-next-18 (CR 118.3): the action is paying a cost to cast a spell or activate an ability, for a restriction's `forCosts`. */
+  cost?: true;
+  /** edh-next-69 (CR 701.21a, 109.5): the source of the spell or ability whose effect makes the subject do the action (`sacrifice`), for a restriction's `causedByOpponents`; undefined for a cost or when not known. */
+  cause?: ObjectId;
 }
 export type StaticEffectsFor = (s: GameState, q: RuleQuery) => StaticEffect[];
 

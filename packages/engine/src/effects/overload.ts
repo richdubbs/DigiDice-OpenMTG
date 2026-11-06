@@ -14,13 +14,13 @@ import type { EffectProgram, EffectStep, ModeSpec, ObjRef, ObjectFilter, PlayerR
 export const OVERLOAD = 'overload';
 
 /** The keys of a step under which a reference to a target names the thing the step acts on (or is acted on): the places an `each` reference is read the same way. */
-const ACTED_ON_KEYS: ReadonlySet<string> = new Set(['what', 'to', 'who', 'player', 'affects', 'subject']);
+const ACTED_ON_KEYS: ReadonlySet<string> = new Set(['what', 'to', 'who', 'player', 'affects', 'subject', 'on' /* edh-perms-8: putCounters (Fangs of Kalonia) */, 'over' /* edh-next-131: forEach (March of Progress, "for each creature chosen this way": each of them, CR 702.96a) */]);
 
 type Replacement = { obj?: ObjRef; player?: PlayerRef };
 
 /** The `each` references that stand for target spec `t` once "target" has become "each" (CR 702.96a), or null when the spec has no such reading. */
 function eachFor(t: TargetSpec): Replacement | null {
-  if (t.min !== 1 || t.max !== 1 || t.divide || t.groupLimit || t.distinctFrom || t.sameOwner || t.differentNames || t.perOpponent || t.perPlayer || t.chooser) return null;
+  if (t.min !== 1 || t.max !== 1 || t.divide || t.groupLimit || t.distinctFrom || t.sameOwner || t.differentNames || t.differentManaValues || t.perOpponent || t.perPlayer || t.chooser) return null;
   const filter: ObjectFilter = t.filter ?? {};
   switch (t.kind) {
     case 'object':

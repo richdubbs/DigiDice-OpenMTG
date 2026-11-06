@@ -152,11 +152,13 @@ describe('std-ry3 guard G2 (design 6.8): a nonsense word never leaves an automat
 describe('std-ry3 fail-closed edges of the templates', () => {
   it('"maximum hand size is increased by" a computed number, another player\'s hand size and a duration stay manual', () => {
     expect(level('Enchantment', 'Your maximum hand size is increased by the number of lands you control.')).not.toBe('full');
-    expect(level('Enchantment', "Each opponent's maximum hand size is reduced by two.")).not.toBe('full');
+    // edh-players-6 (Jin-Gitaxias, Core Augur; CR 402.2) reads "Each opponent's maximum hand size is reduced by N" with a plain number, so only the computed number stays manual
+    expect(level('Enchantment', "Each opponent's maximum hand size is reduced by two.")).toBe('full');
+    expect(level('Enchantment', "Each opponent's maximum hand size is reduced by the number of lands you control.")).not.toBe('full');
     expect(level('Sorcery', 'Draw a card. Your maximum hand size is reduced by one for the rest of the game.')).not.toBe('full');
   });
-  it('"skips their next combat phase this turn" and "skips their next two combat phases" stay manual', () => {
-    expect(level('Sorcery', 'Target opponent skips their next combat phase this turn.')).not.toBe('full');
+  it('"skips their next two combat phases" stays manual ("skips their next combat phase this turn" is read since edh-c-60, Moment of Silence: a shield that ends with the turn)', () => {
+    expect(level('Sorcery', 'Target opponent skips their next combat phase this turn.')).toBe('full'); // edh-c-60 (eff.edhv60.skip.nextCombatPhase.dur), the older negative is a Moment of Silence wording
     expect(level('Sorcery', 'Target player skips their next two combat phases.')).not.toBe('full');
   });
   it('the and/or form keeps both halves: "except by Walls and/or creatures with flying" is not the Walls-only or the flyers-only restriction', () => {
@@ -191,9 +193,10 @@ describe('std-ry3 renderer support (G6: the render gate is exact)', () => {
     expect(level('Creature — Snake', 'Whenever this creature deals combat damage to a player, that player skips their next untap step.')).toBe('full');
     expect(level('Creature — Angel', 'Flying\nWhenever this creature deals combat damage to a player, that player skips their next combat phase.')).toBe('full');
   });
-  it('fails closed: "that player" of an attack trigger (the defender may be a planeswalker) and a group of players stay manual', () => {
+  it('fails closed: "that player" of an attack trigger (the defender may be a planeswalker) stays manual; a group of players is one shield each (edh-next-99)', () => {
     expect(level('Creature — Snake', 'Whenever this creature attacks, that player skips their next untap step.')).not.toBe('full');
-    expect(level('Sorcery', 'Each opponent skips their next untap step.')).not.toBe('full');
+    // edh-next-99: no longer a negative - a group's one-use skip shield is now one shield per player (effects/handlers/lasting.ts#effectsToStore; Brine Elemental), played in cloud/edh-next-99
+    expect(level('Sorcery', 'Each opponent skips their next untap step.')).toBe('full');
   });
 });
 

@@ -85,7 +85,8 @@ describe('CR 605.1a, 605.3b: a mana ability runs only addMana steps', () => {
       }
     }
     const drawn = parse('Creature — Elf', '{T}: Add {G}. Draw a card.').abilities[0]!;
-    expect(drawn.kind === 'activated' && drawn.isMana && drawn.effect.steps.map((st) => st.op)).toEqual(['addMana', 'draw']);
+    expect(drawn.kind === 'activated' && drawn.isMana).toBeUndefined(); // edh-fix-5: CR 605.1a, a draw moves a card out of a library: an ordinary ability
+    expect(drawn.kind === 'activated' && drawn.effect.steps.map((st) => st.op)).toEqual(['addMana', 'draw']);
   });
 
   it('CR 605.1a: an ability that creates a token with a quoted "{T}: Add {G}." is not itself a mana ability', () => {
@@ -136,8 +137,8 @@ describe('CR 614.15, 608.2c: "Y. If C, X instead." folds only when X replaces Y 
 
   it('CR 614.15: the render gate never reads `if C then [X] else [Y]` with X and Y different instructions as an "instead" fold', () => {
     const forest = { cond: 'exists', of: { ref: 'each', filter: { subtypes: ['Forest'], controller: 'you' } } };
-    const def = spell([{ op: 'if', cond: forest, then: [draw(2)], else: [{ op: 'gainLife', who: { ref: 'you' }, amount: 2 }] } as EffectStep]);
-    rejects(def, 'You gain 2 life. If you control a Forest, draw two cards instead.');
+    const def = spell([{ op: 'if', cond: forest, then: [draw(2)], else: [{ op: 'loseLife', who: { ref: 'each', who: 'opponent' }, amount: 2 }] } as EffectStep]); // edh-replace-2: "gain life" by "draw" (both of you) is a fold now; another player's instruction is not
+    rejects(def, 'Each opponent loses 2 life. If you control a Forest, draw two cards instead.');
   });
 });
 
@@ -155,8 +156,11 @@ describe('CR 107.3f: "pay {X}" on resolution', () => {
 });
 
 describe('CR 603.7c, 400.7: a delayed trigger and an object the same resolution moved', () => {
-  it('CR 400.7, 603.7c: "{1}: Exile ~. Return ~ to the battlefield ... at the beginning of the next end step." is not automated', () => {
-    expect(ok(parse('Creature — Elf', "{1}: Exile ~. Return ~ to the battlefield under its owner's control at the beginning of the next end step."))).toBe(false);
+  it('CR 400.7, 603.7c: "{1}: Exile ~. Return ~ to the battlefield ... at the beginning of the next end step." is automated through the exile move\'s binding, never the ~ handle (edh-next-78 and edh-next-79; Saltskitter: rebindMovedSelf)', () => {
+    const f = parse('Creature — Elf', "{1}: Exile ~. Return ~ to the battlefield under its owner's control at the beginning of the next end step.");
+    expect(ok(f), json(f)).toBe(true);
+    expect(/"op":"delay"[^\]]*"what":\{"ref":"self"/.test(json(f)), json(f)).toBe(false);
+    expect(json(f)).toContain('"ref":"bound"');
   });
 
   it('CR 400.7, 603.7c: "Exile target creature. Return it to the battlefield ... at the beginning of the next end step." is not automated through the target handle', () => {
@@ -312,6 +316,14 @@ const PROMOTED: Readonly<Record<string, string>> = {
     + 'Otherworldly Journey, Planar Guide (cloud-r3-fx-review.json), Spinal Embrace, Surprise Deployment (fast4-t32-review.json)',
   'dl.yourNextEnd.lead': 'CR 603.7, 603.7a, 724.1: golden Coalstoke Gearhulk, Puppeteer Clique, Glorious End (End the turn, then the delay: played); a target the '
     + 'delayed sentence announces makes it manual (CR 603.3d)',
+  // edh-zones-25 (appended): promoted from experimental on one hand-verified golden card (Conspiracy Theorist, test/m5/golden/cards/edh-zones-25-review.json) plus the scenarios of
+  // test/cloud/edh-zones-25 (pay and discard, declined, no card, no mana); three index cards print the wording (Wolf of Devil's Breach, Banon, the Returners' Leader). 6.9 deviation named in the record
+  // edh-zones-25 (appended): promoted from experimental on one hand-verified golden card (Conspiracy Theorist, test/m5/golden/cards/edh-zones-25-review.json) plus the scenarios of
+  // test/cloud/edh-zones-25 (pay and discard, declined, no card, no mana); three index cards print the wording (Wolf of Devil's Breach, Banon, the Returners' Leader). 6.9 deviation named in the record
+  // edh-c-7: promoted from experimental on two hand-verified golden cards (Force of Rage, Rally the Ancestors, test/m5/golden/cards/edh-c-7-review.json) plus the scenarios of
+  // test/cloud/edh-c-7 (exiled at the controller's next upkeep only, not at the opponent's; a creature that left before is a new object); 6.9 deviation named in the record
+  'dl.yourNextUpkeep.tail': 'CR 603.7, 603.7c, 503.1, 400.7: two verified golden cards (Force of Rage, Rally the Ancestors) plus played scenarios (test/cloud/edh-c-7); the same sentence as dl.yourNextUpkeep.lead with the delay last',
+  'ch.maypay.discard': 'CR 118.12, 701.9a, 608.2d: one verified golden card (Conspiracy Theorist) plus played scenarios (test/cloud/edh-zones-25); the only wording of the kind in the index: pay and discard one card, then the "If you do" follower',
 };
 
 describe('design 6.9: template status', () => {

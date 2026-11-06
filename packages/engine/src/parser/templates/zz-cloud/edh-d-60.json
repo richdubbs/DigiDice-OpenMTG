@@ -1,0 +1,167 @@
+[
+  {
+    "id": "eff.edhd60.eachOther.becomeCopy.thoseNotLegendary",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.4a",
+      "CR 613.1a",
+      "CR 611.2c"
+    ],
+    "pattern": "each other {g:Filter} becomes a copy of {p:Obj} {d:Dur} , except {x:CopyExceptEach}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$g"
+              ],
+              "not": {
+                "is": "$p"
+              }
+            }
+          },
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p",
+              "except": "$x"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each other",
+      "each",
+      "other",
+      "except",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Choose target nonlegendary creature you control. Each other creature you control becomes a copy of it until end of turn, except those creatures aren't legendary."
+      },
+      {
+        "text": "Choose target Elf you control. Each other Elf you control becomes a copy of that creature until end of turn, except those creatures aren't legendary."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature you control. Each other creature you control becomes a copy of it until end of turn, except those creatures are legendary.",
+      "Choose target creature you control. Each other creature you control becomes a copy of it until end of turn, except those creatures aren't legendary and have haste."
+    ]
+  },
+  {
+    "id": "eff.edhd60.eachOtherThanChosen.becomeCopy",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.4a",
+      "CR 613.1a",
+      "CR 611.2c"
+    ],
+    "pattern": "each {g:Filter} other than the chosen creature becomes a copy of {p:Obj} {d:Dur} , except {x:CopyExcept}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$g"
+              ],
+              "not": {
+                "is": "$p"
+              }
+            }
+          },
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p",
+              "except": "$x"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "other",
+      "except",
+      "until",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Choose target Elf you control. Each Elf you control other than the chosen creature becomes a copy of that creature until end of turn, except it isn't legendary."
+      },
+      {
+        "text": "Choose target nonlegendary creature you control. Each creature you control other than the chosen creature becomes a copy of that creature until end of turn, except it's 1/1."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature you control. Each creature you control other than the chosen creature becomes a copy of that creature until end of turn, except it is legendary.",
+      "Choose target creature you control. Each creature you control other than the chosen creature becomes a copy of that creature until end of turn, except it has haste if it's a Wall."
+    ]
+  },
+  {
+    "id": "rid.edhd60.copyTargets.object",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.10c",
+      "CR 115.1",
+      "CR 601.2c"
+    ],
+    "pattern": "the copy targets {o:Obj}",
+    "build": {
+      "$patchPrevious": {
+        "targetsObject": "$o",
+        "@require": {
+          "result": "spell",
+          "targetsObject": null,
+          "newTargets": null,
+          "retargetEach": null,
+          "retargetAll": null,
+          "gains": null,
+          "count": null,
+          "except": null
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "targets"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell that targets only a single creature you control, create a 2/2 green Bear creature token, then copy that spell. The copy targets that token."
+      },
+      {
+        "text": "Whenever you cast an instant spell that targets only a single creature you control, create a 1/1 white Spirit creature token with flying, then copy that spell. The copy targets that token."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell that targets only a single creature you control, create a 1/1 red Soldier creature token with haste, then draw a card. The copy targets that token.",
+      "Whenever you cast a spell that targets only a single creature you control, copy that spell and you may choose new targets for the copy. The copy targets that creature."
+    ]
+  }
+]

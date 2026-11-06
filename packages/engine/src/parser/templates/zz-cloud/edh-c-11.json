@@ -1,0 +1,587 @@
+[
+  {
+    "id": "eff.edhv11.must.each.block",
+    "weak": 1,
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 509.1c"
+    ],
+    "pattern": "{o:Objs} block[s] {d:Dur} if able",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "block"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "if able",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Each creature your opponents control blocks this turn if able."
+      },
+      {
+        "text": "Artifact creatures your opponents control block this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "Each creature your opponents control blocks this turn.",
+      "Each creature your opponents control can't block this turn.",
+      "Each creature your opponents control attacks this turn if able."
+    ]
+  },
+  {
+    "id": "eff.edhv11.pump.extraBlock",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 509.1a"
+    ],
+    "pattern": "{o:Obj} get[s] {pt:PT} {d:Dur} and can block an additional creature this turn",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        },
+        {
+          "s": "rule",
+          "rule": "extraBlockers",
+          "value": 1,
+          "of": {
+            "is": "$o"
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Untap target creature. It gets +1/+1 until end of turn and can block an additional creature this turn."
+      },
+      {
+        "text": "Target creature gets +1/+1 until end of turn and can block an additional creature this turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+2 until end of turn and can block two additional creatures this turn.",
+      "Target creature gets +2/+2 until end of turn and can block an additional creature each combat.",
+      "Target creature gets +2/+2 and can block an additional creature this turn."
+    ],
+    "consumes": [
+      "additional"
+    ]
+  },
+  {
+    "id": "eff.edhv11.prevent.combat.toAndBy.objs.dur",
+    "weak": 1,
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.1"
+    ],
+    "pattern": "prevent all combat damage that would be dealt to and dealt by {o:Objs} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Untap up to two target creatures. Prevent all combat damage that would be dealt to and dealt by those creatures this turn."
+      },
+      {
+        "text": "Untap up to three target creatures. Prevent all combat damage that would be dealt to and dealt by those creatures this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt to those creatures this turn.",
+      "Prevent all combat damage that would be dealt by those creatures this turn.",
+      "Prevent all damage that would be dealt to and dealt by those creatures this turn."
+    ],
+    "subject": "none"
+  },
+  {
+    "id": "eff.edhv11.becomes.artifactcreature.basept.gains.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} becomes an artifact creature with base power and toughness {pt:BasePT} and gains {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "At the beginning of your end step, target artifact or creature becomes an artifact creature with base power and toughness 4/4 and gains flying."
+      },
+      {
+        "text": "{T}: Target artifact becomes an artifact creature with base power and toughness 3/3 and gains trample and haste."
+      }
+    ],
+    "counterExamples": [
+      "Target artifact you control becomes an artifact creature with base power and toughness 2/6.",
+      "Target artifact you control becomes an artifact creature with base power and toughness 2/6 and loses flying.",
+      "Target artifact you control becomes a creature with base power and toughness 2/6 and gains flying.",
+      "Until end of turn, target artifact you control becomes an artifact creature with base power and toughness 2/6 and gains flying."
+    ]
+  },
+  {
+    "id": "eff.edhv11.dur.obj.has.basept.becomes.subtype",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 205.3a",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} has base power and toughness {pt:BasePT} and becomes ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{X}: Until end of turn, target creature you control has base power and toughness X/X and becomes a Giant in addition to its other types."
+      },
+      {
+        "text": "Until end of turn, target land you control has base power and toughness 3/3 and becomes a Giant in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature you control has base power and toughness 3/3 and becomes a Giant.",
+      "Target creature you control has base power and toughness 3/3 and becomes a Giant in addition to its other types.",
+      "Until end of turn, target creature you control has base power 3 and becomes a Giant in addition to its other types.",
+      "Until end of turn, target creature you control has base power and toughness 3/3 and becomes a Giant in addition to its other creature types."
+    ]
+  },
+  {
+    "id": "eff.edhv11.gains.becomes.colorlessArtifact",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 105.2c",
+      "CR 205.1b"
+    ],
+    "pattern": "{o:Obj} gains {a:Abilities} and becomes a colorless artifact in addition to its other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact"
+                ]
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": []
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{2}{B}, {T}: Put a petrification counter on target creature. It gains defender and becomes a colorless artifact in addition to its other types."
+      },
+      {
+        "text": "{T}: Target creature gains defender and becomes a colorless artifact in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gains defender and becomes a colorless artifact.",
+      "Target creature gains defender and becomes an artifact in addition to its other types.",
+      "Target creature loses defender and becomes a colorless artifact in addition to its other types.",
+      "Target creature gains defender until end of turn and becomes a colorless artifact in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.edhv11.its.cantActivate.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.5",
+      "CR 611.2a"
+    ],
+    "pattern": "its activated abilities can't be activated",
+    "build": {
+      "op": "effect",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "singular",
+              "text": "it"
+            }
+          },
+          "mode": "cant",
+          "action": "activate"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "{2}{B}, {T}: Put a petrification counter on target creature. It gains defender and becomes a colorless artifact in addition to its other types. Its activated abilities can't be activated."
+      },
+      {
+        "text": "{T}: Target creature gains defender. Its activated abilities can't be activated."
+      }
+    ],
+    "counterExamples": [
+      "Put a petrification counter on target creature. Its triggered abilities can't be activated.",
+      "Put a petrification counter on target creature. Its activated abilities can be activated.",
+      "Put a petrification counter on target creature. Its activated abilities can't be activated this turn."
+    ]
+  },
+  {
+    "id": "eff.edhv11.may.have.objs.get",
+    "weak": 1,
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.5",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c"
+    ],
+    "pattern": "you may have {o:Objs} get {pt:PT} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ enters, you may have Ally creatures you control get +1/+0 until end of turn."
+      },
+      {
+        "text": "{T}: You may have Elf creatures you control get +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "You may have Ally creatures you control get +1/+0.",
+      "You may have Ally creatures you control gets +1/+0 until end of turn.",
+      "You may have Ally creatures you control gain flying until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv11.damage.toItself",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to itself",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$src",
+      "amount": "$n"
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{T}: Flip a coin. If you win the flip, destroy target creature. If you lose the flip, ~ deals 2 damage to itself."
+      },
+      {
+        "text": "Whenever ~ is dealt damage, ~ deals that much damage to itself."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 2 damage to itself unless you control a Zombie.",
+      "~ deals 2 damage to each Gremlin.",
+      "~ deals 2 damage to it."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv11.then.player.discards.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.9a",
+      "CR 608.2h"
+    ],
+    "pattern": "then {p:Player} discard[s] {n:Qty} card[s] if {c:Cond}",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": "$n",
+      "guard": "$c"
+    },
+    "subject": "player",
+    "consumes": [
+      "then",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Return target creature to its owner's hand. Then that player discards a card if you control a Vampire."
+      },
+      {
+        "text": "Draw a card. Then you discard two cards if you control a Zombie."
+      }
+    ],
+    "counterExamples": [
+      "Return target nonland permanent to its owner's hand. Then that player discards a card unless you control a Zombie.",
+      "Return target nonland permanent to its owner's hand. Then that player discards a land card if you control a Zombie.",
+      "Return target nonland permanent to its owner's hand. Then that player may discard a card if you control a Zombie."
+    ]
+  },
+  {
+    "id": "cm.edhv11.ability.more.foreach",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 118.7a",
+      "CR 602.1"
+    ],
+    "pattern": "this ability costs {m:ManaCost} more to activate for each {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "increase",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": "$f"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{4}, {T}: Draw two cards. This ability costs {1} more to activate for each card in your hand."
+      },
+      {
+        "text": "{2}, {T}: Draw a card. This ability costs {1} more to activate for each Equipment you control."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Draw three cards. This ability costs {1} less to activate for each card in your hand.",
+      "{3}, {T}: Draw three cards. This spell costs {1} more to activate for each card in your hand.",
+      "{3}, {T}: Draw three cards. This ability costs {1} more to activate if you control an Equipment."
+    ]
+  }
+]

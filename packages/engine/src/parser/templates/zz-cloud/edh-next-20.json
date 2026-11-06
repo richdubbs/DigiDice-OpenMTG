@@ -1,0 +1,204 @@
+[
+  {
+    "id": "rid.edhn20.search.countInstead",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 614.15",
+      "CR 701.23a",
+      "CR 702.33d"
+    ],
+    "pattern": "if {c:Cond} , search your library for {n:Qty} {f:Filter} cards instead of {m:Qty}",
+    "build": {
+      "$patchPrevious": {
+        "@step": -3,
+        "@names": true,
+        "@replace": true,
+        "@require": {
+          "op": "search",
+          "zone": "library",
+          "reveal": true
+        },
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "search",
+            "who": {
+              "ref": "you"
+            },
+            "zone": "library",
+            "filter": "$f",
+            "min": "$n",
+            "max": "$n",
+            "reveal": true,
+            "as": "search"
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "search",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for a basic Island card, reveal it, put it into your hand, then shuffle. If ~ was kicked, search your library for two basic Island cards instead of one."
+      },
+      {
+        "text": "Search your library for a basic Forest card, reveal it, put it into your hand, then shuffle. If you control a creature, search your library for three basic Forest cards instead of one."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a basic Island card, reveal it, put it into your hand, then shuffle. If ~ was kicked, search your library for two basic Island cards.",
+      "Draw a card. If ~ was kicked, search your library for two basic Island cards instead of one.",
+      "Search your library for a basic Island card, reveal it, put it into your hand, then shuffle. If ~ was kicked, you may search your library for two basic Island cards instead of one."
+    ]
+  },
+  {
+    "id": "eff.edhn20.token.you.forEach.qty",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 2,
+    "subject": "none",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "you create ( a | an ) {t:TokenDesc} for each {n:Qty}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t"
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You create a Clue token for each opponent who lost life this turn."
+      },
+      {
+        "text": "You create a Treasure token for each opponent who was dealt combat damage this turn."
+      }
+    ],
+    "counterExamples": [
+      "You create two Clue tokens for each opponent who lost life this turn.",
+      "Target opponent creates a Clue token for each opponent who lost life this turn.",
+      "You create a Clue token for each opponent who lost life."
+    ]
+  },
+  {
+    "id": "eff.edhn20.they.cantBeBlocked.exceptBy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 509.1b",
+      "CR 509.1c",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:They} can't be blocked {d:Dur} except by {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": {
+            "not": "$f"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Create two 2/2 green Wolf creature tokens. They can't be blocked this turn except by creatures with flying."
+      },
+      {
+        "text": "Create two 1/1 red Goblin creature tokens. They can't be blocked this turn except by Walls."
+      }
+    ],
+    "counterExamples": [
+      "Create two 2/2 green Wolf creature tokens. They can't be blocked this turn.",
+      "Create two 2/2 green Wolf creature tokens. They can be blocked this turn except by creatures with flying.",
+      "Create two 2/2 green Wolf creature tokens. They can't be blocked except by creatures with flying this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn20.selfAndOther.cantBeBlocked.exceptBy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 509.1b",
+      "CR 509.1c",
+      "CR 115.1c",
+      "CR 611.2c"
+    ],
+    "pattern": "~ and {o:Obj} can't be blocked {d:Dur} except by {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "self"
+              },
+              "$o"
+            ]
+          },
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": {
+            "not": "$f"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "other",
+      "can't",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, ~ and up to one other target creature can't be blocked this turn except by creatures with flying."
+      },
+      {
+        "text": "Whenever ~ attacks, ~ and target Elf you control can't be blocked this turn except by Walls."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, ~ and up to one other target creature can't be blocked this turn.",
+      "When ~ enters, ~ and up to one other target creature can't be blocked this turn except by creatures with flying or Walls this turn.",
+      "When ~ enters, ~ and up to one other target creature can be blocked this turn except by creatures with flying."
+    ]
+  }
+]

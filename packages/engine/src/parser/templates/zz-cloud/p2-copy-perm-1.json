@@ -58,14 +58,14 @@
       "You may have ~ enter as a copy of any creature on the battlefield, except it's an enchantment.",
       "You may have ~ enter as a copy of any creature on the battlefield, except it loses all other card types.",
       "You may have ~ enter as a copy of any creature on the battlefield, except it's an enchantment in addition to its other types if it's an artifact.",
-      "You may have ~ enter as a copy of a creature an opponent controls, except it's a Vehicle artifact with crew 2 and it loses all other card types."
+      "You may have ~ enter as a copy of a creature an opponent controls, except it's a Vehicle artifact with crew 2."
     ]
   },
   {
     "id": "eff.p2copyperm1.copyToken.except",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 111.10",
       "CR 707.2",
@@ -142,7 +142,7 @@
     "id": "eff.p2copyperm1.becomeCopy.except",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 707.2",
       "CR 707.9a",
@@ -263,7 +263,7 @@
     "id": "eff.p2copyperm1.eachOther.becomeCopy.dur.except",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 707.2",
       "CR 707.9a",

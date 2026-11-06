@@ -15,7 +15,7 @@ import type { Normalize } from './api';
 import { charsOfObject, ptNumbers } from '../rules/characteristics';
 
 /** Features this module implements (`feature:history`: `GameState.history` is written by `triggers/history.ts` from these events, design 5.2). */
-export const FEATURES: readonly string[] = ['history'];
+export const FEATURES: readonly string[] = ['history', 'history.sinceYourLastTurn' /* edh-next-135: rules/history.ts#historyInScope, CR 500.1 */];
 
 /** FAST5X E19: the prefix of a cast event's data keys `manaFrom.<Subtype>` (triggers/context.ts collects them into `EventContext.manaFrom`). */
 export const MANA_FROM = 'manaFrom.';
@@ -24,6 +24,9 @@ export const MANA_SOURCE = 'manaSource.';
 
 /** Zones whose contents every player can see: an object that moves to one of them can be found there afterwards (CR 400.7e, 603.6). */
 export const PUBLIC_ZONES: readonly ZoneKind[] = ['battlefield', 'graveyard', 'stack', 'exile', 'command'];
+
+/** edh-zones-4: the causes of zone changes whose cards are moved one at a time (each its own batch, `splitBatches`). */
+const EXILED_ONE_AT_A_TIME: ReadonlySet<string> = new Set(['exileUntil', 'cascade', 'discover']);
 
 /**
  * CR 603.2c, 603.6a, 603.10a: events that happened together form a batch. The engine does not mark simultaneity, so the cut is made where one thing ends and the
@@ -41,8 +44,13 @@ export function splitBatches(events: readonly GameEvent[]): GameEvent[][] {
   };
   for (const e of events) {
     if (e.type === 'stepBegan' || e.type === 'turnBegan') flush();
+    const oneAtATime = e.type === 'zoneChanged' && e.to === 'exile' && e.cause !== undefined && EXILED_ONE_AT_A_TIME.has(e.cause);
+    if (oneAtATime) flush(); // what the resolution did before is not simultaneous with the first card
     cur.push(e);
     if (e.type === 'resolved') flush();
+    // edh-zones-4 (CR 701.57a, 702.85a; ruling 2024-06-07 on Laelia, the Blade Reforged): the cards "exile cards from the top of your library until ..." (cascade and discover
+    // too) exiles are exiled one at a time (effects/handlers/actions-native.ts#exileUntil), so each is its own occurrence of "one or more cards are put into exile"
+    if (oneAtATime) flush();
   }
   flush();
   return out;
@@ -85,6 +93,11 @@ export const normalize: Normalize = (g: Game, events, batch) => {
   const offset = events.length > 0 ? Math.max(0, g.events.indexOf(events[0]!)) : 0;
   const out: SemEvent[] = [];
   let at = offset;
+  // edh-c-68 (CR 508.1b, 509.1, 509.3c; Rakdos Roustabout): `defender` of a blocked attacker, the player or planeswalker (or battle) it attacks, however it became blocked
+  const defenderOfBlocked = (attacker: ObjectId): SemEvent['roles'] => {
+    const att = s.combat?.attackers.find((x) => x.id === attacker);
+    return att !== undefined && att.defender !== null ? { defender: isPlayer(att.defender) ? players(att.defender) : objects(handle(att.defender)) } : {};
+  };
   const push = (ev: SemEvent['ev'], roles: SemEvent['roles'], d: SemEvent['data'], before: Record<ObjectId, LastKnown> = {}): void => {
     // FAST5 T59: a "becomes" event names its object `subject`, a damage event `object`: a trigger of both ("becomes tapped or is dealt damage") reads `object` in each
     const named = ev === 'becomes' && roles.subject !== undefined && roles.object === undefined ? { ...roles, object: roles.subject } : roles;
@@ -123,15 +136,19 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         // CR 400.7e, 603.6: the subject is the object in the zone it went to when everyone can see that zone and it is still there (a token that ceased to exist
         // is not); otherwise the object as it last was.
         const subject: ObjHandle = PUBLIC_ZONES.includes(e.to) && newObj && e.newId ? { id: e.newId, zone: e.to } : { id: e.oldId, zone: e.from ?? e.to };
-        const controller = lk?.object.controller ?? e.controller;
+        // edh-d-37 (CR 603.6a, 110.2; Overburden, Tunnel Ignus): the player of an event that put an object onto the battlefield is who controls it as it enters (not who controlled the card in
+        // a graveyard, a library or a hand before); an object that left the battlefield was controlled by who controlled it there (CR 603.10a)
+        const controller = e.to === 'battlefield' ? e.controller : (lk?.object.controller ?? e.controller);
         const before = lk && !created ? { [e.oldId]: lk } : {};
-        const d = data({ from: e.from, to: e.to, oldId: e.oldId, newId: e.newId ?? undefined, cause: e.cause, owner: e.owner, name: e.name, faceDown: e.faceDown, tapped: e.tapped }); // faceDown: FAST5X E25; tapped: pc-tokens-2 (entered tapped)
+        const d = data({ from: e.from, to: e.to, oldId: e.oldId, newId: e.newId ?? undefined, cause: e.cause, owner: e.owner, name: e.name, faceDown: e.faceDown, tapped: e.tapped, viaSource: e.viaSource }); // faceDown: FAST5X E25; tapped: pc-tokens-2 (entered tapped)
         push('zoneChange', { subject: objects(subject), player: players(controller) }, d, before);
         // CR 701.17 (sacrifice), 701.9 (discard), 701.8 (destroy), 701.13 (exile) as actions: the same happening seen as a verb.
         // p2-trigger-events-1 (CR 701.17a): a mill is a card put into a graveyard from a library; one a replacement sent elsewhere is not reported as milled
         const verb0 = CAUSE_VERBS[e.cause ?? ''];
         const verb = verb0 === 'mill' && (e.from !== 'library' || e.to !== 'graveyard') ? undefined : verb0;
-        if (verb) push('action', { subject: objects(subject), player: players(verb === 'discard' || verb === 'mill' ? e.owner : controller) }, data({ ...d, verb }), before);
+        // edh-players-22 (CR 109.5, 701.8a): a destruction by a spell or ability also names the controller of that spell or ability (`by`)
+        const by = verb === 'destroy' ? e.destroyedBy : verb === 'discard' ? e.discardedBy : undefined; // edh-next-132 (CR 701.9a): and a discard by an effect names its controller
+        if (verb) push('action', { subject: objects(subject), player: players(verb === 'discard' || verb === 'mill' ? e.owner : controller), ...(by !== undefined ? { by: players(by) } : {}) }, data({ ...d, verb, by }), before);
         if (created || (e.cause === 'create token' && e.from === null)) {
           push('createToken', { newObject: objects({ id: e.newId ?? e.oldId, zone: e.to }), player: players(e.controller) }, data({ oldId: e.oldId, newId: e.newId ?? e.oldId }));
         }
@@ -149,7 +166,10 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         // r4-fxz (CR 107.3, 601.2b): the X announced for the spell, for "whenever you cast a spell with {X} in its mana cost, ... X ..." (triggers/stack.ts)
         // Standard round 3, r3-trig (CR 700.2, 601.2b): whether modes were chosen for the spell as it was cast (a modal spell), and how many
         const modes = o?.stack?.modes;
-        push('cast', { spell: objects({ id: e.objectId, zone: 'stack' }), player: players(e.player) }, data({ copy: false, from: o?.stack?.castFrom /* trek-11 (CR 400.11): 'outside' for a card cast from outside the game: it is no zone, so "from your hand" does not match it and "from anywhere other than your hand" does */, spellsBefore: e.spellsBefore, manaSpent: e.manaSpent, nth, via: o?.stack?.costsPaid.alternative, x: o?.stack?.x, ...from, modal: modes !== undefined, modesChosen: modes?.length }), gone(e.objectId));
+        // edh-perms-21 (CR 115.9c, 608.2h): the one object the spell targets, fixed with the event (a target that leaves before the trigger resolves is read as it last existed)
+        const targeted = [...new Set((o?.stack?.targets ?? []).flat().flatMap((t) => (t.kind === 'object' ? [t.id] : [])))];
+        const tgt = targeted.length === 1 && (o?.stack?.targets ?? []).flat().every((t) => t.kind === 'object') ? { spellTarget: objects(handle(targeted[0]!)) } : {};
+        push('cast', { spell: objects({ id: e.objectId, zone: 'stack' }), player: players(e.player), ...tgt }, data({ copy: false, from: o?.stack?.castFrom /* trek-11 (CR 400.11): 'outside' for a card cast from outside the game: it is no zone, so "from your hand" does not match it and "from anywhere other than your hand" does */, spellsBefore: e.spellsBefore, manaSpent: e.manaSpent, nth, via: o?.stack?.costsPaid.alternative, x: o?.stack?.x, ...from, modal: modes !== undefined, modesChosen: modes?.length, kicked: (o?.stack?.costsPaid.kicked ?? 0) > 0 /* edh-c-59 (CR 702.33d): "the first kicked spell you cast each turn" */ }), gone(e.objectId));
         break;
       }
       case 'spellCopied': {
@@ -157,10 +177,13 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         push('cast', { spell: objects({ id: e.objectId, zone: 'stack' }), player: players(o?.controller ?? s.turn.activePlayer) }, data({ copy: true, copyOf: e.copyOf }), gone(e.objectId));
         break;
       }
-      case 'abilityActivated':
+      case 'abilityActivated': {
+        // edh-next-67 (CR 115.1, 602.2b; Professor Hojo): did the ability target a creature its controller controls? (the targets chosen as it was put on the stack)
+        const targeted = s.objects[e.objectId]?.stack?.targets.flat().some((t) => { const to = t.kind === 'object' ? s.objects[t.id] : undefined; return to !== undefined && to.zone === 'battlefield' && to.controller === e.player && charsOfObject(s, to).types.includes('Creature'); }) === true;
         // FAST5X E20: `exhaust` (CR 702.177a) and `loyalty` (CR 606.3), the kind of ability activated (triggers/match.ts, `activate.ability`)
-        push('activate', { source: objects(handle(e.sourceId)), spell: objects({ id: e.objectId, zone: 'stack' }), player: players(e.player) }, data({ mana: false, exhaust: e.exhaust, loyalty: e.loyalty, loyaltyRemoved: e.loyaltyRemoved }), gone(e.sourceId)); // r3-trig: loyaltyRemoved (CR 606.4)
+        push('activate', { source: objects(handle(e.sourceId)), spell: objects({ id: e.objectId, zone: 'stack' }), player: players(e.player) }, data({ mana: false, exhaust: e.exhaust, loyalty: e.loyalty, ninjutsu: e.ninjutsu, boast: e.boast, loyaltyRemoved: e.loyaltyRemoved, lifePaid: e.lifePaid, xInCost: e.xInCost, manaSpent: e.manaSpent, ...(e.lifePaid !== undefined ? { amount: e.lifePaid } : {}) /* edh-next-74: CR 602.2b, 107.3a */, fromZone: e.fromZone, targetsOwnCreature: targeted ? true : undefined }), gone(e.sourceId)); // r3-trig; edh-zones-19: ninjutsu: loyaltyRemoved (CR 606.4); edh-next-67: targetsOwnCreature
         break;
+      }
       case 'attackersDeclared': {
         const count = e.attackers.length;
         // Standard round 3, r3-trig (CR 508.1, 208.1): the total power of the creatures declared as attackers (all the active player's, CR 508.1a), for "whenever you
@@ -177,7 +200,7 @@ export const normalize: Normalize = (g: Game, events, batch) => {
           // pc-combat-1 (CR 508.5, 603.2c): the player attacked, or the controller of the planeswalker attacked ("one or more creatures attack one of your opponents or a
         // planeswalker they control" is one occurrence for each such player, triggers/occurrences.ts#batchOccurrences)
         const defendingPlayer = isPlayer(a.defender) ? a.defender : (s.objects[a.defender] ?? s.lki[a.defender]?.object)?.protector ?? controllerOf(a.defender); // a battle's defending player is its protector (CR 508.5)
-        push('attacks', roles, data({ count, alone: count === 1, defenderIsPlayer: isPlayer(a.defender), totalPower, defendingPlayer }), gone(a.attacker));
+        push('attacks', roles, data({ count, alone: count === 1, defenderIsPlayer: isPlayer(a.defender), totalPower, defendingPlayer, declared: `|${e.attackers.map((x) => x.attacker).join('|')}|` /* edh-combat-5: the ids declared together, CR 508.1 */ }), gone(a.attacker));
         }
         break;
       }
@@ -195,14 +218,18 @@ export const normalize: Normalize = (g: Game, events, batch) => {
           push('blocks', { ...roles, object: roles['attacker']!, subject: roles['blocker']! }, data({ count: e.blocks.length, first: !seenBlockers.has(b.blocker) }), before);
           seenBlockers.add(b.blocker);
           // CR 509.3c: "becomes blocked" triggers once per attacker, "becomes blocked by a creature" once per blocker: the first pair of an attacker is flagged.
-          push('becomesBlocked', { ...roles, object: roles['blocker']!, subject: roles['attacker']! }, data({ first: !seen.has(b.attacker) }), before);
+          // edh-c-48 (CR 509.3e): "becomes blocked by two or more creatures" reads how many creatures blocked this attacker when the blockers were declared (the first pair carries it)
+          const firstPair = !seen.has(b.attacker);
+          // edh-c-68 (CR 508.1b, 509.1; Rakdos Roustabout): `defender`, the player or planeswalker (or battle) the blocked attacker attacks
+          const blockedDefender = defenderOfBlocked(b.attacker);
+          push('becomesBlocked', { ...roles, ...blockedDefender, object: roles['blocker']!, subject: roles['attacker']! }, data({ first: firstPair, ...(firstPair ? { blockCountBefore: 0, blockCount: e.blocks.filter((x) => x.attacker === b.attacker).length } : {}) }), before);
           seen.add(b.attacker);
         }
         // std-rx35 (CR 509.1h): each attacker no blocker was declared for "attacks and isn't blocked" (its defending player is read from the combat state, effects/refs.ts)
         // pc-combat-4 (CR 509.1h, 508.1b): `defenderPlayer`, the player attacked (absent when the attacker attacks a planeswalker or battle), for "attack you and aren't blocked"
         for (const a of e.unblocked ?? []) {
           const att = s.combat?.attackers.find((x) => x.id === a);
-          push('attacksUnblocked', { attacker: objects(handle(a)), player: players(controllerOf(a) ?? s.turn.activePlayer) }, data({ ...(att !== undefined && att.defender !== null && isPlayer(att.defender) ? { defenderPlayer: att.defender } : {}) }), gone(a));
+          push('attacksUnblocked', { attacker: objects(handle(a)), player: players(controllerOf(a) ?? s.turn.activePlayer), ...(att !== undefined && att.defender !== null && isPlayer(att.defender) ? { defender: players(att.defender) } : {}) /* edh-combat-6: "that player" */ }, data({ ...(att !== undefined && att.defender !== null && isPlayer(att.defender) ? { defenderPlayer: att.defender } : {}) }), gone(a));
         }
         break;
       }
@@ -210,8 +237,15 @@ export const normalize: Normalize = (g: Game, events, batch) => {
       case 'becameBlocked': {
         for (const a of e.attackers) {
           const attacker = objects(handle(a));
-          push('becomesBlocked', { attacker, subject: attacker, player: players(controllerOf(a) ?? s.turn.activePlayer) }, data({ first: true }), gone(a));
+          push('becomesBlocked', { attacker, subject: attacker, ...defenderOfBlocked(a), player: players(controllerOf(a) ?? s.turn.activePlayer) }, data({ first: true }), gone(a));
         }
+        break;
+      }
+      // edh-combat-4 (CR 509.3c-d, 509.3a): a creature put onto the battlefield blocking an attacker makes the attacker "become blocked by a creature" (always), and "become blocked"
+      // only if it was an unblocked creature before; it never "blocks" (no `blocks` event)
+      case 'blockerEntered': {
+        const roles: SemEvent['roles'] = { blocker: objects(handle(e.blocker)), attacker: objects(handle(e.attacker)), player: players(controllerOf(e.blocker) ?? s.turn.activePlayer) };
+        push('becomesBlocked', { ...roles, ...defenderOfBlocked(e.attacker), object: roles['blocker']!, subject: roles['attacker']! }, data({ first: !e.attackerWasBlocked, blockCountBefore: e.blockCount - 1, blockCount: e.blockCount }), { ...gone(e.blocker), ...gone(e.attacker) });
         break;
       }
       case 'damageDealt': {
@@ -224,13 +258,17 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         break;
       }
       case 'stepBegan':
-        push('step', { player: players(e.activePlayer) }, data({ step: e.step, turn: turnAt(g, at), mainPhase: e.mainPhase })); // FAST5X E17: CR 505.1b
+        push('step', { player: players(e.activePlayer) }, data({ step: e.step, turn: turnAt(g, at), mainPhase: e.mainPhase, upkeepStep: e.upkeepStep, combatPhase: e.combatPhase, addedPhase: e.addedPhase })); // FAST5X E17: CR 505.1b; edh-combat-5: CR 500.8
         break;
       case 'turnBegan':
         push('beginTurn', { player: players(e.activePlayer) }, data({ turn: e.turn }));
         break;
       case 'lifeChanged':
-        if (e.delta !== 0) push('life', { player: players(e.player) }, data({ change: e.delta > 0 ? 'gain' : 'loss', amount: Math.abs(e.delta), life: e.life, cause: e.cause }));
+        if (e.delta !== 0) push('life', { player: players(e.player) }, data({ change: e.delta > 0 ? 'gain' : 'loss', amount: Math.abs(e.delta), life: e.life, cause: e.cause, fromDamage: e.delta < 0 && e.cause?.startsWith('damage from') ? true : undefined })); // edh-players-3: fromDamage (rules/damage.ts#dealDamage names the cause "damage from X")
+        break;
+      // edh-next-109 (CR 119.4; Font of Agonies): "whenever you pay life" (the amount paid is the event's amount)
+      case 'lifePaid':
+        push('action', { player: players(e.player) }, data({ verb: 'payLife', amount: e.amount }));
         break;
       case 'drew': {
         const p = s.players.find((x) => x.id === e.player);
@@ -244,6 +282,9 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         push('draw', { player: players(e.player) }, data({ nth, firstInDrawStep }));
         break;
       }
+      case 'revealedThisWay': // edh-next-144 (CR 701.20a, 607.2): the card a `revealFirstDraw` rule of `sourceId` revealed (triggers/reveal-draw.ts)
+        push('reveal', { player: players(e.player), subject: objects(handle(e.objectId)), source: objects(handle(e.sourceId)) }, data({ thisWay: true }));
+        break;
       case 'turnedFaceUp':
         // FAST5X E25 (CR 701.40b, 608.2, 603.4): the event's player is the one who turned it face up ("you turned a permanent face up this turn"); "a permanent
         // you control is turned face up" judges the subject's controller (triggers/match.ts), not this player
@@ -251,9 +292,12 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         break;
       // Standard round 5, r5-trig (CR 502.3): an untap by the untap step's turn-based action says so (`untapStep`, "during your untap step")
       case 'untapped':
-        push('becomes', { subject: objects(handle(e.objectId)), player: players(controllerOf(e.objectId) ?? s.turn.activePlayer) }, data({ what: e.type, ...(e.untapStep === true ? { untapStep: true } : {}) }), gone(e.objectId));
+        push('becomes', { subject: objects(handle(e.objectId)), player: players(controllerOf(e.objectId) ?? s.turn.activePlayer) }, data({ what: e.type, ...(e.untapStep === true ? { untapStep: true, ownUntapStep: (controllerOf(e.objectId) ?? s.turn.activePlayer) === s.turn.activePlayer } : {}) }), gone(e.objectId));
         break;
       case 'tapped':
+        // edh-players-20 (CR 508.1f; Verity Circle): the creature was tapped as it was declared as an attacker
+        push('becomes', { subject: objects(handle(e.objectId)), player: players(controllerOf(e.objectId) ?? s.turn.activePlayer) }, data({ what: e.type, ...(e.asAttacker === true ? { asAttacker: true } : {}) }), gone(e.objectId));
+        break;
       // M6-0 (m6 design 2.3): turning face down (CR 708.2b), flipping (CR 710), mutating (CR 702.140d) and melding (CR 701.42a) are "becomes" changes too
       case 'turnedFaceDown':
       case 'flipped':
@@ -272,6 +316,11 @@ export const normalize: Normalize = (g: Game, events, batch) => {
       case 'crewTapped':
         push('becomes', { subject: objects(handle(e.objectId)), source: objects(handle(e.by)), player: players(e.player) }, data({ what: e.as === 'crew' ? 'crewCostPaid' : e.as === 'teamwork' ? 'teamworkCostPaid' : 'saddleCostPaid' }), gone(e.objectId));
         break;
+      // edh-d-39 (CR 702.26b-c, 603.2, 603.10a): a permanent phases out or in; a permanent that phases out is phased out when the trigger is collected, so the matcher reads it as it was (look back)
+      case 'phasedOut':
+      case 'phasedIn':
+        push('becomes', { subject: objects(handle(e.objectId)), player: players(controllerOf(e.objectId) ?? s.turn.activePlayer) }, data({ what: e.type }), gone(e.objectId));
+        break;
       case 'objectDesignation':
         // M6-0: a Case becomes solved (CR 719.3b), a permanent becomes prepared (CR 722.3a), a Class becomes level N (CR 716.2a); becoming unprepared is no pattern
         if (e.what !== 'unprepared' && e.what !== 'unsuspected') push('becomes', { subject: objects(handle(e.objectId)), player: players(controllerOf(e.objectId) ?? s.turn.activePlayer) }, data({ what: e.what, level: e.level }), gone(e.objectId));
@@ -287,13 +336,40 @@ export const normalize: Normalize = (g: Game, events, batch) => {
       case 'dayNight':
         push('dayNight', {}, data({ to: e.to })); // M6-0: CR 731.1a
         break;
-      case 'becameCopy': // M6-0: CR 707.4, a copy effect begins: no pattern reads it (no enters or leaves triggers)
-      case 'damagePrevented': // M6-0: CR 615.13 prevention-triggered abilities are out of scope (m6 design 1.3); no pattern reads it yet
+      case 'designationChanged':
+        // edh-players-18 (CR 725.1, 725.3): a player becomes the monarch (the previous monarch ceases to be it; day and night have their own `dayNight`; the initiative has no pattern)
+        if (e.what === 'monarch' && e.to !== 'day' && e.to !== 'night') push('monarch', { player: players(e.to) }, data({}));
         break;
+      case 'becameCopy': // M6-0: CR 707.4, a copy effect begins: no pattern reads it (no enters or leaves triggers)
+        break;
+      case 'damagePrevented': {
+        // edh-replace-3 (CR 615.13): "Some triggered abilities trigger when damage that would be dealt is prevented. Such an ability triggers each time a prevention effect is applied to
+        // one or more simultaneous damage events and prevents some or all of that damage." One occurrence for each effect and recipient: the consecutive events of the same effect
+        // for the same recipient in the same simultaneous batch (effects/damage-batch.ts) are added up into the first of them, whatever lies between them.
+        const same = (x: GameEvent | undefined): x is Extract<GameEvent, { type: 'damagePrevented' }> => x?.type === 'damagePrevented' && x.effect === e.effect && x.batch === e.batch && x.target[0] === e.target[0];
+        if (events.slice(0, i).some(same)) break; // already added up into the first of them
+        let amount = e.amount;
+        const sources = [...e.source];
+        for (let j = i + 1; j < events.length; j++) {
+          const x = events[j];
+          if (!same(x)) continue;
+          amount += x.amount;
+          for (const src of x.source) if (!sources.includes(src)) sources.push(src);
+        }
+        const target = e.target[0]!;
+        const roles: SemEvent['roles'] = { source: objects(...sources.map(handle)) };
+        if (isPlayer(target)) roles.recipient = players(target);
+        else roles.object = objects(handle(target));
+        const controller = controllerOf(sources[0]!);
+        if (controller) roles.player = players(controller);
+        push('damagePrevented', roles, data({ amount, toPlayer: isPlayer(target), target }), { ...Object.assign({}, ...sources.map(gone)), ...(isPlayer(target) ? {} : gone(target)) });
+        break;
+      }
       case 'attached':
         // std-rx31 (CR 701.3a, 603.2): the permanent it became attached to is the event's `object` ("Whenever this Equipment becomes attached to a creature, ... that creature")
-        push('becomes', { subject: objects(handle(e.objectId)), player: players(controllerOf(e.objectId) ?? s.turn.activePlayer), ...(e.to ? { object: objects(handle(e.to)) } : {}) },
-          data({ what: e.to === null ? 'unattached' : 'attached', to: e.to ?? undefined }), gone(e.objectId));
+        // edh-perms-10 (CR 701.3d, 603.2; Grafted Exoskeleton): the permanent an unattached Equipment left is the event's `object` too ("... becomes unattached from a permanent, sacrifice that permanent")
+        push('becomes', { subject: objects(handle(e.objectId)), player: players(controllerOf(e.objectId) ?? s.turn.activePlayer), ...(e.to ? { object: objects(handle(e.to)) } : e.from ? { object: objects(handle(e.from)) } : {}) },
+          data({ what: e.to === null ? 'unattached' : 'attached', to: e.to ?? undefined, ...(e.from ? { from: e.from } : {}) }), { ...gone(e.objectId), ...(e.from ? gone(e.from) : {}) });
         break;
       case 'becameTarget': {
         const by = s.objects[e.byStackId] ?? s.lki[e.byStackId]?.object;
@@ -318,10 +394,10 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         // FAST5X E20 (CR 700.14): an `expend` action carries the mana spent this turn to cast spells before and after the payment (triggers/match.ts reads N)
         // CLOUD std-dft: `x`, the X announced for the cycling cost of a `cycle` action (actions/activate.ts); std-lci: `revealed` of an explore (CR 701.44a)
         // std-rx26: a `discover` action's N is also its amount (CR 701.57a: "discover again for the same value", `{q:'eventAmount'}`)
-        push('action', roles, data({ verb: e.verb, spentBefore: e.spent?.before, spentAfter: e.spent?.after, x: e.x, revealed: e.revealed, won: e.won /* p2-player-rules-3 (CR 701.30c) */, ...(e.verb === 'discover' ? { amount: e.x } : {}), ...(e.verb === 'search' ? { zone: e.zone, zoneOwner: e.owner } : {}) }), { ...(e.objectId ? gone(e.objectId) : {}), ...(e.exploited ? gone(e.exploited) : {}) }); // r4-trig: the zone a search searched and its owner (CR 701.23a)
+        push('action', roles, data({ verb: e.verb, spentBefore: e.spent?.before, spentAfter: e.spent?.after, x: e.x, revealed: e.revealed, won: e.won /* p2-player-rules-3 (CR 701.30c) */, ...(e.verb === 'discover' || e.verb === 'scry' /* edh-next-38 (CR 701.22a): the cards looked at */ || e.verb === 'scryBottom' /* edh-d-96: the cards put on the bottom */ ? { amount: e.x } : {}), ...(e.verb === 'search' ? { zone: e.zone, zoneOwner: e.owner } : {}) }), { ...(e.objectId ? gone(e.objectId) : {}), ...(e.exploited ? gone(e.exploited) : {}) }); // r4-trig: the zone a search searched and its owner (CR 701.23a)
         // "becomes monstrous / renowned / saddled / crewed" are the same happenings seen as a state change of the permanent (CR 701.37, 702.112, 702.171, 702.122).
         const became = BECOMES_VERBS[e.verb];
-        if (became && e.objectId) push('becomes', { subject: objects(handle(e.objectId)), player: players(e.actor) }, data({ what: became }), gone(e.objectId));
+        if (became && e.objectId) push('becomes', { subject: objects(handle(e.objectId)), player: players(e.actor) }, data({ what: became, ...(became === 'monstrous' && e.x !== undefined ? { x: e.x } : {}) /* edh-perms-16 (CR 701.37a): the N of the monstrosity */, ...(became === 'crewed' && e.crewers !== undefined ? { crewers: e.crewers } : {}) /* edh-d-89 (CR 702.122e) */ }), gone(e.objectId));
         break;
       }
       case 'votesFinished':
@@ -348,7 +424,8 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         break;
       case 'countered':
       case 'abilityCountered':
-        push('action', { subject: objects({ id: e.objectId, zone: 'stack' }) }, data({ verb: 'counter' }), gone(e.objectId));
+        // edh-cast-6 (CR 701.6a): the player in control of the spell or ability that countered it is the actor of a spell's counter ("a spell or ability you control counters a spell")
+        push('action', { subject: objects({ id: e.objectId, zone: 'stack' }), ...(e.type === 'countered' && e.by !== undefined ? { player: players(e.by) } : {}) }, data({ verb: 'counter' }), gone(e.objectId));
         break;
       case 'tokenCreated':
         if (!out.some((x) => x.ev === 'createToken' && x.data['newId'] === e.objectId)) {
@@ -357,15 +434,19 @@ export const normalize: Normalize = (g: Game, events, batch) => {
         break;
       case 'dieRolled':
         // WP15 INTERFACE CHANGE: the result is also the event's amount, so an ability triggered by the roll reads it as "the result" (q:dieResult, CR 706.2)
-        push('dieRoll', { player: players(e.player) }, data({ result: e.result, sides: e.sides, amount: e.result, instruction: e.instruction }));
+        push('dieRoll', { player: players(e.player) }, data({ result: e.result, sides: e.sides, amount: e.result, instruction: e.instruction, natural: e.natural }));
         break;
       case 'coinFlipped':
         // cloud r3-mech (CR 705.2): a called flip and whether its player won it
         push('coinFlip', { player: players(e.player) }, data({ won: e.won }));
         break;
-      case 'resolved':
-        push('resolves', { subject: objects({ id: e.objectId, zone: 'stack' }) }, data({}), gone(e.objectId));
+      case 'resolved': {
+        // edhn102 (CR 113.7a, 608.2h, 714.2e; Narci, Fable Singer): of an ability, the source it came from (the Saga of a final chapter ability), read as it last existed
+        const ab = s.objects[e.objectId] ?? s.lki[e.objectId]?.object;
+        const src = ab?.kind === 'ability' ? ab.stack?.sourceId : undefined;
+        push('resolves', { subject: objects({ id: e.objectId, zone: 'stack' }), ...(src !== undefined ? { abilitySource: objects(handle(src)) } : {}) }, data({}), { ...gone(e.objectId), ...(src !== undefined ? gone(src) : {}) });
         break;
+      }
       case 'controlChanged':
         // Standard round 3, r3-trig (CR 108.4, 613.1b): the control of a permanent passed from one player to another ("whenever an opponent gains control of a permanent
         // from you"): the permanent and the player who gained control

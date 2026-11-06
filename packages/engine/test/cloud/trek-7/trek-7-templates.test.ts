@@ -242,9 +242,10 @@ describe('trek-7 readings: quantities, "the rest" of an exile-until, the free ca
     for (const rest of ['They put the rest on top in a random order.', 'You put the rest on the bottom in a random order.', 'They put the others on the bottom in a random order.']) {
       expect(fullyAutomated(queen(rest)), rest).toBe(false);
     }
-    // the player who exiles is the one reading "the rest": your own exile-until written with "your" does not become automated by this reading (the gate refuses its wording)
+    // the player who exiles is the one reading "the rest": your own exile-until written with "your" was refused by the gate (its wording); edh-top-7 (Jodah, the Unifier) says it "Put the rest
+    // on the bottom of your library in a random order" (render/steps-zones.ts#exiledRestOfYou), so it is automated; another player's is still refused above
     const own = parseCard(card('Example Order', 'Sorcery', 'Exile cards from the top of your library until you exile a creature card. Put the rest on the bottom of your library in a random order.'), OPTS).faces[0]!;
-    expect(fullyAutomated(own)).toBe(false);
+    expect(fullyAutomated(own)).toBe(true);
   });
   it('"cast any number of spells with mana value less than or equal to <N> from among those cards without paying their mana costs" is one choice among the cards that can be cast now, each face or half held to the limit (CR 118.9, 202.3, 601.2, 608.2d)', () => {
     const t = (limit: string) => parseCard(card('Example Chief', 'Creature — Human', `{T}: Exile the top five cards of your library. You may cast any number of spells with mana value ${limit} from among those cards without paying their mana costs.`, { power: '2', toughness: '2' }), OPTS).faces[0]!;

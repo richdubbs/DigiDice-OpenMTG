@@ -168,13 +168,25 @@ describe('design 5.2: RENDERERS covers every op of the model', () => {
     'revealUntil', // r3-dig (CR 701.20a, 608.2c)
     'fromOutside', // cloud r3-mech (CR 400.11b)
     'changeTarget', 'extraStep', // Cloud r4-fxb (CR 115.7a, 500.9)
+    'doubleX', // edh-next-74 (CR 107.3, 601.2b)
     'chooseNewTargets', // E3XP (CR 115.7d)
     'nextSpell', // Standard round 10 (CR 601.2i, 611.2)
+    'balance', // edh-c-84: Magus of the Balance, Restore Balance (render/steps-edhv84.ts, CR 608.2e)
     'reportAction', // std-mana-12: earthbend and firebending report their action (CR 701.66a, 702.189)
     'clash', // p2-player-rules-2 (CR 701.30)
     'controlPlayer', // std-control-3: you control a player during their next turn or combat phase (CR 723.1)
     'becomeBlocked', // p2-combat-flow-2: an unblocked attacking creature becomes blocked (CR 509.1h)
     'removeDamage', // trek-8: all damage marked on a permanent is removed (CR 120.6)
+    'pair', // edh-top-2: soulbond pairs two creatures (CR 702.95)
+    'endCombatPhase', 'reselectAttack', // trek-18 (CR 724.2, 508.7)
+    'controlBlocks', // edh-combat-7 (CR 509.1, 723.1)
+    'emptyManaPool', // edh-c-85 (CR 106.4, 500.5)
+    'phaseIn', // edhn102 (CR 702.26b-c)
+    'discardOrSacrifice', // edh-next-131: you and defending player each discard a card or sacrifice a permanent (render/steps-edhn131.ts, CR 101.4, 608.2d)
+    'controlAttacks', // edh-d-89 (CR 508.1a, 723.1; Master Warcraft)
+    'guess', 'auction', // edh-next-135: an opponent's guess (CR 608.2d), Thieves' Auction (CR 101.4, 608.2c); said only by their folds
+    'restartGame', // edh-next-137 (CR 727)
+    'putSticker', // edh-next-147: "put a name sticker on it" (CR 123.3, 123.6)
   ];
   it('has a renderer for each of the ops', () => {
     expect(Object.keys(RENDERERS).sort()).toEqual([...OPS].sort());

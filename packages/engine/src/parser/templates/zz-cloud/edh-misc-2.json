@@ -1,0 +1,168 @@
+[
+  {
+    "id": "eff.edhx2.put.oneOfThem.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "put one of them onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "object",
+            "number": "plural",
+            "text": "them"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "putOne"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "putOne"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever one or more artifact cards are put into your graveyard from your library, put one of them onto the battlefield."
+      },
+      {
+        "text": "Whenever one or more Elf cards are put into your graveyard from your library, put one of them onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Whenever one or more artifact cards are put into your graveyard from your library, put each of them onto the battlefield.",
+      "Whenever one or more artifact cards are put into your graveyard from your library, put two of them onto the battlefield.",
+      "Whenever one or more artifact cards are put into your graveyard from your library, put one of them onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.edhx2.return.commandZone",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 408.1",
+      "CR 903.9",
+      "CR 400.7"
+    ],
+    "pattern": "return {o:Objs} to the command zone",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "command"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return target creature you control to the command zone."
+      },
+      {
+        "text": "Return each artifact you control to the command zone."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature you control to your hand.",
+      "Return target creature you control to the command zone under your control.",
+      "Return target creature you control to the command zone tapped."
+    ]
+  },
+  {
+    "id": "eff.edhx2.repeatFollowing",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.31"
+    ],
+    "pattern": "repeat the following process {n:Qty} times",
+    "build": {
+      "op": "repeat",
+      "times": "$n",
+      "do": []
+    },
+    "subject": "none",
+    "consumes": [
+      "following"
+    ],
+    "examples": [
+      {
+        "text": "Repeat the following process X times. Each opponent loses 2 life unless that player sacrifices a creature of their choice or discards a card."
+      },
+      {
+        "text": "Repeat the following process three times. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Repeat the following process X times.",
+      "Repeat the following process.",
+      "Repeat this process X times.",
+      "Repeat the following process three times. You gain 1 life. Draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhx2.put.self.command.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 113.6",
+      "CR 903.6",
+      "CR 400.7",
+      "CR 110.2a"
+    ],
+    "pattern": "put ~ onto the battlefield from the command zone",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}{G}: Put this card onto the battlefield from the command zone."
+      },
+      {
+        "text": "{1}{U}{R}: Put this creature onto the battlefield from the command zone. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}: Put this card onto the battlefield from your hand.",
+      "{2}{G}: Put this card onto the battlefield from the command zone tapped.",
+      "{2}{G}: Put target creature card onto the battlefield from the command zone."
+    ]
+  }
+]

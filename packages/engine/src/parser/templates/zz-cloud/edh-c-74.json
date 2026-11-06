@@ -1,0 +1,415 @@
+[
+  {
+    "id": "eff.edhv74.putOneHand.otherGraveyard.searched",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 401.2",
+      "CR 608.2c"
+    ],
+    "pattern": "put one into your hand and the other into your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "kept"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "kept"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "kept"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to two Forest cards and reveal them. Put one into your hand and the other into your graveyard."
+      },
+      {
+        "text": "Search your library for up to two basic Swamp cards and reveal them. Put one into your hand and the other into your graveyard. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two Forest cards and reveal them. Put one into your hand and the other on the bottom of your library.",
+      "Search your library for up to two Forest cards and reveal them. Put one onto the battlefield and the other into your graveyard.",
+      "Put one into your hand and the other into your graveyard."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv74.player.sacrificesOneOf.theirChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 608.2c",
+      "CR 115.1"
+    ],
+    "pattern": "{p:Player} sacrifice[s] one of {o:Objs} of their choice",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": {
+        "is": "$o"
+      },
+      "count": 1
+    },
+    "subject": "none",
+    "consumes": [
+      "sacrifice"
+    ],
+    "examples": [
+      {
+        "text": "Choose two target artifact creatures controlled by the same player. That player sacrifices one of them of their choice."
+      },
+      {
+        "text": "Choose two target Goblin creatures controlled by the same player. That player sacrifices one of them of their choice."
+      }
+    ],
+    "counterExamples": [
+      "Choose two target creatures controlled by the same player. That player sacrifices both of them of their choice.",
+      "Choose two target creatures controlled by the same player. That player sacrifices one of them.",
+      "Choose two target creatures controlled by the same player. That player exiles one of them of their choice."
+    ]
+  },
+  {
+    "id": "eff.edhv74.player.reveals.handAndTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 401.5",
+      "CR 400.2"
+    ],
+    "pattern": "{p:Player} reveal[s] their hand and the top card of their library",
+    "build": [
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "as": "revealedHand"
+      },
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "topCards",
+          "player": "$p",
+          "count": 1
+        },
+        "as": "revealedTop"
+      }
+    ],
+    "subject": "none",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Target opponent reveals their hand and the top card of their library. You choose a card revealed this way. That player puts the chosen card on the bottom of their library."
+      },
+      {
+        "text": "Target player reveals their hand and the top card of their library. You choose a card revealed this way. That player puts the chosen card on the bottom of their library. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent reveals their hand and the top two cards of their library. You choose a card revealed this way. That player puts the chosen card on the bottom of their library.",
+      "Target opponent reveals their hand. You choose a card revealed this way. That player puts the chosen card on the bottom of their library.",
+      "Target opponent reveals the top card of their library. You choose a card revealed this way. That player puts the chosen card on the bottom of their library."
+    ]
+  },
+  {
+    "id": "eff.edhv74.you.choose.revealedThisWay",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "you choose a card revealed this way",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "bound",
+            "name": "revealedHand"
+          },
+          {
+            "ref": "bound",
+            "name": "revealedTop"
+          }
+        ]
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "choose",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent reveals their hand and the top card of their library. You choose a card revealed this way. That player puts the chosen card on the bottom of their library."
+      },
+      {
+        "text": "Target player reveals their hand and the top card of their library. You choose a card revealed this way. That player puts the chosen card on the bottom of their library. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent reveals their hand and the top card of their library. You choose two cards revealed this way. That player puts the chosen card on the bottom of their library.",
+      "Target opponent reveals their hand and the top card of their library. You choose a card revealed this way, then you gain 1 life. That player puts the chosen card on the bottom of their library.",
+      "Target opponent reveals their hand. You choose a card revealed this way. That player puts the chosen card on the bottom of their library."
+    ]
+  },
+  {
+    "id": "eff.edhv74.player.puts.chosen.bottom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 608.2c",
+      "CR 400.3"
+    ],
+    "pattern": "{p:Player} put[s] the chosen card on the bottom of their library",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "bound",
+        "name": "chosen"
+      },
+      "to": {
+        "zone": "library",
+        "position": "bottom"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent reveals their hand and the top card of their library. You choose a card revealed this way. That player puts the chosen card on the bottom of their library."
+      },
+      {
+        "text": "Target player reveals their hand and the top card of their library. You choose a card revealed this way. That player puts the chosen card on the bottom of their library. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent reveals their hand and the top card of their library. You choose a card revealed this way. That player puts the chosen card on the top of their library.",
+      "Target opponent reveals their hand and the top card of their library. You choose a card revealed this way. That player puts the chosen card into their graveyard.",
+      "Target opponent reveals their hand and the top card of their library. You choose a card revealed this way. That player puts the chosen cards on the bottom of their library."
+    ]
+  },
+  {
+    "id": "rid.edhv74.if.damage.playerOrWalker.andCreature.instead",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 115.1",
+      "CR 603.4"
+    ],
+    "pattern": "if {c:Cond} , ( it | ~ ) deals {n:Qty} damage to that player or planeswalker and {m:Qty} damage to that creature instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "damage",
+            "source": "@previous.source",
+            "to": "@previous.to",
+            "amount": "$n",
+            "also": [
+              {
+                "to": "@previous.also.0.to",
+                "amount": "$m"
+              }
+            ]
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "~ deals 1 damage to target player or planeswalker and 1 damage to target creature that player or that planeswalker's controller controls. If you control a Wizard, ~ deals 3 damage to that player or planeswalker and 3 damage to that creature instead."
+      },
+      {
+        "text": "~ deals 2 damage to target player or planeswalker and 2 damage to target creature that player or that planeswalker's controller controls. If ~ was kicked, ~ deals 4 damage to that player or planeswalker and 4 damage to that creature instead."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 1 damage to target player or planeswalker and 1 damage to target creature that player or that planeswalker's controller controls. If you control a Wizard, ~ deals 3 damage to that player or planeswalker and 3 damage to that creature.",
+      "~ deals 1 damage to target player or planeswalker. If you control a Wizard, ~ deals 3 damage to that player or planeswalker and 3 damage to that creature instead.",
+      "~ deals 1 damage to target player or planeswalker and 1 damage to target creature that player or that planeswalker's controller controls. If you control a Wizard, ~ deals 3 damage to that player and 3 damage to that creature instead."
+    ]
+  },
+  {
+    "id": "eff.edhv74.player.reveals.hand.discardsAll.thatSpellsMv",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.9a",
+      "CR 400.2",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} reveal[s] their hand and discard[s] all cards with that spell 's mana value",
+    "build": [
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "as": "revealedHand"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": {
+          "q": "count",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "manaValue": {
+                "op": "==",
+                "value": {
+                  "q": "stat",
+                  "stat": "manaValue",
+                  "of": {
+                    "ref": "event",
+                    "role": "spell"
+                  }
+                }
+              },
+              "zone": "any",
+              "owner": "$p",
+              "is": {
+                "ref": "bound",
+                "name": "revealedHand"
+              }
+            }
+          }
+        },
+        "filter": {
+          "manaValue": {
+            "op": "==",
+            "value": {
+              "q": "stat",
+              "stat": "manaValue",
+              "of": {
+                "ref": "event",
+                "role": "spell"
+              }
+            }
+          },
+          "zone": "any",
+          "owner": "$p",
+          "is": {
+            "ref": "bound",
+            "name": "revealedHand"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, target player reveals their hand and discards all cards with that spell's mana value."
+      },
+      {
+        "text": "Whenever you cast a spell, target opponent reveals their hand and discards all cards with that spell's mana value."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, target player reveals their hand and discards a card with that spell's mana value.",
+      "Whenever you cast a spell, target player reveals their hand and exiles all cards with that spell's mana value.",
+      "Whenever you cast a spell, target player discards all cards with that spell's mana value."
+    ]
+  }
+]

@@ -1,0 +1,179 @@
+[
+  {
+    "id": "eff.edhv101.pump.group.forEach.qty",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2h",
+      "CR 122.1"
+    ],
+    "pattern": "{o:Objs} get {pt:PT} {d:Dur} for each {n:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  "$n"
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  "$n"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Creatures you control get +1/+0 until end of turn for each lore counter among Sagas you control."
+      },
+      {
+        "text": "Goblins you control get +2/+2 until end of turn for each lore counter among Sagas you control."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get +1/+0 for each lore counter among Sagas you control.",
+      "Creatures you control get +1/+0 until end of turn for each lore counter among Sagas an opponent controls and each Elf you control.",
+      "Creatures you control get +1/+0 until end of turn for each blorfty counter among Sagas you control and each Elf."
+    ]
+  },
+  {
+    "id": "eff.edhv101.maypay.costOrMana",
+    "weak": 1,
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.3",
+      "CR 608.2d",
+      "CR 603.12",
+      "CR 601.2b"
+    ],
+    "pattern": "{p:Player} may {c:Cost} or pay {m:ManaCost}",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "other": [
+          {
+            "kind": "oneOf",
+            "options": [
+              "$c",
+              {
+                "mana": "$m"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may sacrifice a Clue or pay {1}{U}. When you do, tap target creature an opponent controls."
+      },
+      {
+        "text": "Whenever ~ attacks, you may sacrifice an artifact or pay {3}. When you do, tap target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may sacrifice a Clue and pay {1}{U}. When you do, tap target creature an opponent controls.",
+      "Whenever ~ attacks, you may sacrifice a Clue or pay {1}{U} any number of times. When you do, tap target creature an opponent controls.",
+      "Whenever ~ attacks, you sacrifice a Clue or pay {1}{U}. When you do, tap target creature an opponent controls.",
+      "Whenever ~ attacks, you may sacrifice a Clue or pay 2 life. When you do, tap target creature an opponent controls."
+    ]
+  },
+  {
+    "id": "eff.edhv101.mayHave.basePT.ofObj.equalTo.stat",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 608.2d",
+      "CR 608.2h",
+      "CR 208.1"
+    ],
+    "pattern": "you may have the base power and toughness of {o:Obj} become equal to {s:Obj} 's power and toughness {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7b",
+                  "power": {
+                    "q": "stat",
+                    "stat": "power",
+                    "of": "$s"
+                  },
+                  "toughness": {
+                    "q": "stat",
+                    "stat": "toughness",
+                    "of": "$s"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may have the base power and toughness of target Elf you control become equal to ~'s power and toughness until end of turn."
+      },
+      {
+        "text": "When ~ enters, you may have the base power and toughness of target creature become equal to ~'s power and toughness until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you may have the base power and toughness of target Elf you control become equal to ~'s power and toughness.",
+      "Whenever ~ attacks, you may have the base power and toughness of target Elf you control become equal to ~'s toughness until end of turn.",
+      "Whenever ~ attacks, the base power and toughness of target Elf you control become equal to ~'s power and toughness until end of turn.",
+      "Whenever ~ attacks, you may have the power and toughness of target Elf you control become equal to ~'s power and toughness until end of turn."
+    ]
+  }
+]

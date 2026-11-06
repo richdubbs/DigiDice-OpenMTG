@@ -1,0 +1,6 @@
+# edh-players-9 (Commander lane edh-players; test/cloud/edh-players-9, golden edh-players-9-review.json)
+# (Tymna the Weaver is already in test-cards.txt) players counted by what happened to them this turn (cards drawn, lands entered, combat damage); one player compared with every other player; a commander's mana value chosen among partners; a creature that dealt combat damage to you chosen to be sacrificed
+Smuggler's Share
+Battle Angels of Tyr
+Stinging Study
+Witch-king of Angmar

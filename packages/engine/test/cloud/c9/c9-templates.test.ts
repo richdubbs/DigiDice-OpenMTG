@@ -164,8 +164,8 @@ describe('CR 608.2c, 614.15: "instead" replaces another instruction only when it
   it('CR 614.15: another instruction on other objects stays manual ("~ gets +2/+2 ... If ~ is an Aura, enchanted creature gets +2/+2 ... instead" is not read as this rule)', () => {
     expect(fullyAutomated(parse('Instant', 'Target creature gets +2/+2 until end of turn. If you control a Wizard, destroy all artifacts instead.'))).toBe(false);
   });
-  it('WP23 review (kept): instructions on players only ("You gain 2 life. If ..., draw two cards instead.") and a subset of a group stay manual', () => {
-    expect(fullyAutomated(parse('Instant', 'You gain 2 life. If you control a Forest, draw two cards instead.'))).toBe(false);
+  it('WP23 review (kept): a subset of a group stays manual; since edh-replace-2 one instruction of you replaced by another of you ("You gain 2 life. If ..., draw two cards instead.", CR 614.15) is read', () => {
+    expect(fullyAutomated(parse('Instant', 'You gain 2 life. If you control a Forest, draw two cards instead.'))).toBe(true); // edh-replace-2 (otherInstructionOfYou)
     expect(fullyAutomated(parse('Instant', 'Each player draws a card. If you control an Elf, you draw two cards instead.'))).toBe(false);
   });
   it('CR 608.2d (kept): a "may" on either side stays manual', () => {
@@ -196,8 +196,10 @@ describe('CR 608.2c, 614.15: several instructions', () => {
     const [s] = stepsOf(f) as unknown as [{ then: EffectStep[]; else: EffectStep[] }];
     expect(s.then.map((x) => x.op)).toEqual(['putCounters', 'effect']);
   });
-  it('CR 614.15: one instruction replaced by several where one acts on something else (a player) stays manual under a condition decided on resolution', () => {
-    expect(fullyAutomated(parse('Instant', 'Target creature gets +2/+2 until end of turn. If you control a Wizard, instead put a +1/+1 counter on it and you draw a card.'))).toBe(false);
+  // edh-next-10 (render/self-replacement.ts#notWideReplacement; Anticognition): "instead A and B" where A replaces the one instruction and B (draw, scry, tokens, life,
+  // counters) is added in that branch is read: if the condition holds on resolution, A then B; otherwise the original instruction (CR 614.15, 608.2c)
+  it('CR 614.15: one instruction replaced by several where one acts on something else (a player) is read since edh-next-10', () => {
+    expect(fullyAutomated(parse('Instant', 'Target creature gets +2/+2 until end of turn. If you control a Wizard, instead put a +1/+1 counter on it and you draw a card.'))).toBe(true);
   });
   it('CR 608.2c: a sentence of several instructions restated op for op is replaced as a whole ("Target player draws two cards, then discards a card. If ..., instead that player draws three cards, then discards two cards.")', () => {
     const f = parse('Instant', 'Target player draws two cards, then discards a card. If you control a Wizard, instead that player draws three cards, then discards two cards.');
@@ -254,7 +256,8 @@ describe('render gate (G6): the wide "instead" readings are offered only for the
   });
   it('the predicate itself: the WP23 refusals still hold, and a search for a search of another player is refused', () => {
     const search = (who: unknown, filter: unknown) => ({ op: 'search', who, zone: 'library', filter, max: 1, as: 's' });
-    expect(notWideReplacement([draw(1)], [{ op: 'gainLife', who: you, amount: 2 }], swamp)).not.toBeNull();
+    expect(notWideReplacement([draw(1)], [{ op: 'gainLife', who: you, amount: 2 }], swamp)).toBeNull(); // edh-replace-2: one instruction of you by another of you
+    expect(notWideReplacement([{ ...draw(1), who: { ref: 'each', who: 'player' } }], [{ op: 'gainLife', who: you, amount: 2 }], swamp)).not.toBeNull();
     expect(notWideReplacement([search(you, { subtypes: ['Forest'] })], [search(you, { types: ['Artifact'] })], swamp)).toBeNull();
     expect(notWideReplacement([search(you, { subtypes: ['Forest'] })], [search({ ref: 'opponent' }, { types: ['Artifact'] })], swamp)).not.toBeNull();
     expect(notWideReplacement([{ op: 'move', what: bound('x'), to: { zone: 'hand' } }], [{ op: 'may', who: you, do: [] }], swamp)).not.toBeNull();

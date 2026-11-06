@@ -1,0 +1,9 @@
+# edh-c-84 (Commander effort, coordinator C, EDHREC ranks 18,501 to 19,000, later pass). After editing: npm run cards -- fixtures
+Szadek, Lord of Secrets
+Anointed Peacekeeper
+Alhammarret, High Arbiter
+Restore Balance
+Magus of the Balance
+Angus Mackenzie
+Dreadlight Monstrosity
+Invasion of Lorwyn // Winnowing Forces

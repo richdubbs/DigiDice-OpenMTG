@@ -1,0 +1,419 @@
+[
+  {
+    "id": "rep.edhpm24.others.enters.numberAdditionalCounters.andSubtype",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 205.1b",
+      "CR 107.3"
+    ],
+    "pattern": "each {f:Filter} enters with a number of additional {k:CounterKind} counters on it equal to {q:Qty} and as ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$q"
+              }
+            ],
+            "subtypes": "$st"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other",
+      "additional",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Each other Elf you control enters with a number of additional +1/+1 counters on it equal to the number of cards in your hand and as a Zombie in addition to its other types."
+      },
+      {
+        "text": "Each creature you control enters with a number of additional charge counters on it equal to ~'s toughness and as an Elf in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Each other Elf you control enters with a number of additional +1/+1 counters on it equal to the number of cards in your hand and as a Zombie.",
+      "Each other Elf you control enters with a number of additional +1/+1 counters on it equal to the number of cards in your hand and as an artifact in addition to its other types.",
+      "Each other Elf you control enters with a number of additional +1/+1 counters on it equal to the number of cards in your hand and as a Zombie in addition to its other types unless it is blue."
+    ]
+  },
+  {
+    "id": "kw.edhpm24.kicker.x.notZero",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.33a",
+      "CR 107.3",
+      "CR 601.2b"
+    ],
+    "pattern": "kicker {x} . x can't be 0",
+    "build": {
+      "kind": "keyword",
+      "keyword": "kicker",
+      "cost": {
+        "mana": [
+          {
+            "kind": "variable",
+            "name": "X"
+          }
+        ]
+      },
+      "xMin": 1
+    },
+    "examples": [
+      {
+        "text": "Kicker {X}. X can't be 0."
+      },
+      {
+        "text": "Kicker {X}. X can't be 0.\nWhen this creature enters, if it was kicked, create X 1/1 green Squirrel creature tokens."
+      }
+    ],
+    "counterExamples": [
+      "Kicker {X}. X can't be 1.",
+      "Kicker {X}.",
+      "Multikicker {X}. X can't be 0.",
+      "Kicker {2}{G}. X can't be 0."
+    ],
+    "consumes": [
+      "can't"
+    ]
+  },
+  {
+    "id": "eff.edhpm24.instructionChoice.removeOrPutThatCounter",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 122.1"
+    ],
+    "pattern": "^ remove that counter from {o:Recipient} or put another of those counters on {p:Recipient}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "options": [
+          "first",
+          "second"
+        ],
+        "as": "instructionChoice",
+        "link": "instructionChoice"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "instructionChoice",
+          "equals": "first"
+        },
+        "then": [
+          {
+            "op": "removeCounters",
+            "from": "$o",
+            "kind": "",
+            "count": 1,
+            "kindOfChoice": "counterKind"
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "instructionChoice",
+          "equals": "second"
+        },
+        "then": [
+          {
+            "op": "putCounters",
+            "on": "$p",
+            "kind": "",
+            "count": 1,
+            "kindOfChoice": "counterKind"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "remove",
+      "put",
+      "another",
+      "those",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Choose a counter on target artifact. Remove that counter from that artifact or put another of those counters on it."
+      },
+      {
+        "text": "Choose a counter on target land. Remove that counter from that land or put another of those counters on it. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Choose a counter on target creature. Remove that counter from that creature and put another of those counters on it.",
+      "Choose a counter on target creature. Remove that counter from that creature or put two more of those counters on it.",
+      "Remove that counter from target creature or put another of those counters on it."
+    ]
+  },
+  {
+    "id": "eff.edhpm24.instructionChoice.tapOrUntap",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.26a",
+      "CR 701.26b"
+    ],
+    "pattern": "^ tap {a:Objs} , or untap {b:Objs}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "options": [
+          "first",
+          "second"
+        ],
+        "as": "instructionChoice",
+        "link": "instructionChoice"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "instructionChoice",
+          "equals": "first"
+        },
+        "then": [
+          {
+            "op": "tap",
+            "what": "$a"
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "instructionChoice",
+          "equals": "second"
+        },
+        "then": [
+          {
+            "op": "untap",
+            "what": "$b"
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "tap",
+      "untap",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Tap all untapped Elves target player controls, or untap all tapped Elves that player controls."
+      },
+      {
+        "text": "Tap all untapped creatures you control, or untap all tapped lands you control."
+      }
+    ],
+    "counterExamples": [
+      "Tap all untapped Elves target player controls, and untap all tapped Elves that player controls.",
+      "Tap all untapped Elves target player controls, or sacrifice all tapped Elves that player controls.",
+      "Tap all untapped Elves you control or untap all tapped Elves you control, then draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhpm24.objAnd.objs.eachGet.pt.andGain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} and {g:Objs} each get[s] {pt:PT} and gain {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              "$o",
+              "$g"
+            ]
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "and",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature attacks, it and other Elves you control each get +1/+0 and gain trample until end of turn."
+      },
+      {
+        "text": "Whenever this creature becomes tapped, it and other creatures you control that share a creature type with it each get +1/+1 and gain vigilance until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature attacks, it and other Goblins you control each get +1/+0 and gain trample.",
+      "Whenever this creature attacks, it or other Goblins you control each get +1/+0 and gain trample until end of turn.",
+      "Whenever this creature attacks, it and other Goblins you control each get +1/+0 and lose trample until end of turn."
+    ]
+  },
+  {
+    "id": "rep.edhpm24.tokens.mayInstead.thatMany.orThatMany",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 608.2d",
+      "CR 111.1"
+    ],
+    "pattern": "if you would create one or more tokens , you may instead create that many {a:TokenDesc} or that many {b:TokenDesc}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "createToken",
+            "player": "you"
+          },
+          "optional": true,
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "chooseValue",
+                "who": {
+                  "ref": "you"
+                },
+                "what": "option",
+                "options": [
+                  "first",
+                  "second"
+                ],
+                "as": "instructionChoice",
+                "link": "instructionChoice"
+              },
+              {
+                "op": "if",
+                "cond": {
+                  "cond": "chosen",
+                  "link": "instructionChoice",
+                  "equals": "first"
+                },
+                "then": [
+                  {
+                    "op": "createToken",
+                    "who": {
+                      "ref": "you"
+                    },
+                    "count": {
+                      "q": "eventAmount"
+                    },
+                    "token": "$a"
+                  }
+                ]
+              },
+              {
+                "op": "if",
+                "cond": {
+                  "cond": "chosen",
+                  "link": "instructionChoice",
+                  "equals": "second"
+                },
+                "then": [
+                  {
+                    "op": "createToken",
+                    "who": {
+                      "ref": "you"
+                    },
+                    "count": {
+                      "q": "eventAmount"
+                    },
+                    "token": "$b"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "may",
+      "instead",
+      "or",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "If you would create one or more tokens, you may instead create that many 1/1 red Imp creature tokens with flying or that many 2/2 black Rat creature tokens with deathtouch."
+      },
+      {
+        "text": "If you would create one or more tokens, you may instead create that many Treasure tokens or that many Food tokens."
+      }
+    ],
+    "counterExamples": [
+      "If you would create one or more tokens, you may instead create that many 1/1 red Imp creature tokens with flying and that many 2/2 black Rat creature tokens with deathtouch.",
+      "If an opponent would create one or more tokens, you may instead create that many Treasure tokens or that many Food tokens.",
+      "If you would create one or more tokens, instead create that many Treasure tokens or that many Food tokens."
+    ]
+  }
+]

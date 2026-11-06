@@ -7,5 +7,36 @@
   ],
   "reminder": "During your turn, this Vehicle is also a creature.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "Living metal",
+      "zone": [
+        "battlefield"
+      ],
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
 }

@@ -1,0 +1,11 @@
+# edh-c-2 (Commander lane edh-c): a leading "as long as" anthem and cost reduction, "all creatures are <color>", self damage doubling, three-color tokens, "for each <kind> counter on ~", domain against a number, render alts. After editing: npm run cards -- fixtures
+Dauthi Warlord
+Captain Marvel, Shooting Star
+Runeflare Trap
+Charging Tuskodon
+Godsire
+Scroll of the Masters
+Raksha Golden Cub
+Centaur Omenreader
+Darkest Hour
+Path to the Festival

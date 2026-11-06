@@ -42,10 +42,49 @@ export type SubParser = (tokens: readonly Tok[]) => unknown[] | null;
  * graveyard, a card looked at is in the library) would otherwise be two readings of one sentence (guard G5) whichever sentence came before.
  */
 export interface Discourse {
+  /** edh-next-139 (Boxing Ring): no earlier sentence of the ability (this is its first). */
+  readonly first?: boolean;
   readonly milled: boolean;
   readonly seen: boolean;
+  /**
+   * edh-cast-10: a look at the cards of a HAND ("Look at that player's hand."), which is no `seen` (a group of library cards): the hole `SeenInHand` reads it, so that "those cards" of
+   * "You may cast a spell from among those cards" is never two readings (guard G5) with the zone of the pool different.
+   */
+  readonly handLook?: boolean;
   /** r3-choose (CR 115.1, 601.2c): an earlier sentence only announces targets ("Choose target opponent."), so "the chosen player" / "the chosen card" may name them. */
   readonly chose?: boolean;
+  /** edh-next-60 (CR 608.2c, 607.2): an earlier sentence of the same ability chose one object that is no target (`chooseObjects`, "Choose a creature you control."), so "the chosen creature" names it and the link placeholder of another ability is the weaker reading. */
+  readonly chosenObject?: boolean;
+  /**
+   * edh-zones-14 (CR 607.2a, 603.4, 608.2c; Valakut Exploration): the first sentence of the effect of a triggered ability whose intervening "if" counts the cards exiled with its
+   * object ("if there are cards exiled with ~, put them into their owner's graveyard"): "them" is those cards (the linked exile), not an earlier group.
+   */
+  readonly linkedCond?: boolean;
+  /**
+   * edh-zones-18 (CR 701.20a, 608.2c; Selvala, Explorer Returned): the sentences before this one reveal cards from the top of a library and do nothing else with cards (only reveals and
+   * looks), so the cards revealed are still where they were revealed: "for each nonland card revealed this way" counts them in the library (holes/edhz18.ts).
+   */
+  readonly revealStays?: boolean;
+  /**
+   * trek-17 (CR 701.20a, 121.1, 608.2c; Ambassador K'Ehleyr, Alexander, Ship's Fool): the sentences before this one reveal cards from the top of libraries and draw cards (only reveals,
+   * looks and draws), so the cards revealed are in the library or, once drawn, in a hand: "for each nonland card revealed this way" counts them in either (holes/trek17.ts).
+   */
+  readonly revealDrawn?: boolean;
+  /**
+   * edh-zones-22 (CR 701.20a, 608.2c; Old Stickfingers): an earlier sentence reveals cards from the top of a library "until you reveal X <cards>" (a counted reveal until): the
+   * cards it stopped at are "<cards> revealed this way" (holes/object.ts#revealedThisWay), still in the library.
+   */
+  readonly revealedUntil?: boolean;
+  /**
+   * edh-zones-27 (CR 406.1, 608.2c; Aminatou's Augury): an earlier sentence exiles the top cards of a library ("Exile the top eight cards of your library.") and no sentence looks at or reveals
+   * any: "them" is the cards that step exiled, which the `ExiledTop` hole names; the `Seen` hole offers no second reading of the same words (guard G5).
+   */
+  readonly exiledTop?: boolean;
+  /**
+   * edh-next-136 (CR 701.23a, 701.20a; Karn, Scion of Urza): an earlier sentence searches a library: only then can "them" / "those cards" be the cards a search found (the `Found`
+   * hole); after a reveal of the top cards and no search, "An opponent chooses one of them." is the `Seen` group alone (two readings would be guard G5).
+   */
+  readonly searched?: boolean;
 }
 
 export interface HoleCtx {
@@ -178,8 +217,15 @@ export function mergeFilter(a: ObjectFilter, b: ObjectFilter): ObjectFilter | nu
     if (k === 'not') { out[k] = { anyOf: [va, vb] }; continue; }
     return null;
   }
+  // edhn115 (CR 122.2, 406.3; The Animus): a card in a graveyard, a hand or a library has no counters, so "target creature card from a graveyard with a memory counter on it" is never a description of
+  // such a card (a card in exile or a permanent can have them): the counter is the one the instruction puts on the card it moves, which another reading ("exile {o:Obj} with a <kind> counter on it") says
+  if (out['counters'] !== undefined && offBattlefieldZoneOnly(out['zone'])) return null;
   return out as ObjectFilter;
 }
+const offBattlefieldZoneOnly = (z: unknown): boolean => {
+  const zs = Array.isArray(z) ? z : [z];
+  return zs.length > 0 && zs.every((x) => x === 'graveyard' || x === 'hand' || x === 'library');
+};
 
 /**
  * Player predicate for filter fields from a player reference. The model has plain words for the common cases (design 3.3), and a set must have ONE JSON
@@ -201,7 +247,7 @@ export function predOf(p: PlayerRef | PlayerPred): PlayerPred {
 export interface TargetPhrase {
   kind: 'object' | 'player' | 'objectOrPlayer' | 'anyTarget' | 'spell' | 'ability' | 'stackObject';
   filter?: ObjectFilter;
-  players?: { who: PlayerPred };
+  players?: { who: PlayerPred; dealtDamage?: true; dealtCombatDamageBySource?: true; activePlayer?: true; lostLife?: true };
   min: number | Quantity;
   max: number | 'any' | Quantity;
   /** The words of the phrase ("target creature you don't control"). */
@@ -212,24 +258,44 @@ export interface TargetPhrase {
   sameOwner?: boolean;
   /** FAST5 T42: "... target creature cards with different names": no two targets share a name (`TargetSpec.differentNames`, CR 201.2, 115.1). */
   differentNames?: boolean;
+  /** edh-top-3: "... target creature cards that each have a different mana value X or less": no two targets share a mana value (`TargetSpec.differentManaValues`, CR 202.3, 115.1). */
+  differentManaValues?: boolean;
   /** FAST5 T66: "... up to two target creatures with total mana value 6 or less": a limit on a statistic summed over the chosen targets (`TargetSpec.groupLimit`, CR 115.1, 601.2c). */
   groupLimit?: { stat: 'power' | 'toughness' | 'manaValue'; cmp: NumberCmp };
+  /** edh-zones-26 (CR 115.1, 601.2c, 108.3): "target artifact card in that player's graveyard" after the target of the same sentence: the card's owner is the controller of that EARLIER target (`TargetSpec.filter.owner`, lower/targets.ts#specOf). */
+  ownerOfEarlierController?: boolean;
+  /** edh-c-85 (CR 115.1, 601.2c, 109.4; Mutiny): "another target creature that player controls" right after "target creature an opponent controls": the new target is controlled by the controller of the EARLIER target (`TargetSpec.filter.controller`, lower/targets.ts#specOf; it names that target as the targets are chosen, rules/targets.ts#announcedPlayers). */
+  controllerOfEarlierController?: boolean;
   /** FAST5 T66: "for each opponent, ... up to one target nonland permanent that player controls": one target at most for each opponent (`TargetSpec.perOpponent`, CR 115.1, 601.2c). */
   perOpponent?: boolean;
+  /** edh-d-96: "for each opponent who has N or more poison counters as you cast this spell": only those opponents get a target (`TargetSpec.perOpponentPoison`, CR 601.2c). */
+  perOpponentPoison?: number;
   /** r5-fxb: "for each player, ... up to one target creature that player controls" (`TargetSpec.perPlayer`, CR 115.1, 601.2c). */
   perPlayer?: boolean;
+  /** edh-next-127: "for each graveyard with an instant or sorcery card in it, exile target ... from that graveyard" (`TargetSpec.eachWithOne`, CR 115.1, 601.2c). */
+  eachWithOne?: true;
   /** FAST5 T66: "two target nonland permanents that share a card type": the targets have a card type in common (`TargetSpec.sharedCardType`, CR 205.2a, 115.1). */
   sharedCardType?: boolean;
+  /** edh-next-54: "that share a permanent type" (`TargetSpec.sharedPermanentType`, with `sharedCardType`, CR 110.4, 205.2a). */
+  sharedPermanentType?: true;
   /** CLOUD std-ecl: "two target creature cards that share a creature type": the targets have a creature type in common (`TargetSpec.sharedCreatureType`, CR 205.3m, 115.1). */
   sharedCreatureType?: boolean;
   /** CLOUD std-tmt: "two target creatures controlled by different players": no two targets share a controller (`TargetSpec.differentControllers`, CR 115.1). */
   differentControllers?: boolean;
   /** std-rx30: "two target creatures controlled by the same opponent": every target has one controller (`TargetSpec.sameController`, CR 115.1, 110.2). */
   sameController?: boolean;
+  /** edh-next-126: "any number of target creatures with equal toughness": every target has the same toughness (`TargetSpec.equalToughness`, CR 115.1, 208.1). */
+  equalToughness?: true;
   /** std-cardcopy-7: "up to one target nonland card of each card type from your graveyard" (`TargetSpec.perCardType`, CR 115.1, 205.2a). */
   perCardType?: boolean;
   /** p2-damage-2: "target creature an opponent controls chosen at random": the game picks the targets at random among the legal ones (`TargetSpec.random`, CR 601.2c, 603.3d). */
   random?: boolean;
+  /** edh-c-103 (CR 601.2c, 601.7; The Abyss): "destroy target creature that player controls of their choice": that player, not the controller, chooses the target (`TargetSpec.chooser`). */
+  chooser?: PlayerRef;
+  /** edh-d-87 (CR 601.7a; Bladegriff Prototype): who chooses when the `chooser` has left the game (`TargetSpec.chooserElse`). */
+  chooserElse?: 'anOpponent';
+  /** edh-next-146 (CR 601.7a; Arena): "target creature of an opponent's choice they control": the chooser picks among the objects they control (`TargetSpec.chooserControls`). */
+  chooserControls?: true;
   /**
    * T20 (FAST4) INTERFACE CHANGE (additive): a target a keyword action implies without the word "target" in the sentence ("support 2", CR 701.41a):
    * the words that stand for it in the sentence, where the targets pass (parser/lower/targets.ts) places the spec instead of at `text`.
@@ -256,11 +322,23 @@ export interface AnaphorInfo {
    */
   notSelf?: boolean;
   /**
+   * edh-zones-12 ADDITION (optional): the pronoun of "if it's a land card" names a card (CR 108.2b: a token is no card), so a mention that is a token created by the ability is no
+   * candidate ("{T}: Put a card exiled with ~ into its owner's graveyard. If it's a land card, create a Treasure token. If it's a nonland card, ...", Currency Converter);
+   * lower/anaphora.ts#compatible.
+   */
+  cardNoun?: boolean;
+  /**
    * FAST5X E25 ADDITION (optional): the ability's own source is a candidate only when no other mention is ("Counter target spell. Its controller manifests
    * dread."): "its controller" never names the controller of the source, which the source's own text calls "you" (CR 109.5, 608.2c; lower/anaphora.ts#resolveAnaphor).
    * A demotion, never an exclusion: a reference whose only candidate is the source still resolves to it.
    */
   selfLast?: boolean;
+  /**
+   * edh-c-19 ADDITION (optional): the pronoun of "~ deals damage equal to its power" names the source that deals the damage (the sentence's subject) when several objects fit ("Whenever a
+   * creature with flying attacks you, ~ deals damage equal to its power to that creature", Palazzo Archers; CR 120.3, 608.2c). A choice among several candidates only: a reference with one
+   * candidate keeps it (lower/anaphora.ts#resolveAnaphor).
+   */
+  selfFirst?: boolean;
   /**
    * FAST5 T70 ADDITION (optional): the card or cards an earlier instruction of the ability exiled from the top of a library, for the play permission that
    * follows ("You may play those cards this turn"). The unique-candidate rule never resolves it (lower/anaphora.ts#compatible); the impulse idiom binds it to the
@@ -272,12 +350,25 @@ export interface AnaphorInfo {
    * antecedent is a target whose description says the same of its controller (Mention.controls; lower/anaphora.ts#compatible; CR 115.1, 608.2c).
    */
   controls?: 'you' | 'notYou' | 'opponent';
+  /**
+   * edh-zones-9 ADDITION (optional): "both cards" (CR 608.2c; Sword of Hearth and Home): the two single cards two earlier instructions of the ability produced (an exiled
+   * target and a card found), as one group. Resolves only when exactly two single-card mentions fit (lower/anaphora.ts#resolveAnaphor, bindKey `both`); else the sentence
+   * stays manual.
+   */
+  both?: true;
+  /**
+   * edh-c-106 ADDITION (optional): "the other creature" of a trigger on a two-party event (Venomous Fangs, Venom; CR 608.2c): the event's `object` role (the creature dealt damage, the
+   * creature blocked or blocking), never the subject or a mention of an earlier step (lower/anaphora.ts#compatible).
+   */
+  otherParty?: true;
 }
 
 export const targetRef = (t: TargetPhrase): Json => ({ ref: 'target', id: '', $target: t as unknown as Json });
 export const anaphorObj = (a: AnaphorInfo): Json => ({ ref: 'bound', name: '', $anaphor: a as unknown as Json });
 export const anaphorQty = (a: AnaphorInfo): Json => ({ q: 'eventAmount', $anaphor: a as unknown as Json });
 export const linkedObj = (): Json => ({ ref: 'linked', link: '$link' });
+/** edh-players-8 (CR 607.2d; Skrelv): the quality "that color" of "hexproof from that color" until lower/links.ts names the earlier choice it means (else the sentence is manual). */
+export const THAT_COLOR_QUALITY = '$thatColor';
 
 export interface Marker { kind: 'target' | 'anaphor' | 'step' | 'link'; path: string; value: unknown }
 
@@ -305,7 +396,7 @@ export function findMarkers(value: unknown, path = ''): Marker[] {
 
 const OR_LESS = [P('or less'), P('or fewer')];
 const OR_MORE = [P('or greater'), P('or more')];
-const CMP_LEAD: [string[], Cmp][] = [[P('less than or equal to'), '<='], [P('greater than or equal to'), '>='], [P('less than'), '<'], [P('fewer than'), '<'], [P('greater than'), '>'], [P('more than'), '>'], [P('equal to'), '=='],
+const CMP_LEAD: [string[], Cmp][] = [[P('less than or equal to'), '<='], [P('greater than or equal to'), '>='], [P('equal to or less than'), '<='] /* edh-next-55 */, [P('equal to or greater than'), '>='] /* edh-next-55 */, [P('less than'), '<'], [P('fewer than'), '<'], [P('greater than'), '>'], [P('more than'), '>'], [P('equal to'), '=='],
   [P('at least'), '>='], [P('at most'), '<='], [P('exactly'), '==']];
 
 /** "3", "3 or less", "3 or more", "less than X", "greater than 2", "equal to the number of ..." as a NumberCmp. A bare quantity means `==`. */

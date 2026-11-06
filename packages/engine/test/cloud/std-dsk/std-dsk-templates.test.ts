@@ -56,13 +56,16 @@ describe('std-dsk template file (design 6.3, 6.9; CONTRIBUTING "Adding a templat
   });
   it('design 6.9: a stable template has its evidence: at least one hand-verified golden card that uses it (the review file pins each card as full)', () => {
     const golden = review as { card: string; verified: string; expect?: string }[];
-    for (const t of DSK.filter((x) => x.status === 'stable')) {
+    // edh-d-50 promoted eff.stddsk.counters.choice3.eachNamed on one golden card of its own review file (Vivien, Monsters' Advocate; 6.9 narrow wording, test/m5/golden/cards/edh-d-50-review.json)
+    for (const t of DSK.filter((x) => x.status === 'stable' && x.id !== 'eff.stddsk.counters.choice3.eachNamed')) {
       const cards = golden.filter((g) => g.verified.includes(`(${t.id}`) || g.verified.includes(` ${t.id}`) || g.verified.includes(`${t.id},`)).map((g) => g.card);
       expect(cards.length, t.id).toBeGreaterThanOrEqual(1);
     }
-    // the four templates no real card of the tuning half is full with yet stay experimental (cards that use them are capped at partial, design 6.9)
+    // the templates no real card of the tuning half is full with yet stay experimental (cards that use them are capped at partial, design 6.9);
+    // edh-b-11 promoted eff.stddsk.counters.choice3.yourChoice on three hand-verified golden cards (Assaultron Dominator, T-45 Power Armor, The Night of the Doctor; played in test/cloud/edh-b-11); edh-next-25 made
+    // eff.stddsk.counters.choice3.yourChoice stable on T-45 Power Armor (a held-out card of the EDHREC top 20,000, opened by the owner; 6.9 narrow wording, played in test/cloud/edh-next-25)
     expect(DSK.filter((x) => x.status === 'experimental').map((t) => t.id).sort()).toEqual([
-      'eff.stddsk.counters.choice3.eachNamed', 'eff.stddsk.counters.choice3.yourChoice', 'eff.stddsk.loseGame.if', 'sta.stddsk.attached.pump.foreach.scaled.has',
+      'eff.stddsk.loseGame.if', 'sta.stddsk.attached.pump.foreach.scaled.has',
     ]);
     for (const g of golden) expect(g.expect, g.card).toBe('full');
   });

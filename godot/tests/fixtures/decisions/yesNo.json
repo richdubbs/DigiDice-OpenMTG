@@ -1,0 +1,11 @@
+{
+  "id": "d4",
+  "player": "p1",
+  "prompt": "Pay {1} to draw a card?",
+  "rules": [
+    "CR 603.5"
+  ],
+  "kind": "yesNo",
+  "yesLabel": "Pay {1}",
+  "noLabel": "Don't pay"
+}

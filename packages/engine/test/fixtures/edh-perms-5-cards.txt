@@ -1,0 +1,9 @@
+# edh-perms-5 (Commander lane edh-perms; test/cloud/edh-perms-5, golden edh-perms-5-review.json)
+# for each target a token copy with an exception and exile them at the next end step, destroy then "if it dies this way" copies with half power and toughness,
+# an X/1 token with a computed power, counters on two groups, base power with a blocking restriction, creature-type lists joined with "and"
+Brokers Ascendancy
+Saw in Half
+Silver-Fur Master
+Twinflame
+Urabrask's Forge
+Wrecking Ball Arm

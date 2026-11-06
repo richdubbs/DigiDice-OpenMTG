@@ -252,7 +252,8 @@ describe('CR 111.4, 207.2d, 122.1: a token named "X of the Y", an exclaimed flav
     const d = card('Test Herald', 'Creature — Human', 'Are You Ready? — Whenever this creature attacks, you gain 1 life.', { pt: ['1', '1'] });
     expect(full(d)).toBe(true);
     expect(d.faces[0]!.abilities[0]!.kind).toBe('triggered');
-    expect(full(card('Test Shout', 'Creature — Human', 'Bring it Home! — Whenever this creature attacks, you gain 1 life.', { pt: ['1', '1'] }))).toBe(false); // "it" in lower case: text
+    expect(full(card('Test Shout', 'Creature — Human', 'Bring it home! — Whenever this creature attacks, you gain 1 life.', { pt: ['1', '1'] }))).toBe(false); // a lower-case word after "it": text (edh-b-1: "it" between capitalized words of a title ending in "!" is a label, "Bring it Down!")
+    expect(full(card('Test Shout', 'Creature — Human', 'Bring it Home! — Whenever this creature attacks, you gain 1 life.', { pt: ['1', '1'] }))).toBe(true);
   });
   it('the count of counters is read before the counter of the same instruction is put (CR 608.2c)', () => {
     const NEST = card('Test Hive Nest', 'Enchantment', 'At the beginning of combat on your turn, create a 1/1 red Insect creature token. Put a +1/+1 counter on it for each brood counter on this enchantment, then put a brood counter on this enchantment.');

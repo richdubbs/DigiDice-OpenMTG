@@ -5,10 +5,14 @@
  * `subject`, `fixed`, `live`, `ask` positions, layers, divisions, `X`, `spellTargetCount`, and the "no semantics" gaps. Every check is a pure function
  * of the node, its ancestors and the ability root, so it runs in one walk.
  */
-import type { EventPattern, EventRole } from '../types/ability';
+import { DIE_ROW_OPEN } from './die-rows';
+import type { EffectProgram, EventPattern, EventRole } from '../types/ability';
+import { choosesXOnResolution } from '../types/x-on-resolution';
 import type { Issue, IssueCode, ValidateContext } from './api';
 import { patternsExpose, patternsHaveAmount } from './lint-roles';
 import { ABILITY_DEFS, ancestors, walkAbility, type WalkNode } from './walk';
+import { isNextCastRider } from './next-cast-rider';
+import { youControlExists } from './you-control-exists'; // edh-next-140
 
 type Rec = Record<string, unknown>;
 const rec = (x: unknown): Rec => (typeof x === 'object' && x !== null ? (x as Rec) : {});
@@ -114,6 +118,24 @@ export function visibleTargets(n: WalkNode): Map<string, Rec> {
  * as it is created (FAST2 T10: CR 603.7c, effects/handlers/lasting-fix.ts#prepareDeferred); a manual ability has no event at all ("Trigger now" runs it
  * without one, design 6.6).
  */
+/**
+ * edh-d-98 (CR 603.4, 603.2; Cemetery Gatekeeper, parser/lower/ability.ts#playOrCastEach): in a trigger of two patterns whose objects are different roles ("plays a land" names
+ * the land as `subject`, "casts a spell" names the spell as `spell`), an intervening "if" that reads the object once per pattern, `{cond:'any', of:[matches subject, matches
+ * spell]}`: each role is exposed by one pattern, and every pattern exposes one of them (an event fills only its own roles, so the other branch matches nothing). Only that
+ * condition, directly under the triggered ability, of `matches` branches on event roles.
+ */
+function perPatternRole(n: WalkNode, role: EventRole, providers: EventPattern[][]): boolean {
+  const m = /^(.*)\/interveningIf\/of\/\d+\/object$/.exec(n.path);
+  if (m === null || providers.length !== 1) return false;
+  const trig = [...ancestors(n)].find((a) => a.path === m[1] && a.def === 'TriggeredAbilityDef');
+  const cond = trig === undefined ? undefined : rec(trig.value['interveningIf']);
+  if (cond === undefined || cond['cond'] !== 'any' || !Array.isArray(cond['of'])) return false;
+  const roles = (cond['of'] as unknown[]).map((c) => { const o = rec(rec(c)['object']); return rec(c)['cond'] === 'matches' && o['ref'] === 'event' && typeof o['role'] === 'string' ? (o['role'] as EventRole) : null; });
+  if (roles.some((r) => r === null) || !roles.includes(role)) return false;
+  const on = providers[0]!;
+  return roles.every((r) => on.some((p) => patternsExpose([p], r!))) && on.every((p) => roles.some((r) => patternsExpose([p], r!)));
+}
+
 function roleProviders(n: WalkNode): EventPattern[][] {
   for (const a of ancestors(n)) {
     // Cloud r4-repl (CR 611.2c, 614.12): the PATTERN of a replacement a resolving instruction creates names what the creating ability's event exposed ("Whenever you
@@ -130,8 +152,13 @@ function roleProviders(n: WalkNode): EventPattern[][] {
       continue;
     }
     // std-copy-3 (CR 106.6, 603.2): "When that mana is spent to cast <spells>, ...": inside the trigger the mana carries, the event is that cast (actions/cast.ts#manaSpentTriggers)
+    // edh-next-127 (CR 603.7a, 601.2i): "When you cast a spell this way, ...": inside a permission's delayed trigger the event is that cast (actions/cast.ts#permitCastTriggers)
+    if (a.def === 'PermissionDef' && n.path.startsWith(`${a.path}/onCast/`)) return [[{ ev: 'cast', player: 'you' } as EventPattern]];
     if (a.def === 'EffectStep' && a.value['op'] === 'addMana' && n.path.startsWith(`${a.path}/whenSpent/`)) return [[{ ev: 'cast', player: 'you', spell: rec(a.value['whenSpent'])['spells'] } as EventPattern]];
     if (a.def === 'TriggeredAbilityDef') return [arr(rec(a.value['trigger'])['on']) as unknown as EventPattern[]];
+    // edh-d-100 (CR 603.2; Share the Spoils): "When they do, ...": inside a permission's `onUse` the event is the land play or the cast made with it; its player is the one who did it
+    // (actions/cast.ts, actions/land.ts with triggers/stack.ts#permitOnUseTrigger): the player role only
+    if (a.def === 'PermissionDef' && n.path.startsWith(`${a.path}/onUse/`)) return [[{ ev: 'action', verb: 'playLand', actor: 'any' } as EventPattern], [{ ev: 'cast', player: 'any' } as EventPattern]];
     if (a.def === 'ChapterAbilityDef') return [[{ ev: 'counters', change: 'put', on: { self: true } }]];
     if (ABILITY_DEFS.has(a.def)) return [];
   }
@@ -141,7 +168,9 @@ function roleProviders(n: WalkNode): EventPattern[][] {
 /** FAST4 T26: is the node inside a triggered ability whose trigger is a "one or more" batch (CR 603.2c)? (the nearest ability, as roleProviders reads it) */
 function triggerIsBatch(n: WalkNode): boolean {
   for (const a of ancestors(n)) {
-    if (a.def === 'ReplacementDef' || (a.def === 'EffectStep' && a.value['op'] === 'delay' && rec(a.value['when'])['at'] === 'event')) return false;
+    // edh-next-109 (CR 603.7, 603.2c; Basri Ket): an event-timed delayed trigger of "one or more creatures attack this turn" (`batch`) counts the attackers like the trigger does
+    if (a.def === 'EffectStep' && a.value['op'] === 'delay' && rec(a.value['when'])['at'] === 'event') return a.value['batch'] === true && rec(rec(a.value['when'])['event'])['ev'] === 'attacks';
+    if (a.def === 'ReplacementDef') return false;
     if (a.def === 'TriggeredAbilityDef') return rec(a.value['trigger'])['batch'] === true;
     if (ABILITY_DEFS.has(a.def)) return false;
   }
@@ -206,6 +235,12 @@ function subjectAllowed(n: WalkNode): boolean {
       if (a.value['op'] === 'forEach' || JSON.stringify(a.value).includes('"ref":"each"')) return true;
       if (a.value['op'] === 'damage' && a.value['perSource'] === true) return true; // FAST5 T49: each source of the group reads its own amount
     }
+    // edh-perms-14 (CR 614.12): the permanent a replacement effect applies to is the subject of the counters it enters with ("for each mana from a Treasure spent to cast it")
+    if (a.def === 'ReplacementBody' && a.value['b'] === 'enters' && n.path.startsWith(`${a.path}/counters/`)) return true;
+    // edh-top-13 (CR 508.1h; Nils, Discipline Enforcer): the amount of an attack tax is read for each taxed creature, the subject (statics/combat-tax.ts#costOf)
+    if (a.def === 'RuleModDef' && a.value['rule'] === 'attackTax' && n.path.startsWith(`${a.path}/value`)) return true;
+    // edh-next-67 (CR 601.2f, 201.2; Locket of Yesterdays): the amount of a cost change reads the spell it is applied to as the subject ("cards with the same name as that spell", statics/costmods.ts#costQuantity)
+    if (a.value['s'] === 'costMod' && n.path.startsWith(`${a.path}/change/`)) return true;
     if (ABILITY_DEFS.has(a.def)) return false;
   }
   return false;
@@ -225,6 +260,9 @@ function definesX(root: unknown): boolean {
     // std-costs-1 (CR 701.59a, 107.3): "you may collect evidence X" in an ability that announced no X: the collector chooses X as they collect
     // (effects/handlers/evidence.ts#choosesEvidenceX)
     if (n.def === 'EffectStep' && n.value['op'] === 'action' && n.value['action'] === 'collectEvidence' && rec(n.value['n'])['q'] === 'X') found = true;
+    // edh-replace-3 (CR 107.3, 118.12; Myr Battlesphere): and "you may tap X untapped Myr you control. If you do, ...": a payment with a count of X in a part of its cost, which its
+    // payer chooses as they pay (effects/handlers/pay.ts#choosesX); the rest of the resolution reads that X
+    if (n.def === 'EffectStep' && n.value['op'] === 'pay' && JSON.stringify(rec(n.value['cost'])['other'] ?? []).includes('"q":"X"')) found = true;
     return found ? false : undefined;
   });
   return found;
@@ -251,6 +289,17 @@ export function turnsFaceUpSelf(root: unknown): boolean {
 }
 
 /**
+ * edh-perms-16 (CR 701.37a, 107.3): "When this creature becomes monstrous, create X X/X ...": the X of the ability triggered by the permanent itself becoming
+ * monstrous is the N of the monstrosity (the event's x; triggers/stack.ts gives the ability that X). Shared with the engine.
+ */
+export function becomesMonstrousSelf(root: unknown): boolean {
+  const ab = typeof root === 'object' && root !== null ? (root as { kind?: unknown; trigger?: { on?: unknown; batch?: unknown } }) : undefined;
+  const on = ab?.kind === 'triggered' && Array.isArray(ab.trigger?.on) && ab.trigger?.batch !== true ? (ab.trigger.on as unknown[]) : [];
+  const p = on.length === 1 && typeof on[0] === 'object' && on[0] !== null ? (on[0] as { ev?: unknown; what?: unknown; object?: Record<string, unknown> }) : undefined;
+  return p?.ev === 'becomes' && p.what === 'monstrous' && p.object?.['self'] === true && Object.keys(p.object).length === 1;
+}
+
+/**
  * r4-fxz (CR 107.3, 603.2): a triggered ability every event of which is the cast of a spell with {X} in its mana cost ("Whenever you cast a spell with {X} in its
  * mana cost, ..."): its X is the X announced for that spell (triggers/stack.ts#castSpellX). Shared with the engine, which gives the ability that X.
  */
@@ -267,7 +316,7 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
   };
   // CLOUD std-dft (CR 107.3a, 702.29a): the X of "when you cycle ~" is the X announced for the cycling cost (triggers/stack.ts), when that cost has one
   // r4-fxz (CR 107.3, 603.2): "Whenever you cast a spell with {X} in its mana cost, look at the top X cards of your library": the X of that spell (triggers/stack.ts)
-  const xDefined = ctx.cardHasX !== false || definesX(root) || (ctx.cyclingX === true && cyclesSelf(root)) || castsSpellWithX(root) || turnsFaceUpSelf(root); // std-rx30: the face-up X
+  const xDefined = ctx.cardHasX !== false || definesX(root) || (ctx.cyclingX === true && cyclesSelf(root)) || castsSpellWithX(root) || turnsFaceUpSelf(root) || becomesMonstrousSelf(root); // std-rx30: the face-up X
   const targetPaths = new Map<string, string[]>();
 
   walkAbility(root, (n) => {
@@ -280,6 +329,23 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
     // stack; a `repeat` of the counters runs its steps again on the SAME targets, so its body may name no target
     if (n.def === 'EffectStep' && v['op'] === 'repeat' && rec(v['times'])['q'] === 'counters' && JSON.stringify(v['do'] ?? null).includes('"ref":"target"')) {
       out('executable-gap', n.path, 'a repeat for each counter whose instructions name a target: "for each counter, ... target ..." is one target per counter (CR 601.2c, 115.1)');
+    }
+    // edhn63 (CR 122.6): "put the same number and kind of counters" reads the counters a triggering counters event put: only a trigger on counters has them
+    if (n.def === 'EffectStep' && v['op'] === 'putCounters' && v['ofEvent'] !== undefined) {
+      const providers = roleProviders(n);
+      if (providers.length === 0 || !providers.some((p) => p.length > 0 && p.every((x) => x.ev === 'counters'))) {
+        out('bad-event-role', n.path, 'putCounters.ofEvent ("the same number and kind of counters") needs a trigger on counters being put (CR 122.6)');
+      }
+    }
+    // edhn63 (CR 122.1, 603.4; Denry Klin): "put the same number of each kind of counter on that creature" copies the counters of ~ named by the ability's own intervening "if ~ has counters on it"
+    if (n.def === 'EffectStep' && v['op'] === 'putCounters' && v['copyFrom'] !== undefined) {
+      let owner: WalkNode | null = null;
+      for (const a of ancestors(n)) if (ABILITY_DEFS.has(a.def)) { owner = a; break; }
+      const c = rec(owner?.value['interveningIf']);
+      const k = rec(rec(c['filter'])['counters']);
+      if (c['cond'] !== 'matches' || rec(c['object'])['ref'] !== 'self' || k['kind'] !== 'any') {
+        out('executable-gap', n.path, 'putCounters.copyFrom ("the same number of each kind of counter") is allowed only in a triggered ability whose intervening "if" says ~ has counters on it (CR 603.4)');
+      }
     }
     switch (n.def) {
       case 'ObjRef':
@@ -307,8 +373,12 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
         if (v['cda'] === true) cdaChecks(n);
         break;
       case 'ReplacementDef':
+        // edh-c-45 (CR 614.1a, 701.19b; Mossbridge Troll): the one static regeneration there is replaces being destroyed (rules/destroy.ts#staticRegenerationCovers), with no condition
         if (rec(v['body'])['b'] === 'regeneration' && v['shield'] === undefined) {
-          out('executable-gap', `${n.path}/shield`, 'a regeneration body is a shield: it needs `shield` (CR 614.8, 701.19); there is no static regeneration');
+          const r = rec(v['replaces']);
+          if (r['ev'] !== 'action' || r['verb'] !== 'destroy' || r['actor'] !== undefined || v['condition'] !== undefined || v['selfReplacement'] === true || v['optional'] === true) {
+            out('executable-gap', `${n.path}/shield`, 'a regeneration body is a shield: it needs `shield` (CR 614.8, 701.19); the only static regeneration is of a destruction, with no condition (edh-c-45)');
+          }
         }
         break;
       case 'EffectStep':
@@ -374,8 +444,15 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
         const role = node.value['role'] as EventRole;
         const providers = roleProviders(node);
         if (providers.length === 0) out('bad-event-role', node.path, `{ref:'event'} is allowed only in a triggered ability, a replacement or an event-based delayed trigger (CR 603.7c)`);
-        else if (!providers.some((p) => patternsExpose(p, role))) {
+        else if (!providers.some((p) => patternsExpose(p, role)) && !perPatternRole(node, role, providers)) {
           out('bad-event-role', node.path, `role "${role}" is not exposed by ${providers.map((p) => p.map((e) => e.ev).join('|')).join(' / ')} (design 3.5)`);
+        }
+        // edh-mana-keywords-5 (CR 602.2, 707.10, 701.5; review finding): the `spell` role of a plain activation trigger ("Whenever you activate an ability that isn't a mana ability") is the
+        // ability on the stack, which only a copy or a counter can act on; "untap it" would act on an ability, never on its source
+        if (role === 'spell' && providers.length > 0 && providers.every((p) => p.every((e) => e.ev === 'activate' && e.activated === undefined))) {
+          let op: unknown;
+          for (const a of ancestors(node)) if (a.def === 'EffectStep') { op = a.value['op']; break; }
+          if (op !== undefined && op !== 'copy' && op !== 'counter') out('executable-gap', node.path, `the ability an activation trigger names can only be copied or countered (CR 707.10, 701.5)`);
         }
       } else if (r === 'subject') {
         if (!subjectAllowed(node)) out('bad-subject', node.path, `{ref:'subject'} is allowed only inside a continuous effect or an each-scoped step (design 3.1)`);
@@ -392,23 +469,31 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
           // T20 (FAST4) INTERFACE CHANGE: "each player may ...": the `may` of a group runs its steps once per player, that player iterating
           // (effects/handlers/control.ts#mayHandler: the choices first in APNAP order, CR 101.4, 608.2d); its own `who` is not inside such a step
           // M12 gaps: also the group "[you and] each opponent who voted for ..." (`voters`, the same plural `may`)
-          if (a.def === 'EffectStep' && a.value['op'] === 'may' && (rec(a.value['who'])['ref'] === 'each' || rec(a.value['who'])['ref'] === 'voters')
+          if (a.def === 'EffectStep' && a.value['op'] === 'may' && (rec(a.value['who'])['ref'] === 'each' || rec(a.value['who'])['ref'] === 'voters' || rec(a.value['who'])['ref'] === 'otherOf' /* edh-players-12 */)
             && (node.path.startsWith(`${a.path}/do/`) || node.path.startsWith(`${a.path}/otherwise/`))) inLoop = true;
           // C6 (CR 608.2e, 101.4): "each opponent sacrifices a creature with the greatest power among creatures they control": the sacrifice of a group binds each
           // choosing player as iterating while that player chooses (effects/handlers/zones-remove.ts#asChooser); only in its filter
-          if (a.def === 'EffectStep' && a.value['op'] === 'sacrificeChoice' && (rec(a.value['who'])['ref'] === 'each' || rec(a.value['who'])['ref'] === 'eachWho') && node.path.startsWith(`${a.path}/filter/`)) inLoop = true;
+          if (a.def === 'EffectStep' && a.value['op'] === 'sacrificeChoice' && (rec(a.value['who'])['ref'] === 'each' || rec(a.value['who'])['ref'] === 'eachWho' || rec(a.value['who'])['ref'] === 'target' /* edh-players-15: several player targets */) && node.path.startsWith(`${a.path}/filter/`)) inLoop = true;
           // r5-refs (CR 608.2e, 101.4): ... and in its count, which the handler reads for each choosing player ("sacrifices half the creatures they control")
           if (a.def === 'EffectStep' && a.value['op'] === 'sacrificeChoice' && (rec(a.value['who'])['ref'] === 'each' || rec(a.value['who'])['ref'] === 'eachWho') && a.value['mode'] !== 'all' && node.path.startsWith(`${a.path}/count/`)) inLoop = true;
           // std-rx30 (CR 608.2e, 101.4): "Each player loses half their life, then discards half the cards in their hand": the amount of a life change or the count of a
           // discard of a group, which the handler reads for each player (effects/handlers/cards-util.ts#readFor)
           if (a.def === 'EffectStep' && (a.value['op'] === 'loseLife' || a.value['op'] === 'gainLife') && rec(a.value['who'])['ref'] === 'each' && node.path.startsWith(`${a.path}/amount/`)) inLoop = true;
           if (a.def === 'EffectStep' && a.value['op'] === 'discard' && rec(a.value['who'])['ref'] === 'each' && node.path.startsWith(`${a.path}/count/`)) inLoop = true;
+          // edh-players-12 (CR 608.2e, 101.4, 120.2b): ... and the amount of damage to a group ("~ deals damage to each opponent equal to the number of cards that player has drawn")
+          // edh-next-143 (CR 608.2d; Khorvath's Fury): also of the players a "choose friend or foe" chose a word for (`chose`, "each foe"), and their draw below
+          if (a.def === 'EffectStep' && a.value['op'] === 'damage' && (rec(a.value['to'])['ref'] === 'each' || rec(a.value['to'])['ref'] === 'chose') && node.path.startsWith(`${a.path}/amount/`)) inLoop = true;
           // p2-zone-moves-1 (CR 121.2, 608.2e): ... and the count of a draw of a group ("then draws that many cards": the cards that player discarded)
-          if (a.def === 'EffectStep' && a.value['op'] === 'draw' && rec(a.value['who'])['ref'] === 'each' && node.path.startsWith(`${a.path}/count/`)) inLoop = true;
+          if (a.def === 'EffectStep' && a.value['op'] === 'draw' && (rec(a.value['who'])['ref'] === 'each' || rec(a.value['who'])['ref'] === 'chose') && node.path.startsWith(`${a.path}/count/`)) inLoop = true;
+          // edh-c-27 (CR 608.2e, 101.4): ... and the count of a token creation of a group ("Each player creates a 1/1 Cat token for each untapped Forest they control")
+          if (a.def === 'EffectStep' && a.value['op'] === 'createToken' && rec(a.value['who'])['ref'] === 'each' && node.path.startsWith(`${a.path}/count/`)) inLoop = true;
           // C6 (CR 608.2c, 101.4): "for each player, choose a creature that player controls": a choice for each player binds that player while its objects are read
           if (a.def === 'EffectStep' && a.value['op'] === 'chooseObjects' && a.value['perPlayer'] !== undefined && node.path.startsWith(`${a.path}/from/`)) inLoop = true;
           // r5-refs (CR 101.4): ... and its chooser, when each of those players chooses for themselves ("each player chooses any number of creatures they control")
           if (a.def === 'EffectStep' && a.value['op'] === 'chooseObjects' && a.value['perPlayer'] !== undefined && node.path === `${a.path}/who`) inLoop = true;
+          // edh-d-71 (CR 119.4, 118.12, 101.4; Temporal Extortion): "Any player may pay half their life, rounded up": the cost of a payment every player is offered (`everyPlayer`) reads the
+          // paying player (effects/handlers/pay.ts, worked out for each payer)
+          if (a.def === 'EffectStep' && a.value['op'] === 'pay' && a.value['everyPlayer'] === true && node.path.startsWith(`${a.path}/cost/`)) inLoop = true;
           if (ABILITY_DEFS.has(a.def)) break;
         }
         if (!inLoop) out('unbound-name', node.path, `{ref:'iterating'} is allowed only inside a forEach`);
@@ -420,7 +505,11 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
         const self = rec(node.value)['self'] === true;
         // CLOUD C8 (CR 601.2b, 400.7j): ... or a spell reading the cards its additional cost exiled ("the exiled card"), checked card-wide (model/lint-card.ts#costReferenceIssues)
         const spellReads = owner?.value['kind'] === 'spell' && !self && !inDeferred(node, owner);
-        if (!spellReads && !(Array.isArray(parts) && parts.some((p) => rec(p)['kind'] === 'exileFrom' && (rec(p)['self'] === true) === self))) {
+        // edh-next-131 (CR 118.12, 400.7j, 608.2h; God-Pharaoh's Gift): or the "If you do" of a payment of the effect that exiles cards ("you may exile a creature card from your graveyard. If you do,
+        // create a token that's a copy of that card"): the `pay` handler records what it exiled for the resolution (effects/handlers/pay.ts)
+        const paidReads = !self && [...ancestors(node)].some((a) => a.def === 'EffectStep' && a.value['op'] === 'pay' && node.path.startsWith(`${a.path}/then/`)
+          && Array.isArray(rec(a.value['cost'])['other']) && (rec(a.value['cost'])['other'] as unknown[]).some((p) => rec(p)['kind'] === 'exileFrom' && rec(p)['self'] !== true));
+        if (!spellReads && !paidReads && !(Array.isArray(parts) && parts.some((p) => rec(p)['kind'] === 'exileFrom' && (rec(p)['self'] === true) === self))) {
           out('executable-gap', node.path, `{ref:'costExiled'} is allowed only in an activated ability whose cost exiles ${self ? '~' : 'cards other than ~'}, or in a spell whose additional cost exiles cards (CR 601.2b, 602.2b, 702.167a)`);
         }
       } else if (r === 'costBeheld' || r === 'costChosenObject' || r === 'costRevealed') { // p2-refs-1: and what a reveal cost revealed
@@ -430,12 +519,23 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
         for (const a of ancestors(node)) if (ABILITY_DEFS.has(a.def)) { owner = a; break; }
         // std-costs-2 (CR 601.2b): and so does what its additional cost chose (`costChosenObject`)
         if (owner?.value['kind'] !== 'spell' || inDeferred(node, owner)) out('executable-gap', node.path, `{ref:'${r}'} is allowed only in a spell whose additional cost ${r === 'costBeheld' ? 'beholds (CR 601.2b, 701.4a)' : r === 'costRevealed' ? 'reveals a card (CR 601.2b, 701.20a)' : 'chooses an object (CR 601.2b)'}`);
+      } else if (r === 'convokers') {
+        // edh-mana-keywords-8 (CR 702.51a, 702.51c): only a spell was cast and so convoked; a triggered or activated ability, a delayed or reflexive trigger paid no convoke
+        let owner: WalkNode | null = null;
+        for (const a of ancestors(node)) if (ABILITY_DEFS.has(a.def)) { owner = a; break; }
+        // edh-d-9 (CR 702.51a, 400.7d; Venerated Loxodon): or in the triggered ability of the permanent that spell became, whose trigger is its own entering the battlefield
+        const ownEnters = owner?.value['kind'] === 'triggered' && JSON.stringify(owner.value['trigger']) === '{"on":[{"ev":"zoneChange","subject":{"self":true},"to":"battlefield"}]}';
+        // edh-d-48 (CR 702.51a, 614.1c, 614.12, 400.7d; Ancient Imperiosaur): or in its own "enters with counters" replacement, which applies as that spell resolves and the permanent comes to be
+        const ownEntersWith = owner?.value['kind'] === 'static' && [...ancestors(node)].some((a) => a.value['s'] === 'replace' && JSON.stringify(a.value['replaces']) === '{"ev":"zoneChange","subject":{"self":true},"to":"battlefield"}' && rec(a.value['body'])['b'] === 'enters');
+        if (owner === null || !(owner.value['kind'] === 'spell' || ownEnters || ownEntersWith) || inDeferred(node, owner)) out('executable-gap', node.path, `{ref:'convokers'} is allowed only in a spell or the enters trigger of the permanent it became (CR 702.51a, 702.51c, 400.7d)`);
       } else if (r === 'costTapped') {
         // T35: only an activated ability whose cost taps another permanent ("Tap another creature you control: ..." station, CR 702.184a) reads what it tapped
         let owner: WalkNode | null = null;
         for (const a of ancestors(node)) if (ABILITY_DEFS.has(a.def)) { owner = a; break; }
         const parts = owner?.value['kind'] === 'activated' ? rec(owner.value['cost'])['other'] : undefined;
-        if (!(Array.isArray(parts) && parts.some((p) => rec(p)['kind'] === 'tapUntapped'))) out('executable-gap', node.path, `{ref:'costTapped'} is allowed only in an activated ability whose cost taps an untapped permanent (CR 602.2b, 702.184a)`);
+        // edh-next-104 (CR 601.2b, 608.2h; Burn at the Stake): or a spell, whose additional cost taps an untapped permanent (model/lint-card.ts#costReferenceIssues checks that cost card-wide)
+        const spellTaps = owner?.value['kind'] === 'spell' && !inDeferred(node, owner);
+        if (!spellTaps && !(Array.isArray(parts) && parts.some((p) => rec(p)['kind'] === 'tapUntapped'))) out('executable-gap', node.path, `{ref:'costTapped'} is allowed only in an activated ability whose cost taps an untapped permanent, or in a spell whose additional cost does (CR 601.2b, 602.2b, 702.184a)`);
       } else if (r === 'costSacrificed') {
         // FAST3 T18: only an ability with a cost of its own reads what that cost sacrificed (CR 602.2b; a spell's additional cost, CR 601.2b, is checked by
         // the parser, which writes the reference only next to such a cost): an activated ability must sacrifice something other than ~ as a cost
@@ -476,13 +576,19 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
       } else if (q === 'ask') {
         if (!qtyAskAllowed(node)) out('ask-position', node.path, 'a manual quantity (ask) is allowed only inside a step (design 10.1)');
         else if (inManaEffect(node)) out('ask-position', node.path, MANA_ASK);
+      } else if (q === 'asCast') {
+        // edh-next-126 (CR 601.2i): an "as you cast" number is recorded for the spell's own instructions only (actions/cast-checks.ts#recordCastValues); anywhere else it is never read
+        let owner: WalkNode | null = null;
+        for (const a of ancestors(node)) if (ABILITY_DEFS.has(a.def)) { owner = a; break; }
+        if (owner?.value['kind'] !== 'spell' || inDeferred(node, owner)) out('executable-gap', node.path, `{q:'asCast'} is allowed only in the instructions of a spell itself (CR 601.2i)`);
       } else if (q === 'live') {
         if (has(node, 'Modification') === null) out('live-position', node.path, `{q:'live'} is allowed only inside a continuous-effect modification (design 3.4)`);
       } else if (q === 'spellTargetCount') {
         const cm = has(node, 'CostModDef');
         // r4-cost (CR 601.2c, 602.2b): also the cost of an activated ability (its own cost change, a keyword's, or a modifier of activated abilities' costs)
         const abilityCost = (cm !== null && rec(cm.value['applies'])['abilities'] !== undefined) || [...ancestors(node)].some((a, i, all) => (a.def === 'ActivatedAbilityDef' || a.def === 'KeywordAbilityDef') && (i === 0 ? node : all[i - 1]!).slot === 'costChange');
-        if (!abilityCost && (cm === null || rec(cm.value['applies'])['self'] !== true)) out('spell-target-count', node.path, `{q:'spellTargetCount'} is allowed only in the cost modifier of the spell itself (CR 601.2f)`);
+        // edh-next-58 (CR 601.2c, 601.2f; Hinata, Battlefield Thaumaturge): also a modifier of other spells' costs (`applies.spells`): the targets of the spell it applies to
+        if (!abilityCost && (cm === null || (rec(cm.value['applies'])['self'] !== true && rec(cm.value['applies'])['spells'] === undefined))) out('spell-target-count', node.path, `{q:'spellTargetCount'} is allowed only in the cost modifier of the spell itself (CR 601.2f)`);
       } else if (q === 'spellTargetTotal') {
         // std-costs-1 (CR 601.2c, 601.2f): the spell's targets are known as its total cost is determined; only an additional cost of the spell itself reads them
         // (actions/cast.ts#withTargetTotals fixes the number there)
@@ -495,6 +601,18 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
         const announced = effects.some((e) => rec(e)['s'] === 'additionalCost' && rec(e)['announceCount'] === true && rec(e)['name'] === node.value['name']);
         const cm = has(node, 'CostModDef');
         if (!announced || cm === null || rec(cm.value['applies'])['self'] !== true) out('spell-target-count', node.path, `{q:'costCount'} is allowed only in the spell's own cost modifier, next to the optional cost that announces that number (CR 601.2b, 601.2f)`);
+      } else if (q === 'eventExcess') {
+        // edh-top-15 (CR 120.10): only the trigger of a permanent being dealt excess damage has an excess to read
+        const providers = roleProviders(node);
+        if (providers.length === 0 || !providers.some((p) => p.length > 0 && p.every((x) => x.ev === 'damage' && x.excess === true))) {
+          out('bad-event-role', node.path, `{q:'eventExcess'} ("the excess") needs a trigger on damage dealt with \`excess\` (CR 120.10)`);
+        }
+      } else if (q === 'manaProduced') {
+        // edh-d-90 (CR 106.3, 605.1a, 605.3b; Tyvar the Bellicose): only the trigger of an activation of a mana ability has the mana it produced to read (triggers/context.ts `produced`)
+        const providers = roleProviders(node);
+        if (providers.length === 0 || !providers.some((p) => p.length > 0 && p.every((x) => x.ev === 'activate' && x.manaAbility === true))) {
+          out('bad-event-role', node.path, `{q:'manaProduced'} ("the amount of mana ~ produced") needs a trigger on the activation of a mana ability (CR 605.1a, 605.3b)`);
+        }
       } else if (q === 'eventAmount') {
         const providers = roleProviders(node);
         const batch = triggerIsBatch(node); // FAST4 T26: a "one or more ... attack" trigger counts the attackers (model/lint-roles.ts#patternsHaveAmount)
@@ -580,7 +698,7 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
       const payload: Record<string, boolean> = {
         '4': m['types'] !== undefined || m['subtypes'] !== undefined || m['supertypes'] !== undefined || m['named'] !== undefined,
         '5': m['colors'] !== undefined && Object.keys(rec(m['colors'])).length > 0,
-        '6': m['add'] !== undefined || m['removeAll'] === true || m['remove'] !== undefined || m['cantHave'] !== undefined || m['addActivatedOf'] !== undefined, // r5-static
+        '6': m['add'] !== undefined || m['keywordsOf'] !== undefined /* edh-d-102 */ || m['removeAll'] === true || m['remove'] !== undefined || m['removeEnchant'] !== undefined /* edh-perms-4 */ || m['cantHave'] !== undefined || m['addActivatedOf'] !== undefined || m['protectionFromColorsOf'] !== undefined /* edh-players-15 */ || m['addChosen'] !== undefined /* edhd63 */, // r5-static
         '7a': m['power'] !== undefined || m['toughness'] !== undefined,
         '7b': m['power'] !== undefined || m['toughness'] !== undefined,
         '7c': m['power'] !== undefined || m['toughness'] !== undefined,
@@ -616,6 +734,15 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
         case 'cast': {
           // trek-12 (CR 707.12, 113.6, 400.7; Q, Stacking the Deck): a copy of THE CARD ITSELF ("Create a copy of ~. You may cast the copy.") is made in exile and cast: the
           // card is a card in exile only in an activated ability that functions in exile alone (`zone: ['exile']`); anywhere else (a permanent, a spell) ~ is no card to copy
+          // edh-next-132 (CR 707.12, 701.20a; God-Eternal Kefnet): a copy created in the hand of the event's card is that only of a card a reveal trigger revealed there (the
+          // revealed card is in the hand as it is drawn); any other event's card is somewhere else (a graveyard, a library), where the copy would have to be created instead
+          if (s['copyIn'] === 'hand') {
+            let owner: WalkNode | null = null;
+            for (const a of ancestors(node)) if (ABILITY_DEFS.has(a.def)) { owner = a; break; }
+            const on = arr(rec(owner?.value['trigger'])['on']);
+            if (owner?.value['kind'] !== 'triggered' || on.length === 0 || !on.every((e) => e['ev'] === 'reveal')) out('executable-gap', node.path, 'a copy created in a hand needs a card a reveal trigger revealed in that hand (CR 707.12, 701.20a)');
+            break;
+          }
           if (s['copyIn'] === undefined || rec(s['what'])['ref'] !== 'self') break;
           let owner: WalkNode | null = null;
           for (const a of ancestors(node)) if (ABILITY_DEFS.has(a.def)) { owner = a; break; }
@@ -629,7 +756,7 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
           const rows = arr(s['table']);
           rows.forEach((row, i) => {
             const { min, max } = row;
-            if (typeof min !== 'number' || typeof max !== 'number' || min > max || min < 1 || (typeof s['sides'] === 'number' && max > s['sides'])) {
+            if (typeof min !== 'number' || typeof max !== 'number' || min > max || min < 1 || (typeof s['sides'] === 'number' && max > s['sides'] && !(max >= DIE_ROW_OPEN && i === rows.length - 1 && (s['modifier'] !== undefined || min <= s['sides']) /* edh-next-24: a last row "N+" of a roll with a modifier (model/die-rows.ts); edh-next-55: or one that starts inside the die ("20+" of a d20: the result never passes the sides, CR 706.2) */))) {
               out('executable-gap', `${node.path}/table/${i}`, `a die table row is a range inside 1..${String(s['sides'])} (CR 706.2)`);
             } else if (rows.slice(0, i).some((o) => typeof o['min'] === 'number' && typeof o['max'] === 'number' && o['min'] <= max && min <= o['max'])) {
               out('executable-gap', `${node.path}/table/${i}`, 'die table rows overlap (CR 706.2)');
@@ -664,15 +791,28 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
           break;
         }
         case 'pay':
+          // edhd27 (CR 118.12, 608.2c; Read the Runes ruling): "For each card drawn this way, discard a card unless you sacrifice a permanent" is one choice per card, not one payment for all: an
+          // `else` that discards or acts a computed number of times (a result count) is a gap
+          if (s['else'] !== undefined && JSON.stringify(s['else']).includes('"q":"resultCount"')) {
+            out('executable-gap', `${node.path}/else`, 'a payment that stands for an instruction done once for each of an earlier result (one payment per time, CR 118.12) is not modeled');
+          }
           // CR 107.3f: an X in a cost paid on resolution is chosen by the payer then; the pay handler reads an announced X (CR 601.2b, 602.2b), and r5-cost: in an
           // ability that announced none, the controller's own "you may pay {X}" once (effects/handlers/pay.ts#choosesX); anyone else's payment is still a gap
           // ... and never when a target of the ability reads X: its targets are chosen before the payment (CR 603.3d), when X is not chosen yet (Relentless Dead)
-          if (hasVariableMana(s['cost']) && !announcesX() && (!(rec(s['who'])['ref'] === 'you' && s['times'] === undefined && s['mandatory'] !== true && s['else'] === undefined) || targetsReadX())) {
+          // edh-d-97 (CR 107.3f, 603.3d, 608.2b): ... except a triggered ability that BEGINS with that payment: its targets are chosen with X relaxed and checked again with the X its
+          // controller chooses as they pay (types/x-on-resolution.ts, effects/ctx.ts#recheckXTargets)
+          if (hasVariableMana(s['cost']) && !announcesX() && (!(rec(s['who'])['ref'] === 'you' && s['times'] === undefined && s['mandatory'] !== true && s['else'] === undefined) || (targetsReadX() && !xChosenOnResolution(node)))) {
             out('executable-gap', `${node.path}/cost`, 'a payment with {X} on resolution needs the payer to choose X (CR 107.3f), which this build does not do; X is announced only by a spell with X in its mana cost or an activated ability with X in its cost');
           }
           break;
         default:
       }
+    }
+
+    /** edh-d-97: `node` is the first instruction of a triggered ability with no modes and the engine lets its controller choose X as they pay it (types/x-on-resolution.ts). */
+    function xChosenOnResolution(n: WalkNode): boolean {
+      const r = rec(root);
+      return r['kind'] === 'triggered' && n.path === `${base}/effect/steps/0` && choosesXOnResolution(rec(r['effect']) as unknown as EffectProgram);
     }
 
     /** r5-cost: a target spec of the ability itself (not of a reflexive trigger, chosen after the payment) that reads X. */
@@ -689,15 +829,28 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
     /** Whether X of this ability is announced (CR 601.2b, 602.2b): a spell of a card with {X} in its mana cost, or an activated ability with {X} in its cost. */
     function announcesX(): boolean {
       const r = rec(root);
-      if (r['kind'] === 'activated') return hasVariableMana(r['cost']);
+      // edh-c-103 (CR 107.3a, 602.2b; Martyr of Frost): an X counted by a part of the cost, "Reveal X blue cards from your hand", is announced too (rules/cost.ts#costHasX)
+      if (r['kind'] === 'activated') return hasVariableMana(r['cost']) || arr(rec(r['cost'])['other']).some((p) => ['count', 'amount'].some((k) => rec(p[k])['q'] === 'X'));
       return r['kind'] === 'spell' && ctx.cardHasX !== false;
     }
 
     /** std-lci: a step beside `addMana` that the mana-ability resolver runs as written (see activatedChecks). */
     function resolverManaStep(st: Record<string, unknown>): boolean {
+      // edh-mana-keywords-12 (CR 605.3b, 701.20a; parser/lower/ability.ts#handRevealChoice): its controller's choice of any number of cards of their hand, and their reveal
+      if (st['op'] === 'chooseObjects' || st['op'] === 'reveal') {
+        const who = JSON.stringify(st['who']) === '{"ref":"you"}';
+        const from = rec(st['from']);
+        const filter = rec(from['filter']);
+        if (st['guard'] !== undefined || !who) return false;
+        return st['op'] === 'reveal' ? rec(st['what'])['ref'] === 'bound' && typeof st['as'] === 'string' && st['to'] === undefined
+          : from['ref'] === 'each' && filter['zone'] === 'hand' && filter['owner'] === 'you' && st['min'] === 0 && st['max'] === 'any' && typeof st['as'] === 'string' && Object.keys(st).every((k) => ['op', 'who', 'from', 'min', 'max', 'as'].includes(k));
+      }
       if (st['guard'] !== undefined || st['as'] !== undefined) return false;
+      if (isNextCastRider(st)) return true; // edh-d-31 (CR 605.3b, 603.7; model/next-cast-rider.ts)
+      // edh-mana-keywords-12 (CR 605.3b, 601.2i; parser/lower/ability.ts#nextSpellSunburst): the next spell its controller casts this turn gains sunburst
+      if (st['op'] === 'nextSpell') return JSON.stringify(st['who']) === '{"ref":"you"}' && st['rider'] === 'keyword' && rec(st['keyword'])['keyword'] === 'sunburst';
       if (st['op'] === 'removeCounters') return rec(st['from'])['ref'] === 'self';
-      if (st['op'] === 'putCounters') return rec(st['on'])['ref'] === 'self';
+      if (st['op'] === 'putCounters') return rec(st['on'])['ref'] === 'self' || (JSON.stringify(st['on']) === '{"ref":"you"}' && st['kind'] === 'rad' && typeof st['count'] === 'number'); // edh-next-140: a player's counters on its controller (Harold and Bob)
       // CMD5 (CR 605.3b, 120.3): the source's fixed damage to its controller, "This land deals 1 damage to you." (model/cap-walk.ts#nativeManaEffect)
       if (st['op'] === 'damage') {
         const to = rec(st['to']);
@@ -706,7 +859,12 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
       // std-rx22 (CR 605.3b, 119.3): a fixed amount of life its controller gains, "You gain 1 life." (parser/lower/ability.ts#gainLifeYou)
       if (st['op'] === 'gainLife') {
         const who = rec(st['who']);
-        return who['ref'] === 'you' && Object.keys(who).length === 1 && typeof st['amount'] === 'number';
+        return ((who['ref'] === 'you' && Object.keys(who).length === 1) || (who['ref'] === 'each' && who['who'] === 'opponent' && Object.keys(who).length === 2)) && (typeof st['amount'] === 'number' || (rec(st['amount'])['q'] === 'X' && Object.keys(rec(st['amount'])).length === 1 && who['ref'] === 'you' /* edh-next-97: the X of the cost */)) && st['also'] === undefined; // edh-mana-keywords-4: or each opponent (Grove of the Burnwillows)
+      }
+      // edh-players-23 (CR 605.3b, 119.3): a fixed amount of life its controller, each opponent or each player loses, "Each player loses 1 life." (parser/lower/ability.ts#loseLifeFixed)
+      if (st['op'] === 'loseLife') {
+        const who = rec(st['who']);
+        return ((who['ref'] === 'you' && Object.keys(who).length === 1) || (who['ref'] === 'each' && (who['who'] === 'opponent' || who['who'] === 'player') && Object.keys(who).length === 2)) && typeof st['amount'] === 'number' && st['also'] === undefined;
       }
       // std-ry7 (CR 605.1a, 605.3b): a fixed draw by its controller, now or at a step ("Draw a card.", "Draw a card at the beginning of the next turn's upkeep."),
       // and the source staying tapped through its controller's next untap step (parser/lower/ability.ts#drawYou, #delayedDrawYou, #selfNoUntapNext)
@@ -714,8 +872,20 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
         const who = rec(x['who']);
         return x['op'] === 'draw' && who['ref'] === 'you' && Object.keys(who).length === 1 && typeof x['count'] === 'number' && x['guard'] === undefined && x['as'] === undefined;
       };
-      if (st['op'] === 'draw') return drawYou(st);
-      if (st['op'] === 'delay') return arr(st['targets']).length === 0 && st['duration'] === undefined && rec(st['when'])['at'] === 'step' && arr(st['do']).length > 0 && arr(st['do']).every(drawYou);
+      // edh-mana-keywords-9 (CR 605.1a, 605.3b, 706.2): its controller rolls one die with no results table (parser/lower/ability.ts#youRollOneDie)
+      if (st['op'] === 'rollDie') {
+        const who = rec(st['who']);
+        return who['ref'] === 'you' && Object.keys(who).length === 1 && typeof st['sides'] === 'number' && st['count'] === undefined && st['table'] === undefined;
+      }
+      if (st['op'] === 'delay') {
+        // edh-d-22 (CR 605.3b, 603.7, 613.1b): or a delayed change of control of the source itself to an opponent (parser/lower/ability.ts#delayedSelfControlToOpponent; Rainbow Vale)
+        const only = arr(st['do']).length === 1 ? rec(arr(st['do'])[0]) : undefined;
+        const eff = only === undefined ? {} : rec(arr(only['effects'])[0]);
+        const mod = rec(arr(eff['mods'])[0]);
+        const control = only !== undefined && only['op'] === 'effect' && only['guard'] === undefined && only['as'] === undefined && rec(only['duration'])['d'] === 'permanent' && arr(only['effects']).length === 1 && eff['s'] === 'continuous'
+          && rec(eff['affects'])['ref'] === 'self' && Object.keys(rec(eff['affects'])).length === 1 && arr(eff['mods']).length === 1 && mod['layer'] === 2 && rec(mod['controller'])['ref'] === 'anOpponent' && Object.keys(mod).length === 2;
+        return arr(st['targets']).length === 0 && st['duration'] === undefined && st['guard'] === undefined && st['as'] === undefined && rec(st['when'])['at'] === 'step' && arr(st['do']).length > 0 && (arr(st['do']).every(drawYou) || control);
+      }
       if (st['op'] === 'effect') {
         const d = rec(st['duration']);
         const effects = arr(st['effects']);
@@ -725,6 +895,15 @@ export function lintNodes(root: unknown, base: string, ctx: ValidateContext, iss
           && r['mode'] === 'cant' && r['action'] === 'untapDuringUntapStep' && r['other'] === undefined;
       }
       if (st['op'] !== 'if') return false;
+      // edh-mana-keywords-4 (CR 605.3b, 122.1; parser/lower/ability.ts#selfSacrificeNoCounters): "If there are no mining counters on ~, sacrifice it." (Gemstone Mine)
+      const cond = rec(st['cond']);
+      const left = rec(cond['left']);
+      const then = arr(st['then']);
+      if (cond['cond'] === 'compare' && left['q'] === 'counters' && rec(left['on'])['ref'] === 'self' && typeof left['kind'] === 'string' && cond['op'] === '==' && cond['right'] === 0 && st['else'] === undefined
+        && then.length === 1 && rec(then[0])['op'] === 'sacrifice' && rec(rec(then[0])['what'])['ref'] === 'self' && Object.keys(rec(rec(then[0])['what'])).length === 1 && rec(then[0])['guard'] === undefined && rec(then[0])['as'] === undefined) return true;
+      // edh-next-140 (CR 605.3b, 608.2c; parser/lower/ability.ts#gainLifeIfYouControl; Altar of the Pantheon): "If you control a God, a Demigod, or a legendary enchantment, you gain 1 life."
+      if (st['else'] === undefined && youControlExists(st['cond']) && then.length === 1 && rec(then[0])['op'] === 'gainLife' && JSON.stringify(rec(then[0])['who']) === '{"ref":"you"}'
+        && typeof rec(then[0])['amount'] === 'number' && rec(then[0])['guard'] === undefined && rec(then[0])['as'] === undefined && rec(then[0])['also'] === undefined) return true;
       const lists = [st['then'], ...(st['else'] !== undefined ? [st['else']] : [])];
       return lists.every((l) => Array.isArray(l) && l.length > 0 && l.every((x) => rec(x)['op'] === 'addMana' && (Array.isArray(rec(x)['units']) || typeof rec(rec(x)['dynamic'])['kind'] === 'string') && rec(x)['guard'] === undefined)); // pc-keywords-mana-2: and a dynamic production
     }

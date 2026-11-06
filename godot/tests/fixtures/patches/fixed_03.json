@@ -1,0 +1,1 @@
+{"name":"a key added and one deleted","before":{"a":1,"b":2},"ops":[{"op":"del","path":["b"]},{"op":"set","path":["c"],"value":3}],"after":{"a":1,"c":3}}

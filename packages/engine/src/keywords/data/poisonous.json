@@ -12,5 +12,39 @@
   ],
   "reminder": "Whenever this creature deals combat damage to a player, that player gets {n} poison counters.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "Whenever ~ deals combat damage to a player, that player gets {n} poison counters.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "damage",
+            "source": {
+              "self": true
+            },
+            "combat": true,
+            "recipient": {
+              "player": "any"
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "event",
+              "role": "recipient"
+            },
+            "kind": "poison",
+            "count": "$amount"
+          }
+        ]
+      }
+    }
+  ]
 }

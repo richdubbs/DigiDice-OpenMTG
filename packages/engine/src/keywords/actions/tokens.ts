@@ -1,5 +1,5 @@
 /** CR 701 actions that create tokens: investigate (701.16), incubate (701.53), populate (701.36), amass (701.47). Pure macros over primitive ops. Owner: WP3. */
-import type { ObjectFilter } from '../../types/ability';
+import type { EffectStep, ObjectFilter } from '../../types/ability';
 import type { ActionMacro } from '../types';
 import { carry, countOf, manualAction } from './common';
 
@@ -7,7 +7,15 @@ import { carry, countOf, manualAction } from './common';
 export const INVESTIGATE: ActionMacro = {
   name: 'investigate',
   rule: 'CR 701.16',
-  expand: (step) => carry(step, [{ op: 'createToken', who: step.who, token: { predefined: 'Clue' }, count: countOf(step), ...(step.as !== undefined ? { as: step.as } : {}) }]),
+  // edh-next-113 (CR 603.2, 701.16a; Erdwal Illuminator): the player investigated, which "Whenever you investigate" abilities see (reportAction, as the earthbend macro reports);
+  // "investigate twice" is two investigations, so two reports (a calculated number of times: one report)
+  expand: (step) => {
+    const n = countOf(step);
+    const one: EffectStep = { op: 'reportAction', who: step.who, verb: 'investigate' };
+    // a calculated number of times that comes to 0 is no investigation (CR 701.16a): no report then (as the connive macro, keywords/actions/library.ts)
+    const reports: EffectStep[] = typeof n === 'number' ? Array.from({ length: n >= 1 ? n : 0 }, () => one) : [{ op: 'if', cond: { cond: 'compare', left: n, op: '>', right: 0 }, then: [one] }];
+    return carry(step, [{ op: 'createToken', who: step.who, token: { predefined: 'Clue' }, count: n, ...(step.as !== undefined ? { as: step.as } : {}) }, ...reports]);
+  },
 };
 
 /** CR 701.53a: to incubate N, create an Incubator token that enters with N +1/+1 counters on it (CR 111.10i). */
@@ -26,11 +34,15 @@ const OWN_TOKEN_CREATURES: ObjectFilter = { types: ['Creature'], token: true, co
 export const POPULATE: ActionMacro = {
   name: 'populate',
   rule: 'CR 701.36',
-  expand: (step) =>
-    carry(step, [
+  expand: (step) => {
+    const once: EffectStep[] = [
       { op: 'chooseObjects', who: step.who, from: { ref: 'each', filter: OWN_TOKEN_CREATURES }, min: 1, max: 1, as: '_populate' },
-      { op: 'copy', what: { ref: 'bound', name: '_populate' }, result: 'token', who: step.who, ...(step.n !== undefined ? { count: step.n } : {}), ...(step.as !== undefined ? { as: step.as } : {}) },
-    ]),
+      { op: 'copy', what: { ref: 'bound', name: '_populate' }, result: 'token', who: step.who, ...(step.as !== undefined ? { as: step.as } : {}) },
+    ];
+    // edh-b-4 (CR 701.36a, 608.2c; Full Flowering): "populate X times" populates X times in a row, each time choosing a token you control then (one a previous time made counts)
+    if (step.n !== undefined) return carry(step, [{ op: 'repeat', times: step.n, do: once }]);
+    return carry(step, once);
+  },
 };
 
 const YOUR_ARMY: ObjectFilter = { types: ['Creature'], subtypes: ['Army'], controller: 'you' };

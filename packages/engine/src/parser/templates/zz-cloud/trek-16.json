@@ -1,0 +1,332 @@
+[
+  {
+    "id": "rep.trek16.tokens.any.thatManyOther",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.6",
+      "CR 111.1"
+    ],
+    "pattern": "if one or more tokens would be created under your control , that many {t:TokenDesc} are created instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you"
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "createToken",
+            "who": {
+              "ref": "you"
+            },
+            "count": {
+              "q": "eventAmount"
+            },
+            "token": "$t"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more tokens would be created under your control, that many 2/2 black Zombie creature tokens are created instead."
+      },
+      {
+        "text": "If one or more tokens would be created under your control, that many 1/1 blue Bird artifact creature tokens with flying are created instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more tokens would be created under your control, twice that many 2/2 black Zombie creature tokens are created instead.",
+      "If one or more tokens would be created under an opponent's control, that many 2/2 black Zombie creature tokens are created instead.",
+      "If one or more tokens would be created under your control, that many 2/2 black Zombie creature tokens are created."
+    ]
+  },
+  {
+    "id": "eff.trek16.each.becomeCopy.dur",
+    "kind": "effect",
+    "cr": [
+      "CR 707.2",
+      "CR 707.4",
+      "CR 109.2",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1a"
+    ],
+    "pattern": "each {g:Filter} becomes a copy of {p:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$g"
+          },
+          "mods": [
+            {
+              "layer": "1a",
+              "copyOf": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Each Vehicle token you control becomes a copy of target Vehicle you control until end of turn."
+      },
+      {
+        "text": "{3}: Each Food token you control becomes a copy of target artifact you control until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Each Vehicle token you control becomes a copy of target Vehicle you control.",
+      "{2}: Each Vehicle token you control becomes a copy of target Vehicle you control until end of turn, except it has flying.",
+      "{2}: Each Vehicle token you control becomes a copy of target Vehicle you control until your next turn."
+    ],
+    "status": "stable",
+    "since": 8,
+    "weak": 1
+  },
+  {
+    "id": "eff.trek16.whenIt.dies.thisTurn.nextEnd",
+    "kind": "effect",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 603.10a",
+      "CR 700.4",
+      "CR 513.1"
+    ],
+    "pattern": "when {o:Obj} dies this turn , {x:Effects} at the beginning of the next end step",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "is": "$o"
+          },
+          "from": "battlefield",
+          "to": "graveyard"
+        }
+      },
+      "do": [
+        {
+          "op": "delay",
+          "when": {
+            "at": "step",
+            "step": "end",
+            "next": true
+          },
+          "do": "$x"
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "this turn",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, target creature gets +2/+0 until end of turn. When it dies this turn, return that card to the battlefield under its owner's control at the beginning of the next end step."
+      },
+      {
+        "text": "Whenever ~ attacks, target creature gets +1/+1 until end of turn. When that creature dies this turn, return that card to the battlefield tapped under its owner's control at the beginning of the next end step."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, target creature gets +2/+0 until end of turn. When it dies, return that card to the battlefield under its owner's control at the beginning of the next end step.",
+      "Whenever ~ attacks, target creature gets +2/+0 until end of turn. When it dies this turn, return that card to the battlefield under its owner's control at the beginning of the next combat.",
+      "Whenever ~ attacks, target creature gets +2/+0 until end of turn. When it dies this turn, return that card to the battlefield under its owner's control."
+    ],
+    "status": "stable",
+    "since": 8,
+    "priority": 1
+  },
+  {
+    "id": "eff.trek16.lasting.triggersAdditionalTime",
+    "kind": "effect",
+    "cr": [
+      "CR 603.2d",
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 113.3d",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , if a triggered ability of {o:Obj} triggers , that ability triggers an additional time",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "static",
+                  "text": "If a triggered ability of this permanent triggers, that ability triggers an additional time.",
+                  "effects": [
+                    {
+                      "s": "triggerMod",
+                      "abilitiesOf": {
+                        "self": true
+                      },
+                      "additional": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Choose target creature you control. Until end of turn, if a triggered ability of that creature triggers, that ability triggers an additional time."
+      },
+      {
+        "text": "{2}: Choose another target creature you control. For as long as ~ remains tapped, if a triggered ability of that creature triggers, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Choose target creature you control. Until end of turn, if a triggered ability of that creature triggers, that ability triggers two additional times.",
+      "{1}, {T}: Choose target creature you control. Until end of turn, if an activated ability of that creature is activated, that ability triggers an additional time.",
+      "{1}, {T}: Choose target creature you control. If a triggered ability of that creature triggers, that ability triggers an additional time."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.trek16.player.mayCast.fromTheirHand.free",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9"
+    ],
+    "pattern": "{p:Player} may cast a spell from their hand without paying its mana cost",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": "$p",
+          "from": {
+            "ref": "each",
+            "filter": {
+              "notTypes": [
+                "Land"
+              ],
+              "zone": "hand",
+              "owner": "$p",
+              "isCard": true
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "cast"
+        },
+        {
+          "op": "cast",
+          "who": "$p",
+          "what": {
+            "ref": "bound",
+            "name": "cast"
+          },
+          "free": true,
+          "as": "spellcast"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Target opponent whose turn it is may cast a spell from their hand without paying its mana cost."
+      },
+      {
+        "text": "Whenever ~ attacks, target opponent may cast a spell from their hand without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target opponent whose turn it is may cast a spell from their graveyard without paying its mana cost.",
+      "{T}: Target opponent whose turn it is may cast a spell from their hand.",
+      "{T}: Target opponent whose turn it is casts a spell from their hand without paying its mana cost."
+    ],
+    "status": "stable",
+    "since": 8
+  },
+  {
+    "id": "eff.trek16.you.copy.spell",
+    "kind": "effect",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 115.1"
+    ],
+    "pattern": "you copy {o:Obj}",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever an opponent casts an instant spell, you copy that spell."
+      },
+      {
+        "text": "{T}: Target opponent may draw a card. If they don't, you copy target instant spell."
+      }
+    ],
+    "counterExamples": [
+      "Whenever an opponent casts an instant spell, you copy that spell twice.",
+      "Whenever an opponent casts an instant spell, you copy that creature.",
+      "Whenever an opponent casts an instant spell, they copy that spell."
+    ],
+    "consumes": [],
+    "status": "stable",
+    "since": 8
+  }
+]

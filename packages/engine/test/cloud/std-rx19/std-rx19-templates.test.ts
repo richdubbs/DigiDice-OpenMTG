@@ -169,7 +169,11 @@ describe('std-rx19 parser, renderer and engine support (hole readings, no templa
     const text = 'This land enters tapped unless you control a Forest.\nWhen this land enters untapped, you gain 2 life.';
     expect(level('Land', text)).toBe('full');
     expect(abilitiesOf('Land', text)).toContain('"subject":{"self":true,"tapped":false}');
-    expect(level('Creature — Human', 'Whenever a creature an opponent controls enters untapped, you gain 1 life.')).not.toBe('full');
+    // edh-perms-6 (render/evt.ts, CR 603.6a, 110.5b) reads "enters untapped" of ANOTHER object too, as the entering object's own `tapped: false`; its played test is
+    // cloud/edh-perms-6/edh-perms-6-scenarios.test.ts. std-rx19 had kept it manual only because nothing read it yet.
+    const other = 'Whenever a creature an opponent controls enters untapped, you gain 1 life.';
+    expect(level('Creature — Human', other)).toBe('full');
+    expect(abilitiesOf('Creature — Human', other)).toContain('"controller":"opponent","tapped":false');
   });
 });
 

@@ -1,0 +1,1 @@
+{"name":"integer-like keys deleted and re-added","before":{"2":"b","10":"a","z":1},"ops":[{"op":"del","path":["2"]},{"op":"set","path":["3"],"value":"c"}],"after":{"3":"c","10":"a","z":1}}

@@ -24,6 +24,7 @@ import { isPickPart, partCandidates, type PickPart } from './cost-pick';
 import type { Denial } from './denial';
 import { gameOf, hookpoints } from './hookpoints';
 import { overlayAsSpell } from '../statics/rule-sources';
+import { reduceManaBy } from '../statics/costmods';
 
 /** Remove up to `n` generic mana from the symbols (CR 118.7a: a generic reduction touches only the generic component). Returns the new symbols and how many were removed. */
 export function reduceGeneric(mana: readonly ManaSymbol[], n: number): { mana: ManaSymbol[]; removed: number } {
@@ -147,7 +148,7 @@ export function applyOptions(g: Game, player: PlayerId, sourceId: ObjectId | nul
     if (ids.length === 0) continue;
     const mana = reduction(g.s, opt, current.mana, ids);
     if (!mana) throw new IllegalAction(`Each object you choose must pay for some mana of ${label} (${opt.describe}).`, ['CR 601.2h']);
-    current = { ...current, mana, other: [...current.other, { ...part, count: ids.length, chosen: [...ids] } as PlanPart] };
+    current = { ...current, mana, other: [...current.other, { ...part, count: ids.length, chosen: [...ids] } as PlanPart], ...(opt.key === 'convoke' ? { convoked: [...(current.convoked ?? []), ...ids] } : {}) };
     if (planDenial(g.s, player, sourceId, current)) {
       throw new IllegalAction(`With those choices the rest of the cost of ${label} could not be paid.`, ['CR 118.3', 'CR 601.2h']);
     }
@@ -186,12 +187,29 @@ export function emergeReduction(s: GameState, plan: CostPlan, id: ObjectId): Cos
 }
 
 /**
+ * edh-combat-7 (CR 702.48a-c; Blast-Furnace Hellkite, ruling 2022-10-14): with offering the total cost is reduced by the sacrificed permanent's MANA COST: generic mana reduces generic
+ * mana, colored and colorless mana reduce mana of the same type, and any excess reduces that much generic mana; never below {0} (statics/costmods.ts#reduceManaBy). A permanent with no
+ * mana cost (a token) reduces nothing. `id` is the permanent chosen as the cost was announced (CR 702.48b); it becomes the already chosen object of the plan's sacrifice part.
+ */
+export function offeringReduction(s: GameState, plan: CostPlan, id: ObjectId): CostPlan | null {
+  const o = s.objects[id];
+  if (!o) return null;
+  const i = plan.other.findIndex((p) => p.kind === 'sacrifice' && !p.self);
+  if (i < 0) return null;
+  const by = (charsOfObject(s, o).manaCost ?? []).filter((m) => m.kind !== 'variable'); // an {X} in the cost of a permanent is 0 (CR 107.3, 202.1b): Walking Ballista reduces nothing but may be sacrificed
+  const mana = by.length === 0 ? plan.mana : reduceManaBy(plan.mana, by);
+  if (mana === null) return null;
+  const other = plan.other.map((p, j) => (j === i && p.kind === 'sacrifice' ? { ...p, count: 1, chosen: [id] } : p));
+  return { ...plan, mana, other };
+}
+
+/**
  * The permanents whose sacrifice makes the emerge cost payable: `plan` is the total cost (base + additional costs) with the sacrifice part; each candidate is tried with
  * the reduction by its mana value and every payment option (CR 702.119a, 601.2h). Pure.
  */
-export function emergePayableCandidates(s: GameState, player: PlayerId, spellId: ObjectId, plan: CostPlan): ObjectId[] {
+export function emergePayableCandidates(s: GameState, player: PlayerId, spellId: ObjectId, plan: CostPlan, reduction: (s: GameState, plan: CostPlan, id: ObjectId) => CostPlan | null = emergeReduction): ObjectId[] {
   return emergeCandidates(s, player, plan).filter((c) => {
-    const reduced = emergeReduction(s, plan, c);
+    const reduced = reduction(s, plan, c);
     return reduced !== null && payableWithOptions(s, player, spellId, reduced) === null;
   });
 }

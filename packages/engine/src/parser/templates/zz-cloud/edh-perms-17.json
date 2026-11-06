@@ -1,0 +1,593 @@
+[
+  {
+    "id": "sta.edhpm17.self.mustAttack.cantSacrificed.cantAttackPlayer",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 508.1b",
+      "CR 701.21a",
+      "CR 604.1"
+    ],
+    "pattern": "~ attacks each combat if able , can't be sacrificed , and can't attack {p:Player}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "mustIfAble",
+          "action": "attack"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "beSacrificed"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": "$p"
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "each",
+      "if able",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ attacks each combat if able, can't be sacrificed, and can't attack its owner."
+      },
+      {
+        "text": "~ attacks each combat if able, can't be sacrificed, and can't attack you."
+      }
+    ],
+    "counterExamples": [
+      "~ attacks each combat if able, can't be sacrificed, and can't attack its owner this turn.",
+      "~ attacks each combat if able and can't attack its owner.",
+      "~ attacks each combat if able, can't be sacrificed, and can't block its owner."
+    ]
+  },
+  {
+    "id": "sta.edhpm17.attached.pump.grant.cantAttackYou.cantSacrificed",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 701.21a",
+      "CR 613.4c",
+      "CR 303.4"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} , has {a:Abilities} , can't attack you or planeswalkers you control , and can't be sacrificed",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "attack",
+          "other": {
+            "types": [
+              "Planeswalker"
+            ],
+            "controller": "you"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "beSacrificed"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +3/+1, has trample, can't attack you or planeswalkers you control, and can't be sacrificed."
+      },
+      {
+        "text": "Equipped creature gets +1/+2, has reach, can't attack you or planeswalkers you control, and can't be sacrificed."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+2, has reach, can't attack you or planeswalkers you control, and can't be exiled.",
+      "Enchanted creature gets +1/+2, has reach, and can't be sacrificed.",
+      "Enchanted creature gets +1/+2, has reach, can't attack you, and can't be sacrificed."
+    ]
+  },
+  {
+    "id": "eff.edhpm17.player.gainControl.untapIt.counterOnIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 108.4",
+      "CR 613.1b",
+      "CR 611.2a",
+      "CR 701.26b",
+      "CR 122.1"
+    ],
+    "pattern": "{p:Player} gains control of {o:Obj} , untaps it , and puts {n:Qty} +1/+1 counter[s] on it",
+    "build": [
+      {
+        "op": "effect",
+        "duration": {
+          "d": "permanent"
+        },
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 2,
+                "controller": "$p"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "untap",
+        "what": "$o"
+      },
+      {
+        "op": "putCounters",
+        "on": "$o",
+        "kind": "+1/+1",
+        "count": "$n",
+        "by": "$p"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, target opponent gains control of ~, untaps it, and puts a +1/+1 counter on it."
+      },
+      {
+        "text": "At the beginning of each player's upkeep, that player gains control of ~, untaps it, and puts two +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, target opponent gains control of ~, taps it, and puts a +1/+1 counter on it.",
+      "At the beginning of your upkeep, target opponent gains control of ~, untaps it, and puts a -1/-1 counter on it.",
+      "At the beginning of your upkeep, target opponent gains control of ~ until end of turn, untaps it, and puts a +1/+1 counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhpm17.mayHave.player.gainControl.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 108.4",
+      "CR 613.1b",
+      "CR 608.2d",
+      "CR 611.2a"
+    ],
+    "pattern": "you may have {p:Player} gain control of {o:Obj} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": 2,
+                  "controller": "$p"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may have target opponent gain control of target artifact you control until end of turn."
+      },
+      {
+        "text": "When ~ enters, you may have target player gain control of target land you control until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, target opponent may gain control of target artifact you control until end of turn.",
+      "At the beginning of your upkeep, you may have target opponent exchange control of target artifact you control until end of turn.",
+      "At the beginning of your upkeep, you may have each opponent gain control of target artifact you control until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhpm17.becomes.creature.baseEqualMv",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 202.3",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes a creature in addition to its other types and has base power and base toughness each equal to its mana value",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": {
+                  "ref": "subject"
+                }
+              },
+              "toughness": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": {
+                  "ref": "subject"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Target noncreature artifact you control becomes a creature in addition to its other types and has base power and base toughness each equal to its mana value."
+      },
+      {
+        "text": "Target land you control becomes a creature in addition to its other types and has base power and base toughness each equal to its mana value."
+      }
+    ],
+    "counterExamples": [
+      "Target land you control becomes a creature and has base power and base toughness each equal to its mana value.",
+      "Target land you control becomes a creature in addition to its other types and has base power and base toughness each equal to its power.",
+      "Target land you control becomes a creature in addition to its other types and has base power and base toughness each equal to its mana value until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhpm17.self.aslong.isLand.inAddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 205.1b",
+      "CR 205.3d"
+    ],
+    "pattern": "as long as {c:Cond} , it's a land in addition to its other types",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Land"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is tapped, it's a land in addition to its other types."
+      },
+      {
+        "text": "As long as ~ is attacking, it's a land in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is tapped, it's a land.",
+      "As long as ~ is tapped, it's an artifact in addition to its other types.",
+      "As long as ~ is tapped, it's a land in addition to its other types until end of turn."
+    ]
+  },
+  {
+    "id": "ch.edhpm17.put.attached",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 301.5e",
+      "CR 303.4f",
+      "CR 303.4g",
+      "CR 400.7",
+      "CR 110.2"
+    ],
+    "pattern": "you may put {f:Filter} onto the battlefield attached to ~",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "attachedTo": {
+            "ref": "self"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may put an Equipment card from your graveyard onto the battlefield attached to ~."
+      },
+      {
+        "text": "Whenever ~ attacks, you may put an Aura card from your hand onto the battlefield attached to ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may put an Equipment card from your graveyard onto the battlefield tapped attached to ~.",
+      "When ~ enters, you may put an Equipment card from your graveyard onto the battlefield attached to target creature you control.",
+      "When ~ enters, put an Equipment card from your graveyard onto the battlefield attached to ~.",
+      "When ~ enters, you may put an Equipment card from your graveyard onto the battlefield attached to it."
+    ]
+  },
+  {
+    "id": "eff.edhpm17.token.attacking.forEach.qty",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 508.4",
+      "CR 701.6a",
+      "CR 608.2c"
+    ],
+    "pattern": "create ( a | an ) {t:TokenDesc} ( that's | that are ) tapped and attacking for each {n:Qty}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t",
+      "tapped": true,
+      "attacking": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create a 1/1 white Soldier creature token that's tapped and attacking for each opponent you have."
+      },
+      {
+        "text": "Whenever ~ attacks, create a 2/2 black Zombie creature token that's tapped and attacking for each opponent you have."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create a 1/1 white Soldier creature token that's tapped and attacking for each opponent you have this turn.",
+      "Whenever ~ attacks, create two 1/1 white Soldier creature tokens that are tapped and attacking for each opponent you have.",
+      "Whenever ~ attacks, create a 1/1 white Soldier creature token that's tapped for each opponent you have."
+    ]
+  },
+  {
+    "id": "rid.edhpm17.copy.token.entersTappedAttacking.player",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.4",
+      "CR 508.4a",
+      "CR 707.2",
+      "CR 110.5b"
+    ],
+    "pattern": "the token enters tapped and attacking {p:Player}",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "result": "token"
+        },
+        "tapped": {
+          "@new": true
+        },
+        "attacking": {
+          "@new": {
+            "defender": "$p"
+          }
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "tapped",
+      "attacking"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack a player, create a token that's a copy of target creature you control, except it's 1/1. The token enters tapped and attacking that player."
+      },
+      {
+        "text": "Whenever ~ attacks, create a token that's a copy of target creature you control, except it has haste. The token enters tapped and attacking defending player."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create a token that's a copy of target creature you control. The token enters tapped.",
+      "Whenever ~ attacks, create two tokens that are copies of target creature you control. The tokens enter tapped and attacking that player.",
+      "Whenever ~ attacks, draw a card. The token enters tapped and attacking that player.",
+      "Whenever ~ attacks, create a token that's a copy of target creature you control. The token enters tapped and attacking defending player."
+    ]
+  },
+  {
+    "id": "eff.edhpm17.forEach.copyToken.tappedAttacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 707.2",
+      "CR 111.1",
+      "CR 508.4"
+    ],
+    "pattern": "for each {f:Filter} , create a tapped and attacking token that's a copy of ( it | that token | that creature | that permanent )",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          },
+          "tapped": true,
+          "attacking": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, for each creature token you control, create a tapped and attacking token that's a copy of that token."
+      },
+      {
+        "text": "Whenever ~ attacks, for each creature token you control that entered this turn, create a tapped and attacking token that's a copy of that token."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, for each creature token you control, create a token that's a copy of that token.",
+      "Whenever ~ attacks, for each creature token you control, create two tapped and attacking tokens that are copies of that token.",
+      "Whenever ~ attacks, for each creature token you control, create a tapped and attacking token that's a copy of target creature."
+    ]
+  }
+]

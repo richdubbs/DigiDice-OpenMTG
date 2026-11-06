@@ -1,0 +1,9 @@
+# edh-zones-22 (Commander effort, lane edh-zones; test/cloud/edh-zones-22, golden edh-zones-22-review.json): Sorin, Lord of Innistrad (destroyed targets "put into a graveyard this way", "creatures and/or other planeswalkers"), Descendants' Fury (sacrifice one of them), Birthing Ritual (the rest after an "if you do" option), Serra Paragon (one play from the graveyard with a rider), Zara, Renegade Recruiter (attacking that player or a planeswalker), Old Stickfingers (reveal until X, all revealed this way), Captain N'ghathrod (put there from their library this turn), Wondrous Crucible (a nonland card at random, copy it)
+Sorin, Lord of Innistrad
+Descendants' Fury
+Birthing Ritual
+Serra Paragon
+Zara, Renegade Recruiter
+Old Stickfingers
+Captain N'ghathrod
+Wondrous Crucible

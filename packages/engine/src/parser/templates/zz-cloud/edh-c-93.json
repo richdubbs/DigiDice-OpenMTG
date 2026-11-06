@@ -1,0 +1,150 @@
+[
+  {
+    "id": "eff.edhv93.player.loseLife.ifCond",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life if {c:Cond}",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": "$n",
+      "guard": "$c"
+    },
+    "subject": "player",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target creature with flying. Its controller loses 3 life if you've cast another black spell this turn."
+      },
+      {
+        "text": "Destroy target creature. Its controller loses 2 life if you control an Elf."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target creature. Its controller loses 3 life unless you control an Elf.",
+      "Destroy target creature with flying. Its controller loses 4 life.",
+      "Destroy target creature. Its controller gains 3 life if you control an Elf."
+    ]
+  },
+  {
+    "id": "eff.edhv93.damage.andItself.whereX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 107.3",
+      "CR 107.1b",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] x damage to {to:Recipient} and x damage to itself , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$to",
+          "amount": {
+            "q": "X"
+          },
+          "also": [
+            {
+              "to": "$src",
+              "amount": {
+                "q": "X"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{2}, {T}: ~ deals X damage to any target and X damage to itself, where X is the number of Goblin cards in your graveyard."
+      },
+      {
+        "text": "Whenever ~ attacks, ~ deals X damage to target creature and X damage to itself, where X is the number of Goblins you control."
+      }
+    ],
+    "counterExamples": [
+      "{1}{R}, {T}: ~ deals X damage to any target and X damage to itself.",
+      "{1}{R}, {T}: ~ deals X damage to any target and 2 damage to itself, where X is the number of Goblins you control.",
+      "{1}{R}, {T}: ~ deals X damage to any target and X damage to you, where X is the number of Goblins you control."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv93.linked.returnOne.battlefield.bare",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2d",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "return a card exiled with ~ to the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, return a card exiled with ~ to the battlefield."
+      },
+      {
+        "text": "When ~ enters, exile target creature card from your graveyard.\nAt the beginning of your upkeep, you may pay {2}. If you do, return a card exiled with ~ to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, return a card exiled with ~ to your hand.",
+      "When ~ enters, exile up to two target creatures an opponent controls.\nWhen ~ leaves the battlefield, return a card exiled with ~ to the battlefield under your control.",
+      "When ~ leaves the battlefield, return a card exiled with ~ to the battlefield."
+    ]
+  }
+]

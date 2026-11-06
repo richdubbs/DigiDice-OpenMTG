@@ -149,10 +149,10 @@ describe('fail closed (guide section 9; CR 205.1a, 707.9a, 603.12): the readings
     expect(full(card('Test Effigy', 'Artifact', 'You may have this artifact enter as a copy of any creature on the battlefield, except it\'s an artifact.'))).toBe(false);
   });
   it('"loses all other card types" is not automated', () => {
-    expect(full(card('Test Mech', 'Artifact — Vehicle', 'You may have this artifact enter as a copy of a creature you control, except it\'s an artifact and it loses all other card types.'))).toBe(false);
+    expect(full(card('Test Mech', 'Artifact — Vehicle', 'You may have this artifact enter as a copy of a creature you control, except it\'s an artifact and it loses all other card types.'))).toBe(true); // edh-next-57: the bare type with "loses all other card types" is read for "it" now (types SET, CR 205.1a)
   });
-  it('"this ability" inside a reflexive trigger (the resolving ability is not the printed one) is not automated', () => {
-    expect(full(card('Test Shifter', 'Creature — Shapeshifter', 'At the beginning of combat on your turn, you may pay {1}. When you do, this creature becomes a copy of another target creature you control, except it has this ability.', { pt: ['1', '1'] }))).toBe(false);
+  it('"this ability" inside a reflexive trigger is the ability whose text it is (edh-next-133: effects/handlers/lasting.ts#bakeThisAbility fixes it as the reflexive trigger is queued; Aurora Shifter)', () => {
+    expect(full(card('Test Shifter', 'Creature — Shapeshifter', 'At the beginning of combat on your turn, you may pay {1}. When you do, this creature becomes a copy of another target creature you control, except it has this ability.', { pt: ['1', '1'] }))).toBe(true); // edh-next-133: outdated negative, now automated
   });
   it('a color with the "other types" tail (the color would be set, not added) is not automated', () => {
     expect(full(card('Test Raiser Two', 'Creature — Zombie', 'You may have this creature enter as a copy of any creature card in a graveyard, except it\'s a 4/4 black Zombie in addition to its other types.', { pt: ['4', '4'] }))).toBe(false);

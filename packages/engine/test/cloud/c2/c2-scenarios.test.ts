@@ -71,8 +71,8 @@ describe('CR 402.2, 514.1: "Your maximum hand size is three." (a static ability)
 
 describe('CR 402.2, 613.11: "Each opponent\'s maximum hand size is two."', () => {
   const GAG = card('Test Gag Order', 'Artifact', "Each opponent's maximum hand size is two.");
-  it('is lowered (experimental: capped at partial) and changes only the opponent', () => {
-    expect(capped(GAG)).toBe(true);
+  it('is lowered (stable since edh-c-66, which promoted it on Cursed Rack) and changes only the opponent', () => {
+    expect(full(GAG)).toBe(true);
     const s = scenario([], { defs: [GAG], p1: { battlefield: ['Test Gag Order'] } });
     expect(maxHandSize(s, 'p1')).toBe(7);
     expect(maxHandSize(s, 'p2')).toBe(2);

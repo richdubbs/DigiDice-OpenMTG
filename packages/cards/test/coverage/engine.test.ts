@@ -39,7 +39,7 @@ describe('WP25 compile adapter (design 6.1 steps 2-9)', { timeout: 60_000 }, () 
   it('names the pipeline it measures: compileCardV2 once WP18 is merged, the announced fallback before', () => {
     fixtureRuns();
     expect(['compileCardV2', 'parse+degrade (WP18 not merged)']).toContain(fullEngine().pipeline());
-  }, 60_000); // the first test of the file compiles every fixture card (fixtureRuns, cached for the others): about 5 s alone, over the 5 s default on a loaded machine
+  }, 240_000); // the first test of the file compiles every fixture card (fixtureRuns, cached for the others): about 5 s alone, over the 5 s default on a loaded machine; over 60 s under load at about 3,000 cards (Commander combined copy)
   it('CR 120.3 (Lightning Bolt): a card every node of which the engine has is full; its parse is kept for the parser metrics', () => {
     const bolt = fixtureRuns().find((r) => r.card.name === 'Lightning Bolt')!;
     expect(bolt.level).toBe('full');
@@ -61,7 +61,7 @@ describe('WP25 compile adapter (design 6.1 steps 2-9)', { timeout: 60_000 }, () 
       } else expect(after.level, r.card.name).toBe(r.level);
     }
     expect(demoted).toBeGreaterThan(0);
-  }, 60_000); // compiles every fixture card twice (954 at the FAST5X batch 1 merge into main): over 5 s on a loaded machine
+  }, 240_000); // compiles every fixture card twice (954 at the FAST5X batch 1 merge into main): over 5 s on a loaded machine; about 40 s alone at about 3,000 (Commander combined copy), over 60 s under load
   it('the fallback path classifies like design 10.3: experimental templates cap at partial (10.4); forceFallback is honored', () => {
     const exp = { ...BOOTSTRAP_TEMPLATES.find((t) => t.id === 'eff.draw.you')!, status: 'experimental' as const };
     const engine = createCoverageEngine({ templates: [...BOOTSTRAP_TEMPLATES.filter((t) => t.id !== 'eff.draw.you'), exp], forceFallback: true });

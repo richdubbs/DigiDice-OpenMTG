@@ -1,0 +1,8 @@
+# edh-c-53 (Commander effort, coordinator C, EDHREC ranks 24,001 to 24,500, second pass). After editing: npm run cards -- fixtures
+Hardened Berserker
+Dream Thief
+Cinderslash Ravager
+Sigil Blessing
+Cone of Flame
+Clip Wings
+Draugr Thought-Thief

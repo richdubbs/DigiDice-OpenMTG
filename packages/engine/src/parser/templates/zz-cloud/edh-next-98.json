@@ -1,0 +1,58 @@
+[
+  {
+    "id": "eff.edhn98.forEach.eachOpponentLoses1.youGain1",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 119.3",
+      "CR 119.1"
+    ],
+    "pattern": "for each {f:Filter} , each opponent loses 1 life and you gain 1 life",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "amount": {
+          "q": "count",
+          "of": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        }
+      },
+      {
+        "op": "gainLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": {
+          "q": "count",
+          "of": {
+            "ref": "each",
+            "filter": "$f"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Exile up to two target cards from graveyards. For each creature card exiled this way, each opponent loses 1 life and you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Exile up to two target cards from graveyards. For each creature card exiled this way, each opponent loses 2 life and you gain 1 life.",
+      "Exile up to two target cards from graveyards. For each creature card exiled this way, target opponent loses 1 life and you gain 1 life.",
+      "Exile up to two target cards from graveyards. For each creature card exiled this way, each opponent loses 1 life and each other player gains 1 life."
+    ]
+  }
+]

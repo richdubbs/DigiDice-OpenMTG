@@ -1,0 +1,753 @@
+[
+  {
+    "id": "sta.edhd91.aslong.noLossForZeroLife",
+    "kind": "static",
+    "since": 91,
+    "status": "stable",
+    "cr": [
+      "CR 704.5a",
+      "CR 104.3b",
+      "CR 611.3a"
+    ],
+    "pattern": "as long as {c:Cond} , you don't lose the game for having 0 or less life",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "noLossForZeroLife"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is attached to a Knight, you don't lose the game for having 0 or less life."
+      },
+      {
+        "text": "As long as you control a Demon, you don't lose the game for having 0 or less life."
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is attached to a creature, you don't lose the game for having 0 or less poison counters.",
+      "If ~ is attached to a creature, you don't lose the game for having 0 or less life.",
+      "As long as you control a Demon, you can't lose the game."
+    ]
+  },
+  {
+    "id": "eff.edhd91.player.chooses.cardInYourGraveyard",
+    "kind": "effect",
+    "since": 91,
+    "status": "stable",
+    "subject": "none",
+    "weak": 1,
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 109.4"
+    ],
+    "pattern": "{p:Player} chooses a {f:Filter} card in your graveyard",
+    "build": {
+      "op": "chooseObjects",
+      "who": "$p",
+      "from": {
+        "ref": "each",
+        "filter": {
+          "$merge": [
+            "$f",
+            {
+              "isCard": true,
+              "owner": "you",
+              "zone": "graveyard"
+            }
+          ]
+        }
+      },
+      "min": 1,
+      "max": 1,
+      "as": "chosen"
+    },
+    "consumes": [
+      "chooses"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, defending player chooses a nonlegendary creature card in your graveyard. Return that card to the battlefield."
+      },
+      {
+        "text": "Whenever ~ attacks, defending player chooses a creature card in your graveyard. Return that card to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, defending player chooses a nonlegendary creature card in their graveyard. Return that card to the battlefield.",
+      "Whenever ~ attacks, defending player chooses a nonlegendary creature card in your hand. Return that card to the battlefield.",
+      "Whenever ~ attacks, defending player chooses two creature cards in your graveyard. Return those cards to the battlefield."
+    ]
+  },
+  {
+    "id": "eff.edhd91.you.return.bf.additionalCounters",
+    "kind": "effect",
+    "since": 91,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 122.6",
+      "CR 400.7",
+      "CR 608.2c"
+    ],
+    "pattern": "you return {o:Obj} to the battlefield with {n:Qty} additional +1/+1 counter[s] on it",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "counters": [
+          {
+            "kind": "+1/+1",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, defending player chooses a nonlegendary creature card in your graveyard. You return that card to the battlefield with an additional +1/+1 counter on it. The creature is a Zombie in addition to its other types."
+      },
+      {
+        "text": "Whenever ~ attacks, target opponent chooses a creature card in your graveyard. You return that card to the battlefield with two additional +1/+1 counters on it. The creature is a Vampire in addition to its other types."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, defending player chooses a creature card in your graveyard. You return that card to your hand with an additional +1/+1 counter on it. The creature is a Zombie in addition to its other types.",
+      "Whenever ~ attacks, defending player chooses a creature card in your graveyard. They return that card to the battlefield with an additional +1/+1 counter on it. The creature is a Zombie in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.edhd91.mayPaySacrificeIt.chooseLand.searchSameName",
+    "kind": "effect",
+    "since": 91,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 118.12",
+      "CR 608.2d",
+      "CR 701.21a",
+      "CR 701.23a",
+      "CR 201.2",
+      "CR 603.12"
+    ],
+    "pattern": "you may pay {m:ManaCost} and sacrifice it . if you do , choose a land you control . then search your library for up to two basic land cards which have the same name as the chosen land , put them onto the battlefield tapped , then shuffle",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "mana": "$m",
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": {
+              "self": true
+            },
+            "count": 1,
+            "self": true
+          }
+        ]
+      },
+      "then": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Land"
+              ],
+              "controller": "you"
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "chosen"
+        },
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "supertypes": [
+              "Basic"
+            ],
+            "types": [
+              "Land"
+            ],
+            "sharesWith": {
+              "with": {
+                "ref": "bound",
+                "name": "chosen"
+              },
+              "quality": "name"
+            }
+          },
+          "min": 0,
+          "max": 2,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            },
+            "tapped": true
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if",
+      "then",
+      "up to",
+      "same",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "When ~ deals combat damage to a player, you may pay {3} and sacrifice it. If you do, choose a land you control. Then search your library for up to two basic land cards which have the same name as the chosen land, put them onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Whenever ~ attacks, you may pay {1}{G} and sacrifice it. If you do, choose a land you control. Then search your library for up to two basic land cards which have the same name as the chosen land, put them onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ deals combat damage to a player, you may pay {3} and sacrifice it. If you do, choose a land you control. Then search your library for up to three basic land cards which have the same name as the chosen land, put them onto the battlefield tapped, then shuffle.",
+      "When ~ deals combat damage to a player, you may pay {3} and sacrifice it. If you do, choose a land you control. Then search your library for up to two basic land cards which have the same name as the chosen land, put them onto the battlefield, then shuffle.",
+      "When ~ deals combat damage to a player, you may pay {3} or sacrifice it. If you do, choose a land you control. Then search your library for up to two basic land cards which have the same name as the chosen land, put them onto the battlefield tapped, then shuffle."
+    ]
+  },
+  {
+    "id": "sta.edhd91.yourTurns.playLandCastSpell.graveyards.fromLibraries",
+    "kind": "static",
+    "since": 91,
+    "status": "stable",
+    "cr": [
+      "CR 305.1",
+      "CR 305.2",
+      "CR 601.3",
+      "CR 404.1",
+      "CR 400.7",
+      "CR 611.3a"
+    ],
+    "pattern": "( during each of your turns | during your turn ) , you may play a land and cast a spell from among cards in graveyards that were put there from libraries this turn",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "types": [
+              "Land"
+            ],
+            "putThereThisTurn": true,
+            "putThereFrom": "library"
+          },
+          "from": "graveyard",
+          "oncePerTurn": true,
+          "anyGraveyard": true
+        },
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "putThereThisTurn": true,
+            "putThereFrom": "library"
+          },
+          "from": "graveyard",
+          "oncePerTurn": true,
+          "anyGraveyard": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "during",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, each player mills a card.\nDuring your turn, you may play a land and cast a spell from among cards in graveyards that were put there from libraries this turn."
+      },
+      {
+        "text": "{T}: Each player mills two cards.\nDuring your turn, you may play a land and cast a spell from among cards in graveyards that were put there from libraries this turn."
+      }
+    ],
+    "counterExamples": [
+      "During each of your turns, you may play a land and cast a spell from among cards in your graveyard that were put there from libraries this turn.",
+      "During each of your turns, you may play a land and cast a spell from among cards in graveyards that were put there from the battlefield this turn.",
+      "During each of your turns, you may cast a spell from among cards in graveyards that were put there from libraries this turn."
+    ]
+  },
+  {
+    "id": "eff.edhd91.mayCastArtifactFromGroup.thisTurn.hasAffinity",
+    "kind": "effect",
+    "since": 91,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2a",
+      "CR 601.2f",
+      "CR 702.41a",
+      "CR 611.2a"
+    ],
+    "pattern": "you may cast an artifact spell from among {o:Group} this turn . if you do , it has affinity for artifacts",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$o"
+          },
+          "onlyTypes": [
+            "Artifact"
+          ],
+          "single": true,
+          "spellKeyword": {
+            "kind": "keyword",
+            "keyword": "affinity",
+            "text": "Affinity for artifacts",
+            "filter": {
+              "types": [
+                "Artifact"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, exile the top five cards of your library. You may cast an artifact spell from among them this turn. If you do, it has affinity for artifacts."
+      },
+      {
+        "text": "When ~ enters, exile the top three cards of your library. You may cast an artifact spell from among them this turn. If you do, it has affinity for artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile the top five cards of your library. You may cast an artifact spell from among them this turn. If you do, it has convoke.",
+      "Whenever ~ attacks, exile the top five cards of your library. You may cast a creature spell from among them this turn. If you do, it has affinity for artifacts.",
+      "Whenever ~ attacks, exile the top five cards of your library. You may cast an artifact spell from among them. If you do, it has affinity for artifacts."
+    ]
+  },
+  {
+    "id": "eff.edhd91.may.returnOneOfGroup.ownersHand",
+    "kind": "effect",
+    "since": 91,
+    "status": "stable",
+    "weak": 1,
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 608.2c",
+      "CR 400.3"
+    ],
+    "pattern": "you may return one of {o:Group} to its owner 's hand",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": {
+              "is": "$o"
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "as": "returned"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "returned"
+          },
+          "to": {
+            "zone": "hand"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever one or more Dragons you control deal combat damage to a player, draw a card. You may return one of those Dragons to its owner's hand."
+      },
+      {
+        "text": "Whenever one or more creatures you control deal combat damage to a player, scry 1. You may return one of those creatures to its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "Whenever one or more Dragons you control deal combat damage to a player, draw a card. You may return two of those Dragons to their owners' hands.",
+      "Whenever one or more Dragons you control deal combat damage to a player, draw a card. Return one of those Dragons to its owner's hand.",
+      "Whenever one or more Dragons you control deal combat damage to a player, draw a card. You may exile one of those Dragons."
+    ]
+  },
+  {
+    "id": "eff.edhd91.dig.mayReveal.fourAndOr.hand",
+    "kind": "effect",
+    "since": 91,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may reveal ( a | an ) {a:Filter} card , ( a | an ) {b:Filter} card , ( a | an ) {c:Filter} card , and/or ( a | an ) {d:Filter} card from among {g:Seen} and put those cards into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$a"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$b"
+            ],
+            "is": "$g",
+            "zone": "library",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosenB"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$c"
+            ],
+            "is": "$g",
+            "zone": "library",
+            "not": {
+              "is": {
+                "ref": "union",
+                "of": [
+                  {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  {
+                    "ref": "bound",
+                    "name": "chosenB"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosenC"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$d"
+            ],
+            "is": "$g",
+            "zone": "library",
+            "not": {
+              "is": {
+                "ref": "union",
+                "of": [
+                  {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  {
+                    "ref": "bound",
+                    "name": "chosenB"
+                  },
+                  {
+                    "ref": "bound",
+                    "name": "chosenC"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosenD"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "chosen"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenB"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenC"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenD"
+            }
+          ]
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "chosen"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenB"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenC"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenD"
+            }
+          ]
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, look at the top four cards of your library. You may reveal an Elf card, a Goblin card, a Druid card, and/or a Shaman card from among them and put those cards into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "When ~ enters, look at the top six cards of your library. You may reveal an artifact card, a creature card, an enchantment card, and/or a land card from among them and put those cards into your hand. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, look at the top four cards of your library. You may reveal a Cleric card, a Rogue card, a Warrior card, or a Wizard card from among them and put those cards into your hand. Put the rest on the bottom of your library in a random order.",
+      "Whenever ~ attacks, look at the top four cards of your library. You may reveal a Cleric card, a Rogue card, a Warrior card, and/or a Wizard card from among them and put those cards into your graveyard. Put the rest on the bottom of your library in a random order.",
+      "Whenever ~ attacks, look at the top four cards of your library. You may reveal a Cleric card, a Rogue card, and/or a Wizard card from among them and put those cards onto the battlefield. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhd91.mayPayExileIt.batToken.gainsReturnQuote",
+    "kind": "effect",
+    "since": 91,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 118.12",
+      "CR 608.2d",
+      "CR 607.2a",
+      "CR 613.1f",
+      "CR 111.1",
+      "CR 603.1"
+    ],
+    "pattern": "you may pay {m:ManaCost} and exile it . if you do , create {n:Qty} {t:TokenDesc} . it gains {q:BatExiledReturnQuote}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "mana": "$m"
+      },
+      "guard": {
+        "cond": "matches",
+        "object": {
+          "ref": "event",
+          "role": "subject"
+        },
+        "filter": {
+          "zone": "graveyard"
+        }
+      },
+      "then": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "event",
+            "role": "subject"
+          },
+          "to": {
+            "zone": "exile"
+          },
+          "as": "exiledCard"
+        },
+        {
+          "op": "createToken",
+          "who": {
+            "ref": "you"
+          },
+          "count": "$n",
+          "token": "$t",
+          "as": "token"
+        },
+        {
+          "op": "effect",
+          "duration": {
+            "d": "permanent"
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": {
+                "ref": "bound",
+                "name": "token"
+              },
+              "mods": [
+                {
+                  "layer": 6,
+                  "add": "$q"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another nontoken Vampire you control dies, you may pay {1}{B} and exile it. If you do, create a 1/1 black Bat creature token with flying. It gains \"When this token deals combat damage to a player, sacrifice it and return the exiled card to the battlefield tapped.\""
+      },
+      {
+        "text": "Whenever another nontoken creature you control dies, you may pay {2} and exile it. If you do, create a 1/1 black Bat creature token with flying. It gains \"When this token deals combat damage to a player, sacrifice it and return the exiled card to the battlefield tapped.\""
+      }
+    ],
+    "counterExamples": [
+      "Whenever another nontoken Vampire you control dies, you may pay {1} and exile it. If you do, create a 1/1 black Bat creature token with flying. It gains \"When this token deals combat damage to a player, return the exiled card to the battlefield tapped.\"",
+      "Whenever another nontoken Vampire you control dies, you may pay {1} or exile it. If you do, create a 1/1 black Bat creature token with flying. It gains \"When this token deals combat damage to a player, sacrifice it and return the exiled card to the battlefield tapped.\"",
+      "Whenever another nontoken Vampire you control dies, you may pay {1} and exile it. If you do, create a 1/1 black Bat creature token with flying. It gains \"When this token deals combat damage to a player, sacrifice it and return the exiled card to the battlefield.\""
+    ]
+  }
+]

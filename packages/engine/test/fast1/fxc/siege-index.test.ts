@@ -1,6 +1,6 @@
 /**
  * FXC, audit C2 on the real cards: every Siege of the local index that compiles full is defeated by combat damage, triggers CR 310.12b, is exiled and cast
- * transformed for free, and its back face ends on the battlefield under its controller (or the card stays in exile if the cast is declined).
+ * transformed for free, and its back face ends on the battlefield under its controller (an instant or sorcery back face in the graveyard; the card stays in exile if the cast is declined).
  * Skipped without the local card index (OPENMTG_CACHE_DIR); no card text is committed.
  */
 import { describe, expect, it } from 'vitest';
@@ -31,7 +31,8 @@ describe.skipIf(!idx)('CR 310.12b on every full Siege of the index', () => {
 
   for (const def of sieges) {
     it(`${def.name}: defeated, exiled, cast transformed for free, back face on the battlefield`, () => {
-      const s0 = scenario(['Craw Wurm'], { p1: { battlefield: ['Craw Wurm', { name: def.name, counters: { defense: 1 } }] }, defs: [def] });
+      // three Forests: a back face whose power and toughness count your lands (Winnowing Forces) survives as it enters (CR 704.5f)
+      const s0 = scenario(['Craw Wurm', 'Forest'], { p1: { battlefield: ['Craw Wurm', 'Forest', 'Forest', 'Forest', { name: def.name, counters: { defense: 1 } }] }, defs: [def] });
       const battle = find(s0, def.name, 'battlefield');
       let s = runCombat(s0, { attack: [[find(s0, 'Craw Wurm', 'battlefield'), battle]], until: 'combatDamage' });
       expect(logHas(s, new RegExp(`triggers: When the last defense counter is removed`), 'CR 310.12b')).toBe(true);
@@ -50,6 +51,13 @@ describe.skipIf(!idx)('CR 310.12b on every full Siege of the index', () => {
       expect(spellId).toBeDefined();
       expect(s.objects[spellId!]!.stack!.face).toBe(1);
       s = settle(s);
+      // an instant or sorcery back face (Valor's Reach Tag Team) resolves and goes to its owner's graveyard (CR 608.2n), not onto the battlefield
+      const PERMANENT = ['Artifact', 'Battle', 'Creature', 'Enchantment', 'Land', 'Planeswalker'];
+      if (!(def.faces[1]?.types ?? []).some((t) => PERMANENT.includes(t))) {
+        expect(s.zones.battlefield.some((id) => s.defs[s.objects[id]!.defId]!.name === def.name)).toBe(false);
+        expect(s.zones.graveyard['p1']!.some((id) => s.defs[s.objects[id]!.defId]!.name === def.name)).toBe(true);
+        return;
+      }
       const back = s.zones.battlefield.find((id) => s.objects[id]!.defId === s.objects[battle]?.defId || s.defs[s.objects[id]!.defId]!.name === def.name);
       expect(back).toBeDefined();
       expect(s.objects[back!]!.face).toBe(1);

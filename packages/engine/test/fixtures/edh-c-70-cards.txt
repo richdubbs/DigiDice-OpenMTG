@@ -1,0 +1,7 @@
+# edh-c-70 (Commander lane edh-c, EDHREC ranks 29,001-29,500, second pass): enchanted artifact creature, prevent damage to up to N targets, redirect the next damage to any target, if the other player does, color of your choice with no duration, unless they sacrifice the enchanted artifact. After editing: npm run cards -- fixtures
+Domineer
+Redeem
+Zhalfirin Crusader
+Skullknocker Ogre
+Alchor's Tomb
+Curse Artifact

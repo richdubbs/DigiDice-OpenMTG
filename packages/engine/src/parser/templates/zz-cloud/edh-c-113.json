@@ -1,0 +1,199 @@
+[
+  {
+    "id": "eff.edhv113.exchange.handGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.12a",
+      "CR 400.1",
+      "CR 404.1"
+    ],
+    "pattern": "exchange your hand and graveyard",
+    "build": {
+      "op": "exchange",
+      "a": {
+        "ref": "you"
+      },
+      "b": {
+        "ref": "you"
+      },
+      "what": "handGraveyard"
+    },
+    "subject": "none",
+    "consumes": [
+      "exchange"
+    ],
+    "examples": [
+      {
+        "text": "{2}{U}, {T}: Exchange your hand and graveyard."
+      },
+      {
+        "text": "When ~ enters, exchange your hand and graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Exchange your hand and graveyard, then shuffle.",
+      "Exchange target player's hand and graveyard.",
+      "Exchange your hand and exile."
+    ]
+  },
+  {
+    "id": "sta.edhv113.lands.chosenLandType.inaddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3i",
+      "CR 305.7",
+      "CR 607.2d",
+      "CR 613.1d"
+    ],
+    "pattern": "lands you control are the chosen type in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Land"
+          ],
+          "controller": "you"
+        }
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "chosen": "landType"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As this enchantment enters, choose a basic land type.\nLands you control are the chosen type in addition to their other types. Creatures you control get +1/+0."
+      },
+      {
+        "text": "As this enchantment enters, choose a basic land type.\nLands you control are the chosen type in addition to their other types. Creatures you control have trample."
+      }
+    ],
+    "counterExamples": [
+      "As this enchantment enters, choose a basic land type.\nLands you control are the chosen type.",
+      "As this enchantment enters, choose a basic land type.\nLands your opponents control are the chosen type in addition to their other types.",
+      "As this enchantment enters, choose a basic land type.\nLands you control are the chosen type in addition to their other types until end of turn. Creatures you control have trample."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhv113.obj.becomes.legendary.named.losesAll",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 201.2",
+      "CR 205.1a",
+      "CR 205.4",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 613.1f",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} legendary {st:Subtypes} creature named {nm:Name} and loses all abilities",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              },
+              "supertypes": {
+                "add": [
+                  "Legendary"
+                ]
+              },
+              "named": "$nm"
+            },
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target nontoken creature becomes a 4/4 legendary Spirit creature named Lantern and loses all abilities."
+      },
+      {
+        "text": "{3}, {T}: Target creature becomes a 1/1 legendary Elf creature named Sprout and loses all abilities."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target creature becomes a 1/1 Elf creature named Sprout and loses all abilities.",
+      "When ~ enters, target creature becomes a 1/1 legendary Elf creature named Sprout.",
+      "When ~ enters, target creature becomes a 1/1 legendary Elf creature and loses all abilities."
+    ]
+  },
+  {
+    "id": "eff.edhv113.obj.damageToSelf.equal",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 608.2h"
+    ],
+    "pattern": "{src:Obj} deal[s] damage to ( itself | himself | herself ) equal to {n:Qty}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$src",
+      "amount": "$n"
+    },
+    "subject": "object",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "When ~ enters, ~ deals damage to himself equal to the number of cards in your hand."
+      },
+      {
+        "text": "{T}: ~ deals damage to itself equal to the number of lands you control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, ~ deals damage to itself.",
+      "When ~ enters, ~ deals damage to each creature equal to the number of cards in your hand.",
+      "When ~ enters, ~ deals damage to themselves equal to the number of cards in your hand."
+    ]
+  }
+]

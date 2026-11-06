@@ -2,6 +2,7 @@
   {
     "id": "eff.t63.cast.noncreature.fromHand.free",
     "kind": "effect",
+    "priority": 1,
     "cr": [
       "CR 601.2",
       "CR 608.2g",

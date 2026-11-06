@@ -1,0 +1,17 @@
+# edh-perms-9 (Commander lane edh-perms; test/cloud/edh-perms-9, golden edh-perms-9-review.json)
+# put-onto-the-battlefield marker (Kodama), untap it and a group, creature type and color set by an Equipment, Vehicle artifact Aura, a sum of two for-each counts, losing five keywords,
+# excess damage to a permanent, each-of two puts, "during your turn" grants, a conditional untap during other untap steps, "except for lands and tokens", a group becoming Frogs
+Bilbo's Ring
+Bottle-Cap Blast
+Eidolon of Countless Battles
+Elspeth Tirel
+Filigree Vector
+Godo, Bandit Warlord
+Kodama of the East Tree
+Nim Deathmantle
+Nyxborn Hydra
+Polymorphist's Jest
+Quest for Renewal
+Sauron, the Dark Lord
+Shay Cormac
+Swift Reconfiguration

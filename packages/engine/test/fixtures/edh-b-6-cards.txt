@@ -1,0 +1,13 @@
+# edh-b-6 (Commander lane edh-b, ranks 9,001-10,000 second pass): end-step cast restriction, scry plus one, life total becomes, keyword cost reduction, self-and-group anthems. After editing: npm run cards -- fixtures
+Necrologia
+Taigam, Ojutai Master
+Brenard, Ginger Sculptor
+Demonic Taskmaster
+Wolfcaller's Howl
+Resolute Archangel
+Kenessos, Priest of Thassa
+Eternity Vessel
+Realm Seekers
+Pollywog Symbiote
+Sylvan Advocate
+Vampire Nocturnus

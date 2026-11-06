@@ -1,0 +1,487 @@
+[
+  {
+    "id": "eff.edhn131.forEachChosen.copyToken",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 111.1",
+      "CR 115.1",
+      "CR 608.2c",
+      "CR 702.96a"
+    ],
+    "pattern": "for each creature chosen this way , create a token that's a copy of it",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "bound",
+        "name": "",
+        "$anaphor": {
+          "sort": "object",
+          "number": "singular",
+          "text": "it"
+        }
+      },
+      "as": "chosenCopied",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "chosenCopied"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose target creature you control. For each creature chosen this way, create a token that's a copy of it."
+      },
+      {
+        "text": "Choose target nonlegendary creature. For each creature chosen this way, create a token that's a copy of it."
+      }
+    ],
+    "counterExamples": [
+      "For each creature chosen this way, create a token that's a copy of it.",
+      "Choose target creature you control. For each creature chosen this way, create two tokens that are copies of it."
+    ],
+    "consumes": [
+      "each",
+      "chosen",
+      "this way"
+    ]
+  },
+  {
+    "id": "eff.edhn131.cast.upToOneInstantAndOrSorcery.free",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2",
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 107.3",
+      "CR 608.2g",
+      "CR 118.9"
+    ],
+    "pattern": "you may cast up to one target instant card and/or up to one target sorcery card from your graveyard each with mana value x or less without paying their mana costs",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "target",
+            "id": "",
+            "$target": {
+              "kind": "object",
+              "filter": {
+                "types": [
+                  "Instant"
+                ],
+                "zone": "graveyard",
+                "owner": "you",
+                "isCard": true,
+                "manaValue": {
+                  "op": "<=",
+                  "value": {
+                    "q": "X"
+                  }
+                }
+              },
+              "min": 0,
+              "max": 1,
+              "text": "up to one target instant card"
+            }
+          },
+          {
+            "ref": "target",
+            "id": "",
+            "$target": {
+              "kind": "object",
+              "filter": {
+                "types": [
+                  "Sorcery"
+                ],
+                "zone": "graveyard",
+                "owner": "you",
+                "isCard": true,
+                "manaValue": {
+                  "op": "<=",
+                  "value": {
+                    "q": "X"
+                  }
+                }
+              },
+              "min": 0,
+              "max": 1,
+              "text": "up to one target sorcery card"
+            }
+          }
+        ]
+      },
+      "free": true,
+      "optional": true,
+      "select": {},
+      "as": "castThisWay"
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "each",
+      "and/or",
+      "up to",
+      "their"
+    ],
+    "examples": [
+      {
+        "text": "You may cast up to one target instant card and/or up to one target sorcery card from your graveyard each with mana value X or less without paying their mana costs."
+      },
+      {
+        "text": "You may cast up to one target instant card and/or up to one target sorcery card from your graveyard each with mana value X or less without paying their mana costs. If a spell cast this way would be put into your graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "You may cast up to one target instant card and/or up to one target sorcery card from your graveyard without paying their mana costs.",
+      "You may cast up to one target instant card or up to one target sorcery card from your graveyard each with mana value X or less without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.edhn131.copy.eachOfThoseSpells.twice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 608.2c"
+    ],
+    "pattern": "copy each of those spells twice",
+    "build": {
+      "op": "copy",
+      "what": {
+        "ref": "bound",
+        "name": "",
+        "$anaphor": {
+          "sort": "object",
+          "number": "plural",
+          "text": "those spells"
+        }
+      },
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "count": 2
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "twice"
+    ],
+    "examples": [
+      {
+        "text": "You may cast up to one target instant card and/or up to one target sorcery card from your graveyard each with mana value X or less without paying their mana costs. If X is 10 or more, copy each of those spells twice."
+      },
+      {
+        "text": "You may cast up to one target instant card and/or up to one target sorcery card from your graveyard each with mana value X or less without paying their mana costs. Copy each of those spells twice."
+      }
+    ],
+    "counterExamples": [
+      "Copy each of those spells twice.",
+      "Draw a card. Copy each of those spells twice."
+    ]
+  },
+  {
+    "id": "eff.edhn131.copyToken.hasteLosesKeyword",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 702.10",
+      "CR 702.95",
+      "CR 613.1f",
+      "CR 111.1"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} , except it has haste and loses soulbond",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "text": "Haste",
+              "keyword": "haste"
+            }
+          ]
+        },
+        {
+          "layer": 6,
+          "remove": [
+            "soulbond"
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of combat on your turn, create a token that's a copy of target creature you control, except it has haste and loses soulbond."
+      },
+      {
+        "text": "When ~ enters, create a token that's a copy of ~, except it has haste and loses soulbond. Exile it at end of combat."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of target creature, except it has haste and loses flying.",
+      "Create a token that's a copy of target creature, except it loses soulbond."
+    ]
+  },
+  {
+    "id": "rid.edhn131.mayCastCopy.payingInstead",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.12",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 601.2b",
+      "CR 118.9",
+      "CR 400.7"
+    ],
+    "pattern": "you may cast the copy by paying {m:ManaCost} rather than paying its mana cost",
+    "build": {
+      "$patchPrevious": {
+        "op": "cast",
+        "result": null,
+        "copyIn": "exile",
+        "optional": true,
+        "costChange": {
+          "kind": "set",
+          "cost": {
+            "mana": "$m"
+          },
+          "name": "alternative"
+        },
+        "@into": true,
+        "@require": {
+          "what.ref": "bound",
+          "result": "spell",
+          "count": null,
+          "newTargets": null,
+          "except": null,
+          "as": null
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may",
+      "rather than"
+    ],
+    "examples": [
+      {
+        "text": "Exile target instant card from your graveyard. Copy it. You may cast the copy by paying {2} rather than paying its mana cost."
+      },
+      {
+        "text": "Whenever ~ attacks, exile up to one target sorcery card from your graveyard. If you do, copy it. You may cast the copy by paying {1}{U} rather than paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Copy target instant spell. You may cast the copy by paying {3} rather than paying its mana cost.",
+      "Exile target instant card from your graveyard. Copy it. You may cast the copy by paying {3} in addition to paying its mana cost."
+    ]
+  },
+  {
+    "id": "eff.edhn131.forEachAttached.copyTokenAttached",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 111.1",
+      "CR 303.4f",
+      "CR 301.5c",
+      "CR 608.2c"
+    ],
+    "pattern": "for each nontoken permanent attached to it , create a token that's a copy of that permanent attached to that creature",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "filter": {
+          "token": false,
+          "attachedToObject": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "singular",
+              "text": "it"
+            }
+          }
+        }
+      },
+      "as": "attachedCopied",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "attachedCopied"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          },
+          "attachTo": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "singular",
+              "text": "that creature",
+              "head": "creature"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "attached"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an enchanted creature you control attacks, for each nontoken permanent attached to it, create a token that's a copy of that permanent attached to that creature."
+      },
+      {
+        "text": "Whenever a modified creature you control attacks, put a +1/+1 counter on it. Then for each nontoken permanent attached to it, create a token that's a copy of that permanent attached to that creature."
+      }
+    ],
+    "counterExamples": [
+      "For each nontoken permanent attached to it, create a token that's a copy of that permanent attached to that creature.",
+      "Whenever a creature you control attacks, for each nontoken permanent attached to it, create a token that's a copy of that permanent."
+    ]
+  },
+  {
+    "id": "eff.edhn131.youAndDefending.discardOrSacrifice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 701.9a",
+      "CR 701.21a",
+      "CR 506.2"
+    ],
+    "pattern": "you and defending player each discard a card or sacrifice a permanent",
+    "build": {
+      "op": "discardOrSacrifice",
+      "players": [
+        {
+          "ref": "you"
+        },
+        {
+          "ref": "defending"
+        }
+      ],
+      "filter": {},
+      "as": "wastedThisWay"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you and defending player each discard a card or sacrifice a permanent."
+      },
+      {
+        "text": "Whenever this creature attacks, you and defending player each discard a card or sacrifice a permanent. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you and defending player each discard a card and sacrifice a permanent.",
+      "Whenever ~ attacks, defending player discards a card or sacrifices a permanent."
+    ]
+  },
+  {
+    "id": "eff.edhn131.draw.forEachLandCard.thisWay",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 121.1",
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 111.7"
+    ],
+    "pattern": "you draw a card for each land card put into a graveyard this way",
+    "build": {
+      "op": "draw",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "count",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "wastedThisWay"
+            },
+            "types": [
+              "Land"
+            ],
+            "isCard": true,
+            "zone": "graveyard"
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you and defending player each discard a card or sacrifice a permanent. You draw a card for each land card put into a graveyard this way."
+      },
+      {
+        "text": "Whenever this creature attacks, you and defending player each discard a card or sacrifice a permanent. You draw a card for each land card put into a graveyard this way."
+      }
+    ],
+    "counterExamples": [
+      "You draw a card for each land card put into a graveyard this way.",
+      "Whenever ~ attacks, destroy target land. You draw a card for each land card put into a graveyard this way."
+    ]
+  }
+]

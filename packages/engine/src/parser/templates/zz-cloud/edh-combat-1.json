@@ -1,0 +1,230 @@
+[
+  {
+    "id": "sta.edhcb1.self.cantAttackAlreadyAttacked",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 508.1c",
+      "CR 506.2",
+      "CR 604.1"
+    ],
+    "pattern": "~ can't attack a player ( it | he | she ) has already attacked this turn",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "alreadyAttacked": true
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Example Relic can't attack a player it has already attacked this turn."
+      },
+      {
+        "text": "This permanent can't attack a player it has already attacked this turn."
+      }
+    ],
+    "counterExamples": [
+      "~ can't attack a player it has already attacked.",
+      "~ can't attack a player it attacked last turn.",
+      "Enchanted creature can't attack a player it has already attacked this turn.",
+      "~ can't attack a creature it has already attacked this turn."
+    ]
+  },
+  {
+    "id": "eff.edhcb1.grant.attacksThisCombat",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} gains {a:Abilities} {d:Dur} and attacks this combat if able",
+    "build": [
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 6,
+                "add": "$a"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "endOfCombat"
+        },
+        "effects": [
+          {
+            "s": "restrict",
+            "subject": "$o",
+            "mode": "mustIfAble",
+            "action": "attack"
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "consumes": [
+      "if able",
+      "if",
+      "until",
+      "this combat"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you control gains haste until end of turn and attacks this combat if able."
+      },
+      {
+        "text": "Target creature an opponent controls gains trample until end of turn and attacks this combat if able."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gains haste until end of turn and attacks each combat if able.",
+      "Target creature gains haste until end of turn and attacks this combat.",
+      "Target creature gains haste until end of turn and blocks this combat if able.",
+      "Target creature gains haste until end of turn and can't attack this combat."
+    ]
+  },
+  {
+    "id": "sta.edhcb1.aslong.pumpgrant.mustAttack",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f",
+      "CR 508.1d"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} get[s] {pt:PT} , ( has | have ) {a:Abilities} , and attacks each combat if able",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "if",
+      "each",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control an artifact, Example Relic gets +2/+2, has flying, and attacks each combat if able."
+      },
+      {
+        "text": "As long as you have 10 or more life, this permanent gets +1/+1, has trample, and attacks each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control an artifact, Example Relic gets +2/+2, has flying, and attacks this combat if able.",
+      "As long as you control an artifact, Example Relic gets +2/+2, has flying, and blocks each combat if able.",
+      "As long as you control an artifact, Example Relic gets +2/+2, has flying, and attacks each combat.",
+      "Example Relic gets +2/+2, has flying, and attacks each combat if able."
+    ]
+  },
+  {
+    "id": "sta.edhcb1.exert.asAttacks.notExerted.whenYouDo",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.43a",
+      "CR 701.43b",
+      "CR 508.1",
+      "CR 603.12"
+    ],
+    "pattern": "if ~ hasn't been exerted this turn , you may exert ( it | ~ ) as ( it | he | she ) attacks . when you do , {e:Effects}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "mayExertAsAttacks",
+          "unlessExertedThisTurn": true,
+          "then": {
+            "as": "exerted",
+            "do": [
+              {
+                "op": "reflexive",
+                "when": {
+                  "did": "exerted"
+                },
+                "targets": [],
+                "do": "$e"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "may",
+      "exert",
+      "as",
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "If this creature hasn't been exerted this turn, you may exert it as it attacks. When you do, draw a card."
+      },
+      {
+        "text": "If Example Relic hasn't been exerted this turn, you may exert it as it attacks. When you do, untap all other creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "If this creature hasn't been exerted this turn, you may exert it as it attacks.",
+      "If this creature hasn't attacked this turn, you may exert it as it attacks. When you do, draw a card.",
+      "If this creature has been exerted this turn, you may exert it as it attacks. When you do, draw a card.",
+      "You may exert this creature as it attacks. When you do, draw a card."
+    ]
+  }
+]

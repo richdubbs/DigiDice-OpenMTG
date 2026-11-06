@@ -1,0 +1,356 @@
+[
+  {
+    "id": "sta.trek18.onceGy.cast.entersWith",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 601.2a",
+      "CR 404.1",
+      "CR 611.3a",
+      "CR 614.1c",
+      "CR 122.1h"
+    ],
+    "pattern": "once during each of your turns , you may cast {f:Filter} from your graveyard . if you cast a spell this way , that ( artifact creature | enchantment creature | artifact | enchantment | creature | permanent | spell ) enters with {r:Qty} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "from": "graveyard",
+          "oncePerTurn": true,
+          "entersWith": [
+            {
+              "kind": "$k",
+              "count": "$r"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "each",
+      "may",
+      "this way",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast an enchantment creature spell from your graveyard. If you cast a spell this way, that enchantment creature enters with a shield counter on it."
+      },
+      {
+        "text": "Once during each of your turns, you may cast an enchantment spell from your graveyard. If you cast a spell this way, that enchantment enters with two +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast an enchantment creature spell from your hand. If you cast a spell this way, that enchantment creature enters with a shield counter on it.",
+      "Once during each of your turns, you may cast an enchantment creature spell from your graveyard. If you cast a spell this way, that enchantment creature gains haste.",
+      "Once during each of your opponents' turns, you may cast an enchantment creature spell from your graveyard. If you cast a spell this way, that enchantment creature enters with a shield counter on it."
+    ]
+  },
+  {
+    "id": "sta.trek18.onceTop.cast",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 401.5",
+      "CR 611.3a"
+    ],
+    "pattern": "once during each of your turns , you may cast {f:Filter} from the top of your library",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": "$f",
+          "fromTop": true,
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast an enchantment spell from the top of your library."
+      },
+      {
+        "text": "Flying\nOnce during each of your turns, you may cast a creature spell with power 2 or less from the top of your library."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast an enchantment spell from your graveyard.",
+      "Twice during each of your turns, you may cast an enchantment spell from the top of your library.",
+      "Once during each of your opponents' turns, you may cast an enchantment spell from the top of your library."
+    ]
+  },
+  {
+    "id": "eff.trek18.youGain.hexproof.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.11c",
+      "CR 611.2a",
+      "CR 115.1"
+    ],
+    "pattern": "you gain hexproof {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "controller": "opponent"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "gain",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "You gain hexproof until end of turn."
+      },
+      {
+        "text": "Draw a card. You gain hexproof until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "You gain hexproof.",
+      "You gain hexproof from red until end of turn.",
+      "Each opponent gains hexproof until end of turn."
+    ]
+  },
+  {
+    "id": "eff.trek18.token.tappedAttacking.front",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 701.7a",
+      "CR 508.4"
+    ],
+    "pattern": "create {n:Qty} tapped and attacking {t:TokenDesc}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t",
+      "tapped": true,
+      "attacking": true
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Create a tapped and attacking 2/2 white Knight creature token with vigilance."
+      },
+      {
+        "text": "Create two tapped and attacking 1/1 red Goblin creature tokens."
+      }
+    ],
+    "counterExamples": [
+      "Create a tapped and blocking 2/2 white Knight creature token with vigilance.",
+      "Create a tapped 2/2 white Knight creature token with vigilance.",
+      "Create a tapped and attacking 2/2 white Knight creature token with vigilance, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "sta.trek18.stationCrewTripled",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.122a",
+      "CR 702.184a",
+      "CR 701.11a",
+      "CR 604.1"
+    ],
+    "pattern": "~ stations spacecraft and crews vehicles as though ~ 's power were tripled",
+    "build": {
+      "s": "rule",
+      "rule": "crewStationPowerTripled"
+    },
+    "consumes": [
+      "as though"
+    ],
+    "needs": [
+      "rulemod:crewStationPowerTripled"
+    ],
+    "examples": [
+      {
+        "text": "~ stations Spacecraft and crews Vehicles as though ~'s power were tripled."
+      },
+      {
+        "text": "Defender\n~ stations Spacecraft and crews Vehicles as though ~'s power were tripled."
+      }
+    ],
+    "counterExamples": [
+      "~ crews Vehicles as though ~'s power were tripled.",
+      "~ stations Spacecraft and crews Vehicles as though ~'s power were doubled.",
+      "~ stations Spacecraft and saddles Mounts as though ~'s power were tripled."
+    ]
+  },
+  {
+    "id": "eff.trek18.endCombatPhase",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 724.2",
+      "CR 724.2a",
+      "CR 724.2b",
+      "CR 724.2c",
+      "CR 724.2d",
+      "CR 724.2e",
+      "CR 724.2f",
+      "CR 724.2g"
+    ],
+    "pattern": "end the combat phase",
+    "build": {
+      "op": "endCombatPhase"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card. End the combat phase."
+      },
+      {
+        "text": "{2}{R}: End the combat phase. Activate only during the declare blockers step."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. End the combat.",
+      "Draw a card. End the turn.",
+      "Draw a card. End the combat phase unless it is blue."
+    ]
+  },
+  {
+    "id": "trg.trek18.duringDeclareAttackers",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 508.1",
+      "CR 500.1"
+    ],
+    "pattern": "( when | whenever ) {e:Event} during the declare attackers step",
+    "build": {
+      "on": "$e",
+      "while": {
+        "cond": "turnOf",
+        "whose": "any",
+        "step": "declareAttackers"
+      }
+    },
+    "consumes": [
+      "when",
+      "whenever",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters during the declare attackers step, draw a card."
+      },
+      {
+        "text": "Whenever you cast a creature spell during the declare attackers step, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters during the declare blockers step, draw a card.",
+      "When ~ enters during your declare attackers step, draw a card.",
+      "When ~ enters during the beginning of combat step, draw a card."
+    ],
+    "priority": -1
+  },
+  {
+    "id": "eff.trek18.reselect.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.7",
+      "CR 508.7a",
+      "CR 508.7b",
+      "CR 508.7c",
+      "CR 508.7d",
+      "CR 608.2d"
+    ],
+    "pattern": "for each of {t:Them} , you may reselect which player or permanent that creature is attacking",
+    "build": {
+      "op": "forEach",
+      "over": "$t",
+      "as": "each",
+      "do": [
+        {
+          "op": "reselectAttack",
+          "what": {
+            "ref": "bound",
+            "name": "each"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, choose up to two target attacking creatures. For each of them, you may reselect which player or permanent that creature is attacking."
+      },
+      {
+        "text": "{2}{R}: Choose any number of target attacking creatures. For each of them, you may reselect which player or permanent that creature is attacking."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose up to two target attacking creatures. For each of them, reselect which player or permanent that creature is attacking.",
+      "When ~ enters, choose up to two target attacking creatures. For each of them, you may reselect which player that creature is attacking.",
+      "When ~ enters, choose up to two target creatures. For each of them, you may reselect which player or permanent that creature is attacking, then untap it."
+    ]
+  }
+]

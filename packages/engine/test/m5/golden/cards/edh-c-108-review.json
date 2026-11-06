@@ -1,0 +1,670 @@
+[
+ {
+  "card": "Mind Carver",
+  "expect": "full",
+  "verified": "edh-c-108 review (Commander effort, a card of the EDHREC top 30,000 opened by the owner (commander request 2026-10-27, more cards 2026-10-30); Scryfall rulings fetched 2026-10-31), by hand against the Oracle text and the rules cited (sta.edhv108.equipped.pump.insteadAslong; trg.enters, eff.attach, kw.equip): an Equipment that attaches itself to a creature you control as it enters; the equipped creature gets +1/+0, and +3/+1 instead (not added) as long as an opponent has eight or more cards in their graveyard (the condition is any one opponent's graveyard, checked continuously, CR 611.3a; Scryfall ruling 2020-09-25).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "attach",
+         "what": {
+          "ref": "self"
+         },
+         "to": {
+          "ref": "target",
+          "id": "t0"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "condition": {
+       "cond": "compare",
+       "left": {
+        "q": "countPlayers",
+        "of": {
+         "ref": "each",
+         "who": "opponent"
+        },
+        "sizeIs": {
+         "zone": "graveyard",
+         "op": ">=",
+         "n": 8
+        }
+       },
+       "op": ">=",
+       "right": 1
+      },
+      "otherwise": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 1,
+          "toughness": 0
+         }
+        ]
+       }
+      ],
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": "7c",
+          "power": 3,
+          "toughness": 1
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "colored",
+         "color": "B"
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Armament of Nyx",
+  "expect": "full",
+  "verified": "edh-c-108 review (Commander effort, a card of the EDHREC top 30,000 opened by the owner (commander request 2026-10-27, more cards 2026-10-30); Scryfall rulings fetched 2026-10-31), by hand against the Oracle text and the rules cited (sta.edhv108.enchanted.has.aslongIs.otherwise.preventDamageBy; kw.line): the enchanted creature has double strike while it is an enchantment, and while it is not, all damage that would be dealt by it is prevented (a replacement effect that exists only while the condition is false, checked continuously, Scryfall ruling 2014-04-26; CR 611.3a, 615.1). Engine: foreign replacement effects of an `otherwise` list are indexed and read with the condition negated (effects/replacement-index.ts, effects/replacements.ts).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "enchant",
+      "filter": {
+       "types": [
+        "Creature"
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "condition": {
+       "cond": "matches",
+       "object": {
+        "ref": "attachedTo"
+       },
+       "filter": {
+        "types": [
+         "Enchantment"
+        ]
+       }
+      },
+      "otherwise": [
+       {
+        "s": "replace",
+        "replaces": {
+         "ev": "damage",
+         "source": {
+          "attachedToSource": true
+         }
+        },
+        "body": {
+         "b": "prevent",
+         "amount": "all"
+        }
+       }
+      ],
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "attachedTo"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "add": [
+           {
+            "kind": "keyword",
+            "keyword": "double strike"
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Memory Leak",
+  "expect": "full",
+  "verified": "edh-c-108 review (Commander effort, a card of the EDHREC top 30,000 opened by the owner (commander request 2026-10-27, more cards 2026-10-30); Scryfall rulings fetched 2026-10-31), by hand against the Oracle text and the rules cited (eff.reveal.hand, eff.edhv108.youChoose.fromGraveyardOrHand.exile; kw.line): the opponent reveals their hand, you choose one nonland card among the cards of that player's graveyard and hand together (their hand is public by then; a land is not offered) and exile it; the cycling is the keyword line. CR 701.13a, 608.2d, 406.3.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "reveal",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "what": {
+          "ref": "each",
+          "filter": {
+           "zone": "hand",
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "notTypes": [
+            "Land"
+           ],
+           "zone": [
+            "graveyard",
+            "hand"
+           ],
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "isCard": true
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "chosen"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "chosen"
+         },
+         "to": {
+          "zone": "exile"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "keyword",
+      "keyword": "cycling",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Psychic Intrusion",
+  "expect": "full",
+  "verified": "edh-c-108 review (Commander effort, a card of the EDHREC top 30,000 opened by the owner (commander request 2026-10-27, more cards 2026-10-30); Scryfall rulings fetched 2026-10-31), by hand against the Oracle text and the rules cited (eff.reveal.hand, eff.edhv108.youChoose.fromGraveyardOrHand.exile, eff.pcep1.cast.obj.dur.anyColor): the same choice and exile as Memory Leak, then you may cast that card for as long as it remains exiled, spending mana as though it were mana of any color (CR 609.4b); the card is the chosen one only, and the permission is yours alone. Promotes eff.pcep1.cast.obj.dur.anyColor from experimental to stable on this card (6.9 deviation, named in the record).",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "player",
+         "min": 1,
+         "max": 1,
+         "players": {
+          "who": "opponent"
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "reveal",
+         "who": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "what": {
+          "ref": "each",
+          "filter": {
+           "zone": "hand",
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           }
+          }
+         }
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "notTypes": [
+            "Land"
+           ],
+           "zone": [
+            "graveyard",
+            "hand"
+           ],
+           "owner": {
+            "ref": "target",
+            "id": "t0"
+           },
+           "isCard": true
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "chosen"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "chosen"
+         },
+         "to": {
+          "zone": "exile"
+         }
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "remainsExiled"
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "who": {
+            "ref": "you"
+           },
+           "action": "cast",
+           "of": {
+            "is": {
+             "ref": "bound",
+             "name": "chosen"
+            }
+           },
+           "anyManaColor": true
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Jungle Wayfinder",
+  "expect": "full",
+  "verified": "edh-c-108 review (Commander effort, a card of the EDHREC top 30,000 opened by the owner (commander request 2026-10-27, more cards 2026-10-30); Scryfall rulings fetched 2026-10-31), by hand against the Oracle text and the rules cited (trg.enters, eff.edhv108.eachPlayerMay.search.reveal.hand.shuffle): each player in turn order may search their own library for a basic land card, reveal it, put it into their own hand, then shuffle their own library (CR 701.23a, 101.4); a player who declines does nothing.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "each",
+          "who": "player"
+         },
+         "do": [
+          {
+           "op": "search",
+           "who": {
+            "ref": "iterating"
+           },
+           "zone": "library",
+           "filter": {
+            "supertypes": [
+             "Basic"
+            ],
+            "types": [
+             "Land"
+            ]
+           },
+           "max": 1,
+           "reveal": true,
+           "as": "playerSearch"
+          },
+          {
+           "op": "move",
+           "what": {
+            "ref": "bound",
+            "name": "playerSearch"
+           },
+           "to": {
+            "zone": "hand",
+            "owner": {
+             "ref": "iterating"
+            }
+           }
+          },
+          {
+           "op": "shuffle",
+           "who": {
+            "ref": "iterating"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Genju of the Cedars",
+  "expect": "full",
+  "verified": "edh-c-108 review (Commander effort, a card of the EDHREC top 30,000 opened by the owner (commander request 2026-10-27, more cards 2026-10-30); Scryfall rulings fetched 2026-10-31), by hand against the Oracle text and the rules cited (kw.line; eff.cont.becomes.color.subtype, rid.stillLand; trg.when, ch.may, eff.return.self.gy.hand): the first two abilities were already automated; the third is a may-return of the Aura from its owner's graveyard to its hand when the enchanted Forest is put into a graveyard (the Aura follows it by state-based action, so it is in the graveyard when the trigger resolves; a declined may leaves it there). Render only: the wording alts of render/evt.ts and render/steps-zones.ts; no template. CR 303.4, 700.4, 704.5m, 400.7.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "enchant",
+      "filter": {
+       "subtypes": [
+        "Forest"
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "effect",
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "s": "continuous",
+           "affects": {
+            "ref": "attachedTo"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "types": {
+              "add": [
+               "Creature"
+              ]
+             },
+             "subtypes": {
+              "add": [
+               "Spirit"
+              ]
+             }
+            },
+            {
+             "layer": 5,
+             "colors": {
+              "set": [
+               "G"
+              ]
+             }
+            },
+            {
+             "layer": "7b",
+             "power": 4,
+             "toughness": 4
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "subtypes": [
+           "Forest"
+          ],
+          "attachedToSource": true
+         },
+         "from": "battlefield",
+         "to": "graveyard"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "may",
+         "who": {
+          "ref": "you"
+         },
+         "do": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "self",
+            "moved": true
+           },
+           "to": {
+            "zone": "hand"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Spoils of the Vault",
+  "expect": "full",
+  "verified": "edh-c-108 review (Commander effort, a card of the EDHREC top 30,000 opened by the owner (commander request 2026-10-27, more cards 2026-10-30); Scryfall rulings fetched 2026-10-31), by hand against the Oracle text and the rules cited (eff.stdmisc.choose.cardName, eff.r3dig.revealUntil, eff.put.hand, eff.edhv108.exile.otherRevealed.loseLifeEach): the name need not be of a card in the library (Scryfall ruling 2018-12-07: if none, the whole library is exiled and you lose 1 life for each card); the named card goes to the hand, every other card revealed is exiled together and you lose 1 life for each. CR 201.3, 701.20a, 119.3.",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "spell",
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseValue",
+         "who": {
+          "ref": "you"
+         },
+         "what": "cardName",
+         "as": "chosenCardName",
+         "link": "chosenCardName"
+        },
+        {
+         "op": "revealUntil",
+         "who": {
+          "ref": "you"
+         },
+         "filter": {
+          "chosen": {
+           "link": "chosenCardName",
+           "quality": "cardName"
+          }
+         },
+         "as": "hit",
+         "revealed": "revealed"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "hit"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "bound",
+            "name": "revealed"
+           },
+           "not": {
+            "is": {
+             "ref": "bound",
+             "name": "hit"
+            }
+           },
+           "zone": "library"
+          }
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "as": "exiledOthers"
+        },
+        {
+         "op": "loseLife",
+         "who": {
+          "ref": "you"
+         },
+         "amount": {
+          "q": "count",
+          "of": {
+           "ref": "bound",
+           "name": "exiledOthers"
+          }
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

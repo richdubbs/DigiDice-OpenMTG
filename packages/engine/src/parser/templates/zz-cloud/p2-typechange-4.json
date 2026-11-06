@@ -228,7 +228,7 @@
     "id": "sta.p2tc4.group.are.artifacts.inAddition",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 205.1b",
       "CR 604.1",

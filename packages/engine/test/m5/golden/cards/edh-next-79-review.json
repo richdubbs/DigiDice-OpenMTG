@@ -1,0 +1,718 @@
+[
+  {
+    "card": "Phytotitan",
+    "expect": "full",
+    "verified": "edh-next-79 review (rank 9,214 of the EDHREC top 20,000, lane rest), by hand against the Oracle text and the rules cited (CR 603.7, 400.7, 608.2c): returns tapped at the beginning of ITS OWNER's next upkeep (eff.edhn79.return.bf.owner.tapped.theirNextUpkeep; CR 603.7, 503.1); templates: ",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "text": "When ~ dies, return it to the battlefield tapped under its owner's control at the beginning of their next upkeep.",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "from": "battlefield",
+                  "to": "graveyard"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "delay",
+                  "when": {
+                    "at": "step",
+                    "step": "upkeep",
+                    "next": true,
+                    "whose": {
+                      "ref": "ownerOf",
+                      "object": {
+                        "ref": "event",
+                        "role": "subject"
+                      }
+                    }
+                  },
+                  "do": [
+                    {
+                      "op": "move",
+                      "what": {
+                        "ref": "event",
+                        "role": "subject"
+                      },
+                      "to": {
+                        "zone": "battlefield",
+                        "controller": "owner",
+                        "tapped": true
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Obzedat, Ghost Council",
+    "expect": "full",
+    "verified": "edh-next-79 review (rank 10,698 of the EDHREC top 20,000, lane rest), by hand against the Oracle text and the rules cited (CR 603.7, 400.7, 608.2c): the haste is granted inside the delayed return to the object that came back (CR 603.7c, 400.7); templates: ",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "triggered",
+            "text": "When ~ enters, target opponent loses 2 life and you gain 2 life.",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "trigger": {
+              "on": [
+                {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [
+                {
+                  "id": "t0",
+                  "kind": "player",
+                  "min": 1,
+                  "max": 1,
+                  "text": "target opponent",
+                  "players": {
+                    "who": "opponent"
+                  }
+                }
+              ],
+              "steps": [
+                {
+                  "op": "loseLife",
+                  "who": {
+                    "ref": "target",
+                    "id": "t0"
+                  },
+                  "amount": 2
+                },
+                {
+                  "op": "gainLife",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "amount": 2
+                }
+              ]
+            }
+          },
+          {
+            "kind": "triggered",
+            "text": "At the beginning of your end step, you may exile ~. If you do, return it to the battlefield under its owner's control at the beginning of your next upkeep. It gains haste.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "trigger": {
+              "on": [
+                {
+                  "ev": "step",
+                  "step": "end",
+                  "whose": "you"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "may",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "do": [
+                    {
+                      "op": "move",
+                      "what": {
+                        "ref": "self"
+                      },
+                      "to": {
+                        "zone": "exile"
+                      },
+                      "as": "moved"
+                    }
+                  ],
+                  "as": "did"
+                },
+                {
+                  "op": "if",
+                  "cond": {
+                    "cond": "did",
+                    "step": "did"
+                  },
+                  "then": [
+                    {
+                      "op": "delay",
+                      "when": {
+                        "at": "step",
+                        "step": "upkeep",
+                        "whose": "you",
+                        "next": true
+                      },
+                      "do": [
+                        {
+                          "op": "move",
+                          "what": {
+                            "ref": "bound",
+                            "name": "moved"
+                          },
+                          "to": {
+                            "zone": "battlefield",
+                            "controller": "owner"
+                          },
+                          "as": "returned"
+                        },
+                        {
+                          "op": "effect",
+                          "duration": {
+                            "d": "permanent"
+                          },
+                          "effects": [
+                            {
+                              "s": "continuous",
+                              "affects": {
+                                "ref": "bound",
+                                "name": "returned"
+                              },
+                              "mods": [
+                                {
+                                  "layer": 6,
+                                  "add": [
+                                    {
+                                      "kind": "keyword",
+                                      "keyword": "haste",
+                                      "text": "haste"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ],
+                      "capture": [
+                        "moved"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Nahiri's Resolve",
+    "expect": "full",
+    "verified": "edh-next-79 review (rank 5,142 of the EDHREC top 20,000, lane rest), by hand against the Oracle text and the rules cited (CR 603.7, 400.7, 608.2c): exile any number of your nontoken artifacts and/or creatures, return those cards at your next upkeep (eff.edhn79.exile.anyNumber.youControl); templates: ",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "static",
+            "text": "Creatures you control get +1/+0 and have haste.",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you"
+                  }
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": 1,
+                    "toughness": 0
+                  },
+                  {
+                    "layer": 6,
+                    "add": [
+                      {
+                        "kind": "keyword",
+                        "keyword": "haste",
+                        "text": "haste"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "kind": "triggered",
+            "text": "At the beginning of your end step, exile any number of nontoken artifacts and/or creatures you control. Return those cards to the battlefield under their owner's control at the beginning of your next upkeep.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "trigger": {
+              "on": [
+                {
+                  "ev": "step",
+                  "step": "end",
+                  "whose": "you"
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "anyOf": [
+                        {
+                          "token": false,
+                          "types": [
+                            "Artifact",
+                            "Creature"
+                          ]
+                        }
+                      ],
+                      "controller": "you"
+                    }
+                  },
+                  "min": 0,
+                  "max": "any",
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "exile"
+                  }
+                },
+                {
+                  "op": "delay",
+                  "when": {
+                    "at": "step",
+                    "step": "upkeep",
+                    "whose": "you",
+                    "next": true
+                  },
+                  "do": [
+                    {
+                      "op": "move",
+                      "what": {
+                        "ref": "bound",
+                        "name": "chosen"
+                      },
+                      "to": {
+                        "zone": "battlefield",
+                        "controller": "owner"
+                      }
+                    }
+                  ],
+                  "capture": [
+                    "chosen"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Legion's Initiative",
+    "expect": "full",
+    "verified": "edh-next-79 review (rank 7,264 of the EDHREC top 20,000, lane rest), by hand against the Oracle text and the rules cited (CR 603.7, 400.7, 608.2c): at the beginning of the next combat (dl.edhn79.nextCombat.lead) the exiled creatures return and gain haste until end of turn; templates: ",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "static",
+            "text": "Red creatures you control get +1/+0.",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "each",
+                  "filter": {
+                    "colors": [
+                      "R"
+                    ],
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you"
+                  }
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": 1,
+                    "toughness": 0
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "kind": "static",
+            "text": "White creatures you control get +0/+1.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "each",
+                  "filter": {
+                    "colors": [
+                      "W"
+                    ],
+                    "types": [
+                      "Creature"
+                    ],
+                    "controller": "you"
+                  }
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": 0,
+                    "toughness": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "kind": "activated",
+            "text": "{R}{W}, Exile ~: Exile all creatures you control. At the beginning of the next combat, return those cards to the battlefield under their owner's control and those creatures gain haste until end of turn.",
+            "src": [
+              2
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "cost": {
+              "mana": [
+                {
+                  "kind": "colored",
+                  "color": "R"
+                },
+                {
+                  "kind": "colored",
+                  "color": "W"
+                }
+              ],
+              "other": [
+                {
+                  "kind": "exileFrom",
+                  "zone": "battlefield",
+                  "count": 1,
+                  "self": true
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "types": [
+                        "Creature"
+                      ],
+                      "controller": "you"
+                    }
+                  },
+                  "to": {
+                    "zone": "exile"
+                  },
+                  "as": "them"
+                },
+                {
+                  "op": "delay",
+                  "when": {
+                    "at": "step",
+                    "step": "beginCombat",
+                    "next": true
+                  },
+                  "do": [
+                    {
+                      "op": "move",
+                      "what": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "to": {
+                        "zone": "battlefield",
+                        "controller": "owner"
+                      },
+                      "as": "returned"
+                    },
+                    {
+                      "op": "effect",
+                      "duration": {
+                        "d": "endOfTurn"
+                      },
+                      "effects": [
+                        {
+                          "s": "continuous",
+                          "affects": {
+                            "ref": "bound",
+                            "name": "returned"
+                          },
+                          "mods": [
+                            {
+                              "layer": 6,
+                              "add": [
+                                {
+                                  "kind": "keyword",
+                                  "keyword": "haste",
+                                  "text": "haste"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ],
+                  "capture": [
+                    "them"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Sanctum Prelate",
+    "expect": "full",
+    "verified": "edh-next-79 review (rank 9,774 of the EDHREC top 20,000, lane rest), by hand against the Oracle text and the rules cited (CR 603.7, 400.7, 608.2c): as it enters choose a number (rep.edhn79.enters.choose.number); noncreature spells with that mana value can't be cast; templates: ",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "static",
+            "text": "As ~ enters, choose a number.",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "zone": [
+              "stack",
+              "battlefield"
+            ],
+            "effects": [
+              {
+                "s": "replace",
+                "replaces": {
+                  "ev": "zoneChange",
+                  "subject": {
+                    "self": true
+                  },
+                  "to": "battlefield"
+                },
+                "body": {
+                  "b": "enters",
+                  "choose": [
+                    {
+                      "what": "number",
+                      "link": "chosenNumber",
+                      "min": 0
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "kind": "static",
+            "text": "Noncreature spells with mana value equal to the chosen number can't be cast.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "effects": [
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "each",
+                  "who": "player"
+                },
+                "mode": "cant",
+                "action": "cast",
+                "other": {
+                  "notTypes": [
+                    "Creature"
+                  ],
+                  "manaValue": {
+                    "op": "==",
+                    "value": {
+                      "q": "chosenNumber",
+                      "link": "chosenNumber"
+                    }
+                  },
+                  "stackKind": "spell",
+                  "zone": "stack"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "card": "Shanna, Sisay's Legacy",
+    "expect": "full",
+    "verified": "edh-next-79 review (rank 10,885 of the EDHREC top 20,000, lane rest), by hand against the Oracle text and the rules cited (CR 603.7, 400.7, 608.2c): cannot be targeted by abilities opponents control, spells still can (sta.edhn79.obj.cantBeTargeted.abilitiesByOpponents); templates: ",
+    "faces": [
+      {
+        "abilities": [
+          {
+            "kind": "static",
+            "text": "~ can't be the target of abilities your opponents control.",
+            "src": [
+              0
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "effects": [
+              {
+                "s": "restrict",
+                "subject": {
+                  "ref": "self"
+                },
+                "mode": "cant",
+                "action": "beTargeted",
+                "other": {
+                  "controller": "opponent",
+                  "stackKind": "ability"
+                }
+              }
+            ]
+          },
+          {
+            "kind": "static",
+            "text": "~ gets +1/+1 for each creature you control.",
+            "src": [
+              1
+            ],
+            "prov": {
+              "by": "template"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": {
+                  "ref": "self"
+                },
+                "mods": [
+                  {
+                    "layer": "7c",
+                    "power": {
+                      "q": "count",
+                      "of": {
+                        "ref": "each",
+                        "filter": {
+                          "types": [
+                            "Creature"
+                          ],
+                          "controller": "you"
+                        }
+                      }
+                    },
+                    "toughness": {
+                      "q": "count",
+                      "of": {
+                        "ref": "each",
+                        "filter": {
+                          "types": [
+                            "Creature"
+                          ],
+                          "controller": "you"
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

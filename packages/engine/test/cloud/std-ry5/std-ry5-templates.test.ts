@@ -191,7 +191,8 @@ describe('std-ry5 Cond (parser/holes/cond.ts; CR 701.9a): "you\'ve discarded a c
   });
   it('fails closed: "two cards" and another player are not read', () => {
     expect(level('Artifact', '{T}: You gain 2 life. Activate only if you\'ve discarded two cards this turn.')).not.toBe('full');
-    expect(level('Artifact', '{T}: You gain 2 life. Activate only if an opponent discarded a card this turn.')).not.toBe('full');
+    // edh-next-47: "an opponent discarded a card this turn" is now read (Tinybones, Trinket Thief; parser/holes/p2iv1.ts), so it is no longer a negative here; a player is still not read
+    expect(level('Artifact', '{T}: You gain 2 life. Activate only if each player discarded a card this turn.')).not.toBe('full');
   });
 });
 
@@ -201,8 +202,9 @@ describe('std-ry5 announcement (actions/announce-cond.ts, model/forms.ts; CR 602
     expect(d.automation.level).toBe('full');
     expect(JSON.stringify(d.faces[0]!.abilities)).toContain('"onlyIf":{"cond":"compare","left":{"q":"stat","stat":"power","of":{"ref":"each","filter":{"types":["Creature"],"controller":"you"}},"sum":true}');
   });
-  it('the greatest power among a group is still not read at announcement (it stays the controller\'s attestation)', () => {
-    expect(level('Creature — Bear', '{1}{G}: Regenerate this creature. Activate only if the greatest power among creatures you control is 4 or greater.')).not.toBe('full');
+  // edh-next-9 (actions/announce-cond.ts, model/forms.ts; feature announce.qty.stat.max.each): the greatest power among a group is read at announcement now
+  it('the greatest power among a group is read at announcement since edh-next-9', () => {
+    expect(level('Creature — Bear', '{1}{G}: Regenerate this creature. Activate only if the greatest power among creatures you control is 4 or greater.')).toBe('full');
   });
 });
 

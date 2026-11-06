@@ -1,0 +1,95 @@
+[
+  {
+    "id": "eff.edhn43.delay.loseControl.of",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 108.4",
+      "CR 701.3d"
+    ],
+    "pattern": "when you lose control of {o:Obj} , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "controlChange",
+          "object": {
+            "is": "$o"
+          },
+          "from": "you"
+        }
+      },
+      "do": "$x"
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "lose control"
+    ],
+    "examples": [
+      {
+        "text": "Gain control of target creature until end of turn. When you lose control of that creature, tap it."
+      },
+      {
+        "text": "Gain control of target Equipment until end of turn. When you lose control of that Equipment, unattach it."
+      }
+    ],
+    "counterExamples": [
+      "Gain control of target creature until end of turn. When you gain control of that creature, tap it.",
+      "Gain control of target creature until end of turn. When an opponent loses control of that creature, tap it.",
+      "Gain control of target creature until end of turn. Whenever you lose control of a creature, tap it."
+    ]
+  },
+  {
+    "id": "eff.edhn43.becomes.colorless.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1e",
+      "CR 105.2c",
+      "CR 400.7a"
+    ],
+    "pattern": "{o:Obj} becomes colorless",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 5,
+              "colors": {
+                "set": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target spell or permanent becomes colorless. Draw a card."
+      },
+      {
+        "text": "Target creature becomes colorless. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Target spell or permanent becomes colorless until end of turn.",
+      "Target spell or permanent becomes colorless and green.",
+      "Target spell or permanent becomes a colorless artifact."
+    ]
+  }
+]

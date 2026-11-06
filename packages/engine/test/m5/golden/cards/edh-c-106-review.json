@@ -1,0 +1,616 @@
+[
+{
+"card": "Venomous Fangs",
+"expect": "full",
+"verified": "edh-c-106 review (Commander effort, EDHREC rank 25127; manual half), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-31) and the Comprehensive Rules (media.wizards.com text 2026-09-25): a triggered ability on the Aura (no new template; hole reading 'the other creature', AnaphorInfo.otherParty): whenever the enchanted creature deals damage (combat or not) to a creature, the creature it damaged (event role object) is destroyed (CR 120.3, 701.8a); damage to a player does not trigger it. Scryfall ruling 2004-10-04: regeneration is needed twice (lethal damage and destroy) is the engine's ordinary destroy.",
+"faces": [
+{
+"abilities": [
+{
+"kind": "keyword",
+"keyword": "enchant",
+"filter": {
+"types": [
+"Creature"
+]
+},
+"text": "Enchant creature"
+},
+{
+"kind": "triggered",
+"text": "Whenever enchanted creature deals damage to a creature, destroy the other creature.",
+"trigger": {
+"on": [
+{
+"ev": "damage",
+"source": {
+"types": [
+"Creature"
+],
+"attachedToSource": true
+},
+"recipient": {
+"object": {
+"types": [
+"Creature"
+]
+}
+}
+}
+]
+},
+"effect": {
+"targets": [],
+"steps": [
+{
+"op": "destroy",
+"what": {
+"ref": "event",
+"role": "object"
+}
+}
+]
+}
+}
+]
+}
+]
+},
+{
+"card": "Venom",
+"expect": "full",
+"verified": "edh-c-106 review (Commander effort, EDHREC rank 25231; manual half), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-31) and the Comprehensive Rules (media.wizards.com text 2026-09-25): a triggered ability on the Aura: whenever the enchanted creature blocks or becomes blocked by a non-Wall creature (two event patterns, CR 509.1), the creature on the other side (event role object, 'the other creature') is destroyed at end of combat by a delayed trigger (CR 603.7), as Thicket Basilisk's JSON does for ~. Ruling 2004-10-04: blockers declared before the Aura moved are not affected.",
+"faces": [
+{
+"abilities": [
+{
+"kind": "keyword",
+"keyword": "enchant",
+"filter": {
+"types": [
+"Creature"
+]
+},
+"text": "Enchant creature"
+},
+{
+"kind": "triggered",
+"text": "Whenever enchanted creature blocks or becomes blocked by a non-Wall creature, destroy the other creature at end of combat.",
+"trigger": {
+"on": [
+{
+"ev": "blocks",
+"blocker": {
+"types": [
+"Creature"
+],
+"attachedToSource": true
+},
+"attacker": {
+"notSubtypes": [
+"Wall"
+],
+"types": [
+"Creature"
+]
+}
+},
+{
+"ev": "becomesBlocked",
+"attacker": {
+"types": [
+"Creature"
+],
+"attachedToSource": true
+},
+"by": {
+"notSubtypes": [
+"Wall"
+],
+"types": [
+"Creature"
+]
+}
+}
+]
+},
+"effect": {
+"targets": [],
+"steps": [
+{
+"op": "delay",
+"when": {
+"at": "endOfCombat"
+},
+"do": [
+{
+"op": "destroy",
+"what": {
+"ref": "event",
+"role": "object"
+}
+}
+]
+}
+]
+}
+}
+]
+}
+]
+},
+{
+"card": "Dragon Hunter",
+"expect": "full",
+"verified": "edh-c-106 review (Commander effort, EDHREC rank 25226; manual half), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-31) and the Comprehensive Rules (media.wizards.com text 2026-09-25): protection from Dragons (keyword) and a static permission (sta.edhv106.self.blockAsThough.reach): this creature can block Dragon attackers as though it had reach, i.e. it can block a flying Dragon (CR 702.17b, 609.4); not other fliers, and other creatures are not given the permission. No Scryfall rulings.",
+"faces": [
+{
+"abilities": [
+{
+"kind": "keyword",
+"keyword": "protection",
+"quality": "subtype:dragons",
+"text": "Protection from Dragons"
+},
+{
+"kind": "static",
+"text": "~ can block Dragons as though it had reach.",
+"effects": [
+{
+"s": "permit",
+"who": {
+"ref": "you"
+},
+"of": {
+"self": true
+},
+"action": "blockAsThough",
+"attacker": {
+"subtypes": [
+"Dragon"
+]
+},
+"asThough": "as though it had reach"
+}
+]
+}
+]
+}
+]
+},
+{
+"card": "Storm Entity",
+"expect": "full",
+"verified": "edh-c-106 review (Commander effort, EDHREC rank 25216; manual half), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-31) and the Comprehensive Rules (media.wizards.com text 2026-09-25): haste and a replacement (rep.edhv106.enters.counter.forEachOtherSpell): it enters with one +1/+1 counter for each spell cast this turn by any player other than itself (CR 614.1c, 122.6, 601.2i). Ruling 2022-12-08: counted as it enters, including spells cast while it was on the stack; copies are not cast spells.",
+"faces": [
+{
+"abilities": [
+{
+"kind": "keyword",
+"keyword": "haste",
+"text": "Haste"
+},
+{
+"kind": "static",
+"text": "~ enters with a +1/+1 counter on it for each other spell cast this turn.",
+"zone": [
+"stack",
+"battlefield"
+],
+"effects": [
+{
+"s": "replace",
+"replaces": {
+"ev": "zoneChange",
+"subject": {
+"self": true
+},
+"to": "battlefield"
+},
+"body": {
+"b": "enters",
+"counters": [
+{
+"kind": "+1/+1",
+"count": {
+"q": "happenedCount",
+"event": {
+"ev": "cast",
+"spell": {
+"not": {
+"self": true
+}
+}
+},
+"scope": "turn"
+}
+}
+]
+}
+}
+]
+}
+]
+}
+]
+},
+{
+"card": "Kindle the Carnage",
+"expect": "full",
+"verified": "edh-c-106 review (Commander effort, EDHREC rank 25082; manual half), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-31) and the Comprehensive Rules (media.wizards.com text 2026-09-25): a spell: discard a card at random (CR 701.9b); if you do, ~ deals damage equal to that card's mana value to each creature (the discarded card, read from last known information, CR 608.2h); you may repeat the process any number of times (repeat op, one yes/no per iteration). Rulings 2006-05-01: each iteration is a separate instance of damage with the same source; lethal damage is only checked after you stop (state-based actions wait for the whole spell).",
+"faces": [
+{
+"abilities": [
+{
+"kind": "spell",
+"text": "Discard a card at random. If you do, ~ deals damage equal to that card's mana value to each creature. You may repeat this process any number of times.",
+"effect": {
+"targets": [],
+"steps": [
+{
+"op": "discard",
+"who": {
+"ref": "you"
+},
+"count": 1,
+"mode": "random",
+"as": "them"
+},
+{
+"op": "if",
+"cond": {
+"cond": "did",
+"step": "them"
+},
+"then": [
+{
+"op": "damage",
+"source": {
+"ref": "self"
+},
+"to": {
+"ref": "each",
+"filter": {
+"types": [
+"Creature"
+]
+}
+},
+"amount": {
+"q": "stat",
+"stat": "manaValue",
+"of": {
+"ref": "bound",
+"name": "them"
+}
+}
+}
+]
+},
+{
+"op": "repeat",
+"times": 1,
+"do": [
+{
+"op": "discard",
+"who": {
+"ref": "you"
+},
+"count": 1,
+"mode": "random",
+"as": "them"
+},
+{
+"op": "if",
+"cond": {
+"cond": "did",
+"step": "them"
+},
+"then": [
+{
+"op": "damage",
+"source": {
+"ref": "self"
+},
+"to": {
+"ref": "each",
+"filter": {
+"types": [
+"Creature"
+]
+}
+},
+"amount": {
+"q": "stat",
+"stat": "manaValue",
+"of": {
+"ref": "bound",
+"name": "them"
+}
+}
+}
+]
+}
+],
+"process": true,
+"optional": true
+}
+]
+}
+}
+]
+}
+]
+},
+{
+"card": "Forbidden Ritual",
+"expect": "full",
+"verified": "edh-c-106 review (Commander effort, EDHREC rank 25326; manual half), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-31) and the Comprehensive Rules (media.wizards.com text 2026-09-25): a spell: sacrifice a nontoken permanent; if you do, the target opponent (chosen on casting) loses 2 life unless that player sacrifices a permanent of their choice or discards a card (template eff.edhv106.loseLife.unlessThatPlayerSacrificeOrDiscard, weak next to the 'each opponent' reading); you may repeat the process, the same target (ruling 2004-10-04). Sacrifice happens on resolution (CR 608.2c, 118.12a, 701.21a).",
+"faces": [
+{
+"abilities": [
+{
+"kind": "spell",
+"text": "Sacrifice a nontoken permanent. If you do, target opponent loses 2 life unless that player sacrifices a permanent of their choice or discards a card. You may repeat this process any number of times.",
+"effect": {
+"targets": [
+{
+"id": "t0",
+"kind": "player",
+"min": 1,
+"max": 1,
+"text": "target opponent",
+"players": {
+"who": "opponent"
+}
+}
+],
+"steps": [
+{
+"op": "sacrificeChoice",
+"who": {
+"ref": "you"
+},
+"filter": {
+"token": false
+},
+"count": 1,
+"as": "did"
+},
+{
+"op": "if",
+"cond": {
+"cond": "did",
+"step": "did"
+},
+"then": [
+{
+"op": "pay",
+"who": {
+"ref": "target",
+"id": "t0"
+},
+"cost": {
+"other": [
+{
+"kind": "sacrifice",
+"filter": {},
+"count": 1
+}
+]
+},
+"else": [
+{
+"op": "pay",
+"who": {
+"ref": "target",
+"id": "t0"
+},
+"cost": {
+"other": [
+{
+"kind": "discard",
+"count": 1
+}
+]
+},
+"else": [
+{
+"op": "loseLife",
+"who": {
+"ref": "target",
+"id": "t0"
+},
+"amount": 2
+}
+]
+}
+]
+}
+]
+},
+{
+"op": "repeat",
+"times": 1,
+"do": [
+{
+"op": "sacrificeChoice",
+"who": {
+"ref": "you"
+},
+"filter": {
+"token": false
+},
+"count": 1,
+"as": "did"
+},
+{
+"op": "if",
+"cond": {
+"cond": "did",
+"step": "did"
+},
+"then": [
+{
+"op": "pay",
+"who": {
+"ref": "target",
+"id": "t0"
+},
+"cost": {
+"other": [
+{
+"kind": "sacrifice",
+"filter": {},
+"count": 1
+}
+]
+},
+"else": [
+{
+"op": "pay",
+"who": {
+"ref": "target",
+"id": "t0"
+},
+"cost": {
+"other": [
+{
+"kind": "discard",
+"count": 1
+}
+]
+},
+"else": [
+{
+"op": "loseLife",
+"who": {
+"ref": "target",
+"id": "t0"
+},
+"amount": 2
+}
+]
+}
+]
+}
+]
+}
+],
+"process": true,
+"optional": true
+}
+]
+}
+}
+]
+}
+]
+},
+{
+"card": "Demonic Hordes",
+"expect": "full",
+"verified": "edh-c-106 review (Commander effort, EDHREC rank 25463; manual half), by hand against the Oracle text, the Scryfall rulings (fetched 2026-10-31) and the Comprehensive Rules (media.wizards.com text 2026-09-25): {T}: destroy target land; at the beginning of your upkeep, unless you pay {B}{B}{B}, tap ~ and sacrifice a land of an opponent's choice (templates eff.edhv106.unlessPay.prefix and eff.edhv106.sacrifice.ofOpponentsChoice; the chooser is an opponent picked by the controller, CR 601.7a, 701.21a). Paying is the player's choice made first (CR 118.12a).",
+"faces": [
+{
+"abilities": [
+{
+"kind": "activated",
+"text": "{T}: Destroy target land.",
+"cost": {
+"tap": true
+},
+"effect": {
+"targets": [
+{
+"id": "t0",
+"kind": "object",
+"min": 1,
+"max": 1,
+"text": "target land",
+"filter": {
+"types": [
+"Land"
+]
+}
+}
+],
+"steps": [
+{
+"op": "destroy",
+"what": {
+"ref": "target",
+"id": "t0"
+}
+}
+]
+}
+},
+{
+"kind": "triggered",
+"text": "At the beginning of your upkeep, unless you pay {B}{B}{B}, tap ~ and sacrifice a land of an opponent's choice.",
+"trigger": {
+"on": [
+{
+"ev": "step",
+"step": "upkeep",
+"whose": "you"
+}
+]
+},
+"effect": {
+"targets": [],
+"steps": [
+{
+"op": "pay",
+"who": {
+"ref": "you"
+},
+"cost": {
+"mana": [
+{
+"kind": "colored",
+"color": "B"
+},
+{
+"kind": "colored",
+"color": "B"
+},
+{
+"kind": "colored",
+"color": "B"
+}
+]
+},
+"else": [
+{
+"op": "tap",
+"what": {
+"ref": "self"
+}
+},
+{
+"op": "sacrificeChoice",
+"who": {
+"ref": "you"
+},
+"filter": {
+"types": [
+"Land"
+]
+},
+"count": 1,
+"chooser": {
+"ref": "anOpponent"
+}
+}
+]
+}
+]
+}
+}
+]
+}
+]
+}
+]

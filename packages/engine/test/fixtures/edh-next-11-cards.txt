@@ -1,0 +1,11 @@
+# edh-next-11 (Commander lane edh-next, EDHREC ranks 10,001-12,500, third pass): prevent damage this turn to a target, a creature that has a counter, can block any number of creatures, an additional land during each of their turns, enchanted land is snow, then flip a coin, each of two targets gains, all activated abilities of all lands, spend mana for the activation costs of its own abilities, loyalty abilities of the enchanted planeswalker. After editing: npm run cards -- fixtures
+Kurbis, Harvest Celebrant
+Banewhip Punisher
+Valor Made Real
+Storm Cauldron
+Glittering Frost
+Molten Birth
+Fated Clash
+Manascape Refractor
+Elspeth's Talent
+Rowan's Talent

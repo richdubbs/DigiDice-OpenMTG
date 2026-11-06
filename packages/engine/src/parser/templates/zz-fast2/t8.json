@@ -25,7 +25,9 @@
     },
     "subject": "object",
     "consumes": [
-      "each"
+      "each",
+      "each other",
+      "other"
     ],
     "examples": [
       {
@@ -526,7 +528,7 @@
       "You gain 3 life for each Cleric you control unless it is blue.",
       "You gain 6 life for each Cleric you control."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 3
   },
   {
@@ -577,7 +579,7 @@
       "You gain 4 life for each Cleric you control unless it is blue.",
       "You gain 7 life for each Cleric you control."
     ],
-    "status": "experimental",
+    "status": "stable",
     "since": 3
   },
   {

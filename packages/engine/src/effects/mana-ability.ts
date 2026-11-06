@@ -11,17 +11,19 @@ import { Game } from '../core/game';
 import type { GameObject, GameState } from '../types/state';
 import type { PlayerId } from '../types/ids';
 import type { ActivatedInfo } from '../rules/abilities';
-import { activatingX, installManaAbilityResolver, installManaAmountReader, installTapManaMultiplier } from '../rules/mana';
-import { tapManaMultiplier } from '../statics/hooks';
+import { activatingPaid, activatingX, installManaAbilityResolver, installManaAmountReader, installManaProductionReader, installTappedManaCollapse, installTappedManaOnlyColorless, installTapManaMultiplier } from '../rules/mana';
+import { tapManaMultiplier, tapManaMultiplierSources, tappedManaCollapseAt, tappedManaOnlyColorless, withResolvingAbility } from '../statics/hooks';
 import type { ExecCtx } from './api';
 import { evalQty } from './eval';
 import { runSteps } from './run';
+import { plannedProduction } from './handlers/cards-mana';
 
 /** The context a mana ability resolves in (no stack object, no targets, no event). */
 function manaCtx(g: Game, player: PlayerId, source: GameObject, info: ActivatedInfo): ExecCtx {
   return {
     g, source: { id: source.id, zone: 'battlefield' }, stackId: null, controller: player, program: info.def.effect, stack: null, targets: new Map(), event: null,
     bindings: new Map(), results: new Map(), vars: new Map(),
+    ...(activatingPaid(g) !== undefined ? { manaPaid: activatingPaid(g)! } : {}), // edh-top-2: what the cost exiled (ObjRef costExiled)
     choices: new Map(), // std-mana-12 (CR 106.1, 608.2c): what an addMana step with a `link` records ("becomes that color", lasting-fix.ts#fixChosen)
   };
 }
@@ -29,9 +31,14 @@ function manaCtx(g: Game, player: PlayerId, source: GameObject, info: ActivatedI
 installManaAbilityResolver((g, player, source, info) => {
   const x = activatingX(g); // p2-mana-1: the X announced for its cost (rules/mana.ts#counterXPart)
   const cx = { ...manaCtx(g, player, source, info), ...(x !== undefined ? { manaX: x } : {}) };
-  runSteps(cx, info.def.effect.steps);
+  // edh-next-122 (CR 605.3b, 113.3c): a mana ability activated while something resolves is its own ability: not part of that resolution (statics/hooks.ts#withResolvingAbility)
+  withResolvingAbility(undefined, () => runSteps(cx, info.def.effect.steps));
 });
 
-installTapManaMultiplier(tapManaMultiplier); // std-mana-1 (CR 106.12, 614.1a)
+installTapManaMultiplier(tapManaMultiplier, tapManaMultiplierSources); // std-mana-1 (CR 106.12, 614.1a)
+installTappedManaCollapse(tappedManaCollapseAt); // edh-next-12 (CR 106.12, 614.1a; Damping Sphere)
+installTappedManaOnlyColorless(tappedManaOnlyColorless); // edh-c-72 (CR 106.12, 614.1a; Ritual of Subdual)
 
 installManaAmountReader((s: GameState, player, source, info, count) => evalQty(manaCtx(new Game(s), player, source, info), count));
+
+installManaProductionReader((s: GameState, player, source, info, step) => plannedProduction(manaCtx(new Game(s), player, source, info), step as Parameters<typeof plannedProduction>[1])); // edh-mana-keywords-3

@@ -1,0 +1,9 @@
+# edh-next-81 (small clusters): suspend X with the exile counters-removed trigger, counters remain on ~, pay {M} any number of times
+Aeon Chronicler
+Detritivore
+Benalish Commander
+Dinosaurs on a Spaceship
+Skullbriar, the Walking Grave
+Intrepid Adversary
+Tainted Adversary
+Spectral Adversary

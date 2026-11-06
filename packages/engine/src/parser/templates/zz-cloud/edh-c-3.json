@@ -1,0 +1,513 @@
+[
+  {
+    "id": "eff.edhv3.return.oppGraveyard.theirHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 400.3",
+      "CR 404.1",
+      "CR 115.1"
+    ],
+    "pattern": "return {o:Objs} to their hand",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return two target cards from an opponent's graveyard to their hand."
+      },
+      {
+        "text": "Return target creature card from an opponent's graveyard to their hand."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from an opponent's graveyard to their library.",
+      "Return target creature card from your graveyard to their hand.",
+      "Return target creature to their hand."
+    ]
+  },
+  {
+    "id": "sta.edhv3.obj.pump.grant.everyType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} , has {a:Abilities} , and is every creature type",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": 4,
+          "subtypes": {
+            "all": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "every"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +1/+1, has flying, and is every creature type."
+      },
+      {
+        "text": "Equipped creature gets +2/+0, has first strike and haste, and is every creature type."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+4 and has flying.",
+      "Enchanted creature gets +1/+1, has flying, and is every creature type until end of turn.",
+      "Enchanted creature gets +1/+1, has flying, and is every land type."
+    ]
+  },
+  {
+    "id": "sta.edhv3.group.are.subtypes.inAddition",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 604.1",
+      "CR 613.1d"
+    ],
+    "pattern": "{o:Objs} are {st:PluralSubtype} in addition to their other creature types",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Creatures you control are Goblins in addition to their other creature types."
+      },
+      {
+        "text": "Other creatures are Elves in addition to their other creature types."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control are Goblins.",
+      "Creatures you control are Goblins in addition to their other colors.",
+      "Creatures you control are Goblins in addition to their other creature types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv3.obj.gains.becomes.subtype.inAddition",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3m",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 611.2a"
+    ],
+    "pattern": "{o:Obj} gains {a:Abilities} and becomes ( a | an ) {st:Subtypes} in addition to its other creature types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gains flying and becomes a Bird in addition to its other creature types."
+      },
+      {
+        "text": "Put a +1/+1 counter on target creature. That creature gains lifelink and becomes an Angel in addition to its other creature types."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gains flying and becomes a Bird in addition to its other creature types until end of turn.",
+      "Target creature gains flying and becomes a Bird.",
+      "Target creature becomes a Bird in addition to its other creature types."
+    ]
+  },
+  {
+    "id": "eff.edhv3.may.haveLoseLifeEqual",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 119.3"
+    ],
+    "pattern": "you may have {p:Player} lose life equal to {n:Qty}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "loseLife",
+          "who": "$p",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may have target player lose life equal to the number of creatures you control."
+      },
+      {
+        "text": "Whenever a creature an opponent controls dies, you may have that player lose life equal to your life total."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, target player may lose life equal to the number of creatures you control.",
+      "Whenever ~ attacks, you may have target player gain life equal to the number of creatures you control.",
+      "Whenever ~ attacks, you may have target player lose life equal to the number of creatures you control unless they pay {1}."
+    ]
+  },
+  {
+    "id": "eff.edhv3.may.haveDealDamageToEqual",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} may have {src:Obj} deal damage to {to:Recipient} equal to {n:Qty}",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$to",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you may have ~ deal damage to target creature equal to the number of lands you control."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may have ~ deal damage to any target equal to your life total."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, ~ deals damage to target creature equal to the number of lands you control.",
+      "When ~ enters, you may have ~ deal damage to target creature equal to the number of lands you control unless that creature's controller pays {1}.",
+      "When ~ enters, you may have ~ deal damage to target creature."
+    ]
+  },
+  {
+    "id": "eff.edhv3.may.haveDealDamageEqualToYouAndTarget",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.2b",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} may have {src:Obj} deal damage equal to {n:Qty} to you and {r:AnyTarget}",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": {
+            "ref": "you"
+          },
+          "amount": "$n",
+          "also": [
+            {
+              "to": "$r",
+              "amount": "$n"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may have ~ deal damage equal to its power to you and any target."
+      },
+      {
+        "text": "When ~ dies, you may have ~ deal damage equal to the number of creatures you control to you and any target."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, ~ deals damage equal to its power to you and any target.",
+      "Whenever ~ attacks, you may have ~ deal damage equal to its power to any target.",
+      "Whenever ~ attacks, you may have ~ deal damage equal to its power to each opponent and any target."
+    ]
+  },
+  {
+    "id": "eff.edhv3.players.cant.gainlife.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 119.7",
+      "CR 101.2"
+    ],
+    "pattern": "players can't gain life {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "gainLife"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Players can't gain life this turn."
+      },
+      {
+        "text": "Players can't gain life until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Players can gain life this turn.",
+      "Players can't lose life this turn.",
+      "Players can't gain life until your next turn."
+    ]
+  },
+  {
+    "id": "sta.edhv3.aslong.grant.cantBeBlocked",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 509.1b"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} has {a:Abilities} and can't be blocked",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control a Goblin, ~ has hexproof and can't be blocked."
+      },
+      {
+        "text": "As long as ~ is tapped, it has lifelink and can't be blocked."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control a Goblin, ~ has hexproof and must be blocked if able.",
+      "As long as you control a Goblin, ~ has hexproof.",
+      "As long as you control a Goblin, ~ loses hexproof and can't be blocked."
+    ]
+  },
+  {
+    "id": "sta.edhv3.prevent.allDamageBy.obj",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 604.1",
+      "CR 303.4"
+    ],
+    "pattern": "prevent all damage that would be dealt by {o:Obj}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt by equipped creature."
+      },
+      {
+        "text": "Prevent all damage that would be dealt by enchanted permanent."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt by enchanted creature this turn.",
+      "Prevent all combat damage that would be dealt by equipped creature.",
+      "Prevent all damage that would be dealt to equipped creature."
+    ]
+  },
+  {
+    "id": "sta.edhv3.otherturns.group.have",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 500.1"
+    ],
+    "pattern": "during turns other than yours , {f:Filter} have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "not",
+        "of": {
+          "cond": "turnOf",
+          "whose": "you"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "other",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During turns other than yours, creatures you control have hexproof."
+      },
+      {
+        "text": "During turns other than yours, untapped Walls you control have flying and vigilance."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, Goblins you control have hexproof.",
+      "During turns other than yours, creatures you control have hexproof until end of turn.",
+      "During turns other than yours, creatures you control get +1/+1."
+    ]
+  }
+]

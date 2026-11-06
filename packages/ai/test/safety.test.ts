@@ -172,7 +172,9 @@ describe('CR 601.2f: manual casting text is never skipped', () => {
   it('CR 601.2f: a spell whose additional cost is manual text is not cast (a cost no template reads yet)', () => {
     // M6-5a: Tormenting Voice's "discard a card" is a real additional cost now (static:additionalCost), and M6-5 reads "sacrifice a creature or
     // discard a card" as a grouped cost (CR 601.2b), so the manual case is a cost the parser can't state
-    const voice = oracle({ name: 'Test Manual Voice', type_line: 'Sorcery', mana_cost: '{1}{R}', oracle_text: 'As an additional cost to cast this spell, put a card from your hand on top of your library.\nDraw two cards.' });
+    // (2026-11-05: "put a card from your hand on top of your library" is read as a cost now (cm.additional with the put-on-top step), so the
+    // manual cost is one to an opponent's library, which no template reads)
+    const voice = oracle({ name: 'Test Manual Voice', type_line: 'Sorcery', mana_cost: '{1}{R}', oracle_text: 'As an additional cost to cast this spell, put a card from your hand on top of an opponent\'s library.\nDraw two cards.' });
     expect(voice.faces[0]!.abilities[0]!.kind).toBe('manual');
     const s = scenario(['Mountain', 'Grizzly Bears'], { defs: [voice], p1: { hand: ['Test Manual Voice', 'Grizzly Bears'], battlefield: ['Mountain', 'Mountain'] } });
     expect(explainPriorityFor(s).map((x) => x.label).filter((l) => l.includes('Test Manual Voice'))).toEqual([]);

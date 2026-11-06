@@ -22,6 +22,7 @@
 import type { TargetSpec } from '../../types/ability';
 import type { LoweredProgram, LoweredSeq, Unit } from './types';
 import { sequenceUnits } from './sequencing';
+import { groupMayActs, perGroupAmounts } from './targets';
 import { isRec, leftoverMarker, namesIn, rewrite, setManual, visit } from './util';
 
 /** A damage step (anywhere in the unit) dealt by an object other than this one whose recipients or amount say "other" (see the header). */
@@ -30,7 +31,7 @@ function otherOfAnotherSource(steps: unknown): boolean {
   visit(steps, (n) => {
     if (found) return false;
     if (n['op'] !== 'damage' || !isRec(n['source']) || n['source']['ref'] === 'self') return;
-    visit([n['to'], n['amount']], (f) => { if (f['other'] === true) found = true; });
+    visit([n['to'], n['amount'], n['also']], (f) => { if (f['other'] === true) found = true; }); // edh-next-23: and the `also` recipients
   });
   return found;
 }
@@ -40,6 +41,10 @@ export function delayCaptures(steps: readonly unknown[]): string[] {
   const inside = new Set(namesIn(steps));
   const read = new Set<string>();
   visit(steps, (n) => { if (n['ref'] === 'bound' && typeof n['name'] === 'string' && !inside.has(n['name'])) read.add(n['name']); });
+  // edh-d-98 (CR 603.7c, 608.2h; Synthetic Destiny: "Exile all creatures you control. At the beginning of the next end step, reveal ... until you reveal that many creature cards"): the
+  // count of what an instruction of the creating ability did ("that many", `resultCount` of its step) is read as the delayed trigger is created (effects/handlers/lasting-fix.ts#prepareDeferred
+  // fixes it to a number then), so the delayed trigger captures that step's name too
+  visit(steps, (n) => { if (n['q'] === 'resultCount' && typeof n['step'] === 'string' && n['which'] === undefined && !inside.has(n['step'])) read.add(n['step']); });
   return [...read].sort();
 }
 
@@ -131,6 +136,21 @@ function castsCopyOfUnexiled(steps: unknown, exiled: Set<string>): boolean {
   visit(steps, (n) => {
     const to = n['to'];
     if (n['op'] === 'move' && typeof n['as'] === 'string' && isRec(to) && to['zone'] === 'exile' && n['faceDown'] === undefined) exiled.add(n['as']);
+    // edh-zones-22 (CR 608.2c, 707.12; Wondrous Crucible): "Exile a nonland card at random from your graveyard. Copy it.": the card this resolution chose and exiled is named by the choice (`chosen`), which the exile moves
+    if (n['op'] === 'move' && isRec(to) && to['zone'] === 'exile' && n['faceDown'] === undefined && isRec(n['what']) && n['what']['ref'] === 'bound' && typeof n['what']['name'] === 'string') exiled.add(n['what']['name']);
+    // edh-zones-12 (CR 608.2c, 707.12; Mizzix's Mastery): "For each card exiled this way, copy it, ...": the loop's variable stands for one of the cards this resolution
+    // exiled (a loop over the cards of the exile binding that are still in exile, or over the binding itself)
+    if (n['op'] === 'forEach' && typeof n['as'] === 'string' && isRec(n['over'])) {
+      const over = n['over'];
+      const filter = isRec(over['filter']) ? over['filter'] : null;
+      const group = over['ref'] === 'bound' ? over : filter !== null && over['ref'] === 'each' && filter['zone'] === 'exile' && isRec(filter['is']) ? filter['is'] : null;
+      if (group !== null && group['ref'] === 'bound' && typeof group['name'] === 'string' && exiled.has(group['name'])) exiled.add(n['as']);
+    }
+    // edh-next-127 (CR 608.2c, 608.2d, 707.12; Mysterious Stranger): "choose one of them at random and copy it": a choice among the cards of an exile binding still in exile stands for one of them
+    if (n['op'] === 'chooseObjects' && typeof n['as'] === 'string' && isRec(n['from']) && n['from']['ref'] === 'each' && isRec(n['from']['filter'])) {
+      const f = n['from']['filter'] as Record<string, unknown>;
+      if (f['zone'] === 'exile' && isRec(f['is']) && f['is']['ref'] === 'bound' && typeof f['is']['name'] === 'string' && exiled.has(f['is']['name'])) exiled.add(n['as']);
+    }
   });
   let bad = false;
   visit(steps, (n) => {
@@ -147,14 +167,66 @@ function castsCopyOfUnexiled(steps: unknown, exiled: Set<string>): boolean {
     if (isRec(what) && what['ref'] === 'self') return;
     // edh-cast-1 (CR 607.2a, 707.12; Isochron Scepter): a copy of the card the object's linked ability exiled, which is still in exile (the handler copies it from there)
     if (isRec(what) && what['ref'] === 'linked' && what['link'] === 'exiled') return;
+    // edh-next-132 (CR 707.12, 608.2h; God-Eternal Kefnet, ruling 2019-05-03): a copy created in the hand of the card the trigger's event revealed there ("copy that card and you may cast
+    // the copy"; the handler copies it from where it is, or from its last known information once it left the hand)
+    if (n['copyIn'] === 'hand' && isRec(what) && what['ref'] === 'event' && what['role'] === 'subject') return;
+    // edh-zones-12 (CR 607.2a, 707.12; Arcane Bombardment): or a copy of each card of the linked exile, which are all still in exile (the handler copies each from there)
+    if (isRec(what) && what['ref'] === 'each' && isRec(what['filter']) && what['filter']['zone'] === 'exile' && isRec(what['filter']['is']) && what['filter']['is']['ref'] === 'linked' && what['filter']['is']['link'] === 'exiled') return;
     if (!isRec(what) || what['ref'] !== 'bound' || typeof what['name'] !== 'string' || !exiled.has(what['name'])) bad = true;
   });
   return bad;
 }
 
+/**
+ * edhn78 (CR 603.7c, 400.7, 608.2c; Saltskitter): "Exile this creature. Return this creature to the battlefield under its owner's control at the beginning of the next end
+ * step." The delayed trigger names the object the ability itself just moved ("this creature" = "it"): the same object as a later zone's new object, which the move's binding
+ * follows (the capture of the delay), not the `self` handle. Rewrites the `self` references of a `delay` after an unconditional top-level `move` of `self` into the binding of
+ * that move (given the name `moved` when it has none). Only a move that is not a destination of the battlefield (the object left it), and only the plain case: a delay inside a
+ * choice, a loop or a condition is left as it is (the check below refuses it).
+ */
+function rebindMovedSelf(units: Unit[]): boolean {
+  let pending: { u: number; s: number } | null = null;
+  let changed = false;
+  for (let ui = 0; ui < units.length; ui++) {
+    const u = units[ui]!;
+    if (u.manual || !Array.isArray(u.steps)) continue;
+    for (let si = 0; si < u.steps.length; si++) {
+      const st = u.steps[si] as unknown;
+      if (!isRec(st)) continue;
+      if (st['op'] === 'move' && isRec(st['what']) && st['what']['ref'] === 'self' && isRec(st['to']) && (st['to']['zone'] === 'exile' || st['to']['zone'] === 'graveyard') && st['guard'] === undefined && st['until'] === undefined && !('optional' in st)) { pending = { u: ui, s: si }; continue; }
+      if (st['op'] === 'move' && isRec(st['what']) && st['what']['ref'] === 'self') pending = null; // a later move of the object itself (to a hand, a library, the battlefield) ends the plain case
+      if (st['op'] !== 'delay' || pending === null) continue;
+      if (!isRec(st['when']) || st['when']['at'] !== 'step') continue; // only a delay that waits for a step names no event of its own
+      let reads = false;
+      visit(st['do'], (n) => { if (n['ref'] === 'controllerOf' || n['ref'] === 'ownerOf') return false; if (n['ref'] === 'self') reads = true; });
+      if (!reads) continue;
+      // edh-next-79 (review; CR 603.7c, 400.7): an instruction after the delayed return that still acts on ~ ("~ gains haste.") would act on the object before the move: the plain case ends, the check below refuses
+      let later = false;
+      for (let uj = ui; uj < units.length; uj++) {
+        const from = uj === ui ? si + 1 : 0;
+        const xs = units[uj]!.manual || !Array.isArray(units[uj]!.steps) ? [] : (units[uj]!.steps as unknown[]).slice(from);
+        visit(xs, (n) => { if (n['ref'] === 'controllerOf' || n['ref'] === 'ownerOf') return false; if (n['ref'] === 'self') later = true; });
+      }
+      if (later) continue;
+      const mu = units[pending.u]!;
+      const mv = (mu.steps as unknown[])[pending.s] as Record<string, unknown>;
+      const taken = new Set<string>(); units.forEach((x) => namesIn(x.steps as unknown[]).forEach((n) => taken.add(n)));
+      const name = typeof mv['as'] === 'string' ? mv['as'] : taken.has('moved') ? null : 'moved';
+      if (name === null) continue;
+      const steps = [...(mu.steps as unknown[])]; steps[pending.s] = { ...mv, as: name }; mu.steps = steps as typeof mu.steps;
+      const ds = [...(u.steps as unknown[])];
+      ds[si] = rewrite(st, (n) => (n['ref'] === 'controllerOf' || n['ref'] === 'ownerOf' ? n : n['ref'] === 'self' ? { ref: 'bound', name } : undefined));
+      u.steps = ds as typeof u.steps;
+      changed = true;
+    }
+  }
+  return changed;
+}
+
 function check(seq: LoweredSeq, bad: ReadonlyMap<string, string>): LoweredSeq {
   let changed = false;
   const units: Unit[] = seq.units.map((u) => ({ ...u }));
+  if (rebindMovedSelf(units)) changed = true; // edhn78
   const moved = new Set<string>();
   const hidden = new Set<string>();
   const exiled = new Set<string>();
@@ -174,11 +246,14 @@ function check(seq: LoweredSeq, bad: ReadonlyMap<string, string>): LoweredSeq {
     if (left !== null) { setManual(u, { code: 'lint', reason: `an unresolved ${left} marker after lowering` }); changed = true; return; }
     // FAST5 T42: "with different names" says something about the set chosen, which only a target phrase keeps (parser/holes/object.ts); anywhere else it would be dropped
     if (u.flags.includes('different-names')) { setManual(u, { code: 'no-template', reason: '"with different names" outside a plural target phrase' }); changed = true; return; }
+    if (u.flags.includes('different-mv')) { setManual(u, { code: 'no-template', reason: '"a different mana value" outside a plural target phrase' }); changed = true; return; } // edh-top-3
     if (u.flags.includes('linked-exiled-target')) { setManual(u, { code: 'no-template', reason: '"exiled with ~" as a filter outside a target phrase' }); changed = true; return; } // std-rx5
     if (u.flags.includes('shared-creature-type')) { setManual(u, { code: 'no-template', reason: '"that share a creature type" outside a target phrase of exactly two' }); changed = true; return; } // CLOUD std-ecl
     if (u.flags.includes('zone-unstated')) { setManual(u, { code: 'no-template', reason: 'a card with no zone stated' }); changed = true; return; }
     if (u.flags.includes('batch')) {
-      u.steps = rewrite(u.steps, (n) => (n['op'] === 'delay' && isRec(n['when']) && n['when']['at'] === 'event' ? { ...n, batch: true } : undefined)) as typeof u.steps;
+      // edh-players-13 (CR 603.2c): the event "to one or more players" is one occurrence for the whole batch (the flag `wholeBatch` of parser/holes/event.ts)
+      const whole = u.flags.includes('wholeBatch');
+      u.steps = rewrite(u.steps, (n) => (n['op'] === 'delay' && isRec(n['when']) && n['when']['at'] === 'event' ? { ...n, batch: true, ...(whole ? { wholeBatch: true } : {}) } : undefined)) as typeof u.steps;
       changed = true;
     }
     // both read the steps before either makes the unit manual (setManual clears them); delayOnMoved also records this unit's moves for the next units
@@ -214,7 +289,9 @@ export function lowerNormalize(p: LoweredProgram): LoweredProgram {
     else if (countersOffBattlefield(t)) bad.set(t.id, `reason:"with a counter on it" read as a filter of a card in a ${String(t.filter!.zone)} (target "${t.id}"): counters don't stay on a card that changes zones (CR 122.2), so it is the counter the instruction puts on the card it moves ("exile ... from a graveyard with a memory counter on it"), which this reading drops`);
   }
   const targets: TargetSpec[] = p.targets.filter((t) => !bad.has(t.id));
-  const captured = (seq: LoweredSeq): LoweredSeq => ({ ...seq, steps: withCaptures(seq.steps) });
+  // edh-zones-3 (lower/targets.ts#perGroupAmounts): a group of players doing one instruction with an amount of their own, one player at a time;
+  // edh-players-12 (lower/targets.ts#groupMayActs): the `may` of a group, each player who chose doing it
+  const captured = (seq: LoweredSeq): LoweredSeq => ({ ...seq, steps: groupMayActs(perGroupAmounts(withCaptures(seq.steps))) });
   return {
     targets,
     main: captured(check(p.main, bad)),

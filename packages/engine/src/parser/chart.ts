@@ -112,6 +112,10 @@ export function parsePattern(src: string): Node[] {
       if (c === '|' || c === ')' || c === ']' || c === '}') fail(`unexpected ${c}`);
       if (c === ',' || c === '.' || c === ':' || c === ';' || c === '!') { i++; seq.push({ t: 'lit', alts: [c] }); continue; }
       if (c === '~') { i++; seq.push({ t: 'lit', alts: ['~'] }); continue; }
+      // edh-next-137 (CR 114.2, 607.2a; Tibalt, Cosmic Impostor): '¤' is the outer card's name inside a quoted ability (the GRANTOR token, parser/tokenize.ts), "cards exiled with ¤" of an emblem
+      if (c === '¤') { i++; seq.push({ t: 'lit', alts: ['¤'] }); continue; }
+      // edh-next-137 (CR 606.1; Comet, Stellar Pup): a backslash makes the next bracket a literal word ("\\[ +2 \\]", the loyalty symbol Oracle prints inside an effect), not an optional part
+      if (c === '\\' && (src[i + 1] === '[' || src[i + 1] === ']')) { seq.push({ t: 'lit', alts: [src[i + 1]!] }); i += 2; continue; }
       // a word, possibly with a [s] / [es] agreement suffix glued to it
       const m = /^[A-Za-z0-9'’+\-/*ˣ]+/.exec(src.slice(i)); // FAST5 T65: also the superscript x of "2ˣ"
       if (m === null) fail(`unexpected character "${c}"`);
@@ -224,6 +228,18 @@ function buildRefs(build: unknown, out: Set<string>): void {
     buildRefs(o['$concat'], out);
     return;
   }
+  // edh-players-9: {"$merge": [X, Y]} is the object X with the members of the object Y added (Y's win): a hole's description with one more property the pattern spells out
+  if ('$merge' in o) {
+    if (Object.keys(o).length !== 1 || !Array.isArray(o['$merge']) || o['$merge'].length !== 2) throw new Error('$merge must be the only key and hold exactly two objects');
+    buildRefs(o['$merge'], out);
+    return;
+  }
+  // edh-perms-21: {"$mergeEach": [X, Y]} is the array X (a hole's list) with the members of the object Y added to each of its objects (Y's win)
+  if ('$mergeEach' in o) {
+    if (Object.keys(o).length !== 1 || !Array.isArray(o['$mergeEach']) || o['$mergeEach'].length !== 2) throw new Error('$mergeEach must be the only key and hold a list and an object');
+    buildRefs(o['$mergeEach'], out);
+    return;
+  }
   for (const k of Object.keys(o)) {
     if (k.startsWith('$')) throw new Error(`unknown directive ${k}`);
     buildRefs(o[k], out);
@@ -255,6 +271,16 @@ export function instantiate(build: unknown, caps: Readonly<Record<string, unknow
     const items = (o['$concat'] as unknown[]).map((x) => instantiate(x, caps));
     return items.some((x) => x === undefined) ? undefined : items.flatMap((x) => (Array.isArray(x) ? x : [x]));
   }
+  // edh-players-9: the first object with the members of the second added; a missing first (or one that is not an object) makes the whole value missing
+  if ('$merge' in o) {
+    const [x, y] = (o['$merge'] as unknown[]).map((v) => instantiate(v, caps));
+    return x === undefined || x === null || typeof x !== 'object' || Array.isArray(x) || y === null || typeof y !== 'object' ? undefined : { ...(x as object), ...(y as object) };
+  }
+  // edh-perms-21: the list with the members of the second (an object) added to each of its objects; a missing list makes the whole value missing
+  if ('$mergeEach' in o) {
+    const [x, y] = (o['$mergeEach'] as unknown[]).map((v) => instantiate(v, caps));
+    return !Array.isArray(x) || y === null || typeof y !== 'object' || Array.isArray(y) || x.some((i) => i === null || typeof i !== 'object' || Array.isArray(i)) ? undefined : x.map((i) => ({ ...(i as object), ...(y as object) }));
+  }
   const out: Record<string, unknown> = {};
   for (const k of Object.keys(o)) {
     const v = instantiate(o[k], caps);
@@ -284,7 +310,8 @@ export interface CompiledTemplates {
 }
 
 /** CR 608.2c: effects are joined by commas, "and", "then" and the sentence mark; "then" implies order only, never success (that is "if you do", CR 118.12). */
-const JOINERS: string[][] = [[','], ['and'], ['then'], [',', 'then'], [',', 'and'], ['.'], ['.', 'then']];
+// edh-next-25 (CR 608.2c; Witherbloom Command): ", then you return ..." is ", then" with the controller named: an instruction with no subject of its own is done by you
+const JOINERS: string[][] = [[','], ['and'], ['then'], [',', 'then'], [',', 'and'], ['.'], ['.', 'then'], [',', 'then', 'you']];
 /**
  * Compiled grammars by array identity, with a snapshot of the elements the grammar was built from: pushing, removing or replacing a template of an
  * array that was already used compiles again. Templates themselves are immutable data; editing one in place is not seen.
@@ -595,6 +622,31 @@ function unlessAroundDelayLead(it: Item): boolean {
   return last !== undefined && (last.build as { op?: unknown } | null)?.op === 'delay' && /^(\^\s*)?[a-z]/i.test(last.pattern.trim()) && /,\s*\{[a-z]+:Effects\}$/i.test(last.pattern.trim());
 }
 
+/**
+ * edh-zones-24 (CR 603.7, 603.7a, 608.2c; Glimpse the Impossible): "At the beginning of the next end step, put them into your graveyard, then create a token for each
+ * card put into your graveyard this way." A delayed triggered ability's lead (as `unlessAroundDelayLead` reads it: a template whose build is a `delay` and which
+ * starts with a word and ends with ", {e:Effects}") takes every instruction of its sentence joined by ",", "and" or "then"; an instruction joined after it would be
+ * done now, not at the delayed time, a reading English never gives (Oracle starts a new sentence for what is not delayed). That derivation is never built; the other
+ * reading always exists (the lead's own {e:Effects} reads "A, then B"), so before this both were built and the unit was ambiguous (G5). The sentence mark "." is not
+ * affected (as leadInIfCutShort).
+ */
+function delayLeadCutShort(it: Item): boolean {
+  if (it.prod.special !== 'effects-next') return false;
+  const joiner = it.prod.syms.slice(1, -1).map((s) => (s.t === 'lit' ? s.alts.join('|') : '?')).join(' ');
+  if (joiner === '.' || joiner === '. then') return false;
+  const left = it.children[0];
+  if (left?.kind !== 'use') return false;
+  const last = lastEffect(left.use)?.template;
+  // edh-c-106 (CR 118.12a, 608.2c; Demonic Hordes): ... and the same for the payment lead "unless you pay {B}{B}{B}, tap ~ and sacrifice a land" (eff.edhv106.unlessPay.prefix: a template
+  // that starts with "unless" and ends with ", {e:Effects}"): the branch takes every instruction of the sentence, the payment is not one instruction of a longer list
+  if (last !== undefined && (last.build as { op?: unknown } | null)?.op === 'pay' && /^unless\b/i.test(last.pattern.trim()) && /,\s*\{[a-z]+:Effects\}$/i.test(last.pattern.trim())) return true;
+  // edh-d-57 (CR 614.1a, 608.2c; Stunning Reversal): a one-shot replacement effect's lead "the next time you would lose the game this turn, instead {e:Effects}" takes every instruction of its sentence
+  // ("instead draw seven cards and your life total becomes 1": both are done in place of the loss); an instruction joined after it would be done now, a reading English never gives
+  if (last !== undefined && /,\s*instead\s+\{[a-z]+:Effects\}$/i.test(last.pattern.trim()) && (last.build as { op?: unknown; effects?: { s?: unknown }[] } | null)?.op === 'effect'
+    && (last.build as { effects?: { s?: unknown }[] }).effects?.[0]?.s === 'replace') return true;
+  return last !== undefined && (last.build as { op?: unknown } | null)?.op === 'delay' && /^(\^\s*)?[a-z]/i.test(last.pattern.trim()) && /,\s*\{[a-z]+:Effects\}$/i.test(last.pattern.trim());
+}
+
 /** A "may" wrapper: a template that consumes "may" and ends with its instructions ("you may {e:Effects}", ch.may). */
 const MAY_WRAP = new WeakMap<Template, boolean>();
 function isMayWrap(t: Template): boolean {
@@ -631,6 +683,47 @@ function mayCutShort(it: Item): boolean {
   if (last === undefined || !isMayWrap(last)) return false;
   const next = firstEffect(right.use)?.template;
   return next !== undefined && next.subject === 'none' && !(next.consumes ?? []).includes('may');
+}
+
+/** A delayed-trigger TAIL: a template whose build is a `delay` and whose pattern starts with its instructions and ends with the time ("{e:Effects} at the beginning of the next end step"). */
+const DELAY_TAIL = new WeakMap<Template, boolean>();
+function isDelayTail(t: Template): boolean {
+  let v = DELAY_TAIL.get(t);
+  if (v === undefined) {
+    v = (t.build as { op?: unknown } | null)?.op === 'delay' && /^\{[a-z]+:Effects\}\s+[a-z]/i.test(t.pattern.trim()) && !/\{[a-z]+:Effects\}$/i.test(t.pattern.trim());
+    DELAY_TAIL.set(t, v);
+  }
+  return v;
+}
+
+/**
+ * edh-next-69 (CR 603.7a, 603.7c, 608.2c; Tiana, Ship's Caretaker: "you may return that card ... at the beginning of the next end step"; Tiana's rulings 2018-04-27: the
+ * ability "creates a delayed triggered ability that will let you return" the card): in "you may A at the beginning of the next end step" the choice is made when the delayed
+ * ability resolves, not as the sentence is. A "may" wrapper whose instructions end in a delayed-trigger tail would make the choice now and delay only A; that derivation is
+ * never built. The other reading always exists (the tail's own {e:Effects} reads "you may A"), so before this both were built and the unit was ambiguous (G5).
+ */
+function mayAroundDelayTail(it: Item): boolean {
+  const t = it.prod.tpl;
+  if (t === undefined || !isMayWrap(t)) return false;
+  const last = it.children[it.children.length - 1];
+  if (last?.kind !== 'use' || last.use.template) return false;
+  const inner = lastEffect(last.use)?.template;
+  return inner !== undefined && isDelayTail(inner);
+}
+
+/**
+ * edh-next-69 (CR 603.7a, 608.2c; Astral Slide: "If you do, return that card to the battlefield ... at the beginning of the next end step"): a lead-in "if" (a template that
+ * consumes "if" and starts "if" or "then if") holds its condition as the instruction is carried out and delays only what the condition lets through; a delayed-trigger tail
+ * wrapped around such a lead-in would delay the condition itself ("if you do" would then look at a step that is long past). That derivation is never built; the other
+ * reading always exists (the lead-in's own {e:Effects} reads "A at the beginning of ..."), so before this both were built and the unit was ambiguous (G5).
+ */
+function delayTailAroundIf(it: Item): boolean {
+  const t = it.prod.tpl;
+  if (t === undefined || !isDelayTail(t)) return false;
+  const first = it.children[0];
+  if (first?.kind !== 'use' || first.use.template) return false;
+  const inner = lastEffect(first.use)?.template;
+  return inner !== undefined && (inner.consumes ?? []).includes('if') && /^(\^\s*)?(then\s+)?if\b/i.test(inner.pattern.trim()) && /\{[a-z]+:Effects\}$/i.test(inner.pattern.trim());
 }
 
 interface SetState { items: Item[]; keys: Set<string>; waiting: Map<string, Item[]>; predicted: Set<string>; missed: Set<string> }
@@ -706,7 +799,7 @@ function run(prods: Prod[], goalLhs: string, ctx: HoleCtx, toks: readonly Tok[],
       const it = S.items[k]!;
       const sym = it.prod.syms[it.dot];
       if (sym === undefined) {
-        if (mayAroundUnless(it) || leadInIfCutShort(it) || mayCutShort(it) || unlessAroundDelayLead(it)) continue;
+        if (mayAroundUnless(it) || leadInIfCutShort(it) || mayCutShort(it) || unlessAroundDelayLead(it) || delayLeadCutShort(it) || mayAroundDelayTail(it) || delayTailAroundIf(it)) continue;
         const done = complete(it, i);
         if (it.prod.lhs === goalLhs && it.origin === 0 && i === n) goal.push(done);
         const doneKey = `${canonicalJson(done.value)}#${sigOf(done.use)}`;
@@ -830,7 +923,44 @@ function meaningOf(v: unknown): unknown {
   return JSON.stringify(v).includes('"whereX"') ? expand(v) : v;
 }
 
-function decide(goal0: Completed[], items: number): ChartOk | ChartAmbiguous | null {
+/**
+ * edh-top-9 (CR 608.2c, 118.12; Volatile Stormdrake): "If you do, sacrifice that creature unless you pay an amount of {E} equal to its mana value." has two readings when a
+ * generic "<effects> unless <player> pays <cost>" template wraps the conditional sentence: the payment is asked first and the "if you do" only guards the sacrifice (`pay`
+ * with `else: [if did previous ...]`), or the condition guards the whole choice (`if did previous, then: pay ... else: sacrifice`). The words put the condition first: the
+ * payment is never asked when the earlier instruction was not done, so the reading that pays first is not a reading of the sentence. Likewise "You get {E}{E}{E}{E}, then
+ * sacrifice that creature unless you pay ...": with a "then" in the sentence the "unless" is the last instruction's, never the energy's (the reading that makes both instructions
+ * depend on the payment loses). Without a "then" ("A and B unless C") the scope stays ambiguous English (G5).
+ */
+function paysBeforeItsIf(v: unknown, hasThen: boolean): boolean {
+  let found = false;
+  const walk = (n: unknown): void => {
+    if (found) return;
+    if (Array.isArray(n)) { for (const x of n) walk(x); return; }
+    if (n === null || typeof n !== 'object') return;
+    const r = n as Record<string, unknown>;
+    // "A, then B unless C": the "unless" belongs to the last instruction, so a payment that stands in for several instructions at once (all of them done only when it is not paid) is no reading
+    if (hasThen && r['op'] === 'pay' && Array.isArray(r['else']) && r['else'].length >= 2) { found = true; return; }
+    if (r['op'] === 'pay' && Array.isArray(r['else']) && r['else'].length === 1) {
+      const first = r['else'][0] as Record<string, unknown> | null;
+      const c = first !== null && typeof first === 'object' ? first['cond'] as Record<string, unknown> | undefined : undefined;
+      if (first !== null && typeof first === 'object' && first['op'] === 'if' && c !== undefined && c['cond'] === 'did' && c['$step'] === 'previous' && Object.keys(c).length === 3) { found = true; return; }
+    }
+    for (const k in r) walk(r[k]);
+  };
+  walk(v);
+  return found;
+}
+
+function decide(goal0: Completed[], items: number, hasThen: boolean): ChartOk | ChartAmbiguous | null {
+  const first = decideAmong(goal0, items);
+  if (first === null || first.status !== 'ambiguous') return first;
+  // edh-top-9: only a sentence that would be ambiguous is looked at again: a reading that asks the payment before its own "if you do" (or that makes several
+  // instructions depend on one payment) loses to the reading that does not (paysBeforeItsIf); a sentence with one winner is never changed
+  const clean = goal0.filter((c) => !paysBeforeItsIf(c.value, hasThen));
+  return clean.length > 0 && clean.length < goal0.length ? decideAmong(clean, items) : first;
+}
+
+function decideAmong(goal0: Completed[], items: number): ChartOk | ChartAmbiguous | null {
   // p2-counters-state-2: a reading that leaves X undefined beside its own "where X is" clause loses to one that does not (xFreeBesideWhereX)
   const clean = goal0.filter((c) => !xFreeBesideWhereX(c.value));
   const goal = clean.length > 0 && clean.length < goal0.length ? clean : goal0;
@@ -935,7 +1065,7 @@ function parseCounting(input: ChartInput, count: (n: number) => void, total: () 
   // Guard G8: rank over ALL templates, so the winner is the same whatever this engine can run. If the winner needs a capability that is missing, the unit is
   // needs-engine; it never falls back to the next best reading, which is a known-approximate one.
   const first = runCounted(skipped.length > 0 ? compiled.prods : active, goalLhs, ctx, toks, budget, count);
-  const decided = decide(first.goal, total());
+  const decided = decide(first.goal, total(), toks.some((t) => t.norm === 'then'));
   if (decided !== null) {
     if (skipped.length === 0) return decided;
     if (decided.status === 'ok') {

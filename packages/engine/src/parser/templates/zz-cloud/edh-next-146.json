@@ -1,0 +1,507 @@
+[
+  {
+    "id": "sta.edhn146.self.has.wardX.where",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.21a",
+      "CR 702.21b",
+      "CR 107.3",
+      "CR 122.1"
+    ],
+    "pattern": "~ has ward {x} , where x is {n:Qty}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "ward",
+      "cost": {
+        "mana": [
+          {
+            "kind": "variable",
+            "name": "X"
+          }
+        ]
+      },
+      "costX": "$n"
+    },
+    "consumes": [
+      "has",
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "~ has ward {X}, where X is the number of cards in your hand."
+      },
+      {
+        "text": "~ has ward {X}, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "~ has ward {2}, where X is the number of cards in your hand.",
+      "~ has ward {X}.",
+      "Creatures you control have ward {X}, where X is the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "sta.edhn146.asAttached.choose.creatureName.creatureType",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.3a",
+      "CR 607.2d",
+      "CR 613.7e",
+      "CR 201.3",
+      "CR 205.3m"
+    ],
+    "pattern": "as ~ becomes attached to ( a | an ) {f:Filter} , choose a creature card name and a creature type",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "chooseAsAttached",
+          "of": "$f",
+          "asAttached": [
+            {
+              "what": "cardName",
+              "link": "cardName",
+              "cardKind": "creature"
+            },
+            {
+              "what": "creatureType",
+              "link": "creatureType"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as",
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "As ~ becomes attached to an artifact creature, choose a creature card name and a creature type."
+      },
+      {
+        "text": "As ~ becomes attached to a legendary creature, choose a creature card name and a creature type."
+      }
+    ],
+    "counterExamples": [
+      "As ~ becomes attached to a creature, choose a card name and a creature type.",
+      "As ~ becomes attached to an artifact creature, choose a creature card name.",
+      "As ~ enters, choose a creature card name and a creature type."
+    ]
+  },
+  {
+    "id": "sta.edhn146.attached.grant.unblockable.lastChosenNameType",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 612.8",
+      "CR 509.1b",
+      "CR 607.2d",
+      "CR 301.5a"
+    ],
+    "pattern": "equipped creature has {a:Abilities} , it can't be blocked , and its name and creature type are the last chosen name and creature type",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "beBlocked"
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "chosen": "creatureType",
+                "chosenSets": true
+              },
+              "namedChosen": "cardName"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As ~ becomes attached to an artifact creature, choose a creature card name and a creature type.\nEquipped creature has flying, it can't be blocked, and its name and creature type are the last chosen name and creature type."
+      },
+      {
+        "text": "As ~ becomes attached to a legendary creature, choose a creature card name and a creature type.\nEquipped creature has hexproof, it can't be blocked, and its name and creature type are the last chosen name and creature type."
+      }
+    ],
+    "counterExamples": [
+      "As ~ becomes attached to an artifact creature, choose a creature card name and a creature type.\nEquipped creature has flying, it can't be blocked, and its name is the last chosen name.",
+      "As ~ becomes attached to an artifact creature, choose a creature card name and a creature type.\nEquipped creature has flying and its name and creature type are the last chosen name and creature type.",
+      "As ~ becomes attached to an artifact creature, choose a creature card name and a creature type.\nEquipped creature has flying, it can't block, and its name and creature type are the last chosen name and creature type."
+    ]
+  },
+  {
+    "id": "eff.edhn146.sacrifice.each.youControl",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2c"
+    ],
+    "pattern": "sacrifice each {f:Filter} you control",
+    "build": {
+      "op": "sacrifice",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, sacrifice each other artifact you control."
+      },
+      {
+        "text": "When ~ enters, sacrifice each other creature you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, sacrifice each other artifact an opponent controls.",
+      "When ~ enters, sacrifice another creature you control."
+    ]
+  },
+  {
+    "id": "eff.edhn146.return.bf.underPlayer.theirNextUpkeep",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 603.7c",
+      "CR 503.1",
+      "CR 110.2",
+      "CR 400.7j",
+      "CR 800.4a"
+    ],
+    "pattern": "return {o:Obj} to the battlefield under {p:Player} 's control at the beginning of their next upkeep",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "upkeep",
+        "next": true,
+        "whose": "$p"
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "battlefield",
+            "controller": "$p"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "their",
+      "next",
+      "upkeep"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, choose target opponent. Return ~ to the battlefield under that player's control at the beginning of their next upkeep."
+      },
+      {
+        "text": "When ~ dies, choose target player. Return ~ to the battlefield under that player's control at the beginning of their next upkeep."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, choose target opponent. Return ~ to the battlefield under that player's control at the beginning of your next upkeep.",
+      "When ~ dies, choose target opponent. Return ~ to the battlefield under its owner's control at the beginning of their next upkeep.",
+      "When ~ dies, choose target opponent. Return ~ to the battlefield tapped under that player's control at the beginning of their next upkeep."
+    ]
+  },
+  {
+    "id": "rep.edhn146.enters.becomesChoiceOf3.creatureWith",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 613.2a",
+      "CR 707.2",
+      "CR 208.1"
+    ],
+    "pattern": "as ~ enters , it becomes your choice of a {p1:BasePT} creature with {a1:Abilities} , a {p2:BasePT} creature with {a2:Abilities} , or a {p3:BasePT} creature with {a3:Abilities}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "becomesOneOf": [
+              {
+                "power": "$p1.p",
+                "toughness": "$p1.t",
+                "types": [
+                  "Creature"
+                ],
+                "add": "$a1"
+              },
+              {
+                "power": "$p2.p",
+                "toughness": "$p2.t",
+                "types": [
+                  "Creature"
+                ],
+                "add": "$a2"
+              },
+              {
+                "power": "$p3.p",
+                "toughness": "$p3.t",
+                "types": [
+                  "Creature"
+                ],
+                "add": "$a3"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as",
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, it becomes your choice of a 4/4 creature with trample, a 1/3 creature with reach, or a 2/2 creature with haste."
+      },
+      {
+        "text": "As ~ enters, it becomes your choice of a 2/2 creature with first strike, a 1/1 creature with deathtouch, or a 3/1 creature with menace."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, it becomes your choice of a 4/4 creature with trample or a 1/3 creature with reach.",
+      "As ~ enters, it becomes a 4/4 creature with trample, a 1/3 creature with reach, or a 2/2 creature with haste.",
+      "When ~ enters, it becomes your choice of a 4/4 creature with trample, a 1/3 creature with reach, or a 2/2 creature with haste."
+    ]
+  },
+  {
+    "id": "eff.edhn146.loses.firstStrikeOrSwampwalk",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.7a",
+      "CR 702.14c"
+    ],
+    "pattern": "{o:Obj} loses first strike or swampwalk {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "lostAbility",
+        "link": "lostAbility",
+        "options": [
+          "first strike",
+          "swampwalk"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "lostAbility",
+          "equals": "first strike"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "remove": [
+                      "first strike"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "lostAbility",
+          "equals": "swampwalk"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "remove": [
+                      "landwalk:swamp"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "consumes": [
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Target creature loses first strike or swampwalk until end of turn."
+      },
+      {
+        "text": "Target attacking creature loses first strike or swampwalk until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Target creature loses first strike and swampwalk until end of turn.",
+      "{1}, {T}: Target creature loses first strike or islandwalk until end of turn.",
+      "{1}, {T}: Target creature gains first strike or swampwalk until end of turn."
+    ]
+  },
+  {
+    "id": "rep.edhn146.enters.chooseAnother.youControl",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 400.7"
+    ],
+    "pattern": "as ~ enters , choose another {f:Filter} you control",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "chooseObject": {
+              "filter": {
+                "anyOf": [
+                  "$f"
+                ],
+                "other": true,
+                "controller": "you"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as",
+      "another",
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose another artifact creature you control.\nSacrifice ~: The chosen creature gains hexproof until end of turn."
+      },
+      {
+        "text": "As ~ enters, choose another Wizard you control.\n{T}: Untap the chosen creature."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a creature you control.\nSacrifice ~: The chosen creature gains hexproof until end of turn.",
+      "As ~ enters, choose another creature an opponent controls.\nSacrifice ~: The chosen creature gains hexproof until end of turn.",
+      "When ~ enters, choose another creature you control.\nSacrifice ~: The chosen creature gains hexproof until end of turn."
+    ]
+  }
+]

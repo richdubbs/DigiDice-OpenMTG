@@ -44,7 +44,7 @@ describe('destroy (CR 701.8)', () => {
     const r = runProgram(s, { name: 'Lightning Bolt', targets: [[chosenObject(bears)]] }, prog([{ op: 'destroy', what: { ref: 'target', id: 't0' }, as: 'gone' }], [creature]));
     // FAST5X E17 (CR 608.2h): a named destroy step also reports what it destroyed as it last existed (StepResult.before: "a creature you controlled was destroyed this way")
     expect(r.results[0]).toMatchObject({ performed: true, count: 1, before: [{ leftZone: 'battlefield', object: { id: bears, controller: 'p2' } }] });
-    expect(pipeline.proposals).toEqual([{ ev: 'destroy', object: { id: bears, zone: 'battlefield' }, canRegenerate: true }]);
+    expect(pipeline.proposals).toEqual([{ ev: 'destroy', object: { id: bears, zone: 'battlefield' }, canRegenerate: true, by: 'p1' }]); // edh-players-22: and the controller of the spell or ability that destroys it (CR 109.5)
     expect(r.state.zones.graveyard['p2']).toContain(r.state.lki[bears]!.newId);
     expect(r.cx.bindings.get('gone')!.objects).toEqual([{ id: r.state.lki[bears]!.newId!, zone: 'graveyard' }]);
   });

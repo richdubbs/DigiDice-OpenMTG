@@ -9,6 +9,8 @@ import { charsOfObject, compileCard, type CardDef, type GameState, type OracleCa
 import { activate, cast, resolveTop, target } from '../../m5/cr-examples/helpers';
 import { answer, creature, declareAttackers, find, lifeOf, logHas, pass, passUntil, runCombat, scenario, toDeclareAttackers } from '../../m4/helpers';
 import { parsed } from './support';
+import { defaultParseOptions, parseCard } from '../../../src/parser/parse';
+import { TEMPLATE_SET } from '../../../src/parser/template-set';
 
 function spell(name: string, cost: string, text: string, type = 'Instant'): CardDef {
   return compileCard({ name, layout: 'normal', mana_cost: cost, type_line: type, oracle_text: text, colors: ['W'] } as OracleCard);
@@ -39,16 +41,16 @@ describe('CR 615.7: "Prevent the next N damage that would be dealt to any target
     expect(own.automation.level).toBe('full');
     expect(own.automation.unsupported).toEqual([]);
   });
-  it('design 6.9, CR 113.1c: an experimental template inside a quoted (granted) ability caps the card at partial too, and is recorded as used', () => {
-    // eff.t8.gainlife.foreach3 (template-set version 3) is still experimental (one index card)
-    const text = 'Enchant land\nEnchanted land has "{T}: You gain 3 life for each creature you control."';
-    const aura = spell('Warded Ground', '{W}', text, 'Enchantment — Aura');
-    expect(aura.automation.level).toBe('partial');
-    const face = parsed(text, 'Enchantment — Aura');
-    expect(face.templatesUsed).toContain('eff.t8.gainlife.foreach3');
-    expect(face.experimental).toContain('eff.t8.gainlife.foreach3');
-    const stable = 'Enchant land\nEnchanted land has "{T}: Prevent the next 1 damage that would be dealt to you this turn."';
-    expect(spell('Warded Field', '{W}', stable, 'Enchantment — Aura').automation.level).toBe('full');
+  it('design 6.9, CR 113.1c: an experimental template inside a quoted (granted) ability caps the card at partial too, and is recorded as used (the d6 roll, stable since edh-top-14, is made experimental here)', () => {
+    const text = 'Enchant land\nEnchanted land has "{T}: Roll a d6. You gain life equal to the result."';
+    const card = { name: 'Warded Ground', layout: 'normal', type_line: 'Enchantment — Aura', mana_cost: '{W}', oracle_text: text, colors: ['W'] } as OracleCard;
+    const stable = parseCard(card, defaultParseOptions()).faces[0]!;
+    expect(stable.templatesUsed).toContain('eff.p2cdr1.rollDie.d6');
+    expect(stable.experimental ?? []).not.toContain('eff.p2cdr1.rollDie.d6');
+    const templates = TEMPLATE_SET.map((t) => (t.id === 'eff.p2cdr1.rollDie.d6' ? { ...t, status: 'experimental' as const } : t));
+    const exp = parseCard(card, defaultParseOptions({ templates })).faces[0]!;
+    expect(exp.templatesUsed).toContain('eff.p2cdr1.rollDie.d6');
+    expect(exp.experimental).toContain('eff.p2cdr1.rollDie.d6');
   });
   it('guard G10: an experimental template of template-set version 1 inside quotes is recorded as used but keeps main\'s level (until it is reviewed)', () => {
     const text = 'Enchant creature\nEnchanted creature has "Whenever this creature deals combat damage to a player, you may draw a card."';

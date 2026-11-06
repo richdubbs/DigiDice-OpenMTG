@@ -1,0 +1,249 @@
+[
+  {
+    "id": "eff.edhv40.self.loses.keyword.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "~ loses {k:Keyword}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "remove": [
+                "$k.keyword"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "{0}: ~ loses reach."
+      },
+      {
+        "text": "{1}: ~ loses defender."
+      }
+    ],
+    "counterExamples": [
+      "{0}: ~ loses reach until end of turn.",
+      "{0}: ~ loses all abilities.",
+      "{0}: Target creature loses reach."
+    ]
+  },
+  {
+    "id": "rst.edhv40.cantattack.if.defending.controls",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 508.1c",
+      "CR 506.2",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't attack if defending player controls ( a | an ) {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "attack",
+      "when": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "controller": {
+              "ref": "defending"
+            },
+            "anyOf": [
+              "$f"
+            ]
+          }
+        }
+      }
+    },
+    "consumes": [
+      "can't",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ can't attack if defending player controls an untapped Forest."
+      },
+      {
+        "text": "~ can't attack if defending player controls a Desert."
+      }
+    ],
+    "counterExamples": [
+      "~ can't attack unless defending player controls a Desert.",
+      "~ can't block if defending player controls a Desert.",
+      "~ can't attack if you control a Desert."
+    ]
+  },
+  {
+    "id": "rst.edhv40.cantblock.if.youControl",
+    "weak": 1,
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't block if you control ( a | an ) {f:Filter}",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "block",
+      "when": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "controller": "you",
+            "anyOf": [
+              "$f"
+            ]
+          }
+        }
+      }
+    },
+    "consumes": [
+      "can't",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ can't block if you control an untapped creature."
+      },
+      {
+        "text": "~ can't block if you control a Wizard."
+      }
+    ],
+    "counterExamples": [
+      "~ can't block unless you control a Wizard.",
+      "~ can't attack if you control a Wizard.",
+      "~ can't block if defending player controls a Wizard."
+    ]
+  },
+  {
+    "id": "eff.edhv40.mayHave.obj.pumpGain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.5",
+      "CR 611.2a",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "you may have {o:Obj} get {pt:PT} and gain {a:Abilities} {d:Dur}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7c",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may have target creature get +1/+3 and gain lifelink until end of turn."
+      },
+      {
+        "text": "You may have target creature you control get +2/+2 and gain trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "You may have target creature get +2/+0 and gain deathtouch.",
+      "You may have target creature get +2/+0 and lose deathtouch until end of turn.",
+      "Target creature gets +1/+0 and gains deathtouch until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv40.unattach.all.from",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.3d",
+      "CR 301.5",
+      "CR 608.2c"
+    ],
+    "pattern": "unattach all {f:Filter} from {o:Obj}",
+    "build": {
+      "op": "attach",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "attachedToObject": "$o"
+        }
+      },
+      "to": null
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Unattach all Auras from target creature."
+      },
+      {
+        "text": "Unattach all Equipment from target land."
+      }
+    ],
+    "counterExamples": [
+      "Unattach all Equipment you control.",
+      "Unattach target Equipment from target creature.",
+      "Attach all Equipment to target creature."
+    ],
+    "consumes": [
+      "all"
+    ]
+  }
+]

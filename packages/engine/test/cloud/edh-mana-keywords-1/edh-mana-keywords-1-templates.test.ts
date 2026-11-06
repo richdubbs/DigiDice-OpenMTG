@@ -176,8 +176,8 @@ describe.skipIf(index === null)('edh-mana-keywords-1 design 6.10 (local index): 
 
 describe('edh-mana-keywords-1 parser and renderer changes (one test each)', () => {
   const face = (text: string, type = 'Artifact') => parseCard(card('Example Relic', type, text), OPTS).faces[0]!;
-  it('CR 602.5d, 605.3a: "Activate only as an instant." on a mana ability stays manual (it forbids activating while a cost is paid; the model has no field for it)', () => {
-    expect(fullyAutomated(face('{T}, Sacrifice ~: Add {C}{C}. Activate only as an instant.'))).toBe(false);
+  it('CR 602.5e, 605.3a: "Activate only as an instant." on a mana ability was manual in this round; edh-mana-keywords-2 reads it (ActivatedAbilityDef.instantSpeed): see its scenarios', () => {
+    expect(fullyAutomated(face('{T}, Sacrifice ~: Add {C}{C}. Activate only as an instant.'))).toBe(true);
   });
   it('render/kw.ts (CR 702.6c): "Equip legendary creature {1}" prints back as itself; "Equip legendary creatures you control {1}" and a nonlegendary quality do not parse to it', () => {
     expect(fullyAutomated(face('Equip legendary creature {1}', 'Artifact — Equipment'))).toBe(true);

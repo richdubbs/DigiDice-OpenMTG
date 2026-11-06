@@ -1,0 +1,276 @@
+[
+  {
+    "id": "eff.edhn7.discardHands.thenDraw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 121.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard their hands , then draw[s] {n:Qty} card[s]",
+    "build": [
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "hand"
+      },
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$n"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "all",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Any number of target opponents each discard their hands, then draw four cards."
+      },
+      {
+        "text": "Any number of target players each discard their hands, then draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "Any number of target opponents each discard their hands, then draw four cards at random.",
+      "Any number of target opponents each discard their libraries, then draw four cards.",
+      "Any number of target opponents each discard their hands, then you draw four cards."
+    ]
+  },
+  {
+    "id": "eff.edhn7.you.return.draw.gain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 101.4"
+    ],
+    "pattern": "you return {f:Filter} to your hand , draw {n:Qty} card[s] , then gain {m:Qty} life",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n"
+      },
+      {
+        "op": "gainLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": "$m"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent loses 2 life. You return a creature card from your graveyard to your hand, draw two cards, then gain 3 life."
+      },
+      {
+        "text": "Target opponent discards a card. You return a land card from your graveyard to your hand, draw a card, then gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent loses 2 life. You return a creature card from your graveyard to your hand, draw two cards, then gain 3 life for each card in your hand.",
+      "Target opponent loses 2 life. You return a creature card from your graveyard to your hand, then draw two cards.",
+      "Target opponent loses 2 life. Each player returns a creature card from their graveyard to their hand, draws two cards, then gains 3 life."
+    ]
+  },
+  {
+    "id": "eff.edhn7.player.sac.discard.thenLose",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 701.9a",
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "{p:Player} sacrifice[s] {a:Qty} {f:Filter} of their choice , discard[s] {m:Qty} card[s] , then lose[s] {n:Qty} life",
+    "build": [
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$f",
+        "count": "$a"
+      },
+      {
+        "op": "discard",
+        "who": "$p",
+        "count": "$m"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$n"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent sacrifices a creature of their choice, discards two cards, then loses 3 life."
+      },
+      {
+        "text": "Each opponent sacrifices an artifact of their choice, discards a card, then loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent sacrifices a creature of their choice, discards two cards, then loses 3 life for each card in their hand.",
+      "Target opponent sacrifices a creature, discards two cards, then loses 3 life.",
+      "Target opponent sacrifices a creature of their choice, then discards two cards, then loses 3 life."
+    ]
+  },
+  {
+    "id": "eff.edhn7.player.sac.theyControl.greatestPower",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 208.1",
+      "CR 608.2d",
+      "CR 101.4"
+    ],
+    "pattern": "{p:Player} sacrifice[s] a creature they control with the greatest power",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "count": 1,
+      "filter": {
+        "types": [
+          "Creature"
+        ],
+        "power": {
+          "op": ">=",
+          "value": {
+            "q": "stat",
+            "stat": "power",
+            "agg": "max",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": {
+                  "ref": "iterating"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "greatest"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent sacrifices a creature they control with the greatest power."
+      },
+      {
+        "text": "Target player sacrifices a creature they control with the greatest power."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent sacrifices two creatures they control with the greatest power.",
+      "Each opponent sacrifices a creature they control with the least power.",
+      "Each opponent sacrifices a creature you control with the greatest power."
+    ]
+  },
+  {
+    "id": "eff.edhn7.return.all.colorOfYourChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.4",
+      "CR 608.2c",
+      "CR 400.3"
+    ],
+    "pattern": "return all permanents of the color of your choice to their owners' hands",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "chosenColor",
+        "link": "color"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "chosen": {
+              "link": "color",
+              "quality": "color"
+            }
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "return",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Return all permanents of the color of your choice to their owners' hands."
+      },
+      {
+        "text": "Scry 1. Return all permanents of the color of your choice to their owners' hands."
+      }
+    ],
+    "counterExamples": [
+      "Return all creatures of the color of your choice to their owners' hands.",
+      "Return all permanents of the color of your choice to your hand.",
+      "Return all permanents of the color of their choice to their owners' hands."
+    ]
+  }
+]

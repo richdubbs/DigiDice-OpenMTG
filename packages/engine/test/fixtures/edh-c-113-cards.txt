@@ -1,0 +1,8 @@
+# edh-c-113 (Commander EDHREC ranks 18,501-19,000, later pass): exchange your hand and graveyard, lands you control are the chosen type, deals damage to himself equal to, becomes a legendary creature named X and loses all abilities, that <creature type> after a permanent search, dealt damage by equipped creature this turn, "it" in the guard of a counter step. After editing: npm run cards -- fixtures
+Harness Infinity
+Realmwright
+Sarkhan the Mad
+The Curse of Fenric
+Zirilan of the Claw
+Unscythe, Killer of Kings
+Hog-Monkey Rampage

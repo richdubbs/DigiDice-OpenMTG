@@ -1,0 +1,41 @@
+[
+  {
+    "id": "eff.edhv107.put.yourChoiceTopOrBottom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put {o:Obj} on your choice of the top or bottom of its owner 's library",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "endChosenBy": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "Put target creature card from a graveyard on your choice of the top or bottom of its owner's library."
+      },
+      {
+        "text": "Put target card from a graveyard on your choice of the top or bottom of its owner's library. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Put target creature card from a graveyard on the top or bottom of its owner's library.",
+      "Put target creature card from a graveyard on your choice of the top or bottom of your library.",
+      "Put target creature card from a graveyard on their choice of the top or bottom of its owner's library."
+    ]
+  }
+]

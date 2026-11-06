@@ -34,7 +34,8 @@ import type { GameState } from '../types/state';
 import { contextFor } from './replace-ctx';
 import { BODY_KINDS, DESTINATION_PARTS, ENTERS_PARTS, kindOf, PROPOSAL_KINDS, RULE_REPLACEMENTS, type BodyKind } from './registries';
 import { DESTINATION_PART_FIELDS, destinationFieldSet, ENTERS_PART_FIELDS, entersFieldSet } from './replace-bodies';
-import { aboutSelf as aboutSelfPattern, replacementIndex } from './replacement-index';
+import { aboutSelf as aboutSelfPattern, replacementIndex, type IndexedReplacement } from './replacement-index';
+import { installLeavingReplacementSnapshot } from '../core/zones';
 import { asItWouldEnter, isEntering } from './entering';
 
 export { contextFor } from './replace-ctx';
@@ -116,6 +117,13 @@ function isSet(g: Game, ref: NonNullable<ObjectFilter['is']>, source: ObjectId):
     const h = handleOf(g, source);
     return h ? [h] : [];
   }
+  // edh-c-3 (CR 303.4, 301.5, 615.1a; Temporal Isolation, "prevent all damage that would be dealt by enchanted creature"): the object the Aura or Equipment that carries the static
+  // ability is attached to (nothing while it is attached to nothing or to a player: the pattern then matches nothing)
+  if (ref.ref === 'attachedTo') {
+    const host = g.s.objects[source]?.attachedTo;
+    const h = typeof host === 'string' ? handleOf(g, host) : null;
+    return h ? [h] : [];
+  }
   return null; // any other reference needs an interpreter context: the pattern does not match (fail closed)
 }
 
@@ -162,8 +170,19 @@ export function matchProposed(g: Game, pattern: EventPattern, e: Proposed, sourc
   // Each role filter is rewritten on the CURRENT pattern (one role per entry, so the rewrites compose).
   for (const [i] of roleFilters(pattern, e).entries()) {
     const r = roleFilters(p, e)[i]!;
-    const f = r.get();
+    let f = r.get();
     if (f === undefined) continue;
+    // edh-next-4 (CR 120.2, 608.2b, 400.7; Terrifying Presence): "creatures other than target creature": a top-level `not` that is exactly `{is: <objects>}` is judged here, the event's object being
+    // none of those objects, and then dropped; the rest of the filter (types, controller) is read by the event matcher. Any other `is` below the top level still fails closed.
+    if (f.not !== undefined && f.not.is !== undefined && Object.keys(f.not).length === 1) {
+      const out = isSet(g, f.not.is, source);
+      if (out === null) return false;
+      const obj0 = r.object;
+      if (obj0 && out.some((h) => h.id === obj0.id && h.zone === obj0.zone)) return false;
+      const { not: _not, ...restF } = f;
+      f = restF;
+      p = r.set(Object.keys(restF).length > 0 ? restF : undefined);
+    }
     if (nestedIs(f)) return false;
     if (f.is === undefined) continue;
     // PUSH1 T2 (CR 115.4): a damage recipient with an object part and a player part is either (triggers/match.ts): damage to a player is judged by the
@@ -186,6 +205,22 @@ export function matchProposed(g: Game, pattern: EventPattern, e: Proposed, sourc
     const { cause: _cause, ...rest } = p;
     p = rest;
   }
+  if (p.ev === 'damage' && p.toOtherThanSourceController === true) {
+    // edhd63 (CR 120.1, 109.4; Bitter Feud): the damaged player, or the controller of the damaged permanent, is a player other than the controller of the source (as it last existed)
+    if (e.ev !== 'damage') return false;
+    const by = (g.s.objects[e.source.id] ?? g.s.lki[e.source.id]?.object)?.controller;
+    const to = typeof e.to === 'string' ? e.to : (g.s.objects[e.to.id] ?? g.s.lki[e.to.id]?.object)?.controller;
+    if (by === undefined || to === undefined || by === to) return false;
+    const { toOtherThanSourceController: _t, ...rest } = p;
+    p = rest;
+  }
+  if (p.ev === 'draw' && p.firstEachTurn === true) {
+    // edh-d-98 (CR 121.2, 614.1a; Scion of Halaster): "the first time you would draw a card each turn": the draw being proposed is the player's first proposed draw this turn
+    // (effects/propose.ts#runPipeline counted it before the replacements were looked at)
+    if (e.ev !== 'draw' || (g.s.players.find((x) => x.id === e.player)?.turnStats.drawsProposed ?? 0) !== 1) return false;
+    const { firstEachTurn: _f, ...rest } = p;
+    p = rest;
+  }
   if (p.ev === 'draw' && p.exceptFirstInDrawStep === true) {
     // r5-repl (CR 504.1, 614.1a): "except the first one you draw in each of your draw steps": not a draw in the player's own draw step before they have drawn a
     // card in it (core/steps.ts records where that step's draws begin). A first draw that was replaced drew no card, so the next one is the first (unverified)
@@ -193,10 +228,38 @@ export function matchProposed(g: Game, pattern: EventPattern, e: Proposed, sourc
     const { exceptFirstInDrawStep: _x, ...rest } = p;
     p = rest;
   }
+  if (p.ev === 'life' && p.fromDamage === true) {
+    // edh-players-3 (CR 120.3a, 614.1a): only the loss of life that damage causes (the life-loss funnel of rules/damage.ts), not infect damage, a payment or any other loss
+    if (e.ev !== 'life' || e.fromDamage !== true) return false;
+    const { fromDamage: _fd, ...rest } = p;
+    p = rest;
+  }
+  if (p.ev === 'life' && p.byController === true) {
+    // edh-d-54 (CR 614.1a, 119.3; Rain of Gore): "If a spell or ability would cause its controller to gain life": the gain comes from the instructions of a resolving
+    // spell or ability (effects/handlers/lifedamage.ts#proposeLifeChange names its controller) and is gained by that controller; lifelink (a static ability's damage
+    // result), a cost and a gain another player gets from it are not that event
+    if (e.ev !== 'life' || e.change !== 'gain' || e.effectController === undefined || e.effectController !== e.player) return false;
+    const { byController: _bc, ...rest } = p;
+    p = rest;
+  }
+  if (p.ev === 'life' && p.toAtMost !== undefined) {
+    // edh-d-86 (CR 614.1a, 119.3, 119.4, 120.3a; Enduring Angel): "If your life total would be reduced to 0 or less": a loss of life (from damage, an instruction or a new life total,
+    // CR 119.5) or a payment of life (the player loses that much life, CR 119.4) that would leave the player's life total at or below the number, judged as the event would happen
+    if (p.change !== 'loss' || !((e.ev === 'life' && e.change === 'loss') || e.ev === 'payLife')) return false;
+    if (g.player(e.player).life - e.amount > p.toAtMost) return false;
+    const { toAtMost: _ta, ...rest } = p;
+    p = e.ev === 'payLife' ? ({ ev: 'action', verb: 'payLife', ...(rest.player !== undefined ? { actor: rest.player } : {}) } as EventPattern) : rest;
+  }
   if (p.ev === 'zoneChange' && p.byOpponent === true) {
     // FAST5 T36 (CR 701.9a): the discard is the effect of a spell or ability an opponent of the discarding player (the card's owner) controls
     if (e.ev !== 'zoneChange' || e.destination.causedBy === undefined || e.destination.causedBy === g.s.objects[e.object.id]?.owner) return false;
     const { byOpponent: _by, ...rest } = p;
+    p = rest;
+  }
+  if (p.ev === 'zoneChange' && p.byEffect === true) {
+    // edh-zones-20 (CR 701.9a): the discard is the effect of a spell or ability of any player (`causedBy`, effects/handlers/cards-draw.ts); a cost, the cleanup step or a rule has none
+    if (e.ev !== 'zoneChange' || e.destination.causedBy === undefined) return false;
+    const { byEffect: _by, ...rest } = p;
     p = rest;
   }
   // M6-1: a replacement of counters put on or removed from an OBJECT is about permanents ("on a creature you control", "on a permanent", CR 122.6): the
@@ -248,6 +311,9 @@ const holds = (cx: ExecCtx, c: Condition | undefined): boolean => c === undefine
 const holdsFor = (cx: ExecCtx, c: Condition | undefined, e: Proposed): boolean => {
   if (c === undefined) return true;
   const amount = eventAmount(e);
+  // edh-replace-3 (CR 614.1a, 601.2a; Containment Priest): a condition about the object that would move ("and it wasn't cast", `wasCast` of the event's `subject`) reads the
+  // object the move is about, a spell on the stack as it enters
+  if (e.ev === 'zoneChange') return evalCond({ ...cx, event: { ev: 'zoneChange', roles: { subject: { objects: [{ id: e.object.id, zone: e.object.zone }] } }, before: {}, ...(amount !== undefined ? { amount } : {}) } }, c);
   return evalCond(amount === undefined ? cx : { ...cx, event: { ev: 'action', roles: {}, before: {}, amount } }, c);
 };
 
@@ -262,6 +328,7 @@ export function klassOf(def: ReplacementDef): 0 | 1 | 2 | 3 | 4 {
   if (def.selfReplacement === true) return 0; // CR 614.15, 616.1a
   const b = def.body;
   const toBattlefield = b.b === 'modify' && b.destination?.zone === 'battlefield' ? b.destination : undefined;
+  if (b.b === 'modify' && def.replaces.ev === 'createToken' && b.to !== undefined && b.destination === undefined && b.amount === undefined && b.count === undefined) return 1; // edh-next-61: a token created under another player's control (Crafty Cutpurse ruling; CR 616.1b)
   if ((b.b === 'enters' && b.under !== undefined) || (toBattlefield !== undefined && toBattlefield.controller !== 'owner')) return 1; // CR 616.1b: who controls it as it enters
   if (b.b === 'enters' && b.copy !== undefined) return 2; // CR 616.1c
   if ((b.b === 'enters' && b.transformed === true) || toBattlefield?.transformed === true) return 3; // CR 616.1d
@@ -358,6 +425,11 @@ function selfSources(g: Game, e: Proposed): { o: GameObject; controller: PlayerI
   return involved(g, e).map(({ o, face, controller }) => ({ o, controller, statics: staticsOf(g, o, face, e.ev === 'zoneChange' && e.to === 'battlefield' ? controller : undefined, e) }));
 }
 
+/** The ability's condition for one indexed effect: true for an `effects` entry, false for an `otherwise` entry (edh-c-108, CR 611.3a). */
+function holdsAbility(cx: ExecCtx, x: IndexedReplacement): boolean {
+  return x.otherwise === true ? !holds(cx, x.ability.condition) : holds(cx, x.ability.condition);
+}
+
 function selfCandidates(g: Game, e: Proposed): Candidate[] {
   const out: Candidate[] = [];
   for (const { o, controller, statics } of selfSources(g, e)) {
@@ -411,7 +483,7 @@ function recordCandidates(g: Game, e: Proposed, at: MatchGame): Candidate[] {
     if (!matchProposed(at(), def.replaces, e, source, rec.controller)) continue;
     if (def.condition !== undefined) {
       const src = rec.source ? g.s.objects[rec.source.id] ?? g.s.lki[rec.source.id]?.object : undefined;
-      if (!src || !evalCond(contextFor(g, src, rec.controller), def.condition)) continue;
+      if (!src || !holdsFor(contextFor(g, src, rec.controller), def.condition, e)) continue; // edh-replace-3: the condition may read the object that would move (holdsFor)
     }
     const shield = def.shield !== undefined;
     out.push({
@@ -422,6 +494,13 @@ function recordCandidates(g: Game, e: Proposed, at: MatchGame): Candidate[] {
   return out;
 }
 
+installLeavingReplacementSnapshot((g, ids) => {
+  const want = new Set<string>(ids);
+  const out: IndexedReplacement[] = [];
+  for (const list of replacementIndex(g.s).values()) for (const x of list) if (want.has(x.object) && g.s.objects[x.object]?.zone === x.zone) out.push(x);
+  return out;
+});
+
 /**
  * M6-1 (m6 design 3.1.1, E1, D2): the replacement effects of the static abilities of OTHER objects that apply: from the index (effects/replacement-index.ts,
  * bucketed by the pattern's event kind, only where the ability functions, CR 113.6, 604.1), whose body the pipeline applies to this event, whose pattern
@@ -429,19 +508,31 @@ function recordCandidates(g: Game, e: Proposed, at: MatchGame): Candidate[] {
  * "You" is the source's controller after layer 2 (CR 109.5, 613.1b).
  */
 function foreignCandidates(g: Game, e: Proposed, at: MatchGame): Candidate[] {
-  const entries = replacementIndex(g.s).get(semOf(g, e).ev);
-  if (!entries || entries.length === 0) return [];
+  const ev = semOf(g, e).ev;
+  const entries = replacementIndex(g.s).get(ev) ?? [];
+  // edh-zones-7 (CR 614.1a, 616.1; Dauthi Voidwalker, Rest in Peace): the foreign replacements of permanents that left in the same event as the object this event is about
+  // (a wipe, a state-based check, a sacrifice batch) still apply to it: they are looked up as they were just before the first of them moved (no rule says it outright; the Dauthi Voidwalker and Kalitas, Traitor of Ghet rulings do; CR 614.12 is the nearest: judge the objects as they were)
+  const subject = (e as { object?: { id?: string } }).object?.id;
+  const together = subject !== undefined && g.leaving?.has(subject) === true
+    ? ((g.leavingReplacements ?? []) as IndexedReplacement[]).filter((x) => x.effect.replaces.ev === ev && g.s.objects[x.object]?.zone !== x.zone)
+    : [];
+  if (entries.length === 0 && together.length === 0) return [];
   const out: Candidate[] = [];
-  for (const x of entries) {
-    const o = g.s.objects[x.object];
-    if (!o || o.zone !== x.zone) continue;
+  for (const x of [...entries, ...together]) {
+    const departed = together.includes(x);
+    const o = departed ? g.s.lki[x.object]?.object : g.s.objects[x.object];
+    if (!o || (!departed && o.zone !== x.zone)) continue;
     if (x.effect.body.b === 'enters' && ENTERING_TOGETHER.get(g)?.has(o.id) === true) continue; // CR 614.12: entering at the same time
     if (!bodyFits(e, x.effect.body, g)) continue;
     const controller = controllerOf(g.s, o);
     if (!matchProposed(at(), x.effect.replaces, e, o.id, controller)) continue;
     const cx = contextFor(g, o, controller);
-    if (!holds(cx, x.ability.condition) || !holdsFor(cx, x.effect.condition, e)) continue;
-    out.push({ id: `foreign:${o.id}:${x.key}:${x.index}`, def: x.effect, source: { id: o.id, zone: o.zone }, klass: klassOf(x.effect), sourceName: g.nameOf(o.id), controller });
+    if (departed) {
+      let ok = false;
+      try { ok = holdsAbility(cx, x) && holdsFor(cx, x.effect.condition, e); } catch { ok = false; } // (a departed source that the conditions cannot be read for applies nothing)
+      if (!ok) continue;
+    } else if (!holdsAbility(cx, x) || !holdsFor(cx, x.effect.condition, e)) continue;
+    out.push({ id: `foreign:${o.id}:${x.key}:${x.index}`, def: x.effect, source: { id: o.id, zone: o.zone }, klass: klassOf(x.effect), sourceName: departed ? (g.s.defs[o.defId]?.name ?? o.defId) : g.nameOf(o.id), controller });
   }
   return out;
 }

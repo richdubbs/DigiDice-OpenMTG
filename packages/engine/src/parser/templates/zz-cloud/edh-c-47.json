@@ -1,0 +1,435 @@
+[
+  {
+    "id": "eff.edhv47.you.incubate",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.53a",
+      "CR 109.5"
+    ],
+    "pattern": "you incubate {n:Qty}",
+    "build": {
+      "op": "action",
+      "action": "incubate",
+      "who": {
+        "ref": "you"
+      },
+      "n": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature enters, you incubate 2."
+      },
+      {
+        "text": "Whenever this creature attacks, you incubate 3."
+      }
+    ],
+    "counterExamples": [
+      "When this creature enters, target player incubates 2.",
+      "When this creature enters, you incubate 2 times.",
+      "When this creature enters, you incubate."
+    ]
+  },
+  {
+    "id": "cm.edhv47.ability.less.domain",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 602.2b",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 205.3i",
+      "CR 604.1"
+    ],
+    "pattern": "this ability costs {m:ManaCost} less to activate for each basic land type among lands you control",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "math",
+                  "op": "+",
+                  "args": [
+                    {
+                      "q": "math",
+                      "op": "min",
+                      "args": [
+                        1,
+                        {
+                          "q": "count",
+                          "of": {
+                            "ref": "each",
+                            "filter": {
+                              "types": [
+                                "Land"
+                              ],
+                              "subtypes": [
+                                "Plains"
+                              ],
+                              "controller": "you"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "q": "math",
+                      "op": "min",
+                      "args": [
+                        1,
+                        {
+                          "q": "count",
+                          "of": {
+                            "ref": "each",
+                            "filter": {
+                              "types": [
+                                "Land"
+                              ],
+                              "subtypes": [
+                                "Island"
+                              ],
+                              "controller": "you"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "q": "math",
+                      "op": "min",
+                      "args": [
+                        1,
+                        {
+                          "q": "count",
+                          "of": {
+                            "ref": "each",
+                            "filter": {
+                              "types": [
+                                "Land"
+                              ],
+                              "subtypes": [
+                                "Swamp"
+                              ],
+                              "controller": "you"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "q": "math",
+                      "op": "min",
+                      "args": [
+                        1,
+                        {
+                          "q": "count",
+                          "of": {
+                            "ref": "each",
+                            "filter": {
+                              "types": [
+                                "Land"
+                              ],
+                              "subtypes": [
+                                "Mountain"
+                              ],
+                              "controller": "you"
+                            }
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "q": "math",
+                      "op": "min",
+                      "args": [
+                        1,
+                        {
+                          "q": "count",
+                          "of": {
+                            "ref": "each",
+                            "filter": {
+                              "types": [
+                                "Land"
+                              ],
+                              "subtypes": [
+                                "Forest"
+                              ],
+                              "controller": "you"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{5}, {T}: Draw a card. This ability costs {1} less to activate for each basic land type among lands you control."
+      },
+      {
+        "text": "{4}, {T}: Draw a card. This ability costs {2} less to activate for each basic land type among lands you control."
+      }
+    ],
+    "counterExamples": [
+      "{5}, {T}: Draw a card. This ability costs {1} more to activate for each basic land type among lands you control.",
+      "{5}, {T}: Draw a card. This ability costs {1} less to activate for each basic land type among lands your opponents control.",
+      "{5}, {T}: Draw a card. This ability costs {1}{U} less to activate for each basic land type among lands you control."
+    ]
+  },
+  {
+    "id": "eff.edhv47.investigate.twiceForEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.16a",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 109.5"
+    ],
+    "pattern": "investigate twice for each {f:Filter}",
+    "build": {
+      "op": "action",
+      "action": "investigate",
+      "who": {
+        "ref": "you"
+      },
+      "n": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          2,
+          {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": "$f"
+            }
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "twice",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Discard any number of cards, then investigate twice for each card discarded this way."
+      },
+      {
+        "text": "Sacrifice any number of artifacts, then investigate twice for each artifact sacrificed this way."
+      }
+    ],
+    "counterExamples": [
+      "Discard any number of cards, then investigate three times for each card discarded this way.",
+      "Discard any number of cards, then investigate twice.",
+      "Discard any number of cards, then investigate once for each card discarded this way."
+    ]
+  },
+  {
+    "id": "rep.edhv47.enters.counter.forEachDifferentManaCost",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 202.1",
+      "CR 608.2h"
+    ],
+    "pattern": "~ enters with ( a | an ) {k:CounterKind} counter on it for each different mana cost among {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "distinct",
+                  "what": "manaCosts",
+                  "among": {
+                    "ref": "each",
+                    "filter": "$f"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "different"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a +1/+1 counter on it for each different mana cost among nonland cards in your graveyard."
+      },
+      {
+        "text": "~ enters with a +1/+1 counter on it for each different mana cost among artifact cards in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a +1/+1 counter on it for each different mana value among nonland cards in your graveyard.",
+      "~ enters with a +1/+1 counter on it for each mana cost among nonland cards in your graveyard.",
+      "~ enters with a +1/+1 counter on target creature for each different mana cost among nonland cards in your graveyard."
+    ]
+  },
+  {
+    "id": "sta.edhv47.assignAsUnblocked.character",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 510.1b",
+      "CR 510.1c",
+      "CR 609.4",
+      "CR 604.1",
+      "CR 609.4"
+    ],
+    "pattern": "you may have ~ assign ( his | her | ~'s ) combat damage as though ( he | she | ~ ) weren't blocked",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "assignAsUnblocked"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ assign his combat damage as though he weren't blocked."
+      },
+      {
+        "text": "You may have ~ assign her combat damage as though she weren't blocked."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ assign his combat damage as though he weren't blocked this turn.",
+      "You may have ~ assign his combat damage as though he had trample.",
+      "You may have target creature assign his combat damage as though he weren't blocked."
+    ]
+  },
+  {
+    "id": "eff.edhv47.permit.free.oncePerYourTurn.fromHand.orSubtype",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 118.9",
+      "CR 500.1"
+    ],
+    "pattern": "once during each of your turns , you may cast a noncreature or {f:Filter} from your hand without paying its mana cost",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "anyOf": [
+              {
+                "notTypes": [
+                  "Creature"
+                ],
+                "stackKind": "spell",
+                "zone": "stack"
+              },
+              "$f"
+            ],
+            "castFrom": "hand"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "each",
+      "may",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast a noncreature or Goblin spell from your hand without paying its mana cost."
+      },
+      {
+        "text": "Once during each of your turns, you may cast a noncreature or Zombie spell from your hand without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast a noncreature or Goblin spell from your graveyard without paying its mana cost.",
+      "Once during each turn, you may cast a noncreature or Goblin spell from your hand without paying its mana cost.",
+      "Once during each of your turns, you may cast a noncreature spell from your hand without paying its mana cost."
+    ]
+  }
+]

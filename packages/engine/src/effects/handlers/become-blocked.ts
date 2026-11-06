@@ -5,17 +5,19 @@
  */
 import type { EffectStep } from '../../types/ability';
 import type { StepHandler } from '../api';
-import { performMakeBlocked } from '../perform-direct';
+import { performMakeBlockedIds } from '../perform-direct';
 import { did, namesOf, permanentsOf } from './zones-util';
 
 type Step = Extract<EffectStep, { op: 'becomeBlocked' }>;
 
 const becomeBlocked: StepHandler<Step> = (cx, st) => {
   const g = cx.g;
-  const done = permanentsOf(cx, st.what).filter((h) => performMakeBlocked(g, h.id));
+  // edhv31 (CR 702.22i): a band blocks as a group, so every member that changed is named, not only the ones the effect named
+  const ids = [...new Set(permanentsOf(cx, st.what).flatMap((h) => performMakeBlockedIds(g, h.id)))];
+  const done = ids.map((id) => ({ id })) as ReturnType<typeof permanentsOf>;
   if (done.length > 0) {
     g.log(`${namesOf(g, done)} ${done.length === 1 ? 'becomes' : 'become'} blocked.`, { rules: ['CR 509.1h'], level: 'action' });
-    g.emit({ type: 'becameBlocked', attackers: done.map((h) => h.id) });
+    g.emit({ type: 'becameBlocked', attackers: ids });
   }
   return did(done.length);
 };

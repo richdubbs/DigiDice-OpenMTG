@@ -1,0 +1,276 @@
+[
+  {
+    "id": "eff.edht15.unattach.fromYours",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.3d",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "unattach ( a | an ) equipment from ( a | an ) creature you control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "subtypes": [
+              "Equipment"
+            ],
+            "attachedToObject": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "you"
+              }
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "unattachChoice"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "bound",
+          "name": "unattachChoice"
+        },
+        "to": null,
+        "hostAs": "unattachHost"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "a",
+      "an"
+    ],
+    "examples": [
+      {
+        "text": "{1}: You may unattach an Equipment from a creature you control. If you do, draw a card."
+      },
+      {
+        "text": "{2}{G}: You may unattach an Equipment from a creature you control. If you do, that creature gains vigilance until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}: You may unattach an Equipment from target creature you control.",
+      "{1}: You may unattach an Equipment from a creature an opponent controls.",
+      "{1}: You may unattach all Equipment from a creature you control."
+    ]
+  },
+  {
+    "id": "eff.edht15.tap.andItGains",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 701.26a",
+      "CR 611.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "tap {o:Obj} and it gains {a:Abilities} {d:Dur}",
+    "build": [
+      {
+        "op": "tap",
+        "what": "$o"
+      },
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 6,
+                "add": "$a"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Tap target creature you control and it gains vigilance until end of turn."
+      },
+      {
+        "text": "When ~ enters, tap target creature an opponent controls and it gains defender until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Tap target creature you control and it gains vigilance.",
+      "Untap target creature you control and it gains vigilance until end of turn.",
+      "Tap target creature you control and target creature gains vigilance until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edht15.search.andCast.mv",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 608.2g"
+    ],
+    "pattern": "search your library for ( a | an ) {f:Filter} card with mana value {n:Qty} or less and cast that card without paying its mana cost",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "manaValue": {
+            "op": "<=",
+            "value": "$n"
+          }
+        },
+        "max": 1,
+        "as": "searchCast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "searchCast"
+        },
+        "free": true,
+        "optional": false
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "{1}{G}, {T}: Search your library for a green sorcery card with mana value 3 or less and cast that card without paying its mana cost. Then shuffle."
+      },
+      {
+        "text": "{T}: Search your library for a blue instant card with mana value 2 or less and cast that card without paying its mana cost. Then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Search your library for a blue instant card with mana value 2 or less and you may cast that card without paying its mana cost. Then shuffle.",
+      "{T}: Search your library for a blue instant card with mana value 2 or less and put that card onto the battlefield. Then shuffle.",
+      "{T}: Search your library for a blue instant card with mana value 2 or more and cast that card without paying its mana cost."
+    ]
+  },
+  {
+    "id": "rid.edht15.instead.tokensTappedAttacking",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 111.1",
+      "CR 508.4"
+    ],
+    "pattern": "if {c:Cond} , instead create two of those tokens that are tapped and attacking",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "@require": {
+          "tapped": true,
+          "count": 2
+        },
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "@previousWith": {
+              "attacking": true
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "createToken",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control attacks, create two tapped 1/1 white Spirit creature tokens with flying. If that creature is legendary, instead create two of those tokens that are tapped and attacking."
+      },
+      {
+        "text": "When ~ enters, create two tapped 2/2 black Zombie creature tokens. If you control a Vampire, instead create two of those tokens that are tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control attacks, create two tapped 1/1 white Spirit creature tokens with flying. If that creature is legendary, create two of those tokens that are tapped and attacking.",
+      "Whenever a creature you control attacks, create two tapped 1/1 white Spirit creature tokens with flying. If that creature is legendary, instead create three of those tokens that are tapped and attacking.",
+      "Whenever a creature you control attacks, create two 1/1 white Spirit creature tokens with flying. If that creature is legendary, instead create two of those tokens that are tapped and attacking."
+    ]
+  },
+  {
+    "id": "trg.edht15.dealtExcessNoncombat.one",
+    "kind": "trigger",
+    "cr": [
+      "CR 120.10",
+      "CR 120.4a",
+      "CR 120.2b",
+      "CR 603.2"
+    ],
+    "pattern": "whenever ( a | an ) {f:Filter} is dealt excess noncombat damage",
+    "build": {
+      "on": [
+        {
+          "ev": "damage",
+          "recipient": {
+            "object": "$f"
+          },
+          "combat": false,
+          "excess": true
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "needs": [
+      "feature:ev.damage.excess"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature an opponent controls is dealt excess noncombat damage, you gain 1 life."
+      },
+      {
+        "text": "Whenever a creature or planeswalker an opponent controls is dealt excess noncombat damage, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature an opponent controls is dealt excess combat damage, you gain 1 life.",
+      "Whenever a creature an opponent controls is dealt noncombat damage, you gain 1 life.",
+      "Whenever one or more creatures an opponent controls are dealt excess noncombat damage, you gain 1 life."
+    ],
+    "since": 8,
+    "status": "stable"
+  }
+]

@@ -1,0 +1,216 @@
+[
+  {
+    "id": "eff.edhv37.reveal.obj.may",
+    "kind": "effect",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may reveal {o:Obj}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "reveal",
+          "who": {
+            "ref": "you"
+          },
+          "what": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may look at the top card of your library. If it shares a creature type with this creature, you may reveal it. If you do, you gain 5 life."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may look at the top card of your library. If it shares a creature type with this creature, you may reveal it. If you do, each opponent loses 3 life."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card, then you may reveal it.",
+      "At the beginning of your upkeep, you may look at the top card of your library. If it shares a creature type with this creature, you may reveal a card. If you do, you gain 5 life.",
+      "At the beginning of your upkeep, you may look at the top card of your library. If it shares a creature type with this creature, reveal it. If you do, you gain 5 life.",
+      "At the beginning of your upkeep, you may look at the top card of your library. If it shares a color with this creature, you may reveal it. If you do, you gain 5 life."
+    ],
+    "status": "stable",
+    "since": 9,
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv37.may.exile.nTypedFromGraveyard",
+    "weak": 1,
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 406.2",
+      "CR 608.2d"
+    ],
+    "pattern": "you may exile {n:Qty} {f:Filter} card[s] from your graveyard",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "exileFrom",
+            "zone": "graveyard",
+            "filter": "$f",
+            "count": "$n"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, you may exile three Goblin cards from your graveyard. If you do, draw two cards."
+      },
+      {
+        "text": "When this creature enters, you may exile three artifact cards from your graveyard. If you do, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "You may exile two creature cards from a graveyard.",
+      "You may exile two creature cards from your hand.",
+      "Exile two creature cards from your graveyard.",
+      "When this creature enters, you may exile two creature cards from your graveyard."
+    ]
+  },
+  {
+    "id": "sta.edhv37.allSubtype.arePlains",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 305.7",
+      "CR 613.1d"
+    ],
+    "pattern": "all {a:PluralSubtype} are plains",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Land"
+              ],
+              "subtypes": "$a"
+            }
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": [
+                  "Plains"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "All Forests are Plains."
+      },
+      {
+        "text": "All Islands are Plains."
+      }
+    ],
+    "counterExamples": [
+      "All Forests are Plains in addition to their other land types.",
+      "All lands are Plains.",
+      "All Forests are Swamps.",
+      "Nonbasic lands are Plains.",
+      "All Forests are Plains you control."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "eff.edhv37.pump.attacksThisTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 611.2a",
+      "CR 613.4c"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} {d:Dur} and attacks this turn if able",
+    "build": [
+      {
+        "op": "effect",
+        "duration": "$d",
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": "7c",
+                "power": "$pt.p",
+                "toughness": "$pt.t"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "endOfTurn"
+        },
+        "effects": [
+          {
+            "s": "restrict",
+            "subject": "$o",
+            "mode": "mustIfAble",
+            "action": "attack"
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "consumes": [
+      "if able",
+      "if",
+      "until",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Target creature you don't control gets -3/-0 until end of turn and attacks this turn if able."
+      },
+      {
+        "text": "Target creature an opponent controls gets +1/-1 until end of turn and attacks this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "Target creature you don't control gets -2/-0 until end of turn and attacks this combat if able.",
+      "Target creature you don't control gets -2/-0 until end of turn and attacks each combat if able.",
+      "Target creature you don't control gets -2/-0 until end of turn and blocks this turn if able.",
+      "Target creature you don't control gets -2/-0 and attacks this turn if able."
+    ]
+  }
+]

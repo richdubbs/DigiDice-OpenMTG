@@ -1,0 +1,33 @@
+[
+{"card":"Planar Nexus","expect":"full","verified":"edh-misc-4 review (6.9 narrow wording: one card prints it; held-out/tuning half opened by the owner's commander request 2026-10-27), by hand against the Oracle text, the Scryfall rulings and the Comprehensive Rules of 2026-09-25: a static ability adding the twelve nonbasic land types of CR 205.3i (the reminder text lists ten, the ruling says the rules list rules) in layer 4 to itself (CR 613.1d); the two mana abilities were read too (sta.edhx4.self.everyNonbasicLandType) It is a characteristic-defining ability (CR 604.3): the types apply in every zone.","faces":[
+{"abilities":[
+{"effects":[
+{"affects":{"ref":"self"},"cda":true,"mods":[
+{"layer":4,"subtypes":{"add":["Cave","Desert","Gate","Lair","Locus","Mine","Planet","Power-Plant","Sphere","Tower","Town","Urza's"]}}
+],"s":"continuous"}
+],"kind":"static"},{"cost":{"tap":true},"effect":{"steps":[
+{"op":"addMana","units":[["C"]],"who":{"ref":"you"}}
+],"targets":[]},"isMana":true,"kind":"activated"},{"cost":{"mana":[
+{"amount":1,"kind":"generic"}
+],"tap":true},"effect":{"steps":[
+{"op":"addMana","units":[["W","U","B","R","G"]],"who":{"ref":"you"}}
+],"targets":[]},"isMana":true,"kind":"activated"}
+]}
+]},
+{"card":"Doubling Cube","expect":"full","verified":"edh-misc-4 review (6.9 narrow wording: one card prints it; opened by the owner's commander request 2026-10-27), by hand against the Oracle text, the Scryfall rulings and the Comprehensive Rules of 2026-09-25: {3},{T}: a mana ability (CR 605.1a) adding as much of each of the six types of mana as the controller has unspent of it (CR 106.4, 106.1); the copies carry no restriction (ruling) (eff.edhx4.double.unspentMana)","faces":[
+{"abilities":[
+{"cost":{"mana":[
+{"amount":3,"kind":"generic"}
+],"tap":true},"effect":{"steps":[
+{"dynamic":{"count":{"q":"unspentMana","type":"W"},"kind":"ofType","type":"W"},"op":"addMana","who":{"ref":"you"}},{"dynamic":{"count":{"q":"unspentMana","type":"U"},"kind":"ofType","type":"U"},"op":"addMana","who":{"ref":"you"}},{"dynamic":{"count":{"q":"unspentMana","type":"B"},"kind":"ofType","type":"B"},"op":"addMana","who":{"ref":"you"}},{"dynamic":{"count":{"q":"unspentMana","type":"R"},"kind":"ofType","type":"R"},"op":"addMana","who":{"ref":"you"}},{"dynamic":{"count":{"q":"unspentMana","type":"G"},"kind":"ofType","type":"G"},"op":"addMana","who":{"ref":"you"}},{"dynamic":{"count":{"q":"unspentMana","type":"C"},"kind":"ofType","type":"C"},"op":"addMana","who":{"ref":"you"}}
+],"targets":[]},"isMana":true,"kind":"activated"}
+]}
+]},
+{"card":"Ripples of Potential","expect":"full","verified":"edh-misc-4 review (6.9 narrow wording: one card prints it; opened by the owner's commander request 2026-10-27), by hand against the Oracle text, the Scryfall rulings and the Comprehensive Rules of 2026-09-25: proliferate (CR 701.34a) binding the permanents that got a counter, then any number of those you control (none allowed), then those phase out (CR 702.26) (eff.edhx4.proliferate.thenChoose.permanents)","faces":[
+{"abilities":[
+{"effect":{"steps":[
+{"action":"proliferate","as":"b0","op":"action","who":{"ref":"you"}},{"as":"b1","from":{"filter":{"controller":"you","is":{"name":"b0","ref":"bound"}},"ref":"each"},"max":"any","min":0,"op":"chooseObjects","who":{"ref":"you"}},{"op":"phaseOut","what":{"name":"b1","ref":"bound"}}
+],"targets":[]},"kind":"spell"}
+]}
+]}
+]

@@ -1,0 +1,407 @@
+[
+  {
+    "id": "eff.edhv75.eachOfThem.get",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2c"
+    ],
+    "pattern": "each of {o:Them} gets {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Untap two target creatures. Each of them gets +2/+2 until end of turn."
+      },
+      {
+        "text": "Tap up to two target creatures. Each of them gets -2/-0 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Untap two target creatures. Each of them gets +2/+2.",
+      "Untap two target creatures. Each of them gets +2/+2 for each Elf you control until end of turn.",
+      "Each of them gets +2/+2 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv75.becomesColor.andAttacks",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 611.2a",
+      "CR 613.1e",
+      "CR 105.3"
+    ],
+    "pattern": "{o:Obj} becomes {c:Color} until end of turn and attacks this turn if able",
+    "build": [
+      {
+        "op": "effect",
+        "duration": {
+          "d": "endOfTurn"
+        },
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 5,
+                "colors": {
+                  "set": [
+                    "$c"
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "endOfTurn"
+        },
+        "effects": [
+          {
+            "s": "restrict",
+            "subject": "$o",
+            "mode": "mustIfAble",
+            "action": "attack"
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "consumes": [
+      "if",
+      "if able",
+      "this turn",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Target creature becomes green until end of turn and attacks this turn if able."
+      },
+      {
+        "text": "Target creature an opponent controls becomes blue until end of turn and attacks this turn if able."
+      }
+    ],
+    "counterExamples": [
+      "Target creature becomes red and attacks this turn if able.",
+      "Target creature becomes red until end of turn and attacks this turn.",
+      "Target creature becomes red until end of turn and blocks this turn if able."
+    ]
+  },
+  {
+    "id": "sta.edhv75.prevent.allDamageBy.group",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 615.1a",
+      "CR 604.1",
+      "CR 614.1a"
+    ],
+    "pattern": "prevent all damage that would be dealt by {g:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$g"
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt by instant spells."
+      },
+      {
+        "text": "Prevent all damage that would be dealt by red creatures."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage that would be dealt by red creatures.",
+      "Prevent all damage that would be dealt to red creatures.",
+      "Prevent the next 3 damage that would be dealt by red creatures."
+    ]
+  },
+  {
+    "id": "eff.edhv75.payelse.costOrLife",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 118.12",
+      "CR 118.12a",
+      "CR 119.4",
+      "CR 608.2c"
+    ],
+    "pattern": "{e:Effects} unless {p:Player} pay[s] {c:Cost} or {n:Qty} life",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": "$c",
+      "else": [
+        {
+          "op": "pay",
+          "who": "$p",
+          "cost": {
+            "other": [
+              {
+                "kind": "payLife",
+                "amount": "$n"
+              }
+            ]
+          },
+          "else": "$e"
+        }
+      ]
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, sacrifice ~ unless you pay {1} or 1 life."
+      },
+      {
+        "text": "At the beginning of your upkeep, ~ deals 2 damage to you unless you pay {2} or 2 life."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, sacrifice ~ unless you pay {1} and 1 life.",
+      "At the beginning of your upkeep, sacrifice ~ if you pay {1} or 1 life.",
+      "At the beginning of your upkeep, sacrifice ~ unless you pay {1} or lose 1 life."
+    ]
+  },
+  {
+    "id": "eff.edhv75.has.whileSourceTapped",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 613.1f",
+      "CR 702.18a"
+    ],
+    "pattern": "{o:Obj} has {a:Abilities} for as long as ~ remains tapped",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "whileSource",
+        "as": "tapped"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "for as long as"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Target creature you control has shroud for as long as ~ remains tapped."
+      },
+      {
+        "text": "{T}: Target creature you control has hexproof and flying for as long as ~ remains tapped."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target creature you control has shroud.",
+      "{T}: Target creature you control has shroud for as long as ~ remains untapped.",
+      "{T}: Target creature you control has shroud until end of turn."
+    ]
+  },
+  {
+    "id": "rep.edhv75.enters.chooseOpponent.countersPerTheirCreature",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 122.1"
+    ],
+    "pattern": "as ~ enters , choose an opponent . ~ enters with ( a | an ) {k:CounterKind} counter on it for each creature that player controls",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "opponent",
+                "link": "opponent"
+              }
+            ],
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": {
+                      "types": [
+                        "Creature"
+                      ],
+                      "controller": {
+                        "ref": "linked",
+                        "link": "opponent"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, choose an opponent. ~ enters with a +1/+1 counter on it for each creature that player controls."
+      },
+      {
+        "text": "As this creature enters, choose an opponent. This creature enters with a charge counter on it for each creature that player controls."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose an opponent. ~ enters with a -1/-1 counter on it for each creature you control.",
+      "As ~ enters, choose a player. ~ enters with a -1/-1 counter on it for each creature that player controls.",
+      "As ~ enters, choose an opponent. ~ enters with two -1/-1 counters on it for each creature that player controls."
+    ]
+  },
+  {
+    "id": "eff.edhv75.whenDealtDamageThisWay.dies.thisTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 603.10a",
+      "CR 700.4",
+      "CR 120.3"
+    ],
+    "pattern": "when a creature dealt damage this way dies this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "types": [
+              "Creature"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "set",
+                "number": "plural",
+                "participle": "dealt damage this way",
+                "text": "dealt damage this way"
+              }
+            }
+          },
+          "from": "battlefield",
+          "to": "graveyard"
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "this turn",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "~ deals 3 damage to target creature. When a creature dealt damage this way dies this turn, draw a card."
+      },
+      {
+        "text": "~ deals 2 damage to target creature. When a creature dealt damage this way dies this turn, create a 1/1 black Skeleton creature token."
+      }
+    ],
+    "counterExamples": [
+      "~ deals 3 damage to target creature. When a creature dealt damage this way dies, draw a card.",
+      "~ deals 3 damage to target creature. When a creature dealt damage this turn dies this turn, draw a card.",
+      "When a creature dealt damage this way dies this turn, draw a card."
+    ]
+  }
+]

@@ -1,0 +1,614 @@
+[
+  {
+    "id": "trg.edhn132.opponentEffectDiscardsSelf",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 603.2",
+      "CR 109.5",
+      "CR 113.6k"
+    ],
+    "pattern": "when a spell or ability an opponent controls causes you to discard ~",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "discard",
+          "actor": "you",
+          "object": {
+            "self": true
+          },
+          "by": "opponent"
+        }
+      ]
+    },
+    "needs": [
+      "feature:ev.action.discard.by"
+    ],
+    "consumes": [
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "When a spell or ability an opponent controls causes you to discard this card, draw two cards."
+      },
+      {
+        "text": "When a spell or ability an opponent controls causes you to discard this card, you gain 4 life."
+      }
+    ],
+    "counterExamples": [
+      "When a spell or ability you control causes you to discard this card, draw two cards.",
+      "When you discard this card, draw two cards.",
+      "When a spell an opponent controls causes you to discard this card, draw two cards."
+    ]
+  },
+  {
+    "id": "eff.edhn132.copyToken.oneOfThosePermanents",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 111.1",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 115.9b"
+    ],
+    "pattern": "create a token that's a copy of one of those permanents",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "object",
+                "number": "plural",
+                "text": "those permanents"
+              }
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "copied"
+      },
+      {
+        "op": "copy",
+        "what": {
+          "ref": "bound",
+          "name": "copied"
+        },
+        "result": "token",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever you cast an instant or sorcery spell, if it targets one or more other permanents you control, create a token that's a copy of one of those permanents."
+      },
+      {
+        "text": "Whenever you cast a sorcery spell, if it targets one or more artifacts you control, create a token that's a copy of one of those permanents."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast an instant or sorcery spell, if it targets one or more other permanents you control, create a token that's a copy of each of those permanents.",
+      "Whenever you cast an instant or sorcery spell, if it targets one or more other permanents you control, create two tokens that are copies of one of those permanents."
+    ]
+  },
+  {
+    "id": "eff.edhn132.ifX.forEach.copyIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 107.3",
+      "CR 608.2c",
+      "CR 707.2",
+      "CR 111.1"
+    ],
+    "pattern": "if x is {n:Qty} or more , for each {f:Filter} , create a token that's a copy of it",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "X"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": [
+        {
+          "op": "forEach",
+          "over": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "as": "each",
+          "do": [
+            {
+              "op": "copy",
+              "what": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "result": "token",
+              "who": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{X}, {T}: Destroy up to X target artifacts. If X is 3 or more, for each artifact destroyed this way, create a token that's a copy of it."
+      },
+      {
+        "text": "{X}, {T}: Destroy up to X target creatures. If X is 4 or more, for each creature destroyed this way, create a token that's a copy of it."
+      }
+    ],
+    "counterExamples": [
+      "{X}, {T}: Destroy up to X target artifacts. If X is 3 or more, for each artifact destroyed this way, create two tokens that are copies of it.",
+      "{X}, {T}: Destroy up to X target artifacts. If X is 3 or less, for each artifact destroyed this way, create a token that's a copy of it."
+    ]
+  },
+  {
+    "id": "eff.edhn132.choose.anyNumber.differentNames",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 201.2"
+    ],
+    "pattern": "choose any number of {f:Filter} with different names",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen",
+        "distinct": "name"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "different"
+    ],
+    "examples": [
+      {
+        "text": "Choose any number of creature tokens you control with different names. Untap those creatures."
+      },
+      {
+        "text": "Choose any number of artifacts you control with different names. For each of them, create a token that's a copy of it."
+      }
+    ],
+    "counterExamples": [
+      "Choose any number of creature tokens you control with different powers. Untap those creatures.",
+      "Choose up to two creature tokens you control with different names. Untap those creatures.",
+      "Choose any number of target creature tokens you control with different names. Untap those creatures."
+    ]
+  },
+  {
+    "id": "eff.edhn132.forEachOfThem.copyIt",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 707.2",
+      "CR 111.1"
+    ],
+    "pattern": "for each of {t:Them} , create a token that's a copy of it",
+    "build": {
+      "op": "forEach",
+      "over": "$t",
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Choose any number of artifacts you control with different names. For each of them, create a token that's a copy of it."
+      },
+      {
+        "text": "Choose up to two target creatures you control. For each of them, create a token that's a copy of it."
+      }
+    ],
+    "counterExamples": [
+      "Choose up to two target creatures you control. For each of them, create two tokens that are copies of it.",
+      "Choose up to two target creatures you control. For each of them, create a tapped token that's a copy of it."
+    ]
+  },
+  {
+    "id": "eff.edhn132.milled.may.exile.one",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 406.1"
+    ],
+    "pattern": "you may exile ( a | an ) {f:Filter} card from among {g:Milled}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Each player mills three cards. You may exile a creature card from among the cards milled this way."
+      },
+      {
+        "text": "Mill four cards. You may exile an artifact card from among them. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Mill four cards. Exile an artifact card from among them.",
+      "Mill four cards. You may exile two artifact cards from among them.",
+      "Mill four cards. You may put an artifact card from among them into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn132.becomes.ptColorSubtype.losesAll",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 205.1a"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} {c:Color} {st:Subtypes} creature and loses all abilities",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target creature becomes a 1/1 white Human creature and loses all abilities."
+      },
+      {
+        "text": "Target creature an opponent controls becomes a 0/1 blue Frog creature and loses all abilities."
+      }
+    ],
+    "counterExamples": [
+      "Target creature becomes a 1/1 white Human creature.",
+      "Target creature becomes a 1/1 white Human creature and loses all abilities until end of turn.",
+      "Target creature becomes a 1/1 white Human artifact creature and loses all abilities."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "eff.edhn132.forEachOfThem.controllerVillainous",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.55a",
+      "CR 701.55d",
+      "CR 608.2f",
+      "CR 109.4"
+    ],
+    "pattern": "for each of {t:Them} , that creature 's controller faces a villainous choice -- {a:Effects} , or {b:Effects}",
+    "build": {
+      "op": "forEach",
+      "over": "$t",
+      "as": "each",
+      "do": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "bound",
+              "name": "each"
+            }
+          },
+          "villainous": true,
+          "do": "$a",
+          "otherwise": "$b"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Choose up to two target creatures you don't control. For each of them, that creature's controller faces a villainous choice -- That creature becomes a 1/1 white Human creature and loses all abilities, or you create a token that's a copy of it."
+      },
+      {
+        "text": "Choose up to three target creatures you don't control. For each of them, that creature's controller faces a villainous choice -- You draw a card, or you create a token that's a copy of it."
+      }
+    ],
+    "counterExamples": [
+      "Choose up to two target creatures you don't control. For each of them, that creature's controller faces a villainous choice -- That creature becomes a 1/1 white Human creature and loses all abilities.",
+      "Choose up to two target creatures you don't control. For each of them, that creature's owner faces a villainous choice -- You draw a card, or you create a token that's a copy of it."
+    ]
+  },
+  {
+    "id": "sta.edhn132.revealFirstDraw",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 121.2"
+    ],
+    "pattern": "you may reveal the first card you draw each turn as you draw it",
+    "build": {
+      "s": "rule",
+      "rule": "revealFirstDraw",
+      "optional": true
+    },
+    "consumes": [
+      "may",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You may reveal the first card you draw each turn as you draw it. Whenever you reveal an instant or sorcery card this way, copy that card and you may cast the copy. That copy costs {2} less to cast."
+      },
+      {
+        "text": "You may reveal the first card you draw each turn as you draw it. Whenever you reveal a sorcery card this way, copy that card and you may cast the copy. That copy costs {1} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the first card you draw each turn.",
+      "You may reveal the first card you draw each turn.",
+      "You may reveal the first card you draw on each of your turns as you draw it."
+    ]
+  },
+  {
+    "id": "eff.edhn132.copyThatCard.mayCastCopy.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.12",
+      "CR 608.2g",
+      "CR 608.2d"
+    ],
+    "pattern": "copy that card and you may cast the copy",
+    "build": [
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "event",
+          "role": "subject"
+        },
+        "copyIn": "hand",
+        "optional": true
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may reveal the first card you draw each turn as you draw it. Whenever you reveal an instant or sorcery card this way, copy that card and you may cast the copy. That copy costs {2} less to cast."
+      },
+      {
+        "text": "You may reveal the first card you draw each turn as you draw it. Whenever you reveal a sorcery card this way, copy that card and you may cast the copy. That copy costs {1} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "You may reveal the first card you draw each turn as you draw it. Whenever you reveal an instant or sorcery card this way, copy that card twice and you may cast the copies.",
+      "You may reveal the first card you draw each turn as you draw it. Whenever you reveal an instant or sorcery card this way, copy that card and you may cast the copy without paying its mana cost.", "Whenever an instant or sorcery card is put into your graveyard from your library, copy that card and you may cast the copy. That copy costs {2} less to cast."
+    ]
+  },
+  {
+    "id": "rid.edhn132.thatCopy.costsLess",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 707.12"
+    ],
+    "pattern": "that copy costs {m:ManaCost} less to cast",
+    "build": {
+      "$patchPrevious": {
+        "costChange": {
+          "kind": "reduce",
+          "mana": "$m"
+        },
+        "@require": {
+          "op": "cast",
+          "copyIn": "hand",
+          "costChange": null,
+          "free": null
+        }
+      }
+    },
+    "examples": [
+      {
+        "text": "You may reveal the first card you draw each turn as you draw it. Whenever you reveal an instant or sorcery card this way, copy that card and you may cast the copy. That copy costs {2} less to cast."
+      },
+      {
+        "text": "You may reveal the first card you draw each turn as you draw it. Whenever you reveal a sorcery card this way, copy that card and you may cast the copy. That copy costs {1} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "You may reveal the first card you draw each turn as you draw it. Whenever you reveal an instant or sorcery card this way, copy that card and you may cast the copy. That copy costs {2} more to cast.",
+      "Draw a card. That copy costs {2} less to cast."
+    ]
+  },
+  {
+    "id": "trg.edhn132.revealCardThisWay",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.20a",
+      "CR 603.2",
+      "CR 607.2a"
+    ],
+    "pattern": "whenever you reveal ( a | an ) {f:Filter} card this way",
+    "build": {
+      "on": [
+        {
+          "ev": "reveal",
+          "player": "you",
+          "card": {
+            "$merge": [
+              "$f",
+              {
+                "isCard": true
+              }
+            ]
+          },
+          "thisWay": true
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "You may reveal the first card you draw each turn as you draw it. Whenever you reveal an instant or sorcery card this way, copy that card and you may cast the copy. That copy costs {2} less to cast."
+      },
+      {
+        "text": "You may reveal the first card you draw each turn as you draw it. Whenever you reveal a sorcery card this way, copy that card and you may cast the copy. That copy costs {1} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you reveal an instant or sorcery card, draw a card.",
+      "Whenever an opponent reveals an instant or sorcery card this way, draw a card."
+    ]
+  }
+]

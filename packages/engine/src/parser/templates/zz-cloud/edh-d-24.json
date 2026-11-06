@@ -1,0 +1,395 @@
+[
+  {
+    "id": "sta.edhd24.grant.pump.protection.keepsAuras",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16c",
+      "CR 702.16d",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} and has {a:Abilities} . this effect doesn't remove auras",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": {
+                "$mergeEach": [
+                  "$a",
+                  {
+                    "exceptAttached": {
+                      "ref": "grantor"
+                    },
+                    "exceptAttachedKinds": {
+                      "subtypes": [
+                        "Aura"
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "doesn't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +1/+1 and has protection from artifacts. This effect doesn't remove Auras."
+      },
+      {
+        "text": "Equipped creature gets +3/+0 and has protection from multicolored. This effect doesn't remove Auras."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+1 and has protection from artifacts. This effect doesn't remove Equipment.",
+      "Enchanted creature gets +1/+1 and has protection from artifacts until end of turn. This effect doesn't remove Auras.",
+      "Enchanted creature gets +1/+1 and has flying. This effect doesn't remove Auras."
+    ]
+  },
+  {
+    "id": "sta.edhd24.grant.protection.keepsAurasEquipmentYours",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16c",
+      "CR 702.16d",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} has {a:Abilities} . this effect doesn't remove auras and equipment you control that are already attached to it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": {
+                "$mergeEach": [
+                  "$a",
+                  {
+                    "exceptAttached": {
+                      "ref": "grantor"
+                    },
+                    "exceptAttachedKinds": {
+                      "subtypes": [
+                        "Aura",
+                        "Equipment"
+                      ],
+                      "yours": true
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "doesn't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature has protection from artifacts. This effect doesn't remove Auras and Equipment you control that are already attached to it."
+      },
+      {
+        "text": "Equipped creature has protection from multicolored. This effect doesn't remove Auras and Equipment you control that are already attached to it."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature has protection from artifacts. This effect doesn't remove Auras and Equipment that are already attached to it.",
+      "Enchanted creature has protection from artifacts. This effect doesn't remove Auras you control that are already attached to it.",
+      "Enchanted creature has flying. This effect doesn't remove Auras and Equipment you control that are already attached to it."
+    ]
+  },
+  {
+    "id": "trg.edhd24.attached.andOthers.attack.one",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1",
+      "CR 508.3a",
+      "CR 603.2",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "whenever ( enchanted | equipped ) creature and at least one other creature attack",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "attachedToSource": true
+          },
+          "count": {
+            "op": ">=",
+            "value": 2
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "other",
+      "at least"
+    ],
+    "examples": [
+      {
+        "text": "Whenever equipped creature and at least one other creature attack, you gain 2 life."
+      },
+      {
+        "text": "Whenever enchanted creature and at least one other creature attack, scry 1."
+      }
+    ],
+    "counterExamples": [
+      "Whenever equipped creature and at least two other creatures attack, you gain 2 life.",
+      "Whenever equipped creature and at least one other creature block, you gain 2 life.",
+      "Whenever equipped land and at least one other creature attack, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.edhd24.search.couldEnchant.putAttached",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 303.4a",
+      "CR 303.4f",
+      "CR 702.5a",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card that could enchant {h:Obj} , put it onto the battlefield attached to {g:Obj} , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": {
+            "$merge": [
+              "$f",
+              {
+                "couldEnchant": "$h"
+              }
+            ]
+          },
+          "max": 1,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            },
+            "attachedTo": "$g"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control attacks, you may search your library for an Aura card that could enchant that creature, put it onto the battlefield attached to that creature, then shuffle."
+      },
+      {
+        "text": "When ~ enters, you may search your library for an Aura card that could enchant ~, put it onto the battlefield attached to ~, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may search your library for an Aura card that could enchant ~, put it onto the battlefield tapped attached to ~, then shuffle.",
+      "When ~ enters, you may search your library for an Aura card, put it onto the battlefield attached to ~, then shuffle.",
+      "When ~ enters, you search your library for an Aura card that could enchant ~, put it onto the battlefield attached to ~, then shuffle.",
+      "When ~ enters, you may search your library for an Aura card that could enchant ~, put it into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhd24.put.targets.bf.underYourControl.attachedTo.creatureYouControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 303.4f",
+      "CR 303.4g",
+      "CR 301.5c",
+      "CR 110.2",
+      "CR 115.1"
+    ],
+    "pattern": "put {o:Targets} onto the battlefield under your control attached to a creature you control",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "enchantOnly": {
+            "types": [
+              "Creature"
+            ],
+            "controller": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Put target Aura card from a graveyard onto the battlefield under your control attached to a creature you control."
+      },
+      {
+        "text": "When this creature enters, put target Equipment card from your graveyard onto the battlefield under your control attached to a creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Put target Aura card from a graveyard onto the battlefield under your control attached to target creature you control.",
+      "Put target Aura card from a graveyard onto the battlefield under your control attached to a creature an opponent controls.",
+      "Put target Aura card from a graveyard onto the battlefield attached to a creature you control and tapped."
+    ]
+  },
+  {
+    "id": "sta.edhd24.attachOnly.toKind",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 301.5",
+      "CR 301.5c",
+      "CR 303.4",
+      "CR 704.5n",
+      "CR 604.1",
+      "CR 101.2"
+    ],
+    "pattern": "~ can be attached only to ( a | an ) {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "not": "$f"
+            }
+          },
+          "mode": "cant",
+          "action": "beAttached",
+          "other": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only"
+    ],
+    "examples": [
+      {
+        "text": "~ can be attached only to a creature with flying."
+      },
+      {
+        "text": "~ can be attached only to an artifact creature."
+      }
+    ],
+    "counterExamples": [
+      "~ can be attached only to creatures with flying.",
+      "~ can't be attached to a creature with flying.",
+      "~ can be enchanted only by a creature with flying.",
+      "~ can be attached only to a creature you control."
+    ]
+  },
+  {
+    "id": "kw.edhd24.equip.orCost",
+    "kind": "ability",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.6a",
+      "CR 602.2b",
+      "CR 118.1"
+    ],
+    "pattern": "equip {c:ManaCost} or {d:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+        "other": [
+          {
+            "kind": "oneOf",
+            "options": [
+              {
+                "mana": "$c"
+              },
+              {
+                "mana": "$d"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "needs": [
+      "keyword:equip"
+    ],
+    "examples": [
+      {
+        "text": "Equip {1} or {R}"
+      },
+      {
+        "text": "Equip {3} or {W}{W}"
+      }
+    ],
+    "counterExamples": [
+      "Equip {1} and {R}",
+      "Equip {1} or",
+      "Equip {1} or {R} or {G}"
+    ]
+  }
+]

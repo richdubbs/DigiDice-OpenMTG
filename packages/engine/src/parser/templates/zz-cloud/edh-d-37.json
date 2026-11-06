@@ -1,0 +1,466 @@
+[
+  {
+    "id": "eff.edhd37.destroyAllNonbasicLands.forEachLandSearchBasic",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.8a",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 701.23a",
+      "CR 110.2"
+    ],
+    "pattern": "destroy all nonbasic lands . for each land destroyed this way , its controller may search their library for a basic land card and put it onto the battlefield",
+    "build": [
+      {
+        "op": "destroy",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "notSupertypes": [
+              "Basic"
+            ],
+            "types": [
+              "Land"
+            ]
+          }
+        },
+        "as": "destroyedThisWay"
+      },
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "bound",
+          "name": "destroyedThisWay"
+        },
+        "as": "landDestroyed",
+        "do": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "controllerOf",
+              "object": {
+                "ref": "bound",
+                "name": "landDestroyed"
+              }
+            },
+            "do": [
+              {
+                "op": "search",
+                "who": {
+                  "ref": "controllerOf",
+                  "object": {
+                    "ref": "bound",
+                    "name": "landDestroyed"
+                  }
+                },
+                "zone": "library",
+                "filter": {
+                  "supertypes": [
+                    "Basic"
+                  ],
+                  "types": [
+                    "Land"
+                  ]
+                },
+                "max": 1,
+                "as": "search"
+              },
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "search"
+                },
+                "to": {
+                  "zone": "battlefield",
+                  "controller": {
+                    "ref": "controllerOf",
+                    "object": {
+                      "ref": "bound",
+                      "name": "landDestroyed"
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "all",
+      "each",
+      "may",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all nonbasic lands. For each land destroyed this way, its controller may search their library for a basic land card and put it onto the battlefield."
+      },
+      {
+        "text": "When ~ enters, destroy all nonbasic lands. For each land destroyed this way, its controller may search their library for a basic land card and put it onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all nonbasic lands. For each land destroyed this way, its owner may search their library for a basic land card and put it onto the battlefield.",
+      "Destroy all lands. For each land destroyed this way, its controller may search their library for a basic land card and put it onto the battlefield.",
+      "Destroy all nonbasic lands. For each land destroyed this way, its controller may search their library for a basic land card and put it onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.edhd37.playerSacrificesAll.forEachLandSearchBasicTapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2c",
+      "CR 608.2e",
+      "CR 608.2h",
+      "CR 701.23a",
+      "CR 110.2"
+    ],
+    "pattern": "each player sacrifices all {f:Filter} . for each land sacrificed this way , its controller may search their library for a basic land card and put it onto the battlefield tapped",
+    "build": [
+      {
+        "op": "sacrificeChoice",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "filter": "$f",
+        "count": 1,
+        "mode": "all",
+        "as": "sacrificedThisWay"
+      },
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "sacrificedThisWay"
+            },
+            "types": [
+              "Land"
+            ],
+            "zone": "any"
+          }
+        },
+        "as": "landSacrificed",
+        "do": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "controllerOf",
+              "object": {
+                "ref": "bound",
+                "name": "landSacrificed"
+              }
+            },
+            "do": [
+              {
+                "op": "search",
+                "who": {
+                  "ref": "controllerOf",
+                  "object": {
+                    "ref": "bound",
+                    "name": "landSacrificed"
+                  }
+                },
+                "zone": "library",
+                "filter": {
+                  "supertypes": [
+                    "Basic"
+                  ],
+                  "types": [
+                    "Land"
+                  ]
+                },
+                "max": 1,
+                "as": "search"
+              },
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "search"
+                },
+                "to": {
+                  "zone": "battlefield",
+                  "controller": {
+                    "ref": "controllerOf",
+                    "object": {
+                      "ref": "bound",
+                      "name": "landSacrificed"
+                    }
+                  },
+                  "tapped": true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "each",
+      "all",
+      "may",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Each player sacrifices all artifacts and nonbasic lands they control. For each land sacrificed this way, its controller may search their library for a basic land card and put it onto the battlefield tapped."
+      },
+      {
+        "text": "Each player sacrifices all enchantments, artifacts, and lands they control. For each land sacrificed this way, its controller may search their library for a basic land card and put it onto the battlefield tapped."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent sacrifices all artifacts and nonbasic lands they control. For each land sacrificed this way, its controller may search their library for a basic land card and put it onto the battlefield tapped.",
+      "Each player sacrifices all artifacts and nonbasic lands they control. For each land sacrificed this way, its controller may search their library for a basic land card and put it onto the battlefield.",
+      "Each player sacrifices all artifacts and nonbasic lands they control. For each land sacrificed this way, its owner may search their library for a basic land card and put it onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.edhd37.exileAll.battlefieldGraveyardsHands",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 406.2",
+      "CR 400.7",
+      "CR 608.2c",
+      "CR 701.13a"
+    ],
+    "pattern": "exile all {f:Filter} from the battlefield , all cards from all graveyards , and all cards from all hands",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "isCard": true
+          }
+        },
+        "to": {
+          "zone": "exile"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "isCard": true
+          }
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "consumes": [
+      "all",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Exile all artifacts and creatures from the battlefield, all cards from all graveyards, and all cards from all hands."
+      },
+      {
+        "text": "Exile all enchantments, lands, and planeswalkers from the battlefield, all cards from all graveyards, and all cards from all hands."
+      }
+    ],
+    "counterExamples": [
+      "Exile all artifacts and creatures from the battlefield, all cards from all graveyards, and all cards from all libraries.",
+      "Exile all artifacts and creatures from the battlefield, all cards from your graveyard, and all cards from all hands.",
+      "Exile all artifacts and creatures from the battlefield and all cards from all graveyards."
+    ]
+  },
+  {
+    "id": "trg.edhd37.playerPutsOntoBattlefield",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 603.6a",
+      "CR 608.3a",
+      "CR 110.2"
+    ],
+    "pattern": "whenever a player puts {f:Filter} onto the battlefield",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": "$f",
+          "to": "battlefield"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "puts"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player puts a nontoken creature onto the battlefield, you gain 1 life."
+      },
+      {
+        "text": "Whenever a player puts an artifact onto the battlefield, scry 1."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player puts a nontoken creature onto the battlefield from their hand, you gain 1 life.",
+      "Whenever you put a nontoken creature onto the battlefield, you gain 1 life.",
+      "Whenever an opponent puts a nontoken creature onto the battlefield, you gain 1 life."
+    ]
+  },
+  {
+    "id": "eff.edhd37.become.pl.ptSubtypes.creatures.with.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Objs} become {pt:BasePT} {st:Subtypes} creatures with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Search your library for up to two basic land cards, put them onto the battlefield, then shuffle. Those lands become 3/3 Elemental creatures with haste."
+      },
+      {
+        "text": "Search your library for up to three basic land cards, put them onto the battlefield, then shuffle. Those lands become 2/2 Golem creatures with trample."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two basic land cards, put them onto the battlefield, then shuffle. Those lands become 3/3 Elemental creatures.",
+      "Search your library for up to two basic land cards, put them onto the battlefield, then shuffle. Those lands become 3/3 Elemental creatures with haste until end of turn.",
+      "Target land becomes a 3/3 Elemental creature with haste."
+    ]
+  },
+  {
+    "id": "eff.edhd37.player.may.search.upTo.bf.tapped.them",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "player",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 608.2d",
+      "CR 110.2"
+    ],
+    "pattern": "{p:Player} may search their library for up to {n:Qty} {f:Filter} cards , put them onto the battlefield tapped , then shuffle",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "search",
+          "who": "$p",
+          "zone": "library",
+          "filter": "$f",
+          "min": 0,
+          "max": "$n",
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": "$p",
+            "tapped": true
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": "$p"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "up to",
+      "then"
+    ],
+    "needs": [],
+    "examples": [
+      {
+        "text": "Destroy target land. Its controller may search their library for up to two basic land cards, put them onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Exile target creature. Its controller may search their library for up to three basic Forest cards, put them onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target land. Its controller may search their library for up to two basic land cards, put them onto the battlefield, then shuffle.",
+      "Destroy target land. Its controller may search their library for up to two basic land cards, put them into their hand, then shuffle.",
+      "Destroy target land. Its controller searches their library for up to two basic land cards, puts them onto the battlefield tapped, then shuffles."
+    ]
+  }
+]

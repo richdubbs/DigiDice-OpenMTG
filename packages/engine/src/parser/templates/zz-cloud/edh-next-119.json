@@ -1,0 +1,116 @@
+[
+  {
+    "id": "sta.edhn119.controlSearching",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 723.2",
+      "CR 723.5",
+      "CR 701.23a"
+    ],
+    "pattern": "you control ( your opponents | each opponent ) while they're searching their libraries",
+    "build": {
+      "s": "rule",
+      "rule": "controlSearching"
+    },
+    "consumes": [
+      "each",
+      "while"
+    ],
+    "examples": [
+      {
+        "text": "You control each opponent while they're searching their libraries."
+      },
+      {
+        "text": "Flash, ward {5}\nYou control each opponent while they're searching their libraries."
+      }
+    ],
+    "counterExamples": [
+      "You control each opponent while they're searching their graveyards.",
+      "You control target opponent while they're searching their libraries.",
+      "You control each opponent while they're attacking."
+    ]
+  },
+  {
+    "id": "sta.edhn119.searchFoundExiled",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 609.4b",
+      "CR 701.23a",
+      "CR 611.2b"
+    ],
+    "pattern": "while an opponent is searching their library , they exile ( each card | the cards ) they find . you may play those cards for as long as they remain exiled , and you may spend mana as though it were mana of any color to cast them",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "searchFoundExiled"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "may",
+      "while",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "While an opponent is searching their library, they exile the cards they find. You may play those cards for as long as they remain exiled, and you may spend mana as though it were mana of any color to cast them."
+      },
+      {
+        "text": "Flash, ward {5}\nWhile an opponent is searching their library, they exile the cards they find. You may play those cards for as long as they remain exiled, and you may spend mana as though it were mana of any color to cast them."
+      }
+    ],
+    "counterExamples": [
+      "While an opponent is searching their library, they exile the cards they find. You may cast those cards for as long as they remain exiled, and you may spend mana as though it were mana of any color to cast them.",
+      "While an opponent is searching their library, they exile the cards they find. You may play those cards for as long as they remain exiled, and you may spend mana as though it were mana of any type to cast them.",
+      "While an opponent is searching their graveyard, they exile the cards they find. You may play those cards for as long as they remain exiled, and you may spend mana as though it were mana of any color to cast them.",
+      "While an opponent is searching their library, they exile the cards they find."
+    ]
+  },
+  {
+    "id": "eff.edhn119.gainControlPlayer.nextTurn.thenExtraTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 723.1",
+      "CR 723.1b",
+      "CR 723.5",
+      "CR 500.7"
+    ],
+    "pattern": "you gain control of {p:Player} during that player 's next turn . after that turn , that player takes an extra turn",
+    "build": {
+      "op": "controlPlayer",
+      "who": "$p",
+      "during": "turn",
+      "thenExtraTurn": true
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "extra",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "You gain control of target player during that player's next turn. After that turn, that player takes an extra turn."
+      },
+      {
+        "text": "You gain control of target opponent during that player's next turn. After that turn, that player takes an extra turn."
+      }
+    ],
+    "counterExamples": [
+      "You gain control of target opponent during that player's next turn.",
+      "You gain control of target opponent during that player's next turn. After that turn, you take an extra turn.",
+      "You gain control of target opponent during that player's next combat phase. After that turn, that player takes an extra turn.",
+      "You gain control of target opponent during that player's next turn. After that turn, that player takes two extra turns."
+    ]
+  }
+]

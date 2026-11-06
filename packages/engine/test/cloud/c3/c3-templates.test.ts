@@ -18,7 +18,7 @@ import { defaultParseOptions, parseCard } from '../../../src/parser/parse';
 import { validateTemplates } from '../../../src/parser/chart';
 import { TEMPLATE_FILES, TEMPLATE_SET } from '../../../src/parser/template-set';
 import { ENGINE_CAPABILITIES } from '../../../src/model/capabilities';
-import { pluralize } from '../../../src/render/text';
+import { firstAlt, pluralize } from '../../../src/render/text';
 import lexicon from '../../../src/parser/lexicon.generated.json';
 import c3 from '../../../src/parser/templates/zz-cloud/c3.json';
 import review from '../../m5/golden/cards/cloud-c3-review.json';
@@ -160,7 +160,8 @@ describe('C3 parser and renderer readings (CR 702.14a, 205.3m)', () => {
   it('CR 205.3m: every creature type whose Oracle plural is spelled like the singular is printed that way ("Treefolk you control", "Other Myr you control")', () => {
     const same = (lexicon as { subtypes: { singular: string; plural: string; class: string }[] }).subtypes.filter((s) => s.class === 'creature' && s.singular === s.plural);
     expect(same.length).toBeGreaterThan(20);
-    for (const s of same) expect(pluralize(s.singular), s.singular).toBe(s.singular);
+    // (edh-b-9, family spawn-plural: "Spawn" also has Oracle's "Spawns" as an alt; the display form, the first option, is the lexicon's)
+    for (const s of same) expect(firstAlt(pluralize(s.singular)), s.singular).toBe(s.singular);
     for (const text of ['Treefolk you control have hexproof.', 'Other Myr you control get +1/+1.', 'Other Samurai you control have vigilance.', 'Kor and Allies you control have flying.']) {
       expect(fullyAutomated(lord(text)), text).toBe(true);
     }
@@ -181,7 +182,7 @@ describe('C3 golden review file (test/m5/golden/cards/cloud-c3-review.json)', ()
     for (const g of golden) {
       // a card the follow-up leaves partial names the abilities that stay manual (they are not in its entry)
       if (g.expect !== 'full') expect(g.verified, g.card).toMatch(/stays? manual/);
-      expect(g.verified, g.card).toMatch(/^Cloud C3 (follow-up \(cloud batch 3\) )?review, by hand/);
+      expect(g.verified, g.card).toMatch(/^(Cloud C3 (follow-up \(cloud batch 3\) )?|edh-misc-1 )review, by hand/); // edh-misc-1 (Commander effort) added Puresteel Paladin for sta.c3.grant.aslong
       expect(g.verified, g.card).toMatch(/CR \d/);
     }
   });

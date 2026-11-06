@@ -11,7 +11,7 @@ export type GameEvent =
   | { type: 'gameStarted'; startingPlayer: PlayerId }
   | { type: 'turnBegan'; turn: number; activePlayer: PlayerId }
   /** FAST5X E17 (additive): `mainPhase`, of a main phase, the number of the main phase in its turn (CR 505.1b; `GameState.turn.mains`). */
-  | { type: 'stepBegan'; step: Step; activePlayer: PlayerId; mainPhase?: number }
+  | { type: 'stepBegan'; step: Step; activePlayer: PlayerId; mainPhase?: number; /* edh-d-71: of an upkeep step, its number in its turn (CR 503.1, 500.9) */ upkeepStep?: number; /* edh-d-34: the number of the combat phase this combat step is in (CR 500.8) */ combatPhase?: number; addedPhase?: number /* edh-combat-5: the id of the added phase this step is in (turn.addedPhaseId) */ }
   | { type: 'stepEnded'; step: Step }
   | { type: 'priorityGiven'; player: PlayerId }
   | {
@@ -34,6 +34,12 @@ export type GameEvent =
       faceDown?: true;
       /** pc-tokens-2 INTERFACE CHANGE (additive): the new object is tapped as it enters the battlefield (CR 614.1c, 603.6a): what "enters tapped" triggers read, whatever happens to it later in the batch. */
       tapped?: true;
+      /** edh-perms-9 (CR 603.6a, 608.2): the object whose resolving ability's effect put the new object onto the battlefield; what "wasn't put onto the battlefield with this ability" reads. */
+      viaSource?: ObjectId;
+      /** edh-players-22 (CR 109.5, 701.8a): with the cause 'destroy', the controller of the spell or ability whose instruction destroyed it (none for a state-based action). */
+      destroyedBy?: PlayerId;
+      /** edh-next-132 (CR 701.9a, 109.5): with the cause 'discard', the controller of the spell or ability whose instruction made the player discard (none for a cost, the cleanup step or a rule). */
+      discardedBy?: PlayerId;
     }
   /**
    * CMDF INTERFACE CHANGE (additive): `commandZone` when the drawn card was the player's commander and its owner put it into the command zone instead of into
@@ -41,8 +47,12 @@ export type GameEvent =
    * itself is the `zoneChanged` event with cause 'commander' that comes just before.
    */
   | { type: 'drew'; player: PlayerId; objectId: ObjectId; commandZone?: true }
+  /** edh-next-144 (CR 701.20a, 607.2): a `revealFirstDraw` rule of `sourceId` revealed the card `objectId` its controller `player` drew (triggers/reveal-draw.ts). */
+  | { type: 'revealedThisWay'; player: PlayerId; objectId: ObjectId; sourceId: ObjectId }
   | { type: 'shuffled'; player: PlayerId }
   | { type: 'lifeChanged'; player: PlayerId; delta: number; life: number; cause?: string }
+  /** edh-next-109 (CR 119.4, 118.3; Font of Agonies): a player paid `amount` life (a cost, a Phyrexian symbol or an effect), the payment no replacement replaced; follows its `lifeChanged`. */
+  | { type: 'lifePaid'; player: PlayerId; amount: number }
   /**
    * `group` (PUSH1 T2, optional): the damage events one instruction dealt at the same time share it (one noncombat damage step, CR 120.2b, 608.2c), so a
    * trigger on "~ deals damage" sees ONE event however many recipients there were (triggers/occurrences.ts). Combat damage needs none: a step's batch is it.
@@ -52,7 +62,8 @@ export type GameEvent =
    * NaN when it cannot be computed (a creature whose toughness is not a number): readers fail to determine (CR 608.2b).
    */
   | { type: 'damageDealt'; source: ObjectId; target: ObjectId | PlayerId; amount: number; combat: boolean; group?: number; excess?: number }
-  | { type: 'tapped'; objectId: ObjectId }
+  /** edh-players-20 INTERFACE CHANGE (additive), CR 508.1f: `asAttacker`, tapped as it was declared as an attacker (core/combat.ts); "if it isn't being declared as an attacker" (Verity Circle) reads it. */
+  | { type: 'tapped'; objectId: ObjectId; asAttacker?: true }
   | { type: 'untapped'; objectId: ObjectId; /** Standard round 5, r5-trig (CR 502.3): untapped by the untap step's turn-based action */ untapStep?: true }
   /** FAST5X E21 INTERFACE CHANGE (additive): `by`, the player who put the counters (CR 122.6, 122.6a); absent when no player is known (a by-hand change). */
   | { type: 'countersChanged'; target: ObjectId | PlayerId; counter: string; delta: number; by?: PlayerId }
@@ -65,10 +76,12 @@ export type GameEvent =
   | { type: 'spellCast'; objectId: ObjectId; player: PlayerId; /** Spells cast this turn before this one by ALL players, not only by this player (storm counts every player's spells, CR 702.40a). */ spellsBefore?: number; /** FAST5X E9 INTERFACE CHANGE (additive), CR 601.2h, 702.191a: the amount of mana spent to cast it (its mana units; life paid for Phyrexian mana, convoke and delve are not mana). */ manaSpent?: number; /** FAST5X E19 INTERFACE CHANGE (additive), CR 106.3: per mana spent, the subtypes its source had as it produced it (ManaUnit.sourceSubtypes); absent when no source had any. */ manaFrom?: string[][]; /** std-lci (additive), CR 106.3: the objects that produced the mana spent to cast it (ManaUnit.sourceId, each once); absent when none is known. */ manaSources?: ObjectId[] }
   /** FAST5X E20 INTERFACE CHANGE (additive): `exhaust` (CR 702.177a: an exhaust ability) and `loyalty` (CR 606.3: a loyalty ability), what was activated. */
   /** Standard round 3, r3-trig INTERFACE CHANGE (additive): `loyaltyRemoved`, the loyalty counters the cost of a loyalty ability removed from its source (CR 606.4). */
-  | { type: 'abilityActivated'; objectId: ObjectId; sourceId: ObjectId; player: PlayerId; exhaust?: true; loyalty?: true; loyaltyRemoved?: number }
+  /** edh-players-5 INTERFACE CHANGE (additive), CR 109.2, 602.2: `fromZone`, the zone the ability's source was in as it was activated (a cycling ability is activated from a hand, unearth from a graveyard), for "an ability of a creature" (a permanent on the battlefield). */
+  | { type: 'abilityActivated'; objectId: ObjectId; sourceId: ObjectId; player: PlayerId; /** edh-next-74 INTERFACE CHANGE (additive), CR 602.2b, 107.3a, 118.3 (Verrak, Warped Sengir; Magus Lucea Kane): the life the cost paid, and whether the cost had {X}, fixed as the cost was paid. */ lifePaid?: number; xInCost?: true; /** edh-d-50 (CR 602.2b, 106.3): the number of mana spent on the cost, fixed as the cost was paid */ manaSpent?: number; exhaust?: true; loyalty?: true; loyaltyRemoved?: number; fromZone?: string; /** edh-zones-19 INTERFACE CHANGE (additive), CR 702.49a, 702.49d: a ninjutsu ability (commander ninjutsu too) was activated. */ ninjutsu?: true; /** edh-c-104 INTERFACE CHANGE (additive), CR 702.142a: a boast ability was activated. */ boast?: true }
   | { type: 'abilityTriggered'; objectId: ObjectId; sourceId: ObjectId; player: PlayerId }
   | { type: 'resolved'; objectId: ObjectId }
-  | { type: 'countered'; objectId: ObjectId }
+  /** edh-cast-6 ADDITION (optional): `by`, the controller of the spell or ability whose instruction countered it (CR 701.6a, 603.2: "Whenever a spell or ability you control counters a spell"). */
+  | { type: 'countered'; objectId: ObjectId; by?: PlayerId }
   /** Cloud std-spm ADDITION (optional): `from`, the zone the land was played from (CR 305.1: "whenever you play a land from exile"). */
   | { type: 'landPlayed'; objectId: ObjectId; player: PlayerId; from?: CastOrigin /* trek-11: or 'outside', a land played from outside the game (CR 400.11b) */ }
   | { type: 'attackersDeclared'; attackers: { attacker: ObjectId; defender: PlayerId | ObjectId }[] }
@@ -76,6 +89,8 @@ export type GameEvent =
   | { type: 'blockersDeclared'; blocks: { blocker: ObjectId; attacker: ObjectId }[]; unblocked?: ObjectId[] }
   /** p2-combat-flow-2 ADDITION: attacking creatures an effect made blocked, with no blocker (CR 509.1h; op becomeBlocked): "becomes blocked" triggers (CR 509.3c). */
   | { type: 'becameBlocked'; attackers: ObjectId[] }
+  /** edh-combat-4 (CR 509.3c-d, 506.3e): a creature put onto the battlefield blocking an attacker; `attackerWasBlocked`: the attacker was a blocked creature before. Never "blocks" (CR 509.3a-b). */
+  | { type: 'blockerEntered'; blocker: ObjectId; attacker: ObjectId; attackerWasBlocked: boolean; /** edh-c-48 (CR 509.3e): the creatures blocking the attacker now, this one included */ blockCount: number }
   | { type: 'mulligan'; player: PlayerId; count: number }
   /**
    * CR 104.3, 104.5. M12-1 (type only; coordination with milestone 13): `rules`, the CR citations of the loss (core/sba.ts#markLost has them for its log
@@ -99,21 +114,27 @@ export type GameEvent =
     /** p2-player-rules-3 (CR 701.30c): a `clash` says whether its actor won it. */
     won?: boolean;
     /** std-rx17 (CR 702.110b): for the verb `exploit`, the creature sacrificed (`objectId` is the exploiting creature). */
-    exploited?: ObjectId }
+    exploited?: ObjectId;
+    /** edh-d-89 (CR 702.122e): for the verb `crew`, how many creatures were tapped to pay the cost of the crew ability that resolved (0 for a copy, which was not paid for). */
+    crewers?: number }
   | { type: 'tokenCreated'; player: PlayerId; objectId: ObjectId }
   | { type: 'becameTarget'; objectId: ObjectId | PlayerId; byStackId: ObjectId; byController: PlayerId }
-  | { type: 'attached'; objectId: ObjectId; to: ObjectId | null }
+  /** `from` (edh-perms-10, CR 701.3d): with `to: null`, the permanent it was attached to (an object, never a player), for "becomes unattached from a permanent". */
+  | { type: 'attached'; objectId: ObjectId; to: ObjectId | null; from?: ObjectId }
   /** `convert` (M6-0, m6 design 2.3, CR 701.27e: "transforms into" also sees converting). */
   | { type: 'transformed'; objectId: ObjectId; convert?: true }
   /** `by` (FAST5X E25, CR 701.40b, 608.2, 116.2b): the player who turned it face up (the special action's player, or the controller of the effect). */
   | { type: 'turnedFaceUp'; objectId: ObjectId; by?: PlayerId }
   /** `instruction` (p2-c-dieroll-1, CR 706.1, 603.2c): the rolls of one instruction share it ("whenever you roll one or more dice" triggers once for them). */
-  | { type: 'dieRolled'; player: PlayerId; sides: number; result: number; instruction?: number }
+  /** `natural` (edh-next-55, CR 706.2): the die's own result before any modifier (`result` is the result after it): "a die's highest natural result". */
+  | { type: 'dieRolled'; player: PlayerId; sides: number; result: number; instruction?: number; natural?: number }
   | { type: 'coinFlipped'; player: PlayerId; won: boolean }
   | { type: 'spellCopied'; objectId: ObjectId; copyOf: ObjectId }
   | { type: 'abilityCountered'; objectId: ObjectId }
   | { type: 'controlChanged'; objectId: ObjectId; from: PlayerId; to: PlayerId }
   | { type: 'phasedOut'; objectId: ObjectId }
+  /** edh-d-39 (CR 702.26c, 603.2): a phased-out permanent phased in (rules/phasing.ts#phaseInPermanent, #phaseInForUntapStep); triggers/normalize.ts reads it as `becomes` `phasedIn`. */
+  | { type: 'phasedIn'; objectId: ObjectId }
   | { type: 'designationChanged'; what: 'monarch' | 'initiative' | 'day' | 'night'; to: PlayerId | 'day' | 'night' }
   /** FAST5X-4 ADDITION: a player's speed became `speed` (CR 702.179a-d; `from` absent: they had no speed). No trigger pattern reads it. */
   | { type: 'speedChanged'; player: PlayerId; speed: number; from?: number }

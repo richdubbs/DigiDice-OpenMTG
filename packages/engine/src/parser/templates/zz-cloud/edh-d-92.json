@@ -1,0 +1,781 @@
+[
+  {
+    "id": "eff.edhd92.exile.filterCardFromEachGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 404.1",
+      "CR 101.4",
+      "CR 607.2a"
+    ],
+    "pattern": "exile ( a | an ) {f:Filter} card from each graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "isCard": true,
+            "owner": {
+              "ref": "iterating"
+            },
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile an artifact card from each graveyard."
+      },
+      {
+        "text": "{2}, {T}: Exile a creature or land card from each graveyard."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile an artifact card from each opponent's graveyard.",
+      "When ~ enters, exile two artifact cards from each graveyard.",
+      "When ~ enters, exile an artifact card at random from each graveyard.",
+      "When ~ enters, you may exile an artifact card from each graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhd92.cast.linkedExiled.anyType",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 609.4b"
+    ],
+    "pattern": "you may cast ( a | an ) {f:Filter} card exiled with ~ , and mana of any type can be spent to cast that spell",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "any",
+            "isCard": true,
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "anyManaType": true
+      }
+    ],
+    "consumes": [
+      "may",
+      "any"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target artifact card from a graveyard.\n{2}, {T}: You may cast an artifact card exiled with ~, and mana of any type can be spent to cast that spell."
+      },
+      {
+        "text": "At the beginning of your upkeep, exile the top card of each player's library.\n{1}, {T}: You may cast a creature card exiled with ~, and mana of any type can be spent to cast that spell."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: You may cast an artifact card exiled with ~ this turn, and mana of any type can be spent to cast that spell.",
+      "{2}, {T}: You may play an artifact card exiled with ~, and mana of any type can be spent to cast that spell.",
+      "{2}, {T}: You may cast an artifact card exiled with ~, and mana of any color can be spent to cast that spell."
+    ]
+  },
+  {
+    "id": "sta.edhd92.yourTurn.group.are.subtypes.have",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 205.1b",
+      "CR 113.3d"
+    ],
+    "pattern": "during your turn , {f:Filter} are {g:Filter} in addition to their other types and have {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$g.subtypes"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, creatures you control are Clues in addition to their other types and have \"{1}, Sacrifice this creature: Draw a card.\""
+      },
+      {
+        "text": "During your turn, lands you control are Treasures in addition to their other types and have \"{T}, Sacrifice this land: Add two mana of any one color.\""
+      }
+    ],
+    "counterExamples": [
+      "During your turn, creatures you control are Clues and have \"{1}, Sacrifice this creature: Draw a card.\"",
+      "During each opponent's turn, creatures you control are Clues in addition to their other types and have \"{1}, Sacrifice this creature: Draw a card.\"",
+      "During your turn, creatures you control are Clues in addition to their other types and gain \"{1}, Sacrifice this creature: Draw a card.\""
+    ]
+  },
+  {
+    "id": "eff.edhd92.counters.doubleOnSelf.ifPowerAtMost",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 122.1",
+      "CR 701.10e",
+      "CR 608.2c",
+      "CR 208.1"
+    ],
+    "pattern": "double the number of {k:CounterKind} counters on ~ if its power is {n:Qty} or less",
+    "build": {
+      "op": "action",
+      "action": "doubleCounters",
+      "subject": {
+        "ref": "self"
+      },
+      "who": {
+        "ref": "you"
+      },
+      "arg": "$k",
+      "guard": {
+        "cond": "compare",
+        "left": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+            "ref": "self"
+          }
+        },
+        "op": "<=",
+        "right": "$n"
+      }
+    },
+    "consumes": [
+      "double",
+      "if",
+      "or less"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, double the number of +1/+1 counters on ~ if its power is 8 or less."
+      },
+      {
+        "text": "{2}{G}: Double the number of +1/+1 counters on ~ if its power is 10 or less."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, double the number of +1/+1 counters on ~ if its power is 8 or greater.",
+      "At the beginning of your end step, double the number of +1/+1 counters on ~ if its toughness is 8 or less.",
+      "At the beginning of your end step, double the number of +1/+1 counters on target creature if its power is 8 or less."
+    ]
+  },
+  {
+    "id": "eff.edhd92.counters.removeAllButOne.gainPerRemoved",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 119.3"
+    ],
+    "pattern": "remove all but one {k:CounterKind} counter from {o:Obj} , then you gain 1 life for each {j:CounterKind} counter removed this way",
+    "build": [
+      {
+        "op": "removeCounters",
+        "from": "$o",
+        "kind": "$k",
+        "count": {
+          "q": "math",
+          "op": "max",
+          "args": [
+            0,
+            {
+              "q": "math",
+              "op": "-",
+              "args": [
+                {
+                  "q": "counters",
+                  "on": "$o",
+                  "kind": "$k"
+                },
+                1
+              ]
+            }
+          ]
+        },
+        "as": "removed"
+      },
+      {
+        "op": "gainLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": {
+          "q": "countersRemoved",
+          "step": "removed",
+          "kind": "$j"
+        }
+      }
+    ],
+    "consumes": [
+      "all",
+      "all but one",
+      "then",
+      "each",
+      "removed this way",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, remove all but one +1/+1 counter from ~, then you gain 1 life for each +1/+1 counter removed this way."
+      },
+      {
+        "text": "{T}: Remove all but one charge counter from target artifact, then you gain 1 life for each charge counter removed this way."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Remove all charge counters from target artifact, then you gain 1 life for each charge counter removed this way.",
+      "{T}: Remove all but one charge counter from target artifact, then you gain 2 life for each charge counter removed this way.",
+      "{T}: Remove all but one charge counter from target artifact, then draw a card for each charge counter removed this way."
+    ]
+  },
+  {
+    "id": "eff.edhd92.amassZombie.thenArmyDealsOwnPower",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.47a",
+      "CR 701.47c",
+      "CR 120.3",
+      "CR 208.1",
+      "CR 608.2h"
+    ],
+    "pattern": "amass zombies {n:Qty} , then the army you amassed deals damage equal to its power to {to:Recipient}",
+    "build": [
+      {
+        "op": "action",
+        "action": "amass",
+        "who": {
+          "ref": "you"
+        },
+        "n": "$n",
+        "arg": "Zombie",
+        "as": "amassed"
+      },
+      {
+        "op": "damage",
+        "source": {
+          "ref": "bound",
+          "name": "amassed"
+        },
+        "to": "$to",
+        "amount": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+            "ref": "bound",
+            "name": "amassed"
+          }
+        }
+      }
+    ],
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Amass Zombies 3, then the Army you amassed deals damage equal to its power to target creature an opponent controls."
+      },
+      {
+        "text": "When ~ enters, amass Zombies 1, then the Army you amassed deals damage equal to its power to each creature you don't control."
+      }
+    ],
+    "counterExamples": [
+      "Amass Zombies 3, then the Army you amassed deals damage equal to its toughness to target creature an opponent controls.",
+      "Amass Zombies 3, then the Army you amassed deals 3 damage to target creature an opponent controls.",
+      "Amass Zombies 3, then the Army you amassed fights target creature an opponent controls."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhd92.player.tapsUntapped.perCounterOnSelf",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.26a",
+      "CR 608.2d",
+      "CR 608.2h",
+      "CR 122.1",
+      "CR 702.32a"
+    ],
+    "pattern": "{p:Player} taps ( a | an ) untapped {f:Filter} they control for each {k:CounterKind} counter on ~",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "$merge": [
+              "$f",
+              {
+                "controller": "$p",
+                "tapped": false
+              }
+            ]
+          }
+        },
+        "min": {
+          "q": "counters",
+          "on": {
+            "ref": "self"
+          },
+          "kind": "$k"
+        },
+        "max": {
+          "q": "counters",
+          "on": {
+            "ref": "self"
+          },
+          "kind": "$k"
+        },
+        "as": "tapCandidates"
+      },
+      {
+        "op": "tap",
+        "what": {
+          "ref": "bound",
+          "name": "tapCandidates"
+        }
+      }
+    ],
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each player's upkeep, that player taps an untapped creature they control for each time counter on ~."
+      },
+      {
+        "text": "At the beginning of each opponent's upkeep, that player taps an untapped artifact or land they control for each charge counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each player's upkeep, that player untaps a tapped creature they control for each time counter on ~.",
+      "At the beginning of each player's upkeep, that player taps an untapped creature they control for each creature you control.",
+      "At the beginning of each player's upkeep, that player taps an untapped creature you control for each time counter on ~."
+    ]
+  },
+  {
+    "id": "eff.edhd92.chooseTarget.permanentOrSuspended.mayRemoveOrPutTime",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 115.1",
+      "CR 702.62a",
+      "CR 702.62b",
+      "CR 122.1",
+      "CR 608.2d"
+    ],
+    "pattern": "choose target permanent you control or suspended card you own . if that permanent or card has a time counter on it , you may remove a time counter from it or put another time counter on it",
+    "build": [
+      {
+        "op": "if",
+        "cond": {
+          "cond": "matches",
+          "object": {
+            "ref": "target",
+            "id": "",
+            "$target": {
+              "kind": "object",
+              "filter": {
+                "zone": [
+                  "battlefield",
+                  "exile"
+                ],
+                "anyOf": [
+                  {
+                    "zone": "battlefield",
+                    "controller": "you"
+                  },
+                  {
+                    "zone": "exile",
+                    "keyword": "suspend",
+                    "counters": {
+                      "kind": "time"
+                    },
+                    "owner": "you"
+                  }
+                ]
+              },
+              "min": 1,
+              "max": 1,
+              "text": "target permanent you control or suspended card you own"
+            }
+          },
+          "filter": {
+            "counters": {
+              "kind": "time"
+            }
+          }
+        },
+        "then": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "chooseValue",
+                "who": {
+                  "ref": "you"
+                },
+                "what": "option",
+                "as": "timeMode",
+                "link": "timeMode",
+                "options": [
+                  "remove",
+                  "put"
+                ]
+              },
+              {
+                "op": "if",
+                "cond": {
+                  "cond": "chosen",
+                  "link": "timeMode",
+                  "equals": "remove"
+                },
+                "then": [
+                  {
+                    "op": "removeCounters",
+                    "from": {
+                      "ref": "target",
+                      "id": "",
+                      "$target": {
+                        "kind": "object",
+                        "filter": {
+                          "zone": [
+                            "battlefield",
+                            "exile"
+                          ],
+                          "anyOf": [
+                            {
+                              "zone": "battlefield",
+                              "controller": "you"
+                            },
+                            {
+                              "zone": "exile",
+                              "keyword": "suspend",
+                              "counters": {
+                                "kind": "time"
+                              },
+                              "owner": "you"
+                            }
+                          ]
+                        },
+                        "min": 1,
+                        "max": 1,
+                        "text": "target permanent you control or suspended card you own"
+                      }
+                    },
+                    "kind": "time",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "op": "if",
+                "cond": {
+                  "cond": "chosen",
+                  "link": "timeMode",
+                  "equals": "put"
+                },
+                "then": [
+                  {
+                    "op": "putCounters",
+                    "on": {
+                      "ref": "target",
+                      "id": "",
+                      "$target": {
+                        "kind": "object",
+                        "filter": {
+                          "zone": [
+                            "battlefield",
+                            "exile"
+                          ],
+                          "anyOf": [
+                            {
+                              "zone": "battlefield",
+                              "controller": "you"
+                            },
+                            {
+                              "zone": "exile",
+                              "keyword": "suspend",
+                              "counters": {
+                                "kind": "time"
+                              },
+                              "owner": "you"
+                            }
+                          ]
+                        },
+                        "min": 1,
+                        "max": 1,
+                        "text": "target permanent you control or suspended card you own"
+                      }
+                    },
+                    "kind": "time",
+                    "count": 1
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "if",
+      "may",
+      "or",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Choose target permanent you control or suspended card you own. If that permanent or card has a time counter on it, you may remove a time counter from it or put another time counter on it."
+      },
+      {
+        "text": "Whenever ~ attacks, choose target permanent you control or suspended card you own. If that permanent or card has a time counter on it, you may remove a time counter from it or put another time counter on it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Choose target permanent you control or suspended card you own. If that permanent or card has a time counter on it, you may remove a time counter from it.",
+      "{T}: Choose target permanent you control or suspended card you own. If that permanent or card has a time counter on it, remove a time counter from it or put another time counter on it.",
+      "{T}: Choose target permanent an opponent controls or suspended card you own. If that permanent or card has a time counter on it, you may remove a time counter from it or put another time counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhd92.exileTop.nonlandTimeCountersMv.gainsSuspend",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 406.1",
+      "CR 608.2c",
+      "CR 122.1",
+      "CR 202.3",
+      "CR 702.62a",
+      "CR 702.62b",
+      "CR 611.2c"
+    ],
+    "pattern": "exile the top {n:Qty} cards of your library . for each nonland card exiled this way , put a number of time counters on that card equal to its mana value . if it doesn't have suspend , it gains suspend",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "as": "exiledTop"
+      },
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "exiledTop"
+            },
+            "zone": "exile",
+            "notTypes": [
+              "Land"
+            ]
+          }
+        },
+        "as": "timeCard",
+        "do": [
+          {
+            "op": "putCounters",
+            "on": {
+              "ref": "bound",
+              "name": "timeCard"
+            },
+            "kind": "time",
+            "count": {
+              "q": "stat",
+              "stat": "manaValue",
+              "of": {
+                "ref": "bound",
+                "name": "timeCard"
+              }
+            }
+          },
+          {
+            "op": "if",
+            "cond": {
+              "cond": "not",
+              "of": {
+                "cond": "matches",
+                "object": {
+                  "ref": "bound",
+                  "name": "timeCard"
+                },
+                "filter": {
+                  "keyword": "suspend"
+                }
+              }
+            },
+            "then": [
+              {
+                "op": "effect",
+                "duration": {
+                  "d": "permanent"
+                },
+                "effects": [
+                  {
+                    "s": "continuous",
+                    "affects": {
+                      "ref": "bound",
+                      "name": "timeCard"
+                    },
+                    "mods": [
+                      {
+                        "layer": 6,
+                        "add": [
+                          {
+                            "kind": "keyword",
+                            "keyword": "suspend",
+                            "text": "suspend"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "each",
+      "this way",
+      "if",
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile the top three cards of your library. For each nonland card exiled this way, put a number of time counters on that card equal to its mana value. If it doesn't have suspend, it gains suspend."
+      },
+      {
+        "text": "{4}, {T}: Exile the top two cards of your library. For each nonland card exiled this way, put a number of time counters on that card equal to its mana value. If it doesn't have suspend, it gains suspend."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top three cards of your library. For each nonland card exiled this way, put a number of time counters on that card equal to its power. If it doesn't have suspend, it gains suspend.",
+      "When ~ enters, exile the top three cards of your library. For each nonland card exiled this way, put a number of time counters on that card equal to its mana value.",
+      "When ~ enters, exile the top three cards of target player's library. For each nonland card exiled this way, put a number of time counters on that card equal to its mana value. If it doesn't have suspend, it gains suspend."
+    ]
+  }
+]

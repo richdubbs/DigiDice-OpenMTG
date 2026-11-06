@@ -3635,87 +3635,60 @@
  },
  {
   "card": "Archangel Avacyn // Avacyn, the Purifier",
-  "verified": "r4-refs review, by hand, the abilities the parser understands (dl.r4refs.nextUpkeep.tail): flash, flying, vigilance; when it enters your creatures gain indestructible until end of turn; when a non-Angel creature you control dies, ~ transforms at the beginning of the next upkeep (CR 603.7, 701.27a)",
+  "verified": "r4-refs review, by hand, the abilities the parser understands (dl.r4refs.nextUpkeep.tail): flash, flying, vigilance; when it enters your creatures gain indestructible until end of turn; when a non-Angel creature you control dies, ~ transforms at the beginning of the next upkeep (CR 603.7, 701.27a); edh-next-32 update (EDHREC rank 7,516; held-out, opened by the owner (commander request 2026-10-27, more cards 2026-10-30)), by hand against the Oracle text, the Scryfall rulings (fetched 2026-11-01) and the Comprehensive Rules (media.wizards.com text 2026-09-25): the back face's 'When this creature transforms into Avacyn, the Purifier, it deals 3 damage to each other creature and each opponent' is now understood (parser/lower/scope.ts: 'it' in a trigger of the object's own transformation is the object itself, CR 701.27e, 712.18, 120.3, 109.2); the card is full",
   "faces": [
    {
     "abilities": [
      {
-      "kind": "keyword",
       "keyword": "flash",
-      "prov": {
-       "by": "keyword",
-       "id": "flash"
-      },
-      "src": [
-       0
-      ]
+      "kind": "keyword"
      },
      {
-      "kind": "keyword",
       "keyword": "flying",
-      "prov": {
-       "by": "keyword",
-       "id": "flying"
-      },
-      "src": [
-       1
-      ]
+      "kind": "keyword"
      },
      {
-      "kind": "keyword",
       "keyword": "vigilance",
-      "prov": {
-       "by": "keyword",
-       "id": "vigilance"
-      },
-      "src": [
-       1
-      ]
+      "kind": "keyword"
      },
      {
-      "kind": "triggered",
       "effect": {
        "steps": [
         {
-         "op": "effect",
          "duration": {
           "d": "endOfTurn"
          },
          "effects": [
           {
-           "s": "continuous",
            "affects": {
-            "ref": "each",
             "filter": {
              "controller": "you",
              "types": [
               "Creature"
              ]
-            }
+            },
+            "ref": "each"
            },
            "mods": [
             {
-             "layer": 6,
              "add": [
               {
-               "kind": "keyword",
-               "keyword": "indestructible"
+               "keyword": "indestructible",
+               "kind": "keyword"
               }
-             ]
+             ],
+             "layer": 6
             }
-           ]
+           ],
+           "s": "continuous"
           }
-         ]
+         ],
+         "op": "effect"
         }
        ],
        "targets": []
       },
-      "prov": {
-       "by": "template"
-      },
-      "src": [
-       2
-      ],
+      "kind": "triggered",
       "trigger": {
        "on": [
         {
@@ -3729,11 +3702,9 @@
       }
      },
      {
-      "kind": "triggered",
       "effect": {
        "steps": [
         {
-         "op": "delay",
          "do": [
           {
            "op": "changeFace",
@@ -3743,6 +3714,7 @@
            }
           }
          ],
+         "op": "delay",
          "when": {
           "at": "step",
           "next": true,
@@ -3752,12 +3724,7 @@
        ],
        "targets": []
       },
-      "prov": {
-       "by": "template"
-      },
-      "src": [
-       3
-      ],
+      "kind": "triggered",
       "trigger": {
        "on": [
         {
@@ -3782,33 +3749,41 @@
    {
     "abilities": [
      {
-      "kind": "keyword",
       "keyword": "flying",
-      "prov": {
-       "by": "keyword",
-       "id": "flying"
-      },
-      "src": [
-       0
-      ]
+      "kind": "keyword"
      },
      {
-      "kind": "triggered",
       "effect": {
        "steps": [
         {
-         "op": "manual",
-         "reason": "contagion: \"each other\" in a sentence that is not understood (design 6.7 T2)"
+         "also": [
+          {
+           "amount": 3,
+           "to": {
+            "ref": "each",
+            "who": "opponent"
+           }
+          }
+         ],
+         "amount": 3,
+         "op": "damage",
+         "source": {
+          "ref": "self"
+         },
+         "to": {
+          "filter": {
+           "other": true,
+           "types": [
+            "Creature"
+           ]
+          },
+          "ref": "each"
+         }
         }
        ],
        "targets": []
       },
-      "prov": {
-       "by": "template"
-      },
-      "src": [
-       1
-      ],
+      "kind": "triggered",
       "trigger": {
        "on": [
         {
@@ -3823,7 +3798,8 @@
      }
     ]
    }
-  ]
+  ],
+  "expect": "full"
  },
  {
   "card": "Case of the Gateway Express",
@@ -3945,20 +3921,18 @@
  },
  {
   "card": "Sarkhan the Masterless",
-  "verified": "r4-refs review, by hand, the abilities the parser understands (eff.r4refs.eachYouControl.deals.damage): whenever a creature attacks you or a planeswalker you control, each Dragon you control deals 1 damage to that creature (CR 120.1, 120.3, 508.1); the -3 token",
+  "verified": "r4-refs review, by hand, the abilities the parser understands (eff.r4refs.eachYouControl.deals.damage): whenever a creature attacks you or a planeswalker you control, each Dragon you control deals 1 damage to that creature (CR 120.1, 120.3, 508.1); the -3 token edh-next-137: the +1 is automated too (each planeswalker you control becomes a 4/4 red Dragon creature and gains flying until end of turn; edh-next-137-review.json).",
   "faces": [
    {
     "abilities": [
      {
-      "kind": "triggered",
       "effect": {
        "steps": [
         {
-         "op": "damage",
          "amount": 1,
+         "op": "damage",
          "perSource": true,
          "source": {
-          "ref": "each",
           "filter": {
            "anyOf": [
             {
@@ -3968,7 +3942,8 @@
             }
            ],
            "controller": "you"
-          }
+          },
+          "ref": "each"
          },
          "to": {
           "ref": "event",
@@ -3978,59 +3953,100 @@
        ],
        "targets": []
       },
-      "prov": {
-       "by": "template"
-      },
-      "src": [
-       0
-      ],
+      "kind": "triggered",
       "trigger": {
        "on": [
         {
-         "ev": "attacks",
          "attacker": {
           "types": [
            "Creature"
           ]
          },
          "defender": "you",
+         "ev": "attacks",
          "orPlaneswalker": true
         }
        ]
       }
      },
      {
-      "kind": "activated",
       "cost": {
        "loyalty": 1
       },
       "effect": {
        "steps": [
         {
-         "op": "manual",
-         "reason": "contagion: \"until\" in a sentence that is not understood (design 6.7 T2)"
+         "duration": {
+          "d": "endOfTurn"
+         },
+         "effects": [
+          {
+           "affects": {
+            "filter": {
+             "controller": "you",
+             "types": [
+              "Planeswalker"
+             ]
+            },
+            "ref": "each"
+           },
+           "mods": [
+            {
+             "layer": 4,
+             "subtypes": {
+              "set": [
+               "Dragon"
+              ]
+             },
+             "types": {
+              "set": [
+               "Creature"
+              ]
+             }
+            },
+            {
+             "colors": {
+              "set": [
+               "R"
+              ]
+             },
+             "layer": 5
+            },
+            {
+             "add": [
+              {
+               "keyword": "flying",
+               "kind": "keyword"
+              }
+             ],
+             "layer": 6
+            },
+            {
+             "layer": "7b",
+             "power": 4,
+             "toughness": 4
+            }
+           ],
+           "s": "continuous"
+          }
+         ],
+         "op": "effect"
         }
        ],
        "targets": []
       },
       "isLoyalty": true,
-      "prov": {
-       "by": "template"
-      },
-      "src": [
-       1
-      ]
+      "kind": "activated"
      },
      {
-      "kind": "activated",
       "cost": {
        "loyalty": -3
       },
       "effect": {
        "steps": [
         {
-         "op": "createToken",
          "count": 1,
+         "op": "createToken",
          "token": {
           "colors": [
            "R"
@@ -4055,12 +4071,7 @@
        "targets": []
       },
       "isLoyalty": true,
-      "prov": {
-       "by": "template"
-      },
-      "src": [
-       2
-      ]
+      "kind": "activated"
      }
     ]
    }

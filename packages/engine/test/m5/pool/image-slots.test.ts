@@ -77,11 +77,11 @@ describe('WP24 image slots (design 12.2): one per physical side', { timeout: 60_
       for (const n of new Set([def.name, ...def.faces.map((f) => f.name)])) if (slotFor(slots, n).length !== 1) problems.push(`${name}: "${n}" resolves to ${slotFor(slots, n).length} slots`);
     }
     expect(problems).toEqual([]);
-  }, 120_000); // every fixture card is compiled: the set grows with every package, so the default 5 s is not enough on a busy machine
+  }, 1_800_000); // every fixture card is compiled: the set grows with every package (about 100 s alone at 3,300 cards in 2026-10), so 120 s timed out in whole-engine runs (raised to 30 min 2026-11-05: about 320-420 s alone, more in whole-engine runs, at 6,610 fixture cards after the 60th merge's rounds)
 
   it('slots do not depend on rules automation (contract C3): the same slots with no abilities compiled', () => {
     for (const name of fixtureCardNames()) expect(imageSlots(compileCard(getCard(name), noAbilityCompiler))).toEqual(imageSlots(compiledDef(name)));
-  });
+  }, 1_800_000); // compiles every fixture card twice (raised to 30 min 2026-11-05: about 320-420 s alone, more in whole-engine runs, at 6,610 fixture cards after the 60th merge's rounds)
 });
 
 describe('WP24 image slots of layouts outside the fixture set (synthetic definitions)', { timeout: 60_000 }, () => {
@@ -147,8 +147,9 @@ describe('WP24 token variants: the interpreter\'s token and the index\'s token s
       for (const card of getTokens(t)) expect(keys(compileCard(card, noAbilityCompiler))).toEqual(oracleTokenVariantKeys(card));
     }
     const spirits = getTokens('Spirit').flatMap(oracleTokenVariantKeys);
-    expect(spirits).toHaveLength(7); // FAST5 MX6: the endure cards' white Spirit tokens (1/1, 2/2, 3/3, X/X) joined the fixture set; std-cardcopy-5: Kaya, Spirits' Justice's white-black 1/1; pc-tokens-1: Ceaseless Conflict's red-white 3/2
-    expect(new Set(spirits).size).toBe(7);
+    expect(spirits).toHaveLength(13); // edh-c-105: Obscura Ascendancy's white 2/2 Spirit with flying; edh-top-1: Ugin, the Ineffable's colorless 2/2 Spirit; edh-*: Forbidden Orchard's colorless 1/1 Spirit; FAST5 MX6: the endure cards' white Spirit tokens (1/1, 2/2, 3/3, X/X) joined the fixture set; std-cardcopy-5: Kaya, Spirits' Justice's white-black 1/1; pc-tokens-1: Ceaseless Conflict's red-white 3/2; edh-zones-24: Teferi, Temporal Pilgrim's blue 2/2 with vigilance; edh-next-9: Saint Traft and Rem Karolus's blue 1/1 flying Spirit; edh-next-117: Wan Shi Tong, All-Knowing's colorless 1/1 Spirit that can't block or be blocked by non-Spirit creatures
+    expect(new Set(spirits).size).toBe(13);
+    expect(spirits).toContain('Spirit (1/1 C Creature — Spirit)');
     expect(spirits).toContain('Spirit (1/1 W Creature — Spirit; Flying)');
   });
 

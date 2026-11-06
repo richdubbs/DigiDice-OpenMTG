@@ -103,7 +103,9 @@ function putOneOntoBattlefieldNamedLater(list: EffectStep[], i: number, st: Rend
   const pool = groupPool(a.from);
   if (pool === null || pool.desc === null) return null;
   const m = list[i + 1];
-  if (m?.op !== 'move' || m.guard !== undefined || m.until !== undefined || m.as !== undefined || m.what.ref !== 'bound' || m.what.name !== a.as) return null;
+  if (m?.op !== 'move' || m.guard !== undefined || m.until !== undefined || m.what.ref !== 'bound' || m.what.name !== a.as) return null;
+  // edh-perms-17 (CR 608.2c): the move may name what it did (`as`) for a later "if an Equipment was put onto the battlefield this way" (Armored Skyhunter)
+  if (m.as !== undefined && !later1(list, i + 2, m.as)) return null;
   if (m.to.zone !== 'battlefield' || JSON.stringify(m.to.controller) !== JSON.stringify({ ref: 'you' })) return null;
   const later = JSON.stringify(list.slice(i + 2));
   if (!later.includes(`"name":"${a.as}"`)) return null; // chooseFromGroup's otherwise
@@ -113,6 +115,11 @@ function putOneOntoBattlefieldNamedLater(list: EffectStep[], i: number, st: Rend
   const text = `you may put ${np} from among ${them.text} ${destPhrase(m.to, st, false, true)}`;
   bind(st, a.as, { nouns: [...new Set([...K.nounsOf(pool.desc), 'permanent'])], plural: false, zone: 'battlefield' });
   return { clauses: [acting('you', text, text, { closesScope: true })], consumed: 2 };
+}
+
+/** edh-perms-17: does a later step read the step name `as` (a `did` condition of it)? */
+function later1(list: EffectStep[], from: number, as: string): boolean {
+  return JSON.stringify(list.slice(from)).includes(`"step":"${as}"`);
 }
 
 /** What "it's a 3/3 Robot artifact creature with flying" says, of the lasting effect on the permanent a move named `as` (null for anything else). */

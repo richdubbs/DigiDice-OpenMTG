@@ -1,0 +1,350 @@
+[
+ {
+  "id": "eff.edhn56.eot.cast.linked.free",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 607.2a",
+   "CR 611.2a",
+   "CR 601.3",
+   "CR 118.9"
+  ],
+  "pattern": "until end of turn , you may cast a spell from among cards exiled with ( it | ~ ) without paying its mana cost",
+  "build": {
+   "op": "effect",
+   "duration": {
+    "d": "endOfTurn"
+   },
+   "effects": [
+    {
+     "s": "permit",
+     "who": {
+      "ref": "you"
+     },
+     "action": "cast",
+     "of": {
+      "is": {
+       "ref": "linked",
+       "link": "exiled"
+      }
+     },
+     "single": true,
+     "costChange": {
+      "kind": "set",
+      "cost": {}
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "may",
+   "without",
+   "until"
+  ],
+  "examples": [
+   {
+    "text": "Whenever a Goblin you control dies, exile it.\n{T}: Until end of turn, you may cast a spell from among cards exiled with ~ without paying its mana cost."
+   },
+   {
+    "text": "Whenever a Goblin you control dies, exile it.\n{1}, {T}: Until end of turn, you may cast a spell from among cards exiled with ~ without paying its mana cost."
+   }
+  ],
+  "counterExamples": [
+   "Whenever a Goblin you control dies, exile it.\n{T}: Until end of turn, you may cast a spell from among cards exiled with ~.",
+   "Whenever a Goblin you control dies, exile it.\n{T}: Until end of turn, you may cast two spells from among cards exiled with ~ without paying their mana costs.",
+   "Whenever a Goblin you control dies, exile it.\n{T}: Until end of turn, you may cast a spell from among cards in exile without paying its mana cost."
+  ]
+ },
+ {
+  "id": "eff.edhn56.dur.ownerMayCast.free",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 611.2a",
+   "CR 611.2b",
+   "CR 601.3",
+   "CR 118.9",
+   "CR 400.7",
+   "CR 108.3"
+  ],
+  "pattern": "{d:Dur} , its owner may cast {o:Obj} without paying its mana cost",
+  "build": {
+   "op": "effect",
+   "duration": "$d",
+   "effects": [
+    {
+     "s": "permit",
+     "who": {
+      "ref": "ownerOf",
+      "object": "$o"
+     },
+     "action": "cast",
+     "of": {
+      "is": "$o"
+     },
+     "costChange": {
+      "kind": "set",
+      "cost": {}
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "may",
+   "without"
+  ],
+  "examples": [
+   {
+    "text": "Exile target artifact. Until end of turn, its owner may cast that card without paying its mana cost."
+   },
+   {
+    "text": "Exile target creature. Until end of turn, its owner may cast that card without paying its mana cost."
+   }
+  ],
+  "counterExamples": [
+   "Exile target artifact. Until end of turn, its owner may cast that card.",
+   "Exile target artifact. Until end of turn, you may cast that card without paying its mana cost.",
+   "Exile target artifact. Until end of turn, its controller may cast that card without paying its mana cost.",
+   "Exile target artifact. Until end of turn, its owner may play that card without paying its mana cost."
+  ]
+ },
+ {
+  "id": "eff.edhn56.lookAndPlay.obj.thisTurn",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 406.3",
+   "CR 701.20e",
+   "CR 611.2a",
+   "CR 611.2c",
+   "CR 601.3",
+   "CR 305.1",
+   "CR 400.7"
+  ],
+  "pattern": "you may look at and play {o:Obj} this turn",
+  "build": [
+   {
+    "op": "look",
+    "who": {
+     "ref": "you"
+    },
+    "at": "$o"
+   },
+   {
+    "op": "effect",
+    "duration": {
+     "d": "endOfTurn"
+    },
+    "effects": [
+     {
+      "s": "permit",
+      "who": {
+       "ref": "you"
+      },
+      "action": "play",
+      "of": {
+       "is": "$o"
+      }
+     }
+    ]
+   }
+  ],
+  "consumes": [
+   "may",
+   "this turn"
+  ],
+  "examples": [
+   {
+    "text": "Exile the top card of target opponent's library face down. You may look at and play that card this turn."
+   },
+   {
+    "text": "Whenever ~ deals combat damage to a player, exile the top card of your library face down. You may look at and play that card this turn."
+   }
+  ],
+  "counterExamples": [
+   "Exile the top card of target opponent's library face down. You may look at that card this turn.",
+   "Exile the top card of target opponent's library face down. You may look at and play that card until end of turn.",
+   "Exile the top card of target opponent's library face down. You may look at and cast that card this turn."
+  ]
+ },
+ {
+  "id": "eff.edhn56.linked.returnEach.filter.battlefield.owners",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 607.2a",
+   "CR 400.7",
+   "CR 110.2",
+   "CR 108.3"
+  ],
+  "pattern": "return each {f:Filter} card exiled with ( it | ~ ) to the battlefield under ( its owner 's | their owners ' ) control",
+  "build": {
+   "op": "move",
+   "what": {
+    "ref": "each",
+    "filter": {
+     "is": {
+      "ref": "linked",
+      "link": "exiled"
+     },
+     "zone": "exile",
+     "isCard": true,
+     "anyOf": [
+      "$f"
+     ]
+    }
+   },
+   "to": {
+    "zone": "battlefield",
+    "controller": "owner"
+   }
+  },
+  "consumes": [
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Whenever a Goblin you control dies, exile it.\nWhenever ~ attacks, return each artifact card exiled with ~ to the battlefield under its owner's control."
+   },
+   {
+    "text": "Whenever a Goblin you control dies, exile it.\nWhen ~ dies, return each creature card exiled with it to the battlefield under its owner's control."
+   }
+  ],
+  "counterExamples": [
+   "Whenever a Goblin you control dies, exile it.\nWhenever ~ attacks, return each artifact card exiled with ~ to the battlefield under your control.",
+   "Whenever a Goblin you control dies, exile it.\nWhenever ~ attacks, return each artifact card exiled with ~ to its owner's hand.",
+   "Whenever a Goblin you control dies, exile it.\nWhenever ~ attacks, return an artifact card exiled with ~ to the battlefield under its owner's control."
+  ]
+ },
+ {
+  "id": "eff.edhn56.linked.returnEach.battlefield.you",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 607.2a",
+   "CR 400.7",
+   "CR 110.2"
+  ],
+  "pattern": "return each card exiled with ( it | ~ ) to the battlefield under your control",
+  "build": {
+   "op": "move",
+   "what": {
+    "ref": "each",
+    "filter": {
+     "is": {
+      "ref": "linked",
+      "link": "exiled"
+     },
+     "zone": "exile",
+     "isCard": true
+    }
+   },
+   "to": {
+    "zone": "battlefield",
+    "controller": {
+     "ref": "you"
+    }
+   }
+  },
+  "consumes": [
+   "each"
+  ],
+  "examples": [
+   {
+    "text": "Whenever a Goblin you control dies, exile it.\nWhenever ~ attacks, return each card exiled with ~ to the battlefield under your control."
+   },
+   {
+    "text": "When ~ enters, exile up to two target creatures.\nWhen ~ dies, return each card exiled with it to the battlefield under your control."
+   }
+  ],
+  "counterExamples": [
+   "Whenever a Goblin you control dies, exile it.\nWhenever ~ attacks, return each card exiled with ~ to the battlefield under its owner's control.",
+   "Whenever a Goblin you control dies, exile it.\nWhenever ~ attacks, return each card exiled with ~ to your hand.",
+   "Whenever a Goblin you control dies, exile it.\nWhenever ~ attacks, return a card exiled with ~ to the battlefield under your control."
+  ]
+ },
+ {
+  "id": "eff.edhn56.linked.putOne.battlefield.withCounter",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 607.2a",
+   "CR 608.2d",
+   "CR 110.2",
+   "CR 122.6",
+   "CR 614.1c",
+   "CR 400.7"
+  ],
+  "pattern": "put ( a | an ) {f:Filter} card exiled with ( it | ~ ) onto the battlefield under your control with ( a | an ) {k:CounterKind} counter on it",
+  "build": [
+   {
+    "op": "chooseObjects",
+    "who": {
+     "ref": "you"
+    },
+    "from": {
+     "ref": "each",
+     "filter": {
+      "is": {
+       "ref": "linked",
+       "link": "exiled"
+      },
+      "zone": "any",
+      "isCard": true,
+      "anyOf": [
+       "$f"
+      ]
+     }
+    },
+    "min": 1,
+    "max": 1,
+    "as": "returned"
+   },
+   {
+    "op": "move",
+    "what": {
+     "ref": "bound",
+     "name": "returned"
+    },
+    "to": {
+     "zone": "battlefield",
+     "controller": {
+      "ref": "you"
+     },
+     "counters": [
+      {
+       "kind": "$k",
+       "count": 1
+      }
+     ]
+    }
+   }
+  ],
+  "consumes": [],
+  "examples": [
+   {
+    "text": "Whenever a nontoken Goblin you control dies, exile it.\nAt the beginning of your end step, put a creature card exiled with ~ onto the battlefield under your control with a stun counter on it."
+   },
+   {
+    "text": "When ~ enters, exile up to two target artifacts.\nWhen ~ leaves the battlefield, put an artifact card exiled with it onto the battlefield under your control with a finality counter on it."
+   }
+  ],
+  "counterExamples": [
+   "Whenever a nontoken Goblin you control dies, exile it.\nAt the beginning of your end step, put a creature card exiled with ~ onto the battlefield under your control.",
+   "Whenever a nontoken Goblin you control dies, exile it.\nAt the beginning of your end step, put a creature card exiled with ~ onto the battlefield under its owner's control with a stun counter on it.",
+   "Whenever a nontoken Goblin you control dies, exile it.\nAt the beginning of your end step, put a creature card exiled with ~ onto the battlefield under your control with two stun counters on it."
+  ]
+ }
+]

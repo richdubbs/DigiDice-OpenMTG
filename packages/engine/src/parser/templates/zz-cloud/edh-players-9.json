@@ -1,0 +1,162 @@
+[
+  {
+    "id": "eff.edhp9.youCreate.token.ifCond",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 111.1",
+      "CR 701.7a"
+    ],
+    "pattern": "^ you create ( a | an ) {t:TokenDesc} if {c:Cond}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": "$t",
+      "guard": "$c"
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, draw a card. Then you create a Treasure token if that player controls more lands than you."
+      },
+      {
+        "text": "At the beginning of your end step, you create a Food token if you control three or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, draw a card. Then you create a Treasure token unless that player controls more lands than you.",
+      "Whenever ~ deals combat damage to a player, draw a card. Then you create two Treasure tokens if that player controls more lands than you.",
+      "Whenever ~ deals combat damage to a player, draw a card. Then that player creates a Treasure token if they control more lands than you."
+    ]
+  },
+  {
+    "id": "eff.edhp9.drawLose.commanderManaValue",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 903.3",
+      "CR 107.3",
+      "CR 608.2h",
+      "CR 121.1",
+      "CR 119.3"
+    ],
+    "pattern": "^ you draw x cards and you lose x life , where x is the mana value of a commander you own on the battlefield or in the command zone",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "commander": true,
+            "owner": "you",
+            "zone": [
+              "battlefield",
+              "command"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosenCommander"
+      },
+      {
+        "op": "let",
+        "name": "whereX",
+        "value": {
+          "q": "stat",
+          "stat": "manaValue",
+          "of": {
+            "ref": "bound",
+            "name": "chosenCommander"
+          }
+        }
+      },
+      {
+        "op": "draw",
+        "who": {
+          "ref": "you"
+        },
+        "count": {
+          "q": "var",
+          "name": "whereX"
+        }
+      },
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": {
+          "q": "var",
+          "name": "whereX"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you draw X cards and you lose X life, where X is the mana value of a commander you own on the battlefield or in the command zone."
+      },
+      {
+        "text": "When ~ enters, you draw X cards and you lose X life, where X is the mana value of a commander you own on the battlefield or in the command zone."
+      }
+    ],
+    "counterExamples": [
+      "You draw X cards and you lose X life, where X is the greatest mana value of a commander you own on the battlefield or in the command zone.",
+      "You draw X cards and you lose X life, where X is the mana value of a commander you own in your graveyard.",
+      "You draw X cards and each opponent loses X life, where X is the mana value of a commander you own on the battlefield or in the command zone."
+    ]
+  },
+  {
+    "id": "eff.edhp9.sacrifice.theirChoice.dealtDamageToYou",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 510.2"
+    ],
+    "pattern": "{p:Player} sacrifice[s] {n:Qty} {f:Filter} of their choice that dealt combat damage to you this turn",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": "$p",
+      "filter": {
+        "$merge": [
+          "$f",
+          {
+            "dealtDamageToYouThisTurn": "combat"
+          }
+        ]
+      },
+      "count": "$n"
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "{T}: Each opponent sacrifices a creature of their choice that dealt combat damage to you this turn."
+      },
+      {
+        "text": "When ~ enters, target player sacrifices two nonblack creatures of their choice that dealt combat damage to you this turn."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Each opponent sacrifices a creature of their choice that dealt damage to you this turn.",
+      "{T}: Each opponent sacrifices a creature of their choice that dealt combat damage to target player this turn.",
+      "{T}: Each opponent sacrifices a creature of your choice that dealt combat damage to you this turn."
+    ]
+  }
+]

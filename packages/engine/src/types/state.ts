@@ -7,8 +7,8 @@ import type { CardDef } from './card';
 import type { Decision, DecisionAnswer } from './decisions';
 import type { Action } from './actions';
 import type { CardId, DefId, ObjectId, PlayerId } from './ids';
-import type { Color, ManaType } from './mana';
-import type { AbilityDef, AltCostDelay, CounterSpec, Destination, Duration, EffectStep, EventPattern, EventRole, FaceDownProfile, KeywordAbilityDef, LinkId, ManaRestriction, ManaSpentRider, ManaSpentTrigger, Modification, Name, ObjectFilter, StaticEffect, TargetSpec } from './ability';
+import type { Color, ManaCost, ManaType } from './mana';
+import type { AbilityDef, AltCostDelay, CounterSpec, Destination, Duration, EffectProgram, EffectStep, EventPattern, EventRole, FaceDownProfile, KeywordAbilityDef, LinkId, ManaRestriction, ManaSpentRider, ManaSpentTrigger, Modification, Name, ObjectFilter, StaticEffect, TargetSpec } from './ability';
 import type { Chars } from '../rules/characteristics';
 
 /** Zones (CR 400.1). Library, hand and graveyard are always the owner's (CR 400.3). */
@@ -21,10 +21,14 @@ export const HIDDEN_ZONES: readonly ZoneKind[] = ['library', 'hand']; // CR 400.
  * "from exile") never matches it, while "from anywhere other than your hand" (`not` of a zone, `notFrom`) does: the spell was plainly not cast from the hand.
  * (A judgement the owner may revisit: Star Trek's rules text is not out yet.)
  */
-export type CastOrigin = ZoneKind | 'outside';
+/** And (edh-next-143 INTERFACE CHANGE, additive; CR 601.2a, Sen Triplets ruling 2020-08-07) `'otherHand'`, a spell cast from the hand of a player other than its caster: never "your hand" ("if you cast it from your hand" is false, "from anywhere other than your hand" is true). */
+export type CastOrigin = ZoneKind | 'outside' | 'otherHand';
 
-/** trek-11 (CR 400.11, 601.2a): the origin of a spell cast from `o`: `'outside'` for the staging object of a card played from outside the game, else its zone. */
-export const castOriginOf = (o: { zone: ZoneKind; fromOutside?: true }): CastOrigin => (o.fromOutside === true ? 'outside' : o.zone);
+/**
+ * trek-11 (CR 400.11, 601.2a): the origin of a spell cast from `o`: `'outside'` for the staging object of a card played from outside the game, else its zone.
+ * edh-next-143 (CR 601.2a; Sen Triplets): with the player `by` who casts or plays it, a card in another player's hand is `'otherHand'` (never "your hand").
+ */
+export const castOriginOf = (o: { zone: ZoneKind; owner?: PlayerId; fromOutside?: true }, by?: PlayerId): CastOrigin => (o.fromOutside === true ? 'outside' : by !== undefined && o.zone === 'hand' && o.owner !== undefined && o.owner !== by ? 'otherHand' : o.zone);
 
 /** Steps of a turn (CR 500.1). Main phases have no steps; we model them as steps for simplicity. */
 export type Step =
@@ -70,6 +74,12 @@ export interface ManaUnit {
    * the source had no subtypes (rules/mana.ts#addMana).
    */
   sourceSubtypes?: string[];
+  /**
+   * edh-cast-8 INTERFACE CHANGE (additive), CR 106.3, 205.2a, 601.2h: the card types its source had as this mana was spent to cast a spell (last known information when the
+   * source left the battlefield to pay, none for a source that was not on the battlefield: actions/cast.ts stamps it on the units of `CostsPaid.manaSpent`, never on the units of a mana pool), for "if three or more mana from
+   * creatures was spent to cast it" (Inga and Esika). Absent when the source had no card type (a mana unit with no source).
+   */
+  sourceTypes?: string[];
   /** std-mana-1 INTERFACE CHANGE (additive), CR 106.6: a rider on the spell this mana is spent on (`ManaSpentRider`; actions/cast.ts#applySpentRiders). */
   rider?: ManaSpentRider;
   /**
@@ -89,11 +99,21 @@ export interface PlayerState {
   /** Number of the most recent turn of this player that has begun (CR 302.6 summoning sickness, CR 602.5a). */
   lastTurnStarted: number;
   /**
+   * edh-next-135 INTERFACE CHANGE (additive), CR 500.1: the number of this player's turn before the one `lastTurnStarted` holds (core/turn.ts#beginNextTurn); read by the history scope
+   * `sinceYourLastTurn` ("since your last turn" during your own turn). Absent before the player's second turn, so every earlier state and action log is unchanged.
+   */
+  previousTurnStarted?: number;
+  /**
    * std-r9 INTERFACE CHANGE (additive): how many turns of this player have begun this game, extra turns included (CR 500.7) and skipped turns not (CR 500.11:
    * a skipped turn does not happen); counted as each turn begins (core/turn.ts#beginTurn). Read by the quantity `turnsBegun` ("You can't cast ~ during your
    * first, second, or third turns of the game"). Absent = 0, so every earlier state and action log is unchanged.
    */
   turnsBegun?: number;
+  /**
+   * trek-18 INTERFACE CHANGE (additive), CR 500.7: how many extra turns of this player have begun this game (counted as each extra turn begins, core/turn.ts#beginNextTurn); read by
+   * the quantity `extraTurnsBegun` ("if you haven't begun an extra turn this game", H.M.S. Bounty). Absent = 0, so every earlier state and action log is unchanged.
+   */
+  extraTurnsBegun?: number;
   /**
    * CMD3 INTERFACE CHANGE (additive): the numbers of the turns of this player's last two upkeep steps that began, the latest last (core/turn.ts#beginStep);
    * read by the condition `controlledSinceUpkeep` (echo, CR 702.30a: "if this permanent came under your control since the beginning of your last upkeep").
@@ -112,6 +132,11 @@ export interface PlayerState {
   /** Counters on players (energy, experience, ...). CR 122.1. */
   counters: Record<string, number>;
   /**
+   * edh-next-147 INTERFACE CHANGE (additive, optional): the name stickers this player has access to (CR 123.2c: the stickers of the sticker sheets chosen as the game
+   * began, core/create.ts from `PlayerConfig.stickerSheets`), each one distinct (CR 123.3a: `id`), its words `text`. Absent: the player plays without stickers.
+   */
+  stickers?: { id: string; text: string }[];
+  /**
    * Life gained / lost this turn, spells cast this turn, etc. for conditions. FAST5X E20 INTERFACE CHANGE (additive): `manaSpentOnSpells`, the mana this player
    * spent this turn to cast spells (CR 700.14, expend; absent = 0; rules/crime.ts).
    * FAST5X E22 INTERFACE CHANGE (additive): `descended`, the permanent cards put into this player's graveyard from anywhere this turn (CR 700.11: "the number of
@@ -120,11 +145,23 @@ export interface PlayerState {
    * or more coins each turn", effects/handlers/game.ts#flipCoin). Absent = 0.
    */
   turnStats: {
+    /** edh-d-98 INTERFACE CHANGE (additive), CR 121.2, 614.1a: the draws proposed for this player this turn, replaced or not (effects/propose.ts#runPipeline): "the first time you would draw a card each turn". Absent: none. */
+    drawsProposed?: number;
     lifeGained: number; lifeLost: number; spellsCast: number; cardsDrawn: number; damageDealtToOpponents?: number; descended?: number; manaSpentOnSpells?: number; coinFlips?: number;
     /** r5-repl INTERFACE CHANGE (additive): `cardsDrawn` as this player's draw step began this turn (core/steps.ts); absent before it (CR 504.1). */
     drawStepFrom?: number;
+    /** edh-d-49 INTERFACE CHANGE (additive), CR 706.2: the ids of the objects whose once-each-turn die-roll option (`rollAdjust`, `rollReroll` with `oncePerTurn`) this player used this turn (effects/roll-options.ts). */
+    rollOptionsUsed?: ObjectId[];
+    /** edh-next-19 INTERFACE CHANGE (additive), CR 119.1, 500.1: this player's life total as the turn began (core/turn.ts); read by the quantity `life` with `atTurnStart`. */
+    lifeAtTurnStart?: number;
     /** pc-exile-play-2 INTERFACE CHANGE (additive), CR 601.2i: the spells this player cast this turn, by the zone each was cast from ("the first spell you cast from exile each turn"). */
     castFromCount?: Record<string, number>;
+    /** edh-mana-keywords-12 INTERFACE CHANGE (additive), CR 601.2i, 106.3: the spells this player cast this turn that had mana spent from a source of each subtype ("the first spell you cast each turn that mana from a Treasure was spent to cast"). */
+    castManaFromCount?: Record<string, number>;
+    /** edh-players-7 INTERFACE CHANGE (additive), CR 121.1, 400.7: the cards this player drew this turn, by the id each has in the hand (core/zones.ts#drawCard); a card that left the hand is a new object and has another id. Read by the filter field `drawnThisTurn` (rules/filter.ts). */
+    drawn?: ObjectId[];
+    /** edh-d-3 INTERFACE CHANGE (additive), CR 702.69a, 700.4: the permanents (tokens too) put into a graveyard from the battlefield this turn, counted for the player who owns the graveyard (core/zones.ts#moveObject); gravestorm adds up every player's (`{q:'permanentsToGraveyardThisTurn'}`). Absent = 0. */
+    permanentsToGraveyard?: number;
   };
 
   // ---- M11-0 ADDITIONS (m11 design 4.2; all optional and absent outside a Commander game, so every earlier state and action log is unchanged) ----
@@ -235,6 +272,8 @@ export interface StopSettings {
 /** Information about a spell or ability on the stack (CR 405, 601, 602, 603). */
 export interface StackInfo {
   kind: 'spell' | 'activated' | 'triggered';
+  /** edhd36 (CR 606.2): the activated ability is a loyalty ability (set as it is put on the stack, actions/activate.ts). */
+  loyalty?: true;
   /** For abilities: the source object (CR 113.7) and its last known information. */
   sourceId?: ObjectId;
   sourceName?: string;
@@ -244,8 +283,14 @@ export interface StackInfo {
   face?: number;
   /** Chosen modes (indices into ModeSpec.options), CR 700.2. */
   modes?: number[];
-  /** Chosen targets per TargetSpec (per chosen mode when modal), CR 601.2c. */
-  targets: TargetChoice[][];
+  /**
+   * edh-next-69 INTERFACE CHANGE (additive), CR 702.47a-b, 707.10: the text of the cards spliced onto this spell as it was cast ("Splice onto Arcane {1}{R}"), in the order
+   * chosen: a copy of their spell abilities, announced after the spell's own targets and played after the spell's own steps (effects/run.ts#spellPlan). A copy of the spell
+   * has it too. Capability `feature:splice`.
+   */
+  splice?: { name: string; text: string; programs: EffectProgram[] }[];
+  /** Chosen targets per TargetSpec (per chosen mode when modal), CR 601.2c. edh-d-83: with `for` on a per-player target (StackTargetChoice). */
+  targets: StackTargetChoice[][];
   /** Value of X (CR 107.3). */
   x?: number;
   /** Optional/additional/alternative costs paid (kicker count, flashback, ...). */
@@ -266,12 +311,14 @@ export interface StackInfo {
    * on its triggering ("copy that ability", the `abilityTriggered` event) finds it on the stack (effects/refs.ts).
    */
   pendingId?: string;
+  /** edhn78 INTERFACE CHANGE (additive), CR 714.2, 714.2d: a Saga's final chapter ability (PendingTrigger.finalChapter); read by the `finalChapterAbility` stack kind of an object filter. */
+  finalChapter?: true;
   /** "Split second" and similar flags read from the spell when cast. */
   flags?: string[];
   /** Zone the card was cast from (aftermath: exile instead of leaving the stack, CR 702.127a); trek-11: or `'outside'`, from outside the game (CR 400.11). */
   castFrom?: CastOrigin;
   /** pc-exile-play-2 INTERFACE CHANGE (additive), CR 601.2i: which spell this was among those its caster cast this turn (`turn`), and among those cast from the same zone (`fromZone`); 1 is the first. */
-  castOrdinal?: { turn: number; fromZone: number };
+  castOrdinal?: { turn: number; fromZone: number; /** edh-next-114: which spell this was among those its caster cast this turn from a zone other than their hand (1 is the first; 0 for a spell cast from the hand itself) */ notHand?: number; /** edh-mana-keywords-12: for each subtype of a source of the mana spent on it, which spell this was among those with mana from such a source (1 is the first) */ manaFrom?: Record<string, number> };
   /** FAST4 T27 INTERFACE CHANGE (additive): the player who cast the spell (CR 601.2a), kept in the permanent's cast record (`GameObject.cast.by`). */
   caster?: PlayerId;
   /** std-rx22 INTERFACE CHANGE (additive): the spell's controller changed while it was on the stack (core/control.ts); copied to `GameObject.cast.controlLost`. */
@@ -281,6 +328,8 @@ export interface StackInfo {
    * the condition (rules/resolutions.ts#castCheckKey). Read by `{cond:'asCast'}`.
    */
   castChecks?: Record<string, boolean>;
+  /** edh-next-126 INTERFACE CHANGE (additive): the "as you cast this spell" numbers of the spell (`{q:'asCast'}`), decided when it became cast (CR 601.2i), keyed by the JSON of the value. */
+  castValues?: Record<string, number>;
   /** A fused split spell: both halves were cast together (CR 702.102). */
   fused?: boolean;
   /**
@@ -307,7 +356,7 @@ export interface StackInfo {
    * the log. Recorded as the spell is cast (actions/cast.ts), applied by effects/rule-replacements/permit-enters.ts; a copy (CR 707.10) is not cast, so
    * it is ignored there.
    */
-  permitEnters?: { counters: CounterSpec[]; source: string; /** std-freecast-2 (CR 614.1c, 205.1b): and the subtypes it has in addition to its other types (PermissionDef.entersSubtypes). */ subtypes?: string[] };
+  permitEnters?: { counters: CounterSpec[]; source: string; /** std-freecast-2 (CR 614.1c, 205.1b): and the subtypes it has in addition to its other types (PermissionDef.entersSubtypes). */ subtypes?: string[]; /** edh-zones-22 (CR 614.1c): and the abilities it has (PermissionDef.entersAbilities). */ abilities?: AbilityDef[]; /** edh-next-68 (CR 614.1c): and it enters tapped (PermissionDef.entersTapped). */ tapped?: true };
   /**
    * r5-repl INTERFACE CHANGE (additive), CR 614.1a, 400.7: the spell was cast with a permission that says "If that spell would be put into a graveyard, exile
    * it instead" (`PermissionDef.graveyardInstead`): where it goes instead of a graveyard, and the name of the permission's source for the log. Recorded as
@@ -315,6 +364,12 @@ export interface StackInfo {
    * a copy (CR 707.10) is not cast, so it is ignored there.
    */
   permitGraveyardInstead?: { to: Destination; source: string };
+  /**
+   * edh-perms-4 INTERFACE CHANGE (additive), CR 601.3b, 603.7: the spell was cast at a time a sorcery could not have been cast, and only the flash permission of its own static ability
+   * let it be (`PermissionDef.offTimingSacrifice`, Necromancy): as it resolves, the controller of the permanent it becomes sacrifices it at the beginning of the next cleanup step
+   * (core/resolve.ts#offTimingSacrifice). Recorded as the spell is cast (actions/cast.ts); a copy of the spell was not cast (CR 707.10), so it never has it.
+   */
+  offTimingSacrifice?: true;
 }
 
 /** Where an ability on the stack or in a key comes from. `keyword` = generated by the keyword library, key `k:<face>:<index>:<n>`. */
@@ -332,6 +387,13 @@ export interface AbilityRef {
 }
 
 export type TargetChoice = { kind: 'object'; id: ObjectId } | { kind: 'player'; id: PlayerId };
+/**
+ * edh-d-83 INTERFACE CHANGE (additive), CR 115.1, 601.2c, 608.2b (Guff Rewrites History; Blatant Thievery ruling 2004-10-04): a target as the stack stores it. `for`, on an object chosen
+ * for a `perPlayer` / `perOpponent` spec ("for each player, choose target ... that player controls"), the player it was chosen for (its controller then; its owner for a card in a
+ * graveyard), written by the announcement (actions/announce-targets.ts), never by an answer (a player answers with `TargetChoice`). As the spell resolves the object is an illegal
+ * target once that player no longer controls (owns) it (effects/ctx.ts#checkAll). Absent everywhere else.
+ */
+export type StackTargetChoice = TargetChoice | { kind: 'object'; id: ObjectId; for: PlayerId };
 
 export interface CostsPaid {
   kicked?: number;
@@ -349,6 +411,18 @@ export interface CostsPaid {
   sacrificed?: ObjectId[];
   /** T35 ADDITION: the permanents tapped to pay a `tapUntapped` cost (ObjRef `costTapped`, station CR 702.184a); they stay on the battlefield. */
   tapped?: ObjectId[];
+  /** edh-next-141 ADDITION: the permanents unattached to pay an `unattach` cost of another object than the source (ObjRef `costUnattached`, CR 701.3d, 118.3); they stay on the battlefield. */
+  unattached?: ObjectId[];
+  /**
+   * edh-d-89 ADDITION (optional, absent = none), CR 702.122b-c, 702.122e: the creatures tapped to pay the cost of THIS crew ability (the creatures it was "crewed by"); the ability's
+   * `becomes crewed` event carries how many (`EventContext.crewers`, Mighty Servant of Leuk-o).
+   */
+  crewers?: ObjectId[];
+  /**
+   * edh-mana-keywords-8 INTERFACE CHANGE (additive), CR 702.51a, 702.51c: the creatures tapped to convoke this spell as it was cast ("each creature that convoked this spell",
+   * ObjectFilter `convokedSpell`). Only the spell that was cast has them: a copy of it was not cast, so no creature convoked it (CR 707.10, 702.51c).
+   */
+  convoked?: ObjectId[];
   /**
    * FAST5X E7 ADDITION (additive): the permanents returned to their owner's hand to pay the cost, by the ids they had ON THE BATTLEFIELD (keys of
    * `GameState.lki`, CR 608.2h): sneak's "the creature that was returned" (CR 702.190b), web-slinging's "the returned creature" (CR 702.188a).
@@ -368,6 +442,10 @@ export interface CostsPaid {
    */
   discarded?: ObjHandle[];
   lifePaid?: number;
+  /** edh-d-49 INTERFACE CHANGE (additive), CR 706.2, 602.2b: the result of the die a `rollDie` cost part rolled (after modifiers); read by `{q:'dieResult'}` of the ability's effect. */
+  rolled?: number;
+  /** edh-top-2 INTERFACE CHANGE (additive), CR 107.4f, 702.150a: how many Phyrexian mana symbols of the cost were paid with life (compleated reads it as the permanent enters). */
+  phyrexianLife?: number;
   /**
    * FAST5X E1 INTERFACE CHANGE (additive): the player chosen to pay an additional cost, by the cost's name (CR 702.174a: the opponent a gift is promised to,
    * read by PlayerRef `costChosen`). A copy keeps it (CR 707.10), and so does the permanent's cast record (CR 607.2i-j, 400.7d).
@@ -432,6 +510,12 @@ export interface LinkValue {
    * every other player leaves `values` out (core/view.ts#hideSecretLinks) until a `revealChosen` cost reveals it (rules/pay-parts.ts deletes this field).
    */
   secret?: PlayerId[];
+  /**
+   * edh-players-13 ADDITION (additive), CR 608.2d: what each player chose when several players chose for one link ("Each player chooses a creature type.",
+   * "Each opponent chooses fame or fortune."): the value (as in `values`) by chooser. Kept for the resolution that made the choice only (`cx.choices`). Read by the `chose` player reference ("each player who chose fame") and,
+   * through `values`, by a filter of the chosen quality ("a type chosen this way").
+   */
+  byPlayer?: Record<PlayerId, string>;
 }
 
 export type RoleValue = { objects: ObjHandle[] } | { players: PlayerId[] };
@@ -442,6 +526,19 @@ export interface EventContext {
   roles: Partial<Record<EventRole, RoleValue>>;
   /** "that much": damage dealt, life gained, cards drawn, counters put. */
   amount?: number;
+  /** edh-d-49 INTERFACE CHANGE (additive), CR 706.2, 603.2c: of a `dieRoll` event (a batch: every die of the occurrence), the highest result; read by `{q:'dieResultHighest'}`. */
+  dieHighest?: number;
+  /** edhn63 INTERFACE CHANGE (additive), CR 122.1, 122.6, 603.2c: of a `counters` event (a batch: every counters event of the occurrence), the number of counters of each kind put or removed; read by `putCounters.ofEvent` ("the same number and kind of counters"). */
+  counterKinds?: Record<string, number>;
+  /** edh-top-15 INTERFACE CHANGE (additive), CR 120.10: of a `damage` event, the part of its amount that was excess damage (the single event or the sum of a batch); read by `{q:'eventExcess'}`. */
+  excess?: number;
+  /** edh-next-97 INTERFACE CHANGE (additive), CR 700.4: of a `zoneChange` batch from the battlefield, whether every object in it died (was put into a graveyard); read by `{cond:'eventDied'}`. */
+  died?: boolean;
+  /**
+   * edh-d-89 INTERFACE CHANGE (additive), CR 702.122e: of a `becomes crewed` event, how many creatures were tapped to pay the cost of the crew ability that resolved (`CostsPaid.crewers`); read by
+   * `{cond:'eventCrewers'}`. Absent for any other event.
+   */
+  crewers?: number;
   /** pc-tokens-2 INTERFACE CHANGE (additive): of a `createToken` event being replaced, the definition id of the token (`createToken.exceptReplaced` skips a step that would make that very token). */
   token?: string;
   /** INTEGRATION ADDITION (W1): of a `cast` event, the spells cast this turn by all players before that spell (CR 702.40a); read by `{q:'spellsBefore'}` (storm). */
@@ -502,12 +599,20 @@ export interface GameObject {
   flipped: boolean;
   faceDown: boolean;
   phasedOut: boolean;
+  /** edh-next-132 INTERFACE CHANGE (additive), CR 601.2f, 707.12 (God-Eternal Kefnet: "That copy costs {2} less to cast"): a copy of a card created to be cast with a reduction of its own cost; read by statics/costmods.ts#costModsFor as it is cast. */
+  castReduce?: ManaCost;
   /** Face currently up for double-faced/split/flip handling (0 = front). */
   face: number;
   /** Turn number this object came under its controller's control (CR 302.6 summoning sickness). */
   controlledSinceTurn: number;
 
   counters: Record<string, number>;
+  /**
+   * edh-next-147 INTERFACE CHANGE (additive, optional): the name stickers on this object, in timestamp order (CR 123.1, 123.6c): each one's id among its owner's
+   * stickers (`PlayerState.stickers`, CR 123.3a), its words and its position (`at`, the number of words of the name before it when it was put, CR 123.6b-c). Kept as the
+   * object moves to a public zone, gone in a hidden one (CR 123.5, core/zones.ts#moveObject). Its words are added to the name (statics/stickers.ts#withNameStickers).
+   */
+  nameStickers?: { id: string; text: string; at: number }[];
   /**
    * r4-fxb INTERFACE CHANGE (additive): the timestamp of the latest keyword counter of each kind put on this object (CR 122.1b, 613.7c: a counter's effect has
    * the timestamp of when it was put on), written by rules/counters.ts#addCounters, read by statics/live.ts#counterEffects: a flying counter put on after a
@@ -519,6 +624,14 @@ export interface GameObject {
   deathtouchDamaged: boolean;
   /** The object (or player, for "Enchant player") this Aura / Equipment / Fortification is attached to (CR 301.5, 303.4, 301.5a). */
   attachedTo?: ObjectId | PlayerId;
+  /**
+   * edh-top-2 INTERFACE CHANGE (additive), CR 702.95b, 702.95d-e: the creature this one is paired with (soulbond); both creatures name each other, a creature has at most one.
+   * Set by the `pair` op (effects/handlers/pair.ts), cleared by the state-based check of core/sba-objects.ts when the pair no longer holds (702.95e); a new object after any
+   * zone change has none (CR 400.7).
+   */
+  pairedWith?: ObjectId;
+  /** edh-top-2, CR 702.95e: the player who controlled both creatures when they were paired; another player gaining control of either one ends the pair. */
+  pairedBy?: PlayerId;
   /** CR 310.9: the player who protects this battle (it can be attacked by that player's opponents). */
   protector?: PlayerId;
   /** Choices made as it entered ("As ~ enters, choose a color"). */
@@ -527,11 +640,16 @@ export interface GameObject {
   revealedTo?: PlayerId[];
   /** CR 607 link store of THIS object instance (a new object after any zone change, CR 400.7). Redacted like `chosen` for hidden objects. */
   links?: Record<LinkId, LinkValue>;
+  /**
+   * edh-next-137 ADDITION (additive), CR 114.2, 607.2a (Tibalt, Cosmic Impostor): an emblem whose abilities read the links of the permanent that made it ("You may play cards
+   * exiled with ~"): a link this emblem does not hold itself is read from that object (its last known links once it has left, CR 400.7). Written by core/emblems.ts#createEmblem only.
+   */
+  linksFrom?: ObjectId;
   /** Kept from the spell that became this permanent (CR 400.7d, 607.2i): costs paid, X, alternative cost, zone cast from. */
   // FAST4 T27 INTERFACE CHANGE (additive): `by`, the player who cast the spell (CR 601.2a; "if you cast it": Condition `wasCast.by`)
   // std-rx22 INTERFACE CHANGE (additive): `controlLost`, the permanent's controller changed at least once since it entered (core/control.ts), so the caster has not
   // controlled it without a break (Condition `wasCast.kept`, suspend's haste, CR 702.62a)
-  cast?: { costsPaid: CostsPaid; x?: number; from: CastOrigin; via?: string; turn: number; by?: PlayerId; controlLost?: true };
+  cast?: { costsPaid: CostsPaid; x?: number; from: CastOrigin; via?: string; turn: number; by?: PlayerId; controlLost?: true; /** edh-next-37 (CR 601.2i, 603.4): the answers of the "as you cast" conditions of its triggered abilities, copied from `StackInfo.castChecks` */ castChecks?: Record<string, boolean> };
   /**
    * trek-11 INTERFACE CHANGE (additive), CR 400.11b, 601.2a, 305.1: set ONLY on the staging object of a card a player plays from outside the game (core/zones.ts#stageFromOutside):
    * a card they own outside the game (`GameState.outside`) becomes this object, in its owner's hand, for the length of ONE special action (`playOutside`,
@@ -598,6 +716,8 @@ export interface GameObject {
    * until the permanent leaves the battlefield (a new object, CR 400.7, has none). Not copiable.
    */
   renowned?: boolean;
+  /** edh-next-122 ADDITION, CR 702.128b: the token was created by a resolving embalm ability (effects/handlers/tokens-copy.ts). Not copiable. */
+  embalmed?: true;
   /**
    * FAST5X E8 INTERFACE CHANGE (additive), CR 709.5c: the unlocked designations of a permanent with a shared type line (a Room), as the indices of its unlocked
    * halves (0 = left, 1 = right; ascending, no duplicates). Absent or empty: every half is locked. Only on the battlefield; not copiable (a copy has the halves,
@@ -690,6 +810,10 @@ export interface CopiableValues {
   name?: string;
   /** CR 707.9d: the copied characteristic-defining abilities that an exception overrides (and the color indicator for 'colors'). */
   dropCda?: ('colors' | 'types' | 'subtypes' | 'power' | 'toughness')[];
+  /** edh-next-122 (CR 707.9b, 202.1b): an exception says the copy has no mana cost (`{noManaCost: true}`): no mana cost, mana value 0. Part of the copiable values. */
+  noManaCost?: true;
+  /** edh-next-136 (CR 707.9b, 306.5b, 707.2): an exception says the copy's starting loyalty is this number (`{startingLoyalty: n}`, Jace, Mirror Mage): its loyalty. Part of the copiable values. */
+  startingLoyalty?: number;
   /**
    * CR 707.9, 707.3, 613.2a: concrete modifications that are part of the copiable values, in order along the whole chain (oldest first): copy exceptions
    * (retained values materialized, conditional ones resolved) and the P/T-setting "as enters" / "as turned face up" effects.
@@ -710,6 +834,10 @@ export interface AttackerState {
   blockedBy: ObjectId[];
   /** CR 509.1h: set when blockers are declared and unchanged by blockers leaving. */
   blocked: boolean;
+  /** edhv31 (CR 702.22c, 702.22e): the band this attacker was declared in (attackers with the same number are banded together); lasts for the rest of combat. */
+  band?: number;
+  /** edh-d-90 ADDITION (optional): it was declared attacking a planeswalker (CR 508.1b): with trample over planeswalkers, its damage may go to the defending player once that planeswalker is removed from combat (CR 702.19e). */
+  atPlaneswalker?: true;
 }
 
 /** Combat bookkeeping (CR 506-511). Exists from the beginning of combat step until the end of combat step (CR 511.3). */
@@ -719,6 +847,11 @@ export interface CombatState {
   /** True once at least one creature was declared as an attacker: only then do the declare blockers and combat damage steps happen (CR 508.8). */
   attacked: boolean;
   attackers: AttackerState[];
+  /**
+   * edh-d-75 ADDITION (optional; CR 508.1d, 506.4, 603.4; Firkraag, Cunning Instigator): the creatures that "had to attack this combat": an attack requirement applied to each when it was declared as an attacker
+   * (core/combat.ts#declareAttackers). Kept for the whole combat, also for a creature that has left it, because the trigger asks after the damage.
+   */
+  forced?: ObjectId[];
   /** Blocking creatures and the attackers they block. */
   blockers: { id: ObjectId; blocking: ObjectId[]; /** The player who declared it as a blocker: a blocker whose controller is no longer this player is removed from combat (CR 506.4). */ defendingPlayer: PlayerId }[];
   /** Combat damage steps that have happened (0, 1 or 2; CR 510.4). */
@@ -727,6 +860,11 @@ export interface CombatState {
   extraDamageStep: boolean;
   /** Attackers and blockers that had first strike or double strike as the first combat damage step began (CR 702.7b-c, 702.4b). */
   firstStrikers: ObjectId[];
+  /**
+   * edh-combat-7 ADDITION (optional, absent = each defending player declares their own blockers): the player who chooses which creatures block this combat and how they block (op `controlBlocks`,
+   * Odric, Master Tactician; CR 509.1, 723.1). Set while the trigger resolves, before blockers are declared; the most recent such effect decides.
+   */
+  blocksBy?: PlayerId;
 }
 
 /** A continuous effect created by a resolving spell or ability (CR 611.2). Static abilities store nothing: they are re-derived (CR 611.3a). */
@@ -754,6 +892,8 @@ export interface ContinuousEffectRec {
   attachedTo?: ObjectId | PlayerId;
   /** M6-0 (m6 design 2.2), M6-2: the snapshot a copy effect applies (written once by effects/copy.ts#beginCopy; never by card data). */
   copy?: CopiableValues;
+  /** edh-next-120 (CR 612.5, 701.12h): the snapshot of the other object's copiable values whose rules text a `rulesTextOf` layer 3 effect gives (written once by effects/text-exchange.ts). */
+  textOf?: CopiableValues;
   /**
    * M6-0 (m6 design 2.2), M6-2, CR 613.2a: created by an "as ~ enters" or "as ~ is turned face up" ability that sets power and toughness (Primal Clay,
    * Aquamorph Entity): its modifications apply in layer 1a with this record's timestamp and are part of the copiable values (CR 707.2).
@@ -790,6 +930,8 @@ export interface DelayedTriggerRec {
   once?: boolean;
   /** FAST5 T50 (CR 603.2c): the event is a "one or more" batch: the matching events of one batch are one occurrence (the `batch` of the `delay` step). */
   batch?: boolean;
+  /** edh-players-13 (CR 603.2c): with `batch`, the whole batch is one occurrence, whoever it was dealt to (`delay.wholeBatch`, types/ability.ts). */
+  wholeBatch?: true;
   /** std-tdm (CR 603.7, 603.3d): the targets of the delayed triggered ability, chosen when it is put on the stack (`delay.targets`, types/ability.ts). */
   targets?: TargetSpec[];
   firedCount: number;
@@ -813,6 +955,11 @@ export interface UntilMoveRec {
   objects: { object: ObjHandle; back: ZoneKind }[];
   /** Name of the source for the log. */
   sourceName: string;
+  /**
+   * edh-perms-22 (CR 702.26, 610.3): the record is about permanents that PHASED OUT until the event ("phases out until ~ leaves the battlefield"): `objects` are on the
+   * battlefield (back 'battlefield'), they stay phased out through the untap steps, and when the event happens they phase in (tapped when `tapped`), not move.
+   */
+  phase?: { tapped: boolean };
 }
 
 /** What the "happened this turn" conditions and the history filters read (CR 603.4 style). Pruned at cleanup, except game-scope entries. */
@@ -834,6 +981,14 @@ export interface HistoryEntry {
 
 export interface DesignationState {
   monarch?: PlayerId;
+  /**
+   * edh-players-18 INTERFACE CHANGE (additive), CR 610.3a-b, 725.3: the last players who became the monarch, each with the game's timestamp counter as it became so (core/designations.ts#setMonarch;
+   * the latest 16). An exile "until a player becomes the monarch" that resolves after one of them became the monarch since its ability was put onto the stack moves nothing
+   * (effects/handlers/zones-move.ts), as the stack object's timestamp is older than the entry's.
+   */
+  monarchLog?: { timestamp: number; player: PlayerId }[];
+  /** edh-next-82 (CR 725.1, 500.1): who was the monarch as the current turn began (core/turn.ts writes it as each turn starts; absent when nobody was). "If you were the monarch as the turn began." */
+  monarchAtTurnStart?: PlayerId;
   initiative?: PlayerId;
   dayNight?: 'day' | 'night';
   /** Players who have the city's blessing (CR 702.131c): once gained it stays for the rest of the game. */
@@ -914,6 +1069,8 @@ export interface PendingTrigger {
   controller: PlayerId;
   abilityRef: AbilityRef;
   context: EventContext;
+  /** edhn78 INTERFACE CHANGE (additive), CR 714.2, 714.2d: this trigger is the Saga's final chapter ability (the greatest chapter number it has); copied to StackInfo.finalChapter. */
+  finalChapter?: true;
   /** For delayed/reflexive triggers: the inline ability. */
   inline?: AbilityDef;
   /** Specs of targets already known when it was created (reflexive triggers choose targets on being put on the stack, CR 603.3d). */
@@ -942,7 +1099,7 @@ export interface LastKnown {
    * modified (a counter on it, an Equipment attached, or an Aura its controller controls attached); the Aura may leave with it or go to the graveyard after,
    * so the battlefield cannot say it afterwards. Set by core/zones.ts#moveObject; read by rules/filter.ts#isEquipped / isModified for last known information.
    */
-  attached?: { equipped: boolean; modified: boolean; ids?: ObjectId[] }; // `ids`: the permanents attached to it then (filter `wasAttachedTo`)
+  attached?: { equipped: boolean; modified: boolean; /** edh-d-5 (CR 303.4b, 603.10a): an Aura of any controller was attached */ enchanted?: boolean; ids?: ObjectId[] }; // `ids`: the permanents attached to it then (filter `wasAttachedTo`)
   /**
    * std-combat-3 ADDITION (additive), CR 603.10a: the permanents on the battlefield immediately before it left (itself included; for objects that leave together,
    * before the first of them moved, core/zones.ts#leavingTogether). A leaves-the-battlefield trigger "looks back in time": a quantity in its pattern ("with the
@@ -973,6 +1130,14 @@ export interface LastKnown {
    * Absent: none (the goad action's entries are in `object.goaded`). Set by core/zones.ts#moveObject; read by rules/filter.ts.
    */
   goadedBy?: PlayerId[];
+  /**
+   * edh-d-93 ADDITION (additive), CR 208.1, 613.4, 603.10a, 608.2h: the permanent's base power as it left the battlefield (its power after layer 7b; null when it had none), so "if its power was
+   * different from its base power" of a dies trigger reads it afterwards (`ObjectFilter.powerDiffersFromBase`, rules/filter.ts). Recorded only in a game one of whose definitions asks
+   * (core/zones.ts#basePowerLookbackPresent). Set by core/zones.ts#moveObject (for objects that leave together, as they were before the first of them moved).
+   * edh-next-133 (CR 608.2h, 613.4b; Curie, Emergent Intelligence ruling 2024-03-08) reads the same fact as a quantity (effects/eval.ts `basePower`): recorded too in a game where some
+   * ability reads a base power (core/zones.ts#basePowerReadersPresent), when not already recorded; a null (no number) reads as no value there.
+   */
+  basePower?: number | null;
 }
 
 /** A log line. `text` is public; `privateText` replaces it for the listed players (hidden info). */
@@ -992,6 +1157,16 @@ export interface GameResult {
 }
 
 /** A suspended action waiting for a player's decision; see core/apply.ts. */
+/** Shortcuts (CR 727, docs/design/shortcuts.md 1): a settled action of this turn with the answers it took (`GameState.turnActions`). */
+export interface TurnActionRec {
+  /** A priority action or a pass (never an answer, a cancel, a concession, a stops change or a shortcut). */
+  action: Extract<Action, { type: 'pass' | 'playLand' | 'cast' | 'activate' | 'manualTrigger' | 'manualStatic' | 'special' }>;
+  /** Every answer the action took, in the order the decisions were asked (whoever answered). */
+  answers: DecisionAnswer[];
+  /** Multiplayer only, like `Suspension.answeredBy`: who gave each answer. */
+  answeredBy?: PlayerId[];
+}
+
 export interface Suspension {
   /** The settled state the action started from. */
   base: GameState;
@@ -1039,6 +1214,8 @@ export interface AttackersOnly {
   filter: ObjectFilter;
   controller: PlayerId;
   sourceId?: ObjectId;
+  /** edh-d-34: the objects an effect named when it added the phase ("Only the chosen creatures can attack"), instead of a description to match (the `filter` is then empty). */
+  ids?: ObjectId[];
   /** The creatures that match, fixed as the declare attackers step of that combat phase begins (core/turn-effects.ts#fixAllowedAttackers). */
   allowed?: ObjectId[];
 }
@@ -1051,9 +1228,12 @@ export interface PlayerControlRec {
   id: string;
   controller: PlayerId;
   player: PlayerId;
-  during: 'turn' | 'combat';
+  /** edh-next-119 INTERFACE CHANGE (additive): 'search', while one search of the player's own library goes on (CR 723.2, Opposition Agent; effects/handlers/search-control.ts), created active and removed as the search ends. */
+  during: 'turn' | 'combat' | 'search';
   /** CR 723.1a: of two active records for one player, the most recently created one works. */
   timestamp: number;
+  /** edh-next-119 INTERFACE CHANGE (additive), CR 500.7: "After that turn, that player takes an extra turn." (Emrakul, the Promised End): the controlled turn adds an extra turn of the player as it ends. */
+  thenExtraTurn?: true;
   active?: true;
   /** For the log. */
   sourceName: string;
@@ -1093,9 +1273,17 @@ export interface GameState {
      */
     extraTurnIds?: number[];
     extraTurnSeq?: number;
+    /** edh-next-46 (CR 500.7, 502.1, 614.10; Savor the Moment): ids (`extraTurnIds`) of queued extra turns that skip their untap step; core/turn.ts#beginNextTurn removes an id as its turn begins. */
+    extraTurnSkipUntap?: number[];
     extraTurnId?: number;
     /** Steps to skip this turn. */
     skipSteps: Step[];
+    /**
+     * edh-d-89 ADDITION (optional, absent = the active player and each defending player declare their own): the player who chooses which creatures attack this turn (`attacksBy`) and which block
+     * and how (`blocksBy`), for every combat of the rest of the turn (ops `controlAttacks`, `controlBlocks` with `turn`; Master Warcraft; CR 508.1a, 509.1a, 723.1). Cleared as a turn begins.
+     */
+    attacksBy?: PlayerId;
+    blocksBy?: PlayerId;
     /** CR 514.3a: another cleanup step follows the current one. */
     cleanupAgain?: boolean;
     /** Combat phases that have begun this turn (CR 500.8); reset when the turn begins. Numbers `CombatState.number`. */
@@ -1106,11 +1294,20 @@ export interface GameState {
      * cleared when the turn begins; the `stepBegan` event of a main phase carries its number (`mainPhase`).
      */
     mains?: number;
+    /** edh-d-71 ADDITION (optional, absent = none yet): upkeep steps that have begun this turn (CR 503.1, 500.9: "the first upkeep each turn" counts the additional ones too). Set as an upkeep step begins (core/turn.ts#beginStep), cleared when the turn begins; the `stepBegan` event of an upkeep carries its number (`upkeepStep`). */
+    upkeeps?: number;
     /**
      * WP15 ADDITION (optional, absent = none): phases an effect added to this turn (CR 500.8), each to happen right after the next end of a phase of the kind
      * `after` (the current phase included). Several added after the same phase: the most recently created one occurs first (the last entry here).
      */
-    extraPhases?: { after: PhaseKind; phase: 'combat' | 'main'; attackers?: AttackersOnly }[];
+    extraPhases?: { after: PhaseKind; phase: 'combat' | 'main'; attackers?: AttackersOnly; id?: number; seq?: number; /** trek-20 ADDITION: "after the second main phase" (World at War; CR 505.1, 500.8): only the end of the postcombat main phase begins it, never the first main phase's or an added one's. */ postcombat?: true; /** trek-20 ADDITION: the main phase "followed by" the added combat phase with this id begins only when that combat phase ends. */ follows?: number; /** trek-20 ADDITION: "after the second main phase" counts main phases (CR 505.1b): taken only when the second main phase of the turn ends, and never when too late. */ secondMain?: true }[];
+    /**
+     * edh-combat-5 ADDITION (optional, absent = none): `extraPhaseSeq`, the last id given to a phase an effect added this turn (`extraPhases[].id`, core/turn-effects.ts#addExtraPhase);
+     * `addedPhaseId`, the id of the added phase under way (set as it begins, removed as any phase ends and at the turn's start). "At the beginning of that combat" (Moraug, Fury of
+     * Akoum; CR 500.8, 603.7a) waits for the beginning of that one phase (the delayed trigger's `when.phase: 'added'`, triggers/delayed.ts#fires).
+     */
+    extraPhaseSeq?: number;
+    addedPhaseId?: number;
     /**
      * std-rq ADDITION (optional, absent = none): while an added combat phase with an attacker restriction is under way ("Only land creatures can attack during
      * that combat phase", CR 500.8, 508.1), the creatures that may attack in it. Set as that phase begins (core/turn.ts), removed as any phase ends and at the turn's start.
@@ -1120,23 +1317,35 @@ export interface GameState {
      * r4-fxb ADDITION (optional, absent = none): steps an effect added to this turn (CR 500.9), each right after the step `afterStep`, or after the next end of a phase
      * of the kind `afterPhase`. Several added after the same step or phase: the most recently created one occurs first (the last entry here).
      */
-    extraSteps?: { afterStep?: Step; afterPhase?: PhaseKind; step: Step }[];
+    extraSteps?: { afterStep?: Step; afterPhase?: PhaseKind; step: Step; seq?: number }[];
+    /** edh-misc-5 ADDITION (optional): creation order shared by `extraPhases` and the `afterPhase` entries of `extraSteps` (CR 500.8, 500.9: the most recently created occurs first, whichever kind). */
+    anchorSeq?: number;
     /**
      * Standard round 10 ADDITION (optional, absent = none): riders on the next spell a player casts this turn ("the next spell you cast this turn can't be
      * countered", op `nextSpell`, CR 601.2i, 611.2): each applies to the first spell `player` casts after it was created that matches `filter`, read with
      * `controller` as "you" and `sourceId` as the source, and is then removed (actions/cast.ts#takeNextSpellRiders). Cleared as a turn begins ("this turn").
      */
     nextSpell?: {
-      player: PlayerId; controller: PlayerId; sourceId?: ObjectId; filter?: ObjectFilter; rider: 'cantBeCountered' | 'keyword' | 'free';
+      player: PlayerId; controller: PlayerId; sourceId?: ObjectId; filter?: ObjectFilter; rider: 'cantBeCountered' | 'keyword' | 'free' | 'reduce' | 'flash' | 'enters' | 'life';
+      /** edh-d-95 ADDITION: the counters an `enters` rider gives the permanent the spell becomes (core/turn-effects.ts#takeNextSpellRiders puts them in the spell's `permitEnters`). */
+      counters?: CounterSpec[];
       /** std-rx26 ADDITION: the keyword a `keyword` rider gives the spell, from the moment it is put on the stack to be cast (core/turn-effects.ts#lockNextSpellKeywords). */
       keyword?: KeywordAbilityDef;
+      /** edh-d-50 ADDITION: a `keyword` rider that stays after a spell took it (every matching spell this turn; core/turn-effects.ts#lockNextSpellKeywords). */
+      lasting?: true;
+      /** edh-d-50 ADDITION: the name of a `lasting` rider; a spell it was given to carries `nsl:<id>` in its stack flags so the rider gives it the keyword once (the cast locks riders twice, actions/cast.ts). */
+      lockId?: string;
+      /** edh-c-53 ADDITION: the symbols a `reduce` rider takes off the next matching spell's cost (statics/costmods.ts#costModsFor). */
+      mana?: ManaCost;
     }[];
     /** r4-fxb ADDITION (optional): while added steps run, the steps they were added after (the last is the running one's): the turn resumes as if it had just ended. */
     stepResume?: Step[];
     /** WP15 ADDITION (optional): while an added phase runs, where the turn resumes once it ends: the last step of the phase it was added after, and whether that phase was an added one itself. */
-    phaseResume?: { after: Step; added: boolean }[];
+    phaseResume?: { after: Step; added: boolean; /** trek-20: the id of the added phase that `after` ended, and how many main phases had begun then (the anchor's own, restored when the turn resumes there). */ id?: number; mains?: number }[];
     /** WP15 ADDITION (optional): an effect ended the turn (CR 724.1): nobody gets priority, the current step ends and the game skips to the cleanup step. */
     ending?: boolean;
+    /** trek-18 ADDITION (optional): an effect ended the combat phase (CR 724.2): nobody gets priority, the current step ends and the game skips to the next phase (core/turn.ts). */
+    endingCombat?: boolean;
     /** WP15 ADDITION (optional): this turn is an extra turn (CR 500.7). */
     extra?: boolean;
     /**
@@ -1205,8 +1414,20 @@ export interface GameState {
    * combat phase" (CR 723.1), waiting or active (core/player-control.ts). Not read by the layers.
    */
   playerControl?: PlayerControlRec[];
+  /**
+   * Shortcuts ADDITION (optional, absent = none, so states saved before it still load; docs/design/shortcuts.md 1): the settled actions of the current
+   * turn, the newest last, at most `TURN_ACTIONS_KEPT` (core/shortcut.ts; the oldest dropped), so a player can propose to repeat a sequence of them (CR 727,
+   * `Action` 'shortcut'). Recorded by core/apply.ts#applyAction, cleared when a turn begins (core/turn.ts#beginNextTurn). Not read by the layers; never in a
+   * view (core/view.ts derives `GameView.repeatable` and `loop` from it), so the hidden ids its answers may hold never leave the engine.
+   */
+  turnActions?: TurnActionRec[];
   /** What "happened this turn" conditions and history filters read (CR 603.4). Filled by the trigger normalizer (WP8). */
   history: HistoryEntry[];
+  /**
+   * edh-next-143 INTERFACE CHANGE (additive), CR 116.2d (Leonin Arbiter): the players who paid, as a special action, to ignore the effect of a static ability of an object
+   * (`RestrictionDef.ignoreFor`) until end of turn: that object, that player and the turn it was paid on (an entry of an earlier turn has ended). Absent when nobody did.
+   */
+  ignoredEffects?: { source: ObjectId; player: PlayerId; turn: number }[];
   /** Monarch, initiative, day/night, speed. */
   designations: DesignationState;
   /** Chips for manual shields and unenforced one-shot text; state, not log entries. */

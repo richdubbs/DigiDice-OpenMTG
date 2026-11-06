@@ -23,15 +23,25 @@ function overPlayers(step: Record<string, unknown>): boolean {
   return step['op'] === 'forEach' && over !== undefined && over['ref'] === 'each' && typeof over['who'] === 'string' && over['filter'] === undefined;
 }
 
+/**
+ * edh-d-2 (design 6.4, CR 602.2b, 400.3; Slogurk, the Overslime): "Remove three +1/+1 counters from ~: Return it to its owner's hand": a move of one object the instruction names
+ * itself, only when `allowMove` (the cost did not move that object itself: after "Sacrifice ~" a card in the graveyard is a new object, CR 400.7j, 400.7) (the pronoun or the object itself) introduces no object a later word could mean; a move of a group, of what a search or a choice picked, or one that names its result is not this.
+ */
+function movesNamed(step: Record<string, unknown>): boolean {
+  if (step['op'] !== 'move' || step['as'] !== undefined || step['link'] !== undefined || step['remember'] !== undefined) return false;
+  const what = step['what'];
+  return typeof what === 'object' && what !== null && !Array.isArray(what) && ((what as Record<string, unknown>)['ref'] === 'self' || '$anaphor' in what);
+}
+
 /** Does the step (with every step nested in it) only act on objects already named? Ops of comparisons are symbols and are skipped. */
-export function actsOnlyOnNamed(step: unknown): boolean {
+export function actsOnlyOnNamed(step: unknown, allowMove = false): boolean {
   let ok = true;
   const walk = (v: unknown): void => {
     if (!ok) return;
     if (Array.isArray(v)) { v.forEach(walk); return; }
     if (typeof v !== 'object' || v === null) return;
     const op = (v as Record<string, unknown>)['op'];
-    if (typeof op === 'string' && /^[a-z]/i.test(op) && !ACTS_ONLY.has(op) && !overPlayers(v as Record<string, unknown>)) { ok = false; return; }
+    if (typeof op === 'string' && /^[a-z]/i.test(op) && !ACTS_ONLY.has(op) && !overPlayers(v as Record<string, unknown>) && !(allowMove && movesNamed(v as Record<string, unknown>))) { ok = false; return; }
     Object.values(v).forEach(walk);
   };
   walk(step);

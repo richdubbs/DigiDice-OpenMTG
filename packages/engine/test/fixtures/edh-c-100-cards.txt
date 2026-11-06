@@ -1,0 +1,5 @@
+# edh-c-100 (Commander lane edh-c, ranks 23,501-24,000, fourth pass). After editing: npm run cards -- fixtures
+Coerced Confession
+Dragon Man, Reformed Robot
+Light from Within
+Patient Rebuilding

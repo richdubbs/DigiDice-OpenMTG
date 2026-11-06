@@ -18,6 +18,7 @@ const DECISION_KIND_TABLE: Record<Decision['kind'], true> = {
   order: true, chooseTargets: true, payCost: true, declareAttackers: true, declareBlockers: true, assignDamage: true, chooseReplacement: true,
   manualResolve: true, chooseDivision: true, chooseName: true,
   commanderZone: true, // M11-0 (m11 design 4.3): CR 903.9a-b
+  shortcut: true, // shortcuts (docs/design/shortcuts.md 3): CR 727.2b, unverified
 };
 export const DECISION_KINDS: readonly string[] = Object.keys(DECISION_KIND_TABLE);
 
@@ -43,6 +44,13 @@ export function chooseObjectsLimitHolds(d: Pick<Extract<Decision, { kind: 'choos
     case '<': return total < lim.value;
     case '>': return total > lim.value;
   }
+}
+
+/** edh-d-85: does choosing `ids` keep the decision's `typesAtLeast` (no object chosen, or at least `n` different card types among them; always true without one)? */
+export function chooseObjectsTypesHold(d: Pick<Extract<Decision, { kind: 'chooseObjects' }>, 'typesAtLeast'>, ids: readonly string[]): boolean {
+  const t = d.typesAtLeast;
+  if (t === undefined || ids.length === 0) return true;
+  return new Set(ids.flatMap((id) => t.types[id] ?? [])).size >= t.n;
 }
 
 export function validateAnswer(s: GameState, d: Decision, a: DecisionAnswer): void {
@@ -72,6 +80,7 @@ export function validateAnswer(s: GameState, d: Decision, a: DecisionAnswer): vo
         fail(d.min === d.max ? `Choose exactly ${d.min}.` : `Choose between ${d.min} and ${d.max}.`);
       }
       for (const id of ans.ids) if (!d.options.includes(id)) fail('That object is not a legal choice.');
+      if (!chooseObjectsTypesHold(d, ans.ids)) fail(`Those choices need at least ${d.typesAtLeast!.n} card types among them (or choose none).`, ['CR 205.2a', 'CR 608.2d', ...(d.rules ?? [])]); // edh-d-85
       if (!chooseObjectsLimitHolds(d, ans.ids)) fail(`Those choices break the limit: total ${d.limit!.stat === 'manaValue' ? 'mana value' : d.limit!.stat} must be ${d.limit!.op} ${d.limit!.value}.`, ['CR 608.2d', ...(d.rules ?? [])]);
       break;
     }
@@ -147,6 +156,7 @@ export function validateAnswer(s: GameState, d: Decision, a: DecisionAnswer): vo
     case 'declareAttackers': {
       const ans = a as Extract<DecisionAnswer, { kind: 'declareAttackers' }>;
       if (!Array.isArray(ans.attacks)) fail('Declare the attacks (it may be an empty list).', ['CR 508.1']);
+      if (ans.bands !== undefined && !(Array.isArray(ans.bands) && ans.bands.every((b) => Array.isArray(b) && b.every((id) => isStr(id))))) fail('The bands are lists of attacking creatures.', ['CR 702.22c']); // edhv31
       const seen = new Set<string>();
       for (const at of ans.attacks) {
         if (!isRecord(at) || !isStr(at.attacker) || !isStr(at.defender)) fail('Each attack needs an attacker and what it attacks.', ['CR 508.1']);
@@ -159,6 +169,8 @@ export function validateAnswer(s: GameState, d: Decision, a: DecisionAnswer): vo
         seen.add(at.attacker);
         if (c && !c.defenders.includes(at.defender)) fail('That creature cannot attack that player or permanent.', ['CR 508.1b']);
       }
+      // edh-d-89 (CR 508.1b, 723.1; Master Warcraft): another player chose the attacking creatures; the active player only chooses what each of them attacks
+      if (d.allAttack === true && seen.size !== d.candidates.length) fail('Each of these creatures attacks (another player chose them): choose what each of them attacks.', ['CR 508.1b']);
       break;
     }
     case 'declareBlockers': {
@@ -197,6 +209,13 @@ export function validateAnswer(s: GameState, d: Decision, a: DecisionAnswer): vo
             if (!r.trampleTarget && given(r.id) < r.lethal) fail('With trample, assign lethal damage to every blocker before assigning damage to the player or permanent it attacks.', ['CR 702.19b']);
           }
         }
+        // edh-d-90 (CR 702.19c): with trample over planeswalkers, the planeswalker attacked is assigned damage only once every blocker is assigned lethal damage
+        const attacked = d.recipients.find((r) => r.attacked === true);
+        if (attacked && given(attacked.id) > 0) {
+          for (const r of d.recipients) {
+            if (!r.trampleTarget && r.attacked !== true && given(r.id) < r.lethal) fail('With trample, assign lethal damage to every blocker before assigning damage to the planeswalker it attacks.', ['CR 702.19b', 'CR 702.19c']);
+          }
+        }
       }
       break;
     }
@@ -221,7 +240,7 @@ export function validateAnswer(s: GameState, d: Decision, a: DecisionAnswer): vo
       if (!Array.isArray(ans.amounts) || ans.amounts.length !== d.targets.length) fail(`Give one amount for each of the ${d.targets.length} target(s).`, ['CR 601.2d']);
       if (!ans.amounts.every((n) => isInt(n) && n >= 1)) fail(`Each target must be assigned at least 1 (${d.what}).`, ['CR 601.2d']);
       const sum = ans.amounts.reduce((n, x) => n + x, 0);
-      if (sum !== d.total) fail(`Divide exactly ${d.total} (${d.what}) among the targets; those amounts add up to ${sum}.`, ['CR 601.2d']);
+      if (d.upTo === true ? sum > d.total : sum !== d.total) fail(`Divide ${d.upTo === true ? 'at most' : 'exactly'} ${d.total} (${d.what}) among the targets; those amounts add up to ${sum}.`, ['CR 601.2d']);
       break;
     }
     case 'chooseName': {
@@ -233,8 +252,13 @@ export function validateAnswer(s: GameState, d: Decision, a: DecisionAnswer): vo
       // no card of the game has is still a card name, and no object of the game has it
       if (d.cardKind !== undefined) {
         const faces = Object.values(s.defs).flatMap((def) => def.faces.filter((f) => f.name === ans.name));
-        const fits = faces.some((f) => f.types.includes('Land') === (d.cardKind === 'land'));
-        if (faces.length > 0 && !fits) fail(`Name ${d.cardKind === 'land' ? 'a land card' : 'a nonland card'}: "${ans.name}" is ${d.cardKind === 'land' ? 'not a land card' : 'a land card'}.`, ['CR 201.3']);
+        // edh-next-146 (CR 201.3; Psychic Paper): "a creature card name": a card of this game whose face has that name must be a creature card
+        if (d.cardKind === 'creature') {
+          if (faces.length > 0 && !faces.some((f) => f.types.includes('Creature'))) fail(`Name a creature card: "${ans.name}" is not a creature card.`, ['CR 201.3']);
+        } else {
+          const fits = faces.some((f) => f.types.includes('Land') === (d.cardKind === 'land'));
+          if (faces.length > 0 && !fits) fail(`Name ${d.cardKind === 'land' ? 'a land card' : 'a nonland card'}: "${ans.name}" is ${d.cardKind === 'land' ? 'not a land card' : 'a land card'}.`, ['CR 201.3']);
+        }
       }
       break;
     }
@@ -242,6 +266,18 @@ export function validateAnswer(s: GameState, d: Decision, a: DecisionAnswer): vo
       // M11-0: CR 903.9a-b, 704.6d: the owner may put the commander into the command zone (yes) or not (no)
       const ans = a as Extract<DecisionAnswer, { kind: 'commanderZone' }>;
       if (typeof ans.command !== 'boolean') fail('Answer whether the commander goes to the command zone.', [`CR ${d.rule}`]);
+      break;
+    }
+    case 'shortcut': {
+      // Shortcuts (docs/design/shortcuts.md 3): CR 727.2b (unverified), accept, or name the point (a pass of the shortcut, a step of a pass) where this player
+      // wants priority instead of being passed for
+      const ans = a as Extract<DecisionAnswer, { kind: 'shortcut' }>;
+      const stop = (ans as { stop?: unknown }).stop;
+      if (stop === undefined) break;
+      if (!isRecord(stop) || !isInt(stop['pass']) || !isInt(stop['step'])) fail('Name the point where you want priority as a pass and a step (whole numbers), or let the shortcut run.', ['CR 727.2b']);
+      const at = stop as { pass: number; step: number };
+      if (at.pass < 1 || at.pass > d.times) fail(`Choose a pass from 1 to ${d.times}.`, ['CR 727.2b']);
+      if (at.step < 1 || at.step > d.steps.length) fail(`Choose a step from 1 to ${d.steps.length}.`, ['CR 727.2b']);
       break;
     }
   }

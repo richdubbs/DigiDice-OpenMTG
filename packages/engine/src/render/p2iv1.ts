@@ -59,6 +59,8 @@ function compares(c: Extract<Condition, { cond: 'compare' }>, st: RenderState): 
   if (typeof l !== 'object') return null;
   if (typeof c.right !== 'number') return moreThanYou(c, st);
   if (l.q === 'spellManaSpent' && c.op === '==' && c.right === 0 && l.of !== undefined && keysAre(l, ['q', 'of'])) return `no mana was spent to cast ${spentObjectText(l.of, st)}`;
+  // edh-d-53 (CR 601.2h; Void Mirror): the spell of a cast trigger, `spellColorsSpent` 0 (parser/holes/p2iv1.ts)
+  if (l.q === 'spellColorsSpent' && c.op === '==' && c.right === 0 && keysAre(l, ['q'])) return 'no colored mana was spent to cast it';
   if (l.q === 'counters' && l.kind === 'any' && c.op === '>=' && keysAre(l, ['q', 'on', 'kind']) && l.on.ref === 'each' && 'filter' in l.on) {
     return `there are ${numWord(c.right)} or more counters among ${K.np(l.on.filter, st, { det: 'none', plural: true })}`;
   }

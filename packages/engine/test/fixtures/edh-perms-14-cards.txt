@@ -1,0 +1,11 @@
+# edh-perms-14 (Commander lane edh-perms; test/cloud/edh-perms-14, golden edh-perms-14-review.json)
+# mana of a source spent on an entering creature (counters), the ban on counters, a token copy that is 1/1 and a Nightmare, a copy that is a 4/4 flying Dragon, a guarded counter before a fight, a Fractal that counts the spell's mana value, an Equipment attached to the new token, umbra armor for Auras on your permanents
+Kalain, Reclusive Painter
+Coin of Mastery
+Solemnity
+Nightmare Shepherd
+Will of the Temur
+Ancient Animus
+Deekah, Fractal Theorist
+Cori-Steel Cutter
+Umbra Mystic

@@ -1,0 +1,292 @@
+[
+  {
+    "id": "sta.edhb14.pump.foreach.otherSharesAll",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 205.3m",
+      "CR 611.3a"
+    ],
+    "pattern": "( equipped | enchanted ) creature gets {pt:PT} for each other creature on the battlefield that shares a creature type with it",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.p",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "other": true,
+                    "sharesWith": {
+                      "with": {
+                        "ref": "attachedTo"
+                      },
+                      "quality": "creatureType",
+                      "other": true
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$pt.t",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "other": true,
+                    "sharesWith": {
+                      "with": {
+                        "ref": "attachedTo"
+                      },
+                      "quality": "creatureType",
+                      "other": true
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each other",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +1/+1 for each other creature on the battlefield that shares a creature type with it."
+      },
+      {
+        "text": "Equipped creature gets +1/+2 for each other creature on the battlefield that shares a creature type with it."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +2/+2 for each creature on the battlefield that shares a creature type with it.",
+      "Enchanted creature gets +2/+2 for each other creature on the battlefield that shares a color with it.",
+      "Enchanted creature gets +2/+2 for each other creature you control."
+    ]
+  },
+  {
+    "id": "sta.edhb14.permit.attackHaste.opponents",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 302.6",
+      "CR 508.1a",
+      "CR 609.4"
+    ],
+    "pattern": "all creatures can attack your opponents and planeswalkers your opponents control as though those creatures had haste",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "each",
+            "who": "player"
+          },
+          "action": "attackAsThoughHaste",
+          "of": {
+            "types": [
+              "Creature"
+            ]
+          },
+          "opponentsOnly": true
+        }
+      ]
+    },
+    "consumes": [
+      "as though",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "all creatures can attack your opponents and planeswalkers your opponents control as though those creatures had haste."
+      },
+      {
+        "text": "all creatures can attack your opponents and planeswalkers your opponents control as though those creatures had haste."
+      }
+    ],
+    "counterExamples": [
+      "All creatures can attack your opponents as though those creatures had haste.",
+      "Creatures you control can attack your opponents and planeswalkers your opponents control as though those creatures had haste.",
+      "All creatures can attack your opponents and planeswalkers your opponents control as though those creatures had flying."
+    ]
+  },
+  {
+    "id": "eff.edhb14.self.verseCounter.thenItDealsCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 120.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "put a verse counter on ~ , then it deals damage equal to the number of verse counters on it to {to:Recipient}",
+    "build": [
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "self"
+        },
+        "kind": "verse",
+        "count": 1
+      },
+      {
+        "op": "damage",
+        "source": {
+          "ref": "self"
+        },
+        "to": "$to",
+        "amount": {
+          "q": "counters",
+          "on": {
+            "ref": "self"
+          },
+          "kind": "verse"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a noncreature spell, put a verse counter on ~, then it deals damage equal to the number of verse counters on it to any target."
+      },
+      {
+        "text": "Whenever ~ attacks, put a verse counter on ~, then it deals damage equal to the number of verse counters on it to target creature an opponent controls."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, put two verse counters on ~, then it deals damage equal to the number of verse counters on it to any target.",
+      "Whenever ~ attacks, put a verse counter on target creature, then it deals damage equal to the number of verse counters on it to any target.",
+      "Whenever ~ attacks, put a verse counter on ~, then it deals damage equal to the number of charge counters on it to any target.",
+      "Whenever ~ attacks, put a charge counter on ~, then it deals damage equal to the number of verse counters on it to any target."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhb14.player.returns.commanders.theyControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 903.9",
+      "CR 408.1",
+      "CR 903.3",
+      "CR 109.4"
+    ],
+    "pattern": "{p:Player} return[s] each commander they control from the battlefield to the command zone",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "commander": true,
+          "zone": "battlefield",
+          "controller": "$p"
+        }
+      },
+      "to": {
+        "zone": "command"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent returns each commander they control from the battlefield to the command zone."
+      },
+      {
+        "text": "Target player returns each commander they control from the battlefield to the command zone. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target player returns each commander you control from the battlefield to the command zone.",
+      "Target player returns each creature they control from the battlefield to the command zone.",
+      "Target player returns each commander they control from the battlefield to their hand.",
+      "Target player returns a commander they control from the battlefield to the command zone."
+    ]
+  },
+  {
+    "id": "eff.edhb14.destroyAll.notOfChosenTypeThisWay",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.8a"
+    ],
+    "pattern": "destroy all {f:Filter} that aren't {c:ChosenAll}",
+    "build": {
+      "op": "destroy",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "not": {
+            "chosen": "$c"
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Each player chooses a creature type. Destroy all artifact creatures that aren't of a type chosen this way."
+      },
+      {
+        "text": "each player chooses a creature type. destroy all creatures that aren't of a type chosen this way."
+      }
+    ],
+    "counterExamples": [
+      "destroy all creatures that aren't of a type chosen this way.",
+      "Each player chooses a creature type. Destroy all creatures that are of a type chosen this way.",
+      "Each player chooses a creature type. Destroy all creatures that aren't of the chosen type.",
+      "Each opponent chooses a creature type. Destroy all creatures that aren't of a type chosen this way."
+    ]
+  }
+]

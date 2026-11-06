@@ -1,0 +1,526 @@
+[
+  {
+    "id": "sta.edhv28.aura.attackTax",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1h",
+      "CR 508.1d",
+      "CR 303.4",
+      "CR 604.1"
+    ],
+    "pattern": "( enchanted | equipped ) creature can't attack unless its controller pays {m:ManaCost}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "attackTax",
+          "of": {
+            "attachedToSource": true
+          },
+          "defenders": "any",
+          "cost": {
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature can't attack unless its controller pays {2}."
+      },
+      {
+        "text": "Equipped creature can't attack unless its controller pays {1}{B}."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't attack unless its controller pays {3} life.",
+      "Enchanted creature can't block unless its controller pays {3}.",
+      "Enchanted creature can't attack or block unless its controller pays {7}.",
+      "Enchanted creature can't attack unless you pay {3}."
+    ]
+  },
+  {
+    "id": "sta.edhv28.aura.attackBlockTax.perHandCard",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1h",
+      "CR 509.1d",
+      "CR 303.4",
+      "CR 604.1",
+      "CR 402.1"
+    ],
+    "pattern": "( enchanted | equipped ) creature can't attack or block unless its controller pays {1} for each card in your hand",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "attackTax",
+          "of": {
+            "attachedToSource": true
+          },
+          "defenders": "any",
+          "value": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "zone": "hand",
+                "owner": "you",
+                "isCard": true
+              }
+            }
+          }
+        },
+        {
+          "s": "rule",
+          "rule": "blockTax",
+          "of": {
+            "attachedToSource": true
+          },
+          "value": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "zone": "hand",
+                "owner": "you",
+                "isCard": true
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "unless",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature can't attack or block unless its controller pays {1} for each card in your hand."
+      },
+      {
+        "text": "Equip {9}\nEquipped creature can't attack or block unless its controller pays {1} for each card in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature can't attack or block unless its controller pays {2} for each card in your hand.",
+      "Equipped creature can't attack or block unless its controller pays {1} for each card in its controller's hand.",
+      "Equipped creature can't attack unless its controller pays {1} for each card in your hand."
+    ]
+  },
+  {
+    "id": "eff.edhv28.becomes.creature.thatsStillLand.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) {pt:BasePT} creature that's still a land",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "still",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{1}{R}: Until end of turn, target land you control becomes a 2/2 creature that's still a land."
+      },
+      {
+        "text": "{2}: Until end of turn, target land becomes a 4/4 creature that's still a land."
+      }
+    ],
+    "counterExamples": [
+      "{G}: Until end of turn, target land becomes a 3/3 creature that's a land.",
+      "{G}: Until end of turn, target land becomes a 3/3 creature.",
+      "{G}: Target land becomes a 3/3 creature that's still a land.",
+      "{G}: Until end of turn, target land becomes a 3/3 red creature that's still a land."
+    ]
+  },
+  {
+    "id": "eff.edhv28.becomes.xx.subtype.creature.inAddition.whereX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 107.3",
+      "CR 608.2h",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes ( a | an ) x/x {st:Subtypes} creature in addition to its other types , where x is {q:Qty}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$q",
+              "toughness": "$q"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "{1}: Until end of turn, target Swamp becomes an X/X Zombie creature in addition to its other types, where X is the number of Zombies you control."
+      },
+      {
+        "text": "{2}{G}: Until end of turn, target land you control becomes an X/X Elemental creature in addition to its other types, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target Forest becomes an X/X Treefolk creature in addition to its other types, where X is the number of Elves you control.",
+      "{T}: Until end of turn, target Forest becomes an X/X Treefolk creature, where X is the number of Elves you control.",
+      "{T}: Until end of turn, target Forest becomes an X/X Treefolk artifact creature in addition to its other types, where X is the number of Elves you control."
+    ]
+  },
+  {
+    "id": "sta.edhv28.enchantedLand.isThreeBasicTypes",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 303.4",
+      "CR 305.7",
+      "CR 205.3i",
+      "CR 613.1d",
+      "CR 604.1"
+    ],
+    "pattern": "enchanted land is ( a | an ) {a:Subtypes} , {b:Subtypes} , and {c:Subtypes}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": [
+                  "$a.0",
+                  "$b.0",
+                  "$c.0"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Enchanted land is an Island, Swamp, and Forest."
+      },
+      {
+        "text": "Enchanted land is a Plains, Island, and Mountain."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted land is an Island, Swamp, and Forest in addition to its other types.",
+      "Enchanted creature is an Island, Swamp, and Forest.",
+      "Enchanted land is an Island, Swamp, and Forest until end of turn.",
+      "Enchanted land is an Island and Swamp."
+    ]
+  },
+  {
+    "id": "rep.edhv28.players.skip.step.upkeep",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1b",
+      "CR 614.10",
+      "CR 503.1"
+    ],
+    "pattern": "( players | all players ) skip their upkeep steps",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "step",
+            "step": "upkeep",
+            "whose": "any"
+          },
+          "body": {
+            "b": "skip"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "skip",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "All players skip their upkeep steps."
+      },
+      {
+        "text": "All players skip their upkeep steps.\n{1}{R}, {T}: Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Players skip their draw steps.",
+      "Players skip their next upkeep step.",
+      "All opponents skip their upkeep steps.",
+      "You skip your upkeep step."
+    ]
+  },
+  {
+    "id": "rep.edhv28.damageToPlayer.instead.exileTopThatMany",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 406.2"
+    ],
+    "pattern": "if damage would be dealt to a player , that player exiles that many cards from the top of ( their | that player 's ) library instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "any"
+            }
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "topCards",
+                  "player": {
+                    "ref": "event",
+                    "role": "recipient"
+                  },
+                  "count": {
+                    "q": "eventAmount"
+                  }
+                },
+                "to": {
+                  "zone": "exile"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that many",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If damage would be dealt to a player, that player exiles that many cards from the top of that player's library instead."
+      },
+      {
+        "text": "Kicker {9}\nIf damage would be dealt to a player, that player exiles that many cards from the top of that player's library instead."
+      }
+    ],
+    "counterExamples": [
+      "If damage would be dealt to a player, that player mills that many cards instead.",
+      "If damage would be dealt to a player, that player exiles that many cards from the bottom of their library instead.",
+      "If combat damage would be dealt to a player, that player exiles that many cards from the top of their library instead.",
+      "If damage would be dealt to you, you exile that many cards from the top of your library instead."
+    ]
+  },
+  {
+    "id": "rid.edhv28.destroy.thatArtifact.ifMv.instead",
+    "kind": "rider",
+    "status": "stable",
+    "since": 8,
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 702.33d",
+      "CR 202.3"
+    ],
+    "pattern": "if {c:Cond} , destroy that artifact if its mana value is {n:Qty} or less instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "destroy",
+            "what": "@previous.what",
+            "guard": {
+              "cond": "compare",
+              "left": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": "@previous.what"
+              },
+              "op": "<=",
+              "right": "$n"
+            }
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "destroy",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Destroy target artifact if its mana value is 1 or less. If this spell was kicked, destroy that artifact if its mana value is 4 or less instead."
+      },
+      {
+        "text": "Destroy target artifact if its mana value is 3 or less. If you control a Wizard, destroy that artifact if its mana value is 6 or less instead."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target artifact if its mana value is 2 or less. If this spell was kicked, destroy that artifact if its mana value is 5 or less.",
+      "Destroy target artifact if its mana value is 2 or less. If this spell was kicked, destroy that artifact if its mana value is 5 or greater instead.",
+      "Destroy target artifact if its mana value is 2 or less. If this spell was kicked, destroy that creature if its mana value is 5 or less instead."
+    ]
+  },
+  {
+    "id": "eff.edhv28.becomes.color.isntArtifact.durFirst",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 105.3",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1e"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes {c:Color} and isn't an artifact",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "remove": [
+                  "Artifact"
+                ]
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "{1}{B}: Until end of turn, target artifact creature you control becomes black and isn't an artifact."
+      },
+      {
+        "text": "{U}: Until end of turn, target artifact creature becomes red and isn't an artifact."
+      }
+    ],
+    "counterExamples": [
+      "{U}: Target artifact creature becomes blue and isn't an artifact.",
+      "{U}: Until end of turn, target artifact creature becomes blue and isn't a creature.",
+      "{U}: Until end of turn, target artifact creature becomes blue in addition to its other colors and isn't an artifact."
+    ]
+  }
+]

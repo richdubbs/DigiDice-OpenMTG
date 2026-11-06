@@ -179,7 +179,8 @@ describe('std-ry4 parser/parse.ts#cardHasXCost (CR 107.3a, 601.2b): X defined by
 describe('std-ry4 renderer support (G6: the render gate is exact)', () => {
   it('render/mods.ts#continuousHave: "you may have <set> gain <abilities> <duration>" in a trigger; a set given a P/T change keeps refusing the have form', () => {
     expect(level('Creature — Elf Ally', 'Whenever this creature or another Ally you control enters, you may have Ally creatures you control gain lifelink until end of turn.')).toBe('full');
-    expect(level('Sorcery', 'You may have creatures you control get +1/+1 until end of turn.')).not.toBe('full');
+    // (edh-c-11: "you may have <set> get +N/+N <duration>" is its own template eff.edhv11.may.have.objs.get, not the have form of render/mods.ts)
+    expect(level('Sorcery', 'You may have creatures you control get +1/+1 until end of turn.')).toBe('full');
   });
   it('render/abil.ts#atStepAndWhenever: a step first, then another kind of event; two steps keep the plain reading', () => {
     expect(level('Artifact', 'At the beginning of your upkeep and whenever you cast a red spell, put a charge counter on this artifact.')).toBe('full');

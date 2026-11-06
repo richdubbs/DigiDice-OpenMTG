@@ -12,10 +12,14 @@
  *  - Target specs are never touched: targets are chosen before the ability resolves (CR 601.2c), so no choice of the resolution can be read there.
  */
 import type { Draft, Rec, Unit } from './types';
+import { THAT_COLOR_QUALITY } from '../holes/core';
 import { cloneDraft, isRec, MANA_COLOR_MARKER, QUOTED_LINK, rewrite, sequences } from './util';
 
 /** The kinds "that type" may name (CR 205.3, 205.2a, 205.3i). */
-const TYPE_KINDS: ReadonlySet<string> = new Set(['creatureType', 'cardType', 'landType']);
+const TYPE_KINDS: ReadonlySet<string> = new Set(['creatureType', 'cardType', 'landType', 'planeswalkerType' /* edh-d-94: CR 205.3j */]);
+
+/** edh-zones-26 (CR 608.2c-d; Tibalt's Trickery): a template's "that many" naming the number the one earlier choice of the sequence picked (a build string cannot start with `$`). */
+export const NUMBER_OF_EARLIER_CHOICE = '@producerNumber';
 
 export interface Producer { link: string; what: string }
 
@@ -29,19 +33,26 @@ function producerOf(step: Rec): Producer | null {
 function resolveIn(step: Rec, producers: readonly Producer[]): Rec {
   return rewrite(step, (n) => {
     // CLOUD std-misc (CR 608.2c-d): "the chosen number" (`{q:'chosenNumber', link:'$link'}`) is the one earlier number choice of the sequence
-    if (n['q'] === 'chosenNumber' && n['link'] === '$link') {
+    if (n['q'] === 'chosenNumber' && (n['link'] === '$link' || n['link'] === NUMBER_OF_EARLIER_CHOICE)) {
       const links = [...new Set(producers.filter((p) => p.what === 'number').map((p) => p.link))];
       return links.length === 1 ? { ...n, link: links[0] } : undefined;
+    }
+    // edh-players-8 (CR 607.2d, 608.2c; Skrelv): "hexproof from that color" is the color the one earlier "Choose a color." of the sequence chose (the quality `chosen:<link>` of
+    // "the chosen color", read as the effect is created: effects/handlers/lasting-fix.ts#fixChosen)
+    if (n['kind'] === 'keyword' && n['quality'] === THAT_COLOR_QUALITY) {
+      const links = [...new Set(producers.filter((p) => p.what === 'color').map((p) => p.link))];
+      return links.length === 1 ? { ...n, quality: `chosen:${links[0]}` } : undefined;
     }
     const c = n['chosen'];
     if (!isRec(c) || c['link'] !== '$link' || typeof c['quality'] !== 'string') return undefined;
     const q = c['quality'];
     // CLOUD C5 (CR 607.2d): "the chosen type" (`'$chosenType'`) is whichever type the linked choice chose: creature type ("choose a creature type"), card type
     // (Umori, "choose a card type") or land type
-    const fits = producers.filter((p) => (q === '$type' || q === '$chosenType' ? TYPE_KINDS.has(p.what) : p.what === q));
+    // edh-d-95 (CR 208.1, 607.2d): "with power of the chosen quality" (`oddEvenPower`) reads the parity an "odd or even" choice chose, of the power
+    const fits = producers.filter((p) => (q === '$type' || q === '$chosenType' ? TYPE_KINDS.has(p.what) : q === 'oddEvenPower' ? p.what === 'oddEven' : p.what === q));
     const links = [...new Set(fits.map((p) => p.link))];
     if (links.length !== 1) return undefined;
-    const kind = fits[0]!.what;
+    const kind = q === 'oddEvenPower' ? q : fits[0]!.what;
     const out: Rec = {};
     for (const [k, v] of Object.entries(n)) out[k] = k === 'chosen' ? { link: links[0], quality: kind } : rewrite(v, () => undefined);
     // the rest of the node may hold another placeholder (a nested filter): resolve it too
@@ -74,17 +85,43 @@ function resolveEmblemChoices(step: Rec, producers: readonly Producer[]): Rec {
   return { ...step, abilities: walk(step['abilities']) };
 }
 
+/**
+ * edh-c-65 (CR 608.2c-d; Dromar, the Banisher): a step list nested in a step ("You may pay {2}{U}. If you do, choose a color, then return all creatures of that color to
+ * their owners' hands." is the `then` of the payment) is a sequence of its own: a choice in it is what a LATER step of the same nested list means by "that color". The choice
+ * is never offered to steps outside the list (the branch may not run), as the top-level rule says of a choice nested in a condition.
+ */
+function resolveNested(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    const isSteps = value.length > 1 && value.every((x) => isRec(x) && typeof x['op'] === 'string');
+    const local: Producer[] = [];
+    return value.map((x) => {
+      const inner = resolveNested(x);
+      if (!isSteps) return inner;
+      const r = resolveIn(inner as Rec, local);
+      const p = producerOf(r);
+      if (p) local.push(p);
+      return r;
+    });
+  }
+  if (!isRec(value)) return value;
+  const out: Rec = {};
+  for (const [k, x] of Object.entries(value)) out[k] = resolveNested(x);
+  return out;
+}
+
 function resolveSeq(units: Unit[], before: readonly Producer[]): void {
   const producers = [...before];
   for (const u of units) {
     if (u.manual) continue;
     u.steps = u.steps.map((s) => {
-      const r0 = resolveIn(s, producers);
+      const r0 = resolveNested(resolveIn(s, producers)) as Rec;
       const r = r0['op'] === 'createEmblem' ? resolveEmblemChoices(r0, producers) : r0;
       const p = producerOf(r);
       if (p) producers.push(p);
       return r;
     });
+    // edh-zones-26: "that many" naming the number of a choice no earlier instruction of the sequence made reads nothing
+    if (JSON.stringify(u.steps).includes(NUMBER_OF_EARLIER_CHOICE)) u.manual = { code: 'unbound-reference', reason: '"that many" names a number no earlier instruction chose (CR 608.2c)', unresolved: true };
   }
 }
 
@@ -103,7 +140,12 @@ export function resolveFaceChoices<T>(value: T, choices: readonly Producer[] | u
   if (choices === undefined || choices.length === 0) return value;
   return rewrite(value, (n) => {
     // std-rx5 (CR 607.2d, 614.12a): "the chosen number" of "As ~ enters, choose a number between 1 and 10."
-    if (n['q'] === 'chosenNumber' && n['link'] === '$link') return resolveIn(n, choices);
+    if (n['q'] === 'chosenNumber' && (n['link'] === '$link' || n['link'] === NUMBER_OF_EARLIER_CHOICE)) return resolveIn(n, choices);
+    // edh-next-146 (CR 607.2d, 614.12a; Dauntless Bodyguard): "the chosen creature" (`{ref:'linked', link:'$link'}`) of the one "As ~ enters, choose another creature you control." of the face
+    if (n['ref'] === 'linked' && n['link'] === '$link' && Object.keys(n).length === 2) {
+      const objs = choices.filter((c) => c.what === 'object');
+      return objs.length === 1 ? { ref: 'linked', link: objs[0]!.link } : undefined;
+    }
     const c = n['chosen'];
     if (!isRec(c) || c['link'] !== '$link' || c['quality'] === '$type') return undefined;
     return resolveIn(n, choices);
@@ -142,11 +184,51 @@ function resolveManaColor(units: Unit[]): void {
   }
 }
 
+/** edh-next-143: the instructions "each friend" / "each foe" may be the players of (see checkChoseWords). */
+const FRIEND_OR_FOE_OPS: ReadonlySet<string> = new Set(['search', 'move', 'shuffle', 'sacrificeChoice', 'discard', 'draw', 'damage', 'loseLife', 'gainLife']);
+
+/**
+ * edh-players-13 (CR 608.2d): "For each player who chose fame" names a word that an EARLIER "Each opponent chooses fame or fortune." of the same ability offered: a `chose` reference
+ * whose link no earlier choice among words made, or whose word it did not offer, keeps an `$chose` marker and the sentence stays manual (never a loop over nobody).
+ */
+function checkChoseWords(units: Unit[]): void {
+  const offered = new Map<string, string[]>();
+  for (const u of units) {
+    if (u.manual) continue;
+    u.steps = u.steps.map((s) => {
+      // edh-next-143 (CR 608.2d, 101.4): "each friend" / "each foe" (the players "For each player, choose friend or foe." chose a word for) acts as a group only in the instructions
+      // whose handlers do it for each player of the group, each with their own cards (a search, the move of what they found, a shuffle, a sacrifice, a discard, a draw, a life change,
+      // damage to each of them: edh-next-143-scenarios.test.ts); in any other instruction (a choice of objects, ...) the sentence stays manual
+      const friendOk = typeof s['op'] !== 'string' || FRIEND_OR_FOE_OPS.has(s['op']);
+      const out = rewrite(s, (n) => {
+        if (n['ref'] !== 'chose' || typeof n['link'] !== 'string') return undefined;
+        if (n['link'] === 'friendOrFoe' && !friendOk) return { ...n, $chose: 'unoffered' };
+        const words = offered.get(n['link']);
+        return words !== undefined && typeof n['value'] === 'string' && words.includes(n['value']) ? undefined : { ...n, $chose: 'unoffered' };
+      }) as Rec;
+      if (out['op'] === 'chooseValue' && typeof out['link'] === 'string' && Array.isArray(out['options'])) offered.set(out['link'], (out['options'] as unknown[]).map(String));
+      return out;
+    });
+  }
+}
+
 /** Pass 5b (after quantities): resolve the in-ability links, then (CLOUD C5) the ones another ability of the face makes as the object enters. Pure. */
 export function lowerLinks(d: Draft): Draft {
   const out = cloneDraft(d);
+  // edh-players-15 (CR 208.1; Éowyn, Fearless Knight): "with greater power" with nothing after it is more power than the creature whose triggered ability it is (the marker of
+  // parser/holes/filter.ts); in an ability of anything else (a spell, an Aura or Equipment, an activated ability) it names no object, so the marker stays and the sentence is manual
+  if (out.trigger !== undefined && out.selfHeads.includes('creature')) {
+    const strip = (v: unknown): unknown => rewrite(v, (n) => {
+      if (n['$greaterBare'] !== true) return undefined;
+      const { $greaterBare: _m, ...rest } = n;
+      return rest;
+    });
+    for (const u of out.units) if (!u.manual) u.steps = u.steps.map((s) => strip(s) as Rec);
+    out.targets = out.targets.map((t) => strip(t) as typeof t);
+  }
   const seqs = sequences(out);
   for (const seq of seqs) resolveManaColor(seq); // std-mana-12
+  for (const seq of seqs) checkChoseWords(seq); // edh-players-13
   resolveSeq(seqs[0]!, []);
   const header = producersOf(out.units);
   for (const seq of seqs.slice(1)) resolveSeq(seq, header);

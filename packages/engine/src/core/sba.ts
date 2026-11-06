@@ -16,7 +16,8 @@ import { charsOfObject, hasKeyword, readingStable } from '../rules/characteristi
 const START_YOUR_ENGINES = 'start your engines!';
 import { IMMEDIATE_CHECKS } from '../effects/registries';
 import { commanderDamageLoss, commanderZoneChoices, revealTurnedFaceUp } from './sba-commander';
-import { leavePending, noteLoser } from './leave';
+import { leavePending } from './leave';
+import { markLost } from './loss';
 
 /** Returns true if any state-based action was performed. */
 export function performStateBasedActions(g: Game): boolean {
@@ -40,7 +41,7 @@ export function performStateBasedActions(g: Game): boolean {
   // Mark every loser first so simultaneous losses produce a draw (CR 104.4a). A player who can't lose the game stays in it (CR 104.3b-d with the effect).
   for (const l of losers) {
     if (playerRestricted(g.s, l.id, 'cantLoseGame')) continue;
-    markLost(g, l.id, l.reason, [l.rule]);
+    lose(g, l.id, l.reason, [l.rule]); // edh-replace-7 (CR 614.1a): replaceable; replaced or not, the state changed: the actions are checked again
     any = true;
   }
   if (any) checkGameOver(g);
@@ -95,7 +96,7 @@ export function loseGame(g: Game, player: string, reason: string, rules: string[
     g.log(`${g.player(player).name} can't lose the game.`, { rules: ['CR 104.3'], level: 'info' });
     return;
   }
-  markLost(g, player, reason, rules);
+  lose(g, player, reason, rules);
   checkGameOver(g);
 }
 
@@ -110,7 +111,7 @@ export function loseGames(g: Game, players: readonly string[], reason: string, r
       g.log(`${g.player(player).name} can't lose the game.`, { rules: ['CR 104.3'], level: 'info' });
       continue;
     }
-    markLost(g, player, reason, rules);
+    lose(g, player, reason, rules);
   }
   checkGameOver(g);
 }
@@ -156,15 +157,25 @@ export function drawGame(g: Game, reason: string, rules: string[] = ['CR 104.4c'
   g.emit({ type: 'gameOver', winner: null, reason });
 }
 
-function markLost(g: Game, player: string, reason: string, rules: string[]): void {
-  const p = g.player(player);
-  if (p.hasLost) return;
-  p.hasLost = true;
-  p.lostReason = reason;
-  g.log(`${p.name} loses the game: ${reason}.`, { rules, level: 'warning' });
-  g.emit({ type: 'playerLost', player, reason, rules: [...rules] }); // M13-7: the citations of the loss (the hosted results ledger's loss codes)
-  noteLoser(g, { player, reason, rules }); // M12-2: in a multiplayer game the player leaves it (CR 104.5, 800.4a) when the game is checked (core/leave.ts)
+/**
+ * edh-replace-7 (CR 104.3, 614.1a; The Golden Throne): the funnel a loss of the game goes through once the player CAN lose (CR 104.3b): effects/funnels.ts installs the proposal of a
+ * `loseGame` event (effects/proposal-kinds/lose-game.ts), so a replacement effect may replace the loss ("If you would lose the game, instead ..."). A concession (CR 104.3a) never
+ * goes through it. Without it the player loses directly.
+ */
+export type LoseGameFunnel = (g: Game, player: string, reason: string, rules: string[]) => void;
+let loseGameFunnel: LoseGameFunnel | null = null;
+export function installLoseGameFunnel(f: LoseGameFunnel | null): void {
+  loseGameFunnel = f;
 }
+
+function lose(g: Game, player: string, reason: string, rules: string[]): void {
+  if (g.player(player).hasLost) return;
+  if (loseGameFunnel) loseGameFunnel(g, player, reason, rules);
+  else markLost(g, player, reason, rules);
+}
+
+/** The loss itself, once nothing replaced it (effects/perform-events.ts#performLoseGameEvent). */
+
 
 /** CR 104.2a: the last player remaining wins; CR 104.4a: if all players remaining lose simultaneously the game is a draw. */
 export function checkGameOver(g: Game): void {

@@ -1,0 +1,13 @@
+# edh-c-16 (Commander lane edh-c, EDHREC 19,376-20,000): the day/night cost reduction, "during your end step", an opponent's empty hand, counters put on a creature this turn, a tapped and attacking token with a quoted ability, graveyard-or-battlefield triggers, a four-sided die, "enchanted or equipped", an Aura's pump with a lure, "players can't search libraries this turn", "you may have ~ deal damage to <target> equal to <qty>". After editing: npm run cards -- fixtures
+Pugnacious Pugilist
+Maestros Diabolist
+Guul Draz Specter
+Moonrager's Slash
+Sigardian Paladin
+Closing Statement
+Arden Angel
+Firemane Angel
+Warchanter Skald
+Indrik Umbra
+Shadow of Doubt
+Tajuru Archer

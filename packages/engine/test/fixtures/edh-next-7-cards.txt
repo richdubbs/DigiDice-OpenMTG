@@ -1,0 +1,9 @@
+# edh-next-7 (Commander lane edh-next, EDHREC ranks 5,001-6,500, third pass): "1/1 creature" filter prefix, Pest creature token, plural "discard their hands", sentence-start "You ...", sacrifice the creature with the greatest power, color of your choice, three targets. After editing: npm run cards -- fixtures
+The Seedcore
+Pest Rescuer
+Wheel and Deal
+Cruel Ultimatum
+Szat's Will
+Wash Out
+Incremental Blight
+Pendelhaven

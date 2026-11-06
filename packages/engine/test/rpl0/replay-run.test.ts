@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
-  actionShapeProblem, checkpointsOf, checkReplay, createGame, currentEngine, replayAction, startReplay, type Action, type GameConfig, type ReplayFile,
+  actionShapeProblem, checkpointsOf, checkReplay, createGame, currentEngine, replayAction, REPLAY_FORMAT_VERSION, startReplay, type Action, type GameConfig, type ReplayFile,
 } from '../../src/index';
 import { compiledDefs } from '../fixtures';
 import { aiGame, botGame, discardConfig, faceDownConfig } from './games';
@@ -19,7 +19,7 @@ const passes = Array.from({ length: 30 }, (_, i) => ({ type: 'pass', player: i %
 /** A game replay of `cfg` and `actions` (shape only: the engine is not run). */
 function fileOf(cfg: unknown, actions: unknown[]): ReplayFile {
   return {
-    format: 'openmtg-replay', formatVersion: 1, kind: 'game', id: 'r-x', title: 't', createdAt: '2026-10-21T12:00:00Z',
+    format: 'openmtg-replay', formatVersion: REPLAY_FORMAT_VERSION, kind: 'game', id: 'r-x', title: 't', createdAt: '2026-10-21T12:00:00Z',
     app: { version: '0.5.0', commit: 'abc' }, engine: currentEngine(null),
     game: {
       mode: 'computer', format: '', players: [{ id: 'p1', name: 'A', kind: 'person' }, { id: 'p2', name: 'B', kind: 'computer' }], savedBy: 'p1',

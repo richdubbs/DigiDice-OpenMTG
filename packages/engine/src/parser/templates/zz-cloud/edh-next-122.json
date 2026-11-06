@@ -1,0 +1,278 @@
+[
+  {
+    "id": "eff.edhn122.copyToken.oneOfThose.except",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 111.1",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "create a token that's a copy of one of those creatures , except {x:CopyExceptToken}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "object",
+                "number": "plural",
+                "text": "those creatures"
+              }
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "copied"
+      },
+      {
+        "op": "copy",
+        "what": {
+          "ref": "bound",
+          "name": "copied"
+        },
+        "result": "token",
+        "who": {
+          "ref": "you"
+        },
+        "except": "$x"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "When you cast this spell, for each opponent, choose a creature that player controls. Create a token that's a copy of one of those creatures, except its power is equal to the total power of those creatures, its toughness is equal to the total toughness of those creatures, and it's a colorless Eldrazi creature."
+      },
+      {
+        "text": "When this creature enters, for each opponent, choose a creature that player controls. Create a token that's a copy of one of those creatures, except it isn't legendary."
+      }
+    ],
+    "counterExamples": [
+      "Create a token that's a copy of one of those creatures, except its power is equal to the total power of those creatures.",
+      "When this creature enters, for each opponent, choose a creature that player controls. Create a token that's a copy of one of those creatures, except it's a colorless Eldrazi creature in addition to its other types."
+    ]
+  },
+  {
+    "id": "eff.edhn122.nextEnter.asCopies.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 616.1",
+      "CR 707.2",
+      "CR 608.2h",
+      "CR 611.2a"
+    ],
+    "pattern": "the next time one or more creatures or planeswalkers enter this turn , they enter as copies of {o:Obj}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "anyOf": [
+                {
+                  "types": [
+                    "Creature"
+                  ]
+                },
+                {
+                  "types": [
+                    "Planeswalker"
+                  ]
+                }
+              ]
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": {
+                "is": "$o"
+              },
+              "optional": false,
+              "lastKnown": true
+            }
+          },
+          "shield": {
+            "uses": 1,
+            "batch": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose target nonlegendary creature. The next time one or more creatures or planeswalkers enter this turn, they enter as copies of the chosen creature."
+      },
+      {
+        "text": "Choose target creature you control. The next time one or more creatures or planeswalkers enter this turn, they enter as copies of the chosen creature."
+      }
+    ],
+    "counterExamples": [
+      "Choose target nonlegendary creature. The next time one or more creatures enter this turn, they enter as copies of the chosen creature.",
+      "Choose target nonlegendary creature. The next time one or more creatures or planeswalkers enter, they enter as copies of the chosen creature."
+    ],
+    "consumes": [
+      "next"
+    ]
+  },
+  {
+    "id": "rep.edhn122.enters.copy.exceptIfEmbalmed",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 707.5",
+      "CR 707.9b",
+      "CR 702.128a",
+      "CR 702.128b"
+    ],
+    "pattern": "you may have ~ enter as a copy of any {f:Filter} on the battlefield , except if ~ was embalmed , the token has no mana cost , it's white , and it's ( a | an ) {st:Subtypes} in addition to its other types",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "except": [
+                {
+                  "ifEmbalmed": true,
+                  "then": [
+                    {
+                      "noManaCost": true
+                    },
+                    {
+                      "layer": 5,
+                      "colors": {
+                        "set": [
+                          "W"
+                        ]
+                      }
+                    },
+                    {
+                      "layer": 4,
+                      "subtypes": {
+                        "add": "$st"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except",
+      "if",
+      "no",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "You may have this creature enter as a copy of any creature on the battlefield, except if this creature was embalmed, the token has no mana cost, it's white, and it's a Zombie in addition to its other types.\nEmbalm {3}{U}{U}"
+      },
+      {
+        "text": "You may have this creature enter as a copy of any artifact creature on the battlefield, except if this creature was embalmed, the token has no mana cost, it's white, and it's a Zombie in addition to its other types.\nEmbalm {5}{U}"
+      }
+    ],
+    "counterExamples": [
+      "You may have this creature enter as a copy of any creature on the battlefield, except if this creature was embalmed, the token has no mana cost, it's black, and it's a Zombie in addition to its other types.",
+      "You may have this creature enter as a copy of any creature on the battlefield, except if this creature was embalmed, the token has no mana cost and it's a Zombie in addition to its other types."
+    ]
+  },
+  {
+    "id": "sta.edhn122.triggered.cantCause.sacrificeOrExile",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 406.1",
+      "CR 603.1",
+      "CR 113.3c",
+      "CR 101.2"
+    ],
+    "pattern": "triggered abilities you control can't cause you to sacrifice or exile {f:Filter}",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "you"
+        },
+        "mode": "cant",
+        "action": "sacrifice",
+        "other": "$f",
+        "causedByOwnTriggered": true
+      },
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "mode": "cant",
+        "action": "beExiled",
+        "causedByOwnTriggered": true
+      }
+    ],
+    "consumes": [
+      "can't",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Triggered abilities you control can't cause you to sacrifice or exile creature tokens you control."
+      },
+      {
+        "text": "Triggered abilities you control can't cause you to sacrifice or exile artifact tokens you control."
+      }
+    ],
+    "counterExamples": [
+      "Triggered abilities you control can't cause you to sacrifice creature tokens you control.",
+      "Activated abilities you control can't cause you to sacrifice or exile creature tokens you control."
+    ]
+  }
+]

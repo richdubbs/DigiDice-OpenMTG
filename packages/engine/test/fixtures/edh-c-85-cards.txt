@@ -1,0 +1,5 @@
+# edh-c-85 (Commander lane edh-c, EDHREC ranks 15,501-16,000, later pass): a destroyed permanent of an opponent's spell or ability in the turn's history, lose all unspent mana, a second target of the first target's controller. After editing: npm run cards -- fixtures
+Cobra Trap
+Mana Short
+Mutiny
+Breaking of the Fellowship

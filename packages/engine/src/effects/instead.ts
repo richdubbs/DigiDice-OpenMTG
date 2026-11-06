@@ -60,17 +60,30 @@ const describeEvent = (g: Game, e: Proposed): string => {
     case 'drawMany': return `${g.player(e.player).name} would draw ${e.count} card${e.count === 1 ? '' : 's'}`; // r4-repl
     case 'explore': return `${g.nameOf(e.object.id)} would explore`; // r4-repl
     case 'proliferate': return `${g.player(e.player).name} would proliferate`; // p2-replace-events-2
+    case 'search': return `${g.player(e.player).name} would search a ${e.zone}`; // edh-zones-14
     case 'scry': return `${g.player(e.player).name} would scry ${e.count}`; // p2-replace-events-3
     case 'payLife': return `${g.player(e.player).name} would pay ${e.amount} life`; // std-library-4
     default: return 'it would happen';
   }
 };
 
+/**
+ * edh-fix-1 (CR 614.6, 110.5b, 122.6; Chatterfang ruling 2021-06-18, Divine Visitation, Worldwalker Helm ruling 2024-04-12): "anything else specified in the effect creating the token
+ * (such as tapped, attacking, 'that token gains haste' ...) applies" to the tokens a replacement makes instead of, or in addition to, the creation it replaces: they enter
+ * tapped (CR 110.5b) and with the counters the creating instruction gave (never attached to the original's object). Through the entering facts of the createToken
+ * handler (effects/handlers/tokens-create.ts), never a write to the token.
+ */
+export function carryEnterFacts(cx: ExecCtx, e: Proposed): void {
+  if (e.ev !== 'createToken' || e.enter === undefined) return;
+  if (e.enter.tapped === true) cx.insteadTapped = true;
+  if (e.enter.counters !== undefined && e.enter.counters.length > 0) cx.insteadCounters = e.enter.counters.map((c) => ({ kind: c.kind, count: c.count }));
+}
+
 /** CR 614.6: the original event never happens; the steps happen instead. */
 export function applyInstead(g: Game, e: Proposed, b: Extract<ReplacementBody, { b: 'instead' }>, c: Candidate): Proposed | null {
   g.log(`${c.sourceName}: ${describeEvent(g, e)}; something else happens instead.`, { rules: ['CR 614.1a', 'CR 614.6'], level: 'action' });
   const cx = replacementCtx(g, e, c);
-  if (e.ev === 'createToken' && e.enter?.tapped === true) cx.insteadTapped = true;
+  carryEnterFacts(cx, e); // edh-fix-1
   runNested(cx, b.do);
   return null;
 }

@@ -1,0 +1,6 @@
+# edh-combat-5 (Commander lane edh-combat): the golden cards of the round (test/m5/golden/cards/edh-combat-5-review.json)
+Tifa, Martial Artist
+Walking Bulwark
+Moraug, Fury of Akoum
+Merry, Esquire of Rohan
+Odric, Lunarch Marshal

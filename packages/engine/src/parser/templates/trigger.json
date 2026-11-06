@@ -215,10 +215,10 @@
     "id": "trg.you.proliferate",
     "kind": "trigger",
     "cr": ["CR 701.34a"],
-    "pattern": "whenever you proliferate",
+    "pattern": "( when | whenever ) you proliferate",
     "build": { "on": [{ "ev": "action", "verb": "proliferate", "actor": "you" }] },
-    "consumes": ["whenever"],
-    "examples": [{ "text": "Whenever you proliferate, draw two cards.", "expect": { "on": [{ "ev": "action", "verb": "proliferate", "actor": "you" }] } }, { "text": "Whenever you proliferate, target player draws three cards." }],
+    "consumes": ["when", "whenever"],
+    "examples": [{ "text": "Whenever you proliferate, draw two cards.", "expect": { "on": [{ "ev": "action", "verb": "proliferate", "actor": "you" }] } }, { "text": "Whenever you proliferate, target player draws three cards." }, { "text": "When you proliferate, draw a card." }],
     "counterExamples": ["Whenever an opponent proliferates, draw two cards.", "Whenever you proliferate twice, draw two cards."],
     "status": "stable",
     "since": 1

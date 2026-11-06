@@ -365,13 +365,16 @@ describe('CR 111.2, 101.4: "Each opponent creates a token that\'s a copy of ..."
 
 describe('CR 122.2: "exile ... card from a graveyard with a memory counter on it" puts the counter; it is no filter of the card in the graveyard (The Animus)', () => {
   const ANIMUS = card('Test Animus', 'Legendary Artifact', 'At the beginning of your end step, exile up to one target legendary creature card from a graveyard with a memory counter on it.\n{T}: Until your next turn, target legendary creature you control becomes a copy of target creature card in exile with a memory counter on it. Activate only as a sorcery.');
-  it('the exile with a counter is not automated (no move puts a counter yet), so the card is not full', () => {
+  // edhn115 (CR 122.2, 406.3): the exile that puts the counter on the card it moves is automated now (eff.edhz27.exile.withOneCounter, since edh-zones-27) and the card is read as a
+  // filter of nothing in a graveyard no more (holes/core.ts#mergeFilter drops the reading): the trigger is full and the move carries the counter; the played case is in cloud/edh-next-115
+  it('the exile with a counter is automated: the move puts the memory counter on the card it exiles (never a filter of the card in the graveyard)', () => {
     const [trigger, copy] = ANIMUS.faces[0]!.abilities;
-    expect(JSON.stringify(trigger)).toContain('"op":"manual"');
+    expect(JSON.stringify(trigger)).not.toContain('"op":"manual"');
+    expect(JSON.stringify(trigger)).toContain('"counters":[{"kind":"memory","count":1}]');
     expect(JSON.stringify(trigger)).not.toContain('"counters":{"kind":"memory"}');
     expect(copy!.kind).toBe('activated');
     expect(JSON.stringify(copy)).toContain('"zone":"exile","counters":{"kind":"memory"}');
-    expect(ANIMUS.automation.level).not.toBe('full');
+    expect(ANIMUS.automation.level).toBe('full');
   });
 });
 

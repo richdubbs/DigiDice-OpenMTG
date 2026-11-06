@@ -1,0 +1,10 @@
+# edh-c-57 (Commander EDHREC ranks 21,501-22,000, second pass): "as long as <cond>, if a source you control would deal damage ... double that damage" and "prevent N of that damage" statics, "any player may <cost>. If a player does, ..." (every player offered), "return ~ to its owner's hand unless you remove N counters from it", "~ has K as long as it has N or fewer counters on it. Otherwise, it has K2", "enchanted Wall can attack as though it didn't have defender", "you may put a <filter> card from your graveyard on top of your library", "creature with a morph ability". After editing: npm run cards -- fixtures
+Anthem of Rakdos
+Thunderstaff
+Carrion Rats
+Argothian Wurm
+Magmatic Sprinter
+Evolved Spinoderm
+Animate Wall
+Halo-Charged Skaab
+Master of the Veil

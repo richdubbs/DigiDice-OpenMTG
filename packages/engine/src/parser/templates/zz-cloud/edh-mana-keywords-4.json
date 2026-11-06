@@ -1,0 +1,98 @@
+[
+  {
+    "id": "sta.edhmk4.spend.anyColor",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 609.4b",
+      "CR 107.4c",
+      "CR 106.1"
+    ],
+    "pattern": "{w:Player} may spend mana as though it were mana of any color",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": "$w",
+          "action": "spendMana",
+          "asThough": "any color"
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Each opponent may spend mana as though it were mana of any color."
+      },
+      {
+        "text": "Each player may spend mana as though it were mana of any color."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent may spend mana as though it were mana of any type.",
+      "Each opponent may spend mana as though it were mana of any color to cast artifact spells.",
+      "Target player may spend mana as though it were mana of any color.",
+      "Each opponent may spend life as though it were mana of any color."
+    ],
+    "needs": [
+      "permit:spendMana.anyColorEverywhere"
+    ],
+    "consumes": [
+      "each",
+      "may",
+      "as though"
+    ]
+  },
+  {
+    "id": "rid.edhmk4.spent.gains.permanent",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 601.2h",
+      "CR 611.2a",
+      "CR 400.7a"
+    ],
+    "pattern": "if that mana is spent on {f:SpellsCast} , it gains haste",
+    "build": {
+      "$patchPrevious": {
+        "rider": {
+          "spells": "$f",
+          "gains": {
+            "kind": "keyword",
+            "keyword": "haste",
+            "text": "haste"
+          },
+          "permanent": true
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "if"
+    ],
+    "needs": [
+      "feature:mana.spentRider",
+      "feature:mana.spentRider.permanent"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {G}. If that mana is spent on a creature spell, it gains haste."
+      },
+      {
+        "text": "{T}: Add {R}. If that mana is spent on a Dragon creature spell, it gains haste."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {G}. If that mana is spent on a creature spell, it gains haste until end of turn.",
+      "{T}: Add {G}. If that mana is spent on a creature spell, it gains trample.",
+      "{T}: Add {G}. If that mana is spent on a creature spell, it gains riot.",
+      "{T}: Add {G}. If that mana is spent on a creature spell, it loses haste."
+    ]
+  }
+]

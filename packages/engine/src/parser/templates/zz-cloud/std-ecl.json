@@ -243,7 +243,7 @@
     "id": "eff.stdecl.gains.allCreatureTypes.dur",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 205.3m",
       "CR 613.1d",

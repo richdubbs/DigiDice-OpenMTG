@@ -294,6 +294,7 @@
   },
   {
     "id": "sta.t29.cda.pt.allhands",
+    "priority": 1,
     "kind": "static",
     "since": 7,
     "status": "stable",

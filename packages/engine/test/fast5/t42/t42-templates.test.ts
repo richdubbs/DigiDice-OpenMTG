@@ -217,19 +217,24 @@ describe.skipIf(index === null)('T42 design 6.9, 6.10 (local index): synthetic e
 
 describe('T42 neighbors stay as they were (guard G10: a formerly automated unit never gets worse)', () => {
   const parse = (type: string, text: string) => parseCard(card('Example Card', type, text), OPTS).faces[0]!;
-  it('"with different names" in a COST is not read (it would be dropped): the cost stays a manual confirmation and the effect stays automated, as before', () => {
+  // edh-next-90 (changed on purpose, Ormos, Archive Keeper): "Discard three cards with different names" is now read as the cost part `discard.distinctNames` (rules/cost-pick.ts), the cost is stated and the ability full
+  it('"with different names" in a discard COST is the cost part distinctNames (edh-next-90); it is still not read as the search wording of T42', () => {
     const f = parse('Creature — Wizard', '{1}{U}{U}, Discard three cards with different names: Draw five cards.');
     const a = f.abilities[0]!;
     expect(a.kind).toBe('activated');
     expect(JSON.stringify(a)).toContain('"op":"draw"');
+    expect(JSON.stringify(a)).toContain('"distinctNames":true');
     expect(JSON.stringify(a)).not.toContain('differentNames');
-    expect(compileCard(card('Example Card', 'Creature — Wizard', '{1}{U}{U}, Discard three cards with different names: Draw five cards.')).automation.level).toBe('partial');
+    expect(compileCard(card('Example Card', 'Creature — Wizard', '{1}{U}{U}, Discard three cards with different names: Draw five cards.')).automation.level).toBe('full');
   });
-  it('an Aura that returns itself attached to "that creature" leaves the sentence before it automated (the new attached templates read targets only)', () => {
+  // edh-perms-8 (changed on purpose): this sentence was manual (the t42 attached templates read targets only); eff.edhpm8.returnSelf.attached reads it, with the Aura card named in its
+  // graveyard inside the delayed trigger (parser/lower/moved-self.ts). A delayed trigger that has an event of its own still leaves it manual (edh-perms-8-templates.test.ts)
+  it('an Aura that returns itself attached to "that creature" at the next end step is automated (edh-perms-8), the sentence before it unchanged', () => {
     const f = parse('Enchantment — Aura', 'Enchant creature\nWhen enchanted creature dies, return that card to the battlefield under its owner\'s control. Return ~ to the battlefield attached to that creature at the beginning of the next end step.');
     const trig = f.abilities.find((a) => a.kind === 'triggered')!;
     expect(JSON.stringify(trig)).toContain('"op":"move"');
-    expect(fullyAutomated(f)).toBe(false);
+    expect(JSON.stringify(trig)).toContain('"attachedTo"');
+    expect(fullyAutomated(f)).toBe(true);
   });
   it('"put one into your hand and the other into your graveyard" with no look before it names an unbound binding: manual, never a guess', () => {
     expect(fullyAutomated(parse('Instant', 'Put one into your hand and the other into your graveyard.'))).toBe(false);

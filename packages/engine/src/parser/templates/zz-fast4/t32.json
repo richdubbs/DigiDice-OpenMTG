@@ -244,7 +244,8 @@
                     1,
                     {
                       "q": "happenedCount",
-                      "event": { "ev": "cast", "player": "you", "spell": { "types": "$f.types", "subtypes": "$f.subtypes", "supertypes": "$f.supertypes", "colors": "$f.colors", "colorless": "$f.colorless" } },
+                      "event": { "ev": "cast", "player": "you", "spell": { "types": "$f.types", "subtypes": "$f.subtypes", "supertypes": "$f.supertypes", "colors": "$f.colors", "colorless": "$f.colorless", "kicked": "$f.kicked",
+            "faceDown": "$f.faceDown" } },
                       "scope": "turn"
                     }
                   ]

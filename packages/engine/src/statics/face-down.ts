@@ -21,7 +21,8 @@ import type { FaceDownProfile, KeywordAbilityDef, Modification } from '../types/
 import type { Chars } from '../rules/characteristics';
 import type { GameObject, GameState } from '../types/state';
 import type { ApplyMods, CharAbility, LiveEffect } from './api';
-import { expansionOf, keywordsOfAbilities } from './abilities';
+import { expansionOf, keywordsOfAbilities, ruleAbilitiesFor } from './abilities';
+import { setOfProfile } from '../types/face-down-set';
 
 /** CR 708.2a, 613.2b: a face-down permanent or spell has the profile (cards exiled face down have none: rules/base-parts/face-down.ts). */
 export const hasFaceDownProfile = (o: GameObject): boolean => o.faceDown && o.kind !== 'ability' && (o.zone === 'battlefield' || o.zone === 'stack');
@@ -56,13 +57,18 @@ function profileAbilities(profile: FaceDownProfile): readonly CharAbility[] {
  * The characteristics of a face-down permanent or spell (CR 708.2a): everything is replaced. Its controller is layer 2's business (later) and what it "can't
  * have" comes from layer 6 (later), so both are kept. Every array is the caller's own (design 4.3, hazards 2-3).
  */
-export function faceDownChars(c: Pick<Chars, 'controller' | 'cantHave'>, profile: FaceDownProfile): Chars {
+export function faceDownChars(c: Pick<Chars, 'controller' | 'cantHave'>, profile: FaceDownProfile, fastPath = false): Chars {
   const abilities = profileAbilities(profile).slice();
+  const set = setOfProfile(profile);
+  // CR 305.6: "It's a Forest land." has the intrinsic mana ability of its basic land type (ruling 2021-04-16: its only ability is "{T}: Add {G}"); the fast path (E16) adds no rule ability after the profile
+  // (only on the fast path: the layered path makes it in layer 6 from the types after layer 4, so Blood Moon removes it, CR 305.7)
+  if (set !== null && fastPath) abilities.push(...ruleAbilitiesFor({ types: set.types as Chars['types'], subtypes: set.subtypes, face: 0, abilities }));
   return {
-    name: '', names: [], face: 0, combined: false, manaCost: null, manaValue: 0, colors: [], supertypes: [], types: ['Creature'], subtypes: [],
-    power: '2', toughness: '2', abilities, keywords: keywordsOfAbilities(abilities), cantHave: [...c.cantHave], controller: c.controller,
+    name: '', names: [], face: 0, combined: false, manaCost: null, manaValue: 0, colors: [], supertypes: [], types: (set?.types ?? ['Creature']) as Chars['types'], subtypes: set?.subtypes ?? [],
+    ...(set === null ? { power: '2', toughness: '2' } : set.pt === null ? {} : { power: set.pt[0], toughness: set.pt[1] }), abilities, keywords: keywordsOfAbilities(abilities), cantHave: [...c.cantHave], controller: c.controller,
   };
 }
+
 
 /** The profile a 1b effect applies: the effect's own, else the modification's, else plain. */
 function profileIn(mods: readonly Modification[], fx: FaceDownProfile | undefined): FaceDownProfile {
@@ -103,5 +109,5 @@ export const FACE_DOWN_RULE_EFFECTS: readonly ((s: GameState) => LiveEffect[])[]
 
 /** E16: the fast path's part (no layer source in the state, so the profile is all of layer 1): applied after the base and before counters. */
 export const FACE_DOWN_INTRINSIC: readonly ((s: GameState, o: GameObject, c: Chars) => Chars)[] = [
-  (_s, o, c) => (hasFaceDownProfile(o) ? faceDownChars(c, profileOf(o)) : c),
+  (_s, o, c) => (hasFaceDownProfile(o) ? faceDownChars(c, profileOf(o), true) : c),
 ];

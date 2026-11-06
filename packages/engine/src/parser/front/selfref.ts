@@ -42,14 +42,26 @@ const TYPE_BEFORE = new Set(['a', 'an', 'other', 'another', 'each', 'attacking',
 const TYPE_AFTER = new Set(['creature', 'creatures', 'card', 'cards', 'token', 'tokens', 'permanent', 'permanents', 'spell', 'spells', 'you', 'your', 'planeswalker', 'planeswalkers']);
 
 /** Titles that a name may start with and that are kept in its short form ("Captain Kirk"). */
-const TITLES = new Set(['Dr.', 'Captain', 'Commander', 'Lord', 'Lady', 'King', 'Queen', 'General', 'Admiral', 'Doctor', 'Professor', 'Sir', 'Chief', 'Agent', 'Ensign']);
+const TITLES = new Set(['Dr.', 'Captain', 'Commander', 'Lord', 'Lady', 'King', 'Queen', 'General', 'Admiral', 'Doctor', 'Professor', 'Sir', 'Chief', 'Agent', 'Ensign', 'Lieutenant']);
 /** First words that are not a name. */
 const NOT_A_NAME = new Set(['The', 'A', 'An', 'Of', 'And', 'Or', 'To', 'In', 'On']);
+
+/** Two-letter English words and rules words that a short name never is (edh-zones-19): "Me, the Immortal" is not "~" in "me". */
+const TWO_LETTER_WORDS = new Set(['me', 'my', 'we', 'he', 'it', 'is', 'as', 'at', 'an', 'if', 'in', 'of', 'on', 'or', 'to', 'up', 'us', 'so', 'no', 'do', 'go', 'be', 'by', 'oh', 'uh', 'um', 'ok', 'ax', 'ox', 'pi', 'id', 'hp']);
 
 /** The short name before the comma of a name ("Bruna, the Fading Light" -> "Bruna"). */
 export function shortName(full: string): string | undefined {
   const i = full.indexOf(', ');
   return i > 0 ? full.slice(0, i) : undefined;
+}
+
+/** edh-b-7 (CR 201.5c): the short name before the comma of a legendary creature's name when it is a keyword and nothing else of the rules vocabulary ("Storm, Force of Nature"). */
+export function keywordShortName(ctx: FaceContext, ix: LexiconIndex): string | undefined {
+  const comma = shortName(normalizeName(ctx.name));
+  if (comma === undefined || comma.length < 3 || !/^\p{Lu}/u.test(comma) || !ctx.supertypes.includes('legendary') || !ctx.types.includes('creature')) return undefined;
+  const w = comma.toLowerCase();
+  if (!ix.keywordNames.has(w) || ix.subtypes.has(w) || ix.cardTypes.has(w)) return undefined;
+  return comma;
 }
 
 /** Nouns that "this <noun>" may have in the OUTER scope: the types and subtypes of this face (design 6.2). */
@@ -62,6 +74,7 @@ export function outerNouns(ctx: FaceContext): Set<string> {
   if (ctx.types.some((t) => t !== 'instant' && t !== 'sorcery')) nouns.add('permanent');
   if (ctx.isToken) nouns.add('token');
   if (ctx.subtypes.includes('room')) nouns.add('door'); // a Room's halves say "this door" (CR 709.5? 721)
+  if (/^bestow\b/im.test(ctx.text)) nouns.add('aura'); // edh-perms-9 (CR 702.103b, 303.4): a bestow creature is an Aura while it is attached, and says "this Aura" ("+1/+1 for each +1/+1 counter on this Aura")
   return nouns;
 }
 
@@ -98,6 +111,9 @@ function pureCharacterTypes(ix: LexiconIndex): ReadonlySet<string> {
 }
 const characterTypeCache = new WeakMap<LexiconIndex, ReadonlySet<string>>();
 
+/** A word of a name that ends in a possessive ('s or s'): "Marit Lage's Slumber", "Heroes' Podium". */
+const POSSESSIVE = /(?:'s|s')(?:\s|$)/;
+
 /** The shortened forms of the face's name that CR 201.5c lets the card use for itself, most specific first. */
 export function shortNames(ctx: FaceContext, ix: LexiconIndex): string[] {
   const full = normalizeName(ctx.name);
@@ -118,20 +134,33 @@ export function shortNames(ctx: FaceContext, ix: LexiconIndex): string[] {
   // Deck", a Legendary Creature -- Q) is known by it ("When Q enters"); no other name that short is (X, Me, Ao, MJ, Uh are words or symbols the text may mean otherwise).
   // Its type positions ("another Q", "a Q") stay types (typePosition).
   if (comma && comma.length < 3 && known && /^\p{Lu}/u.test(comma) && ctx.subtypes.includes(comma.toLowerCase())) return [comma];
+  // edh-zones-19 (CR 201.5c; Ao, the Dawn Sky, MJ, Rising Star): a legendary character known by two letters that are no English word or rules word ("When Ao dies") is the card; "Me", "X" and the
+  // like (TWO_LETTER_WORDS, a letter or a symbol the text may mean otherwise) are not. Its type positions are not an issue (the letters are no subtype: isRulesWord below)
+  if (comma && comma.length === 2 && known && /^\p{Lu}\p{L}$/u.test(comma) && !TWO_LETTER_WORDS.has(comma.toLowerCase()) && !isRulesWord(ix, comma)) return [comma];
   // FAST5X E24: a legendary character's short name that is also a subtype ("Huatli, Poet of Unity", "Kaito, Bane of Nightmares", "Wolverine, Fierce
   // Fighter") is the character (CR 201.5c); its type positions ("a Wolverine", "Huatli planeswalker") stay types (typePosition, CR 205.3m)
   if (comma && known && ix.subtypes.has(comma.toLowerCase()) && !ix.cardTypes.has(comma.toLowerCase()) && !ix.keywordNames.has(comma.toLowerCase())) {
     if (comma.length >= 3 && /^\p{Lu}/u.test(comma) && !out.includes(comma)) out.push(comma);
   } else add(comma);
+  // trek-14 (CR 201.5c; Ensign Harry Kim, Operations: "Ensign Kim"): the part before the comma of a legendary name that is a title, a first name and a last name is also known by
+  // the title and the last name, as a name without a comma is ("Captain James T. Kirk" below)
+  if (comma && known) {
+    const cw = comma.split(' ');
+    if (cw.length >= 3 && TITLES.has(cw[0]!)) add(`${cw[0]} ${cw[cw.length - 1]}`);
+  }
   if (!known || comma) return out;
   // No comma: "Acererak the Archlich", "Ajani Vengeant", "Captain James T. Kirk".
   const words = full.split(' ');
   const cut = words.findIndex((w, i) => i > 0 && (w === 'the' || w === 'of'));
   if (cut > 0) add(words.slice(0, cut).join(' '), true);
+  // edh-next-27 (CR 201.5c; King Darien XLVIII): a legendary name that ends in a Roman numeral is also known without it ("King Darien"); the name before the numeral stays a person's name
+  if (words.length >= 3 && /^[IVXLCDM]{2,}$/.test(words[words.length - 1]!)) add(words.slice(0, -1).join(' '));
   if (words.length >= 2 && TITLES.has(words[0]!)) {
     if (words.length >= 3) add(`${words[0]} ${words[words.length - 1]}`);
-  } else if (words.length >= 2 && !full.includes("'")) {
-    add(words[0], true); // not for "Marit Lage's Slumber": a thing of Marit Lage, not a person called Marit
+  } else if (words.length >= 2 && !POSSESSIVE.test(full)) {
+    // not for "Marit Lage's Slumber": a thing of Marit Lage, not a person called Marit. edh-next-91 (CR 201.5c; Drizzt Do'Urden, Graham O'Brien): an apostrophe inside a person's name
+    // ("Do'Urden", "O'Brien", "Y'shtola") is no possessive, so the first word is still the short name; only an 's or s' that ends a word makes the name a thing of someone
+    add(words[0], true);
   }
   return out;
 }
@@ -196,10 +225,11 @@ export function otherNameWords(text: string, ix: LexiconIndex, skip: (pos: numbe
     // a sentence start: the start of a line, after a period, colon, dash, bullet or an opening quote
     if (before === '' || /(?:[.:•"]|--)$/.test(before)) continue;
     // an item of a cost list ("{2}, Sacrifice another creature: ...")
-    if (before.endsWith(',') && !before.includes('.') && line.slice(at - lineStart).includes(':')) continue;
+    if (before.endsWith(',') && !before.replace(/\.\.\.|\u2026/gu, '').includes('.') && line.slice(at - lineStart).includes(':')) continue; // edh-next-141: an ellipsis of a label is no full stop
     // a label ("Unbreakable Skin -- ...", "Power-up -- {4}{G}: ...")
     const dash = line.indexOf('--');
-    if (dash > at - lineStart && !/[.:"]/.test(line.slice(0, dash))) continue;
+    // edh-next-141 (CR 207.2d; Captain America, First Avenger): an ellipsis is no full stop ("Throw ... -- {3}, ...: He deals ...")
+    if (dash > at - lineStart && !/[.:"]/.test(line.slice(0, dash).replace(/\.\.\.|\u2026/gu, ''))) continue;
     if (/^(?:X|[IVX]+)$/.test(w)) continue;
     if (rulesWordAnyNumber(ix, w)) continue;
     out.push(w);
@@ -290,6 +320,10 @@ export function findSelfRefs(text: string, ctx: FaceContext, ix: LexiconIndex, q
   // words (and a lower-case "of" / "of the") after "named"
   const named = (pos: number): boolean => /\bnamed\s+$/.test(text.slice(Math.max(0, pos - 12), pos))
     || /\bnamed\s+(?:\p{Lu}[\p{L}'-]*\s+(?:of\s+(?:the\s+)?)?)+$/u.test(text.slice(Math.max(0, pos - 60), pos));
+  // edh-next-96 (CR 111.4, 201.2): a token's given name made of the card's short name, "create Tamiyo's Notebook, a legendary colorless Book artifact token": the name is
+  // a characteristic of the token it names, not the object itself. Only where the name is introduced ("create <name>'s <Capital>", "its name is ..."), so "~'s power" stays
+  const possessiveTokenName = (pos: number, end: number): boolean => /\b(?:create|name is)\s+$/i.test(text.slice(Math.max(0, pos - 12), pos))
+    && /^'s\s+\p{Lu}/u.test(text.slice(end, end + 6));
   const inQuote = (pos: number): boolean => insideAny(quoteSpans, pos);
   const names = cardNames ? nameIndex(cardNames) : undefined;
   const faceName = normalizeName(ctx.name);
@@ -317,16 +351,20 @@ export function findSelfRefs(text: string, ctx: FaceContext, ix: LexiconIndex, q
   };
   /** A capitalized word follows ("Marit Lage", "Syr Saxon") or "the" / "of" and one ("Tuktuk the Returned"): the short name is the start of another name. */
   const startsOtherName = (end: number): boolean => /^ (?:(?:the|of) )?\p{Lu}/u.test(text.slice(end, end + 8));
-  const addName = (name: string | undefined, via: SelfVia, short = false): void => {
+  const addName = (name: string | undefined, via: SelfVia, short = false, midLine = false): void => {
     if (!name) return;
     const asType = ix.subtypes.has(name.toLowerCase());
     for (let at = text.indexOf(name); at >= 0; at = text.indexOf(name, at + 1)) {
       const end = at + name.length;
       // Whole words only: no letter or digit on either side.
       if (isWord(text[at - 1]) || isWord(text[end])) continue;
-      if (inQuote(at) || named(at)) continue;
+      if (inQuote(at) || named(at) || possessiveTokenName(at, end)) continue;
       if (asType && typePosition(at, end)) continue;
       if (short && (startsLongerName(at, name) || startsOtherName(end))) continue;
+      if (midLine && (at === 0 || text[at - 1] === '\n')) continue; // edh-b-7: a keyword line starts with the capitalized keyword
+      // edh-c-54 (CR 115.1, 701.13a; Exile): a name that is also a verb ("Exile target nonwhite attacking creature") starts a sentence and takes a target: an object name never
+      // directly precedes "target" (a subject would need its own verb first), so the word is the verb
+      if (via === 'name' && /(?:^|\n|[.:] )$/.test(text.slice(Math.max(0, at - 2), at)) && /^ target\b/i.test(text.slice(end, end + 8))) continue;
       found.push({ start: at, end, via, scope: 'face' });
     }
   };
@@ -341,6 +379,9 @@ export function findSelfRefs(text: string, ctx: FaceContext, ix: LexiconIndex, q
     found.push({ start: at, end, via: 'grantor', scope: 'quote', mark: '¤' });
   }
   for (const s of shortNames(ctx, ix)) addName(s, 'short-name', true);
+  // edh-b-7 (CR 201.5c; Storm, Force of Nature): a legendary creature known by a short name that is also a keyword ("Whenever Storm deals combat damage") is the card
+  // when the name stands inside a line; a line that starts with the capitalized keyword is the keyword
+  addName(keywordShortName(ctx, ix), 'short-name', true, true);
   for (const other of ctx.otherNames) addName(normalizeName(other), 'other-face');
 
   const outer = outerNouns(ctx);
@@ -362,9 +403,17 @@ export function findSelfRefs(text: string, ctx: FaceContext, ix: LexiconIndex, q
   // other target\" until end of turn", "Ms. Marvel gains \"Ms. Marvel's base power is ...\""): the object that has the quoted ability is the object the outer
   // name means, so inside that quote its name and short names are "~" too, and so is a "he" / "him" / "his" after one of them in the same quote
   // std-rx32 (CR 201.5a, 608.2c): also "If Kellan is a Scout, it becomes a Human Faerie Detective and gains "Whenever Kellan deals ..."" (Kellan, Planar Trailblazer):
-  // in one sentence that names the object, then says "it becomes ... and gains" with no other noun phrase that "it" could be, the quote is granted to the object
+  // in one sentence that names the object, then says "it becomes ... and gains" (trek-19: or "he becomes ...", Nog, Ambitious Cadet) with no other noun phrase that "it" could be, the quote is granted to the object
+  // edh-d-87 (CR 201.5, 400.7, 608.2c; Cosima, God of the Voyage): "you may exile Cosima. If you do, it gains "... Cosima ..."": "it" is the card just exiled, the only object the
+  // sentence before names; the quote is granted to that card (the new object in exile), so inside it its name is "~" (the object that has the ability), not the grantor "¤"
+  const exiledThenGains = (c: Candidate, q: QuoteSpan): boolean => /^\. If you do, it gains $/.test(text.slice(c.end, q.open)) && /(?:^|[.:,] )(?:you may )?exile $/i.test(text.slice(Math.max(0, c.start - 24), c.start));
+  const exiledQuotes = quoteSpans.filter((q) => found.some((c) => c.scope === 'face' && c.via !== 'pronoun' && exiledThenGains(c, q)));
+  for (let i = found.length - 1; i >= 0; i--) if (found[i]!.mark === '¤' && exiledQuotes.some((q) => found[i]!.start > q.open && found[i]!.start < q.close)) found.splice(i, 1);
   const selfQuotes = quoteSpans.filter((q) => found.some((c) => c.scope === 'face' && c.via !== 'pronoun'
-    && (/^\s+(?:gains|has)\s+$/.test(text.slice(c.end, q.open)) || /^ is an? [A-Z][\p{L}-]*, it becomes an? [^.,"]* and gains $/u.test(text.slice(c.end, q.open)))));
+    && (/^\s+(?:gains|has)\s+$/.test(text.slice(c.end, q.open)) || /^ is an? [A-Z][\p{L}-]*, (?:it|he) becomes an? [^.,"]* and gains $/u.test(text.slice(c.end, q.open))
+      // edh-d-87 (CR 201.5, 400.7, 608.2c; Cosima, God of the Voyage): "you may exile Cosima. If you do, it gains "... Cosima ..."": "it" is the card just exiled, the only object the
+      // sentence before names; the quote is granted to that card (the new object in exile), so inside it its name is "~" (the object that has the ability), not the grantor
+      || exiledThenGains(c, q))));
   for (const q of selfQuotes) {
     const inside: Candidate[] = [];
     for (const name of [faceName, ...shortNames(ctx, ix)]) {
@@ -446,7 +495,9 @@ export function applySelfRefs(text: string, refs: readonly SelfRef[]): string {
   const parts: string[] = [];
   let at = 0;
   for (const r of refs) {
-    parts.push(text.slice(at, r.range[0]), r.as ?? `${' '.repeat(r.range[1] - r.range[0] - 1)}${r.mark ?? '~'}`);
+    // edh-zones-9 (Blood for the Blood God!): a name that ends with "!" or "?" and closes its line ends the sentence it is in: "Exile Blood for the Blood God!" is "Exile ~."
+    const closes = r.as === undefined && r.mark === undefined && /[!?]$/.test(text.slice(r.range[0], r.range[1])) && r.range[1] - r.range[0] >= 2 && /^\s*$/.test(text.slice(r.range[1]).split('\n')[0] ?? '');
+    parts.push(text.slice(at, r.range[0]), r.as ?? (closes ? `${' '.repeat(r.range[1] - r.range[0] - 2)}~.` : `${' '.repeat(r.range[1] - r.range[0] - 1)}${r.mark ?? '~'}`));
     at = r.range[1];
   }
   parts.push(text.slice(at));

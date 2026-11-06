@@ -1,0 +1,7 @@
+# edh-c-95 (Commander lane edh-c, EDHREC ranks 24,001-24,500, third pass): "If it's a <kind>" after a spell's target, damage "to it instead", a kind of counter moved onto a second target, life gained under two conditions, a grant under "if it devoured a creature", a creature and the Auras attached to it returned. After editing: npm run cards -- fixtures
+Electrostatic Bolt
+Purifying Dragon
+Daghatar the Adamant
+Dawnglow Infusion
+Hellkite Hatchling
+Mark of Eviction

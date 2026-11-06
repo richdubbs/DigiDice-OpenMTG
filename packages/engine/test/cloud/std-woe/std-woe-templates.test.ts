@@ -199,13 +199,19 @@ describe('std-woe renderer and lowering support', () => {
     expect(fullyAutomated(f)).toBe(false);
     expect(JSON.stringify(f.diagnostics)).toContain('one player');
   });
-  it('CR 608.2h, 603.10a: "with one or more counters on it dies ... that many" is not the number of objects that died (no automated "that many")', () => {
+  it('CR 608.2h, 603.10a: "with one or more counters on it dies ... that many" is not the number of objects that died (since edh-next-134: the counters it had)', () => {
     const f = face('Creature — Faerie', 'Whenever a creature you control with one or more counters on it dies, draw that many cards.');
-    expect(fullyAutomated(f)).toBe(false);
+    // combined copy: edh-next-134 (Oft-Nabbed Goat; family that-many-counters-it-had) reads "that many" as the counters on the creature that died, as it last existed: never the number of objects
+    expect(fullyAutomated(f)).toBe(true);
+    expect(JSON.stringify(f.abilities)).toContain('"count":{"q":"counters","on":{"ref":"event","role":"subject"},"kind":"any"}');
   });
-  it('CR 115.3, 109.2, 508.1k: in its own attack trigger, "other target attacking creature" after a target Equipment may mean other than this object: manual', () => {
+  it('CR 115.3, 109.2, 508.1k: in its own attack trigger, "other target attacking creature" after a target Equipment may mean other than this object: both exclusions (edh-d-89)', () => {
     const f = face('Creature — Hedgehog', 'Whenever ~ attacks, attach up to one target Equipment to it. Then up to one other target attacking creature gets +1/+0 until end of turn.');
-    expect(fullyAutomated(f)).toBe(false);
+    // edh-d-89 (Amy Rose): after an Equipment target the phrase keeps BOTH readings' exclusions, other than this object and distinct from the Equipment (never a superset of either reading)
+    expect(fullyAutomated(f), JSON.stringify(f.diagnostics)).toBe(true);
+    expect(JSON.stringify(f.abilities)).toContain('"filter":{"attacking":true,"types":["Creature"],"other":true},"distinctFrom":["t0"]');
+    // any other earlier target that can never be this object is still manual
+    expect(fullyAutomated(face('Creature — Hedgehog', 'Whenever ~ attacks, tap up to one target land. Then up to one other target attacking creature gets +1/+0 until end of turn.'))).toBe(false);
     // elsewhere "other" keeps its reading, other than the earlier targets (Rhino, Terrible Trampler's shape)
     const r = face('Creature — Rhino', 'When ~ enters, destroy target artifact or land. Put a +1/+1 counter on up to one other target creature.');
     expect(fullyAutomated(r), JSON.stringify(r.diagnostics)).toBe(true);

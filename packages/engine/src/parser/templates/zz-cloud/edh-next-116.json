@@ -1,0 +1,225 @@
+[
+  {
+    "id": "eff.edhn116.eachPlayer.keepLandFourTypes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 110.4",
+      "CR 205.2a",
+      "CR 608.2d",
+      "CR 608.2e",
+      "CR 701.21a"
+    ],
+    "pattern": "each player chooses from among the permanents they control an artifact , a creature , an enchantment , and a land , then sacrifices the rest",
+    "build": {
+      "op": "sacrificeChoice",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "filter": {},
+      "count": 1,
+      "mode": "keepEachType",
+      "keepTypes": [
+        "Artifact",
+        "Creature",
+        "Enchantment",
+        "Land"
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Each player chooses from among the permanents they control an artifact, a creature, an enchantment, and a land, then sacrifices the rest."
+      },
+      {
+        "text": "You gain 1 life. Each player chooses from among the permanents they control an artifact, a creature, an enchantment, and a land, then sacrifices the rest."
+      }
+    ],
+    "counterExamples": [
+      "Each player chooses from among the permanents they control an artifact, a creature, an enchantment, and a land, then sacrifices them.",
+      "Each opponent chooses from among the permanents they control an artifact, a creature, an enchantment, and a land, then sacrifices the rest.",
+      "Each player chooses from among the permanents they control an artifact, a creature, an enchantment, and a planeswalker, then sacrifices the rest."
+    ]
+  },
+  {
+    "id": "eff.edhn116.opponents.cantCastOrActivateLoyalty",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 602.5",
+      "CR 606.1",
+      "CR 101.2"
+    ],
+    "pattern": "your opponents can't cast spells or activate planeswalkers' loyalty abilities {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "mode": "cant",
+          "action": "cast"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "opponent"
+          },
+          "mode": "cant",
+          "action": "activate",
+          "abilityKeyword": "loyalty"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Your opponents can't cast spells or activate planeswalkers' loyalty abilities this turn."
+      },
+      {
+        "text": "You gain 1 life. Your opponents can't cast spells or activate planeswalkers' loyalty abilities until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Your opponents can't cast spells or activate planeswalkers' loyalty abilities.",
+      "Your opponents can't cast spells or activate planeswalkers' mana abilities this turn.",
+      "Target player can't cast spells or activate planeswalkers' loyalty abilities this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn116.counters.two.forEach",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 701.8a"
+    ],
+    "pattern": "put two loyalty counters on {o:Obj} for each {n:Qty}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "loyalty",
+      "count": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          2,
+          "$n"
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, destroy all artifacts. Put two loyalty counters on ~ for each permanent destroyed this way."
+      },
+      {
+        "text": "When ~ enters, destroy all creatures with power 1 or less. Put two loyalty counters on ~ for each creature destroyed this way."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, destroy all artifacts. Put three loyalty counters on ~ for each permanent destroyed this way.",
+      "When ~ enters, destroy all artifacts. Put two loyalty counters on ~ for each creature destroyed this way.",
+      "When ~ enters, destroy all artifacts. Put two +1/+1 counters on ~ for each permanent destroyed this way."
+    ]
+  },
+  {
+    "id": "eff.edhn116.exile.thenReturnAllOtherLinked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 109.2",
+      "CR 608.2c"
+    ],
+    "pattern": "exile {o:Obj} , then return all other permanent cards exiled with ~ to the battlefield under their owners' control",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "exile"
+        },
+        "as": "_justExiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "zone": "exile",
+            "isCard": true,
+            "types": [
+              "Artifact",
+              "Battle",
+              "Creature",
+              "Enchantment",
+              "Land",
+              "Planeswalker"
+            ],
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "_justExiled"
+              }
+            }
+          }
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "other",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control dies, exile it, then return all other permanent cards exiled with ~ to the battlefield under their owners' control."
+      },
+      {
+        "text": "Whenever an artifact enters, exile it, then return all other permanent cards exiled with ~ to the battlefield under their owners' control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control dies, exile it, then return all permanent cards exiled with ~ to the battlefield under their owners' control.",
+      "Whenever a creature you control dies, exile it, then return all other permanent cards exiled with ~ to the battlefield under your control.",
+      "Whenever a creature you control dies, exile it, then return all other creature cards exiled with ~ to the battlefield under their owners' control."
+    ]
+  }
+]

@@ -16,10 +16,12 @@ export function filterNames(options: readonly string[], query: string): string[]
 }
 
 /** std-rx28 (CR 201.3): a land card name or a nonland card name only (ChooseNameDecision.cardKind); a face says it by its type line or its types. */
-export type CardKind = 'land' | 'nonland';
+/** edh-next-146 (CR 201.3): or a creature card name only ('creature', Psychic Paper). */
+export type CardKind = 'land' | 'nonland' | 'creature';
 type NameFace = { name: string; typeLine?: string; types?: readonly string[] };
 const isLandFace = (f: NameFace): boolean => (f.types !== undefined ? f.types.includes('Land') : /\bLand\b/.test(f.typeLine ?? ''));
-const fitsKind = (f: NameFace, kind?: CardKind): boolean => kind === undefined || isLandFace(f) === (kind === 'land');
+const isCreatureFace = (f: NameFace): boolean => (f.types !== undefined ? f.types.includes('Creature') : /\bCreature\b/.test(f.typeLine ?? ''));
+const fitsKind = (f: NameFace, kind?: CardKind): boolean => kind === undefined || (kind === 'creature' ? isCreatureFace(f) : isLandFace(f) === (kind === 'land'));
 
 /** The names a card can be named by: each face's name when it has several faces ("Fire", "Ice"; never "Fire // Ice"), else its name; of `kind` only, when given. */
 export function nameableNames(card: { name: string; faces: readonly NameFace[] }, kind?: CardKind): string[] {

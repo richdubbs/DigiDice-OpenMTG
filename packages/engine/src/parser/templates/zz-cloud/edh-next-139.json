@@ -1,0 +1,313 @@
+[
+  {
+    "id": "eff.edhn139.startingWithYou.eachPlayer.mayPayAnyLife",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 101.4",
+      "CR 118.12",
+      "CR 119.4",
+      "CR 608.2d"
+    ],
+    "pattern": "starting with you , each player may pay any amount of life",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "startingWith": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "payLife",
+            "amount": 1
+          }
+        ]
+      },
+      "anyAmount": true,
+      "as": "lifePaid",
+      "link": "lifePaid"
+    },
+    "consumes": [
+      "each",
+      "may",
+      "any"
+    ],
+    "needs": [
+      "op:pay.byPlayerLink"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player may pay any amount of life. Repeat this process until no one pays life. Each player creates a 2/2 black Zombie creature token for each 1 life they paid this way."
+      },
+      {
+        "text": "Starting with you, each player may pay any amount of life. Repeat this process until no one pays life. Each player creates a 2/2 green Wolf creature token for each 1 life they paid this way."
+      }
+    ],
+    "counterExamples": [
+      "Starting with you, each opponent may pay any amount of life. Repeat this process until no one pays life. Each player creates a 1/1 black Rat creature token for each 1 life they paid this way.",
+      "Each player may pay any amount of life. Repeat this process until no one pays life. Each player creates a 1/1 black Rat creature token for each 1 life they paid this way.",
+      "Starting with you, each player may pay any amount of life. Repeat this process until no one pays life. Each player creates a 1/1 black Rat creature token for each 1 life you paid this way."
+    ]
+  },
+  {
+    "id": "eff.edhn139.repeatProcess.untilNoOnePaysLife",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 119.4"
+    ],
+    "pattern": "repeat this process until no one pays life",
+    "build": {
+      "op": "repeat",
+      "times": 1,
+      "do": [],
+      "process": true,
+      "until": {
+        "cond": "did",
+        "step": "lifePaid",
+        "not": true
+      }
+    },
+    "consumes": [
+      "until",
+      "no one"
+    ],
+    "needs": [
+      "op:repeat.until"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player may pay any amount of life. Repeat this process until no one pays life. Each player creates a 2/2 black Zombie creature token for each 1 life they paid this way."
+      },
+      {
+        "text": "Starting with you, each player may pay any amount of life. Repeat this process until no one pays life. Each player creates a 1/1 white Spirit creature token with flying for each 1 life they paid this way."
+      }
+    ],
+    "counterExamples": [
+      "Repeat this process until no one pays life.",
+      "Draw a card. Repeat this process until no one pays life.",
+      "Starting with you, each player may pay any amount of life. Repeat this process until no one pays mana. Each player creates a 1/1 black Rat creature token for each 1 life they paid this way."
+    ]
+  },
+  {
+    "id": "eff.edhn139.eachPlayer.createsToken.forEachLifeTheyPaid",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 111.1",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "each player creates ( a | an ) {t:TokenDesc} for each 1 life they paid this way",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "count": {
+        "q": "chosenNumber",
+        "link": "lifePaid",
+        "of": {
+          "ref": "iterating"
+        }
+      },
+      "token": "$t"
+    },
+    "consumes": [
+      "each",
+      "for each",
+      "this way"
+    ],
+    "needs": [
+      "feature:q.chosenNumber.of"
+    ],
+    "examples": [
+      {
+        "text": "Starting with you, each player may pay any amount of life. Repeat this process until no one pays life. Each player creates a 2/2 black Zombie creature token for each 1 life they paid this way."
+      },
+      {
+        "text": "Starting with you, each player may pay any amount of life. Repeat this process until no one pays life. Each player creates a 2/2 black Zombie creature token for each 1 life they paid this way."
+      }
+    ],
+    "counterExamples": [
+      "Each player creates a 1/1 black Rat creature token for each 1 life they paid this way.",
+      "Draw a card. Each player creates a 1/1 black Rat creature token for each 1 life they paid this way.",
+      "Starting with you, each player may pay any amount of mana. Each player creates a 1/1 black Rat creature token for each 1 life they paid this way."
+    ]
+  },
+  {
+    "id": "eff.edhn139.tapAllUntappedWolves.thisWay",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "priority": 1,
+    "cr": [
+      "CR 701.26a",
+      "CR 608.2c"
+    ],
+    "pattern": "tap all untapped wolf creatures you control",
+    "build": {
+      "op": "tap",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "tapped": false,
+          "types": [
+            "Creature"
+          ],
+          "subtypes": [
+            "Wolf"
+          ],
+          "controller": "you"
+        }
+      },
+      "as": "tappedThisWay"
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Tap all untapped Wolf creatures you control. Each Wolf tapped this way deals damage equal to its power to target creature. That creature deals damage equal to its power divided as its controller chooses among any number of those Wolves."
+      },
+      {
+        "text": "{2}, {T}: Tap all untapped Wolf creatures you control. Each Wolf tapped this way deals damage equal to its power to target creature. That creature deals damage equal to its power divided as its controller chooses among any number of those Wolves."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Tap all untapped Wolf creatures you control.",
+      "{1}, {T}: Tap all untapped Wolf creatures you control. You gain 1 life."
+    ]
+  },
+  {
+    "id": "eff.edhn139.eachWolfTapped.dealsPower.targetDividesBack",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "object",
+    "cr": [
+      "CR 701.26a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 120.2b",
+      "CR 120.3"
+    ],
+    "pattern": "each {f:Filter} tapped this way deals damage equal to its power to {o:Recipient} . that creature deals damage equal to its power divided as its controller chooses among any number of those {g:Filter}",
+    "build": [
+      {
+        "op": "damage",
+        "source": {
+          "ref": "bound",
+          "name": "tappedThisWay",
+          "which": "$f"
+        },
+        "to": "$o",
+        "amount": {
+          "q": "stat",
+          "stat": "power",
+          "of": {
+            "ref": "subject"
+          }
+        },
+        "perSource": true
+      },
+      {
+        "op": "damage",
+        "source": "$o",
+        "to": {
+          "ref": "bound",
+          "name": "tappedThisWay",
+          "which": "$g"
+        },
+        "amount": {
+          "q": "stat",
+          "stat": "power",
+          "of": "$o"
+        },
+        "divided": "bySourceController"
+      }
+    ],
+    "consumes": [
+      "each",
+      "this way",
+      "that",
+      "any number",
+      "those"
+    ],
+    "needs": [
+      "op:damage.dividedBySourceController"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Tap all untapped Wolf creatures you control. Each Wolf tapped this way deals damage equal to its power to target creature. That creature deals damage equal to its power divided as its controller chooses among any number of those Wolves."
+      },
+      {
+        "text": "{2}, {T}: Tap all untapped Wolf creatures you control. Each Wolf tapped this way deals damage equal to its power to target creature. That creature deals damage equal to its power divided as its controller chooses among any number of those Wolves."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Tap all untapped Wolf creatures you control. Each Wolf tapped this way deals damage equal to its power to target creature.",
+      "{1}, {T}: Tap all untapped Wolf creatures you control. Each Wolf tapped this way deals damage equal to its power to target creature. That creature deals damage equal to its power divided as you choose among any number of those Wolves.",
+      "{1}, {T}: Each Wolf tapped this way deals damage equal to its power to target creature. That creature deals damage equal to its power divided as its controller chooses among any number of those Wolves."
+    ]
+  },
+  {
+    "id": "trg.edhn139.creaturePutOntoWithSelf.leaves",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.6c",
+      "CR 603.10a",
+      "CR 607.2c",
+      "CR 400.7"
+    ],
+    "pattern": "when the creature put onto the battlefield with ~ leaves the battlefield",
+    "build": {
+      "on": [
+        {
+          "ev": "zoneChange",
+          "subject": {
+            "types": [
+              "Creature"
+            ],
+            "is": {
+              "ref": "linked",
+              "link": "putOntoWith"
+            }
+          },
+          "from": "battlefield"
+        }
+      ]
+    },
+    "consumes": [
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "When this creature enters, return up to one target creature card from your graveyard to the battlefield.\nWhen the creature put onto the battlefield with this creature leaves the battlefield, draw a card."
+      },
+      {
+        "text": "When this creature enters, return up to one target creature card from your graveyard to the battlefield.\nWhen the creature put onto the battlefield with this creature leaves the battlefield, you lose 3 life."
+      }
+    ],
+    "counterExamples": [
+      "When the creature put onto the battlefield with this creature leaves the battlefield, draw a card.",
+      "When this creature enters, return up to one target creature card from your graveyard to your hand.\nWhen the creature put onto the battlefield with this creature leaves the battlefield, draw a card.",
+      "When this creature enters, return up to one target creature card from your graveyard to the battlefield.\nWhen the creature put onto the battlefield with this creature dies, draw a card."
+    ]
+  }
+]

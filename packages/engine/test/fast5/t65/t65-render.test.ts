@@ -36,10 +36,13 @@ describe('the joiner: the last of three or more steps is also joined with the se
     rejects(three, 'Draw a card and gain 1 life.');
     rejects(three, 'Draw a card, scry 1, and gain 1 life.');
   });
-  it('two steps keep their own wording (no comma before the "and")', () => {
+  // edh-c-77 (CR 608.2c; render/steps.ts): Oracle also joins two instructions with ", and" ("..., and that creature gains flying until end of turn", Skyrider Patrol;
+  // The Motherlode, Excavator; Overabundance), so the joiner accepts it for any two steps since then: punctuation only, the words still have to match.
+  it('two steps are joined with "and" (and, since edh-c-77, also with ", and")', () => {
     const two = spell([draw(), gain(1)]);
     accepts(two, 'Draw a card and gain 1 life.');
-    rejects(two, 'Draw a card, and gain 1 life.');
+    accepts(two, 'Draw a card, and gain 1 life.');
+    rejects(two, 'Draw a card, gain 1 life, and.');
   });
 });
 

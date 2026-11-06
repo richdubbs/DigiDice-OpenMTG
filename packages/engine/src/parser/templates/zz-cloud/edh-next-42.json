@@ -1,0 +1,69 @@
+[
+  {
+    "id": "rep.edhn42.damageToSelf.prevent.sourceControllerDraws",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 615.5",
+      "CR 120.3",
+      "CR 121.1"
+    ],
+    "pattern": "if a source would deal damage to ~ , prevent that damage . the source 's controller draws cards equal to the damage prevented this way",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "self": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "draw",
+                "who": {
+                  "ref": "controllerOf",
+                  "object": {
+                    "ref": "event",
+                    "role": "source"
+                  }
+                },
+                "count": {
+                  "q": "preventedAmount"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "prevent",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to Example Subject, prevent that damage. The source's controller draws cards equal to the damage prevented this way."
+      },
+      {
+        "text": "Example Subject gets +1/+1.\nIf a source would deal damage to Example Subject, prevent that damage. The source's controller draws cards equal to the damage prevented this way."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to ~, prevent that damage. You draw cards equal to the damage prevented this way.",
+      "If a source would deal damage to ~, prevent that damage. The source's controller gains life equal to the damage prevented this way.",
+      "If a source would deal combat damage to ~, prevent that damage. The source's controller draws cards equal to the damage prevented this way."
+    ]
+  }
+]

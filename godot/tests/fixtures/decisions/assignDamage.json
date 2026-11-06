@@ -1,0 +1,28 @@
+{
+  "id": "d13",
+  "player": "p2",
+  "prompt": "Assign 5 combat damage from Hill Giant (trample: lethal damage to every blocker before the rest can go to what it attacks).",
+  "rules": [
+    "CR 510.1c",
+    "CR 702.19b"
+  ],
+  "kind": "assignDamage",
+  "attacker": "o20",
+  "amount": 5,
+  "recipients": [
+    {
+      "id": "o10",
+      "lethal": 2
+    },
+    {
+      "id": "o11",
+      "lethal": 1
+    },
+    {
+      "id": "p1",
+      "lethal": 0,
+      "trampleTarget": true
+    }
+  ],
+  "canTrample": true
+}

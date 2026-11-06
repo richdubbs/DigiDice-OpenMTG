@@ -21,9 +21,9 @@ const level = (text: string, type?: string, o?: { cost?: string; pt?: [string, s
 const manaAbility = (text: string, type?: string) => compile(text, type).faces[0]!.abilities[0]!;
 
 describe('CR 605.1a, 605.3b: steps a mana ability may have beside adding mana (parser/lower/ability.ts, model/cap-walk.ts, model/lint-nodes.ts)', () => {
-  it('"Draw a card." by its controller, also after "Sacrifice ~" as a cost: a mana ability, full', () => {
+  it('"Draw a card." by its controller, also after "Sacrifice ~" as a cost: full, but since CR 605.1a of 2026-09-25 (a draw moves a card out of a library) no mana ability (edh-fix-5)', () => {
     const a = manaAbility('{1}, {T}, Sacrifice this artifact: Add {B}{G}. Draw a card.');
-    expect(a.kind === 'activated' && a.isMana).toBe(true);
+    expect(a.kind === 'activated' && a.isMana).toBeUndefined();
     expect(a.kind === 'activated' && a.effect.steps.map((s) => s.op)).toEqual(['addMana', 'draw']);
     expect(level('{1}, {T}, Sacrifice this artifact: Add {B}{G}. Draw a card.')).toBe('full');
     expect(level('{T}: Add {C}. Draw two cards.')).toBe('full');
@@ -36,9 +36,11 @@ describe('CR 605.1a, 605.3b: steps a mana ability may have beside adding mana (p
     expect(a.kind === 'activated' && a.isMana).toBe(true);
     expect(level("{T}: Add {B} or {G}. This land doesn't untap during your next untap step.", 'Land')).toBe('full');
   });
-  it('near misses stay out of the mana path (fail closed): another player draws, a counted draw, a lasting untap restriction, the source sacrificed before it stays tapped', () => {
-    expect(level('{T}: Add {C}. Each opponent draws a card.')).not.toBe('full');
-    expect(level('{T}: Add {C}. Draw a card for each artifact you control.')).not.toBe('full');
+  it('near misses stay out of the mana path (fail closed): a lasting untap restriction, the source sacrificed before it stays tapped; draws of any kind are ordinary abilities since edh-fix-5 (CR 605.1a)', () => {
+    for (const t of ['{T}: Add {C}. Each opponent draws a card.', '{T}: Add {C}. Draw a card for each artifact you control.']) {
+      const a = manaAbility(t);
+      expect(a.kind === 'activated' && a.isMana).toBeUndefined();
+    }
     expect(level("{T}: Add {C}. This land doesn't untap during your untap step.", 'Land')).not.toBe('full');
     expect(level("{T}, Sacrifice this artifact: Add {C}. This artifact doesn't untap during your next untap step.")).not.toBe('full');
   });

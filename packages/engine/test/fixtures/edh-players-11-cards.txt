@@ -1,0 +1,12 @@
+# edh-players-11 (Commander lane edh-players; test/cloud/edh-players-11, golden edh-players-11-review.json)
+# the players of a group who did an optional action (draw, put counters) named afterwards; counters you put on a permanent or player; a target of an opponent, a creature or a planeswalker; an alternative cost named in a condition; "from among them" after an exile of the top cards; +X/+X or -X/-X and an emblem that gives lands a mana ability; attack with ~ and/or your commander; "that creature" of a sacrificed cost
+Kwain, Itinerant Meddler
+Orzhov Advokist
+The Second Doctor
+All Will Be One
+Baleful Mastery
+Tezzeret, Master of the Bridge
+Liliana of the Dark Realms
+Ainok Strike Leader
+Shadowheart, Dark Justiciar
+Endless Foot Assault

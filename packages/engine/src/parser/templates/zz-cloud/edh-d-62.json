@@ -1,0 +1,541 @@
+[
+  {
+    "id": "eff.edhd62.token.gingerbrute",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.3",
+      "CR 111.4",
+      "CR 701.7a"
+    ],
+    "pattern": "create a gingerbrute token",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "token": {
+        "name": "Gingerbrute",
+        "types": [
+          "Artifact",
+          "Creature"
+        ],
+        "subtypes": [
+          "Food",
+          "Golem"
+        ],
+        "power": 1,
+        "toughness": 1,
+        "manaCost": [
+          {
+            "kind": "generic",
+            "amount": 1
+          }
+        ],
+        "abilities": [
+          {
+            "kind": "keyword",
+            "keyword": "haste",
+            "text": "Haste"
+          },
+          {
+            "kind": "activated",
+            "text": "{1}: ~ can't be blocked this turn except by creatures with haste.",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 1
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "effect",
+                  "duration": {
+                    "d": "endOfTurn"
+                  },
+                  "effects": [
+                    {
+                      "s": "restrict",
+                      "subject": {
+                        "ref": "self"
+                      },
+                      "mode": "cant",
+                      "action": "beBlockedBy",
+                      "other": {
+                        "not": {
+                          "types": [
+                            "Creature"
+                          ],
+                          "keyword": "haste"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "kind": "activated",
+            "text": "{2}, {T}, Sacrifice ~: You gain 3 life.",
+            "cost": {
+              "mana": [
+                {
+                  "kind": "generic",
+                  "amount": 2
+                }
+              ],
+              "tap": true,
+              "other": [
+                {
+                  "kind": "sacrifice",
+                  "filter": {
+                    "self": true
+                  },
+                  "count": 1,
+                  "self": true
+                }
+              ]
+            },
+            "effect": {
+              "targets": [],
+              "steps": [
+                {
+                  "op": "gainLife",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "amount": 3
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, create a Gingerbrute token."
+      },
+      {
+        "text": "At the beginning of your end step, if you're the monarch, create a Gingerbrute token."
+      }
+    ],
+    "counterExamples": [
+      "Create two Gingerbrute tokens.",
+      "Create a tapped Gingerbrute token.",
+      "Create a Gingerbrute token for each opponent."
+    ]
+  },
+  {
+    "id": "eff.edhd62.player.nextTurn.eachCreatureMustAttack",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1d",
+      "CR 611.2a",
+      "CR 500.1",
+      "CR 506.1"
+    ],
+    "pattern": "during {p:Player} 's next turn , each creature that player controls attacks if able",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "duringNextTurn",
+        "whose": "$p"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "$p"
+            }
+          },
+          "mode": "mustIfAble",
+          "action": "attack"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "if",
+      "if able",
+      "during",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "During target player's next turn, each creature that player controls attacks if able."
+      },
+      {
+        "text": "During target opponent's next turn, each creature that player controls attacks if able."
+      }
+    ],
+    "counterExamples": [
+      "During target player's next turn, each creature that player controls blocks if able.",
+      "During target player's next turn, each creature that player controls attacks you if able.",
+      "Until target player's next turn, each creature that player controls attacks if able.",
+      "During target player's next turn, each creature that player controls attacks if able and can't block."
+    ]
+  },
+  {
+    "id": "eff.edhd62.forEachOfThem.counters.colorsItIs",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 122.1",
+      "CR 105.2"
+    ],
+    "pattern": "for each of {t:Them} , put a number of {k:CounterKind} counters on it equal to the number of colors it is",
+    "build": {
+      "op": "forEach",
+      "over": "$t",
+      "as": "each",
+      "do": [
+        {
+          "op": "putCounters",
+          "on": {
+            "ref": "bound",
+            "name": "each"
+          },
+          "kind": "$k",
+          "count": {
+            "q": "distinct",
+            "what": "colors",
+            "among": {
+              "ref": "bound",
+              "name": "each"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Choose up to two target creatures. For each of them, put a number of +1/+1 counters on it equal to the number of colors it is."
+      },
+      {
+        "text": "{2}, {T}: Choose up to three target creatures. For each of them, put a number of +1/+1 counters on it equal to the number of colors it is."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Choose up to two target creatures. For each of them, put a number of +1/+1 counters on it equal to its power.",
+      "{T}: Choose up to two target creatures. For each of them, put a number of +1/+1 counters on it equal to the number of colors you control.",
+      "{T}: Choose up to two target creatures. For each of them, you may put a number of +1/+1 counters on it equal to the number of colors it is."
+    ]
+  },
+  {
+    "id": "eff.edhd62.if.thatCard.wasAllColors",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 105.2",
+      "CR 105.2c"
+    ],
+    "pattern": "if {o:Obj} was all colors , {e:Effects}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "distinct",
+          "what": "colors",
+          "among": "$o"
+        },
+        "op": ">=",
+        "right": 5
+      },
+      "then": "$e"
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Return target multicolored card from your graveyard to your hand. If that card was all colors, you gain 5 life."
+      },
+      {
+        "text": "Return target creature card from your graveyard to your hand. If that card was all colors, draw two cards and create a Treasure token."
+      }
+    ],
+    "counterExamples": [
+      "Return target multicolored card from your graveyard to your hand. If that card was multicolored, draw a card.",
+      "Return target creature card from your graveyard to your hand. If that card was all colors, instead draw a card.",
+      "Return target creature card from your graveyard to your hand. If that card is all colors, you gain 3 life."
+    ]
+  },
+  {
+    "id": "eff.edhd62.dur.objs.each.basept.loseAll",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4b",
+      "CR 613.1f",
+      "CR 113.1"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} each have base power and toughness {pt:BasePT} and lose all abilities",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "until",
+      "each",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Until your next turn, up to two target creatures each have base power and toughness 0/3 and lose all abilities."
+      },
+      {
+        "text": "Until end of turn, up to three target artifact creatures each have base power and toughness 1/1 and lose all abilities."
+      }
+    ],
+    "counterExamples": [
+      "Until your next turn, up to two target creatures each have base power and toughness 0/3 and gain all abilities.",
+      "Until your next turn, up to two target creatures each have base power and toughness 0/3 and lose all abilities except mana abilities.",
+      "Until your next turn, up to two target creatures each have base power and toughness 0/3."
+    ]
+  },
+  {
+    "id": "eff.edhd62.dur.spells.thatPlayerCasts.less",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 611.2a",
+      "CR 108.4"
+    ],
+    "pattern": "{d:Dur} , {f:Filter} {p:Player} casts cost {m:ManaCost} less to cast",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "$p"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Target player draws two cards. Until your next turn, instant, sorcery, and planeswalker spells that player casts cost {2} less to cast."
+      },
+      {
+        "text": "Target opponent draws a card. Until end of turn, creature spells that player casts cost {1} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "Target player draws two cards. Until your next turn, instant, sorcery, and planeswalker spells that player casts cost {2} more to cast.",
+      "Target player draws two cards. Until your next turn, instant, sorcery, and planeswalker spells you cast cost {2} less to cast.",
+      "Target player draws two cards. Until your next turn, instant, sorcery, and planeswalker spells that player casts cost {2} less to cast, but not below {1}."
+    ]
+  },
+  {
+    "id": "eff.edhd62.forEachOpp.mill.returnUnlessPays",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 701.17a",
+      "CR 119.4",
+      "CR 118.12"
+    ],
+    "pattern": "for each opponent , you mill a card , then return that card from your graveyard to your hand unless that player pays {n:Qty} life",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "opp",
+      "do": [
+        {
+          "op": "mill",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1,
+          "as": "milled"
+        },
+        {
+          "op": "pay",
+          "who": {
+            "ref": "iterating"
+          },
+          "cost": {
+            "other": [
+              {
+                "kind": "payLife",
+                "amount": "$n"
+              }
+            ]
+          },
+          "else": [
+            {
+              "op": "move",
+              "what": {
+                "ref": "each",
+                "filter": {
+                  "is": {
+                    "ref": "bound",
+                    "name": "milled"
+                  },
+                  "zone": "graveyard",
+                  "owner": "you"
+                }
+              },
+              "to": {
+                "zone": "hand"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "unless",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, for each opponent, you mill a card, then return that card from your graveyard to your hand unless that player pays 4 life."
+      },
+      {
+        "text": "At the beginning of your upkeep, for each opponent, you mill a card, then return that card from your graveyard to your hand unless that player pays 2 life."
+      }
+    ],
+    "counterExamples": [
+      "{T}: For each opponent, you mill a card, then return that card from your graveyard to your hand unless that player pays {2}.",
+      "{T}: For each opponent, you mill two cards, then return those cards from your graveyard to your hand unless that player pays 3 life.",
+      "{T}: For each opponent, you mill a card, then return that card from your graveyard to your hand if that player pays 3 life."
+    ]
+  },
+  {
+    "id": "eff.edhd62.player.putsCardOfTheirChoice.fromTheirGraveyard.underYourControl",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 108.3",
+      "CR 701.20"
+    ],
+    "pattern": "{p:Player} puts ( a | an ) {f:Filter} card of their choice from their graveyard onto the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "isCard": true,
+            "zone": "graveyard",
+            "owner": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent puts an artifact card of their choice from their graveyard onto the battlefield under your control."
+      },
+      {
+        "text": "Target player puts a Zombie card of their choice from their graveyard onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent puts a creature card of their choice from their graveyard onto the battlefield.",
+      "Target opponent puts a creature card of their choice from your graveyard onto the battlefield under your control.",
+      "Target opponent puts a creature card of their choice from their graveyard into their hand."
+    ]
+  }
+]

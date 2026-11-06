@@ -1,0 +1,10 @@
+# edh-d-2 (Commander EDHREC ranks 11,251-12,500): return a card from the graveyard tapped with N counters, search another player's library into their graveyard, optional "sacrifice any number of creatures / exile any number of creature cards from your graveyard" cost reductions, the exiled-with random card to its owner's hand, a life total set to half the starting life total, mill then may put a card from among them onto the battlefield, reveal your hand and put all lands, "return it" after a counter cost. After editing: npm run cards -- fixtures
+Life's Finale
+Quiet Speculation
+Extus, Oriq Overlord // Awaken the Blood Avatar
+Torgaar, Famine Incarnate
+Mole Module
+Manabond
+Slogurk, the Overslime
+Gorex, the Tombshell
+Retrofitted Transmogrant

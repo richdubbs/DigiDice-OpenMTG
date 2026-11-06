@@ -1,0 +1,1 @@
+{"name":"a changed number deep inside","before":{"p":{"life":20,"hand":["x"]}},"ops":[{"op":"set","path":["p","life"],"value":17}],"after":{"p":{"life":17,"hand":["x"]}}}

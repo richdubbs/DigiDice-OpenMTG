@@ -1,0 +1,6 @@
+# edh-zones-6 (Commander effort, lane edh-zones; test/cloud/edh-zones-6, golden edh-zones-6-review.json): a quote inside a quote, a search by exact printed mana cost, an emblem followed by another sentence, a spell's own replacement from anywhere, return to hand destination first, additional counters on an object put onto the battlefield
+Urza's Saga
+Nissa, Who Shakes the World
+Nexus of Fate
+Scrap Trawler
+Neoform

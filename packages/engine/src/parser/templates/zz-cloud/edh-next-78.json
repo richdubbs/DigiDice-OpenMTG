@@ -1,0 +1,85 @@
+[
+  {
+    "id": "trg.edhn78.finalChapter.triggers",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 714.2",
+      "CR 714.2d",
+      "CR 603.2",
+      "CR 603.3b"
+    ],
+    "pattern": "whenever the final chapter ability of a saga you control triggers",
+    "build": {
+      "on": [
+        {
+          "ev": "abilityTriggered",
+          "of": {
+            "subtypes": [
+              "Saga"
+            ],
+            "controller": "you"
+          },
+          "finalChapter": true
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever the final chapter ability of a Saga you control triggers, create a 2/2 white Knight creature token."
+      },
+      {
+        "text": "Whenever the final chapter ability of a Saga you control triggers, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever the final chapter ability of a Saga an opponent controls triggers, draw a card.",
+      "Whenever a chapter ability of a Saga you control triggers, draw a card.",
+      "Whenever the final chapter ability of a Saga you control triggers, if you control a creature, draw a card."
+    ]
+  },
+  {
+    "id": "trg.edhn78.finalChapter.resolves",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 714.2",
+      "CR 714.2d",
+      "CR 603.2",
+      "CR 608.2"
+    ],
+    "pattern": "whenever the final chapter ability of a saga you control resolves",
+    "build": {
+      "on": [
+        {
+          "ev": "resolves",
+          "what": {
+            "stackKind": "finalChapterAbility",
+            "controller": "you"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever the final chapter ability of a Saga you control resolves, you gain 3 life."
+      },
+      {
+        "text": "Whenever the final chapter ability of a Saga you control resolves, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever the final chapter ability of a Saga an opponent controls resolves, draw a card.",
+      "Whenever a chapter ability of a Saga you control resolves, draw a card.",
+      "Whenever the final chapter ability of a Saga you control resolves, if you control a creature, draw a card."
+    ]
+  }
+]

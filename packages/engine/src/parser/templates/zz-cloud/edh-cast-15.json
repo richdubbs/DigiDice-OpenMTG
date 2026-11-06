@@ -1,0 +1,747 @@
+[
+  {
+    "id": "rid.edhc15.mana.whenSpent.castOrActivate.copy",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.6",
+      "CR 603.2",
+      "CR 707.10",
+      "CR 602.2"
+    ],
+    "pattern": "when you spend this mana to cast a spell or activate an ability , copy that spell or ability",
+    "build": {
+      "$patchPrevious": {
+        "whenSpent": {
+          "@new": {
+            "spells": {},
+            "orAbilities": true,
+            "do": [
+              {
+                "op": "copy",
+                "what": {
+                  "ref": "event",
+                  "role": "spell"
+                },
+                "result": "spell",
+                "who": {
+                  "ref": "you"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Add {R}. When you spend this mana to cast a spell or activate an ability, copy that spell or ability."
+      },
+      {
+        "text": "{2}, {T}: Add {G}. When you spend this mana to cast a spell or activate an ability, copy that spell or ability."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add {R}. When you spend this mana to cast a spell, copy that spell.",
+      "{T}: Draw a card. When you spend this mana to cast a spell or activate an ability, copy that spell or ability.",
+      "{T}: Add {R}. When you spend this mana to cast a spell or activate an ability, copy that spell."
+    ]
+  },
+  {
+    "id": "eff.edhc15.copy.all.spells.thenOtherAbilities",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 113.7a",
+      "CR 608.2c"
+    ],
+    "pattern": "copy all spells you control , then copy all other activated and triggered abilities you control",
+    "build": [
+      {
+        "op": "copy",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "controller": "you",
+            "stackKind": "spell",
+            "zone": "stack"
+          }
+        },
+        "result": "spell",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "copy",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              {
+                "stackKind": "activatedAbility"
+              },
+              {
+                "stackKind": "triggeredAbility"
+              }
+            ],
+            "controller": "you",
+            "zone": "stack"
+          }
+        },
+        "result": "spell",
+        "who": {
+          "ref": "you"
+        },
+        "exceptThis": true
+      }
+    ],
+    "consumes": [
+      "all",
+      "other",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell, copy all spells you control, then copy all other activated and triggered abilities you control. You may choose new targets for the copies."
+      },
+      {
+        "text": "At the beginning of your end step, copy all spells you control, then copy all other activated and triggered abilities you control. You may choose new targets for the copies."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell, copy all spells you control, then copy all activated and triggered abilities you control.",
+      "Whenever you cast a spell, copy all spells you control, then copy all other activated abilities you control.",
+      "Whenever you cast a spell, copy all spells you control, then copy all other activated and triggered abilities your opponents control.",
+      "Whenever you cast a spell, copy all spells you control."
+    ]
+  },
+  {
+    "id": "eff.edhc15.eachOpponentMay.copy.newTargets",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 707.10",
+      "CR 707.10c",
+      "CR 608.2d",
+      "CR 101.4"
+    ],
+    "pattern": "each opponent may copy {o:Obj} and may choose new targets for the copy they control",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": "$o",
+          "result": "spell",
+          "who": {
+            "ref": "iterating"
+          },
+          "newTargets": "may"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "may",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Choose target instant spell. Each opponent may copy that spell and may choose new targets for the copy they control."
+      },
+      {
+        "text": "Choose target sorcery spell. Each opponent may copy that spell and may choose new targets for the copy they control."
+      }
+    ],
+    "counterExamples": [
+      "Choose target instant spell. Each opponent copies that spell and may choose new targets for the copy they control.",
+      "Choose target instant spell. Each player may copy that spell and may choose new targets for the copy they control.",
+      "Choose target instant spell. Each opponent may copy that spell and may choose new targets for the copy you control."
+    ]
+  },
+  {
+    "id": "eff.edhc15.copy.oncePlus.eachOpponentWhoCopied",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 707.10",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you copy {o:Obj} once plus an additional time for each opponent who copied the spell this way",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "spell",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "math",
+        "op": "+",
+        "args": [
+          1,
+          {
+            "q": "resultCount",
+            "step": "",
+            "$step": "previous",
+            "$who": "each"
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "each",
+      "additional",
+      "plus",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Choose target instant spell. Each opponent may copy that spell and may choose new targets for the copy they control. You copy that spell once plus an additional time for each opponent who copied the spell this way."
+      },
+      {
+        "text": "Choose target sorcery spell. Each opponent may copy that spell and may choose new targets for the copy they control. You copy that spell once plus an additional time for each opponent who copied the spell this way."
+      }
+    ],
+    "counterExamples": [
+      "Choose target instant spell. Each opponent may copy that spell and may choose new targets for the copy they control. You copy that spell once plus an additional time for each opponent who copied the spell.",
+      "Choose target instant spell. Each opponent may copy that spell and may choose new targets for the copy they control. You copy that spell twice plus an additional time for each opponent who copied the spell this way.",
+      "Choose target instant spell. Each opponent may copy that spell and may choose new targets for the copy they control. You copy that spell once plus an additional time for each player who copied the spell this way."
+    ]
+  },
+  {
+    "id": "rid.edhc15.copies.youControl.newTargets",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.10c",
+      "CR 115.7"
+    ],
+    "pattern": "you may choose new targets for the copies you control",
+    "build": {
+      "$patchPrevious": {
+        "newTargets": {
+          "@new": "may"
+        },
+        "@require": {
+          "result": "spell",
+          "count.q": "math"
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Choose target instant spell. Each opponent may copy that spell and may choose new targets for the copy they control. You copy that spell once plus an additional time for each opponent who copied the spell this way. You may choose new targets for the copies you control."
+      },
+      {
+        "text": "Choose target sorcery spell. Each opponent may copy that spell and may choose new targets for the copy they control. You copy that spell once plus an additional time for each opponent who copied the spell this way. You may choose new targets for the copies you control."
+      }
+    ],
+    "counterExamples": [
+      "Choose target instant spell. Copy that spell. You may choose new targets for the copies you control.",
+      "Choose target instant spell. Each opponent may copy that spell and may choose new targets for the copy they control. You copy that spell once plus an additional time for each opponent who copied the spell this way. You may choose new targets for the copies they control."
+    ]
+  },
+  {
+    "id": "cm.edhc15.additional.sacrificeOneOrMore.copyForEach",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.8",
+      "CR 601.2b",
+      "CR 603.12",
+      "CR 707.10",
+      "CR 701.21a"
+    ],
+    "pattern": "as an additional cost to cast ~ , you may sacrifice one or more creatures . when you do , copy ~ for each creature sacrificed this way",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": "you"
+                },
+                "count": "any"
+              }
+            ]
+          },
+          "optional": true,
+          "name": "sacrificed",
+          "announceCount": true,
+          "copyForEach": true
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "may",
+      "one or more",
+      "when",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, you may sacrifice one or more creatures.  When you do, copy ~ for each creature sacrificed this way."
+      },
+      {
+        "text": "As an additional cost to cast ~, you may sacrifice one or more creatures. When you do,  copy ~ for each creature sacrificed this way."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast this spell, you may sacrifice one or more artifacts. When you do, copy this spell for each creature sacrificed this way.",
+      "As an additional cost to cast this spell, you may sacrifice one or more creatures. When you do, copy this spell for each creature sacrificed.",
+      "As an additional cost to cast this spell, you may sacrifice a creature. When you do, copy this spell for each creature sacrificed this way.",
+      "As an additional cost to cast this spell, you may sacrifice one or more creatures. When you do, copy this spell."
+    ]
+  },
+  {
+    "id": "sta.edhc15.spells.cast.ripple",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 601.2a",
+      "CR 707.10",
+      "CR 702.60a"
+    ],
+    "pattern": "{f:Filter} you cast have ripple {n:Count}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            "$f"
+          ],
+          "controller": "you",
+          "not": {
+            "stackKind": "copy",
+            "zone": "stack"
+          },
+          "zone": "stack"
+        }
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": [
+            {
+              "kind": "keyword",
+              "keyword": "ripple",
+              "amount": "$n",
+              "text": "ripple"
+            }
+          ]
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Goblin spells you cast have ripple 2."
+      },
+      {
+        "text": "Spells you cast have ripple 5."
+      }
+    ],
+    "counterExamples": [
+      "Goblin spells you control have ripple 2.",
+      "Goblin spells your opponents cast have ripple 2.",
+      "Goblin spells you cast have cascade."
+    ]
+  },
+  {
+    "id": "eff.edhc15.choose.anotherTargetPlayer.thanCaster",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c",
+      "CR 603.3d"
+    ],
+    "pattern": "choose another target player",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "player",
+          "players": {
+            "who": "any",
+            "otherThan": {
+              "ref": "event",
+              "role": "player"
+            }
+          },
+          "min": 1,
+          "max": 1,
+          "text": "another target player"
+        }
+      }
+    },
+    "consumes": [
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player casts a spell, choose another target player. ~ deals damage equal to that spell's mana value to the chosen player."
+      },
+      {
+        "text": "Whenever an opponent casts their first spell each turn, choose another target player. ~ deals damage equal to that spell's mana value to the chosen player."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player casts a spell, choose target player. ~ deals damage equal to that spell's mana value to the chosen player.",
+      "Whenever a player casts a spell, choose another target opponent. ~ deals damage equal to that spell's mana value to the chosen player.",
+      "Whenever a player casts a spell, choose another target player."
+    ]
+  },
+  {
+    "id": "cm.edhc15.self.less.ifTargetsSpellThatTargets",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 604.5",
+      "CR 118.7a",
+      "CR 115.9b"
+    ],
+    "pattern": "~ costs {m:ManaCost} less to cast if it targets a spell or ability that targets {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "spellTargetCount",
+                  "filter": {
+                    "anyOf": [
+                      {
+                        "stackKind": "spell"
+                      },
+                      {
+                        "stackKind": "ability"
+                      }
+                    ],
+                    "targets": {
+                      "ref": "each",
+                      "filter": "$f"
+                    },
+                    "zone": "stack"
+                  }
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "needs": [
+      "feature:costMod.times",
+      "feature:spellTargetCount.filter"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {3} less to cast if it targets a spell or ability that targets a creature you control with toughness 5 or greater."
+      },
+      {
+        "text": "~ costs {2} less to cast if it targets a spell or ability that targets a tapped artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {3} more to cast if it targets a spell or ability that targets a creature you control with toughness 5 or greater.",
+      "~ costs {3} less to cast if it targets a spell or ability that targets two creatures you control.",
+      "~ costs {3} less to cast if it targets a spell that targets a creature you control with toughness 5 or greater."
+    ]
+  },
+  {
+    "id": "eff.edhc15.owner.putsIt.topOrBottom",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "its owner puts {o:Obj} on their choice of the top or bottom of their library",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "ownerChoosesEnd": true
+      }
+    },
+    "consumes": [
+      "choice"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters,  choose up to one target creature spell or planeswalker spell. Its owner puts it on their choice of the top or bottom of their library."
+      },
+      {
+        "text": "When ~ enters, choose target artifact spell. Its owner puts it on their choice of the top or bottom of their library."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, choose target artifact spell. Its controller puts it on their choice of the top or bottom of their library.",
+      "When ~ enters, choose target artifact spell. Its owner puts it on the top or bottom of their library.",
+      "When ~ enters, choose target artifact spell. Its owner puts it on their choice of the top or bottom of your library."
+    ]
+  },
+  {
+    "id": "eff.edhc15.cast.upTo.instantSorcery.totalMV.graveyardOrHand.free",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 601.2",
+      "CR 608.2g",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 608.2d"
+    ],
+    "pattern": "you may cast up to {k:Qty} instant and/or sorcery spells with total mana value {m:Qty} or less from your graveyard and/or hand without paying their mana costs",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Instant",
+            "Sorcery"
+          ],
+          "zone": [
+            "graveyard",
+            "hand"
+          ],
+          "owner": "you",
+          "isCard": true
+        }
+      },
+      "free": true,
+      "select": {
+        "max": "$k",
+        "totalManaValue": "$m"
+      }
+    },
+    "consumes": [
+      "may",
+      "up to",
+      "total",
+      "and/or"
+    ],
+    "examples": [
+      {
+        "text": "You may cast up to two instant and/or sorcery spells with total mana value 6 or less from your graveyard and/or hand without paying their mana costs."
+      },
+      {
+        "text": "You may cast up to three instant and/or sorcery spells with total mana value 4 or less from your graveyard and/or hand without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "You may cast up to two instant and/or sorcery spells with total mana value 6 or less from your graveyard without paying their mana costs.",
+      "You may cast up to two instant and/or sorcery spells with total mana value 6 or less from your hand and/or graveyard without paying their mana costs.",
+      "You may cast up to two instant and/or sorcery spells with total mana value 6 or less from your graveyard and/or hand by paying their mana costs.",
+      "You may cast up to two instant or sorcery spells with total mana value 6 or less from your graveyard and/or hand without paying their mana costs."
+    ]
+  },
+  {
+    "id": "rid.edhc15.cast.those.exileInstead",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 608.2c",
+      "CR 400.7"
+    ],
+    "pattern": "if those spells would be put into your graveyard , exile them instead",
+    "build": {
+      "$patchPrevious": {
+        "graveyardInstead": {
+          "@new": {
+            "to": {
+              "zone": "exile"
+            },
+            "yours": true
+          }
+        },
+        "@require": {
+          "free": true
+        }
+      }
+    },
+    "attachTo": "cast",
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "You may cast up to two instant and/or sorcery spells with total mana value 6 or less from your graveyard and/or hand without paying their mana costs. If those spells would be put into your graveyard, exile them instead."
+      },
+      {
+        "text": "You may cast up to three instant and/or sorcery spells with total mana value 4 or less from your graveyard and/or hand without paying their mana costs. If those spells would be put into your graveyard, exile them instead."
+      }
+    ],
+    "counterExamples": [
+      "You may cast up to two instant and/or sorcery spells with total mana value 6 or less from your graveyard and/or hand without paying their mana costs. If those spells would be put into a graveyard, exile them instead.",
+      "You may cast up to two instant and/or sorcery spells with total mana value 6 or less from your graveyard and/or hand without paying their mana costs. If those spells would be put into your graveyard, put them on the bottom of your library instead."
+    ]
+  },
+  {
+    "id": "eff.edhc15.cantBeCounteredOrTargeted.byBlueOrBlackSpells.thisTurn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.6a",
+      "CR 115.1",
+      "CR 101.2",
+      "CR 611.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "spells you control can't be countered by blue or black spells this turn , and creatures you control can't be the targets of blue or black spells this turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "controller": "you",
+              "stackKind": "spell",
+              "zone": "stack"
+            }
+          },
+          "mode": "cant",
+          "action": "beCountered",
+          "other": {
+            "colors": [
+              "U",
+              "B"
+            ],
+            "stackKind": "spell"
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you"
+            }
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "colors": [
+              "U",
+              "B"
+            ],
+            "stackKind": "spell"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Scry 1. Spells you control can't be countered by blue or black spells this turn, and creatures you control can't be the targets of blue or black spells this turn."
+      },
+      {
+        "text": "Draw a card. Spells you control can't be countered by blue or black spells this turn, and creatures you control can't be the targets of blue or black spells this turn."
+      }
+    ],
+    "counterExamples": [
+      "Spells you control can't be countered this turn, and creatures you control can't be the targets of blue or black spells this turn.",
+      "Spells you control can't be countered by blue or black spells this turn, and creatures you control can't be the targets of red or green spells this turn.",
+      "Spells you control can't be countered by blue or black spells this turn, and creatures you control can't be the targets of blue or black spells or abilities this turn.",
+      "Spells you control can't be countered by blue or black spells this turn."
+    ]
+  }
+]

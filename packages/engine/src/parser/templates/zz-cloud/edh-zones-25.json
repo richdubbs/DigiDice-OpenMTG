@@ -1,0 +1,329 @@
+[
+  {
+    "id": "eff.edhz25.return.upTo.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 107.1c"
+    ],
+    "pattern": "return up to {n:Qty} {f:Filter} to the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "returnUpTo"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returnUpTo"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Return up to three artifact cards from your graveyard to the battlefield."
+      },
+      {
+        "text": "Mill four cards. Then return up to two land cards from your graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Return up to three artifact cards from your graveyard to your hand.",
+      "Return up to three target artifact cards from your graveyard to the battlefield.",
+      "Return up to three artifact cards from your graveyard to the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.edhz25.search.reveal.oneTapped.restHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7"
+    ],
+    "pattern": "search your library for up to {n:Qty} {f:Filter} cards , reveal those cards , and put one onto the battlefield tapped and the rest into your hand",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "$n",
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "kept"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "kept"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "kept"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "and",
+      "rest"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to three basic Island cards, reveal those cards, and put one onto the battlefield tapped and the rest into your hand."
+      },
+      {
+        "text": "Search your library for up to four basic Plains cards, reveal those cards, and put one onto the battlefield tapped and the rest into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to three basic Island cards, reveal those cards, and put one onto the battlefield and the rest into your hand.",
+      "Search your library for up to three basic Island cards, reveal those cards, and put one onto the battlefield tapped and the rest into your graveyard.",
+      "Search your library for up to three basic Island cards, and put one onto the battlefield tapped and the rest into your hand."
+    ]
+  },
+  {
+    "id": "rid.edhz25.search.upToInstead",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 614.15",
+      "CR 701.23a"
+    ],
+    "pattern": "if {c:Cond} , search your library for up to {n:Qty} {f:Filter} cards instead of {m:Qty}",
+    "build": {
+      "$patchPrevious": {
+        "@step": -4,
+        "@names": true,
+        "@replace": true,
+        "@require": {
+          "op": "search",
+          "zone": "library",
+          "reveal": true
+        },
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "search",
+            "who": {
+              "ref": "you"
+            },
+            "zone": "library",
+            "filter": "$f",
+            "min": 0,
+            "max": "$n",
+            "reveal": true,
+            "as": "search"
+          }
+        ],
+        "else": [
+          "@previous"
+        ],
+        "@unit": -2
+      }
+    },
+    "attachTo": "search",
+    "consumes": [
+      "if",
+      "instead",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to two basic Island cards, reveal those cards, and put one onto the battlefield tapped and the rest into your hand. Then shuffle. If you control a creature, search your library for up to three basic Island cards instead of two."
+      },
+      {
+        "text": "Search your library for up to two basic Plains cards, reveal those cards, and put one onto the battlefield tapped and the rest into your hand. Then shuffle. If you control two or more lands, search your library for up to five basic Plains cards instead of two."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to two basic Island cards, reveal those cards, and put one onto the battlefield tapped and the rest into your hand. Then shuffle. If you control a creature, search your library for up to three basic Island cards.",
+      "Draw a card. If you control a creature, search your library for up to three basic Island cards instead of two."
+    ]
+  },
+  {
+    "id": "trg.edhz25.you.discard.batch.filtered",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 603.2c"
+    ],
+    "pattern": "whenever you discard one or more {f:Filter}",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "discard",
+          "actor": "you",
+          "object": "$f"
+        }
+      ],
+      "batch": true
+    },
+    "consumes": [
+      "whenever",
+      "one or more"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Whenever you discard one or more nonland cards, draw a card."
+      },
+      {
+        "text": "Whenever you discard one or more creature cards, create a Treasure token."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you discard a nonland card, draw a card.",
+      "Whenever you discard two or more nonland cards, draw a card.",
+      "Whenever you discard one or more nonland cards from your hand, draw a card."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhz25.exile.oneOfThem.fromYourGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "exile one of them from your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "object",
+                "number": "plural",
+                "text": "them"
+              }
+            },
+            "zone": "graveyard"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "exiledOne"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiledOne"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "exile"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you discard one or more nonland cards, you may exile one of them from your graveyard."
+      },
+      {
+        "text": "Whenever you discard one or more creature cards, exile one of them from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you discard one or more nonland cards, you may exile two of them from your graveyard.",
+      "Whenever you discard one or more nonland cards, you may exile one of them from a graveyard.",
+      "Whenever you discard one or more nonland cards, you may exile each of them from your graveyard."
+    ]
+  }
+]

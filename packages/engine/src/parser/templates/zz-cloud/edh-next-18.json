@@ -1,0 +1,242 @@
+[
+  {
+    "id": "eff.edhn18.nextSpell.flash",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 702.8a",
+      "CR 611.2"
+    ],
+    "pattern": "the next {f:Filter} you cast this turn can be cast as though it had flash",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": "$f",
+      "rider": "flash"
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "{T}: The next sorcery spell you cast this turn can be cast as though it had flash."
+      },
+      {
+        "text": "{2}, {T}: The next creature spell you cast this turn can be cast as though it had flash."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: The next creature spell you cast can be cast as though it had flash.",
+      "{2}, {T}: The next creature spell an opponent casts this turn can be cast as though it had flash.",
+      "{2}, {T}: The next creature spell you cast this turn can be cast as though it had haste.",
+      "{2}, {T}: Creature spells you cast this turn can be cast as though they had flash."
+    ]
+  },
+  {
+    "id": "sta.edhn18.players.cantPayLifeSacrifice.forCosts",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 118.3",
+      "CR 119.4",
+      "CR 701.21a",
+      "CR 101.2",
+      "CR 604.1"
+    ],
+    "pattern": "players can't pay life or sacrifice {f:Filter} to cast spells or activate abilities",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "payLife",
+          "forCosts": true
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "sacrifice",
+          "other": "$f",
+          "forCosts": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Players can't pay life or sacrifice artifacts to cast spells or activate abilities."
+      },
+      {
+        "text": "Players can't pay life or sacrifice Elves to cast spells or activate abilities."
+      }
+    ],
+    "counterExamples": [
+      "Players can't pay life or sacrifice artifacts to cast spells.",
+      "Players can't pay life or sacrifice artifacts.",
+      "Players can pay life or sacrifice artifacts to cast spells or activate abilities.",
+      "Players can't pay life or discard artifacts to cast spells or activate abilities."
+    ]
+  },
+  {
+    "id": "sta.edhn18.grant.unless",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} ( has | have ) {a:Abilities} unless {c:Cond}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "not",
+        "of": "$c"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "~ has flying unless it's attacking or blocking."
+      },
+      {
+        "text": "~ has trample unless you control a Plains."
+      }
+    ],
+    "counterExamples": [
+      "~ has flying unless.",
+      "~ has flying as long as you control a Plains.",
+      "~ has flying until end of turn unless you control a Plains.",
+      "~ gets +1/+1 unless you control a Plains."
+    ]
+  },
+  {
+    "id": "rst.edhn18.cantBeBlocked.unlessAllBlock",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1b",
+      "CR 509.1c",
+      "CR 101.2",
+      "CR 604.1"
+    ],
+    "pattern": "{o:Obj} can't be blocked unless all creatures defending player controls block it",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beBlocked",
+      "unlessAllBlock": true
+    },
+    "subject": "object",
+    "consumes": [
+      "can't",
+      "all",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature can't be blocked unless all creatures defending player controls block it."
+      },
+      {
+        "text": "Enchanted creature gets +7/+3.\nEnchanted creature can't be blocked unless all creatures defending player controls block it."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't be blocked unless all creatures defending player controls block it this turn.",
+      "Enchanted creature can't be blocked unless one creature defending player controls blocks it.",
+      "Enchanted creature can't be blocked unless all creatures you control block it.",
+      "Enchanted creature can be blocked unless all creatures defending player controls block it."
+    ]
+  },
+  {
+    "id": "eff.edhn18.damage.double.sources.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 611.2a",
+      "CR 120.1",
+      "CR 120.3"
+    ],
+    "pattern": "if a source you control would deal damage {d:Dur} , it deals double that damage instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "controller": "you"
+            }
+          },
+          "body": {
+            "b": "modify",
+            "amount": {
+              "mul": 2
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "double"
+    ],
+    "examples": [
+      {
+        "text": "If a source you control would deal damage this turn, it deals double that damage instead."
+      },
+      {
+        "text": "If a source you control would deal damage this turn, it deals double that damage instead.\nFlashback {1}{R}"
+      }
+    ],
+    "counterExamples": [
+      "If a source you control would deal damage this turn, it deals triple that damage instead.",
+      "If a source an opponent controls would deal damage this turn, it deals double that damage instead.",
+      "If a source you control would deal damage, it deals double that damage instead.",
+      "If a source you control would deal damage this turn to an opponent, it deals double that damage instead."
+    ]
+  }
+]

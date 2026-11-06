@@ -10,6 +10,7 @@ import { plain } from './clause';
 import type { Folded } from './fold';
 import { K } from './kernel';
 import type { RenderState } from './state';
+import { alt } from './text';
 
 function toughnessDamageThisTurn(list: EffectStep[], i: number, st: RenderState): Folded | null {
   const a = list[i];
@@ -18,7 +19,9 @@ function toughnessDamageThisTurn(list: EffectStep[], i: number, st: RenderState)
   if (r.s !== 'rule' || r.rule !== 'combatDamageUsesToughness' || r.onlyIf !== undefined || r.of === undefined || Object.keys(r).length !== 3) return null;
   const f = r.of as { is?: ObjRef };
   if (f.is === undefined || Object.keys(f).length !== 1 || f.is.ref === 'each') return null;
-  return { clauses: [plain(`${K.obj(f.is, st, 'subject').text} assigns combat damage equal to its toughness rather than its power this turn`, { standalone: true })], consumed: 1 };
+  // edh-d-25 (CR 510.1a, 611.2a; Bill the Pony; family toughness-damage-duration): the duration may also lead, "until end of turn, target creature you control assigns combat damage equal to its toughness rather than its power"
+  const subject = K.obj(f.is, st, 'subject').text;
+  return { clauses: [plain(alt(`${subject} assigns combat damage equal to its toughness rather than its power this turn`, `until end of turn, ${subject} assigns combat damage equal to its toughness rather than its power`), { standalone: true })], consumed: 1 };
 }
 
 /** The folds of p2-combat-flow-1, tried before the shared ones (render/fold.ts#foldAt). */

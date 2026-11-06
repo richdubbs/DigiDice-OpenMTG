@@ -1,0 +1,10 @@
+# edh-c-36 (Commander lane edh-c, EDHREC ranks 26,001-26,500): a prevention of the damage creatures would deal to players, each creature each opponent controls, one creature you control, a counter per damage prevented, a group pump per counted card, all cards of a hand and graveyard, beneath the top X cards, damage minus 1, all creatures attacking you, a color pair was, this creature and another target. After editing: npm run cards -- fixtures
+Chameleon Blur
+Aku Djinn
+Homicidal Seclusion
+Brace for Impact
+Sacred Rites
+Identity Crisis
+Quarry Colossus
+Lashknife Barrier
+Razorgrass Invoker

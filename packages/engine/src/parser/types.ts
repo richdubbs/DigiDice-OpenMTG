@@ -64,11 +64,16 @@ export type HoleType =
    */
   | 'OppTarget'
   | 'PlayerTarget' // r5-fxb: as OppTarget, after "for each player," (TargetSpec.perPlayer)
+  | 'PoisonOppTarget' // edh-d-96: as OppTarget, after "for each opponent who has N or more poison counters as you cast ~ , put": only those opponents (`TargetSpec.perOpponentPoison`)
+  | 'AnyOppTarget' // edh-players-10: as OppTarget, after "for any number of opponents,": "target X that player controls", at most one for each opponent chosen (min 0, `TargetSpec.perOpponent`)
   /**
    * FAST5 T47 ADDITION (INTERFACE CHANGE): the contraction "it's" as the pronoun it stands for, an object named earlier, one anaphor like `Obj`'s "it"
    * ("Return it to the battlefield. It's an enchantment."): the tokenizer keeps "it's" as one word, which `Obj` does not read (parser/holes/object.ts#itIs).
    */
   | 'ItIs'
+  | 'Its'
+  | 'LoyaltySym' // edh-next-142: one loyalty symbol in running text, "[+1]" (CR 606.4, 107.7), value the signed number (parser/holes/edhn142.ts)
+  | 'TheyAre' // edh-top-6: the contraction "they're" as the group an earlier sentence named (parser/holes/object.ts#theyAre)
   /**
    * FAST4 T34 ADDITION (INTERFACE CHANGE): the further recipients of divided-free damage named after a first target, "each of up to two other targets" (ONE
    * target spec of any targets, CR 115.4, with up to N targets that must differ from the targets named before it, CR 115.3; parser/holes/object.ts#otherTargets).
@@ -89,6 +94,8 @@ export type HoleType =
    * it", CR 701.20a, 701.20e), value `{ref:'each', filter}` over the anaphor `hand` (parser/holes/object.ts#handCard); only that hand's mention answers to it.
    */
   | 'HandCard'
+  | 'HandCardBare' // edh-c-8
+  | 'HandCardPlural' // edh-c-104
   /** FAST5 T46 ADDITION (INTERFACE CHANGE): "that card" naming the card a `chooseObjects` step chose (CR 608.2c; parser/holes/object.ts#chosenCard), an anaphor with the participle `chosen`. */
   | 'ChosenCard'
   /**
@@ -108,6 +115,11 @@ export type HoleType =
    * (parser/holes/object.ts#seen).
    */
   | 'Seen'
+  /**
+   * edh-cast-10 ADDITION (INTERFACE CHANGE): "those cards" for the cards of a hand a player looked at ("look at that player's hand. You may cast a spell from among those cards"), and
+   * nothing else: a plural anaphor whose antecedent must be such a look (the participle "seen-in-hand" of lower/mentions.ts), never cards of a library (parser/holes/object.ts#seenInHand).
+   */
+  | 'SeenInHand'
   /**
    * FAST5 T45 ADDITION (INTERFACE CHANGE): the description of a spell that is cast, without its article, as the `spell` filter of a `cast` event pattern
    * ("instant or sorcery spell with mana value 3 or less", "outlaw spell"): the noun phrase the Event hole reads after "cast a", with no `zone` and no
@@ -138,6 +150,15 @@ export type HoleType =
   | 'CountersOf'
   /** M12-3 ADDITION (INTERFACE CHANGE), CR 701.38b: the two words of a vote, "carnage or homage" (a closed list, parser/holes/vote.ts), value string[]. */
   | 'VoteWords'
+  /** edh-players-13 ADDITION (INTERFACE CHANGE), CR 608.2d: the words players choose between, "fame or fortune" (`ChoiceWords`, value string[]) and one of them (`ChoiceWord`): a closed list, parser/holes/choicewords.ts. */
+  | 'ChoiceWords'
+  /** edh-players-13 ADDITION (INTERFACE CHANGE), CR 701.38a-b: "evidence vote", the votes a vote word got (parser/holes/vote.ts#voteCount), value a Quantity marker. */
+  | 'VoteCount'
+  /** edhd27 ADDITION (INTERFACE CHANGE), CR 701.38a-b: the votes a player or object received (parser/holes/vote.ts#voteYou and the holes beside it), value a Quantity marker or an object reference marker. */
+  | 'VoteYou' | 'VoteThey' | 'VoteOpp' | 'VotedCreature' | 'ThatManyVotes' | 'NoVotesReceived'
+  | 'ChoiceWord'
+  /** edh-players-13 ADDITION (INTERFACE CHANGE), CR 608.2d: "of a type chosen this way", the `chosen` field of a filter (parser/holes/choicewords.ts#chosenAll). */
+  | 'ChosenAll'
   /**
    * T55 ADDITION (INTERFACE CHANGE): a token that is given its name first, "Mowu, a legendary 3/3 green Dog creature token", "The Void, a legendary 5/5 black Horror
    * Villain creature token with flying and \"The Void attacks each combat if able.\"" (CR 111.4); value: the `TokenDef` with its `name` (parser/holes/token.ts#namedToken).
@@ -149,6 +170,8 @@ export type HoleType =
    * matching hand card for (parser/holes/cost.ts#discardDesc, CR 701.9a, 118.12).
    */
   | 'DiscardDesc'
+  /** edh-zones-12 ADDITION (INTERFACE CHANGE): "a historic card", "a legendary card": an article, adjectives alone and the card noun, value the filter without `isCard` (parser/holes/edhz12.ts#adjCard). */
+  | 'AdjCard'
   /**
    * FAST5 T60 ADDITION (INTERFACE CHANGE): one plural card type word ("lands", "artifacts"), value the type names (string[]), what a type-adding static ability adds
    * ("are lands in addition to their other types", CR 205.1b; parser/holes/misc.ts#cardTypes).
@@ -167,21 +190,36 @@ export type HoleType =
    * answers (parser/holes/object.ts#milled, #found).
    */
   | 'Milled' | 'Found'
+  /** edh-players-11 ADDITION: "them" / "those cards" for the cards "Exile the top N cards of your library" exiled (parser/holes/object.ts#exiledTop). */
+  | 'ExiledTop'
   /**
    * Cloud std-dsk ADDITION (INTERFACE CHANGE): one LISTED counter kind of a list to choose from ("a flying, lifelink, or +1/+1 counter"), no "counter" needed right
    * after it, value the kind (parser/holes/stddsk.ts#listedCounterKind; CR 122.1b, 608.2d).
    */
   | 'ListedCounterKind'
+  /** edh-top-1 ADDITION (INTERFACE CHANGE): "that token" only, the anaphor naming a token an earlier instruction of the resolution created (holes/object.ts#thatToken; CR 608.2c, 111.1). */
+  | 'ThatToken'
+  | 'ThatCreature'
   /** Cloud std-dsk ADDITION (INTERFACE CHANGE): a card description with "that doesn't have the same name as <a described object>", value the filter (parser/holes/stddsk.ts#notSameNameCard; CR 201.2). */
   | 'NotSameNameCard'
+  /** edh-c-51 ADDITION (INTERFACE CHANGE): a card description whose zone the template states ("reveals their hand and discards all <cards>"), value the filter without the `zone-unstated` note (parser/holes/stddsk.ts#cardsOfTemplateZone; CR 400.1). */
+  | 'CardsOfTemplateZone'
   /** C6 ADDITION: "opponent who can't" / "player who can't" after "for each": the players of a group who can't do what an earlier instruction told them (holes/player.ts#whoCant). */
   | 'WhoCant'
   /** Cloud r3-mech ADDITION (INTERFACE CHANGE): a Siege's choice word ("choose Abzan or Mardu"), a closed list, value the word (parser/holes/r3mech.ts#siegeWord; CR 614.12a). */
   | 'SiegeWord'
   | 'PluralSubtype' // cloud r4-mech
   | 'NotMoved' // r4-moved (parser/holes/moved.ts#notMoved)
+  | 'FewerDiscarded' // edh-c-73 (parser/holes/edhv73.ts#fewerDiscarded)
+  | 'ItNotSource' // edh-c-73 (parser/holes/edhv73.ts#itNotSource)
+  | 'FewerPut' // edh-d-93 (parser/holes/edhd93.ts#fewerPut)
+  | 'CountersMoved' // edh-d-93 (parser/holes/edhd93.ts#countersMoved)
   /** Cloud r4-dig ADDITION (INTERFACE CHANGE): a plural card description with no count ("creature and/or land cards"), parser/holes/r4dig.ts#cardsDesc. */
   | 'CardsDesc'
+  /** edh-b-1 ADDITION: a card description with its article whose list ends in a legendary item ("a Knight, Aura, or legendary artifact card"), parser/holes/edhb1.ts#listedCard. */
+  | 'ListedCard'
+  /** edh-b-1 ADDITION: subtypes said as a list with one article ("a Cleric, Rogue, Warrior, and Wizard"), parser/holes/edhb1.ts#subtypeList. */
+  | 'SubtypeList'
   /** Cloud r4-dig ADDITION (INTERFACE CHANGE): the card a library search is for, ranked one unspecific word lower (parser/holes/r4dig.ts#searchDesc). */
   | 'SearchDesc'
   /** r5-moved ADDITION (INTERFACE CHANGE): "a <card>" before "into your graveyard this way" after a surveil 1: one card description with no zone of its own, value the filter (parser/holes/moved.ts#surveilledCard; CR 701.25a). */
@@ -210,9 +248,29 @@ export type HoleType =
   | 'CopyExceptToken'
   /** p2-copy-perm-1 ADDITION: the same, said of several tokens ("they're 3/3 Dragon creatures in addition to their other types, and they have flying"). */
   | 'CopyExceptTokens'
+  /** edh-next-130 ADDITION: the same of one token copy of an object as it last existed, whose card types an exception may SET ("it's a Food artifact ... and it loses all other card types", CR 707.9b, 205.1a). */
+  | 'CopyExceptTokenSet'
+  | 'CopyExceptEach'
   /** p2-counters-state-1 ADDITION: "~ was kicked with its {1}{R} kicker" (CR 702.33f), value a `wasCast` condition with a kicker marker (parser/holes/p2cs1.ts). */
   | 'KickedWith'
+  /** edh-players-2 ADDITION: "hexproof from blue and from black", value `{ abilities, colors }` (parser/holes/edhp2.ts; CR 702.11d). */
+  | 'HexFromColors'
+  /** edh-d-5 ADDITION: "protection from Salamanders" (a list "... and from ..."), value `{ abilities, filters }` (parser/holes/edhd5.ts; CR 702.16a, 702.16j). */
+  | 'ProtFrom'
+  /** edh-c-45 ADDITION: a printed "hexproof from artifacts, creatures, and enchantments": value a list of the hexproof keyword abilities, one for each card type (parser/holes/edhv45.ts; CR 702.11b, 702.11d). */
+  | 'HexFromTypes'
+  /** edh-perms-4 ADDITION: the quoted enchant ability an Aura loses, "enchant creature card in a graveyard": value the filter of that ability (parser/holes/edhpm4.ts; CR 702.5a, 303.4a). */
+  | 'EnchantGraveyardQuote'
+  /** edh-perms-4 ADDITION: the quoted enchant ability it gains, "enchant creature put onto the battlefield with ~": value a list of that enchant ability (parser/holes/edhpm4.ts; CR 607.2a, 613.1f). */
+  | 'EnchantLinkedQuote'
+  /** edh-d-91 ADDITION: Timothar's quoted Bat ability "When this token deals combat damage to a player, sacrifice it and return the exiled card to the battlefield tapped." (parser/holes/edhd91.ts). */
+  | 'BatExiledReturnQuote'
+  /** edh-perms-4 ADDITION: "enchanted creature card", the card in a graveyard the Aura is attached to; value the reference naming it (parser/holes/edhpm4.ts; CR 303.4a, 303.4f). */
+  | 'EnchantedCard'
+  /** edh-perms-8 ADDITION: the word "power" or "toughness" (parser/holes/edhpm8.ts#charStat; CR 208.1): value the stat name. */
+  | 'CharStat'
   /** p2-replace-events-1 ADDITION: the rest of a sentence read as one complete static ability of replacement effects (parser/holes/p2re1.ts#replStatic; CR 614.1a, 611.2a). */
+  | 'ObjPlayer' // edh-zones-16: the one player an object names ("its controller", "that creature's owner"), as Player but never a group
   | 'ReplStatic';
 
 export type TemplateKind = 'ability' | 'cost' | 'trigger' | 'condition' | 'effect' | 'static' | 'filter' | 'quantity' | 'duration' | 'event' | 'rider';
@@ -244,7 +302,9 @@ export interface Template {
    *   "@step": -n at the top (M6-8, opt-in) names the n-th top-level step from the end of the previous sentence instead of its last one.
    *   "@into": true at the top (FAST5 T45, opt-in) lets a rider whose `attachTo` op is not the previous step's own op reach the instruction inside a wrapper that only decides
    *   whether or when it happens: `may.do`, `pay.then`, `if.then`, `delay.do` (the last instruction of the branch; a wrapper with an else / otherwise is refused).
+   *   "@eachBranch": true at the top (edh-cast-12, opt-in) makes a rider after an "instead" fold modify the last instruction of the fold's `else` branch too, when it is of the op `attachTo` names.
    *   "@byOp": {"<op>": {...}} at the top (r5-repl, opt-in) holds one patch per op `attachTo` lists; the one for the previous step's op is merged into the patch.
+   *   "@withPrevious": true at the top (edh-cast-15, opt-in) makes the patch modify the instruction right before the step too, when that is of the same op (two copy instructions, one "copies" sentence).
    *   "@require": {"a.b.0": value} at the top (FAST5 T56, opt-in) refuses the rider unless the previous step has that value at each dotted path (null: nothing there).
    *   "@oneOf": [patch, ...] at the top (std-exile-play-2-1, opt-in) lists patches for different shapes of the previous step, each with its own "@require"; the first
    *   whose "@require" holds is merged into the patch (none: the rider is refused). One wording, one template, several shapes of what it modifies.

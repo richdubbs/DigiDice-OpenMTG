@@ -1,0 +1,578 @@
+[
+  {
+    "id": "eff.edhz18.player.revealTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 401.2"
+    ],
+    "pattern": "{p:Player} reveal[s] the top card of their library",
+    "build": {
+      "op": "reveal",
+      "who": "$p",
+      "what": {
+        "ref": "topCards",
+        "player": "$p",
+        "count": 1
+      }
+    },
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Each opponent reveals the top card of their library."
+      },
+      {
+        "text": "Target player reveals the top card of their library."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent reveals the top two cards of their library.",
+      "Each opponent reveals the top card of your library.",
+      "Each opponent reveals the bottom card of their library."
+    ]
+  },
+  {
+    "id": "eff.edhz18.mana.lifeForEachRevealed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 106.1",
+      "CR 107.1c",
+      "CR 119.3",
+      "CR 605.1a",
+      "CR 608.2c"
+    ],
+    "pattern": "for each {n:Qty} , add {t:ManaSym} and you gain 1 life",
+    "build": [
+      {
+        "op": "addMana",
+        "who": {
+          "ref": "you"
+        },
+        "dynamic": {
+          "kind": "ofType",
+          "type": "$t",
+          "count": "$n"
+        }
+      },
+      {
+        "op": "gainLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": "$n"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Each player reveals the top card of their library. For each land card revealed this way, add {R} and you gain 1 life. Then each player draws a card."
+      },
+      {
+        "text": "{T}: Each player reveals the top card of their library. For each artifact card revealed this way, add {U} and you gain 1 life. Then each player draws a card."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Each player reveals the top card of their library. For each land card revealed this way, add {R} and you gain 2 life.",
+      "{T}: Each player reveals the top card of their library. For each land card revealed this way, add {R}{R} and you gain 1 life.",
+      "{T}: Each player reveals the top card of their library. For each land card you control, add {R} and you gain 1 life."
+    ],
+    "consumes": [
+      "each",
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhz18.revealHandOrTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 401.2",
+      "CR 402.3",
+      "CR 608.2d"
+    ],
+    "pattern": "reveal a card from your hand or the top card of your library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "each",
+              "filter": {
+                "zone": "hand",
+                "owner": "you"
+              }
+            },
+            {
+              "ref": "topCards",
+              "player": {
+                "ref": "you"
+              },
+              "count": 1
+            }
+          ]
+        },
+        "min": 1,
+        "max": 1,
+        "as": "revealPick"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "revealPick"
+        },
+        "as": "revealHandOrTop"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Reveal a card from your hand or the top card of your library."
+      },
+      {
+        "text": "When this creature enters, reveal a card from your hand or the top card of your library."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Reveal a card from your hand and the top card of your library.",
+      "{T}: Reveal a card from your hand or the top two cards of your library.",
+      "{T}: Reveal a card from your graveyard or the top card of your library."
+    ]
+  },
+  {
+    "id": "eff.edhz18.ifRevealedCreatureThisWay.putBattlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 110.2a"
+    ],
+    "pattern": "if you reveal a creature card this way , put it onto the battlefield",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "isCard": true,
+            "is": {
+              "ref": "bound",
+              "name": "revealHandOrTop"
+            },
+            "zone": [
+              "hand",
+              "library"
+            ]
+          }
+        }
+      },
+      "then": [
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "revealHandOrTop"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            }
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Reveal a card from your hand or the top card of your library. If you reveal a creature card this way, put it onto the battlefield."
+      },
+      {
+        "text": "When this creature enters, reveal a card from your hand or the top card of your library. If you reveal a creature card this way, put it onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Reveal a card from your hand or the top card of your library. If you reveal a land card this way, put it onto the battlefield.",
+      "{T}: Reveal a card from your hand or the top card of your library. If you reveal a creature card this way, put it into your hand.",
+      "{T}: Reveal a card from your hand or the top card of your library. If you reveal a creature card this way, put it onto the battlefield tapped."
+    ],
+    "consumes": [
+      "if",
+      "this way"
+    ]
+  },
+  {
+    "id": "eff.edhz18.eachPlayer.lookMayRevealLandAndOrSpell.handRestBottom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 401.1",
+      "CR 401.4",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 205.2a"
+    ],
+    "pattern": "{p:Player} look[s] at the top {n:Qty} cards of their library and may reveal a land card and/or an instant or sorcery card from among them . each player puts the cards they revealed this way into their hand and the rest on the bottom of their library in a random order",
+    "build": [
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "who": "player"
+        },
+        "as": "zonesPlayer",
+        "do": [
+          {
+            "op": "look",
+            "who": {
+              "ref": "bound",
+              "name": "zonesPlayer"
+            },
+            "at": {
+              "ref": "topCards",
+              "player": {
+                "ref": "bound",
+                "name": "zonesPlayer"
+              },
+              "count": "$n"
+            },
+            "as": "zonesSeen"
+          },
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "bound",
+              "name": "zonesPlayer"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Land"
+                ],
+                "isCard": true,
+                "is": {
+                  "ref": "bound",
+                  "name": "zonesSeen"
+                },
+                "zone": "library"
+              }
+            },
+            "min": 0,
+            "max": 1,
+            "as": "zonesLand"
+          },
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "bound",
+              "name": "zonesPlayer"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "anyOf": [
+                  {
+                    "types": [
+                      "Instant"
+                    ]
+                  },
+                  {
+                    "types": [
+                      "Sorcery"
+                    ]
+                  }
+                ],
+                "isCard": true,
+                "is": {
+                  "ref": "bound",
+                  "name": "zonesSeen"
+                },
+                "zone": "library"
+              }
+            },
+            "min": 0,
+            "max": 1,
+            "as": "zonesSpell"
+          },
+          {
+            "op": "reveal",
+            "who": {
+              "ref": "bound",
+              "name": "zonesPlayer"
+            },
+            "what": {
+              "ref": "union",
+              "of": [
+                {
+                  "ref": "bound",
+                  "name": "zonesLand"
+                },
+                {
+                  "ref": "bound",
+                  "name": "zonesSpell"
+                }
+              ]
+            },
+            "as": "zonesRevealed"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "zonesRevealed"
+            },
+            "to": {
+              "zone": "hand"
+            }
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "each",
+              "filter": {
+                "is": {
+                  "ref": "bound",
+                  "name": "zonesSeen"
+                },
+                "zone": "library"
+              }
+            },
+            "to": {
+              "zone": "library",
+              "position": "bottom",
+              "order": "random"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "and",
+      "and/or",
+      "this way",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Each player looks at the top four cards of their library and may reveal a land card and/or an instant or sorcery card from among them. Each player puts the cards they revealed this way into their hand and the rest on the bottom of their library in a random order."
+      },
+      {
+        "text": "Each player looks at the top six cards of their library and may reveal a land card and/or an instant or sorcery card from among them. Each player puts the cards they revealed this way into their hand and the rest on the bottom of their library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Each player looks at the top four cards of their library and may reveal a land card or an instant or sorcery card from among them. Each player puts the cards they revealed this way into their hand and the rest on the bottom of their library in a random order.",
+      "Each player looks at the top four cards of their library and may reveal a land card and/or an instant or sorcery card from among them. Each player puts the cards they revealed this way into their hand and the rest on top of their library in any order.",
+      "Each opponent looks at the top four cards of their library and may reveal a land card and/or an instant or sorcery card from among them. Each opponent puts the cards they revealed this way into their hand and the rest on the bottom of their library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhz18.becomes.artifactCreature.ptEqualMv",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 202.3"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} becomes an artifact creature with power and toughness each equal to its mana value",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": {
+                  "ref": "subject"
+                }
+              },
+              "toughness": {
+                "q": "stat",
+                "stat": "manaValue",
+                "of": {
+                  "ref": "subject"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target noncreature artifact becomes an artifact creature with power and toughness each equal to its mana value."
+      },
+      {
+        "text": "Until your next turn, up to one target artifact you control becomes an artifact creature with power and toughness each equal to its mana value."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target noncreature artifact becomes an artifact creature with base power and toughness 2/2.",
+      "Until end of turn, target noncreature artifact becomes an enchantment creature with power and toughness each equal to its mana value.",
+      "Until end of turn, target noncreature artifact becomes an artifact creature with power and toughness each equal to its power."
+    ],
+    "consumes": [
+      "each",
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhz18.mayFetchArtifactOutsideOrExile.toHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.11",
+      "CR 400.11b",
+      "CR 701.20a",
+      "CR 406.3",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may reveal an artifact card you own from outside the game or choose a face-up artifact card you own in exile . put that card into your hand",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "chooseValue",
+          "who": {
+            "ref": "you"
+          },
+          "what": "option",
+          "options": [
+            "outside",
+            "exile"
+          ],
+          "as": "karnSource",
+          "link": "karnSource"
+        },
+        {
+          "op": "if",
+          "cond": {
+            "cond": "chosen",
+            "link": "karnSource",
+            "equals": "outside"
+          },
+          "then": [
+            {
+              "op": "fromOutside",
+              "who": {
+                "ref": "you"
+              },
+              "filter": {
+                "types": [
+                  "Artifact"
+                ]
+              },
+              "reveal": true
+            }
+          ],
+          "else": [
+            {
+              "op": "chooseObjects",
+              "who": {
+                "ref": "you"
+              },
+              "from": {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Artifact"
+                  ],
+                  "isCard": true,
+                  "owner": "you",
+                  "zone": "exile",
+                  "faceDown": false
+                }
+              },
+              "min": 1,
+              "max": 1,
+              "as": "karnPick"
+            },
+            {
+              "op": "move",
+              "what": {
+                "ref": "bound",
+                "name": "karnPick"
+              },
+              "to": {
+                "zone": "hand"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "that"
+    ],
+    "examples": [
+      {
+        "text": "{T}: You may reveal an artifact card you own from outside the game or choose a face-up artifact card you own in exile. Put that card into your hand."
+      },
+      {
+        "text": "When ~ enters, you may reveal an artifact card you own from outside the game or choose a face-up artifact card you own in exile. Put that card into your hand."
+      }
+    ],
+    "counterExamples": [
+      "{T}: You may reveal an artifact card you own from outside the game or choose a face-up artifact card you own in exile. Put that card onto the battlefield.",
+      "{T}: You may reveal a creature card you own from outside the game or choose a face-up creature card you own in exile. Put that card into your hand.",
+      "{T}: You may reveal an artifact card you own from outside the game or choose a face-up artifact card you own in your graveyard. Put that card into your hand."
+    ]
+  }
+]

@@ -1982,15 +1982,11 @@
  },
  {
   "card": "Chromatic Orrery",
-  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.draw.forEachColorAmong): CR 105.1, 121.1, 602.2: {5}, {T}: draw a card for each color among permanents you control (the distinct colors of every permanent you control); the first line (spend mana as though it were mana of any color) stays manual, the {T} line adds five colorless mana.",
+  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.draw.forEachColorAmong): CR 105.1, 121.1, 602.2: {5}, {T}: draw a card for each color among permanents you control (the distinct colors of every permanent you control); the first line (spend mana as though it were mana of any color) is edh-mana-keywords-4's static, sta.edhmk4.spend.anyColor (CR 609.4b, 107.4c), the {T} line adds five colorless mana.",
   "faces": [
    {
     "abilities": [
-     {
-      "kind": "manual",
-      "reason": "no template matches the sentence",
-      "shape": "static"
-     },
+     {"effects":[{"action":"spendMana","asThough":"any color","s":"permit","who":{"ref":"you"}}],"kind":"static"},
      {
       "cost": {
        "tap": true
@@ -2309,73 +2305,6 @@
       "src": [
        1
       ]
-     }
-    ]
-   }
-  ]
- },
- {
-  "card": "Experimental Lab // Staff Room",
-  "verified": "FAST5 T65 review, by hand against the Oracle text and the rules cited below (eff.t65.counters.put.nAndKeyword): CR 709.5, 701.62, 122.1b, 122.1: when you unlock this door, manifest dread, then put two +1/+1 counters and a trample counter on that creature (the creature the manifest dread put onto the battlefield); the other door stays manual, so only the automated nodes are checked.",
-  "faces": [
-   {
-    "abilities": [
-     {
-      "effect": {
-       "steps": [
-        {
-         "op": "manual",
-         "reason": "contagion: a reference with no unique antecedent in a sentence that is not understood (design 6.7 T2)"
-        }
-       ],
-       "targets": []
-      },
-      "kind": "triggered",
-      "trigger": {
-       "on": [
-        {
-         "door": "this",
-         "ev": "becomes",
-         "object": {
-          "self": true
-         },
-         "what": "unlocked"
-        }
-       ]
-      }
-     }
-    ]
-   },
-   {
-    "abilities": [
-     {
-      "effect": {
-       "steps": [
-        {
-         "op": "manual",
-         "reason": "no template matches the sentence"
-        }
-       ],
-       "targets": []
-      },
-      "kind": "triggered",
-      "trigger": {
-       "on": [
-        {
-         "combat": true,
-         "ev": "damage",
-         "recipient": {
-          "player": "any"
-         },
-         "source": {
-          "controller": "you",
-          "types": [
-           "Creature"
-          ]
-         }
-        }
-       ]
-      }
      }
     ]
    }

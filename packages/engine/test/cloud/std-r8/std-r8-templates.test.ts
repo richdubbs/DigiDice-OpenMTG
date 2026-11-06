@@ -117,9 +117,9 @@ describe('design 6.4, CR 701.20a, 608.2c: the one card revealed on top of a libr
     const c = CREATURE(w('Whenever this creature deals combat damage to a player, reveal the top card of your library and put that card into your hand.'));
     expect(full(c)).toBe(true);
   });
-  it('CR 110.1: after the revealed card was moved onto the battlefield it is a permanent, not "that card": manual', () => {
+  it('CR 110.1, 601.2a: after the revealed card was moved onto the battlefield, "that card" still has one candidate, the revealed card: the spell cast is never "that card" (a spell on the stack, edh-top-7: parser/lower/scope.ts), so the sentence is read (it was manual only because the spell was a second candidate)', () => {
     const c = CREATURE(w('Whenever an opponent casts a spell, reveal the top card of your library, then put it onto the battlefield. Tap that card.'));
-    expect(full(c)).toBe(false);
+    expect(full(c)).toBe(true);
   });
   it('an instruction after the reveal ends the focus: "it" has two candidates (the revealed card, the spell cast) and stays manual', () => {
     const c = CREATURE(w('Whenever an opponent casts a spell, reveal the top card of your library, then you gain 1 life. If it\'s a land card, put it onto the battlefield tapped.'));

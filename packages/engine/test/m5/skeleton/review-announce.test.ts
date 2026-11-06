@@ -114,6 +114,7 @@ describe('WP0 review: model fields that the build does not read are named capabi
     ['feature:target.playerRef', 'a PlayerRef as the player filter'], ['feature:target.sameOwner', 'sameOwner ("from a single graveyard", FAST3 T14)'], ['feature:target.perOpponent', 'perOpponent ("for each opponent, ... that player controls", FAST5 T66)'], ['feature:target.sharedCardType', 'sharedCardType ("that share a card type", FAST5 T66)'], ['feature:target.sharedCreatureType', 'sharedCreatureType ("that share a creature type", CLOUD std-ecl)'], ['feature:modes.chooser', 'an opponent chooses the modes'], ['feature:modes.override', 'kicked / entwined mode counts'],
     ['feature:target.differentControllers', 'differentControllers ("controlled by different players", CLOUD std-tmt)'],
     ['feature:target.perPlayer', 'perPlayer ("for each player, ... that player controls", r5-fxb)'],
+    ['feature:target.eachWithOne', 'eachWithOne ("for each graveyard with ... in it, ... target ... from that graveyard", edh-next-127)'],
     ['feature:target.random', 'random ("chosen at random", p2-damage-2)'],
     ['feature:modes.cost', 'a cost on a mode'], ['feature:activate.onlyIf', 'an activation restriction'], ['feature:limit.game', 'once per game'],
   ];
@@ -188,14 +189,21 @@ describe('WP0 review: model fields that the build does not read are named capabi
     const readers: Record<string, RegExp> = {
       'TargetSpec.filter': /spec\.filter/, 'TargetSpec.players': /spec\.players/, 'ModeSpec.allowRepeat': /\.allowRepeat/, 'ActivatedAbilityDef.isMana': /\.isMana/,
       'ActivatedAbilityDef.isLoyalty': /\.isLoyalty/, 'ActivatedAbilityDef.sorcerySpeed': /\.sorcerySpeed/, 'ActivatedAbilityDef.limit': /def\.limit/, 'ActivatedAbilityDef.zone': /def\.zone/,
+      'ActivatedAbilityDef.instantSpeed': /\.instantSpeed/, 'ModeSpec.escalate': /modal\.escalate/, // edh-mana-keywords-2: rules/sources.ts, rules/pay.ts (CR 602.5e), actions/announce.ts#modeCosts (CR 702.120a)
+      'ActivatedAbilityDef.opponentsOnly': /def\.opponentsOnly/, // edh-c-103: only the opponents of the controller activate it (actions/activate.ts, CR 602.2)
+      'ActivatedAbilityDef.xIs': /def\.xIs/, // edh-next-132: X defined by the text, "X is the mana value of that card" (actions/activate.ts#definedX, CR 107.3c)
       'ActivatedAbilityDef.anyPlayer': /def\.anyPlayer/, // MX5: any player may activate it (actions/activate.ts, CR 602.2)
       'TargetSpec.distinctFrom': /distinctFrom/, 'TargetSpec.divide': /spec\.divide/, 'TargetSpec.groupLimit': /spec\.groupLimit/, 'TargetSpec.onlyIf': /spec\.onlyIf/, 'TargetSpec.chooser': /spec\.chooser/,
       'TargetSpec.differentNames': /spec\.differentNames/, // FAST5 T42: "with different names" (actions/announce-targets.ts, rules/targets.ts)
-      'TargetSpec.perOpponent': /spec\.perOpponent/, 'TargetSpec.sharedCardType': /spec\.sharedCardType/, 'TargetSpec.sharedCreatureType': /spec\.sharedCreatureType/, // FAST5 T66; CLOUD std-ecl: "for each opponent, ... that player controls", "that share a card type" (rules/targets.ts)
+      'TargetSpec.perOpponent': /spec\.perOpponent/, 'TargetSpec.sharedCardType': /spec\.sharedCardType/, 'TargetSpec.sharedCreatureType': /spec\.sharedCreatureType/, 'TargetSpec.equalToughness': /spec\.equalToughness/ /* edh-next-126 */, 'TargetSpec.sharedPermanentType': /spec\.sharedPermanentType/ /* edh-next-54 */, 'TargetSpec.chooserControls': /spec\.chooserControls/ /* edh-next-146 */, // FAST5 T66; CLOUD std-ecl: "for each opponent, ... that player controls", "that share a card type" (rules/targets.ts)
       'TargetSpec.sameController': /spec\.sameController/, // std-rx30: "controlled by the same opponent" (rules/targets.ts#sameControllerHolds)
+      'TargetSpec.differentManaValues': /spec\.differentManaValues/, // edh-top-3: rules/targets.ts#differentManaValuesHold
       'TargetSpec.perCardType': /spec\.perCardType/, // std-cardcopy-7: "of each card type" (rules/targets.ts#perCardTypeHolds)
+      'TargetSpec.perOpponentPoison': /spec\.perOpponentPoison/, // edh-d-96: "who has N or more poison counters as you cast this spell" (rules/targets.ts#candidatesFor)
       'TargetSpec.perPlayer': /spec\.perPlayer/, // r5-fxb: "for each player, ... that player controls" (rules/targets.ts#perOpponentHolds)
+      'TargetSpec.eachWithOne': /spec\.eachWithOne/, // edh-next-127: one target in each graveyard that has one (rules/targets.ts#targetRange)
       'TargetSpec.random': /spec\.random/, // p2-damage-2: "chosen at random" (actions/announce-targets.ts#randomTargets, CR 601.2c, 603.3d)
+      'TargetSpec.chooserElse': /spec\.chooserElse/, // edh-d-87 (CR 601.7a; Bladegriff Prototype): actions/announce-targets.ts#chooserOf
       'TargetSpec.differentControllers': /spec\.differentControllers/, // CLOUD std-tmt: "controlled by different players" (actions/announce-targets.ts, rules/targets.ts)
       'TargetSpec.sameOwner': /spec\.sameOwner/, // FAST3 T14: "from a single graveyard" (actions/announce-targets.ts, rules/targets.ts)
       'TargetSpec.link': /spec\.link/, // FAST5 LNK1: the targets an ability affected, remembered on its source (effects/run.ts#rememberTargets, CR 607.1)
@@ -205,11 +213,17 @@ describe('WP0 review: model fields that the build does not read are named capabi
       'ActivatedAbilityDef.costChange': /def\.costChange/, // FAST5 T38: the ability's own cost change (actions/activate.ts#costChangeOf)
       'ActivatedAbilityDef.xMin': /def\.xMin/, // std-rx12: "X can't be 0." (actions/activate.ts)
       'ActivatedAbilityDef.tapForMana': /def\.tapForMana/, // std-rx27: tap creatures rather than pay an activation's mana (actions/activate.ts)
+      'ActivatedAbilityDef.spendOnlyChosen': /def\.spendOnlyChosen/, // edh-mana-keywords-8: actions/activate.ts#abilityPlan
       'ActivatedAbilityDef.uncopiable': /def\.uncopiable/, // std-copy-1: "This ability can't be copied." (effects/handlers/tokens-copy.ts#copySpells, CR 707.10)
       'ActivatedAbilityDef.costChangeIf': /def\.costChangeIf/, // r4-cost: the condition of the ability's own cost change (actions/activate.ts#costChangeOf)
       'ModeSpec.pawprints': /spec\.pawprints/, // std-blb: the pawprint budget of a "Season" (actions/announce.ts#chooseModes, CR 700.2i)
       'ModeSpec.unchosen': /spec\.unchosen/, // r3-choose: "choose one that hasn't been chosen" (actions/announce.ts#usedModes, CR 700.2)
       'ModeSpec.random': /spec\.random/, // p2-modal-2: "choose one at random" (actions/announce.ts#chooseModes, CR 700.2)
+      'ModeSpec.countIsX': /spec\.countIsX/, // edh-next-139: "Choose X." (actions/announce.ts#modeLimits, CR 601.2b, 601.4)
+      'ModeSpec.mayChoose': /spec\.mayChoose/, // edh-players-19: "you may choose two" (actions/announce.ts#chooseModes, CR 700.2, 603.3c)
+      'ActivatedAbilityDef.spendColorAsAny': /def\.spendColorAsAny/, // edh-next-141 (CR 609.4b): actions/activate.ts#abilityPlan
+      'ActivatedAbilityDef.spendOnlyX': /def\.spendOnlyX/, // edh-next-85: "Spend only black mana on X." (actions/activate.ts#abilityPlan, rules/cost.ts#substituteX)
+      'ActivatedAbilityDef.attackedPlayerOnly': /def\.attackedPlayerOnly/, // edh-d-88: only the player the source attacks activates it (actions/activate.ts, CR 602.2)
     };
     const src = engineModules().filter((m) => !['types', 'model'].includes(m.layer)).map((m) => readFileSync(join(SRC_ROOT, `${m.id}.ts`), 'utf8')).join(' ');
     const claimed = Object.entries(FIELD_COVERAGE).flatMap(([record, fields]) => Object.entries(fields).filter(([, c]) => c === 'read').map(([f]) => `${record}.${f}`));
@@ -224,7 +238,7 @@ describe('WP0 review: model fields that the build does not read are named capabi
         expect(ENGINE_CAPABILITIES.has(coverage), `${record}.${field} -> ${coverage}`).toBe(false);
       }
     }
-    expect(Object.keys(FIELD_COVERAGE.TargetSpec).sort()).toEqual(['chooser', 'differentControllers', 'differentNames', 'distinctFrom', 'divide', 'filter', 'groupLimit', 'link', 'onlyIf', 'perCardType', 'perOpponent', 'perPlayer', 'players', 'random', 'sameController', 'sameOwner', 'sharedCardType', 'sharedCreatureType']);
+    expect(Object.keys(FIELD_COVERAGE.TargetSpec).sort()).toEqual(['chooser', 'chooserControls', 'chooserElse', 'differentControllers', 'differentManaValues', 'differentNames', 'distinctFrom', 'divide', 'eachWithOne', 'equalToughness', 'filter', 'groupLimit', 'link', 'onlyIf', 'perCardType', 'perOpponent', 'perOpponentPoison', 'perPlayer', 'players', 'random', 'sameController', 'sameOwner', 'sharedCardType', 'sharedCreatureType', 'sharedPermanentType']);
   });
 });
 
@@ -284,7 +298,7 @@ describe('WP0 review: value forms of supported filter fields and cost kinds are 
     expect(filterForms({ controller: 'you', keyword: 'flying', attacking: true, power: { op: '>=', value: 2 } })).toEqual([]);
     // The forms WP7 pays are still named by costPartForms (the walker needs the names) and are capabilities of this build now.
     const paid: [string, CostPart][] = [
-      ['cost:discard.self', { kind: 'discard', count: 1, self: true }], ['cost:discard.hand', { kind: 'discard', count: 1, hand: true }],
+      ['cost:discard.self', { kind: 'discard', count: 1, self: true }], ['cost:discard.hand', { kind: 'discard', count: 1, hand: true }], ['cost:reveal.hand', { kind: 'reveal', zone: 'hand', count: 1, hand: true }] /* edh-next-117 */,
       ['cost:removeCounters.filter', { kind: 'removeCounters', counter: 'charge', count: 1, filter: {} }], ['cost:tapUntapped.other', { kind: 'tapUntapped', filter: {}, count: 1, other: true }],
       ['cost:action.forage', { kind: 'action', action: 'forage' }], ['cost:count.any', { kind: 'sacrifice', filter: {}, count: 'any' }],
     ];
@@ -300,7 +314,7 @@ describe('WP0 review: value forms of supported filter fields and cost kinds are 
     // WP7 pays discard.self (cycling), discard.hand, removeCounters.filter, tapUntapped.other and the actions collectEvidence, forage and blight (test/m5/costs);
     // FAST5X E10: and waterbend (CR 701.67a, rules/cost.ts, test/fast5x/e10)
     // FAST5X E13: exile from the battlefield ("Exile ~", a permanent you control), craft's materials and their "N or more" count (CR 118.3, 702.167a)
-    expect([...COST_FORMS].sort()).toEqual(['action.blight', 'action.collectEvidence', 'action.exert' /* FAST5X E28 */, 'action.forage', 'action.waterbend', 'count.any', 'discard.hand', 'discard.self', 'exileFrom.atLeast', 'exileFrom.battlefield', 'exileFrom.orGraveyard', 'exileFrom.stack' /* r5-mech: a resolving spell exiles itself, CR 608.2n */, 'exileFrom.symbolTotal' /* std-cardcopy-7: a total of mana symbols, CR 118.3, 107.4 */, 'exileFrom.totalManaValue' /* std-costs-1: an exact total mana value, CR 118.3, 107.3a */, 'removeCounters.all' /* p2-counters-move-2 */, 'removeCounters.among' /* r3-cost: "from among creatures you control", CR 118.3, 122.1 */, 'removeCounters.any' /* CLOUD std-ecl (also cloud std-spm's, one implementation): counters of any kinds, CR 122.1, 118.3 */, 'removeCounters.filter', 'sacrifice.atLeast' /* std-mana-1: "Sacrifice one or more artifacts", CR 601.2b, 118.3 */, 'sacrifice.distinctNames' /* r3-cost: "with different names", CR 118.3, 201.2 */, 'tapUntapped.other', 'returnToHand.beamUp' /* trek-1: beam me up (Star Trek), rules/cant.ts */].sort());
+    expect([...COST_FORMS].sort()).toEqual(['action.blight', 'action.collectEvidence', 'action.exert' /* FAST5X E28 */, 'action.forage', 'action.waterbend', 'count.any', 'discard.distinctNames' /* edh-next-90: "Discard three cards with different names", CR 118.3, 201.2 */, 'discard.hand', 'discard.sameName' /* edh-c-111 */, 'discard.self', 'reveal.hand' /* edh-next-117: "reveal your hand", CR 701.20a */, 'exileFrom.atLeast', 'exileFrom.battlefield', 'exileFrom.orGraveyard', 'exileFrom.stack' /* r5-mech: a resolving spell exiles itself, CR 608.2n */, 'exileFrom.symbolTotal' /* std-cardcopy-7: a total of mana symbols, CR 118.3, 107.4 */, 'exileFrom.totalManaValue' /* std-costs-1: an exact total mana value, CR 118.3, 107.3a */, 'removeCounters.all' /* p2-counters-move-2 */, 'removeCounters.among' /* r3-cost: "from among creatures you control", CR 118.3, 122.1 */, 'removeCounters.any' /* CLOUD std-ecl (also cloud std-spm's, one implementation): counters of any kinds, CR 122.1, 118.3 */, 'removeCounters.filter', 'sacrifice.all' /* edh-next-45 */, 'sacrifice.atLeast' /* std-mana-1: "Sacrifice one or more artifacts", CR 601.2b, 118.3 */, 'sacrifice.distinctNames' /* r3-cost: "with different names", CR 118.3, 201.2 */, 'sacrifice.half' /* edh-next-106 */, 'sacrifice.atMost' /* edh-next-144: "Sacrifice up to three permanents", CR 601.2b, 118.3 */, 'sacrifice.totalPower' /* edh-next-147: a threshold sacrifice, rules/cost-pick.ts */, 'tapUntapped.other', 'returnToHand.beamUp' /* trek-1: beam me up (Star Trek), rules/cant.ts */, 'revealChosen.player' /* edh-next-135: "Reveal the player you chose", CR 608.2d, 118.3 */, 'exileFrom.mvTotal' /* edh-d-100: a total mana value of N or greater, CR 118.3, 202.3 */, 'exileFrom.typesAmong' /* edh-d-100: N or more card types among them, CR 205.2a */].sort());
     for (const [cap] of costForm) expect(ENGINE_CAPABILITIES.has(cap)).toBe(false);
     for (const [cap] of needsEnv) expect(ENGINE_CAPABILITIES.has(cap)).toBe(true); // WP30: every call site passes a FilterEnv
     expect(ENGINE_CAPABILITIES.has('cost:discard')).toBe(true);

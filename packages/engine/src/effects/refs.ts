@@ -8,15 +8,19 @@
  * a handle a handler checks `isCurrent` (or uses `currentObjs`); before READING it calls `readInfo`.
  */
 import { EngineBug } from '../core/errors';
-import { isPlayerOnlyRef, type ObjRef, type PlayerRef, type Quantity, type Ref } from '../types/ability';
+import { isPlayerOnlyRef, type EventPattern, type ObjRef, type PlayerRef, type Quantity, type Ref } from '../types/ability';
 import { seatNeighbor } from '../statics/seats';
 import { attachedPlayer } from '../statics/attached-player';
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { EventContext, GameObject, LastKnown, LinkValue, ObjHandle, RoleValue, ZoneKind } from '../types/state';
 import { attackerState } from '../rules/combat-state';
 import { charsOfObject, controllerOf, type Chars } from '../rules/characteristics';
+import { partnerOf } from '../statics/pairing';
+import { readLinkOf } from '../statics/links';
 import { findObjects, matchesFilter, type FilterContext, type FilterEnv, type RefValue } from '../rules/filter';
 import { countHistory } from '../rules/history';
+import { compareNumbers } from '../rules/predicates';
+import { randomIndex } from '../rules/random';
 import type { Binding, ExecCtx } from './api';
 
 /**
@@ -24,7 +28,7 @@ import type { Binding, ExecCtx } from './api';
  * names `target`, `each`, `event`, `bound`, `linked` and `fixed`; each name is implemented for both.
  */
 /** audit-fix-1: the reference forms resolveObjs reads beyond the plain kinds (`feature:<name>`, model/capabilities.ts; model/cap-walk.ts emits them). */
-export const REF_FEATURES: readonly string[] = ['ref.bound.which' /* audit-fix-1: CR 608.2h, 400.7 */];
+export const REF_FEATURES: readonly string[] = ['ref.bound.which' /* audit-fix-1: CR 608.2h, 400.7 */, 'each.otherPlayer.castPlayer' /* edh-mana-keywords-7 */, 'ref.linked.except' /* edh-perms-21: all other tokens created with ~ */, 'ref.seat.chosen' /* edhd63: the next player in the chosen direction (CR 101.4, 607.2d) */, 'each.otherPlayer.than' /* edh-next-134: each player other than a named one (CR 102.1, 608.2c) */, 'ref.controlsAny.atLeast' /* edh-d-88: a player who controls N or more X (CR 109.4); also triggers/filters.ts */, 'ref.linked.ever' /* edh-d-96: every card ever exiled with ~ (CR 607.2a) */];
 
 export const REF_RESOLVERS: Readonly<Record<string, true>> = {
   self: true, target: true, bound: true, event: true, attachedTo: true, linked: true, each: true, subject: true, topCards: true, union: true, fixed: true,
@@ -41,11 +45,26 @@ export const REF_RESOLVERS: Readonly<Record<string, true>> = {
   costChosen: true, // FAST5X E1: the player chosen for an additional cost (gift, CR 702.174a)
   seat: true, // M12-1: "the player to your left / right" (m12 design D6; CR 101.4, 103.1)
   controlsMost: true, // C6: "each player who controls the most creatures" (CR 109.4, 101.4)
+  controlsAny: true, // edh-perms-13: "each player who controls an artifact" (CR 109.4, 101.4)
   grantor: true, // r4-static: the object whose static ability grants the ability; statics/mods.ts#withGrantor writes it as `fixed` before any ability uses it
   voters: true, // M12F: "each opponent who voted for a choice you (didn't) vote for" (CR 701.38a)
+  monarch: true, // edh-d-10: "the monarch" (CR 725.1)
+  initiative: true, // edh-next-82: "the player who has the initiative" (CR 726.1)
   enchantedPlayer: true, // std-rr: "enchanted player", the player the source Aura is attached to (CR 303.4, 702.5a)
   otherOf: true, // std-rx30: "the other player" of a group (CR 608.2c)
   eachWho: true, // std-combat-1: "each opponent who attacked you ... this turn" (CR 608.2c, 508.1)
+  chose: true, // edh-players-13: "each player who chose fame" (CR 608.2d)
+  choseNumber: true, // edh-next-120: "each player who chose that number" after "the highest number" (CR 608.2d)
+  attackedBySource: true, // edh-players-17: "each player this creature attacked this turn" (CR 506.3, 508.1)
+  attacked: true, // edh-combat-6: "players being attacked" (CR 506.2, 506.3)
+  votedFor: true, // edh-players-17: "for each money vote ... the voter" (CR 701.38a)
+  convokers: true, // edh-mana-keywords-8: the creatures that convoked this spell (CR 702.51a)
+  pair: true, // edh-top-2: the source creature and the creature it is paired with (CR 702.95b)
+  randomOpponent: true, // trek-17: "a random opponent" (Alexander, Ship's Fool)
+  withLife: true, // edh-next-72: "each player with exactly 13 life" (CR 119.1, 104.3b)
+  costUnattached: true, // edh-next-141: the permanent an unattach cost unattached (CR 701.3d; Captain America, First Avenger)
+  mostLife: true, // edh-d-85: "an opponent with the most life among your opponents" (CR 119.1, 102.3)
+  grantCaster: true, // edh-next-146: "the player who cast ¤" (CR 601.2a, 611.2c): fixed by effects/handlers/lasting.ts#fixGrantCaster as a spell's effect is created, nobody anywhere else
 };
 
 // ---- the quantity evaluator is installed by effects/eval.ts (it needs these resolvers, so it cannot be imported here without a cycle) ----------------------
@@ -101,7 +120,7 @@ export const sourceObject = (cx: ExecCtx): GameObject | undefined => cx.g.s.obje
  * What the source's linked ability remembers (CR 607.1); reads last known information once the source has left. A value chosen during this resolution comes
  * first (FAST3 T13: `ExecCtx.choices`, CR 608.2d): it is the same value while the source is there, and the only one once it has left.
  */
-export const linkValue = (cx: ExecCtx, link: string): LinkValue | undefined => cx.choices?.get(link) ?? sourceObject(cx)?.links?.[link];
+export const linkValue = (cx: ExecCtx, link: string): LinkValue | undefined => cx.choices?.get(link) ?? readLinkOf(cx.g.s, sourceObject(cx), link); // edh-next-137: an emblem's `linksFrom` (statics/links.ts#readLinkOf)
 
 function bindingOf(cx: ExecCtx, name: string): Binding {
   const b = cx.bindings.get(name);
@@ -112,14 +131,15 @@ function bindingOf(cx: ExecCtx, name: string): Binding {
 const roleOf = (cx: ExecCtx, role: Extract<ObjRef, { ref: 'event' }>['role']): RoleValue | undefined => cx.event?.roles[role];
 
 /** The filter context a handler uses to run an `ObjectFilter` while resolving: "you" is the controller, "this" the source, references resolve through `cx`. */
-export function filterCtxOf(cx: ExecCtx): FilterContext {
-  return { you: cx.controller, sourceId: cx.source.id, env: filterEnvOf(cx), ...(cx.choices !== undefined && cx.choices.size > 0 ? { choices: cx.choices } : {}) };
+export function filterCtxOf(cx: ExecCtx, followRevealed = false): FilterContext {
+  return { you: cx.controller, sourceId: cx.source.id, env: filterEnvOf(cx, followRevealed), ...(cx.choices !== undefined && cx.choices.size > 0 ? { choices: cx.choices } : {}) };
 }
 
 /** How filters resolve the references and quantities they mention (`is`, `sharesWith`, `targets`, `controller: {ref}`, `power <= {q:...}`). */
-export function filterEnvOf(cx: ExecCtx): FilterEnv {
+export function filterEnvOf(cx: ExecCtx, followRevealed = false): FilterEnv {
   return {
-    refs: (ref): RefValue => resolveRecipients(cx, ref),
+    // `followRevealed`: the filter of an `each` over "the cards revealed this way" (zone 'any'), see `followRevealedBinding`
+    refs: (ref): RefValue => followRevealed && ref.ref === 'bound' && (ref as { which?: unknown }).which === undefined ? { ...resolveRecipients(cx, ref), objects: followRevealedBinding(cx, ref.name) } : resolveRecipients(cx, ref),
     qty: (q) => quantity(cx, q),
   };
 }
@@ -142,13 +162,72 @@ function auraBecame(cx: ExecCtx): ObjHandle[] {
 }
 
 /**
+ * edh-zones-7 (CR 400.7j, 602.2b): "{1}, Discard this card: ... Shuffle this card into your library from your graveyard." (Kogla and Yidaro): the cost of an ability moved
+ * its own source to a public zone (the discard), and the ability's effects can find that object. The card the discard made of the source, while it is still where the
+ * discard put it; null when the source did not pay its way out of a hand (it is read as it is, or as it last existed).
+ */
+function costMovedSelf(cx: ExecCtx): ObjHandle[] | null {
+  const s = cx.g.s;
+  if (s.objects[cx.source.id] !== undefined) return null; // the source is still the object it was
+  const became = s.lki[cx.source.id]?.newId;
+  if (became === undefined) return null;
+  const paid = (cx.stack?.costsPaid.discarded ?? []).find((h) => h.id === became);
+  return paid !== undefined && paid.zone === 'graveyard' && s.objects[paid.id]?.zone === 'graveyard' ? [{ id: paid.id, zone: paid.zone }] : null; // (a replacement sent it elsewhere: it is not in the graveyard "from your graveyard" names)
+}
+
+/**
+ * edh-next-146 (CR 400.7j, 602.2b, 603.7c; Plague Reaver: "Discard two cards, Sacrifice this creature: ... Return this creature to the battlefield ... at the beginning of their next
+ * upkeep."): the card the cost of this ability made of its own source by sacrificing, exiling or discarding it (the cost moved it to a public zone, so the ability's effects can find it, CR 400.7j),
+ * or the card the move that triggered this ability made of it (CR 400.7e),
+ * while it is still where the cost put it; null when the source was not moved by the cost. Only for a move of the source a delayed trigger of this ability makes
+ * (effects/handlers/lasting.ts#delay): every other read of "~" keeps the object as it last existed (CR 608.2h).
+ */
+export function costMovedSelfCard(cx: ExecCtx): ObjHandle[] | null {
+  const s = cx.g.s;
+  if (s.objects[cx.source.id] !== undefined || cx.stack === null) return null; // the source is still the object it was
+  const became = s.lki[cx.source.id]?.newId;
+  if (became === undefined) return null;
+  const paid = cx.stack.costsPaid;
+  const byCost = (paid.sacrificed ?? []).includes(cx.source.id) || paid.exiled?.self === became || (paid.discarded ?? []).some((h) => h.id === became);
+  // CR 400.7e: or a triggered ability whose event is the move of the source itself ("When ~ dies, ... Return ~ to the battlefield ... at the beginning of their next upkeep")
+  const ev = cx.stack.kind === 'triggered' ? cx.stack.event : undefined;
+  const subj = ev?.ev === 'zoneChange' ? ev.roles.subject : undefined;
+  const byEvent = subj !== undefined && 'objects' in subj && subj.objects.some((h) => h.id === cx.source.id || h.id === became);
+  const now = s.objects[became];
+  return (byCost || byEvent) && now !== undefined && (now.zone === 'graveyard' || now.zone === 'exile') ? [{ id: became, zone: now.zone }] : null;
+}
+
+/**
+ * trek-17 (CR 701.20a, 608.2c, 400.7; Ambassador K'Ehleyr, Alexander, Ship's Fool): the cards a `reveal` step of this resolution revealed (`Binding.revealed`) stay "the cards revealed this
+ * way" wherever the resolution moved them since ("each player reveals the top card of their library, then draws a card. For each nonland card revealed this way, ..."): each card that
+ * left its zone is found again as the object it became (the last known information's `newId`, followed through later moves), in any zone; one that ceased to exist drops out.
+ * Opt-in: only `{ref:'each', filter:{is:<that binding>, zone:'any'}}` (parser/holes/trek17.ts#where) follows; every other reference to a bound reveal ("put one of them into
+ * your hand", "the rest") keeps the objects as they were bound, so a card moved on by the resolution is not part of them again.
+ */
+function followRevealedBinding(cx: ExecCtx, name: string): ObjHandle[] {
+  const b = bindingOf(cx, name);
+  if (b.revealed !== true) return b.objects;
+  const s = cx.g.s;
+  return dedupe(b.objects.flatMap((h): ObjHandle[] => {
+    let id = h.id;
+    for (let i = 0; i < 8 && s.objects[id] === undefined; i++) {
+      const next = s.lki[id]?.newId;
+      if (next === undefined) return [];
+      id = next;
+    }
+    const o = s.objects[id];
+    return o === undefined ? [] : [{ id, zone: o.zone }];
+  }));
+}
+
+/**
  * The objects an object reference stands for: legal targets only (CR 608.2b), the bound objects, the objects a filter selects now, ... A handle may be stale
  * (the object moved during this resolution): reading it gives last known information (`readInfo`), acting on it does nothing (`isCurrent`).
  */
 export function resolveObjs(cx: ExecCtx, ref: ObjRef): ObjHandle[] {
   const s = cx.g.s;
   switch (ref.ref) {
-    case 'self': return 'moved' in ref ? auraBecame(cx) : [cx.source];
+    case 'self': return 'moved' in ref ? auraBecame(cx) : costMovedSelf(cx) ?? [cx.source];
     case 'target': return (cx.targets.get(ref.id) ?? []).filter((t) => t.legal && t.handle !== null).map((t) => t.handle!);
     case 'bound': {
       const b = bindingOf(cx, ref.name);
@@ -186,8 +265,32 @@ export function resolveObjs(cx: ExecCtx, ref: ObjRef): ObjHandle[] {
     }
     // FAST5X E25 (CR 607.2a, 400.7): "the exiled card" of an exile link refers only to a card still in the exile zone: one that left exile is a new object, so
     // nothing (not even its last known information, `readInfo`) stands for it any more (as `costExiled` below). Other linked handles are left as they are.
-    case 'linked': return (linkValue(cx, ref.link)?.objects ?? []).filter((h) => h.zone !== 'exile' || s.objects[h.id]?.zone === 'exile');
-    case 'each': return findObjects(s, ref.filter, filterCtxOf(cx)).map(handleOf);
+    case 'linked': {
+      // edh-d-96 (CR 607.2a, 603.4; Colfenor's Urn ruling 2007-10-01): `ever`, every object the link has remembered, wherever it is now (counted only)
+      if (ref.ever === true) return dedupe(linkValue(cx, ref.link)?.objects ?? []);
+      const here = (linkValue(cx, ref.link)?.objects ?? []).filter((h) => h.zone !== 'exile' || s.objects[h.id]?.zone === 'exile');
+      // edh-zones-24 (CR 607.2a): "the last creature card exiled with it": the most recently linked object that fits the description and is still where it was linked
+      if (ref.last === undefined) {
+        if (ref.except === undefined) return here;
+        const out = new Set(resolveObjs(cx, ref.except).map((h) => h.id)); // edh-perms-21: "all other tokens created with ~"
+        return here.filter((h) => !out.has(h.id));
+      }
+      const fit = new Set(findObjects(s, { zone: 'any', ...ref.last }, filterCtxOf(cx)).map((o) => o.id));
+      const fits = here.filter((h) => s.objects[h.id]?.zone === h.zone && fit.has(h.id));
+      return fits.length === 0 ? [] : [fits[fits.length - 1]!];
+    }
+    case 'each': {
+      // edh-c-104 (CR 400.1, 608.2c; Thran Tome): a filter that names only the group of cards a reveal step bound ("one of those cards": the revealed top cards of a library) and no zone is
+      // those cards wherever they are now (a library is no zone of a filter, rules/filter.ts#findIn); any other group stays a description of the battlefield
+      const bare = ref.filter.zone === undefined && ref.filter.is?.ref === 'bound' && Object.keys(ref.filter).filter((k) => (ref.filter as Record<string, unknown>)[k] !== undefined).join() === 'is';
+      if (bare && bindingOf(cx, (ref.filter.is as { name: string }).name).revealed === true) return followRevealedBinding(cx, (ref.filter.is as { name: string }).name); // (cards revealed this way, wherever they are now)
+      return findObjects(s, ref.filter, filterCtxOf(cx, ref.filter.zone === 'any')).map(handleOf);
+    }
+    case 'pair': { // edh-top-2 (CR 702.95b-d): the source creature and its partner, both or none
+      const me = sourceObject(cx);
+      const mate = partnerOf(s, me);
+      return me !== undefined && mate !== undefined ? [handleOf(me), handleOf(mate)] : [];
+    }
     case 'subject': return cx.subject ? [cx.subject] : [];
     case 'topCards': {
       // std-rg (CR 401.1, 401.2): all but the bottom N cards of each library the reference names, top first
@@ -198,6 +301,22 @@ export function resolveObjs(cx: ExecCtx, ref: ObjRef): ObjHandle[] {
       const n = quantity(cx, ref.count);
       if (n === undefined) return []; // fails to determine (CR 608.2b)
       const take = Math.max(0, Math.floor(n));
+      // edh-c-73 (CR 404.1; Soldevi Digger): a graveyard is ordered, its top card the one put there last (core/move-parts/components.ts#place adds last); top first
+      // edh-next-43 (CR 404.1; Phyrexian Furnace): the bottom card of a graveyard, the card put there first (zone lists end with the newest); bottom first
+      // edhn78 (CR 404.1, 401.2; Shallow Grave): "the top creature card of your graveyard": the card put there last among those that fit (none: nothing)
+      if (ref.zone === 'graveyard' && ref.matching !== undefined) {
+        const fctx = filterCtxOf(cx);
+        return resolvePlayers(cx, ref.player).flatMap((p) => {
+          const gy = s.zones.graveyard[p] ?? [];
+          const out: ObjHandle[] = [];
+          for (let i = gy.length - 1; i >= 0 && out.length < take; i--) { const o = s.objects[gy[i]!]; if (o !== undefined && matchesFilter(s, o, ref.matching!, fctx)) out.push({ id: o.id, zone: 'graveyard' }); }
+          return out;
+        });
+      }
+      // edh-next-123 (CR 401.1, 401.2; Arvinox, the Mind Flail): the bottom card of a library, the last of its list (index 0 is the top), bottom first
+      if (ref.zone !== 'graveyard' && ref.fromBottom === true) return resolvePlayers(cx, ref.player).flatMap((p) => { const lib = s.zones.library[p] ?? []; return lib.slice(Math.max(0, lib.length - take)).reverse().map((id): ObjHandle => ({ id, zone: 'library' })); });
+      if (ref.zone === 'graveyard' && ref.fromBottom === true) return resolvePlayers(cx, ref.player).flatMap((p) => (s.zones.graveyard[p] ?? []).slice(0, take).map((id): ObjHandle => ({ id, zone: 'graveyard' })));
+      if (ref.zone === 'graveyard') return resolvePlayers(cx, ref.player).flatMap((p) => { const gy = s.zones.graveyard[p] ?? []; return gy.slice(Math.max(0, gy.length - take)).reverse().map((id): ObjHandle => ({ id, zone: 'graveyard' })); });
       return resolvePlayers(cx, ref.player).flatMap((p) => (s.zones.library[p] ?? []).slice(0, take).map((id): ObjHandle => ({ id, zone: 'library' }))); // index 0 is the top (CR 401.5)
     }
     case 'union': return dedupe(ref.of.flatMap((r) => resolveObjs(cx, r)));
@@ -205,9 +324,15 @@ export function resolveObjs(cx: ExecCtx, ref: ObjRef): ObjHandle[] {
     case 'fixed': return ref.source === true ? ref.objects.map((h) => ({ id: h.id, zone: h.zone })) : fixedObjs(cx, ref.objects); // CR 611.2c; a moved object is a new one (CR 400.7)
     // FAST3 T18: the permanents sacrificed to pay this spell's or ability's cost, as handles on the battlefield objects they were: they left, so a read is last
     // known information (CR 608.2h, `readInfo`) and nothing can act on them (CR 400.7). A copy of a spell keeps the costs paid for the original (CR 707.10).
-    case 'costSacrificed': return (cx.stack?.costsPaid.sacrificed ?? []).filter((id) => s.lki[id] !== undefined).map((id): ObjHandle => ({ id, zone: 'battlefield' }));
+    case 'costSacrificed': if (ref.card === true) return (cx.stack?.costsPaid.costObjects ?? []).filter((id) => s.objects[id] !== undefined && s.objects[id]!.zone !== 'battlefield' && s.objects[id]!.zone !== 'stack').map((id): ObjHandle => ({ id, zone: s.objects[id]!.zone })); // trek-21 (CR 400.7j): the card the sacrifice made, where it is now
+      return (cx.stack?.costsPaid.sacrificed ?? cx.manaPaid?.sacrificed ?? []).filter((id) => s.lki[id] !== undefined).map((id): ObjHandle => ({ id, zone: 'battlefield' }));
+    // edh-mana-keywords-8 (CR 702.51a, 608.2h): the creatures tapped to convoke this spell, handles on the battlefield; one that has left is read as it last existed there
+    // edh-d-9 (CR 702.51a, 400.7d; Venerated Loxodon): the permanent keeps the record of the spell it was, so its own enters trigger reads the creatures that convoked it too
+    case 'convokers': return (cx.stack?.costsPaid.convoked ?? sourceObject(cx)?.cast?.costsPaid.convoked ?? []).filter((id) => s.objects[id]?.zone === 'battlefield' || s.lki[id] !== undefined).map((id): ObjHandle => ({ id, zone: 'battlefield' }));
     // T35 (station, CR 702.184a): the permanents tapped to pay this ability's cost: handles on the battlefield; one that has left is read as it last existed there (CR 608.2h)
     case 'costTapped': return (cx.stack?.costsPaid.tapped ?? []).filter((id) => s.objects[id]?.zone === 'battlefield' || s.lki[id] !== undefined).map((id): ObjHandle => ({ id, zone: 'battlefield' }));
+    // edh-next-141 (CR 701.3d, 608.2h): the permanents unattached to pay this ability's cost: handles on the battlefield; one that has left is read as it last existed there
+    case 'costUnattached': return (cx.stack?.costsPaid.unattached ?? []).filter((id) => s.objects[id]?.zone === 'battlefield' || s.lki[id] !== undefined).map((id): ObjHandle => ({ id, zone: 'battlefield' }));
     // std-rx28 (CR 701.4a, 608.2h): the card revealed from the hand or the permanent chosen to pay this spell's behold cost, where it was then; one that left that
     // zone is read as it last existed there (it is only ever read: "the power of the creature you chose or the card you revealed"). A copy keeps it (CR 707.10).
     case 'costBeheld': return (cx.stack?.costsPaid.beheld ?? []).filter((b) => b.id !== undefined && b.zone !== undefined && (s.objects[b.id]?.zone === b.zone || s.lki[b.id] !== undefined))
@@ -223,11 +348,12 @@ export function resolveObjs(cx: ExecCtx, ref: ObjRef): ObjHandle[] {
     case 'costReturned': {
       const src = sourceObject(cx);
       const paid = src?.zone === 'stack' && src.stack && src.kind !== 'ability' ? src.stack.costsPaid : src?.cast?.costsPaid;
+      if (cx.stack?.kind === 'activated' && (cx.stack.costsPaid.returned?.length ?? 0) > 0) return (cx.stack.costsPaid.returned ?? []).filter((id) => s.lki[id] !== undefined).map((id): ObjHandle => ({ id, zone: 'battlefield' })); // edh-d-46 (CR 118.3, 608.2h): the permanent this ability's own cost returned
       return (paid?.returned ?? []).filter((id) => s.lki[id] !== undefined).map((id): ObjHandle => ({ id, zone: 'battlefield' }));
     }
     // FAST5X E13 (craft, CR 702.167a, 702.167c): the cards this ability's cost exiled, as the cards they are in exile; one that left exile is a new object (CR 400.7)
     case 'costExiled': {
-      const ex = cx.stack?.costsPaid.exiled;
+      const ex = cx.stack?.costsPaid.exiled ?? cx.manaPaid?.exiled; // edh-top-2 (CR 605.3b): a mana ability has no stack object; its cost's cards are kept by the activation
       const ids = ref.self ? (ex?.self !== undefined ? [ex.self] : []) : ex?.others ?? [];
       // CLOUD C8 (CR 608.2h): the other cards (an additional cost's "the exiled card", craft's materials) are only ever read: one that left exile is read from its last
       // known information ("the exiled card's power"), and nothing acts on it (CR 400.7; the parser never writes an instruction that does, lower/anaphora.ts)
@@ -269,6 +395,7 @@ function fixedObjs(cx: ExecCtx, objects: readonly { id: string; zone: ZoneKind }
 
 /** The player a multiplayer "an opponent" stands for is chosen once per resolution (CR 601.7a). */
 const opponentChoices = new WeakMap<ExecCtx, PlayerId>();
+const randomOpponents = new WeakMap<ExecCtx, PlayerId>(); // trek-17: the opponent "a random opponent" picked in this resolution
 
 /** The players a player reference stands for. Players who have lost the game are never part of "each player" (CR 800.4a). */
 export function resolvePlayers(cx: ExecCtx, ref: PlayerRef): PlayerId[] {
@@ -276,7 +403,15 @@ export function resolvePlayers(cx: ExecCtx, ref: PlayerRef): PlayerId[] {
   switch (ref.ref) {
     case 'you': return [cx.controller];
     case 'target': return (cx.targets.get(ref.id) ?? []).filter((t) => t.legal && t.player !== undefined).map((t) => t.player!);
-    case 'controllerOf': return uniquePlayers(resolveObjs(cx, ref.object).flatMap((h) => { const i = readInfo(cx, h); return i ? [controllerOfInfo(i)] : []; })); // last known information (CR 608.2h)
+    case 'controllerOf': {
+      const controllers = resolveObjs(cx, ref.object).flatMap((h) => { const i = readInfo(cx, h); return i ? [controllerOfInfo(i)] : []; }); // last known information (CR 608.2h)
+      // edh-d-29 (CR 608.2h, 303.4; Strangling Grasp): "enchanted permanent's controller sacrifices a nonland permanent of their choice, then that player loses 1 life": when the permanent the
+      // source is attached to was itself sacrificed, its controller is read from last known information, so "that player" is still the same player
+      if (controllers.length === 0 && ref.object.ref === 'attachedTo') { const gone = attachedHostLki(cx); if (gone) controllers.push(controllerOfInfo(gone)); }
+      // edh-d-5 (CR 115.1, 109.4; Acorn Catapult, Rakdos's Return): "that permanent's controller or that player": the player chosen as that target, if one was
+      const chosenPlayers = ref.orPlayer === true && ref.object.ref === 'target' ? (cx.targets.get(ref.object.id) ?? []).filter((t) => t.legal && t.player !== undefined).map((t) => t.player!) : [];
+      return uniquePlayers([...controllers, ...chosenPlayers]);
+    }
     case 'ownerOf': return uniquePlayers(resolveObjs(cx, ref.object).flatMap((h) => { const i = readInfo(cx, h); return i ? [i.object.owner] : []; })); // CR 108.3
     case 'anOpponent': {
       const opponents = g.opponents(cx.controller).map((p) => p.id);
@@ -292,7 +427,26 @@ export function resolvePlayers(cx: ExecCtx, ref: PlayerRef): PlayerId[] {
       }
       return [chosen];
     }
-    case 'each': return g.apnap().filter((p) => ref.who === 'player' || p !== cx.controller); // active player first (CR 101.4, 608.2e): 'opponent' and 'otherPlayer' are the players other than the controller
+    // trek-17 (Alexander, Ship's Fool: "deals X damage to a random opponent"): one opponent of the controller, picked with the game's random number generator (design 8.8 rule 2);
+    // nobody chooses. No opponent left (CR 800.4a): nobody.
+    case 'randomOpponent': {
+      const except = ref.than !== undefined ? resolvePlayers(cx, ref.than) : []; // edh-top-14 (Maddening Hex): "another one of your opponents"
+      const opponents = g.opponents(cx.controller).map((p) => p.id).filter((p) => !except.includes(p));
+      if (opponents.length === 0) return [];
+      let picked = randomOpponents.get(cx);
+      if (picked === undefined) { picked = opponents[randomIndex(g, opponents.length)]!; randomOpponents.set(cx, picked); } // (the same opponent every time this resolution says "that player")
+      return [picked];
+    }
+    case 'each': {
+      // active player first (CR 101.4, 608.2e): 'opponent' is the players other than the controller; 'otherPlayer' the players other than the one the ability is about:
+      // edh-mana-keywords-7 (CR 603.2, 601.2i; Zenith Chronicler): in a trigger on a spell being cast ("whenever a player casts ..., each other player draws a card") the player
+      // who cast it, otherwise the controller (model/cap-walk.ts allows only cast events for another player there, `feature:each.otherPlayer.castPlayer`)
+      const caster = ref.who === 'otherPlayer' && cx.event?.ev === 'cast' ? roleOf(cx, 'player') : undefined;
+      const except = caster !== undefined && 'players' in caster && caster.players.length === 1 ? caster.players[0] : cx.controller;
+      // edh-next-134 (CR 102.1, 608.2c; Oft-Nabbed Goat): "its owner draws ... and each other player loses ...": the players other than the one `than` names
+      if (ref.who === 'otherPlayer' && ref.than !== undefined) { const than = resolvePlayers(cx, ref.than); return g.apnap().filter((p) => !than.includes(p)); }
+      return g.apnap().filter((p) => ref.who === 'player' || p !== except);
+    }
     case 'event': {
       const v = roleOf(cx, ref.role);
       if (v && 'players' in v) return v.players;
@@ -310,6 +464,7 @@ export function resolvePlayers(cx: ExecCtx, ref: PlayerRef): PlayerId[] {
     case 'linked': return linkValue(cx, ref.link)?.players ?? [];
     // CR 102.1. M12-2 (m12 design E22): CR 800.4j, an active player who left the game leaves a turn "without an active player": nobody
     case 'active': return g.s.options.multiplayer !== undefined && g.player(g.s.turn.activePlayer).hasLost ? [] : [g.s.turn.activePlayer];
+    case 'grantCaster': return []; // edh-next-146 (CR 611.2c): written as `fixed` by effects/handlers/lasting.ts#fixGrantCaster as the effect is created; read anywhere else it is nobody
     case 'defending': return defendingPlayers(cx); // CR 506.2
     case 'otherOpponents': { // M6-12: "each opponent other than defending player" (CR 702.116a, 506.2), APNAP order (CR 101.4)
       // FAST4 T25: "each other opponent": other than the players `than` names (the opponent the trigger's event was about, CR 102.3, 603.2)
@@ -320,6 +475,21 @@ export function resolvePlayers(cx: ExecCtx, ref: PlayerRef): PlayerId[] {
     // std-rr (CR 303.4, 702.5a, 608.2h): "enchanted player", the player the source Aura is attached to (as it last existed on the battlefield once it left, as
     // `attachedTo` reads "enchanted creature"); nobody when it is attached to an object or to nothing
     case 'enchantedPlayer': return attachedPlayer(g.s, sourceObject(cx));
+    // edh-d-10 (CR 725.1, 725.2): "the monarch", the one player with the designation (nobody when there is none or the monarch has left the game, CR 800.4)
+    case 'monarch': { const m = g.s.designations.monarch; return m !== undefined && !g.player(m).hasLost ? [m] : []; }
+    // edh-next-82 (CR 726.1, 800.4): "the player who has the initiative", the one player with the designation (nobody when there is none)
+    case 'initiative': { const m = g.s.designations.initiative; return m !== undefined && !g.player(m).hasLost ? [m] : []; }
+    case 'chose': { // edh-players-13 (CR 608.2d, 101.4): the players whose own choice for the link was the value, in APNAP order, still in the game
+      const by = linkValue(cx, ref.link)?.byPlayer ?? {};
+      return g.apnap().filter((p) => by[p] === ref.value && !g.player(p).hasLost);
+    }
+    case 'choseNumber': { // edh-next-120 (CR 608.2d, 101.4; Wheel of Misfortune): the choosers whose number was the highest (lowest) of all the numbers chosen, or with `not` the other choosers
+      const by = linkValue(cx, ref.link)?.byPlayer ?? {};
+      const nums = Object.values(by).map(Number).filter((n) => Number.isInteger(n));
+      if (nums.length === 0) return [];
+      const edge = ref.extreme === 'highest' ? Math.max(...nums) : Math.min(...nums);
+      return g.apnap().filter((p) => by[p] !== undefined && Number.isInteger(Number(by[p])) && (Number(by[p]) === edge) !== (ref.not === true) && !g.player(p).hasLost);
+    }
     case 'otherOf': { // std-rx30 (CR 608.2c): "the other player", the players of `of` other than the ones `than` names
       const than = resolvePlayers(cx, ref.than);
       return resolvePlayers(cx, ref.of).filter((p) => !than.includes(p));
@@ -333,14 +503,23 @@ export function resolvePlayers(cx: ExecCtx, ref: PlayerRef): PlayerId[] {
     }
     case 'seat': { // M12-1 (m12 design D6): the next / previous player in turn order still in the game, from `of` (you by default; CR 101.4, 103.1)
       const from = ref.of !== undefined ? resolvePlayers(cx, ref.of) : [cx.controller];
-      return uniquePlayers(from.flatMap((p) => { const n = seatNeighbor(g.s, p, ref.side); return n !== undefined ? [n] : []; }));
+      const chosenSide = ref.chosen === undefined ? ref.side : linkValue(cx, ref.chosen)?.values?.[0]; // edhd63: "the next player in the chosen direction"
+      if (chosenSide !== 'left' && chosenSide !== 'right') return [];
+      const side = ref.inverse === true ? (chosenSide === 'left' ? 'right' : 'left') : chosenSide;
+      return uniquePlayers(from.flatMap((p) => { const n = seatNeighbor(g.s, p, side); return n !== undefined ? [n] : []; }));
     }
     case 'controlsMost': { // C6: "each player who controls the most creatures" / "the fewest": every player tied for it, in APNAP order (CR 101.4, 109.4)
       const players = g.apnap();
       const found = findObjects(g.s, { ...ref.filter, zone: 'battlefield' }, filterCtxOf(cx)).filter((o) => !o.phasedOut); // CR 702.26b: phased out, treated as though it doesn't exist
       const counts = players.map((p) => found.filter((o) => controllerOf(g.s, o) === p).length); // CR 613.1b: the controller after layer 2
       const best = ref.fewest === true ? Math.min(...counts) : Math.max(...counts);
+      if (ref.below === true) return players.filter((_, i) => counts[i]! < Math.max(...counts)); // edh-d-46: fewer than the player who controls the most
       return players.filter((_, i) => counts[i] === best);
+    }
+    case 'controlsAny': { // edh-perms-13: "each player who controls an artifact or enchantment": the players who control at least one such permanent, in APNAP order (CR 101.4, 109.4)
+      const found = findObjects(g.s, { ...ref.filter, zone: 'battlefield' }, filterCtxOf(cx)).filter((o) => !o.phasedOut); // CR 702.26b
+      const held = (p: PlayerId): boolean => found.filter((o) => controllerOf(g.s, o) === p).length >= (ref.atLeast ?? 1); // edh-d-88: at least `atLeast` of them
+      return g.apnap().filter((p) => held(p) !== (ref.none === true) && (ref.opponents !== true || p !== cx.controller)); // edh-players-15: `opponents`; edh-d-4: `none`, the players who control no such permanent
     }
     case 'eachWho': { // std-combat-1 (CR 608.2c, 102.1): the players of `who` who did it in the scope's history, in APNAP order (CR 101.4)
       // pc-combat-1 (CR 508.1, 506.4): `attacking` is live: who controls a creature attacking that player now, as the effect resolves
@@ -352,7 +531,37 @@ export function resolvePlayers(cx: ExecCtx, ref: PlayerRef): PlayerId[] {
         return g.apnap().filter((p) => (ref.who === 'player' || p !== cx.controller) && owners.has(p));
       }
       const env = { you: cx.controller, sourceId: cx.source.id, resolvePlayers: (r: PlayerRef) => resolvePlayers(cx, r) };
-      return g.apnap().filter((p) => (ref.who === 'player' || p !== cx.controller) && countHistory(g.s, ref.did, (ref.scope as 'turn'), { ref: 'fixed', players: [p] }, env) > 0);
+      const did: EventPattern = ref.did.ev === 'damage' && ref.did.amount === undefined ? { ...ref.did, amount: { op: '>=', value: 1 } } : ref.did; // edh-d-86 (CR 120.8): damage of 0 is no damage dealt
+      return g.apnap().filter((p) => (ref.who === 'player' || p !== cx.controller) && countHistory(g.s, did, (ref.scope as 'turn' | 'game'), { ref: 'fixed', players: [p] }, env) > 0);
+    }
+    case 'mostLife': { // edh-d-85 (CR 119.1, 102.3): the controller's opponents still in the game tied for the most life among them, in APNAP order
+      const opp = g.apnap().filter((p) => p !== cx.controller && !g.player(p).hasLost);
+      const top = Math.max(...opp.map((p) => g.player(p).life));
+      return opp.filter((p) => g.player(p).life === top);
+    }
+    case 'withLife': // edh-next-72 (CR 119.1, 104.3b, 101.4, 608.2h): the players of the group whose life total compares with the fixed number now, in APNAP order, still in the game
+      return g.apnap().filter((p) => (ref.who === 'player' || p !== cx.controller) && !g.player(p).hasLost && compareNumbers(ref.op, g.player(p).life, ref.n));
+    case 'votedFor': { // edh-players-17 (CR 701.38a, 701.38d, 800.4a): the players who cast each vote for the choice, once per vote, in the order cast; none for a vote resolved by hand
+      const cast = cx.results.get(ref.votes.step)?.voters?.get(ref.votes.choice) ?? [];
+      return cast.filter((p) => !g.player(p).hasLost);
+    }
+    case 'attacked': { // edh-combat-6 (CR 506.2, 506.3, 508.1b, 101.4): the players a creature now in combat attacks (not those who only control an attacked planeswalker or protect an attacked battle), in APNAP order
+      const attacked = new Set<PlayerId>();
+      // edh-next-82 (CR 508.1b; Undercellar Sweep): `by: 'you'`, "a player you're attacking": only the players the controller's creatures attack
+      for (const a of g.s.combat?.attackers ?? []) if (typeof a.defender === 'string' && g.s.players.some((p) => p.id === a.defender) && (ref.by !== 'you' || g.s.objects[a.id]?.controller === cx.controller)) attacked.add(a.defender as PlayerId);
+      if (ref.andYou === true) attacked.add(cx.controller); // edh-next-82: "you or a player you're attacking"
+      return g.apnap().filter((p) => attacked.has(p) && !g.player(p).hasLost);
+    }
+    case 'attackedBySource': { // edh-players-17 (CR 506.3, 508.1, 608.2c, 101.4): the players the source creature attacked in a declare attackers step this turn, in APNAP order
+      // The history entry of an attack names its subject (the attacker's id, still the id after it left, CR 400.7) and, only for an attack on a player, defenderKind 'player'.
+      const id = cx.source.id;
+      const attacked = new Set<PlayerId>();
+      for (const e of g.s.history) {
+        if (e.ev !== 'attacks' || e.turn !== g.s.turn.number || e.subject !== id || e.facts['defenderKind'] !== 'player') continue;
+        const d = e.facts['defendingPlayer'];
+        if (typeof d === 'string') attacked.add(d);
+      }
+      return g.apnap().filter((p) => attacked.has(p) && !g.player(p).hasLost);
     }
     case 'voters': {
       const voters = votersOf(cx, ref.agree);
@@ -399,6 +608,12 @@ function defendingPlayers(cx: ExecCtx): PlayerId[] {
   const attackers: ObjectId[] = [cx.source.id];
   const ev = cx.event?.roles.attacker;
   if (ev && 'objects' in ev) attackers.push(...ev.objects.map((h) => h.id));
+  // edh-next-99 (CR 802.2a, 506.2; Kusari-Gama): an Equipment's trigger on the damage its equipped creature dealt: the defending player is the one that creature attacks (the damage source of the event, or
+  // the creature this source is attached to), tried only after the source itself and the event's attacker
+  const dealt = cx.event?.roles.source;
+  if (dealt && 'objects' in dealt) attackers.push(...dealt.objects.map((h) => h.id));
+  const host = sourceObject(cx)?.attachedTo;
+  if (host !== undefined) attackers.push(host);
   for (const id of attackers) {
     const a = attackerState(s, id);
     if (a) return [a.defendingPlayer];
@@ -433,6 +648,11 @@ function chosenDefendingPlayer(cx: ExecCtx): PlayerId | undefined {
   return chosen;
 }
 
+/** edh-d-29: the last known information of the permanent the source is (still) recorded as attached to, once it has left the battlefield (CR 608.2h). */
+function attachedHostLki(cx: ExecCtx): LastKnown | undefined {
+  const host = sourceObject(cx)?.attachedTo;
+  return host !== undefined && cx.g.s.objects[host] === undefined ? cx.g.s.lki[host] : undefined;
+}
 const controllerOfInfo = (i: LastKnown): PlayerId => (i.chars as (Chars & { controller?: PlayerId }) | null)?.controller ?? i.object.controller; // layer 2 (WP9) adds `Chars.controller`
 
 // ---- both --------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -441,7 +661,13 @@ const controllerOfInfo = (i: LastKnown): PlayerId => (i.chars as (Chars & { cont
 export function resolveRecipients(cx: ExecCtx, ref: Ref): { objects: ObjHandle[]; players: PlayerId[] } {
   if (isPlayerOnlyRef(ref)) return { objects: [], players: resolvePlayers(cx, ref) }; // M12-1: the one table of player-only references (m12 design 4.3)
   switch (ref.ref) {
-    case 'self': case 'attachedTo': case 'subject': case 'topCards': case 'union': case 'costSacrificed': case 'costTapped': case 'costBeheld': case 'costChosenObject': case 'costRevealed': case 'costReturned': case 'costExiled': case 'costDiscarded': case 'grantor':
+    // edh-mana-keywords-9 (CR 115.4, 608.2b; Comet Storm): a union of targets is the recipients of each member: a target of "any target" may be a player
+    case 'union': {
+      const parts = ref.of.map((m) => resolveRecipients(cx, m as Ref));
+      const players = parts.flatMap((p) => p.players);
+      return { objects: dedupe(parts.flatMap((p) => p.objects)), players: players.filter((id, i) => players.indexOf(id) === i) };
+    }
+    case 'self': case 'attachedTo': case 'pair': case 'subject': case 'topCards': case 'costSacrificed': case 'convokers': case 'costTapped': case 'costBeheld': case 'costChosenObject': case 'costRevealed': case 'costReturned': case 'costExiled': case 'costDiscarded': case 'grantor': case 'costUnattached':
       return { objects: resolveObjs(cx, ref), players: [] };
     case 'each':
       return 'filter' in ref ? { objects: resolveObjs(cx, ref), players: [] } : { objects: [], players: resolvePlayers(cx, ref) };

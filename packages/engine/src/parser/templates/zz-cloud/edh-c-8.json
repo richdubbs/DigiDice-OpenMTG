@@ -1,0 +1,594 @@
+[
+  {
+    "id": "sta.edhv8.self.cantHaveCounters",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.6",
+      "CR 614.17",
+      "CR 604.1"
+    ],
+    "pattern": "~ can't have counters put on it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "haveCountersPut"
+        }
+      ]
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "This permanent can't have counters put on it."
+      },
+      {
+        "text": "This enchantment can't have counters put on it."
+      }
+    ],
+    "counterExamples": [
+      "~ can't have +1/+1 counters put on it.",
+      "~ can have counters put on it.",
+      "Enchanted creature can't have counters put on it.",
+      "~ can't have counters removed from it."
+    ]
+  },
+  {
+    "id": "sta.edhv8.prevent.all.to.attached",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1",
+      "CR 614.1a",
+      "CR 604.1"
+    ],
+    "pattern": "prevent all damage that would be dealt to ( enchanted | equipped ) ( creature | permanent )",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "attachedToSource": true
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to equipped creature."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to enchanted permanent."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt by equipped creature.",
+      "Prevent all damage that would be dealt to enchanted creature this turn.",
+      "Prevent all noncombat damage that would be dealt to enchanted creature.",
+      "Prevent the next 1 damage that would be dealt to enchanted creature."
+    ]
+  },
+  {
+    "id": "rep.edhv8.self.dies.bottom",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 700.4",
+      "CR 614.6",
+      "CR 401.4"
+    ],
+    "pattern": "if ~ would die , put it on the bottom of its owner 's library instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "battlefield",
+            "to": "graveyard"
+          },
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "library",
+              "position": "bottom"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If this permanent would die, put it on the bottom of its owner's library instead."
+      },
+      {
+        "text": "If this enchantment would die, put it on the bottom of its owner's library instead."
+      }
+    ],
+    "counterExamples": [
+      "If this permanent would die, put it on top of its owner's library instead.",
+      "If this permanent would die, put it on the bottom of its owner's library.",
+      "If this permanent would leave the battlefield, put it on the bottom of its owner's library instead.",
+      "If this permanent would die this turn, put it on the bottom of its owner's library instead."
+    ]
+  },
+  {
+    "id": "sta.edhv8.group.grant.mustAttack",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 508.1d"
+    ],
+    "pattern": "{f:Filter} have {a:Abilities} and attack each combat if able",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "mustIfAble",
+          "action": "attack"
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "each",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Goblins you control have haste and attack each combat if able."
+      },
+      {
+        "text": "Creatures you control have trample and attack each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control have haste and attack this combat if able.",
+      "Creatures you control have haste and block each combat if able.",
+      "Creatures you control have haste and attack each combat.",
+      "Creatures you control have haste as long as it's your turn and attack each combat if able."
+    ]
+  },
+  {
+    "id": "sta.edhv8.self.cantBeCountered.if",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 604.1",
+      "CR 701.6a",
+      "CR 700.2"
+    ],
+    "pattern": "if {c:Cond} , ~ can't be countered",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "beCountered",
+          "when": "$c"
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "If you control a Wizard, ~ can't be countered."
+      },
+      {
+        "text": "If it's your turn, ~ can't be countered."
+      }
+    ],
+    "counterExamples": [
+      "If you control a Wizard, ~ can be countered.",
+      "If you control a Wizard, ~ can't be copied.",
+      "~ can't be countered if you control a Wizard.",
+      "If you control a Wizard, draw a card. ~ can't be countered."
+    ]
+  },
+  {
+    "id": "eff.edhv8.player.reveals.nCardsFromHand.youChoose",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 402.3",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} reveals {n:Qty} cards from their hand and you choose one of them",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "picked"
+      },
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "bound",
+          "name": "picked"
+        },
+        "as": "them"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "picked"
+            },
+            "zone": "any"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent reveals two cards from their hand and you choose one of them. That player discards that card."
+      },
+      {
+        "text": "Target player reveals four cards from their hand and you choose one of them. That player discards that card."
+      }
+    ],
+    "counterExamples": [
+      "Target player reveals three cards from your hand and you choose one of them.",
+      "Target player reveals three cards from their hand and they choose one of them.",
+      "Target player reveals three cards from their hand.",
+      "Target player reveals three cards from their hand and you choose two of them."
+    ]
+  },
+  {
+    "id": "eff.edhv8.youGain.shroud.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.18a",
+      "CR 611.2a",
+      "CR 115.1"
+    ],
+    "pattern": "you gain shroud {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "gain",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "You gain shroud until end of turn."
+      },
+      {
+        "text": "Draw a card. You gain shroud until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "You gain shroud.",
+      "You gain shroud from red until end of turn.",
+      "Each opponent gains shroud until end of turn.",
+      "You gain hexproof until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv8.hand.chooseTwoKinds",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 609.3"
+    ],
+    "pattern": "you choose {c:HandCardBare} and {d:HandCardBare}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": "$c",
+        "min": 1,
+        "max": 1,
+        "as": "chosenA"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": "$d",
+        "min": 1,
+        "max": 1,
+        "as": "chosenB"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent reveals their hand. You choose from it a nonland card with mana value 3 or less and a card with mana value 4 or greater. That player discards those cards."
+      },
+      {
+        "text": "Target player reveals their hand. You choose from it a creature card and an instant card. That player discards those cards."
+      }
+    ],
+    "counterExamples": [
+      "You choose from it a creature card and an instant card.",
+      "Target player reveals their hand. You choose from it a creature card.",
+      "Target player reveals their hand. You choose from it two creature cards.",
+      "Target player reveals their hand. You choose from your graveyard a creature card and an instant card."
+    ]
+  },
+  {
+    "id": "eff.edhv8.discard.thoseTwoChosen",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} discard[s] those cards",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": 2,
+      "filter": {
+        "is": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "chosenA"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenB"
+            }
+          ]
+        }
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "those"
+    ],
+    "examples": [
+      {
+        "text": "Target player reveals their hand. You choose from it a creature card and an instant card. That player discards those cards."
+      },
+      {
+        "text": "Target opponent reveals their hand. You choose from it a land card and a nonland card. Target opponent discards those cards."
+      }
+    ],
+    "counterExamples": [
+      "That player discards those cards.",
+      "Target player discards those cards.",
+      "Target player reveals their hand. You choose from it a creature card. That player discards those cards."
+    ]
+  },
+  {
+    "id": "sta.edhv8.aslong.attached.defender.attack",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 609.4",
+      "CR 611.3a",
+      "CR 702.3b",
+      "CR 301.5",
+      "CR 303.4"
+    ],
+    "pattern": "as long as ( equipped | enchanted ) creature has defender , it can attack as though it didn't have defender",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "attachedTo"
+        },
+        "filter": {
+          "keyword": "defender"
+        }
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "attachedTo"
+            }
+          },
+          "of": {
+            "attachedToSource": true
+          },
+          "action": "attackAsThoughNoDefender"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "As long as enchanted creature has defender, it can attack as though it didn't have defender."
+      },
+      {
+        "text": "Enchanted creature gets +5/+2.\nAs long as enchanted creature has defender, it can attack as though it didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "As long as equipped creature has defender, it can attack as though it had defender.",
+      "As long as equipped creature has defender, it can block as though it didn't have defender.",
+      "If equipped creature has defender, it can attack as though it didn't have defender.",
+      "As long as equipped creature has flying, it can attack as though it didn't have defender."
+    ]
+  },
+  {
+    "id": "rst.edhv8.cast.self.declareAttackers",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 508.1",
+      "CR 117.1a"
+    ],
+    "pattern": "cast ~ only during the declare attackers step",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "onlyIf",
+          "action": "cast",
+          "when": {
+            "cond": "turnOf",
+            "whose": "any",
+            "step": [
+              "declareAttackers"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "only",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "cast ~ only during the declare attackers step."
+      },
+      {
+        "text": "Cast ~ only during the Declare Attackers step."
+      }
+    ],
+    "counterExamples": [
+      "cast ~ only during the declare blockers step.",
+      "cast ~ only during combat before blockers are declared.",
+      "cast ~ only during the declare attackers step on an opponent's turn.",
+      "cast ~ only during the declare attackers step and only if you've been attacked this step."
+    ]
+  }
+]

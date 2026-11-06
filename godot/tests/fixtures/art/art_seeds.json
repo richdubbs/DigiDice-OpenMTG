@@ -1,0 +1,273 @@
+[
+ {
+  "name": "Test Ember Hound",
+  "colors": [
+   "R"
+  ],
+  "typeLine": "Creature — Elemental Hound",
+  "oracleText": "",
+  "hash": 3972633188,
+  "rng": [
+   0.3524420582689345,
+   0.47411588695831597,
+   0.38237097184173763,
+   0.36521141952835023
+  ],
+  "rngXor": [
+   0.2885489168111235,
+   0.6389859907794744
+  ],
+  "plan": {
+   "flavors": [
+    "R"
+   ],
+   "land": false,
+   "primary": "creature",
+   "gear": false
+  }
+ },
+ {
+  "name": "Placeholder Tide",
+  "colors": [
+   "U"
+  ],
+  "typeLine": "Instant",
+  "oracleText": "Draw a card.",
+  "hash": 2230417346,
+  "rng": [
+   0.46976474579423666,
+   0.0020818659104406834,
+   0.7342208558693528,
+   0.9781148002948612
+  ],
+  "rngXor": [
+   0.27448459388688207,
+   0.5619301402475685
+  ],
+  "plan": {
+   "flavors": [
+    "U"
+   ],
+   "land": false,
+   "primary": "instant",
+   "gear": false
+  }
+ },
+ {
+  "name": "Grove of Testing",
+  "colors": [],
+  "typeLine": "Land — Forest",
+  "oracleText": "",
+  "hash": 3737549641,
+  "rng": [
+   0.6505860835313797,
+   0.5166944218799472,
+   0.8708005324006081,
+   0.9811449348926544
+  ],
+  "rngXor": [
+   0.581547558773309,
+   0.06214250810444355
+  ],
+  "plan": {
+   "flavors": [
+    "G"
+   ],
+   "land": true,
+   "primary": "land",
+   "gear": false
+  }
+ },
+ {
+  "name": "Mixed Signal",
+  "colors": [
+   "W",
+   "U",
+   "B",
+   "R",
+   "G"
+  ],
+  "typeLine": "Legendary Creature — Human Wizard",
+  "oracleText": "",
+  "hash": 1389175596,
+  "rng": [
+   0.12065033218823373,
+   0.013373820343986154,
+   0.23165907082147896,
+   0.801048673922196
+  ],
+  "rngXor": [
+   0.6521766660735011,
+   0.32765605207532644
+  ],
+  "plan": {
+   "flavors": [
+    "W",
+    "B",
+    "G"
+   ],
+   "land": false,
+   "primary": "creature",
+   "gear": false
+  }
+ },
+ {
+  "name": "Brass Contraption",
+  "colors": [],
+  "typeLine": "Artifact Creature — Construct",
+  "oracleText": "",
+  "hash": 2793295427,
+  "rng": [
+   0.4042121490929276,
+   0.9872272028587759,
+   0.943476720014587,
+   0.8753222923260182
+  ],
+  "rngXor": [
+   0.2139969179406762,
+   0.439528874354437
+  ],
+  "plan": {
+   "flavors": [
+    "steel"
+   ],
+   "land": false,
+   "primary": "creature",
+   "gear": false
+  }
+ },
+ {
+  "name": "Shard of Nothing",
+  "colors": [],
+  "typeLine": "Artifact",
+  "oracleText": "",
+  "hash": 1342895017,
+  "rng": [
+   0.7303954425733536,
+   0.7874311844352633,
+   0.9337515237275511,
+   0.3683613839093596
+  ],
+  "rngXor": [
+   0.6805521377827972,
+   0.8914908093865961
+  ],
+  "plan": {
+   "flavors": [
+    "steel"
+   ],
+   "land": false,
+   "primary": "artifact",
+   "gear": false
+  }
+ },
+ {
+  "name": "Duo Land",
+  "colors": [],
+  "typeLine": "Land",
+  "oracleText": "{T}: Add {W} or {B}.",
+  "hash": 1398250716,
+  "rng": [
+   0.14442907297052443,
+   0.5524309866596013,
+   0.34665624471381307,
+   0.8113017380237579
+  ],
+  "rngXor": [
+   0.5169645042624325,
+   0.5605822303332388
+  ],
+  "plan": {
+   "flavors": [
+    "W",
+    "B"
+   ],
+   "land": true,
+   "primary": "land",
+   "gear": false
+  }
+ },
+ {
+  "name": "Ünïcode Ñame 🐉",
+  "colors": [
+   "B",
+   "G"
+  ],
+  "typeLine": "Enchantment — Aura",
+  "oracleText": "",
+  "hash": 3850390031,
+  "rng": [
+   0.976816383888945,
+   0.7482277285307646,
+   0.601149384630844,
+   0.20292909210547805
+  ],
+  "rngXor": [
+   0.598983999574557,
+   0.37633362342603505
+  ],
+  "plan": {
+   "flavors": [
+    "B",
+    "G"
+   ],
+   "land": false,
+   "primary": "enchantment",
+   "gear": false
+  }
+ },
+ {
+  "name": "Walker Test",
+  "colors": [
+   "G",
+   "U"
+  ],
+  "typeLine": "Legendary Planeswalker — Tester",
+  "oracleText": "",
+  "hash": 4110602213,
+  "rng": [
+   0.32449977728538215,
+   0.25516845379024744,
+   0.6870117268990725,
+   0.18925358727574348
+  ],
+  "rngXor": [
+   0.25759561476297677,
+   0.727125657023862
+  ],
+  "plan": {
+   "flavors": [
+    "G",
+    "U"
+   ],
+   "land": false,
+   "primary": "planeswalker",
+   "gear": false
+  }
+ },
+ {
+  "name": "",
+  "colors": [],
+  "typeLine": "Emblem",
+  "oracleText": "",
+  "hash": 2166136261,
+  "rng": [
+   0.6112444521859288,
+   0.4935242917854339,
+   0.7740248835179955,
+   0.4122861116193235
+  ],
+  "rngXor": [
+   0.3677101933863014,
+   0.827772865537554
+  ],
+  "plan": {
+   "flavors": [
+    "crystal"
+   ],
+   "land": false,
+   "primary": "enchantment",
+   "gear": false
+  }
+ }
+]

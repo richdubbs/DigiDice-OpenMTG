@@ -180,7 +180,7 @@
     "id": "eff.p2cf1.flipCoin.untilLose",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 705.1",
       "CR 705.2"

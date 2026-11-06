@@ -49,6 +49,36 @@ function phasedOutIndirectly(g: Game, id: ObjectId): boolean {
   return h !== undefined && h.zone === 'battlefield' && h.phasedOut;
 }
 
+/** edh-perms-22: the permanents that phased out until an event happens (their `untilMoves` records with `phase`). */
+export function phasedOutUntil(g: Game): Set<ObjectId> {
+  const held = new Set<ObjectId>();
+  for (const r of g.s.untilMoves ?? []) if (r.phase !== undefined) for (const o of r.objects) held.add(o.object.id);
+  return held;
+}
+
+/**
+ * edh-perms-22 (CR 702.26c, 702.26g, 610.3): a phased-out permanent phases in now, with what is attached to it (an attachment that phased out with it, CR 702.26g), tapped when
+ * `tapped` ("Tap that creature as it phases in this way", CR 702.26c: it enters the battlefield-presence tapped, not untapped by this). "Permanents can't phase in" keeps it
+ * out (statics/hooks.ts#phaseInDenied). Returns the ids that phased in.
+ */
+export function phaseInPermanent(g: Game, id: ObjectId, tapped: boolean): ObjectId[] {
+  const out: ObjectId[] = [];
+  const collect = (x: ObjectId): void => {
+    const o = g.s.objects[x];
+    if (!o || o.zone !== 'battlefield' || !o.phasedOut || out.includes(x) || phaseInDenied(g.s, x)) return;
+    out.push(x);
+    for (const a of attachmentsOf(g, x)) if (g.s.objects[a]?.phasedOut) collect(a);
+  };
+  collect(id);
+  for (const x of out) {
+    const o = g.s.objects[x]!;
+    o.phasedOut = false;
+    if (tapped && x === id) o.tapped = true;
+  }
+  for (const x of out) g.emit({ type: 'phasedIn', objectId: x }); // edh-d-39 (CR 702.26c, 603.2): "whenever ~ phases in" (triggers/forms-phase.ts)
+  return out;
+}
+
 /**
  * CR 502.1: in the untap step, the phased-out permanents the active player controlled when they phased out phase in (the controller does not change while a
  * permanent is phased out, CR 702.26d). An attachment that phased out indirectly phases in together with its host, whoever controls it (CR 702.26g). (The
@@ -62,9 +92,10 @@ export function phaseInForUntapStep(g: Game, active: PlayerId): ObjectId[] {
     const o = g.s.objects[id]!;
     return !o.phasedOut && o.controller === active && hasKeyword(charsOfObject(g.s, o), 'phasing');
   }));
+  const held = phasedOutUntil(g); // edh-perms-22 (CR 610.3): "phases out until ~ leaves the battlefield" stays out through every untap step
   const direct = g.s.zones.battlefield.filter((id) => {
     const o = g.s.objects[id]!;
-    return o.phasedOut && o.controller === active && !phasedOutIndirectly(g, id);
+    return o.phasedOut && o.controller === active && !phasedOutIndirectly(g, id) && !held.has(id);
   });
   // trek-4 (CR 702.26c, 101.2; unverified): "Permanents can't phase in." keeps a permanent phased out (statics/hooks.ts#phaseInDenied), judged for every
   // permanent that would phase in before any of them does (they phase in simultaneously, CR 502.1); an attachment kept out stays out with its host phased in
@@ -86,6 +117,7 @@ export function phaseInForUntapStep(g: Game, active: PlayerId): ObjectId[] {
     g.s.objects[x]!.phasedOut = false;
     out.push(x);
   }
+  for (const x of out) g.emit({ type: 'phasedIn', objectId: x }); // edh-d-39 (CR 502.1, 702.26c, 603.2): they phase in simultaneously; "whenever ~ phases in" (triggers/forms-phase.ts)
   for (const [x, why] of kept) if (why !== '') g.log(`${g.nameOf(x)} can't phase in. ${why}`, { rules: ['CR 502.1', 'CR 702.26c', 'CR 101.2'], level: 'info' });
   if (out.length > 0) g.log(`${out.map((id) => g.nameOf(id)).join(', ')} phase${out.length === 1 ? 's' : ''} in.`, { rules: ['CR 502.1', 'CR 702.26c'], level: 'info' });
   const gone = phasers.flatMap((id) => phaseOutPermanent(g, id)); // p2-misc-1: with what is attached to each (CR 702.26g)

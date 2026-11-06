@@ -22,6 +22,8 @@ interface Atom {
   /** Accepted types; null = any. */
   accept: ManaType[] | null;
   snow: boolean;
+  /** edh-mana-keywords-7 (CR 107.4b, 106.6; Jegantha): a unit of generic mana (a generic symbol, the generic half of a hybrid one), which mana that "can't be spent to pay generic mana costs" never pays. */
+  generic?: true;
 }
 
 interface Alt {
@@ -30,16 +32,17 @@ interface Alt {
 }
 
 const any = (n: number, snow = false): Atom[] => Array.from({ length: n }, () => ({ accept: null, snow }));
+const genericAtoms = (n: number): Atom[] => Array.from({ length: n }, () => ({ accept: null, snow: false, generic: true as const }));
 const of = (...accept: ManaType[]): Atom => ({ accept, snow: false });
 
 /** The ways to pay one symbol, in order of preference. X must already be substituted. */
 export function alternativesOf(sym: ManaSymbol): Alt[] {
   switch (sym.kind) {
-    case 'generic': return [{ atoms: any(sym.amount), life: 0 }];
+    case 'generic': return [{ atoms: genericAtoms(sym.amount), life: 0 }];
     case 'colored': return [{ atoms: [of(sym.color)], life: 0 }];
     case 'colorless': return [{ atoms: [of('C')], life: 0 }];
     case 'hybrid': return [{ atoms: [of(sym.colors[0], sym.colors[1])], life: 0 }];
-    case 'monoHybrid': return [{ atoms: [of(sym.color)], life: 0 }, { atoms: any(sym.generic), life: 0 }];
+    case 'monoHybrid': return [{ atoms: [of(sym.color)], life: 0 }, { atoms: genericAtoms(sym.generic), life: 0 }];
     case 'colorlessHybrid': return [{ atoms: [of('C', sym.color)], life: 0 }];
     case 'phyrexian': return [{ atoms: [of(sym.color)], life: 0 }, { atoms: [], life: 2 }];
     case 'hybridPhyrexian': return [{ atoms: [of(sym.colors[0], sym.colors[1])], life: 0 }, { atoms: [], life: 2 }];
@@ -50,6 +53,24 @@ export function alternativesOf(sym: ManaSymbol): Alt[] {
 
 /** True for symbols that can be paid with life. */
 export const isPhyrexian = (sym: ManaSymbol): boolean => sym.kind === 'phyrexian' || sym.kind === 'hybridPhyrexian';
+
+/**
+ * edhc5 (CR 118.1, 107.4): the colors a symbol asks for when it is paid with mana of that color ("{B}" in a cost: a {B}, a {B/R}, the {B} half of a {2/B}, a {B/P}); the
+ * symbols that name no color ({2}, {C}, {S}, {X}) are none. Generic and colorless halves are not "{B}" (K'rrik's ruling of 2019-08-23: no life for generic mana).
+ */
+export function colorsOfSymbol(sym: ManaSymbol): ManaType[] {
+  switch (sym.kind) {
+    case 'colored': case 'monoHybrid': case 'colorlessHybrid': case 'phyrexian': return [sym.color];
+    case 'hybrid': case 'hybridPhyrexian': return [sym.colors[0], sym.colors[1]];
+    default: return [];
+  }
+}
+
+/** The color of `lifeFor` a symbol may be paid with 2 life for, when it is not a Phyrexian symbol already (null: none). */
+export function lifeColorOf(sym: ManaSymbol, lifeFor: ReadonlyMap<ManaType, number> | undefined): ManaType | null {
+  if (lifeFor === undefined || lifeFor.size === 0 || isPhyrexian(sym) || (sym.kind === 'colored' && sym.xOnly === true)) return null; // edh-next-85: the X of "Spend only black mana on X" is generic mana
+  return colorsOfSymbol(sym).find((c) => lifeFor.has(c)) ?? null;
+}
 
 export interface SolveInput {
   symbols: ManaSymbol[];
@@ -73,6 +94,17 @@ export interface SolveInput {
   anyType?: boolean;
   /** std-rx32 INTERFACE CHANGE (additive), CR 609.4b: "as though it were mana of any color": an atom that asks only for colors accepts any mana ({C} still needs colorless). */
   anyColor?: boolean;
+  /**
+   * edh-next-140 INTERFACE CHANGE (additive), CR 609.4b (Quicksilver Elemental: "You may spend blue mana as though it were mana of any color to pay the activation costs of this
+   * creature's abilities"): mana of this one type may pay an atom that asks only for colors, beside the types it asks for. Omit: as before.
+   */
+  anyColorWith?: string;
+  /**
+   * edhc5 INTERFACE CHANGE (additive), CR 118.1, 119.4: "For each {B} in a cost, you may pay 2 life rather than pay that mana" (K'rrik, Son of Yawgmoth), "you may pay 2
+   * life ... those spells cost {G} less" (Defiler of Vigor): a symbol that asks for mana of a color in this map (a colored, hybrid, mono-hybrid or colorless-hybrid symbol
+   * of that color) may be paid with 2 life instead, like a Phyrexian symbol; the value is how many symbols of that color at most (Infinity: each). Omit: none.
+   */
+  lifeFor?: ReadonlyMap<ManaType, number>;
 }
 
 export interface Solution {
@@ -127,6 +159,7 @@ function hungarian(cost: number[][], n: number, m: number): number[] {
 
 function atomFits(a: Atom, pr: Provider): boolean {
   if (a.snow && !pr.snow) return false;
+  if (a.generic === true && pr.noGeneric === true) return false; // edh-mana-keywords-7 (CR 106.6): "This mana can't be spent to pay generic mana costs."
   return a.accept === null || a.accept.some((t) => pr.options.includes(t));
 }
 
@@ -205,18 +238,25 @@ function solveOneType(input: SolveInput): Scored | null {
 }
 
 /** FAST5X E29 (CR 609.4b): the same alternative with every atom accepting mana of any type (a snow atom still needs a snow source). */
-const anyTypeAlt = (a: Alt): Alt => ({ atoms: a.atoms.map((x) => ({ accept: null, snow: x.snow })), life: a.life });
+const anyTypeAlt = (a: Alt): Alt => ({ atoms: a.atoms.map((x) => ({ accept: null, snow: x.snow, ...(x.generic === true ? { generic: true as const } : {}) })), life: a.life });
 /** std-rx32 (CR 609.4b): an atom that asks only for colored mana accepts mana of any type; colorless and generic atoms are unchanged. */
 const COLOR_TYPES: ReadonlySet<string> = new Set(['W', 'U', 'B', 'R', 'G']);
 const anyColorAlt = (a: Alt): Alt => ({ atoms: a.atoms.map((x) => (x.accept !== null && x.accept.length > 0 && x.accept.every((t) => COLOR_TYPES.has(t)) ? { accept: null, snow: x.snow } : x)), life: a.life });
+
+/** edh-next-140 (CR 609.4b): an atom that asks only for colored mana also accepts mana of the type `t` ("spend blue mana as though it were mana of any color"). */
+const anyColorWithAlt = (a: Alt, t: string): Alt => ({ atoms: a.atoms.map((x) => (x.accept !== null && x.accept.length > 0 && x.accept.every((y) => COLOR_TYPES.has(y)) && !x.accept.includes(t as never) ? { ...x, accept: [...x.accept, t as never] } : x)), life: a.life });
 
 /** `solve` with every provider's units matched on their own. */
 function solveFlat(input: SolveInput): Scored | null {
   const { symbols, providers, life, forceLife } = input;
   const choices: Alt[][] = symbols.map((sym, i) => {
     const own = input.inner?.has(i) === true; // a filter ability's own cost keeps its types
-    const alts = input.anyType === true && !own ? alternativesOf(sym).map(anyTypeAlt) : input.anyColor === true && !own ? alternativesOf(sym).map(anyColorAlt) : alternativesOf(sym);
-    if (!isPhyrexian(sym)) return alts;
+    const alts = input.anyType === true && !own ? alternativesOf(sym).map(anyTypeAlt) : input.anyColor === true && !own ? alternativesOf(sym).map(anyColorAlt)
+      : input.anyColorWith !== undefined && !own ? alternativesOf(sym).map((a) => anyColorWithAlt(a, input.anyColorWith!)) : alternativesOf(sym); // edh-next-140
+    // edhc5 (CR 118.1): a symbol of a color the player may pay 2 life for is paid with mana as it asks, or with 2 life (no mana) like a Phyrexian symbol
+    const lifeFor = !own && lifeColorOf(sym, input.lifeFor) !== null;
+    if (lifeFor) alts.push({ atoms: [], life: 2 });
+    if (!isPhyrexian(sym) && !lifeFor) return alts;
     if (forceLife) return forceLife.has(i) ? alts.filter((a) => a.life > 0) : alts.filter((a) => a.life === 0);
     return alts;
   });
@@ -237,12 +277,18 @@ function solveFlat(input: SolveInput): Scored | null {
     let lifeTotal = 0;
     const lifeSymbols: number[] = [];
     const atoms: { atom: Atom; symbol: number }[] = [];
+    const perColor = new Map<ManaType, number>();
     combo.forEach((a, i) => {
       const alt = choices[i]![a]!;
-      if (alt.life > 0) { lifeTotal += alt.life; lifeSymbols.push(i); }
+      if (alt.life > 0) {
+        lifeTotal += alt.life; lifeSymbols.push(i);
+        const c = lifeColorOf(symbols[i]!, input.lifeFor);
+        if (c !== null && input.inner?.has(i) !== true) perColor.set(c, (perColor.get(c) ?? 0) + 1);
+      }
       for (const atom of alt.atoms) atoms.push({ atom, symbol: i });
     });
     if (lifeTotal > life) continue; // CR 119.4: a player can pay life only if their life total is at least the payment
+    if ([...perColor].some(([c, n]) => n > (input.lifeFor?.get(c) ?? 0))) continue; // edhc5: "once per spell" (Defiler of Vigor)
     const r = assign(atoms, providers, input.inner);
     if (!r) continue;
     const score = r.total + lifeSymbols.length * LIFE_PENALTY;

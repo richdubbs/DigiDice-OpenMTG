@@ -1,0 +1,681 @@
+[
+  {
+    "id": "eff.edhmk10.look.cardAtRandomInHand",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 402.3"
+    ],
+    "pattern": "look at a card at random in {p:Player} 's hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "hand",
+            "owner": "$p"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "picked"
+      },
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "bound",
+          "name": "picked"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, look at a card at random in target player's hand."
+      },
+      {
+        "text": "Whenever ~ attacks, look at a card at random in target opponent's hand. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "{T}, Sacrifice this artifact: Look at target player's hand. You gain 1 life.",
+      "When ~ enters, look at two cards at random in target opponent's hand.",
+      "When ~ enters, look at a card in target opponent's hand."
+    ]
+  },
+  {
+    "id": "sta.edhmk10.allObjects.colorless",
+    "kind": "static",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 105.2c",
+      "CR 613.1e",
+      "CR 604.1",
+      "CR 108.2"
+    ],
+    "pattern": "( all | the ) cards that aren't on the battlefield , spells , and permanents are colorless",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "zone": [
+            "battlefield",
+            "command",
+            "exile",
+            "graveyard",
+            "hand",
+            "library",
+            "stack"
+          ],
+          "types": [
+            "Artifact",
+            "Battle",
+            "Creature",
+            "Enchantment",
+            "Instant",
+            "Kindred",
+            "Land",
+            "Planeswalker",
+            "Sorcery"
+          ]
+        }
+      },
+      "mods": [
+        {
+          "layer": 5,
+          "colors": {
+            "set": []
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "The cards that aren't on the battlefield, spells, and permanents are colorless."
+      },
+      {
+        "text": "The cards that aren't on the battlefield, spells, and permanents are colorless.\nOther creatures you control get +7/+6."
+      }
+    ],
+    "counterExamples": [
+      "The cards that aren't on the battlefield, spells, and permanents are colorless until end of turn.",
+      "The permanents are colorless.",
+      "The cards that aren't on the battlefield and permanents are colorless.",
+      "The cards that aren't on the battlefield, spells, and permanents are blue."
+    ]
+  },
+  {
+    "id": "sta.edhmk10.players.spend.anyColor",
+    "kind": "static",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 609.4b",
+      "CR 107.4c",
+      "CR 106.1"
+    ],
+    "pattern": "( players | all players ) may spend mana as though it were mana of any color",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "each",
+            "who": "player"
+          },
+          "action": "spendMana",
+          "asThough": "any color"
+        }
+      ]
+    },
+    "needs": [
+      "permit:spendMana.anyColorEverywhere"
+    ],
+    "consumes": [
+      "all",
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "All players may spend mana as though it were mana of any color."
+      },
+      {
+        "text": "All players may spend mana as though it were mana of any color.\nOther creatures you control get +7/+6."
+      }
+    ],
+    "counterExamples": [
+      "Players may spend mana as though it were mana of any type.",
+      "Players may spend mana as though it were mana of any color to cast artifact spells.",
+      "Players may spend life as though it were mana of any color.",
+      "Opponents may spend mana as though it were mana of any color."
+    ]
+  },
+  {
+    "id": "eff.edhmk10.rollDie.twoD12.chooseOne",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2",
+      "CR 608.2c"
+    ],
+    "pattern": "roll two d12 and choose one result",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 12,
+      "count": 2,
+      "chooseOne": true
+    },
+    "subject": "none",
+    "consumes": [
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "Roll two d12 and choose one result. You gain life equal to that result."
+      },
+      {
+        "text": "Roll two d12 and choose one result. Draw a card, then discard a card."
+      }
+    ],
+    "counterExamples": [
+      "Roll a d12. You gain life equal to the result.",
+      "Roll two d12. You gain life equal to the result.",
+      "Roll three d12 and choose one result.",
+      "Roll two d12 and choose two results."
+    ]
+  },
+  {
+    "id": "eff.edhmk10.rollDie.xSixSided",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.1a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "roll x six-sided dice , where x is {n:Qty}",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 6,
+      "count": "$n"
+    },
+    "subject": "none",
+    "consumes": [
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Roll X six-sided dice, where X is the number of Treasures you control. Create a tapped Treasure token for each even result."
+      },
+      {
+        "text": "Whenever ~ attacks, roll X six-sided dice, where X is the number of creatures you control. Create a tapped Treasure token for each even result."
+      }
+    ],
+    "counterExamples": [
+      "Roll X six-sided dice. Create a tapped Treasure token for each even result.",
+      "Roll X d6, where X is the number of creatures you control.",
+      "Roll X six-sided dice, where X is the number of creatures you control and ignore the lowest roll.",
+      "Roll a six-sided die, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.edhmk10.token.tapped.forEachResult",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 111.2",
+      "CR 110.5b",
+      "CR 706.2",
+      "CR 608.2h"
+    ],
+    "pattern": "create ( a | an ) tapped {t:TokenDesc} for each {n:Qty}",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": "$t",
+      "tapped": true
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Roll a d6. Create a tapped Treasure token for each even result."
+      },
+      {
+        "text": "Roll a six-sided die. Create a tapped Treasure token for each even result."
+      }
+    ],
+    "counterExamples": [
+      "Roll a d6. Create a tapped Treasure token for each odd result.",
+      "Roll a d6. Create two tapped Treasure tokens for each even result.",
+      "Roll a d6. Create a tapped Treasure token for each result.",
+      "Roll a d6. Create a Treasure token for each even result."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhmk10.rollDie.d20.subtract",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2",
+      "CR 706.3b",
+      "CR 608.2h"
+    ],
+    "pattern": "roll a d20 and subtract {n:Qty}",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 20,
+      "modifier": {
+        "q": "math",
+        "op": "-",
+        "args": [
+          0,
+          "$n"
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "subtract"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Roll a d20 and subtract the number of creatures you control. If the result is 0 or less, you lose 1 life.\n1\u20149 | You gain 2 life.\n10\u201420 | Draw two cards."
+      },
+      {
+        "text": "{T}: Roll a d20 and subtract the number of cards in your hand.\n1\u201410 | You lose 1 life.\n11\u201420 | You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Roll a d20 and add the number of cards in your hand.\n1\u201410 | You lose 1 life.\n11\u201420 | You gain 1 life.",
+      "{T}: Roll a d6 and subtract the number of cards in your hand.\n1\u20143 | You lose 1 life.\n4\u20146 | You gain 1 life.",
+      "{T}: Roll a d20 and subtract 1.\n1\u201410 | You lose 1 life.\n11\u201420 | You gain 1 life.",
+      "{T}: Roll two d20 and subtract the number of cards in your hand."
+    ]
+  },
+  {
+    "id": "eff.edhmk10.return.aCard.randomFromGraveyard.hand",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 404.1",
+      "CR 400.7"
+    ],
+    "pattern": "return a card at random from your graveyard to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "Return a card at random from your graveyard to your hand. You gain 2 life."
+      },
+      {
+        "text": "Draw a card. Return a card at random from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Return a card from your graveyard to your hand.",
+      "Return a card at random from target player's graveyard to your hand.",
+      "Return a card at random from your graveyard to the battlefield.",
+      "Return two cards at random from your graveyard to your hand and draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhmk10.delay.whenThatCreatureDies",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 603.10a",
+      "CR 700.4",
+      "CR 400.7j"
+    ],
+    "pattern": "when {o:ThatCreature} dies , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "zoneChange",
+          "subject": {
+            "is": "$o"
+          },
+          "from": "battlefield",
+          "to": "graveyard"
+        }
+      },
+      "do": "$x"
+    },
+    "subject": "none",
+    "consumes": [
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "Put a creature card from a graveyard onto the battlefield under your control. When that creature dies, its owner loses the game."
+      },
+      {
+        "text": "Put a creature card from a graveyard onto the battlefield under your control. When that creature dies, you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Put a creature card from a graveyard onto the battlefield under your control. Whenever that creature dies, you draw a card.",
+      "Put a creature card from a graveyard onto the battlefield under your control. When that creature dies this turn, you draw a card.",
+      "Put a creature card from a graveyard onto the battlefield under your control. When it dies, you draw a card.",
+      "Put a creature card from a graveyard onto the battlefield under your control. When that creature leaves the battlefield, you draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhmk10.exile.again",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 406.1",
+      "CR 400.7"
+    ],
+    "pattern": "exile {o:Objs} again",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "again"
+    ],
+    "examples": [
+      {
+        "text": "Exile all nontoken creatures you control. Return those cards to the battlefield under their owner's control, then exile them again."
+      },
+      {
+        "text": "Exile target creature you control. Return it to the battlefield under its owner's control, then exile it again."
+      }
+    ],
+    "counterExamples": [
+      "Exile target creature you control again.",
+      "Exile all nontoken creatures you control. Return those cards to the battlefield under their owner's control, then exile them twice.",
+      "Exile all nontoken creatures you control. Return those cards to the battlefield under their owner's control, then exile them again at the beginning of the next end step."
+    ]
+  },
+  {
+    "id": "kw.edhmk10.madness.paySixColorless",
+    "kind": "ability",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 702.35a",
+      "CR 702.35b",
+      "CR 107.4c"
+    ],
+    "pattern": "madness -- pay six {c}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "madness",
+      "cost": {
+        "mana": [
+          {
+            "kind": "colorless"
+          },
+          {
+            "kind": "colorless"
+          },
+          {
+            "kind": "colorless"
+          },
+          {
+            "kind": "colorless"
+          },
+          {
+            "kind": "colorless"
+          },
+          {
+            "kind": "colorless"
+          }
+        ]
+      }
+    },
+    "needs": [
+      "keyword:madness"
+    ],
+    "examples": [
+      {
+        "text": "Madness--Pay six {C}."
+      },
+      {
+        "text": "Other creatures you control get +7/+6.\nMadness--Pay six {C}."
+      }
+    ],
+    "counterExamples": [
+      "Madness--Pay five {C}.",
+      "Madness--Pay six {R}.",
+      "Madness--Pay six {C} and discard a card.",
+      "Madness--Pay six {C}{C}."
+    ]
+  },
+  {
+    "id": "eff.edhmk10.put.fromAnyGraveyard",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 404.1",
+      "CR 110.2a",
+      "CR 608.2c"
+    ],
+    "pattern": "put ( a | an ) {f:Filter} card from any graveyard onto the battlefield under your control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "any",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "put"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "put"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, put a creature card from any graveyard onto the battlefield under your control."
+      },
+      {
+        "text": "At the beginning of your upkeep, put an artifact card from any graveyard onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put a creature card from your graveyard onto the battlefield under your control.",
+      "When ~ enters, put a creature card from any graveyard into your hand.",
+      "When ~ enters, put two creature cards from any graveyard onto the battlefield under your control."
+    ]
+  },
+  {
+    "id": "eff.edhmk10.rollDie.twoD6.chooseOne",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2",
+      "CR 608.2c"
+    ],
+    "pattern": "roll two d6 and choose one result",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 6,
+      "count": 2,
+      "chooseOne": true
+    },
+    "subject": "none",
+    "consumes": [
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "Roll two d6 and choose one result. You gain life equal to that result."
+      },
+      {
+        "text": "Roll two d6 and choose one result. Draw a card, then discard a card."
+      }
+    ],
+    "counterExamples": [
+      "Roll a d6. You gain life equal to the result.",
+      "Roll two d6. You gain life equal to the result.",
+      "Roll three d6 and choose one result.",
+      "Roll two d6 and choose two results."
+    ]
+  },
+  {
+    "id": "eff.edhmk10.rollDie.twoD8.chooseOne",
+    "kind": "effect",
+    "since": 10,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2",
+      "CR 608.2c"
+    ],
+    "pattern": "roll two d8 and choose one result",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 8,
+      "count": 2,
+      "chooseOne": true
+    },
+    "subject": "none",
+    "consumes": [
+      "choose"
+    ],
+    "examples": [
+      {
+        "text": "Roll two d8 and choose one result. You gain life equal to that result."
+      },
+      {
+        "text": "Roll two d8 and choose one result. Draw a card, then discard a card."
+      }
+    ],
+    "counterExamples": [
+      "Roll a d8. You gain life equal to the result.",
+      "Roll two d8. You gain life equal to the result.",
+      "Roll three d8 and choose one result.",
+      "Roll two d8 and choose two results."
+    ]
+  }
+]

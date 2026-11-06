@@ -29,38 +29,49 @@ export type FieldCoverage = 'read' | `${'feature' | 'filter' | 'cost'}:${string}
  */
 export const FIELD_COVERAGE: {
   TargetSpec: Record<OptionalKeys<TargetSpec>, FieldCoverage>;
-  ModeSpec: Record<OptionalKeys<ModeSpec>, FieldCoverage>;
+  ModeSpec: Record<OptionalKeys<Omit<ModeSpec, 'tokenChars' /* edh-next-129: display only, like `text` (render/program.ts prints the shared sentence back); no rule reads it */>>, FieldCoverage>;
   ActivatedAbilityDef: Record<OptionalKeys<Omit<ActivatedAbilityDef, 'text' | 'label' | 'src' | 'prov'>>, FieldCoverage>;
 } = {
   TargetSpec: {
     filter: 'read', players: 'read', // players.who as a PlayerRef is gated by feature:target.playerRef
     // WP7: read by actions/announce-targets.ts and rules/targets.ts; each is still a named feature (feature:target.*) in FEATURES of actions/announce.ts.
-    distinctFrom: 'read', divide: 'read', groupLimit: 'read', onlyIf: 'read', chooser: 'read', sameOwner: 'read', differentNames: 'read', // FAST3 T14, FAST5 T42
+    distinctFrom: 'read', divide: 'read', groupLimit: 'read', onlyIf: 'read', chooser: 'read', chooserElse: 'read' /* edh-d-87 */, sameOwner: 'read', differentNames: 'read', differentManaValues: 'read', // FAST3 T14, FAST5 T42; edh-top-3: rules/targets.ts#differentManaValuesHold
     perOpponent: 'read', sharedCardType: 'read', // FAST5 T66
+    perOpponentPoison: 'read', // edh-d-96: rules/targets.ts#candidatesFor (CR 601.2c, 122.1f)
     perPlayer: 'read', // r5-fxb: rules/targets.ts#perOpponentHolds (CR 115.1, 601.2c)
     random: 'read', // p2-damage-2: actions/announce-targets.ts#randomTargets (CR 601.2c, 603.3d)
+    equalToughness: 'read', // edh-next-126: rules/targets.ts#equalToughnessHolds (CR 208.1, 115.1)
     sharedCreatureType: 'read', // CLOUD std-ecl: rules/targets.ts#sharedCreatureTypeHolds (CR 205.3m, 115.1)
     differentControllers: 'read', // CLOUD std-tmt
     sameController: 'read', // std-rx30: rules/targets.ts#sameControllerHolds (CR 115.1, 601.2c)
     perCardType: 'read', // std-cardcopy-7: rules/targets.ts#perCardTypeHolds (CR 115.1, 601.2c, 205.2a)
     link: 'read', // LNK1: effects/run.ts#rememberTargets remembers the legal targets on the source as the ability resolves (CR 607.1)
+    sharedPermanentType: 'read', // edh-next-54: rules/targets.ts#sharedCardTypeHolds (CR 110.4, 205.2a)
+    eachWithOne: 'read', // edh-next-127: rules/targets.ts#targetRange (CR 115.1, 601.2c)
+    chooserControls: 'read', // edh-next-146: actions/announce-targets.ts (CR 601.7a)
   },
   // WP7: actions/announce.ts#chooseModes (feature:modes.chooser / feature:modes.override); std-blb (CR 700.2i): pawprints (feature:modes.pawprints)
-  ModeSpec: { allowRepeat: 'read', chooser: 'read', override: 'read', pawprints: 'read', unchosen: 'read' /* r3-choose: chooseModes (feature:modes.unchosen) */, random: 'read' /* p2-modal-2: chooseModes (feature:modes.random) */ },
+  ModeSpec: { allowRepeat: 'read', escalate: 'read' /* edh-mana-keywords-2: set at announcement from the escalate keyword, actions/announce.ts#modeCosts */, chooser: 'read', override: 'read', pawprints: 'read', unchosen: 'read' /* r3-choose: chooseModes (feature:modes.unchosen) */, random: 'read' /* p2-modal-2: chooseModes (feature:modes.random) */, mayChoose: 'read' /* edh-players-19: chooseModes (feature:modes.mayChoose) */, countIsX: 'read' /* edh-next-139: modeLimits (feature:modes.countIsX) */ },
   ActivatedAbilityDef: {
-    isMana: 'read', isLoyalty: 'read', sorcerySpeed: 'read', zone: 'read',
+    isMana: 'read', isLoyalty: 'read', sorcerySpeed: 'read', instantSpeed: 'read' /* edh-mana-keywords-2: rules/sources.ts, rules/pay.ts */, zone: 'read',
     limit: 'read', // limit.per 'game' / 'combat' are gated by feature:limit.game / feature:limit.combat (WP7 honors 'game' only)
     onlyIf: 'read', // WP7: actions/activate.ts (feature:activate.onlyIf)
     // FAST1 T4: the wrapper keyword's name (CR 702.177a); it means nothing beyond the fields above, which carry its restrictions (capability keyword:<name>)
     keyword: 'read',
     // T35: power-up (CR 702.193a), read by actions/activate.ts#abilityCost
     reducedByManaCost: 'read',
+    opponentsOnly: 'read', // edh-c-103: actions/activate.ts (feature:activate.opponentsOnly)
+    spendColorAsAny: 'read', // edh-next-141: actions/activate.ts#abilityPlan, rules/solver.ts colorAsAny (CR 609.4b); written only by statics/mods.ts#spendingColorAsAny on a copied ability
+    attackedPlayerOnly: 'read', // edh-d-88: actions/activate.ts (feature:activate.attackedPlayerOnly)
     anyPlayer: 'read', // MX5: actions/activate.ts (feature:activate.anyPlayer; its .tap / .mana / .self forms are not read)
     costChange: 'read', // T38: actions/activate.ts#costChangeOf (feature:activate.costChange; none for a mana or loyalty ability)
     costChangeIf: 'read', // r4-cost: actions/activate.ts#costChangeOf (feature:activate.costChange.if)
     xMin: 'read', // std-rx12: actions/activate.ts (feature:activate.xMin)
     uncopiable: 'read', // std-copy-1: effects/handlers/tokens-copy.ts#copySpells (feature:activate.uncopiable)
     tapForMana: 'read', // std-rx27: actions/activate.ts, rules/payment-options.ts (feature:activate.tapForMana; with colored mana in the cost .unsupported)
+    spendOnlyChosen: 'read', // edh-mana-keywords-8: actions/activate.ts#abilityPlan (feature:activate.spendOnlyChosen)
+    spendOnlyX: 'read', // edh-next-85: actions/activate.ts#abilityPlan, rules/cost.ts#substituteX (feature:activate.spendOnlyX)
+    xIs: 'read', // edh-next-132: actions/activate.ts#definedX (feature:activate.xIs)
   },
 };
 
@@ -91,9 +102,17 @@ export function costPartForms(p: CostPart): string[] {
   if (count === 'any') out.push('cost:count.any');
   else if (count !== undefined && !isFixedCount(count) && !isAnnouncedX(count)) out.push('cost:count.quantity');
   switch (p.kind) {
+    case 'revealChosen': // edh-next-135 (CR 608.2d): a chosen player (rules/pay-parts.ts)
+      if (p.what === 'player') out.push('cost:revealChosen.player');
+      break;
+    case 'reveal':
+      if (p.hand === true) out.push('cost:reveal.hand'); // edh-next-117 (CR 701.20a): "reveal your hand"
+      break;
     case 'discard':
       if (p.self) out.push('cost:discard.self');
       if (p.hand) out.push('cost:discard.hand');
+      if (p.distinctNames === true) out.push('cost:discard.distinctNames'); // edh-next-90: "with different names" (CR 118.3, 201.2)
+      if (p.sameName === true) out.push('cost:discard.sameName'); // edh-c-111: "with the same name" (CR 118.3, 201.2)
       break;
     case 'removeCounters':
       if (p.filter) out.push('cost:removeCounters.filter');
@@ -101,12 +120,19 @@ export function costPartForms(p: CostPart): string[] {
       if (p.among === true) out.push('cost:removeCounters.among'); // r3-cost: "from among <permanents>", in all (CR 118.3)
       if (p.all === true) out.push('cost:removeCounters.all'); // p2-counters-move-2: "Remove all <kind> counters from ~", X fixed to those counters (CR 118.3, 107.3a)
       break;
+    case 'moveCards': // edh-d-54 (CR 118.3): a fixed count of cards of the filter, rules/cost.ts#toPlanPart
+      if (p.count === 'any') out.push('cost:moveCards.anyNumber');
+      break;
     case 'tapUntapped':
       if (p.other) out.push('cost:tapUntapped.other');
       break;
     case 'sacrifice':
       if (p.distinctNames === true) out.push('cost:sacrifice.distinctNames'); // r3-cost: "with different names" (CR 118.3, 201.2)
       if (p.atLeast !== undefined) out.push('cost:sacrifice.atLeast'); // std-mana-1: "one or more" (CR 601.2b)
+      if (p.atMost !== undefined) out.push('cost:sacrifice.atMost'); // edh-next-144: "up to three" (CR 601.2b)
+      if (p.half !== undefined) out.push('cost:sacrifice.half'); // edh-next-106: "half the lands you control, rounded up" (CR 601.2b, 107.1a)
+      if (p.totalPower !== undefined) out.push('cost:sacrifice.totalPower'); // edh-next-147: "any number of creatures with total power N or greater" (CR 118.3)
+      if (p.all === true) out.push('cost:sacrifice.all'); // edh-next-45: "all creatures you control" (CR 601.2b)
       break;
     case 'action':
       out.push(`cost:action.${p.action}`); // WP7: each keyword action used as a cost is its own capability (rules/cost.ts#COST_ACTIONS)
@@ -121,12 +147,14 @@ export function costPartForms(p: CostPart): string[] {
       if (p.atLeast !== undefined) out.push('cost:exileFrom.atLeast');
       if (p.totalManaValue !== undefined) out.push('cost:exileFrom.totalManaValue'); // std-costs-1: an exact total mana value (CR 118.3, 107.3a)
       if (p.symbolTotal !== undefined) out.push('cost:exileFrom.symbolTotal'); // std-cardcopy-7 (CR 118.3, 107.4)
+      if (p.mvTotal !== undefined) out.push('cost:exileFrom.mvTotal'); // edh-d-100 (CR 118.3, 202.3)
+      if (p.typesAmong !== undefined) out.push('cost:exileFrom.typesAmong'); // edh-d-100 (CR 118.3, 205.2a)
       break;
     case 'returnToHand':
       if (p.beamUp === true) out.push('cost:returnToHand.beamUp'); // trek-1: a beam me up cost, which a "can't be beamed up" permanent can't pay (rules/cant.ts)
       break;
     case 'putIntoLibrary': // trek-9 (CR 118.3, 401.4): the source itself from your graveyard is paid, nothing else (rules/cost.ts#toPlanPart)
-      if (p.zone !== 'graveyard') out.push('cost:putIntoLibrary.zone');
+      if (p.zone !== 'graveyard' && p.zone !== 'battlefield') out.push('cost:putIntoLibrary.zone'); // edh-d-34: or the battlefield
       break;
     default:
   }
@@ -165,19 +193,28 @@ function quantityAnnounceForms(q: Quantity, where: AnnounceWhere): string[] {
     case 'X': return [where === 'spec' ? 'feature:announce.qty.X' : 'feature:announce.qty.X.early']; // before X is announced there is no X to read
     case 'count': return ['feature:announce.qty.count', `feature:announce.count.${q.of.ref}`];
     case 'life': case 'zoneSize': return [`feature:announce.qty.${q.q}`, ...playerRefForms(q.of, 'cond')];
+    case 'devotion': return ['feature:announce.qty.devotion', ...playerRefForms(q.of, 'cond')]; // edh-next-42 (CR 700.5)
     case 'math': return ['feature:announce.qty.math', ...q.args.flatMap((a) => quantityAnnounceForms(a, where))];
     case 'counters': return ['feature:announce.qty.counters', `feature:announce.counters.${q.on.ref}`]; // "three or more brick counters on ~" (CR 602.5b, 122.1)
     // std-ry5 (formidable, CR 208.1, 602.5b): "Activate only if creatures you control have total power 8 or greater": the powers (or toughnesses) of the visible
     // objects a filter selects, added up as they are now
     case 'stat':
       if (q.sum === true && q.agg === undefined && q.station === undefined && q.of.ref === 'each' && (q.stat === 'power' || q.stat === 'toughness')) return ['feature:announce.qty.stat.sum.each'];
+      // edh-next-9 (CR 208.1, 601.2d): "the greatest power among creatures you control", the largest power (or toughness) of the visible objects a filter selects
+      if (q.sum !== true && q.agg === 'max' && q.station === undefined && q.by === undefined && q.of.ref === 'each' && (q.stat === 'power' || q.stat === 'toughness')) return ['feature:announce.qty.stat.max.each'];
+      // edh-next-9 (CR 603.10a, 608.2h): the power or toughness of the SUBJECT of the triggering event alone (announceQty reads nothing else of an event object)
+      if (q.of.ref === 'event' && !(q.of.role === 'subject' && q.sum !== true && q.agg === undefined && q.station === undefined && q.by === undefined && (q.stat === 'power' || q.stat === 'toughness'))) return ['feature:announce.qty.stat.event.other'];
       return [`feature:announce.qty.stat.${q.of.ref}`]; // r4-fxb: the source's own statistic only (actions/announce-cond.ts#announceQty)
     // std-rB (CR 602.5b, 120.1): "Activate only if red sources you controlled dealt 4 or more noncombat damage this turn": the damage of this turn's history added
     // up, in an activation restriction only (the one position that reads the history, as `turnHistoryAtAnnouncement`), with no reference in the pattern and only
     // the source filter fields the history facts answer
     case 'happenedCount':
       if (isOpponentSpellsPerPlayer(q)) return ['feature:announce.qty.happenedCount.opponentSpellsPerPlayer']; // p2-cost-statics-1 (CR 601.2i)
+      if (isOpponentDrawsPerPlayer(q)) return ['feature:announce.qty.happenedCount.opponentDrawsPerPlayer']; // edh-next-3 (CR 121.1, 601.2f)
+      if (where === 'activate' && isTurnEnergySpent(q)) return ['feature:announce.qty.happenedCount.energySpent']; // edh-replace-5 (CR 107.14, 602.5b)
       return where === 'activate' && isTurnDamageTotal(q) ? ['feature:announce.qty.happenedCount.damageTotal', ...historySourceFieldForms(q.event)] : ['feature:announce.qty.happenedCount'];
+    // edh-c-30 (CR 102.3, 118.9; Lavaball Trap): "an opponent had two or more lands enter the battlefield under their control this turn", the opponents of the announcing player each judged alone on this turn's history
+    case 'happenedPlayers': return isOpponentsHappenedPlayers(q) ? ['feature:announce.qty.happenedPlayers.opponents'] : ['feature:announce.qty.happenedPlayers'];
     // merge line D (std-sos's controlsVs, CR 102.2, 102.3, 602.5b): "an opponent controls more lands than you", each opponent counted alone on the visible board
     case 'countPlayers':
       // std-rx24 (CR 122.1f, 602.5b): "an opponent has three or more poison counters", each player's poison counters against a fixed number (announce-cond.ts)
@@ -189,6 +226,11 @@ function quantityAnnounceForms(q: Quantity, where: AnnounceWhere): string[] {
       if (q.controlsIs !== undefined) {
         return q.controlsVs === undefined && q.sizeVs === undefined && q.sizeIs === undefined && q.lifeVs === undefined && q.lifeIs === undefined && q.poisonIs === undefined && q.lostLifeThisTurn === undefined && q.lostLifeIs === undefined && q.didNot === undefined && q.speedVs === undefined && q.of.ref === 'each'
           ? ['feature:announce.qty.countPlayers.controlsIs'] : ['feature:announce.qty.countPlayers'];
+      }
+      // edh-c-40 (CR 402.1, 102.3, 602.5b): "activate only if you have more cards in hand than each opponent", each player's zone size against `than`'s, each counted alone (announce-cond.ts)
+      if (q.sizeVs !== undefined) {
+        return q.controlsVs === undefined && q.sizeIs === undefined && q.lifeVs === undefined && q.lifeIs === undefined && q.poisonIs === undefined && q.lostLifeThisTurn === undefined && q.lostLifeIs === undefined && q.controlsIs === undefined && q.didNot === undefined && q.speedVs === undefined && q.of.ref === 'each'
+          ? ['feature:announce.qty.countPlayers.sizeVs', ...playerRefForms(q.sizeVs.than, 'cond')] : ['feature:announce.qty.countPlayers'];
       }
       return q.controlsVs !== undefined && q.sizeVs === undefined && q.sizeIs === undefined && q.lifeVs === undefined && q.lifeIs === undefined && q.lostLifeThisTurn === undefined && q.lostLifeIs === undefined && q.controlsIs === undefined && q.of.ref === 'each'
         ? ['feature:announce.qty.countPlayers.controlsVs', ...playerRefForms(q.controlsVs.than, 'cond')]
@@ -211,7 +253,13 @@ function quantityAnnounceForms(q: Quantity, where: AnnounceWhere): string[] {
  * actions/announce-cond.ts#announceQty): the colors or card types among a group of objects, a count of a group, and sums and products of those. Any other
  * quantity (a count of the source itself, a life total, a stat, a variable) is still `feature:count.quantity`, which no build honors.
  */
-export function countQuantityForms(q: Quantity): string[] {
+/** edh-next-39: a `countPlayers` of `each` players with no narrowing field ("the number of opponents you have", "the number of players in the game"). */
+export function isBarePlayerCount(q: Extract<Quantity, { q: 'countPlayers' }>): boolean {
+  return q.of.ref === 'each' && q.sizeVs === undefined && q.sizeIs === undefined && q.lifeVs === undefined && q.lifeIs === undefined && q.poisonIs === undefined && q.lostLifeThisTurn === undefined
+    && q.lostLifeIs === undefined && q.controlsVs === undefined && q.controlsIs === undefined && q.speedVs === undefined && q.didNot === undefined;
+}
+
+export function countQuantityForms(q: Quantity, allowX = false): string[] {
   if (typeof q === 'number') return [];
   switch (q.q) {
     case 'distinct': return (q.what === 'colors' || q.what === 'cardTypes') && q.among.ref === 'each' ? quantityAnnounceForms(q, 'spec') : ['feature:count.quantity'];
@@ -219,8 +267,20 @@ export function countQuantityForms(q: Quantity): string[] {
     // p2-counters-state-3 (CR 601.2c, 122.1): the counters on the source itself or on a group, as they are when the targets are announced ("destroy up to X target
     // lands, where X is the number of verse counters on ~": read before a sacrifice cost is paid, CR 601.2h), actions/announce-cond.ts#announceQty
     case 'counters': return q.on.ref === 'self' || q.on.ref === 'each' ? quantityAnnounceForms(q, 'spec') : ['feature:count.quantity'];
-    case 'math': return q.op === '+' || q.op === '*' || q.op === '-' ? ['feature:announce.qty.math', ...q.args.flatMap(countQuantityForms)] : ['feature:count.quantity'];
+    // edh-top-3 (CR 601.2b, 107.3a, 107.1a): the amount DIVIDED among targets (`allowX`) is read once X is announced, so arithmetic of X ("twice X", min, floorDiv) is readable there;
+    // a number of targets or of modes is read before X is announced, so X inside it stays unsupported
+    case 'X': return allowX ? [] : ['feature:count.quantity'];
+    case 'math': return allowX ? ['feature:announce.qty.math', ...q.args.flatMap((a) => countQuantityForms(a, true))] : (q.op === '+' || q.op === '*' || q.op === '-' ? ['feature:announce.qty.math', ...q.args.flatMap((a) => countQuantityForms(a))] : ['feature:count.quantity']);
     case 'kickCount': return q.name === undefined ? ['feature:announce.qty.kickCount'] : ['feature:count.quantity']; // pc-zones-3 (CR 702.33d)
+    // edh-next-39 (CR 102.3, 107.3c, 601.2c; Rot Hulk): the players of `each` still in the game, no narrowing ("the number of opponents you have"), counted as the targets are announced
+    // edh-d-70 (CR 122.1f, 601.2c, 608.2h; Glissa's Retriever): "up to X target cards, where X is the number of opponents who have three or more poison counters", the opponents' poison counters as the targets are announced (announce-cond.ts, std-rx24's reading)
+    case 'countPlayers': return isBarePlayerCount(q) ? ['feature:announce.qty.countPlayers.bare'] : q.poisonIs !== undefined && q.of.ref === 'each' && q.of.who === 'opponent' && Object.keys(q).sort().join() === 'of,poisonIs,q' ? quantityAnnounceForms(q, 'spec') : ['feature:count.quantity'];
+    case 'opponentsAttacked': return q.scope === 'turn' ? ['feature:announce.qty.opponentsAttacked'] : ['feature:announce.qty.opponentsAttacked.combat']; // trek-15 (CR 506.3, 508.1): the whole turn's attacks, from the history; edh-next-51: or this combat's, read as an activation restriction is checked (Nemesis Phoenix)
+    // edh-next-9 (CR 601.2d, 208.1): the amount divided among the targets is "the greatest power among creatures you control", read as the division is announced
+    case 'stat': return allowX ? quantityAnnounceForms(q, 'spec') : ['feature:count.quantity'];
+    case 'devotion': return q.of.ref === 'you' ? quantityAnnounceForms(q, 'spec') : ['feature:count.quantity']; // edh-next-42 (CR 700.5, 601.2c; Mogis's Marauder): your own devotion, read as the targets are announced
+    case 'timesMutated': return ['feature:announce.qty.timesMutated']; // edh-next-140 (CR 702.140d, 601.2c; Archipelagore): "up to X target creatures, where X is the number of times this creature has mutated"
+    case 'lifeGainedThisTurn': return ['feature:announce.qty.lifeGainedThisTurn']; // edh-perms-22 (CR 119.3, 603.3d): "distribute up to that many counters" after "if you gained life this turn"
     case 'eventAmount': return ['feature:announce.qty.eventAmount']; // r3-choose (CR 603.3d): "up to that many target creatures" in a triggered ability
     case 'modesChosen': return ['feature:announce.qty.modesChosen']; // Standard round 3, r3-trig (CR 700.2, 603.3c): "choose up to X, where X is the number of times you chose a mode for that spell"
     default: return ['feature:count.quantity'];
@@ -242,10 +302,19 @@ export function announceCondForms(c: Condition, where: AnnounceWhere): string[] 
     case 'matches': return [...out, `feature:announce.matches.${c.object.ref}`];
     case 'classLevel': return [...out, `feature:announce.classLevel.${c.object.ref}`]; // M6-6 INTERFACE CHANGE (CR 716.2a: "activate only if this Class is level N-1")
     case 'turnOf': return [...out, ...predForms(c.whose)];
+    // edh-mana-keywords-6 (CR 702.131c, 725.1, 602.5): "Activate only if you have the city's blessing" / "if you're the monarch": a designation is a fact of the game state
+    // (state.designations), read as it is now, for a player the announcement can name
+    case 'designation': return [...out, ...playerRefForms(c.who, 'cond')];
+    case 'playerIs': return [...out, ...playerRefForms(c.who, 'cond')]; // edh-players-18
+    case 'attackedYouLastTurn': return c.who === undefined ? out : [...out, 'feature:announce.cond.attackedYouLastTurn.who']; // edh-d-45; edh-d-85: a named player is not announced (fail closed)
+    case 'eventDied': return out; // edh-next-97
+    case 'otherOpponentNotAttacked': return [...out, ...playerRefForms(c.of, 'cond')]; // edh-next-53
     // FAST4 T27: `by` ("if you cast it") is read from the permanent's cast record, which no announcement has: unregistered, fail closed
     case 'wasCast': return [...out, ...(c.xAtLeast !== undefined && where !== 'spec' ? ['feature:announce.cond.wasCast.xAtLeast.early'] : []), ...(c.by !== undefined ? ['feature:announce.cond.wasCast.by'] : []), ...(c.spent !== undefined ? ['feature:announce.cond.wasCast.spent'] : []), ...(c.object !== undefined ? ['feature:announce.cond.wasCast.object'] : []), ...(c.kept === true ? ['feature:announce.cond.wasCast.kept'] : [])];
     // Only the controller attests, and only an activation restriction can ask (CR 602.5b): anywhere else nobody can answer.
     case 'ask': return where === 'activate' && (c.who === undefined || c.who.ref === 'you') ? out : ['feature:announce.cond.ask.unattested'];
+    // edh-next-143 (CR 601.2b, 118.9; Once Upon a Time): "this spell is the first spell you've cast this game" is read as the spell is cast, for its alternative cost only (actions/announce-cond.ts)
+    case 'firstSpellCast': return where === 'altCost' ? out : ['feature:announce.cond.firstSpellCast.other'];
     // FAST5 batch 2 merge (E5 + E9): only "this object entered the battlefield this turn" is read from the history at announcement (CR 400.7, 602.5b)
     // std-blb (CR 602.5b): and, in an activation restriction only, any event of this turn's history whose pattern names no object or player by reference ("Activate
     // only if an opponent lost life this turn"): the history is written before a player receives priority (triggers/stack.ts#collectPendingTriggers), so it is
@@ -293,6 +362,10 @@ export function isSelfEnteredThisTurn(c: Condition): boolean {
  * count of matching events of the turn, at least one or at least a fixed number, done by anyone or by "you" / an opponent; the pattern names no object or player
  * by reference (no `ref` anywhere in it), so its facts are matched without an effect's bindings. Pure.
  */
+/** edh-players-22 (CR 702.76a): `sharesWith` {with: self, quality: creatureType}, the one reference a history pattern may hold at announcement (rules/history.ts#factsMatchFilter reads the spell's creature types). */
+function isOwnTypes(x: unknown): boolean {
+  return typeof x === 'object' && x !== null && JSON.stringify(x) === '{"with":{"ref":"self"},"quality":"creatureType"}';
+}
 export function turnHistoryAtAnnouncement(c: Condition): boolean {
   if (c.cond !== 'happened' || c.scope !== 'turn' || (c.by !== undefined && typeof c.by !== 'string')) return false;
   if (c.times !== undefined && typeof c.times.value !== 'number') return false;
@@ -300,6 +373,7 @@ export function turnHistoryAtAnnouncement(c: Condition): boolean {
   const walk = (v: unknown): void => {
     if (ref || typeof v !== 'object' || v === null) return;
     if (Array.isArray(v)) { v.forEach(walk); return; }
+    if ('sharesWith' in v && isOwnTypes((v as { sharesWith: unknown }).sharesWith)) return; // edh-players-22 (CR 702.76a): prowl's "creature types of this spell", read from the spell being cast
     if ('ref' in v) { ref = true; return; }
     Object.values(v).forEach(walk);
   };
@@ -353,6 +427,17 @@ export function isTurnDamageTotal(q: Quantity): boolean {
 }
 
 /**
+ * edh-replace-5 (CR 107.14, 122.1, 602.5b; Izzet Generatorium's "Activate only if you've paid or lost four or more {E} this turn"): the energy counters removed from the
+ * activating player this turn added up (`sum` of the `amount` of the turn's `counters` entries: a payment is the removal of the counters, CR 107.14), in an activation
+ * restriction only (the one position that reads the history). Nothing else about the counters is asked. Pure.
+ */
+export function isTurnEnergySpent(q: Quantity): boolean {
+  if (typeof q !== 'object' || q.q !== 'happenedCount' || q.sum !== 'amount' || q.per !== undefined || q.by !== undefined || q.beforeEvent !== undefined || q.scope !== 'turn') return false;
+  const e = q.event;
+  return e.ev === 'counters' && e.change === 'removed' && e.kind === 'energy' && 'player' in e.on && e.on.player === 'you' && e.atLeast === undefined && e.byEffect === undefined && e.by === undefined;
+}
+
+/**
  * p2-cost-statics-1 (CR 601.2i, 118.9; Mindbreak Trap): "an opponent cast three or more spells this turn": the most spells one opponent of the controller cast this
  * turn (`happenedCount` of casts per player, by an opponent), nothing else about the spells. Read as a spell is announced from the players' `turnStats.spellsCast`,
  * which actions/cast.ts counts as each spell becomes cast (actions/announce-cond.ts#announceQty). Pure.
@@ -360,6 +445,23 @@ export function isTurnDamageTotal(q: Quantity): boolean {
 export function isOpponentSpellsPerPlayer(q: Quantity): boolean {
   return typeof q === 'object' && q.q === 'happenedCount' && q.per === 'player' && q.by === 'opponent' && q.scope === 'turn' && q.sum === undefined && q.beforeEvent === undefined
     && Object.keys(q.event).length === 1 && q.event.ev === 'cast';
+}
+
+/**
+ * edh-next-3 (CR 121.1, 601.2f; Even the Score): "an opponent has drawn four or more cards this turn": the most cards one opponent drew this turn (`happenedCount` of draws per
+ * player, by an opponent), nothing else about the draws. Read as a spell is announced from the players' `turnStats.cardsDrawn`. Pure.
+ */
+export function isOpponentDrawsPerPlayer(q: Quantity): boolean {
+  return typeof q === 'object' && q.q === 'happenedCount' && q.per === 'player' && q.by === 'opponent' && q.scope === 'turn' && q.sum === undefined && q.beforeEvent === undefined
+    && Object.keys(q.event).length === 1 && q.event.ev === 'draw';
+}
+
+/**
+ * edh-c-30 (CR 102.3, 118.9; Lavaball Trap): the opponents of the announcing player whose history of this turn holds enough matching events, each opponent judged alone
+ * (`happenedPlayers` over each opponent, scope `turn`). Read as a spell is announced from the turn's history (actions/announce-cond.ts#announceQty). Pure.
+ */
+export function isOpponentsHappenedPlayers(q: Quantity): boolean {
+  return typeof q === 'object' && q.q === 'happenedPlayers' && q.of.ref === 'each' && q.of.who === 'opponent' && q.scope === 'turn' && q.countLeft === undefined;
 }
 
 /** Whether an effect program (or one of its modes) has a target of its own. */
@@ -370,31 +472,48 @@ export function targetSpecForms(spec: TargetSpec): string[] {
   const out: string[] = [];
   if (spec.distinctFrom !== undefined) out.push('feature:target.distinct');
   if (spec.divide !== undefined) out.push('feature:target.divide');
+  if (spec.divide?.upTo === true) out.push('feature:target.divide.upTo'); // edh-perms-22 (CR 601.2d)
   if (spec.groupLimit !== undefined) out.push('feature:target.groupLimit');
   if (spec.sameOwner !== undefined) out.push('feature:target.sameOwner'); // FAST3 T14
   if (spec.differentNames !== undefined) out.push('feature:target.differentNames'); // FAST5 T42
+  if (spec.differentManaValues !== undefined) out.push('feature:target.differentManaValues'); // edh-top-3
   if (spec.perOpponent !== undefined) out.push('feature:target.perOpponent'); // FAST5 T66
+  if (spec.perOpponentPoison !== undefined) out.push(spec.perOpponent === true && Number.isInteger(spec.perOpponentPoison) && spec.perOpponentPoison >= 1 ? 'feature:target.perOpponent.poison' : 'feature:target.perOpponent.poison.other'); // edh-d-96
   if (spec.perPlayer !== undefined) out.push('feature:target.perPlayer'); // r5-fxb
+  if (spec.eachWithOne !== undefined) out.push('feature:target.eachWithOne'); // edh-next-127
   if (spec.sharedCardType !== undefined) out.push('feature:target.sharedCardType'); // FAST5 T66
   if (spec.sharedCreatureType !== undefined) out.push('feature:target.sharedCreatureType'); // CLOUD std-ecl
+  if (spec.equalToughness !== undefined) out.push('feature:target.equalToughness'); // edh-next-126
   if (spec.differentControllers !== undefined) out.push('feature:target.differentControllers'); // CLOUD std-tmt
   if (spec.sameController !== undefined) out.push('feature:target.sameController'); // std-rx30
   if (spec.perCardType !== undefined) out.push('feature:target.perCardType'); // std-cardcopy-7
+  if (spec.sharedPermanentType !== undefined) out.push('feature:target.sharedPermanentType'); // edh-next-54
   if (spec.onlyIf !== undefined) out.push('feature:target.onlyIf');
   if (spec.chooser !== undefined) out.push('feature:target.chooser');
+  if (spec.chooserElse !== undefined) out.push('feature:target.chooserElse'); // edh-d-87 (CR 601.7a): actions/announce-targets.ts#chooserOf
   if (spec.random === true) out.push('feature:target.random'); // p2-damage-2 (CR 601.2c, 603.3d)
+  if (spec.chooserControls !== undefined) out.push(spec.chooser !== undefined && spec.random === undefined ? 'feature:target.chooserControls' : 'feature:target.chooserControls.other'); // edh-next-146 (CR 601.7a)
+  if (spec.players?.dealtCombatDamageBySource !== undefined) out.push('feature:target.player.dealtCombatDamageBySource'); // edh-cast-13
+  if (spec.players?.dealtDamage !== undefined) out.push('feature:target.player.dealtDamage'); // edh-next-86
+  if (spec.players?.lostLife !== undefined) out.push('feature:target.player.lostLife'); // edh-c-34
+  if (spec.players?.activePlayer !== undefined) out.push('feature:target.player.activePlayer'); // trek-16
+  if (spec.players?.otherThan !== undefined) out.push('feature:target.player.otherThan'); // edh-cast-15
   if (spec.players && typeof spec.players.who === 'object') out.push('feature:target.playerRef', ...playerRefForms(spec.players.who, 'spec'));
-  if (spec.chooser !== undefined) out.push(...playerRefForms(spec.chooser, 'spec'));
+  // edh-next-134 (CR 603.3d, 603.2): the controller of the triggering event's subject chooses (actions/announce-targets.ts#chooserOf reads the trigger's event); no other event role
+  if (spec.chooser !== undefined && spec.chooser.ref === 'controllerOf' && spec.chooser.object.ref === 'event') out.push(spec.chooser.object.role === 'subject' ? 'feature:target.chooser.eventSubjectController' : 'feature:target.chooser.eventOther');
+  // edh-d-87 (CR 601.7a, 603.3d; Bladegriff Prototype): the triggering event's player chooses, through the same read of the trigger's event (actions/announce-targets.ts#chooserOf)
+  else if (spec.chooser !== undefined && spec.chooser.ref === 'event' && (spec.chooser.role === 'recipient' || spec.chooser.role === 'player')) out.push('feature:announce.sref.event.chooser');
+  else if (spec.chooser !== undefined) out.push(...playerRefForms(spec.chooser, 'spec'));
   if (spec.onlyIf !== undefined) out.push(...announceCondForms(spec.onlyIf, 'spec'));
   // The limit of a group is read with the announced X (CR 115.1): any other quantity waits for WP4's evaluators like a count does.
   const quantities: Quantity[] = spec.groupLimit ? [spec.groupLimit.cmp.value] : [];
   for (const c of quantities) if (!isFixedCount(c) && !isAnnouncedX(c)) out.push('feature:count.quantity');
   // std-tdm (CR 601.2d, 603.3d, 107.3): the amount to divide is announced with the targets, so a calculated one ("X damage divided as you choose among any number of
   // target creatures ..., where X is the number of lands you control") is read then, as T69's number of targets is (actions/announce-targets.ts#withFixedCounts)
-  if (spec.divide !== undefined && typeof spec.divide.total === 'object' && !isAnnouncedX(spec.divide.total)) out.push(...countQuantityForms(spec.divide.total));
+  if (spec.divide !== undefined && typeof spec.divide.total === 'object' && !isAnnouncedX(spec.divide.total)) out.push(...countQuantityForms(spec.divide.total, true));
   // FAST5 T69 (CR 601.2c, 107.3c): the number of targets may be a calculated quantity ("up to X target creatures ... where X is the number of colors among permanents
   // you control"), read when the targets are announced (actions/announce-targets.ts#withFixedCounts): it needs the announcement reader of that quantity
-  for (const c of [spec.min, spec.max]) if (typeof c === 'object' && !isAnnouncedX(c)) out.push(...countQuantityForms(c));
+  for (const c of [spec.min, spec.max]) if (typeof c === 'object' && !isAnnouncedX(c)) out.push(...countQuantityForms(c, c.q === 'math')); // edh-next-104 (CR 601.2b-c, 107.3; Erebos's Intervention): "up to twice X target cards": X is announced before the targets, so arithmetic of X reads there
   return [...new Set(out)];
 }
 
@@ -406,6 +525,8 @@ export function modeSpecForms(m: ModeSpec): string[] {
   if (m.options.some((o) => o.cost !== undefined)) out.push(MODE_OPTION_COST);
   // std-blb (CR 700.2i): a budget of pawprints, and the pawprints of each mode (none without the budget)
   if (m.pawprints !== undefined || m.options.some((o) => o.pawprints !== undefined)) out.push('feature:modes.pawprints');
+  if (m.mayChoose === true) out.push('feature:modes.mayChoose'); // edh-players-19 (CR 700.2): "you may choose two"
+  if (m.countIsX === true) out.push('feature:modes.countIsX'); // edh-next-139 (CR 601.2b, 601.4): "Choose X."
   if (m.unchosen !== undefined) out.push('feature:modes.unchosen'); // r3-choose (CR 700.2): "choose one that hasn't been chosen [this turn]"
   if (m.random === true || m.override?.chosen === true) out.push('feature:modes.random'); // p2-modal-2 (CR 700.2): "choose one at random", "you choose one instead"
   if (m.chooser !== undefined) out.push(...playerRefForms(m.chooser, 'spec'));
@@ -435,7 +556,7 @@ export function selfCostZones(cost: CostDef | undefined): ZoneName[] {
   for (const p of Array.isArray(cost.other) ? cost.other : []) {
     if (!('self' in p) || p.self !== true) continue;
     switch (p.kind) {
-      case 'sacrifice': case 'returnToHand': case 'putCounters': out.add('battlefield'); break;
+      case 'sacrifice': case 'returnToHand': case 'putCounters': case 'unattach': out.add('battlefield'); break;
       case 'discard': out.add('hand'); break;
       case 'reveal': case 'exileFrom': case 'putIntoLibrary': out.add(p.zone); break;
       default:
@@ -457,6 +578,10 @@ export function activatedForms(def: ActivatedAbilityDef): string[] {
   if (def.costChangeIf !== undefined) out.push(def.costChange === undefined ? 'feature:activate.costChange.if.alone' : 'feature:activate.costChange.if'); // r4-cost (CR 601.2f)
   if (def.limit?.per === 'combat') out.push('feature:limit.combat');
   if (def.uncopiable === true) out.push('feature:activate.uncopiable'); // std-copy-1 (CR 707.10)
+  if (def.spendOnlyChosen !== undefined) out.push(def.isMana === true || def.isLoyalty === true || def.anyPlayer === true ? 'feature:activate.spendOnlyChosen.unsupported' : 'feature:activate.spendOnlyChosen'); // edh-mana-keywords-8 (CR 106.6)
+  if (def.spendOnlyX !== undefined) out.push(def.isMana === true || def.isLoyalty === true || def.anyPlayer === true ? 'feature:activate.spendOnlyX.unsupported' : 'feature:activate.spendOnlyX'); // edh-next-85 (CR 107.3a, 106.6)
+  // edh-next-132 (CR 107.3c): an X the text defines, only with an {X} in the mana of the cost and no other X (not on the mana, loyalty or any-player paths)
+  if (def.xIs !== undefined) out.push(def.isMana === true || def.isLoyalty === true || def.anyPlayer === true || def.xMin !== undefined || def.cost?.loyaltyX === true || !(def.cost?.mana ?? []).some((m) => m.kind === 'variable') || JSON.stringify(def.cost?.other ?? []).includes('"q":"X"') ? 'feature:activate.xIs.unsupported' : 'feature:activate.xIs');
   if (def.xMin !== undefined) out.push(def.isMana === true || def.isLoyalty === true || def.anyPlayer === true ? 'feature:activate.xMin.unsupported' : 'feature:activate.xMin'); // std-rx12 (CR 107.3a): not on the mana or loyalty paths
   if (def.cost?.loyaltyX === true) out.push(def.cost.loyalty === undefined && def.isLoyalty === true ? 'feature:activate.loyaltyX' : 'feature:activate.loyaltyX.unsupported'); // std-r9 (CR 606.4)
   // MX5 (CR 602.2): any player may activate it; with {T}/{Q} in the cost (another player's permanent tapped by the activating player) or as a mana ability
@@ -465,6 +590,17 @@ export function activatedForms(def: ActivatedAbilityDef): string[] {
   if (def.anyPlayer === true) {
     const selfPart = (def.cost?.other ?? []).some((x) => 'self' in x && x.self === true);
     out.push(def.cost?.tap || def.cost?.untap ? 'feature:activate.anyPlayer.tap' : def.isMana ? 'feature:activate.anyPlayer.mana' : selfPart ? 'feature:activate.anyPlayer.self' : 'feature:activate.anyPlayer');
+  }
+  // edh-c-103 (CR 602.2): only the opponents of its controller may activate it; with {T}/{Q} in the cost, as a mana or loyalty ability, or with a cost part on the object itself, a form nothing registers
+  if (def.opponentsOnly === true) {
+    const selfPart = (def.cost?.other ?? []).some((x) => 'self' in x && x.self === true);
+    out.push(def.cost?.tap || def.cost?.untap ? 'feature:activate.opponentsOnly.tap' : def.isMana || def.isLoyalty ? 'feature:activate.opponentsOnly.mana' : selfPart ? 'feature:activate.opponentsOnly.self' : 'feature:activate.opponentsOnly');
+  }
+  // edh-d-88 (CR 602.2; Capricopian): only the player the source is attacking may activate it; with {T}/{Q} in the cost, as a mana or loyalty ability, with a cost part on the object itself, or
+  // with `anyPlayer` / `opponentsOnly` beside it, a form nothing registers
+  if (def.attackedPlayerOnly === true) {
+    const selfPart = (def.cost?.other ?? []).some((x) => 'self' in x && x.self === true);
+    out.push(def.cost?.tap || def.cost?.untap || def.isMana || def.isLoyalty || selfPart || def.anyPlayer === true || def.opponentsOnly === true ? 'feature:activate.attackedPlayerOnly.form' : 'feature:activate.attackedPlayerOnly');
   }
   // std-rx27 (CR 601.2h, 602.2b): tap permanents rather than pay the generic mana of the activation cost; colored mana in the cost (each permanent could pay one
   // mana of any type, a payment rules/payment-options.ts does not make) and a mana or loyalty ability (no cost step there) are forms nothing registers

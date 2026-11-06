@@ -10,8 +10,14 @@ import type { Form, Phrase, RenderState } from './state';
 
 /** How a noun phrase is introduced. */
 export interface NpOpts {
+  /** edh-next-54: this description is the one of a target phrase (render/refs.ts): a later target that shares a quality with an EARLIER target is also said "with it" (np.ts, Daring Thief). */
+  specTarget?: true;
+  /** edh-next-31: this description is one option of an `anyOf` list (render/np.ts#buildAnyOfPlain compares the words of the options; no word-order alternatives inside them). */
+  anyOfOption?: true;
   /** The determiner: "a creature", "the creature", "target creature", "all creatures", "each creature", "any creature", none ("creatures you control"). */
   det?: 'a' | 'the' | 'target' | 'all' | 'each' | 'any' | 'none';
+  /** edh-c-6 (CR 115.3): the target is the third of three different targets, "a third target creature" besides "another target creature". */
+  third?: boolean;
   /** Plural noun ("creatures"). */
   plural?: boolean;
   /** Do not print the zone of a card ("search your library for a basic land card" already says the zone). */
@@ -31,6 +37,10 @@ export interface NpOpts {
   singleZone?: boolean;
   /** FAST5 T42: the targets have different names (`TargetSpec.differentNames`): "cards with different names". */
   differentNames?: boolean;
+  /** edh-top-3: the targets have different mana values (`TargetSpec.differentManaValues`): "cards that each have a different mana value X or less". */
+  differentManaValues?: boolean;
+  /** edh-d-22 (CR 113.1): the description has the "abilities" feature (an any-of of the three ability kinds, np.ts#build). */
+  anyAbilities?: boolean;
   /**
    * FAST5 T66: the objects chosen together keep a total (`TargetSpec.groupLimit`, `chooseObjects.groupLimit`): the words "total mana value 4 or less", said as a "with" feature
    * (in front of or behind the zone: "creature cards with total mana value 4 or less from your graveyard").

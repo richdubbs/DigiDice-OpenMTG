@@ -1,0 +1,109 @@
+[
+  {
+    "id": "eff.edhv21.search.oneOfEach4",
+    "kind": "effect",
+    "since": 21,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 401.2"
+    ],
+    "pattern": "search your library for {f:SearchDesc} , {g:SearchDesc} , {h:SearchDesc} , and {i:SearchDesc}",
+    "build": {
+      "op": "search",
+      "who": {
+        "ref": "you"
+      },
+      "zone": "library",
+      "filter": "$f",
+      "max": 1,
+      "and": [
+        "$g",
+        "$h",
+        "$i"
+      ],
+      "as": "search"
+    },
+    "subject": "none",
+    "needs": [
+      "op:search.and"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for a white card, a blue card, a black card, and a red card, put them into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for a Forest card, a Plains card, an Island card, and a Swamp card. Reveal those cards, put them into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a white card, a blue card, a black card, or a red card. Reveal those cards, put them into your hand, then shuffle.",
+      "Search your library for a red card, a green card, a blue card, a black card, and a white card, put them onto the battlefield, then shuffle.",
+      "Search your graveyard for a white card, a blue card, a black card, and a red card. Reveal those cards, put them into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhv21.search.anyNumber.reveal.shuffleTop",
+    "kind": "effect",
+    "since": 21,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23b",
+      "CR 701.20a",
+      "CR 401.4"
+    ],
+    "pattern": "search your library for any number of {f:CardsDesc} , reveal ( them | those cards ) , then shuffle and put ( them | those cards ) on top",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "any",
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for any number of Wizard cards, reveal them, then shuffle and put them on top."
+      },
+      {
+        "text": "Search your library for any number of Equipment cards, reveal those cards, then shuffle and put those cards on top."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for any number of Wizard cards, reveal them, then shuffle and put them on the bottom.",
+      "Search your library for any number of Wizard cards, reveal them, then shuffle and put them into your hand.",
+      "Search your graveyard for any number of Wizard cards, reveal them, then shuffle and put them on top."
+    ]
+  }
+]

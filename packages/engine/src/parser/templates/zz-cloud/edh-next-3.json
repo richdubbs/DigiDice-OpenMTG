@@ -1,0 +1,438 @@
+[
+  {
+    "id": "eff.edhn3.timeTravel",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.56a",
+      "CR 702.62b",
+      "CR 122.6"
+    ],
+    "pattern": "time travel",
+    "build": {
+      "op": "action",
+      "action": "timeTravel",
+      "who": {
+        "ref": "you"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Time travel. Draw a card."
+      },
+      {
+        "text": "{4}, {T}: Time travel. Activate only as a sorcery."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, time travel."
+      }
+    ],
+    "counterExamples": [
+      "Time travel twice.",
+      "Each opponent time travels.",
+      "Time travel, then time travel."
+    ]
+  },
+  {
+    "id": "eff.edhn3.ownLife.half.roundedUp",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 107.1a",
+      "CR 119.1"
+    ],
+    "pattern": "you lose half your life , rounded up",
+    "build": {
+      "op": "loseLife",
+      "who": {
+        "ref": "you"
+      },
+      "amount": {
+        "q": "math",
+        "op": "ceilDiv",
+        "args": [
+          {
+            "q": "life",
+            "of": {
+              "ref": "you"
+            }
+          },
+          2
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "half"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, you lose half your life, rounded up."
+      },
+      {
+        "text": "At the beginning of your upkeep, you lose half your life, rounded up."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, you lose half your life, rounded down.",
+      "Whenever ~ attacks, you lose half your life.",
+      "Whenever ~ attacks, you lose half their life, rounded up."
+    ]
+  },
+  {
+    "id": "eff.edhn3.eachPlayer.half.creatures.roundUp",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 107.1a",
+      "CR 608.2e",
+      "CR 101.4",
+      "CR 119.3",
+      "CR 701.9a",
+      "CR 701.21a"
+    ],
+    "pattern": "each player loses half their life , then discards half the cards in their hand , then sacrifices half the creatures they control of their choice . round up each time",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "amount": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+            {
+              "q": "life",
+              "of": {
+                "ref": "iterating"
+              }
+            },
+            2
+          ]
+        }
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "count": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+            {
+              "q": "zoneSize",
+              "zone": "hand",
+              "of": {
+                "ref": "iterating"
+              }
+            },
+            2
+          ]
+        }
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "controller": {
+            "ref": "iterating"
+          }
+        },
+        "count": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+            {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": {
+                    "ref": "iterating"
+                  }
+                }
+              }
+            },
+            2
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then",
+      "half",
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "You gain 2 life. Each player loses half their life, then discards half the cards in their hand, then sacrifices half the creatures they control of their choice. Round up each time."
+      },
+      {
+        "text": "When ~ enters, each player loses half their life, then discards half the cards in their hand, then sacrifices half the creatures they control of their choice. Round up each time."
+      }
+    ],
+    "counterExamples": [
+      "Each player loses half their life, then discards half the cards in their hand, then sacrifices half the creatures they control of their choice. Round down each time.",
+      "Each opponent loses half their life, then discards half the cards in their hand, then sacrifices half the creatures they control of their choice. Round up each time.",
+      "Each player loses half their life, then discards half the cards in their hand, then sacrifices half the creatures they control of their choice."
+    ]
+  },
+  {
+    "id": "eff.edhn3.eachPlayer.third.creaturesLands.roundUp",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 107.1a",
+      "CR 608.2e",
+      "CR 101.4",
+      "CR 119.3",
+      "CR 701.9a",
+      "CR 701.21a"
+    ],
+    "pattern": "each player loses a third of their life , then discards a third of the cards in their hand , then sacrifices a third of the creatures they control of their choice , then sacrifices a third of the lands they control of their choice . round up each time",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "amount": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+            {
+              "q": "life",
+              "of": {
+                "ref": "iterating"
+              }
+            },
+            3
+          ]
+        }
+      },
+      {
+        "op": "discard",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "count": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+            {
+              "q": "zoneSize",
+              "zone": "hand",
+              "of": {
+                "ref": "iterating"
+              }
+            },
+            3
+          ]
+        }
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "controller": {
+            "ref": "iterating"
+          }
+        },
+        "count": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+            {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Creature"
+                  ],
+                  "controller": {
+                    "ref": "iterating"
+                  }
+                }
+              }
+            },
+            3
+          ]
+        }
+      },
+      {
+        "op": "sacrificeChoice",
+        "who": {
+          "ref": "each",
+          "who": "player"
+        },
+        "filter": {
+          "types": [
+            "Land"
+          ],
+          "controller": {
+            "ref": "iterating"
+          }
+        },
+        "count": {
+          "q": "math",
+          "op": "ceilDiv",
+          "args": [
+            {
+              "q": "count",
+              "of": {
+                "ref": "each",
+                "filter": {
+                  "types": [
+                    "Land"
+                  ],
+                  "controller": {
+                    "ref": "iterating"
+                  }
+                }
+              }
+            },
+            3
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "then",
+      "each time"
+    ],
+    "examples": [
+      {
+        "text": "You gain 2 life. Each player loses a third of their life, then discards a third of the cards in their hand, then sacrifices a third of the creatures they control of their choice, then sacrifices a third of the lands they control of their choice. Round up each time."
+      },
+      {
+        "text": "When ~ enters, each player loses a third of their life, then discards a third of the cards in their hand, then sacrifices a third of the creatures they control of their choice, then sacrifices a third of the lands they control of their choice. Round up each time."
+      }
+    ],
+    "counterExamples": [
+      "Each player loses a third of their life, then discards a third of the cards in their hand, then sacrifices a third of the creatures they control of their choice, then sacrifices a third of the lands they control of their choice. Round down each time.",
+      "Each opponent loses a third of their life, then discards a third of the cards in their hand, then sacrifices a third of the creatures they control of their choice, then sacrifices a third of the lands they control of their choice. Round up each time.",
+      "Each player loses a third of their life, then discards a third of the cards in their hand, then sacrifices a third of the creatures they control of their choice, then sacrifices a third of the lands they control of their choice."
+    ]
+  },
+  {
+    "id": "cm.edhn3.self.lessColored.ifCond",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 604.5",
+      "CR 113.6"
+    ],
+    "pattern": "~ costs {m:ColoredManaCost} less to cast if {c:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ costs {U} less to cast if you control a Golem."
+      },
+      {
+        "text": "~ costs {U}{U} less to cast if you control three or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "~ costs {U} more to cast if you control a Golem.",
+      "~ costs {U} less to cast unless you control a Golem.",
+      "~ costs {U} less to cast for each Golem you control."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "trg.edhn3.cast.notFirst.eachTurn",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2i",
+      "CR 603.2"
+    ],
+    "pattern": "whenever you cast a spell other than your first spell each turn",
+    "build": {
+      "on": [
+        {
+          "ev": "cast",
+          "player": "you",
+          "nthMin": 2
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "other",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a spell other than your first spell each turn, you gain 1 life."
+      },
+      {
+        "text": "Whenever you cast a spell other than your first spell each turn, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you cast a spell other than your second spell each turn, you gain 1 life.",
+      "Whenever an opponent casts a spell other than their first spell each turn, you gain 1 life.",
+      "Whenever you cast a spell other than your first spell this turn, you gain 1 life."
+    ]
+  }
+]

@@ -1,0 +1,8 @@
+# edh-c-38 (Commander lane edh-c, ranks 27,001-27,500). After editing: npm run cards -- fixtures
+Wizard Mentor
+Lady Sun
+Memoricide
+Sinister Strength
+Ghostfire
+Rag Man
+Ethereal Ambush

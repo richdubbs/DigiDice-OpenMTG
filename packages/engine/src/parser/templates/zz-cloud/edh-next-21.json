@@ -1,0 +1,341 @@
+[
+  {
+    "id": "eff.edhn21.put.graveyardCard.top",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 400.3",
+      "CR 404.1",
+      "CR 608.2c"
+    ],
+    "pattern": "put ( a | an ) {f:Filter} card from your graveyard on top of your library",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "back"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "back"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, mill two cards. You may put an artifact card from your graveyard on top of your library."
+      },
+      {
+        "text": "{3}, {T}: Draw a card. Then you may put a creature card from your graveyard on top of your library."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Draw a card. Then you may put a creature card from your graveyard on the bottom of your library.",
+      "{3}, {T}: Draw a card. Then you may put a creature card from your hand on top of your library.",
+      "{3}, {T}: Draw a card. Then you may put two creature cards from your graveyard on top of your library."
+    ]
+  },
+  {
+    "id": "trg.edhn21.draw.enchantedController",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 504.1",
+      "CR 603.2",
+      "CR 303.4"
+    ],
+    "pattern": "at the beginning of the draw step of enchanted ( creature | enchantment | artifact | land | permanent ) 's controller",
+    "build": {
+      "on": [
+        {
+          "ev": "step",
+          "step": "draw",
+          "whose": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "attachedTo"
+            }
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "At the beginning of the draw step of enchanted creature's controller, that player mills two cards."
+      },
+      {
+        "text": "At the beginning of the draw step of enchanted land's controller, that player gains 2 life."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of the draw step of enchanted creature's owner, that player mills two cards.",
+      "At the beginning of the upkeep of enchanted creature's controller, that player mills two cards.",
+      "At the beginning of the next draw step of enchanted creature's controller, that player mills two cards."
+    ]
+  },
+  {
+    "id": "eff.edhn21.player.discard.forEachPoison",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 122.1f",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} discard[s] a card for each poison counter they have",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": {
+        "q": "counters",
+        "on": "$p",
+        "kind": "poison"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player discards a card for each poison counter they have."
+      },
+      {
+        "text": "At the beginning of your upkeep, target opponent discards a card for each poison counter they have."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, that player discards two cards for each poison counter they have.",
+      "Whenever ~ deals combat damage to a player, that player discards a card for each experience counter they have.",
+      "Whenever ~ deals combat damage to a player, that player discards a card at random for each poison counter they have.",
+      "When ~ enters, each opponent discards a card for each poison counter they have."
+    ]
+  },
+  {
+    "id": "eff.edhn21.eachOpponent.poisonAtLeast.loseLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1f",
+      "CR 104.3d",
+      "CR 119.3",
+      "CR 608.2c"
+    ],
+    "pattern": "each opponent who has {n:Qty} or more poison counters loses {l:Qty} life",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "if",
+          "cond": {
+            "cond": "compare",
+            "left": {
+              "q": "counters",
+              "on": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "kind": "poison"
+            },
+            "op": ">=",
+            "right": "$n"
+          },
+          "then": [
+            {
+              "op": "loseLife",
+              "who": {
+                "ref": "bound",
+                "name": "each"
+              },
+              "amount": "$l"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent who has two or more poison counters loses 4 life."
+      },
+      {
+        "text": "Draw a card. Each opponent who has five or more poison counters loses 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent who has two or more poison counters loses all life.",
+      "Each opponent who has two or fewer poison counters loses 4 life.",
+      "Each opponent who has two or more experience counters loses 4 life."
+    ]
+  },
+  {
+    "id": "eff.edhn21.player.mayHave.damageToItself",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 120.1",
+      "CR 120.3",
+      "CR 608.2d",
+      "CR 603.5"
+    ],
+    "pattern": "{p:Player} may have {src:Obj} deal {n:Qty} damage to itself",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$src",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you roll one or more dice, you may have ~ deal 2 damage to itself."
+      },
+      {
+        "text": "Whenever you gain life, you may have ~ deal 1 damage to itself."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you roll one or more dice, you may have ~ deal 2 damage to each Gremlin.",
+      "Whenever you roll one or more dice, ~ deals 2 damage to itself unless you pay {1}.",
+      "Whenever you roll one or more dice, you may have ~ deal 2 damage to it."
+    ]
+  },
+  {
+    "id": "eff.edhn21.put.it.yourLibrary.nthFromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.7",
+      "CR 400.3",
+      "CR 400.7",
+      "CR 608.2c"
+    ],
+    "pattern": "put {o:Obj} into your library third from the top",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "library",
+        "position": {
+          "nth": 3
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ dies, put it into your library third from the top."
+      },
+      {
+        "text": "When ~ is put into your graveyard from the battlefield, you may put it into your library third from the top."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, put it into your graveyard third from the top.",
+      "When ~ dies, put it into your library second from the top.",
+      "When ~ dies, put it into your library third from the bottom."
+    ]
+  },
+  {
+    "id": "eff.edhn21.youGainControl.all",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 110.2"
+    ],
+    "pattern": "you gain control of all {f:Filter} [{d:Dur}]",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "$when": "d",
+        "then": "$d",
+        "else": {
+          "d": "permanent"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, you gain control of all Goblins."
+      },
+      {
+        "text": "When ~ enters, you gain control of all artifacts until end of turn. Untap them."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, you gain control of all Goblins unless an opponent pays {3}.",
+      "When ~ dies, you gain control of up to two Goblins.",
+      "When ~ dies, you gain control of all Goblins for as long as you control ~."
+    ]
+  }
+]

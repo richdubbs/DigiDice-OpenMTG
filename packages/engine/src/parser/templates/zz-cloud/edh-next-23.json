@@ -1,0 +1,162 @@
+[
+  {
+    "id": "eff.edhn23.damage.playerAndEachOther",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 120.3",
+      "CR 608.2c",
+      "CR 109.2"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {p:Player} and each other {f:Filter}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$p",
+      "amount": "$n",
+      "also": [
+        {
+          "to": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "other": true
+            }
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "each other",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, it deals 2 damage to each player and each other creature."
+      },
+      {
+        "text": "When ~ enters, it deals 2 damage to each opponent and each other creature with flying."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, it deals 2 damage to each player and each other creature unless it is blue.",
+      "When ~ enters, it deals 2 damage to each player or each other creature.",
+      "When ~ enters, it deals 2 damage to target player and each other creature."
+    ]
+  },
+  {
+    "id": "sta.edhn23.anthem.subtypeAndOtherSubtype",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 205.3m",
+      "CR 109.2"
+    ],
+    "pattern": "{s:Subtypes} creatures and other {t:Subtypes} creatures get {pt:PT}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": {
+          "anyOf": [
+            {
+              "types": [
+                "Creature"
+              ],
+              "subtypes": [
+                "$s.0"
+              ]
+            },
+            {
+              "types": [
+                "Creature"
+              ],
+              "subtypes": [
+                "$t.0"
+              ],
+              "other": true
+            }
+          ]
+        }
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "consumes": [
+      "and",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Elf creatures and other Goblin creatures get +1/+1."
+      },
+      {
+        "text": "Zombie creatures and other Vampire creatures get +2/+0."
+      }
+    ],
+    "counterExamples": [
+      "Elf creatures and other Goblin creatures get +1/+1 until end of turn.",
+      "Elf creatures and other Goblin creatures have flying.",
+      "Elf creatures and Goblin creatures get +1/+1 and have flying."
+    ]
+  },
+  {
+    "id": "eff.edhn23.grant.group.noDuration",
+    "weak": 1,
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Objs} gain {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Creatures you control gain indestructible."
+      },
+      {
+        "text": "Goblins you control gain haste and trample."
+      }
+    ],
+    "counterExamples": [
+      "Goblins you control gain haste until end of turn.",
+      "Goblins you control gain haste unless you pay {1}.",
+      "Goblins you control lose haste."
+    ]
+  }
+]

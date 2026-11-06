@@ -183,6 +183,19 @@ export function chooseFrom(ctx: Ctx, want: Want, pool: Pool, min: number, max: n
     ...pool.objects.map((id) => ({ t: { kind: 'object' as const, id }, s: objectScore(ctx, want, id) })),
     ...pool.players.map((id) => ({ t: { kind: 'player' as const, id }, s: playerScore(ctx, want, id) })),
   ].sort((a, b) => b.s - a.s);
+  // edh-d-83 (CR 115.1, 601.2c): a spec "for each player / opponent, ... target ... that player controls" takes at most one object of each player (the owner's for a card in a
+  // graveyard, rules/targets.ts#perPlayerKey): only the best candidate of each player is kept
+  if (want.spec?.perPlayer === true || want.spec?.perOpponent === true) {
+    const gy = want.spec.filter?.zone === 'graveyard';
+    const seen = new Set<string>();
+    for (let i = 0; i < scored.length; i++) {
+      const t = scored[i]!.t;
+      const o = t.kind === 'object' ? ctx.view.objects[t.id] : undefined;
+      if (o === undefined) continue;
+      const k = gy ? o.owner : o.controller;
+      if (seen.has(k)) { scored.splice(i, 1); i--; } else seen.add(k);
+    }
+  }
   // Damage with no fixed number of targets ("any number of targets", divided evenly) is best kept on one target.
   const cap = want.kind === 'damage' && max > 1 && want.spec?.divide === undefined ? Math.max(min, 1) : max;
   const good = scored.filter((x) => x.s > 0).length;

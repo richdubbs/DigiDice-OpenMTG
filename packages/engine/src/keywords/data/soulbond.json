@@ -3,9 +3,155 @@
   "rule": "702.95",
   "params": [],
   "mechanisms": [
-    "structural"
+    "expands"
   ],
   "reminder": "You may pair this creature with another unpaired creature when either enters. They remain paired for as long as you control both of them.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When ~ enters, if you control both ~ and another creature and both are unpaired, you may pair ~ with another unpaired creature you control.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "paired": false
+            }
+          },
+          {
+            "cond": "exists",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "you",
+                "other": true,
+                "paired": false
+              }
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "you"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "you",
+                "other": true,
+                "paired": false
+              }
+            },
+            "min": 0,
+            "max": 1,
+            "as": "soulmate"
+          },
+          {
+            "op": "pair",
+            "what": {
+              "ref": "self"
+            },
+            "with": {
+              "ref": "bound",
+              "name": "soulmate"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "kind": "triggered",
+      "text": "Whenever another creature you control enters, if you control both that creature and ~ and both are unpaired, you may pair that creature with ~.",
+      "trigger": {
+        "on": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you",
+              "other": true
+            },
+            "to": "battlefield"
+          }
+        ]
+      },
+      "interveningIf": {
+        "cond": "all",
+        "of": [
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "self"
+            },
+            "filter": {
+              "paired": false
+            }
+          },
+          {
+            "cond": "matches",
+            "object": {
+              "ref": "event",
+              "role": "subject"
+            },
+            "filter": {
+              "paired": false
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "pair",
+                "what": {
+                  "ref": "self"
+                },
+                "with": {
+                  "ref": "event",
+                  "role": "subject"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }

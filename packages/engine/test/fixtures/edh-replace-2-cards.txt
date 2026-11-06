@@ -1,0 +1,16 @@
+# edh-replace-2 (Commander lane edh-replace; test/cloud/edh-replace-2, golden edh-replace-2-review.json)
+# "instead" folds (same-player swap, restated sacrifice / choice / for-each, inside a payment), combat prevention for you and planeswalkers, "dealt damage this way" conditional and exile, "its power" of the source, batch damage amount, sources that would deal
+Rumor Gatherer
+Court of Ambition
+Emiel the Blessed
+Vona's Hunger
+Composer of Spring
+Take the Bait
+Marauding Raptor
+Gleeful Arsonist
+Quartzwood Crasher
+Broodcaller Scourge
+Spikefield Hazard // Spikefield Cave
+Surge of Salvation
+Ob Nixilis, the Adversary
+Murkfiend Liege

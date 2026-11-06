@@ -1,0 +1,267 @@
+[
+  {
+    "id": "sta.edhp2.entering.noTriggers.ofPermanents",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 603.6a",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} entering [the battlefield] don't cause abilities of {g:Filter} to trigger",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "zoneChange",
+            "to": "battlefield",
+            "subject": "$f"
+          },
+          "abilitiesOf": "$g",
+          "additional": 0,
+          "suppress": true
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Lands entering don't cause abilities of creatures your opponents control to trigger."
+      },
+      {
+        "text": "Artifacts and creatures entering the battlefield don't cause abilities of enchantments you control to trigger."
+      }
+    ],
+    "counterExamples": [
+      "Creatures entering or leaving don't cause abilities of artifacts you control to trigger.",
+      "Creatures dying don't cause abilities of artifacts you control to trigger.",
+      "Creatures leaving don't cause abilities of artifacts you control to trigger."
+    ]
+  },
+  {
+    "id": "eff.edhp2.youAndObjs.gain.hexproofFromColors",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.11c",
+      "CR 702.11d",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "you and {o:Objs} gain {h:HexFromColors} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted",
+          "other": {
+            "controller": "opponent",
+            "colors": "$h.colors"
+          }
+        },
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$h.abilities"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "You and creatures you control gain hexproof from red and from green until end of turn."
+      },
+      {
+        "text": "You and permanents you control gain hexproof from white until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "You and permanents you control gain hexproof from red and from green.",
+      "You and permanents you control gain hexproof from monocolored until end of turn.",
+      "Target player and permanents they control gain hexproof from red until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhp2.lifeFixed.objsGain",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.7",
+      "CR 119.8",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "{d:Dur} , your life total can't change , and {o:Objs} gain {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "gainLife"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "loseLife"
+        },
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, your life total can't change, and creatures you control gain flying and lifelink."
+      },
+      {
+        "text": "Until end of turn, your life total can't change, and artifacts you control gain indestructible."
+      }
+    ],
+    "counterExamples": [
+      "Your life total can't change, and creatures you control gain flying.",
+      "Until end of turn, your life total can't change, and creatures you control get +1/+1.",
+      "Until end of turn, your life total can't change."
+    ]
+  },
+  {
+    "id": "eff.edhp2.you.gain.protectionFromEverything",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.16b",
+      "CR 702.16e",
+      "CR 611.2a"
+    ],
+    "pattern": "you gain protection from everything {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beEnchanted"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "you"
+          },
+          "mode": "cant",
+          "action": "beTargeted"
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "player": "you"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "until",
+      "everything"
+    ],
+    "examples": [
+      {
+        "text": "You gain protection from everything until end of turn."
+      },
+      {
+        "text": "Draw a card. You gain protection from everything until your next turn."
+      }
+    ],
+    "counterExamples": [
+      "You gain protection from everything.",
+      "You gain protection from each of your opponents until end of turn.",
+      "Target player gains protection from everything until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhp2.life.lose.forEachCounterOn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] 1 life for each {k:CounterKind} counter on {o:Obj}",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": {
+        "q": "counters",
+        "on": "$o",
+        "kind": "$k"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You lose 1 life for each burden counter on ~."
+      },
+      {
+        "text": "Each opponent loses 1 life for each charge counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "You lose 2 life for each burden counter on ~.",
+      "You lose 1 life for each burden counter on ~ unless it is blue.",
+      "You gain 1 life for each burden counter on ~."
+    ]
+  }
+]

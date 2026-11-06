@@ -1,0 +1,493 @@
+[
+  {
+    "id": "eff.edhn55.createN.ofThoseTokens",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.1",
+      "CR 706.3a",
+      "CR 608.2c"
+    ],
+    "pattern": "create {n:Qty} of those tokens",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": "$n",
+      "token": {
+        "@rowToken": true
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "those"
+    ],
+    "examples": [
+      {
+        "text": "Roll a d12.\n1-9 | Create a 3/1 green Gnome creature token.\n10-12 | Create two of those tokens."
+      },
+      {
+        "text": "Roll a d12.\n1-4 | Create a 3/1 green Gnome creature token.\n5-8 | Create two of those tokens.\n9-12 | Create three of those tokens."
+      }
+    ],
+    "counterExamples": [
+      "Roll a d12.\n1-9 | Create a 3/1 green Gnome creature token.\n10-12 | Create two of those creatures.",
+      "Roll a d12.\n1-12 | Create two of those tokens.",
+      "Roll a d12.\n1-9 | Draw a card.\n10-12 | Create two of those tokens.",
+      "Create two of those tokens."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhn55.filter.enterTapped.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{d:Dur} , {f:Filter} enter tapped",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": "$f",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Until your next turn, lands you control enter tapped."
+      },
+      {
+        "text": "Until your next turn, artifacts your opponents control enter tapped."
+      }
+    ],
+    "counterExamples": [
+      "Lands you control enter tapped until your next turn.",
+      "Until your next turn, lands you control enter untapped.",
+      "Until your next turn, lands you control enter tapped and attacking.",
+      "Until end of turn, lands you control enter tapped."
+    ]
+  },
+  {
+    "id": "eff.edhn55.rollDie.twoD10.chooseOne",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2",
+      "CR 706.3"
+    ],
+    "pattern": "roll two d10 and choose one result",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 10,
+      "count": 2,
+      "chooseOne": true
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Roll two d10 and choose one result."
+      },
+      {
+        "text": "Roll two d10 and choose one result. Gain life equal to that result."
+      }
+    ],
+    "counterExamples": [
+      "Roll two d10.",
+      "Roll three d10 and choose one result.",
+      "Roll two d10 and choose two results."
+    ]
+  },
+  {
+    "id": "eff.edhn55.rollDie.twoD4.chooseOne",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2",
+      "CR 706.3"
+    ],
+    "pattern": "roll two d4 and choose one result",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 4,
+      "count": 2,
+      "chooseOne": true
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Roll two d4 and choose one result."
+      },
+      {
+        "text": "Roll two d4 and choose one result. Draw cards equal to the other result."
+      }
+    ],
+    "counterExamples": [
+      "Roll two d4.",
+      "Roll three d4 and choose one result.",
+      "Roll one d4 and choose one result."
+    ]
+  },
+  {
+    "id": "eff.edhn55.rollDie.twoSixSided",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2",
+      "CR 706.3"
+    ],
+    "pattern": "roll two six-sided dice",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 6,
+      "count": 2
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Roll two six-sided dice."
+      },
+      {
+        "text": "Roll two six-sided dice. Gain life equal to the total of those results."
+      }
+    ],
+    "counterExamples": [
+      "Roll two six-sided dice and choose one result.",
+      "Roll three six-sided dice.",
+      "Roll two six-sided die."
+    ]
+  },
+  {
+    "id": "eff.edhn55.rollDie.threeSixSided",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2",
+      "CR 706.3"
+    ],
+    "pattern": "roll three six-sided dice",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 6,
+      "count": 3
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Roll three six-sided dice."
+      },
+      {
+        "text": "Roll three six-sided dice. For each different result, create a 2/2 green Wolf creature token."
+      }
+    ],
+    "counterExamples": [
+      "Roll three six-sided dice and choose one result.",
+      "Roll two six-sided dice.",
+      "Roll four six-sided dice."
+    ]
+  },
+  {
+    "id": "eff.edhn55.return.anyNumber.totalMv.fromGraveyard.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 202.3",
+      "CR 400.3",
+      "CR 404.1"
+    ],
+    "pattern": "return any number of cards with total mana value {m:Qty} or less from your graveyard to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "return",
+        "groupLimit": {
+          "stat": "manaValue",
+          "cmp": {
+            "op": "<=",
+            "value": "$m"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "return"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return any number of cards with total mana value 5 or less from your graveyard to your hand."
+      },
+      {
+        "text": "Return any number of cards with total mana value 7 or less from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Return any number of cards with total mana value 5 or less from your graveyard to the battlefield.",
+      "Return up to two cards with total mana value 5 or less from your graveyard to your hand.",
+      "Return any number of cards with total mana value 5 or greater from your graveyard to your hand."
+    ],
+    "consumes": [
+      "any number"
+    ]
+  },
+  {
+    "id": "eff.edhn55.return.choose.bf.counters.equalTo",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 614.1c",
+      "CR 122.6",
+      "CR 400.3"
+    ],
+    "pattern": "return ( a | an ) {f:Filter} to the battlefield with a number of {k:CounterKind} counters on it equal to {n:Qty}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "returned"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "returned"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "counters": [
+            {
+              "kind": "$k",
+              "count": "$n"
+            }
+          ]
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Return a creature card from your graveyard to the battlefield with a number of +1/+1 counters on it equal to the number of lands you control."
+      },
+      {
+        "text": "Return an artifact card from your graveyard to the battlefield with a number of charge counters on it equal to the number of cards in your hand."
+      }
+    ],
+    "counterExamples": [
+      "Return a creature card from your graveyard to the battlefield with two +1/+1 counters on it.",
+      "Return a creature card from your graveyard to your hand with a number of +1/+1 counters on it equal to the number of lands you control.",
+      "Return a creature card from your graveyard to the battlefield with a number of +1/+1 counters on it."
+    ]
+  },
+  {
+    "id": "eff.edhn55.search.numberEqualTo.bf.tapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23b",
+      "CR 701.23a",
+      "CR 107.3",
+      "CR 614.1c",
+      "CR 701.19"
+    ],
+    "pattern": "search your library for a number of {f:Filter} cards equal to {n:Qty} , put them onto the battlefield tapped , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": "$n",
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Roll two d4 and choose one result. Search your library for a number of basic land cards equal to the other result, put them onto the battlefield tapped, then shuffle."
+      },
+      {
+        "text": "Roll two d10 and choose one result. Search your library for a number of Forest cards equal to that result, put them onto the battlefield tapped, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Roll two d4 and choose one result. Search your library for a number of basic land cards equal to the other result, put them into your hand, then shuffle.",
+      "Roll two d4 and choose one result. Search your library for a number of basic land cards equal to the other result, put them onto the battlefield, then shuffle.",
+      "Search your library for up to three Forest cards, put them onto the battlefield tapped, then shuffle."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "eff.edhn55.has.baseToughness.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.4b",
+      "CR 611.2a",
+      "CR 208.1",
+      "CR 613.1g"
+    ],
+    "pattern": "{o:Obj} has base toughness {n:Qty} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7b",
+              "toughness": "$n"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target creature has base toughness 1 until end of turn."
+      },
+      {
+        "text": "Target Golem has base toughness 3 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature has base toughness 1.",
+      "Target creature has base power 1 until end of turn.",
+      "Target creature has toughness 1 until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn55.rollDie.d12",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 706.1",
+      "CR 706.2"
+    ],
+    "pattern": "roll a d12",
+    "build": {
+      "op": "rollDie",
+      "who": {
+        "ref": "you"
+      },
+      "sides": 12
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Roll a d12.\n1-6 | Draw a card.\n7-12 | Gain 2 life."
+      },
+      {
+        "text": "Roll a d12. If the result is 12, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Roll a d13.",
+      "Roll two d12.",
+      "Roll a d12 and add 2."
+    ]
+  }
+]

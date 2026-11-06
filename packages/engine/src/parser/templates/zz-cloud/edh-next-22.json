@@ -1,0 +1,216 @@
+[
+  {
+    "id": "rep.edhn22.enters.copy.any.chosen",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.2"
+    ],
+    "pattern": "you may have ~ enter as a copy of any {f:Filter}",
+    "weak": 1,
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter as a copy of any artifact creature card in a graveyard."
+      },
+      {
+        "text": "You may have ~ enter as a copy of any artifact that entered this turn."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter as a copy of any creature card in a graveyard and gain 2 life.",
+      "~ enters as a copy of any creature card in a graveyard.",
+      "You may have ~ enter as a copy of any creature card in a graveyard, except it has flying until end of turn."
+    ]
+  },
+  {
+    "id": "rep.edhn22.enters.tapped.copy.any.exceptHas",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 707.5",
+      "CR 707.9a"
+    ],
+    "pattern": "you may have ~ enter tapped as a copy of any {f:Filter} on the battlefield , except it has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": "$f",
+              "optional": true,
+              "tapped": true,
+              "except": [
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter tapped as a copy of any creature on the battlefield, except it has flying."
+      },
+      {
+        "text": "You may have ~ enter tapped as a copy of any artifact on the battlefield, except it has \"When this artifact enters, draw a card.\""
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter tapped as a copy of any creature on the battlefield, except it has flying until end of turn.",
+      "You may have ~ enter tapped as a copy of any creature in a graveyard, except it has flying.",
+      "You may have ~ enter untapped as a copy of any creature on the battlefield, except it has flying."
+    ]
+  },
+  {
+    "id": "eff.edhn22.look.top.their",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.2",
+      "CR 608.2c",
+      "CR 102.1"
+    ],
+    "pattern": "look at the top card of their library",
+    "build": {
+      "op": "look",
+      "who": {
+        "ref": "you"
+      },
+      "at": {
+        "ref": "topCards",
+        "player": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "player",
+            "number": "plural",
+            "text": "their"
+          }
+        },
+        "count": 1
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever a creature you control deals combat damage to a player, look at the top card of their library."
+      },
+      {
+        "text": "Whenever a creature an opponent controls deals combat damage to a player, look at the top card of their library, then exile it face down."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control deals combat damage to a player, look at the top two cards of their library.",
+      "Whenever a creature you control deals combat damage to a player, look at the top card of their graveyard.",
+      "Whenever a creature you control deals combat damage to a player, reveal the top card of their library."
+    ]
+  },
+  {
+    "id": "eff.edhn22.permit.play.obj.durFirst.anyType",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7",
+      "CR 609.4b"
+    ],
+    "pattern": "{d:Dur} , you may play {o:Obj} , and mana of any type can be spent to cast ( it | that spell )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "anyManaType": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top card of target opponent's library. For as long as that card remains exiled, you may play it, and mana of any type can be spent to cast that spell."
+      },
+      {
+        "text": "Exile the top card of target opponent's library. Until the end of your next turn, you may play that card, and mana of any type can be spent to cast it."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top card of target opponent's library. For as long as that card remains exiled, you may play it.",
+      "Exile the top card of target opponent's library. For as long as that card remains exiled, you may play it, and mana of any type can be spent to pay for it.",
+      "Exile the top card of target opponent's library. For as long as that card remains exiled, each opponent may play it, and mana of any type can be spent to cast that spell."
+    ]
+  }
+]

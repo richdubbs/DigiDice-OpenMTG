@@ -145,9 +145,13 @@ describe.skipIf(localIndex() === null)('WP17 worked cases of design 6.7 on the r
     const f = parseCard(real('Frost Breath'), opts).faces[0]!;
     expect(effectOf(f.abilities[0]).steps.map((s) => s.op)).toEqual(['tap', 'manual']);
   });
-  it('Elspeth Tirel -5 is never automated by the bootstrap templates', () => {
+  it('Elspeth Tirel -5 is never automated without its exception: automated (edh-perms-9, the "except for" list of kinds), the filter excludes lands and tokens and the source', () => {
     const f = parseCard(real('Elspeth Tirel'), options()).faces[0]!;
     const minus = f.abilities.find((a) => a.text.includes('except for lands'))!;
-    expect(minus.kind === 'manual' || effectOf(minus).steps.every((s) => s.op === 'manual')).toBe(true);
+    if (minus.kind === 'manual' || effectOf(minus).steps.every((s) => s.op === 'manual')) return; // fail closed is always allowed
+    const what = JSON.stringify(effectOf(minus).steps);
+    expect(what).toContain('"notTypes":["Land"]');
+    expect(what).toContain('"token":false');
+    expect(what).toContain('"other":true');
   });
 });

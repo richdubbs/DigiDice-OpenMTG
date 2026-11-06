@@ -1,0 +1,567 @@
+[
+  {
+    "id": "eff.edhz24.delayEnd.ifRemainExiled",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 603.4",
+      "CR 513.1",
+      "CR 608.2c"
+    ],
+    "pattern": "at the beginning of the next end step , if any of those cards remain exiled , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "end",
+        "next": true
+      },
+      "do": [
+        {
+          "op": "if",
+          "cond": {
+            "cond": "exists",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "is": {
+                  "ref": "bound",
+                  "name": "",
+                  "$anaphor": {
+                    "sort": "set",
+                    "number": "plural",
+                    "head": "card",
+                    "text": "those cards"
+                  }
+                },
+                "zone": "exile"
+              }
+            }
+          },
+          "then": "$x",
+          "intervening": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top two cards of your library. You may play those cards this turn. At the beginning of the next end step, if any of those cards remain exiled, put them into your hand."
+      },
+      {
+        "text": "Exile the top four cards of your library. At the beginning of the next end step, if any of those cards remain exiled, put them into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top three cards of your library. At the beginning of the next end step, if all of those cards remain exiled, put them into your graveyard.",
+      "Exile the top three cards of your library. At the beginning of your next end step, if any of those cards remain exiled, put them into your graveyard.",
+      "Exile the top three cards of your library. At the beginning of the next end step, if any of those cards remain exiled, put them into your graveyard unless it is blue."
+    ]
+  },
+  {
+    "id": "rid.edhz24.token.thoseHave",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 111.2",
+      "CR 111.4",
+      "CR 608.2c"
+    ],
+    "pattern": "( that token has | those tokens have ) {a:Abilities}",
+    "build": {
+      "$patchPrevious": {
+        "token": {
+          "abilities": {
+            "@new": "$a"
+          }
+        },
+        "@into": true
+      }
+    },
+    "attachTo": "createToken",
+    "examples": [
+      {
+        "text": "Create two 1/1 colorless Golem artifact creature tokens. Those tokens have \"{T}: Add {C}.\""
+      },
+      {
+        "text": "Create a 1/1 colorless Golem artifact creature token. That token has \"{1}: Regenerate ~.\""
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. That token has \"{T}: Add {C}.\"",
+      "Create a 1/1 colorless Golem artifact creature token. That token has \"{T}: Add {C}\" until end of turn.",
+      "Create two 1/1 colorless Golem artifact creature tokens. Those tokens have haste until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhz24.youAndPlayer.eachRevealTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 401.2",
+      "CR 608.2c"
+    ],
+    "pattern": "you and {p:Player} each reveal the top card of your library",
+    "build": [
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": 1
+        },
+        "as": "duelMine"
+      },
+      {
+        "op": "reveal",
+        "who": "$p",
+        "what": {
+          "ref": "topCards",
+          "player": "$p",
+          "count": 1
+        },
+        "as": "duelTheirs"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "and",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each end step, you and target player each reveal the top card of your library."
+      },
+      {
+        "text": "At the beginning of your end step, you and target opponent each reveal the top card of your library."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, you and target opponent each reveal the top two cards of your library.",
+      "At the beginning of your end step, you and target opponent each reveal the bottom card of your library.",
+      "At the beginning of your end step, you or target opponent each reveal the top card of your library."
+    ]
+  },
+  {
+    "id": "eff.edhz24.eachLoseLife.otherRevealed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 202.3"
+    ],
+    "pattern": "you each lose life equal to the mana value of the card revealed by the other player",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "you"
+        },
+        "amount": {
+          "q": "stat",
+          "stat": "manaValue",
+          "of": {
+            "ref": "bound",
+            "name": "duelTheirs"
+          }
+        }
+      },
+      {
+        "op": "loseLife",
+        "who": {
+          "ref": "bound",
+          "name": "",
+          "$anaphor": {
+            "sort": "player",
+            "number": "singular",
+            "head": "player",
+            "text": "the other player"
+          }
+        },
+        "amount": {
+          "q": "stat",
+          "stat": "manaValue",
+          "of": {
+            "ref": "bound",
+            "name": "duelMine"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your draw step, you and target opponent each reveal the top card of your library. You each lose life equal to the mana value of the card revealed by the other player."
+      },
+      {
+        "text": "At the beginning of your end step, you and target opponent each reveal the top card of your library. You each lose life equal to the mana value of the card revealed by the other player."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, you and target opponent each reveal the top card of your library. You each gain life equal to the mana value of the card revealed by the other player.",
+      "At the beginning of your end step, you and target opponent each reveal the top card of your library. You each lose life equal to the power of the card revealed by the other player.",
+      "At the beginning of your end step, you and target opponent each reveal the top card of your library. You each lose life equal to the mana value of the card you revealed."
+    ]
+  },
+  {
+    "id": "eff.edhz24.eachPutRevealed.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "you each put the card you revealed into your hand",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "duelMine"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "duelTheirs"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your draw step, you and target opponent each reveal the top card of your library. You each put the card you revealed into your hand."
+      },
+      {
+        "text": "At the beginning of your end step, you and target opponent each reveal the top card of your library. You each lose life equal to the mana value of the card revealed by the other player. You each put the card you revealed into your hand."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, you and target opponent each reveal the top card of your library. You each put the card you revealed into your graveyard.",
+      "At the beginning of your end step, you and target opponent each reveal the top card of your library. You each put the card you revealed on the bottom of your library.",
+      "At the beginning of your end step, you and target opponent each reveal the top card of your library. You each put the card you revealed onto the battlefield."
+    ]
+  },
+  {
+    "id": "sta.edhz24.asLongAs.exiledCreature.hasLastPtTypes",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 205.3m",
+      "CR 604.2"
+    ],
+    "pattern": "as long as a card exiled with ~ is a creature card , ~ has the power , toughness , and creature types of the last creature card exiled with it . it's still ( a | an ) {st:Subtypes}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            },
+            "types": [
+              "Creature"
+            ],
+            "zone": "exile"
+          }
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": "7b",
+              "power": {
+                "q": "stat",
+                "stat": "power",
+                "of": {
+                  "ref": "linked",
+                  "link": "exiled",
+                  "last": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "isCard": true
+                  }
+                }
+              },
+              "toughness": {
+                "q": "stat",
+                "stat": "toughness",
+                "of": {
+                  "ref": "linked",
+                  "link": "exiled",
+                  "last": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "isCard": true
+                  }
+                }
+              }
+            },
+            {
+              "layer": 4,
+              "subtypes": {
+                "setFrom": {
+                  "ref": "linked",
+                  "link": "exiled",
+                  "last": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "isCard": true
+                  }
+                },
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "and",
+      "last",
+      "still"
+    ],
+    "examples": [
+      {
+        "text": "Imprint \u2014 When this creature enters, you may exile target creature an opponent controls.\nAs long as a card exiled with this creature is a creature card, this creature has the power, toughness, and creature types of the last creature card exiled with it. It's still a Golem."
+      },
+      {
+        "text": "Imprint \u2014 When this creature enters, you may exile target artifact creature.\nAs long as a card exiled with this creature is a creature card, this creature has the power, toughness, and creature types of the last creature card exiled with it. It's still a Construct."
+      }
+    ],
+    "counterExamples": [
+      "Imprint \u2014 When this creature enters, you may exile target creature an opponent controls.\nAs long as a card exiled with this creature is a creature card, this creature has the power, toughness, and creature types of the first creature card exiled with it. It's still a Golem.",
+      "Imprint \u2014 When this creature enters, you may exile target creature an opponent controls.\nAs long as a card exiled with this creature is a creature card, this creature has the power and toughness of the last creature card exiled with it. It's still a Golem.",
+      "Imprint \u2014 When this creature enters, you may exile target creature an opponent controls.\nAs long as a card exiled with this creature is a land card, this creature has the power, toughness, and creature types of the last creature card exiled with it. It's still a Golem.",
+      "Imprint \u2014 When this creature enters, you may exile target creature an opponent controls.\nAs long as a card exiled with this creature is a creature card, this creature has the power, toughness, and creature types of the last creature card exiled with it. It's still a land."
+    ]
+  },
+  {
+    "id": "eff.edhz24.milled.upToN.bf",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 110.2a"
+    ],
+    "pattern": "put up to {n:Qty} {f:CardsDesc} from among {g:Milled} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Mill eight cards. Put up to three artifact cards from among the milled cards onto the battlefield."
+      },
+      {
+        "text": "Mill six cards. Put up to two land cards from among the milled cards onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Mill ten cards. Put up to two creature cards from among the milled cards into your hand.",
+      "Mill ten cards. Put two creature cards from among the milled cards onto the battlefield.",
+      "Mill ten cards. Put up to two creature cards from among the milled cards onto the battlefield under your control."
+    ]
+  },
+  {
+    "id": "eff.edhz24.bounce.playerChoosesAndReturns",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 109.4",
+      "CR 701.9"
+    ],
+    "pattern": "{p:Player} choose[s] {f:Filter} and return[s] it to its owner 's hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": "$p",
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "as": "bounce"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "bounce"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a player casts a creature spell, that player chooses a land they control and returns it to its owner's hand."
+      },
+      {
+        "text": "At the beginning of each opponent's upkeep, that player chooses a permanent they control and returns it to its owner's hand."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a player casts a creature spell, that player chooses a land they control and returns it to the battlefield.",
+      "Whenever a player casts a creature spell, that player chooses a land they control and returns it to your hand.",
+      "Whenever a player casts a creature spell, that player chooses a land you control and returns it to its owner's hand unless they pay {1}."
+    ]
+  },
+  {
+    "id": "eff.edhz24.shuffle.eachIntoOwnersLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} shuffle[s] each {f:Filter} into its owner 's library",
+    "build": [
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "as": "shuffledIn",
+        "do": [
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "shuffledIn"
+            },
+            "to": {
+              "zone": "library"
+            }
+          },
+          {
+            "op": "shuffle",
+            "who": {
+              "ref": "ownerOf",
+              "object": {
+                "ref": "bound",
+                "name": "shuffledIn"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Target player chooses an artifact they control and returns it to its owner's hand. Then they shuffle each creature they control into its owner's library."
+      },
+      {
+        "text": "Target opponent chooses a land they control and returns it to its owner's hand. Then they shuffle each artifact they control into its owner's library."
+      }
+    ],
+    "counterExamples": [
+      "Target player chooses an artifact they control and returns it to its owner's hand. Then they shuffle each creature they control into your library.",
+      "Target player chooses an artifact they control and returns it to its owner's hand. Then they shuffle each creature they control into their graveyard.",
+      "Target player chooses an artifact they control and returns it to its owner's hand. Then they shuffle the creatures they control into its owner's library."
+    ]
+  }
+]

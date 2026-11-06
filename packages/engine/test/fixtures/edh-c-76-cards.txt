@@ -1,0 +1,10 @@
+# edh-c-76 (Commander effort, EDHREC ranks 23,001-23,500, third pass): see docs in the round record. After editing: npm run cards -- fixtures
+Monomania
+Sphinx's Decree
+Guardians of Koilos
+Mishra's Domination
+Morgue Burst
+Gift of the Gargantuan
+Shadows' Verdict
+Harsh Justice
+Stormfront Riders

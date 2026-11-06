@@ -119,9 +119,9 @@ describe('CR 611.2c, 608.2h: the count of a resolved pump is locked as the effec
   const FISTS = card('Test Burning Fists', 'Instant', "Draw a card. Until end of turn, target creature gains trample and gets +1/+0 for each card you've drawn this turn.");
   const GROVE = card('Test Grove Rally', 'Instant', 'Until end of turn, creatures you control get +1/+1 for each Forest you control and gain trample.');
   const BEAR = card('Test Plain Bear', 'Creature — Bear', '', { pt: ['2', '2'] });
-  it('both are automated (the group form is capped at partial by its experimental template, its effect is still data)', () => {
+  it('both are automated (edh-top-2: the group form is stable now: Nissa, Ascended Animist prints it)', () => {
     expect(full(FISTS)).toBe(true);
-    expect(GROVE.automation.level).toBe('partial');
+    expect(GROVE.automation.level).toBe('full');
     expect(JSON.stringify(GROVE.faces)).not.toContain('"op":"manual"');
   });
   it('the card drawn by the spell counts (1 on the first turn, no draw step): 3/2 with trample', () => {

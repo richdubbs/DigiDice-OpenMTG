@@ -1,0 +1,142 @@
+[
+  {
+    "id": "sta.edhpm11.pump.foreach.otherShares",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 604.1",
+      "CR 613.4c",
+      "CR 205.3m",
+      "CR 611.3a"
+    ],
+    "pattern": "( equipped | enchanted ) creature gets +1/+1 for each other creature you control that shares a creature type with it",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "you",
+                "attachedToSource": false,
+                "sharesWith": {
+                  "with": {
+                    "ref": "attachedTo"
+                  },
+                  "quality": "creatureType"
+                }
+              }
+            }
+          },
+          "toughness": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Creature"
+                ],
+                "controller": "you",
+                "attachedToSource": false,
+                "sharesWith": {
+                  "with": {
+                    "ref": "attachedTo"
+                  },
+                  "quality": "creatureType"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each other",
+      "each",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature gets +1/+1 for each other creature you control that shares a creature type with it."
+      },
+      {
+        "text": "Enchanted creature has menace and trample.\nEnchanted creature gets +1/+1 for each other creature you control that shares a creature type with it."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature gets +1/+1 for each creature you control that shares a creature type with it.",
+      "Enchanted creature gets +1/+1 for each other creature that shares a creature type with it.",
+      "Enchanted creature gets +1/+1 for each other creature you control that shares a color with it.",
+      "Enchanted creature gets +2/+2 for each other creature you control that shares a creature type with it."
+    ]
+  },
+  {
+    "id": "rep.edhpm11.creatureTokens.plusA.passive",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 614.5",
+      "CR 111.1"
+    ],
+    "pattern": "if one or more creature tokens would be created under your control , those tokens plus ( a | an ) {t:TokenDesc} are created instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "createToken",
+        "player": "you",
+        "token": {
+          "types": [
+            "Creature"
+          ]
+        }
+      },
+      "body": {
+        "b": "modify",
+        "then": {
+          "as": "created",
+          "do": [
+            {
+              "op": "createToken",
+              "who": {
+                "ref": "you"
+              },
+              "count": 1,
+              "token": "$t"
+            }
+          ]
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If one or more creature tokens would be created under your control, those tokens plus a 2/2 green Bear creature token are created instead."
+      },
+      {
+        "text": "If one or more creature tokens would be created under your control, those tokens plus a 3/3 green Beast creature token are created instead."
+      }
+    ],
+    "counterExamples": [
+      "If one or more creature tokens would be created under an opponent's control, those tokens plus a 1/1 white Soldier creature token are created instead.",
+      "If one or more creature tokens would be created under your control, a 1/1 white Soldier creature token is created instead.",
+      "If one or more creature tokens would be created under your control, those tokens plus two 1/1 white Soldier creature tokens are created instead."
+    ]
+  }
+]

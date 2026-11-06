@@ -216,8 +216,9 @@ describe('CR 601.2i: "whenever an opponent casts their first noncreature spell e
 });
 
 describe('review fix: "each other player" in a trigger on another player\'s spell (CR 603.2, 608.2)', () => {
-  it('"whenever a player casts their first noncreature spell each turn, each other player draws a card" is not full (the others are the caster\'s)', () => {
-    expect(CHRONICLER.automation.level).not.toBe('full');
+  // edh-mana-keywords-7 (CR 603.2, 601.2i): for a trigger on a spell being cast the others are the players other than the caster (effects/refs.ts), so it is full now (Zenith Chronicler)
+  it('"whenever a player casts their first noncreature spell each turn, each other player draws a card" is full: the others are the caster\'s (edh-mana-keywords-7)', () => {
+    expect(CHRONICLER.automation.level).toBe('full');
   });
   it('an opponent casting the spell never makes that opponent draw for it (p1 controls it, p2 casts)', () => {
     const s0 = scenario(CARDS, { defs: DEFS, p1: { battlefield: ['Test Chronicler'] }, p2: { hand: ['Test Zap'] } });

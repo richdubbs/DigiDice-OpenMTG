@@ -48,6 +48,9 @@ export function criticalWordProblem(tokens: readonly Tok[], tree: TemplateUse): 
   for (let i = 0; i < tokens.length; i++) {
     for (const ph of CRITICAL_PHRASES) {
       if (!ph.every((w, k) => tokens[i + k]?.norm === w)) continue;
+      // edhd68 (Rose Tyler): in "for each time counter" the word "time" is the counter's kind, not the phrase "each time": the guard reads it as the word "each" alone
+      // (the following phrases are tried next, and that one is judged on the template's `consumes` as before)
+      if (ph.join(' ') === 'each time' && /^counters?$/.test(tokens[i + 2]?.norm ?? '') && tokens[i - 1]?.norm === 'for') continue;
       const span = ph.map((_, k) => i + k);
       if (span.every((k) => hole[k])) break;
       const tpl = owner[i];
@@ -96,6 +99,8 @@ export interface UnitInput {
   text?: string;
   /** FAST5 T75: what the earlier sentences of the ability made, for the pronoun holes (holes/core.ts#Discourse). */
   discourse?: Discourse;
+  /** edh-d-95: the op of the last top-level step of the sentence before (when the caller knows it): "That creature enters ..." is a next-spell rider only after a next-spell effect. */
+  previousOp?: string;
 }
 
 const rangeOf = (tokens: readonly Tok[]): Range => (tokens.length === 0 ? [0, 0] : [tokens[0]!.start, tokens[tokens.length - 1]!.end]);
@@ -109,7 +114,25 @@ export function parseEffectUnit(input: UnitInput, env: UnitEnv): Unit {
   // CLOUD std-fra (guard G10): a "Then if ..." sentence that only the generic sentence-initial "Then" (eff.stdfra.then.effects, weak) reads is first tried as the rider it
   // always was (eff.t34.thenIf, "the difference" and the other riders of the sentence before): the rider reading keeps what it kept; the generic one is the fallback
   const generic = r.status === 'ok' && input.tokens[0]?.norm === 'then' && input.tokens[1]?.norm === 'if' && r.derivation.templatesUsed.includes('eff.stdfra.then.effects');
-  const viaRider = generic && chart(input.tokens, 'rider', ue).status === 'ok';
+  // edh-fix-4 (guard G10; CR 608.2c, 608.2d): the same for "Each player who does draws two cards." after "Each player may ...": the `did` player reading of edh-players-11 (weak,
+  // parser/holes/player.ts) lets eff.draw read that sentence by itself, but the rider of r5-refs (rid.r5refs.eachWhoDoes.draw) read it first and still does: the draw is made by
+  // the players who did it inside the `may`, and the rider keeps the units after it (a later "You draw a card." is eff.draw) readable
+  const eachWhoDoes = r.status === 'ok' && input.tokens[0]?.norm === 'each' && (input.tokens[1]?.norm === 'player' || input.tokens[1]?.norm === 'opponent') && input.tokens[2]?.norm === 'who'
+    && (input.tokens[3]?.norm === 'does' || input.tokens[3]?.norm === 'did');
+  // edh-c-6 (guard G10; CR 614.1c, 608.2c): "If {G} was spent to cast ~, that creature enters with an additional +1/+1 counter on it." after a move to the battlefield (Vigor Mortis): the
+  // cast-spell reading (eff.r4repl.castSpell.entersWith.additional, a replacement for a spell cast this turn) also reads the sentence, but a later sentence of a spell is the rider of
+  // the move before it (rid.edhv6.entersWith.if.cond)
+  const entersWithRider = r.status === 'ok' && input.index > 0 && input.tokens[0]?.norm === 'if' && r.derivation.templatesUsed.includes('eff.r4repl.castSpell.entersWith.additional');
+  // edh-next-127 (CR 603.7a, 601.2i; The Ruinous Powers): "When you cast a spell this way, its owner loses life equal to its mana value." after a permission: the generic reflexive reading
+  // (rf.whenYouDo, a "when you do" right after the permission) also reads the sentence, but the spell is cast later, with that permission: the rider rid.edhn127.castThisWay.ownerLosesLifeMv
+  // gives the permission its delayed trigger (PermissionDef.onCast)
+  // edh-d-95 (guard G10; CR 614.1c, 611.2; Savage Summoning): ... and "That creature enters with an additional +1/+1 counter on it." as a later sentence after a waiting next-spell effect
+  // ("The next creature spell you cast this turn ... That creature enters ..."): the rider of that effect (rid.edhd95.nextSpell.thatCreatureEntersWithAdditionalCounter); the cast-spell
+  // reading names a cast event, which a later sentence of a spell has not (it stays the reading of a cast trigger's first sentence, index 0)
+  const castThisWay = r.status === 'ok' && input.index > 0 && ['when', 'you', 'cast', 'a', 'spell', 'this', 'way'].every((w, k) => input.tokens[k]?.norm === w) && r.derivation.templatesUsed.includes('rf.whenYouDo');
+  const nextSpellEnters = r.status === 'ok' && input.index > 0 && input.previousOp === 'nextSpell' && input.tokens[0]?.norm === 'that' && input.tokens[1]?.norm === 'creature' && input.tokens[2]?.norm === 'enters'
+    && r.derivation.templatesUsed.includes('eff.r4repl.castSpell.entersWith.additional');
+  const viaRider = (generic || eachWhoDoes || entersWithRider || castThisWay || nextSpellEnters) && chart(input.tokens, 'rider', ue).status === 'ok';
   // Cloud std-woe (CR 608.2c; design 6.3: "then" implies order only): "Draw two cards. Then discard a card." A later sentence of the ability that begins with "Then"
   // says only that its instructions follow the earlier ones, which every sentence does, so when no template reads the whole sentence it is read without the word
   // (the unit keeps its range and text, so the ledger and the render gate still see "Then"; its tokens are the ones charted). Not "Then if ...": a condition there may

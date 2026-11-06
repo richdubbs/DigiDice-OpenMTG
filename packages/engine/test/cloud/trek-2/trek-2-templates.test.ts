@@ -202,7 +202,9 @@ describe('trek-2 parser/holes/cond.ts (CR 601.2i): "if ~ is the first spell you\
   it('the condition is read only while a spell resolves: a static\'s, a trigger\'s or an announcement\'s reader does not have it (capability cond:firstSpellCast only)', () => {
     expect(ENGINE_CAPABILITIES.has('cond:firstSpellCast')).toBe(true);
     expect(ENGINE_CAPABILITIES.has('scond:firstSpellCast')).toBe(false);
-    expect(ENGINE_CAPABILITIES.has('feature:announce.cond.firstSpellCast')).toBe(false);
+    // combined copy: edh-next-143 (Once Upon a Time) reads it at announcement for an alternative cost only (model/forms.ts: feature:announce.cond.firstSpellCast); any other announcement reader stays unregistered
+    expect(ENGINE_CAPABILITIES.has('feature:announce.cond.firstSpellCast')).toBe(true);
+    expect(ENGINE_CAPABILITIES.has('feature:announce.cond.firstSpellCast.other')).toBe(false);
   });
 });
 

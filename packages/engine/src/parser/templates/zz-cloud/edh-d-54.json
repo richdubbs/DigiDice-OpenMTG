@@ -1,0 +1,242 @@
+[
+  {
+    "id": "sta.edhd54.gainLife.byController.loseInstead",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 119.3",
+      "CR 119.4"
+    ],
+    "pattern": "if a spell or ability would cause its controller to gain life , that player loses that much life instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "life",
+        "change": "gain",
+        "byController": true
+      },
+      "body": {
+        "b": "instead",
+        "do": [
+          {
+            "op": "loseLife",
+            "who": {
+              "ref": "event",
+              "role": "player"
+            },
+            "amount": {
+              "q": "eventAmount"
+            }
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "that much"
+    ],
+    "examples": [
+      {
+        "text": "~ has haste. If a spell or ability would cause its controller to gain life, that player loses that much life instead."
+      },
+      {
+        "text": "~ has flying. If a spell or ability would cause its controller to gain life, that player loses that much life instead."
+      }
+    ],
+    "counterExamples": [
+      "~ has haste. If a spell or ability would cause its controller to gain life, that player gains that much life instead.",
+      "~ has haste. If a spell or ability would cause its controller to gain life, that player loses that much life.",
+      "~ has haste. If a spell or ability would cause its controller to lose life, that player loses that much life instead."
+    ]
+  },
+  {
+    "id": "rep.edhd54.enters.putExileToGraveyards.counters",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 400.3",
+      "CR 122.6"
+    ],
+    "pattern": "as ~ enters , you may put {n:Qty} {f:Filter} into their owners' graveyards . if you do , ( it | ~ ) enters with {m:Count} {k:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "putToGraveyard": {
+              "filter": "$f",
+              "count": "$n",
+              "counters": {
+                "kind": "$k",
+                "count": "$m"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, you may put three cards your opponents own from exile into their owners' graveyards. If you do, this creature enters with five +1/+1 counters on it."
+      },
+      {
+        "text": "As ~ enters, you may put two cards your opponents own from exile into their owners' graveyards. If you do, ~ enters with three +1/+1 counters on it."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, you may put two cards your opponents own from exile into their owners' graveyards. If you don't, it enters with four +1/+1 counters on it.",
+      "As ~ enters, you may put two cards your opponents own from exile into their owners' graveyards.",
+      "As ~ enters, you may put two cards you own from exile into their owners' graveyards. If you do, it enters with four +1/+1 counters on it."
+    ]
+  },
+  {
+    "id": "eff.edhd54.put.opponentExiledCard.toGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 406.1",
+      "CR 400.3",
+      "CR 608.2d"
+    ],
+    "pattern": "put a card an opponent owns from exile into that player 's graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "exile",
+            "owner": "opponent",
+            "faceDown": false
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "moved"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "moved"
+        },
+        "to": {
+          "zone": "graveyard",
+          "owner": {
+            "ref": "ownerOf",
+            "object": {
+              "ref": "bound",
+              "name": "moved"
+            }
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, you may put a card an opponent owns from exile into that player's graveyard. If you do, you gain 3 life."
+      },
+      {
+        "text": "Whenever ~ attacks, you may put a card an opponent owns from exile into that player's graveyard. If you do, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, put two cards an opponent owns from exile into their owners' graveyards.",
+      "When ~ enters, put a card an opponent owns from exile onto the battlefield.",
+      "When ~ enters, put a card you own from exile into that player's graveyard."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "rep.edhd54.enters.payOrCond.counters",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 701.20a",
+      "CR 122.6"
+    ],
+    "pattern": "as ~ enters , you may {c:Cost} . if you do or if {k:Cond} , ( it | ~ ) enters with {m:Count} {k2:CounterKind} counter[s] on it",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "countersIfPay": {
+              "cost": "$c",
+              "or": "$k",
+              "counters": [
+                {
+                  "kind": "$k2",
+                  "count": "$m"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, you may reveal a Wizard card from your hand. If you do or if you control a Wizard, ~ enters with two +1/+1 counters on it."
+      },
+      {
+        "text": "As ~ enters, you may reveal an Elf card from your hand. If you do or if you control a Forest, it enters with a +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, you may reveal a Wizard card from your hand. If you do and if you control a Wizard, ~ enters with a +1/+1 counter on it.",
+      "As ~ enters, you may reveal a Wizard card from your hand. If you don't, ~ enters with a +1/+1 counter on it.",
+      "As ~ enters, reveal a Wizard card from your hand. If you do or if you control a Wizard, ~ enters with a +1/+1 counter on it."
+    ]
+  }
+]

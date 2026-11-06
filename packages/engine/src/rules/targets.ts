@@ -14,11 +14,12 @@ import type { EffectProgram, NumberCmp, PlayerRef, TargetSpec } from '../types/a
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { GameObject, GameState, TargetChoice } from '../types/state';
 import { evalCount } from '../effects/eval';
-import { charsOfObject, ptNumbers } from './characteristics';
+import { charsOfObject, PERMANENT_TYPES, ptNumbers } from './characteristics';
 import { creatureTypesOf, findObjects, matchesFilter, type FilterContext } from './filter';
 import { filterCtxOutside, filterMentionsX, relaxUnannouncedX } from './filter-env';
 import { gameOf, hookpoints } from './hookpoints';
 import { seatNeighbor } from '../statics/seats';
+import { controllerDealtCombatDamageBySourceThisTurn, playerDealtDamageThisTurn } from './history';
 
 export interface TargetOptions {
   objects: ObjectId[];
@@ -96,6 +97,7 @@ export function announcedPlayers(s: GameState, ref: PlayerRef, controller: Playe
     }
     case 'seat': { // M12-1 (m12 design D6): the next / previous player in turn order still in the game (CR 101.4, 103.1), from `of` (you by default)
       const from = ref.of === undefined ? [controller] : announcedPlayers(s, ref.of, controller, sourceId, env);
+      if (ref.chosen !== undefined) return null; // edhd63: a chosen direction is no announcement's (fail closed)
       return from === null ? null : [...new Set(from.flatMap((p) => { const n = seatNeighbor(s, p, ref.side); return n !== undefined ? [n] : []; }))];
     }
     default:
@@ -116,7 +118,7 @@ function abilityMatches(s: GameState, o: GameObject, f: TargetSpec['filter'], yo
     return anyOf.some((opt) => abilityMatches(s, o, { ...rest, ...opt }, you, ctx));
   }
   for (const [k, v] of Object.entries(f)) {
-    if (v !== undefined && k !== 'zone' && k !== 'controller' && k !== 'stackKind' && k !== 'targets' && k !== 'is' && k !== 'abilitySource') return false;
+    if (v !== undefined && k !== 'zone' && k !== 'controller' && k !== 'stackKind' && k !== 'targets' && k !== 'is' && k !== 'abilitySource' && k !== 'loyaltyAbility' && k !== 'targetsOnly' && k !== 'targetsOnlyPlayer' /* edh-next-74: CR 115.9c */ && k !== 'targetCount' /* edh-next-121: CR 115.9a */) return false;
   }
   if (f.abilitySource !== undefined && !matchesFilter(s, o, { abilitySource: f.abilitySource, zone: 'stack' as const }, ctx)) return false; // FAST5 T45: CR 113.7a
   if (typeof f.controller === 'object') {
@@ -125,10 +127,13 @@ function abilityMatches(s: GameState, o: GameObject, f: TargetSpec['filter'], yo
   }
   if (f.controller === 'you' && o.controller !== you) return false;
   if (f.controller === 'opponent' && o.controller === you) return false;
-  if (f.targets !== undefined || f.is !== undefined) {
-    const sub = { ...(f.targets !== undefined ? { targets: f.targets } : {}), ...(f.is !== undefined ? { is: f.is } : {}), zone: 'stack' as const };
+  if (f.targets !== undefined || f.is !== undefined || f.targetsOnly !== undefined) {
+    const sub = { ...(f.targets !== undefined ? { targets: f.targets } : {}), ...(f.is !== undefined ? { is: f.is } : {}), ...(f.targetsOnly !== undefined ? { targetsOnly: f.targetsOnly, ...(f.targetsOnlyPlayer === true ? { targetsOnlyPlayer: true as const } : {}) } : {}), zone: 'stack' as const }; // edh-next-74: `targetsOnly` (CR 115.9c)
     if (!matchesFilter(s, o, sub, ctx)) return false; // CR 115.9b: the current targets of the ability
   }
+  // edh-next-121 (CR 115.9a; Wyll's Reversal, and Bolt Bend's "target spell or ability with a single target"): the number of times anything was chosen as a target of the ability
+  if (f.targetCount !== undefined && !matchesFilter(s, o, { targetCount: f.targetCount, zone: 'stack' as const }, ctx)) return false;
+  if (f.loyaltyAbility === true && o.stack?.loyalty !== true) return false; // edhd36 (CR 606.2)
   const kind = o.stack?.kind;
   switch (f.stackKind) {
     case undefined: case 'ability': return true;
@@ -198,6 +203,11 @@ export function targetOptions(s: GameState, spec: TargetSpec, controller: Player
       if (who === 'you' && p.id !== controller) continue;
       if (who === 'opponent' && p.id === controller) continue;
       if (refPlayers && !refPlayers.includes(p.id)) continue;
+      if (spec.players?.dealtDamage === true && !playerDealtDamageThisTurn(s, p.id)) continue; // edh-next-86 (CR 120.1): a player who was dealt damage this turn
+      if (spec.players?.lostLife === true && p.turnStats.lifeLost <= 0) continue; // edh-c-34 (CR 119.3): a player who has lost life this turn
+      if (spec.players?.activePlayer === true && s.turn.activePlayer !== p.id) continue; // trek-16 (CR 115.1, 500.1): the player whose turn it is
+      if (spec.players?.otherThan !== undefined) { const them = ctx.env.refs(spec.players.otherThan)?.players; if (them === undefined || them.length === 0 || them.includes(p.id)) continue; } // edh-cast-15 (CR 115.1): "another target player", not the player the reference names (unreadable: no legal player)
+      if (spec.players?.dealtCombatDamageBySource === true && (sourceId === undefined || !controllerDealtCombatDamageBySourceThisTurn(s, p.id, sourceId))) continue; // edh-cast-13 (CR 510.2, 400.7)
       if (!targetable(s, p.id, controller, sourceId)) continue; // CR 115.1, 702.11b: a player can't be targeted by a spell the effect forbids (Leyline of Sanctity)
       out.players.push(p.id);
     }
@@ -269,13 +279,37 @@ export function differentNamesHold(s: GameState, spec: TargetSpec, chosen: reado
 }
 
 /**
+ * edh-top-3 (CR 202.3, 115.1, 601.2c): do the objects of `chosen` have different mana values, as a spec's `differentManaValues` requires ("any number of target creature
+ * cards that each have a different mana value X or less"; always true without it)? The mana value an object has now (CR 202.3; a face-down or split card as the engine
+ * reads it in `charsOfObject`).
+ */
+export function differentManaValuesHold(s: GameState, spec: TargetSpec, chosen: readonly TargetChoice[]): boolean {
+  if (spec.differentManaValues !== true) return true;
+  const values = chosen.flatMap((t) => {
+    const o = t.kind === 'object' ? s.objects[t.id] : undefined;
+    return o === undefined ? [] : [charsOfObject(s, o).manaValue];
+  });
+  return new Set(values).size === values.length;
+}
+
+/**
  * FAST5 T66: is each object of `chosen` controlled by a different player, as a spec's `perOpponent` requires ("for each opponent, ... up to one target nonland
  * permanent that player controls", CR 115.1, 601.2c: at most one target for each opponent; always true without it)?
  */
 export function perOpponentHolds(s: GameState, spec: TargetSpec, chosen: readonly TargetChoice[]): boolean {
   if (spec.perOpponent !== true && spec.perPlayer !== true) return true; // r5-fxb: `perPlayer`, one for each player, the same rule
-  const controllers = chosen.flatMap((t) => (t.kind === 'object' ? [s.objects[t.id]?.controller ?? `?${t.id}`] : []));
+  const controllers = chosen.flatMap((t) => (t.kind === 'object' ? [perPlayerKey(s, spec, t.id)] : []));
   return new Set(controllers).size === controllers.length;
+}
+
+/**
+ * trek-13 (CR 108.3, 404.1): the player a target "for each opponent / each player" is for: the controller of a permanent, the OWNER of a card in a graveyard ("up to one target
+ * creature card from that player's graveyard", Assimilate the Wounded: a card in a graveyard is its owner's, never anyone's to control).
+ */
+export function perPlayerKey(s: GameState, spec: TargetSpec, id: string): string {
+  const o = s.objects[id];
+  if (o === undefined) return `?${id}`;
+  return spec.kind === 'object' && spec.filter?.zone === 'graveyard' ? o.owner : o.controller;
 }
 
 /**
@@ -284,9 +318,11 @@ export function perOpponentHolds(s: GameState, spec: TargetSpec, chosen: readonl
  */
 export function sharedCardTypeHolds(s: GameState, spec: TargetSpec, chosen: readonly TargetChoice[]): boolean {
   if (spec.sharedCardType !== true) return true;
+  // edh-next-54 (CR 110.4, 205.2a; Role Reversal): "share a permanent type" counts only the card types a permanent can have (Kindred is not one)
+  const only = spec.sharedPermanentType === true ? PERMANENT_TYPES : undefined;
   const sets = chosen.flatMap((t) => {
     const o = t.kind === 'object' ? s.objects[t.id] : undefined;
-    return o === undefined ? [] : [charsOfObject(s, o).types];
+    return o === undefined ? [] : [only === undefined ? charsOfObject(s, o).types : charsOfObject(s, o).types.filter((ty) => only.includes(ty))];
   });
   if (sets.length < 2) return true;
   return sets[0]!.some((ty) => sets.every((set) => set.includes(ty)));
@@ -307,6 +343,20 @@ export function sharedCreatureTypeHolds(s: GameState, spec: TargetSpec, chosen: 
   const fixed = kinds.filter((k) => !k.all);
   if (fixed.length === 0) return true;
   return [...fixed[0]!.set].some((ty) => fixed.every((k) => k.set.has(ty)));
+}
+
+/**
+ * edh-next-126 (CR 115.1, 601.2c, 208.1; V.A.T.S.): do the objects of `chosen` all have the same toughness, as a spec's `equalToughness` requires ("any number of target creatures with
+ * equal toughness"; always true without it, and with fewer than two objects)? The toughness now (CR 613); an object with no number for its toughness fails it.
+ */
+export function equalToughnessHolds(s: GameState, spec: TargetSpec, chosen: readonly TargetChoice[]): boolean {
+  if (spec.equalToughness !== true) return true;
+  const values = chosen.flatMap((t) => {
+    const o = t.kind === 'object' ? s.objects[t.id] : undefined;
+    return o === undefined ? [] : [String(charsOfObject(s, o).toughness ?? '')];
+  });
+  if (values.length < 2) return true;
+  return values.every((v) => /^-?\d+$/.test(v) && v === values[0]);
 }
 
 /**
@@ -360,13 +410,29 @@ export function perCardTypeHolds(s: GameState, spec: TargetSpec, chosen: readonl
  * least 1, CR 601.2d). `null` when the range can't be met (too few candidates, or the cheapest `min` candidates already break `groupLimit`).
  */
 export function targetRange(s: GameState, spec: TargetSpec, available: TargetOptions, x: number): { min: number; max: number } | null {
-  const min = evalCount(spec.min, { x });
+  let min = evalCount(spec.min, { x });
   // FAST5 T66: `perOpponent`, `max` is the most targets for EACH opponent ("for each opponent, ... up to one target ... that player controls"): at most that many from each
   // controller the candidates have (the opponents; a two-player game has one), checked on the set chosen by `perOpponentHolds`
-  const perPlayer = spec.perOpponent === true || spec.perPlayer === true ? new Set(available.objects.map((id) => s.objects[id]?.controller)).size : 1;
+  const perPlayer = spec.perOpponent === true || spec.perPlayer === true ? new Set(available.objects.map((id) => perPlayerKey(s, spec, id))).size : 1;
+  // edh-d-83 (CR 115.1, 601.2c; Guff Rewrites History, Blatant Thievery, Frenzied Gorespawn; Vaevictis Asmadi, the Dire ruling 2018-07-13: "If any player controls no permanents,
+  // Vaevictis's ability won't have sufficient legal targets"): without "up to" ("for each player, choose target nonland permanent that player controls") the spell requires a target
+  // for EACH player of the group (every player in the game, or every opponent), one each (`perOpponentHolds` keeps them apart): when one of them has no candidate the targets
+  // can't all be chosen (CR 601.2c: it can't be cast; CR 603.3d: a trigger is removed from the stack)
+  // edh-next-127 (CR 115.1, 601.2c; Mysterious Stranger): "for each graveyard with an instant or sorcery card in it, ... target ... from that graveyard": one target in each zone that has a candidate
+  if (spec.perPlayer === true && spec.eachWithOne === true) {
+    if (evalCount(spec.min, { x }) !== 1 || evalCount(spec.max, { x }) !== 1) return null;
+    return { min: perPlayer, max: perPlayer };
+  }
+  if ((spec.perOpponent === true || spec.perPlayer === true) && min > 0 && min === evalCount(spec.max, { x })) {
+    const group = s.players.filter((p) => !p.hasLost).length - (spec.perOpponent === true ? 1 : 0);
+    if (perPlayer < group) return null;
+    min *= group;
+  }
   // std-cardcopy-7: `perCardType`, `max` for EACH card type the candidates have (checked on the set chosen by `perCardTypeHolds`)
   const perType = spec.perCardType === true ? new Set(available.objects.flatMap((id) => { const o = s.objects[id]; return o ? charsOfObject(s, o).types : []; })).size : 1;
-  let max = Math.min(evalCount(spec.max, { x }) * perPlayer * perType, optionCount(available));
+  // edh-top-3: `differentManaValues`, at most one target for each mana value the candidates have (checked on the set chosen by `differentManaValuesHold`)
+  const distinctMv = spec.differentManaValues === true ? new Set(available.objects.flatMap((id) => { const o = s.objects[id]; return o ? [charsOfObject(s, o).manaValue] : []; })).size : Infinity;
+  let max = Math.min(evalCount(spec.max, { x }) * perPlayer * perType, optionCount(available), distinctMv);
   if (spec.divide) max = Math.min(max, evalCount(spec.divide.total, { x }));
   if (max < min) return null;
   const g = spec.groupLimit;
@@ -386,7 +452,11 @@ const SPELL_X_TRIAL = { on: false };
 export function candidatesFor(
   s: GameState, spec: TargetSpec, controller: PlayerId, sourceId: ObjectId | undefined, stackId: ObjectId | undefined, chosen: ReadonlyMap<string, readonly TargetChoice[]>, x?: AnnouncedX,
 ): TargetOptions {
-  const opts = targetOptions(s, spec, controller, sourceId, stackId, { chosen, ...(x !== undefined ? { x } : {}) });
+  const opts0 = targetOptions(s, spec, controller, sourceId, stackId, { chosen, ...(x !== undefined ? { x } : {}) });
+  // edh-d-96 (CR 601.2c, 122.1f; Geth's Summons): "for each opponent who has three or more poison counters as you cast this spell": only the targets for such an opponent (the player a target
+  // is for: perPlayerKey), judged now, as the targets are chosen; the resolution's check (isLegalTarget) does not read it
+  const poison = spec.perOpponentPoison;
+  const opts = poison === undefined ? opts0 : { objects: opts0.objects.filter((id) => (s.players.find((p) => p.id === perPlayerKey(s, spec, id))?.poison ?? 0) >= poison), players: opts0.players };
   const forbidden = new Set<string>();
   for (const other of spec.distinctFrom ?? []) for (const t of chosen.get(other) ?? []) forbidden.add(`${t.kind}:${t.id}`);
   if (forbidden.size === 0) return opts;
@@ -452,8 +522,8 @@ function searchSpecs(
     if (range.min === 0) { chosen.set(spec.id, []); return walk(i + 1); }
     const all: TargetChoice[] = [...opts.objects.map((id): TargetChoice => ({ kind: 'object', id })), ...opts.players.map((id): TargetChoice => ({ kind: 'player', id }))];
     // FAST3 T14: a `sameOwner` spec is enumerated too (its first `min` candidates may have several owners), in both modes
-    const limited = (witness && spec.groupLimit !== undefined) || spec.sameOwner === true || spec.differentNames === true || spec.perOpponent === true || spec.perPlayer === true || spec.sharedCardType === true || spec.sharedCreatureType === true
-      || spec.differentControllers === true || spec.sameController === true || spec.perCardType === true; // CLOUD std-tmt, std-rx30, std-cardcopy-7
+    const limited = (witness && spec.groupLimit !== undefined) || spec.sameOwner === true || spec.differentNames === true || spec.differentManaValues === true || spec.perOpponent === true || spec.perPlayer === true || spec.sharedCardType === true || spec.sharedCreatureType === true
+      || spec.equalToughness === true /* edh-next-126 */ || spec.differentControllers === true || spec.sameController === true || spec.perCardType === true; // CLOUD std-tmt, std-rx30, std-cardcopy-7
     if (!usesDistinct && !limited) {
       // Without distinctFrom the choice of one spec never limits another: only the count matters.
       chosen.set(spec.id, all.slice(0, range.min));
@@ -462,12 +532,17 @@ function searchSpecs(
     const combo = (start: number, picked: TargetChoice[]): boolean => {
       if (capped) return false;
       if (picked.length === range.min) {
-        if (limited && (!groupLimitHolds(s, spec, picked, xn) || !sameOwnerHolds(s, spec, picked) || !differentNamesHold(s, spec, picked) || !perOpponentHolds(s, spec, picked) || !sharedCardTypeHolds(s, spec, picked) || !sharedCreatureTypeHolds(s, spec, picked)
+        if (limited && (!groupLimitHolds(s, spec, picked, xn) || !sameOwnerHolds(s, spec, picked) || !differentNamesHold(s, spec, picked) || !differentManaValuesHold(s, spec, picked) || !perOpponentHolds(s, spec, picked) || !sharedCardTypeHolds(s, spec, picked) || !sharedCreatureTypeHolds(s, spec, picked) || !equalToughnessHolds(s, spec, picked)
           || !differentControllersHold(s, spec, picked) || !sameControllerHolds(s, spec, picked) || !perCardTypeHolds(s, spec, picked, xn))) return false;
         chosen.set(spec.id, picked);
         return walk(i + 1);
       }
-      for (let k = start; k < all.length; k++) if (combo(k + 1, [...picked, all[k]!])) return true;
+      for (let k = start; k < all.length; k++) {
+        const next = [...picked, all[k]!];
+        // edh-d-83: one target for each player: a second pick of the same player's is never part of a legal set, so the search stops there (not only at full sets)
+        if ((spec.perOpponent === true || spec.perPlayer === true) && !perOpponentHolds(s, spec, next)) continue;
+        if (combo(k + 1, next)) return true;
+      }
       return false;
     };
     return combo(0, []);

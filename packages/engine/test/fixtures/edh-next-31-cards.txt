@@ -1,0 +1,11 @@
+# edh-next-31 (Commander EDHREC ranks 6,251-7,500): "can't win / opponents can't lose", "for each of its colors", "can't attack during extra turns", exert + "it deals", "another creature died" in a spell, "other" after an "other" group, "those creatures" after damage, gain life per, exile this card from your graveyard, "its controller incubates", enters with counters per death. After editing: npm run cards -- fixtures
+Abyssal Persecutor
+Breathe Your Last
+Medomai the Ageless
+Chain Assassination
+Tori D'Avenant, Fury Rider
+Aragorn and Arwen, Wed
+Thundermaw Hellkite
+Skyfisher Spider
+Excise the Imperfect
+Gorma, the Gullet

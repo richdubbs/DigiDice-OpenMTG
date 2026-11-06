@@ -1,0 +1,69 @@
+[
+  {
+    "action": {
+      "type": "pass",
+      "player": "p1"
+    },
+    "kind": "pass",
+    "label": "Pass priority",
+    "isMana": false
+  },
+  {
+    "action": {
+      "type": "cast",
+      "player": "p1",
+      "card": "o30"
+    },
+    "kind": "cast",
+    "label": "Cast Lightning Bolt",
+    "isMana": false,
+    "object": "o30"
+  },
+  {
+    "action": {
+      "type": "cast",
+      "player": "p1",
+      "card": "o31"
+    },
+    "kind": "cast",
+    "label": "Cast Shock",
+    "isMana": false,
+    "object": "o31"
+  },
+  {
+    "action": {
+      "type": "activate",
+      "player": "p1",
+      "source": "o11",
+      "ability": "p:0:0"
+    },
+    "kind": "activate",
+    "label": "Llanowar Elves: {T}: Add {G}.",
+    "isMana": true,
+    "object": "o11"
+  },
+  {
+    "action": {
+      "type": "activate",
+      "player": "p1",
+      "source": "o12",
+      "ability": "r:basic:G"
+    },
+    "kind": "activate",
+    "label": "Forest: {T}: Add {G}.",
+    "isMana": true,
+    "object": "o12"
+  },
+  {
+    "action": {
+      "type": "activate",
+      "player": "p1",
+      "source": "o13",
+      "ability": "r:basic:R"
+    },
+    "kind": "activate",
+    "label": "Mountain: {T}: Add {R}.",
+    "isMana": true,
+    "object": "o13"
+  }
+]

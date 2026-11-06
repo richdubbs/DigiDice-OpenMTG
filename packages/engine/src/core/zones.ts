@@ -7,17 +7,19 @@ import { HIDDEN_ZONES, type GameObject, type GameState, type LastKnown, type Lin
 import type { DefId, ObjectId, PlayerId } from '../types/ids';
 import { EngineBug, type Game } from './game';
 import { shuffleInPlace } from '../rng';
-import { charsOfObject, isPermanentCard, readingStable, type Chars } from '../rules/characteristics';
+import { charsOfObject, hasKeyword, isPermanentCard, readingStable, type Chars } from '../rules/characteristics';
 import { MENTIONS_ENTERS_WITH_COUNTERS } from '../cards/enters-with';
 import { attackerState, isAttacking, isBlocking, removeFromCombat } from '../rules/combat-state';
 import { cantDo } from '../rules/cant';
+import { countersPutDenial } from '../rules/counters';
 import { variableCounterText } from '../cards/variable-counters';
 import { resolveManually } from './manual';
 import type { CardDef } from '../types/card';
 import type { DestinationFacts } from '../effects/api';
 import { MOVE_PARTS } from './registries';
 import { isCommander, isCommanderGame } from '../statics/commander';
-import { staticGoadersOf, staticGoadPresent } from '../statics/rule-sources';
+import { countersRemainOnMove, staticGoadersOf, staticGoadPresent } from '../statics/rule-sources';
+import { charsThroughLayer7b } from '../statics/layers'; // edh-d-93
 
 export function zoneArray(g: Game, zone: ZoneKind, owner: PlayerId): ObjectId[] {
   const z = g.s.zones;
@@ -125,7 +127,8 @@ export function chooseSiegeProtector(g: Game, controller: PlayerId, name: string
   return opponents.find((p) => p === pick.ids[0]) ?? opponents[0];
 }
 
-function enterWithPrintedCounters(g: Game, o: GameObject, put?: PutEnteringCounters): void {
+/** edh-next-137 (CR 107.3m, 306.5b; Nissa, Steward of Elements): `x`, the value of X the spell that became this permanent was cast with; a printed loyalty "X" is that value (0 when it was not cast). */
+function enterWithPrintedCounters(g: Game, o: GameObject, put?: PutEnteringCounters, lifeSymbols = 0, x?: number): void {
   if (o.faceDown) return;
   const c = charsOfObject(g.s, o);
   const byHand: string[] = [];
@@ -140,13 +143,21 @@ function enterWithPrintedCounters(g: Game, o: GameObject, put?: PutEnteringCount
   ] as const;
   for (const { type, printed, counter, rule } of intrinsic) {
     if (!c.types.includes(type) || printed === undefined) continue;
-    const n = Number(printed);
+    let n = counter === 'loyalty' && printed === 'X' ? (x ?? 0) : Number(printed); // edh-next-137 (CR 107.3m): loyalty X is the X it was cast with, else 0
     if (!Number.isInteger(n) || n < 0) {
       byHand.push(variableCounterText(counter, printed)); // the text of the card's manual part (cards/pipeline.ts#variableCounterAbilities)
       continue;
     }
+    // edh-top-2 (CR 702.150a): compleated: "If this permanent would enter with one or more loyalty counters on it and the player who cast it chose to pay life for any part
+    // of its cost represented by Phyrexian mana symbols, it instead enters with that many loyalty counters minus two for each of those mana symbols."
+    if (n > 0 && counter === 'loyalty' && lifeSymbols > 0 && hasKeyword(c, 'compleated')) {
+      const fewer = Math.max(0, n - 2 * lifeSymbols);
+      g.log(`${c.name} is compleated: it enters with ${lifeSymbols * 2} fewer loyalty counters (${lifeSymbols} Phyrexian mana symbol${lifeSymbols === 1 ? '' : 's'} paid with life).`, { rules: ['CR 702.150a'], level: 'info' });
+      if (fewer === 0) continue;
+      n = fewer;
+    }
     if (n === 0) continue;
-    if (cantDo(g.s, 'haveCountersPut', o.id)) { // WP31: CR 122.6, 614.17 (a planeswalker that can't have counters put on it enters with none)
+    if (countersPutDenial(g, o.id, g.s, counter)) { // WP31: CR 122.6, 614.17 (a planeswalker that can't have counters put on it enters with none)
       g.log(`${c.name} enters with no ${counter} counters: a "can't" effect forbids putting counters on it.`, { rules: [rule, 'CR 122.6', 'CR 614.17'], level: 'info' });
       continue;
     }
@@ -188,10 +199,18 @@ function enterWithPrintedCounters(g: Game, o: GameObject, put?: PutEnteringCount
  * the snapshots of the outer one. Review 2026-10-26 F33: the snapshots are pure reads of the state as it is, taken in one `readingStable` scope (one check of the
  * characteristics cache, not one per object), and what is attached to each permanent is read from one index of the battlefield (`attachmentIndex`).
  */
+/** edh-zones-7: the pipeline's snapshot of the foreign replacement effects of the objects that are about to leave together (installed by effects/replacements.ts, which core/ cannot import). */
+let replacementSnapshot: ((g: Game, ids: readonly ObjectId[]) => readonly unknown[]) | null = null;
+export function installLeavingReplacementSnapshot(f: (g: Game, ids: readonly ObjectId[]) => readonly unknown[]): void {
+  replacementSnapshot = f;
+}
+
 export function leavingTogether<T>(g: Game, ids: readonly ObjectId[], fn: () => T, known?: ReadonlyMap<ObjectId, LastKnown['chars']>): T {
   const outer = g.leaving;
+  const outerReplacements = g.leavingReplacements;
   const outerGoaded = g.leavingGoaded;
   const outerAttached = g.leavingAttached;
+  const outerBasePower = g.leavingBasePower;
   const outerBoard = g.leavingBoard;
   const s = g.s;
   const snap = new Map(outer ?? []);
@@ -219,16 +238,29 @@ export function leavingTogether<T>(g: Game, ids: readonly ObjectId[], fn: () => 
         }
         g.leavingAttached = attached;
       }
+      // edh-d-93 (CR 603.10a, 613.4): the base power of each of them before any of them moves (an effect that sets base power may leave with them); only in a game that can ask
+      if (basePowerLookbackPresent(s)) {
+        const base = new Map(outerBasePower ?? []);
+        let layer7b: Map<ObjectId, Chars> | undefined;
+        for (const id of ids) {
+          if (base.has(id) || s.objects[id]?.zone !== 'battlefield') continue;
+          base.set(id, numberOf((layer7b ??= charsThroughLayer7b(s)).get(id)?.power));
+        }
+        g.leavingBasePower = base;
+      }
     });
     g.leaving = snap;
+    if (replacementSnapshot !== null) g.leavingReplacements = [...(outerReplacements ?? []), ...replacementSnapshot(g, ids)];
     // std-combat-3 (CR 603.10a): the battlefield before any of them moves (an outer call's snapshot is earlier still); review 2026-10-26 F18: one frozen array that
     // the last known information of every object of the event shares (moveObject), not a copy each
     g.leavingBoard = outerBoard ?? Object.freeze([...s.zones.battlefield]);
     return fn();
   } finally {
     g.leaving = outer;
+    g.leavingReplacements = outerReplacements;
     g.leavingGoaded = outerGoaded;
     g.leavingAttached = outerAttached;
+    g.leavingBasePower = outerBasePower;
     g.leavingBoard = outerBoard;
   }
 }
@@ -254,11 +286,42 @@ export function attachedLookbackPresent(s: GameState): boolean {
     let r = DEF_ASKS_ATTACHED.get(d);
     if (r === undefined) {
       const j = JSON.stringify(d);
-      DEF_ASKS_ATTACHED.set(d, (r = j.includes('"equipped":') || j.includes('"modified":') || j.includes('"wasAttachedTo":')));
+      DEF_ASKS_ATTACHED.set(d, (r = j.includes('"equipped":') || j.includes('"modified":') || j.includes('"enchanted":') /* edh-d-5 */ || j.includes('"wasAttachedTo":')));
     }
     if (r) { v = true; break; }
   }
   DEFS_ASK_ATTACHED.set(defs, { v, n });
+  return v;
+}
+
+/** edh-d-93: a power as a number (a `*` or a missing value is none). */
+function numberOf(v: unknown): number | null {
+  if (typeof v === 'number') return v;
+  if (typeof v === 'string' && /^-?\d+$/.test(v)) return Number(v);
+  return null;
+}
+
+/**
+ * edh-d-93 (CR 603.10a, 613.4, 608.2h): can anything in this game ask a permanent's base power as it left the battlefield (`LastKnown.basePower`): a filter `powerDiffersFromBase` anywhere in a
+ * definition? Memoized per definition and per `defs` map and its size, as #attachedLookbackPresent (definitions are only added: a "yes" stays true).
+ */
+const DEF_ASKS_BASE = new WeakMap<object, boolean>();
+const DEFS_ASK_BASE = new WeakMap<GameState['defs'], { v: boolean; n: number }>();
+export function basePowerLookbackPresent(s: GameState): boolean {
+  const defs = s.defs;
+  const hit = DEFS_ASK_BASE.get(defs);
+  if (hit?.v) return true;
+  let n = 0;
+  for (const _k in defs) n++;
+  if (hit && hit.n === n) return false;
+  let v = false;
+  for (const k in defs) {
+    const d = defs[k]!;
+    let r = DEF_ASKS_BASE.get(d);
+    if (r === undefined) DEF_ASKS_BASE.set(d, (r = JSON.stringify(d).includes('"powerDiffersFromBase":')));
+    if (r) { v = true; break; }
+  }
+  DEFS_ASK_BASE.set(defs, { v, n });
   return v;
 }
 
@@ -280,18 +343,20 @@ function attachmentIndex(s: GameState): Map<ObjectId, ObjectId[]> {
  * controller controls attached), now? As rules/filter.ts#isEquipped / isModified read a permanent on the battlefield (a phased-out attachment is none).
  * `index` is `attachmentIndex(s)`, `chars` the permanent's characteristics when they are already worked out.
  */
-function attachedState(s: GameState, id: ObjectId, index: ReadonlyMap<ObjectId, readonly ObjectId[]> = attachmentIndex(s), chars?: Chars): { equipped: boolean; modified: boolean; ids?: ObjectId[] } {
+function attachedState(s: GameState, id: ObjectId, index: ReadonlyMap<ObjectId, readonly ObjectId[]> = attachmentIndex(s), chars?: Chars): { equipped: boolean; modified: boolean; enchanted: boolean; ids?: ObjectId[] } {
   const o = s.objects[id]!;
   const controller = (chars ?? charsOfObject(s, o)).controller;
   let equipped = false;
   let aura = false;
+  let enchanted = false; // edh-d-5 (CR 303.4b, 603.10a): an Aura of any controller is attached
   const ids = [...(index.get(id) ?? [])];
   for (const aid of ids) {
     const c = charsOfObject(s, s.objects[aid]!);
     if (c.subtypes.includes('Equipment')) equipped = true;
     if (c.subtypes.includes('Aura') && c.controller === controller) aura = true;
+    if (c.subtypes.includes('Aura')) enchanted = true;
   }
-  return { equipped, modified: equipped || aura || Object.values(o.counters).some((n) => n > 0), ...(ids.length > 0 ? { ids } : {}) };
+  return { equipped, modified: equipped || aura || Object.values(o.counters).some((n) => n > 0), enchanted, ...(ids.length > 0 ? { ids } : {}) };
 }
 
 /**
@@ -334,9 +399,20 @@ export function moveObject(g: Game, id: ObjectId, to: ZoneKind, opts: MoveOption
     if (attached !== undefined) g.s.lki[id]!.attached = attached;
     g.leavingAttached?.delete(id);
   }
+  // edh-d-93 (CR 603.10a, 613.4, 608.2h): its base power as it left ("if its power was different from its base power"); only in a game that can ask
+  if (from === 'battlefield' && old.kind !== 'ability') {
+    const known = g.leavingBasePower?.get(id);
+    if (known !== undefined || basePowerLookbackPresent(g.s)) g.s.lki[id]!.basePower = known !== undefined ? known : numberOf(charsThroughLayer7b(g.s).get(id)?.power);
+    g.leavingBasePower?.delete(id);
+  }
   // std-combat-3 (CR 603.10a): the battlefield as it was immediately before it left (with the others of its event still on it); review 2026-10-26 F18: the frozen
   // snapshot of its event is shared by every object of it (written once, never edited, like every last known information)
   if (from === 'battlefield' && old.kind !== 'ability') g.s.lki[id]!.board = g.leavingBoard ?? Object.freeze([...g.s.zones.battlefield]);
+  // edh-next-133 (CR 608.2h, 613.4b; Curie, Emergent Intelligence ruling 2024-03-08: "use its base power as it last existed on the battlefield"): only in a game where an ability reads a base power
+  if (from === 'battlefield' && old.kind !== 'ability' && g.s.lki[id]!.basePower === undefined && basePowerReadersPresent(g.s)) {
+    const p = charsThroughLayer7b(g.s).get(id)?.power;
+    if (p !== undefined && p !== null && /^-?\d+$/.test(String(p))) g.s.lki[id]!.basePower = Number(p);
+  }
   // FAST4 T34 (CR 506.4, 608.2h): whether it was attacking or blocking as it left, which removing it from combat erases
   if (from === 'battlefield' && (isAttacking(g.s, id) || isBlocking(g.s, id))) {
     // FAST5X E7 (CR 702.190b, 508.5): and what it was attacking, which sneak's "the same player, planeswalker, or battle" reads after it was returned
@@ -344,7 +420,11 @@ export function moveObject(g: Game, id: ObjectId, to: ZoneKind, opts: MoveOption
     const blk = g.s.combat?.blockers.find((b) => b.id === id);
     g.s.lki[id]!.combat = { attacking: att !== undefined, blocking: isBlocking(g.s, id), ...(att ? { defender: att.defender, defendingPlayer: att.defendingPlayer, blockedBy: [...att.blockedBy] } : {}), ...(blk ? { blockingIds: [...blk.blocking] } : {}) };
   }
+  // edhn81 (CR 122.2; Skullbriar): read before the old object goes away; not to a hand or a library (the destination is part of the ability's words)
+  const keepsCounters = to !== 'hand' && to !== 'library' && Object.keys(old.counters).length > 0 && old.kind !== 'ability' && countersRemainOnMove(g.s, id);
   if (from === 'battlefield') removeFromCombat(g.s, id); // CR 506.4
+  // edh-perms-10 (CR 701.3d, 603.10c): an attachment that leaves the battlefield "becomes unattached" from what it was attached to (the object's own ability looks back at it)
+  if (from === 'battlefield' && old.kind !== 'ability' && old.attachedTo !== undefined) g.emit({ type: 'attached', objectId: id, to: null, ...(g.s.objects[old.attachedTo] !== undefined ? { from: old.attachedTo } : {}) });
   removeFromZone(g, old);
   delete g.s.objects[id];
 
@@ -353,6 +433,10 @@ export function moveObject(g: Game, id: ObjectId, to: ZoneKind, opts: MoveOption
     return null;
   }
   const o = freshObject(g, { kind: old.kind, defId: old.defId, owner: old.owner, ...(old.cardId !== undefined ? { cardId: old.cardId } : {}) }, to);
+  // edhn81 (CR 122.2, 400.7; Skullbriar): "Counters remain on ~ as it moves to any zone other than a player's hand or library": judged by the abilities it had where it was (`keepsCounters`)
+  if (keepsCounters) o.counters = { ...old.counters };
+  // edh-next-147 (CR 123.5, 400.7 exception): stickers stay on an object that moves to a public zone and apply to the new object; a hidden zone (a hand, a library) drops them
+  if (old.nameStickers !== undefined && old.nameStickers.length > 0 && to !== 'hand' && to !== 'library') o.nameStickers = old.nameStickers.map((x) => ({ ...x }));
   if (opts.face !== undefined) o.face = opts.face;
   if (to === 'battlefield' || to === 'stack') o.controller = opts.controller ?? (to === 'stack' ? old.controller : old.owner);
   if (opts.tapped) o.tapped = true;
@@ -381,6 +465,9 @@ export function moveObject(g: Game, id: ObjectId, to: ZoneKind, opts: MoveOption
       type: 'zoneChanged', oldId: id, newId: o.id, from: old.fromOutside === true ? null : from, to: o.zone, owner: o.owner, controller: o.controller, // trek-11 (CR 400.11b): a card from outside the game comes from no zone
       name: g.nameOf(o.id), ...(cause ? { cause } : {}), ...(o.faceDown ? { faceDown: true as const } : {}), // FAST5X E25 (CR 708.3, 406.3)
       ...(o.zone === 'battlefield' && o.tapped ? { tapped: true as const } : {}), // pc-tokens-2 (CR 603.6a)
+      ...(o.zone === 'battlefield' && opts.enter?.viaSource !== undefined ? { viaSource: opts.enter.viaSource } : {}), // edh-perms-9 (CR 608.2)
+      ...(cause === 'destroy' && g.destroyedBy !== null ? { destroyedBy: g.destroyedBy } : {}), // edh-players-22 (CR 109.5, 701.8a)
+      ...(opts.cause === 'discard' && opts.enter?.causedBy !== undefined ? { discardedBy: opts.enter.causedBy } : {}), // edh-next-132 (CR 701.9a, 109.5): the discarding effect's controller
     });
   }
   // FAST5X E22 (CR 700.11, 110.4a): a permanent card put into a graveyard from anywhere is one more time its owner (a card goes to its owner's graveyard,
@@ -391,7 +478,12 @@ export function moveObject(g: Game, id: ObjectId, to: ZoneKind, opts: MoveOption
     const stats = g.player(o.owner).turnStats;
     stats.descended = (stats.descended ?? 0) + 1;
   }
-  if (o.zone === 'battlefield') enterWithPrintedCounters(g, o, opts.putEnteringCounters);
+  // edh-d-3 (CR 702.69a, 700.4): a permanent, a token too, put into a graveyard from the battlefield counts for gravestorm; where it actually went (`o.zone`)
+  if (from === 'battlefield' && o.zone === 'graveyard' && !opts.silent) {
+    const stats = g.player(o.owner).turnStats;
+    stats.permanentsToGraveyard = (stats.permanentsToGraveyard ?? 0) + 1;
+  }
+  if (o.zone === 'battlefield') enterWithPrintedCounters(g, o, opts.putEnteringCounters, from === 'stack' && old.kind === 'card' ? old.stack?.costsPaid.phyrexianLife ?? 0 : 0, from === 'stack' && old.kind === 'card' ? old.stack?.x : undefined); // edh-top-2: compleated (CR 702.150a); a copy of a spell was not cast; edh-next-137: the X it was cast with (CR 107.3m)
   return o.id;
 }
 
@@ -454,7 +546,7 @@ export function createToken(g: Game, def: CardDef, controller: PlayerId, opts: C
     return null;
   }
   g.s.zones.battlefield.push(o.id);
-  g.emit({ type: 'zoneChanged', oldId: o.id, newId: o.id, from: null, to: 'battlefield', owner: o.owner, controller: o.controller, name: g.nameOf(o.id), cause: 'create token' });
+  g.emit({ type: 'zoneChanged', oldId: o.id, newId: o.id, from: null, to: 'battlefield', owner: o.owner, controller: o.controller, name: g.nameOf(o.id), cause: 'create token', ...(o.tapped ? { tapped: true as const } : {}) }); // edh-perms-6 (CR 110.5b, 603.6a): a token that enters tapped did not "enter untapped"
   enterWithPrintedCounters(g, o, opts.putEnteringCounters);
   return o.id;
 }
@@ -464,11 +556,12 @@ export function createToken(g: Game, def: CardDef, controller: PlayerId, opts: C
  * (design 8.5). Its definition joins `state.defs` (equal definitions share an id, core/emblems.ts). No zone-change event: an emblem is not put into the command
  * zone from anywhere, and no pattern of the model reads its creation.
  */
-export function createEmblemObject(g: Game, def: CardDef, owner: PlayerId, links?: Readonly<Record<string, LinkValue>>): ObjectId {
+export function createEmblemObject(g: Game, def: CardDef, owner: PlayerId, links?: Readonly<Record<string, LinkValue>>, linksFrom?: ObjectId): ObjectId {
   g.addDef(def);
   const o = freshObject(g, { kind: 'emblem', defId: def.id, owner, controller: owner }, 'command');
   // std-rx9 (CR 607.2d, 608.2c): the choices of the creating resolution its abilities read, copied as the emblem's own links (core/emblems.ts#createEmblem)
   if (links !== undefined && Object.keys(links).length > 0) o.links = clone(links) as Record<string, LinkValue>;
+  if (linksFrom !== undefined) o.linksFrom = linksFrom; // edh-next-137 (CR 114.2, 607.2a; Tibalt, Cosmic Impostor): the emblem reads that permanent's links
   g.s.objects[o.id] = o;
   g.s.zones.command.push(o.id);
   return o.id;
@@ -628,9 +721,21 @@ export function reorderLibrary(g: Game, player: PlayerId, top: readonly ObjectId
  * FAST5X E26 (CR 702.94a, miracle): what happens AS a card is drawn ("You may reveal this card from your hand as you draw it"). Installed by triggers/miracle.ts
  * (a function registry, not game data: core/ may not import the trigger code).
  */
-let drawHook: ((g: Game, player: PlayerId, id: ObjectId) => void) | null = null;
+// edh-next-144 INTERFACE CHANGE (additive): several hooks, run in the order they were installed (miracle's reveal, triggers/reveal-draw.ts's "reveal the first card you draw"); a hook
+// installed twice runs once
+const drawHooks: ((g: Game, player: PlayerId, id: ObjectId) => void)[] = [];
+/**
+ * edh-next-144 (CR 701.20a, 607.2): a card `player` just drew is revealed to every player by a "reveal the first card you draw" rule of `sourceId` (triggers/reveal-draw.ts); the event
+ * its linked "Whenever you reveal ... this way" triggers read.
+ */
+export function revealDrawnThisWay(g: Game, player: PlayerId, id: ObjectId, sourceId: ObjectId): void {
+  showCards(g, [id], g.s.players.map((p) => p.id));
+  g.log(`${g.player(player).name} reveals ${g.nameOf(id)} as they draw it (${g.nameOf(sourceId)}).`, { rules: ['CR 701.20a', 'CR 121.2'], level: 'action' });
+  g.emit({ type: 'revealedThisWay', player, objectId: id, sourceId });
+}
+
 export function installDrawHook(f: (g: Game, player: PlayerId, id: ObjectId) => void): void {
-  drawHook = f;
+  if (!drawHooks.includes(f)) drawHooks.push(f);
 }
 
 /**
@@ -671,8 +776,9 @@ export function drawCard(g: Game, player: PlayerId): ObjectId | null {
   const newId = moveObject(g, top, 'hand', { cause: 'draw', silent: true });
   if (!newId) return null;
   p.turnStats.cardsDrawn++;
+  (p.turnStats.drawn ??= []).push(newId); // edh-players-7: the card in the hand is one drawn this turn (CR 121.1)
   g.emit({ type: 'drew', player, objectId: newId });
-  drawHook?.(g, player, newId); // FAST5X E26: miracle's reveal as the card is drawn (CR 702.94a)
+  for (const hook of drawHooks) if (g.s.objects[newId]?.zone === 'hand') hook(g, player, newId); // FAST5X E26: miracle's reveal as the card is drawn (CR 702.94a); edh-next-144: and the others
   return newId;
 }
 
@@ -704,4 +810,21 @@ export function objectsIn(g: Game, zone: ZoneKind, owner?: PlayerId): GameObject
     return owners.flatMap((pid) => zoneArray(g, zone, pid).map((id) => g.obj(id)));
   }
   return zoneArray(g, zone, owner ?? '').map((id) => g.obj(id)).filter((o) => !owner || o.controller === owner);
+}
+
+const READS_BASE_POWER = new WeakMap<object, boolean>();
+/** edh-next-133: could some ability in this game read a base power (a `basePower` quantity in a definition on the battlefield or in a stored effect)? A conservative text test, memoized per definition. */
+function basePowerReadersPresent(s: GameState): boolean {
+  for (const id of s.zones.battlefield) {
+    const def = s.defs[s.objects[id]?.defId ?? ''];
+    if (def === undefined) continue;
+    let v = READS_BASE_POWER.get(def);
+    if (v === undefined) READS_BASE_POWER.set(def, (v = JSON.stringify(def.faces).includes('"basePower"')));
+    if (v) return true;
+  }
+  return s.continuousEffects.some((r) => {
+    let v = READS_BASE_POWER.get(r.effect);
+    if (v === undefined) READS_BASE_POWER.set(r.effect, (v = JSON.stringify(r.effect).includes('"basePower"')));
+    return v;
+  });
 }

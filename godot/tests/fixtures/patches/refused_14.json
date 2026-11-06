@@ -1,0 +1,1 @@
+{"name":"refused_14","before":{"a":{"b":[1,2]},"s":"x"},"ops":[{"op":"splice","path":["a"],"at":0,"del":0,"add":[]}],"error":"[\"a\"] is not a list."}

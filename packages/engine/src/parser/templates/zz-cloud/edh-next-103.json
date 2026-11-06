@@ -1,0 +1,147 @@
+[
+  {
+    "id": "rid.edhn103.mana.keep.endofturn.they",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 106.4",
+      "CR 500.5",
+      "CR 514.2",
+      "CR 608.2c"
+    ],
+    "pattern": "until end of turn , they don't lose this mana as steps and phases end",
+    "build": {
+      "$patchPrevious": {
+        "keep": {
+          "@new": "endOfTurn"
+        }
+      }
+    },
+    "attachTo": "addMana",
+    "consumes": [
+      "until"
+    ],
+    "needs": [
+      "op:addMana.keepEndOfTurn"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each player's upkeep, that player adds {G}{G}. Until end of turn, they don't lose this mana as steps and phases end."
+      },
+      {
+        "text": "At the beginning of each opponent's upkeep, that player adds {R}{R}{R}. Until end of turn, they don't lose this mana as steps and phases end."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, add {G}{G}. Until end of turn, they don't lose this mana as steps and phases end.",
+      "At the beginning of each player's upkeep, that player adds {G}{G}. Until your next turn, they don't lose this mana as steps and phases end.",
+      "At the beginning of each player's upkeep, that player adds {G}{G}. Until end of turn, they don't lose this mana as steps end."
+    ]
+  },
+  {
+    "id": "sta.edhn103.all.have.loseOthers",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 613.1f",
+      "CR 604.1",
+      "CR 611.3a"
+    ],
+    "pattern": "all {f:Filter} have {a:Abilities} and lose all other abilities",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "removeAll": true,
+          "add": "$a"
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "All lands have \"{T}: Add one mana of any color\" and lose all other abilities."
+      },
+      {
+        "text": "All creatures have flying and lose all other abilities."
+      }
+    ],
+    "counterExamples": [
+      "All lands have \"{T}: Add one mana of any color\" and lose all abilities.",
+      "All lands have \"{T}: Add one mana of any color\" until end of turn and lose all other abilities.",
+      "All lands have flying and lose flying."
+    ]
+  },
+  {
+    "id": "sta.edhn103.is.artifactCreature.ptManaValue",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 205.1b",
+      "CR 202.3",
+      "CR 604.1"
+    ],
+    "pattern": "{o:Objs} is an artifact creature with power and toughness each equal to its mana value",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "add": [
+              "Artifact",
+              "Creature"
+            ]
+          }
+        },
+        {
+          "layer": "7b",
+          "power": {
+            "q": "stat",
+            "stat": "manaValue",
+            "of": {
+              "ref": "subject"
+            }
+          },
+          "toughness": {
+            "q": "stat",
+            "stat": "manaValue",
+            "of": {
+              "ref": "subject"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each noncreature artifact is an artifact creature with power and toughness each equal to its mana value."
+      },
+      {
+        "text": "Each noncreature artifact you control is an artifact creature with power and toughness each equal to its mana value."
+      }
+    ],
+    "counterExamples": [
+      "Each noncreature artifact is an artifact creature with power and toughness each equal to its power.",
+      "Each noncreature artifact is a creature in addition to its other types with power and toughness each equal to its mana value.",
+      "Each noncreature artifact is an artifact creature with base power and toughness each equal to its mana value."
+    ]
+  }
+]

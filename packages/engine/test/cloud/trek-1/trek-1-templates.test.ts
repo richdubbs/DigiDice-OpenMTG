@@ -221,10 +221,11 @@ describe('trek-1 renderer (render/stat.ts): the untap restriction and "can\'t be
   });
 });
 
-describe('trek-1 renderer (render/steps-lasting.ts): assimilate is said only of one target card in a graveyard, by you', () => {
-  it('"assimilate target creature card from an opponent\'s graveyard" is automated; "assimilate target creature" (a permanent) is not', () => {
+describe('trek-1 renderer (render/steps-lasting.ts): assimilate is said only of one target card in a graveyard, or (trek-13) one target creature, by you', () => {
+  it('"assimilate target creature card from an opponent\'s graveyard" is automated; trek-13 automates "assimilate target creature" (a permanent: its control changes, played in trek-13-scenarios.test.ts); any other permanent is not', () => {
     expect(fullyAutomated(parsedWith(MECH[2]!, "When ~ dies, assimilate target creature card from an opponent's graveyard."))).toBe(true);
-    expect(fullyAutomated(parsedWith(MECH[2]!, 'When ~ dies, assimilate target creature.'))).toBe(false);
+    expect(fullyAutomated(parsedWith(MECH[2]!, 'When ~ dies, assimilate target creature.'))).toBe(true);
+    expect(fullyAutomated(parsedWith(MECH[2]!, 'When ~ dies, assimilate target artifact.'))).toBe(false);
     expect(fullyAutomated(parsedWith(MECH[2]!, 'When ~ dies, assimilate up to two target creature cards from a graveyard.'))).toBe(false);
   });
 });

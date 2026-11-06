@@ -8,9 +8,46 @@
     }
   ],
   "mechanisms": [
-    "replacement"
+    "replacement",
+    "expands"
   ],
   "reminder": "As this creature enters, reveal any number of cards in your hand that share a creature type with it. It enters with {n} +1/+1 counters on it for each card revealed this way.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "static",
+      "text": "{printed}",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "revealHand": {
+              "filter": {
+                "sharesWith": {
+                  "with": {
+                    "ref": "self"
+                  },
+                  "quality": "creatureType"
+                }
+              },
+              "times": "$amount"
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

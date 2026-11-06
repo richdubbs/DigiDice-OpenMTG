@@ -10,7 +10,8 @@
  *    the ability can find it there (CR 400.7f). No event role names it; r5-fxz: the reference becomes `{ref:'self', moved:true}` (effects/refs.ts finds the
  *    card while it is in that graveyard) when every event of the trigger is the host leaving the battlefield, one at a time; otherwise manual;
  *  - a trigger with several events of which only some move the source, a batch, or a step inside a delayed or reflexive trigger (which has an event of its
- *    own): manual.
+ *    own): manual. Except (edh-perms-8, Gift of Immortality) the Aura case inside a delayed trigger that waits for a step ("at the beginning of the next end
+ *    step"): that trigger names no event, so the reference stays the Aura's card in its graveyard.
  * Property reads ("~'s power", the source of damage) keep `self` and read last known information (CR 608.2h).
  */
 import type { EventPattern, ObjectFilter } from '../../types/ability';
@@ -52,18 +53,32 @@ export function rebaseMovedSelf(d: Draft): void {
   for (const u of sequences(d).flat()) {
     if (u.manual) continue;
     let lost = false;
-    const walk = (list: unknown, inner: boolean): void => {
+    // edh-misc-6 (CR 603.7c, 400.7f; Ghoulish Impetus): "return this card to the battlefield at the beginning of the next end step" -- the delayed trigger's instruction
+    // finds the card the Aura became while it is still in that graveyard (`{ref:'self', moved:true}` reads the source's last known information, not the delayed
+    // trigger's event), so one delayed trigger directly in the ability keeps the Aura reading; a reflexive trigger, or a delay inside one, stays refused
+    const walk = (list: unknown, inner: boolean, timer = false, delayed = false): void => {
       if (!Array.isArray(list)) return;
       for (const s of list) {
         if (!isRec(s)) continue;
-        for (const [path, v] of actedOn(s)) {
-          if (!isRec(v) || v['ref'] !== 'self') continue;
-          if (fate === 'event' && !inner) setAt(s, path, { ref: 'event', role: 'subject' });
-          else if (fate === 'aura' && !inner) setAt(s, path, { ref: 'self', moved: true });
+        // edh-next-31 (CR 400.7e, 404.1; Skyfisher Spider): "When ~ dies, ... exile ~ from your graveyard" (template eff.stdrd.exile.fromYourGraveyard) moves the cards of a group whose
+        // filter is the source (`is: {ref:'self'}`, in the graveyard): after the source's own zone change that is the event's subject, the new object found in the graveyard
+        const grp = s['op'] === 'move' && isRec(s['what']) && s['what']['ref'] === 'each' ? s['what']['filter'] : undefined;
+        if (isRec(grp) && isRec(grp['is']) && grp['is']['ref'] === 'self' && Object.keys(grp['is']).length === 1) {
+          if (fate === 'event' && !inner && !delayed) grp['is'] = { ref: 'event', role: 'subject' };
           else lost = true;
         }
-        const own = s['op'] === 'delay' || s['op'] === 'reflexive'; // a delayed or reflexive trigger has an event of its own (CR 603.7, 603.12)
-        for (const k of STEP_LISTS) walk(s[k], inner || own);
+        for (const [path, v] of actedOn(s)) {
+          if (!isRec(v) || v['ref'] !== 'self') continue;
+          if (fate === 'event' && !inner && (!delayed || timer)) setAt(s, path, { ref: 'event', role: 'subject' }); // edhn78 (Brood of Cockroaches): and in a delayed trigger that waits for a step, as "return it" does there (the trigger's event stays readable)
+          else if (fate === 'aura' && (!inner || timer)) setAt(s, path, { ref: 'self', moved: true }); // edh-perms-8: also in a delayed trigger that waits for a step (no event of its own to name the Aura; the card is found while it is still in that graveyard)
+          else lost = true;
+        }
+        const own = s['op'] === 'reflexive'; // a reflexive trigger has an event of its own (CR 603.12)
+        const delay = s['op'] === 'delay'; // so has a delayed one (CR 603.7), which only an Aura's moved card can still be found through
+        const stepTimer = delay && isRec(s['when']) && s['when']['at'] === 'step' && !inner && !delayed; // edh-perms-8: "at the beginning of the next end step"
+        // combined copy: edh-misc-6's `inner` (a delay refuses every fate but the Aura's, a delay inside a delay refuses all) and edh-perms-8's step timer, which
+        // a reflexive or a further delayed trigger ends
+        for (const k of STEP_LISTS) walk(s[k], inner || own || (delay && fate !== 'aura' && !(fate === 'event' && stepTimer)) || (delayed && delay), stepTimer || (timer && !own && !delay), delayed || delay);
       }
     };
     walk(u.steps, false);

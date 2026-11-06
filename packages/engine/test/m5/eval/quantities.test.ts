@@ -30,17 +30,25 @@ const val = (b: ReturnType<typeof board>, q: Quantity) => evalQty(b.cx, q);
 describe('capability table (design 5.2)', () => {
   it('lists every quantity this engine evaluates; dieResult reads the result the rollDie handler keeps (WP15)', () => {
     expect(Object.keys(QTY_EVALUATORS).sort()).toEqual([
-      'X', 'age', 'ask', 'cardsDrawnThisTurn', 'count', 'countPlayers', 'counters', 'devotion', 'dieResult', 'distinct', 'eventAmount', 'happenedCount', 'level', 'life', 'lifeGainedThisTurn',
+      'X', 'activatedThisTurn' /* edh-c-89 */, 'age', 'ask', 'cardsDrawnThisTurn', 'casterControlledCount' /* edh-c-73 */, 'casterSpellsCastThisTurn' /* edh-next-12 */, 'count', 'countPlayers', 'counters', 'devotion', 'dieResult', 'distinct', 'eventAmount', 'eventExcess' /* edh-top-15 */, 'happenedCount', 'level', 'life', 'lifeGainedThisTurn',
       'live', 'math', 'resultCount', 'spellManaSpent' /* FAST5X E9 */, 'spellsBefore', 'spellsCastThisTurn', 'spellTargetCount', 'speed', 'stat', 'targetCount', 'turnNumber', 'var', 'zoneSize',
       'kickCount', 'preventedAmount', 'faceUpX', // M6-0 (m6 design 5)
       'lifeLostThisTurn', 'colorsSpent', // FAST4 T34
       'commanderCasts', // M11-0 (CR 903.8): exact in every game, 0 outside Commander
       'commanderIdentitySize', // pc-statics-2 (CR 903.4): the colors of the commanders' identity, 0 without a commander
       'partySize', // FAST5 T38 (CR 700.8)
+      'symbolsAmong', // edh-c-37 (CR 107.4, 202.1)
+      'keywordsHad', // edh-next-145 (CR 702.1, 608.2h)
+      'dieResultHighest', // edh-d-49 (CR 706.2, 603.2c)
+      'dieResultOther', 'diceResults', // edh-mana-keywords-10 (CR 706.2, 608.2h)
+      'stickerVowels', // edh-next-147 (CR 123.6e): the unique vowels on the sticker this resolution put, 0 without one
       'basePower', // std-rx29 (CR 208.1, 613.4)
+      'asCast', // edh-next-126 (CR 601.2i)
       'manaSymbols', // Standard round 5, r5-trig (CR 107.4, 202.1)
       'turnsBegun', // Standard round 9, std-r9 (CR 500.7)
+      'extraTurnsBegun', // trek-18 (CR 500.7)
       'mostSharingCreatureType', // r5-cost (CR 205.3m)
+      'mostByController', 'lifeLostTotal', // edh-cast-3 (CR 109.4, 119.3)
       'spellColorsSpent', // FAST5 T51 (CR 601.2h)
       'manaSpent', // FAST5 T42
       'excessDamage', // FAST5X E16
@@ -48,16 +56,29 @@ describe('capability table (design 5.2)', () => {
       'damageDealt', // std-rx20
       'unspentMana', // FAST5X E19 (CR 106.4)
       'startingLife', // FAST5 T60 (CR 103.4)
+      'playersLost', // edhn95 (CR 104.3)
       'resolvedThisTurn', // FAST5X E17 (CR 608.2, 400.7)
       'descendedThisTurn', // FAST5X E22 (CR 700.11)
-      'lifeLost', 'votes', 'opponentsAttacked', // M12-3 (CR 119.3, 701.38, 702.121a)
+      'attacksThisTurn', // edh-combat-5 (CR 508.1)
+      'lifeLost', 'votes', 'votesFor' /* edhd27 */, 'opponentsAttacked', // M12-3 (CR 119.3, 701.38, 702.121a)
       'unlockedDoors', // cloud std-dsk (CR 709.5c, 709.5j)
       'happenedDistinct', // CLOUD std-tmt (CR 205.2a): the card types among the spells cast this turn
+      'targetsOf', // edh-next-143 (CR 115.9a): the targets of the event spell
+      'chosenColorsOf', // edh-d-45: a stub (cost modifiers read it, statics/costmods.ts)
+      'sharedCardTypes', // edh-d-90: a stub (cost modifiers read it, statics/costmods.ts)
+      'manaProduced', // edh-d-90 (CR 106.3, 605.3b): the mana the triggering mana ability's activation produced
       'chosenNumber', // CLOUD std-misc (CR 608.2d, 607.2d): the number a linked "Choose a number ..." chose
       'modesChosen', // Standard round 3, r3-trig (CR 700.2, 601.2b): the modes chosen for the spell of a cast trigger
       'loyaltyRemoved', // Standard round 3, r3-trig (CR 606.4): the loyalty counters the cost of the triggering activation removed
       'spellTargetTotal', 'costCount', // std-costs-1 (CR 601.2f, 601.2b): the targets' total mana value, the number announced for an optional cost
       'countersPut', // trek-6
+      'mostSharingName', // edh-replace-4 (CR 201.2)
+      'happenedPlayers', // edh-players-9 (CR 102.3, 121.1, 120.2a)
+      'snowSpent', // edh-zones-26 (CR 107.4h, 601.2h): the {S} among the mana spent to cast the spell
+      'timesMutated', // edh-next-33 (CR 702.140d, 730.2): the merges of this permanent
+      'permanentsToGraveyardThisTurn', // edh-d-3 (CR 702.69a): gravestorm
+      'spellX', // edh-d-31 (CR 107.3e): the X of the spell a cast trigger names
+      'activationManaFrom', // edh-next-129 (CR 602.2b, 106.3): the mana from Treasures spent on the resolving activation (Mr. House)
     ].sort());
     const b = board();
     expect(evalQty(b.cx, { q: 'dieResult' })).toBeUndefined(); // no die rolled in this resolution: fails to determine (CR 608.2b)

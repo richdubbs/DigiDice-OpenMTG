@@ -1,0 +1,573 @@
+[
+  {
+    "id": "rid.edhd96.cast.fromGraveyardThisWay.exileInstead",
+    "kind": "rider",
+    "since": 96,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 611.2a"
+    ],
+    "pattern": "if a spell cast from your graveyard this way would be put into your graveyard , exile it instead",
+    "build": {
+      "$patchPrevious": {
+        "@byOp": {
+          "cast": {
+            "graveyardInstead": {
+              "@new": {
+                "to": {
+                  "zone": "exile"
+                },
+                "yours": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "attachTo": "cast",
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you cast a sorcery spell, you may cast target instant card from your graveyard. If a spell cast from your graveyard this way would be put into your graveyard, exile it instead."
+      },
+      {
+        "text": "When ~ enters, you may cast target sorcery card from your graveyard. If a spell cast from your graveyard this way would be put into your graveyard, exile it instead."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may cast target sorcery card from your graveyard. If a spell cast from your graveyard this way would be put into your graveyard, return it to your hand instead.",
+      "When ~ enters, you may cast target sorcery card from your graveyard. If a spell cast from your hand this way would be put into your graveyard, exile it instead.",
+      "When ~ enters, you may cast target sorcery card from your graveyard. If a spell cast from your graveyard this way would be put into your graveyard, put it on the bottom of your library instead."
+    ]
+  },
+  {
+    "id": "sta.edhd96.surveil.lookAdditional",
+    "kind": "static",
+    "since": 96,
+    "status": "stable",
+    "cr": [
+      "CR 701.25a",
+      "CR 609.3"
+    ],
+    "pattern": "you may look at an additional {n:Count} cards each time you surveil",
+    "build": {
+      "s": "rule",
+      "rule": "surveilLookAdditional",
+      "value": "$n"
+    },
+    "consumes": [
+      "may",
+      "additional",
+      "each time",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You may look at an additional three cards each time you surveil."
+      },
+      {
+        "text": "You may look at an additional four cards each time you surveil."
+      }
+    ],
+    "counterExamples": [
+      "You may look at an additional two cards each time you scry.",
+      "Each opponent may look at an additional two cards each time they surveil.",
+      "You may look at an additional two cards each time you draw."
+    ]
+  },
+  {
+    "id": "eff.edhd96.cast.instantSorcery.mvOrLess.free.fromAmong",
+    "kind": "effect",
+    "since": 96,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 202.3",
+      "CR 304.1",
+      "CR 307.1"
+    ],
+    "pattern": "you may cast instant and sorcery spells with mana value {n:Qty} or less from among {g:Them} without paying their mana costs",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Instant",
+              "Sorcery"
+            ],
+            "is": "$g",
+            "zone": "exile",
+            "manaValue": {
+              "op": "<=",
+              "value": "$n"
+            }
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top five cards of your library. You may cast instant and sorcery spells with mana value 3 or less from among them without paying their mana costs."
+      },
+      {
+        "text": "Exile the top four cards of your library. You may cast instant and sorcery spells with mana value 2 or less from among them without paying their mana costs. Then put all cards exiled this way that weren't cast into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top five cards of your library. You may cast instant and sorcery spells with mana value 3 or greater from among them without paying their mana costs.",
+      "Exile the top five cards of your library. You may cast instant and sorcery spells with mana value 3 or less from among them.",
+      "Exile the top five cards of your library. You may cast creature and sorcery spells with mana value 3 or less from among them without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.edhd96.exile.ownPerPlayer.opponent.until",
+    "kind": "effect",
+    "since": 96,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 406.1",
+      "CR 610.3",
+      "CR 610.3c"
+    ],
+    "pattern": "each opponent exile[s] ( a | an ) {f:Filter} {d:Dur}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 1,
+        "max": 1,
+        "perPlayer": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "as": "ownExiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "ownExiled"
+        },
+        "to": {
+          "zone": "exile"
+        },
+        "until": "$d"
+      }
+    ],
+    "consumes": [
+      "each",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent exiles a card from their hand until ~ leaves the battlefield."
+      },
+      {
+        "text": "When ~ enters, each opponent exiles a creature they control until ~ leaves the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each opponent exiles a creature card from their hand.",
+      "When ~ enters, each player exiles a card from their hand until ~ leaves the battlefield.",
+      "When ~ enters, target opponent exiles a card from their hand until ~ leaves the battlefield."
+    ]
+  },
+  {
+    "id": "sta.edhd96.play.linked.anyColor",
+    "kind": "static",
+    "since": 96,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 609.4b",
+      "CR 107.4c"
+    ],
+    "pattern": "you may play ( cards exiled with ~ | lands and cast spells from among cards exiled with ~ ) . if you cast a spell this way , you may spend mana as though it were mana of any color to cast it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "anyManaColor": true
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if",
+      "this way",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, each opponent exiles a card from their hand until ~ leaves the battlefield.\nYou may play lands and cast spells from among cards exiled with ~. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it."
+      },
+      {
+        "text": "When ~ enters, exile the top two cards of target opponent's library.\nYou may play cards exiled with ~. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top two cards of target opponent's library.\nYou may play cards exiled with ~. If you cast a spell this way, you may spend mana as though it were mana of any type to cast it.",
+      "When ~ enters, exile the top two cards of target opponent's library.\nYou may play cards exiled with ~. If you cast a spell this way, you gain 2 life.",
+      "When ~ enters, exile the top two cards of target opponent's library.\nDuring your turn, you may play cards exiled with ~. If you cast a spell this way, you may spend mana as though it were mana of any color to cast it."
+    ]
+  },
+  {
+    "id": "eff.edhd96.permit.play.upToN.group.dur",
+    "kind": "effect",
+    "since": 96,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 611.2a",
+      "CR 601.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 400.7"
+    ],
+    "pattern": "you may play up to {n:Count} of {o:Group} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": "$o"
+          },
+          "uses": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top four cards of your library. You may play up to two of those cards until the end of your next turn."
+      },
+      {
+        "text": "Exile the top five cards of your library. You may play up to three of them this turn."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top four cards of your library. You may play those cards until the end of your next turn.",
+      "Exile the top four cards of your library. You may cast up to two of those cards until the end of your next turn.",
+      "Exile the top four cards of your library. You may play up to two of those cards."
+    ]
+  },
+  {
+    "id": "trg.edhd96.you.scryBottom",
+    "kind": "trigger",
+    "since": 96,
+    "status": "stable",
+    "cr": [
+      "CR 701.22a",
+      "CR 603.2"
+    ],
+    "pattern": "whenever you choose to put one or more cards on the bottom of your library while scrying",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "scryBottom",
+          "actor": "you"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "one or more"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you choose to put one or more cards on the bottom of your library while scrying, draw a card."
+      },
+      {
+        "text": "Whenever you choose to put one or more cards on the bottom of your library while scrying, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you choose to put one or more cards on the top of your library while scrying, draw a card.",
+      "Whenever you choose to put one or more cards into your graveyard while surveilling, draw a card.",
+      "Whenever an opponent chooses to put one or more cards on the bottom of their library while scrying, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhd96.exile.n.fromBottom",
+    "kind": "effect",
+    "since": 96,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 406.1",
+      "CR 401.1",
+      "CR 608.2c"
+    ],
+    "pattern": "exile {n:Qty} card[s] from the bottom of your library",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "topCards",
+        "player": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "fromBottom": true
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "examples": [
+      {
+        "text": "Whenever you discard one or more cards, exile that many cards from the bottom of your library."
+      },
+      {
+        "text": "Whenever you scry, exile that many cards from the bottom of your library."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you scry, exile that many cards from the top of your library.",
+      "Whenever you scry, exile two cards from the bottom of your library.",
+      "Whenever you scry, put that many cards from the bottom of your library into your graveyard."
+    ]
+  },
+  {
+    "id": "sta.edhd96.duringYourTurn.play.linked",
+    "kind": "static",
+    "since": 96,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 611.3a"
+    ],
+    "pattern": "during your turn , you may play cards exiled with ~",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile the top three cards of target opponent's library.\nQuiet Hoard — During your turn, you may play cards exiled with ~."
+      },
+      {
+        "text": "At the beginning of your upkeep, exile the top two cards of your library.\nStolen Hours — During your turn, you may play cards exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile the top three cards of target opponent's library.\nQuiet Hoard — During each opponent's turn, you may play cards exiled with ~.",
+      "When ~ enters, exile the top three cards of target opponent's library.\nQuiet Hoard — During your turn, you may cast spells from among cards exiled with ~ without paying their mana costs.",
+      "When ~ enters, exile the top three cards of target opponent's library.\nQuiet Hoard — During your turn, each opponent may play cards exiled with ~."
+    ]
+  },
+  {
+    "id": "eff.edhd96.forEachOpponentPoison.put.bf.yours",
+    "kind": "effect",
+    "since": 96,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 122.1f",
+      "CR 110.2"
+    ],
+    "pattern": "for each opponent who has {n:Count} or more poison counters as you cast ~ , put {o:PoisonOppTarget} onto the battlefield under your control",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "consumes": [
+      "each",
+      "or more"
+    ],
+    "examples": [
+      {
+        "text": "For each opponent who has two or more poison counters as you cast ~, put up to one target creature card from that player's graveyard onto the battlefield under your control."
+      },
+      {
+        "text": "For each opponent who has five or more poison counters as you cast ~, put up to one target creature card from that player's graveyard onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "For each opponent who has two or more poison counters as you cast ~, put up to one target creature card from that player's graveyard onto the battlefield.",
+      "For each opponent who has two or more poison counters, put up to one target creature card from that player's graveyard onto the battlefield under your control.",
+      "For each opponent who has two or more poison counters as you cast ~, put up to one target creature card from that player's graveyard into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhd96.put.battlefieldOrHand",
+    "kind": "effect",
+    "since": 96,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 110.2",
+      "CR 400.3"
+    ],
+    "pattern": "put {o:Obj} onto the battlefield or into your hand",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "options": [
+          "battlefield",
+          "hand"
+        ],
+        "as": "bfOrHand",
+        "link": "bfOrHand"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "bfOrHand",
+          "equals": "battlefield"
+        },
+        "then": [
+          {
+            "op": "move",
+            "what": "$o",
+            "to": {
+              "zone": "battlefield",
+              "controller": {
+                "ref": "you"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "bfOrHand",
+          "equals": "hand"
+        },
+        "then": [
+          {
+            "op": "move",
+            "what": "$o",
+            "to": {
+              "zone": "hand",
+              "owner": {
+                "ref": "you"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "consumes": [
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "Exile cards from the top of your library until you exile a creature card. Put that card onto the battlefield or into your hand."
+      },
+      {
+        "text": "Whenever ~ attacks, exile cards from the top of your library until you exile a nonland permanent card. Put that card onto the battlefield or into your hand."
+      }
+    ],
+    "counterExamples": [
+      "Exile cards from the top of your library until you exile a creature card. Put that card onto the battlefield or into your graveyard.",
+      "Exile cards from the top of your library until you exile a creature card. Put that card onto the battlefield and into your hand.",
+      "Exile cards from the top of your library until you exile a creature card. Put that card into your hand."
+    ]
+  }
+]

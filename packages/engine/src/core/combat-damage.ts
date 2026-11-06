@@ -10,7 +10,8 @@ import type { ObjectId, PlayerId } from '../types/ids';
 import type { AttackerState } from '../types/state';
 import { charsOfObject, hasKeyword, ptNumbers, type Chars } from '../rules/characteristics';
 import { dealSimultaneousDamage, settleLifelink, type LifelinkLedger } from '../rules/damage';
-import { assignsCombatDamageAsToughness, assignsNegativePowerAsPositive, mayAssignAsUnblocked } from '../statics/hooks';
+import { hasBanding } from '../rules/combat-rules';
+import { assignsCombatDamageAsToughness, assignsNegativePowerAsPositive, assignsNoCombatDamage, lethalThreshold, mayAssignAsUnblocked, mustAssignAsUnblocked } from '../statics/hooks';
 import type { Game } from './game';
 import type { GameEvent } from '../types/events';
 import { commanderCardOf } from '../statics/commander';
@@ -78,38 +79,74 @@ const UNKNOWN = Number.MAX_SAFE_INTEGER;
 function lethalFor(g: Game, target: ObjectId, deathtouch: boolean, assigned: Map<string, number>): number {
   const o = g.maybeObj(target);
   if (!o) return 0;
-  const toughness = ptNumbers(charsOfObject(g.s, o)).toughness;
+  const toughness = lethalThreshold(g.s, o.id, charsOfObject(g.s, o)); // edh-next-145 (CR 702.19b, 120.6): the power instead when a rule says so (Zilortha)
   const room = toughness === null ? UNKNOWN : Math.max(0, toughness - o.damage - (assigned.get(target) ?? 0));
   return deathtouch ? Math.min(1, room) : room; // CR 702.2c
 }
 
-function askAssignment(g: Game, source: ObjectId, c: Chars, power: number, recipients: ObjectId[], defender: PlayerId | ObjectId | null, trample: boolean, assigned: Map<string, number>): Assignment[] {
+function askAssignment(g: Game, source: ObjectId, c: Chars, power: number, recipients: ObjectId[], defender: PlayerId | ObjectId | null, trample: boolean, assigned: Map<string, number>, chooser?: PlayerId, overPw?: OverPlaneswalker): Assignment[] {
   const deathtouch = hasKeyword(c, 'deathtouch');
-  const list = recipients.map((id) => ({ id: id as ObjectId | PlayerId, lethal: lethalFor(g, id, deathtouch, assigned) }));
-  if (trample && defender !== null) list.push({ id: defender, lethal: 0, trampleTarget: true } as { id: ObjectId | PlayerId; lethal: number; trampleTarget?: boolean });
+  const list: { id: ObjectId | PlayerId; lethal: number; trampleTarget?: boolean; attacked?: true }[] = recipients.map((id) => ({ id: id as ObjectId | PlayerId, lethal: overPw !== undefined && id === overPw.walker ? Math.max(lethalFor(g, id, deathtouch, assigned), overPw.room) : lethalFor(g, id, deathtouch, assigned) }));
+  // edh-d-90 (CR 702.19c): trample over planeswalkers: the planeswalker attacked (lethal: its loyalty left), then its controller, the trample target
+  if (overPw !== undefined) {
+    if (!recipients.includes(overPw.walker)) list.push({ id: overPw.walker, lethal: overPw.room, attacked: true }); // a planeswalker that also blocks is a blocker of the list (Thrasta ruling 2021-06-18)
+    list.push({ id: overPw.controller, lethal: 0, trampleTarget: true });
+  } else if (trample && defender !== null) list.push({ id: defender, lethal: 0, trampleTarget: true });
   const ans = g.choose({
     kind: 'assignDamage',
-    player: g.obj(source).controller,
+    player: chooser ?? g.obj(source).controller, // edhv31 (CR 702.22j-k): with banding, the other side's player divides the damage
     prompt: `Assign ${power} combat damage from ${c.name || g.nameOf(source)}${trample ? ' (trample: lethal damage to every blocker before the rest can go to what it attacks)' : ''}.`,
     attacker: source,
     amount: power,
     recipients: list,
-    canTrample: trample && defender !== null,
-    rules: ['CR 510.1c', ...(trample ? ['CR 702.19b'] : [])],
+    canTrample: (trample && defender !== null) || overPw !== undefined,
+    rules: ['CR 510.1c', ...(trample ? ['CR 702.19b'] : []), ...(overPw !== undefined ? ['CR 702.19c'] : [])],
   });
   return ans.amounts.filter((x) => x.amount > 0).map((x) => ({ target: x.id, amount: x.amount }));
 }
 
+/** edh-d-90 (CR 702.19c): the planeswalker an attacker with trample over planeswalkers attacks, the damage that is lethal for it (its loyalty left) and its controller. */
+interface OverPlaneswalker { walker: ObjectId; room: number; controller: PlayerId }
+
+/**
+ * edh-d-90 (CR 702.19c, 702.19e; Thrasta, Tempest's Roar): for an attacker with trample over planeswalkers that attacks a planeswalker still on the battlefield, the planeswalker and its
+ * controller (damage at least equal to its loyalty, less what other creatures assign it in this step, is lethal: ruling 2021-06-18; deathtouch changes nothing there); null otherwise. A
+ * player who left the game is assigned nothing (CR 800.4e).
+ */
+function overPlaneswalker(g: Game, att: AttackerState, assigned: Map<string, number>): OverPlaneswalker | null {
+  const pw = att.defender !== null ? g.s.objects[att.defender] : undefined;
+  if (pw === undefined || pw.zone !== 'battlefield' || !charsOfObject(g.s, pw).types.includes('Planeswalker')) return null;
+  const controller = pw.controller;
+  if (g.s.players.some((p) => p.id === controller && p.hasLost)) return null;
+  return { walker: pw.id, room: Math.max(0, (pw.counters['loyalty'] ?? 0) - (assigned.get(pw.id) ?? 0)), controller };
+}
+
 /** How an attacking creature assigns its combat damage (CR 510.1b-c, 702.19). */
 function assignAttacker(g: Game, att: AttackerState, c: Chars, power: number, assigned: Map<string, number>): Assignment[] {
-  const trample = hasKeyword(c, 'trample');
+  // edh-d-90 (CR 702.19c): trample over planeswalkers is a variant of trample: it assigns as trample does, with the planeswalker attacked's controller after that planeswalker
+  const overPws = hasKeyword(c, 'trample over planeswalkers');
+  const trample = hasKeyword(c, 'trample') || overPws;
   const deathtouch = hasKeyword(c, 'deathtouch');
   const blockers = att.blockedBy.filter((id) => g.s.objects[id]);
   // M12-2 (m12 design E18): CR 800.4e, combat damage isn't assigned to a player who left the game (core/leave.ts already points such attackers at nothing)
-  const defender = att.defender !== null && g.s.players.some((p) => p.id === att.defender && p.hasLost) ? null : att.defender;
+  let defender = att.defender !== null && g.s.players.some((p) => p.id === att.defender && p.hasLost) ? null : att.defender;
+  const overPw = overPws ? overPlaneswalker(g, att, assigned) : null;
+  // edh-d-90 (CR 702.19e): attacking a planeswalker that was removed from combat (or that left), its damage may go to the defending player once every blocker is assigned lethal damage
+  // (only a creature declared attacking a planeswalker, never one attacking a battle or a player: core/combat.ts sets `atPlaneswalker`; state-based actions clear `defender`, CR 506.4c)
+  if (overPws && overPw === null && att.atPlaneswalker === true && !g.s.players.find((p) => p.id === att.defendingPlayer)?.hasLost) {
+    const pw = defender !== null ? g.s.objects[defender] : undefined;
+    if (pw === undefined || pw.zone !== 'battlefield' || !charsOfObject(g.s, pw).types.includes('Planeswalker') || pw.controller !== att.defendingPlayer) defender = att.defendingPlayer;
+  }
+  if (overPw !== null && power > overPw.room && !mustAssignAsUnblocked(g.s, att.id) && (blockers.length === 0 || !blockers.some((b) => hasBanding(g.s, b)))) {
+    // edh-d-90 (CR 702.19c, 702.19d): unblocked (or blocked with no creature left blocking), the planeswalker and then its controller; blocked, the blockers first
+    if (!att.blocked || blockers.length === 0) return askAssignment(g, att.id, c, power, [], null, true, assigned, undefined, overPw);
+    if (!mayAssignAsUnblocked(g.s, att.id)) return askAssignment(g, att.id, c, power, blockers, null, true, assigned, undefined, overPw);
+  }
   if (!att.blocked) return defender !== null ? [{ target: defender, amount: power }] : []; // CR 510.1b (attacking nothing: no damage)
   // FAST5 T37 (CR 510.1b-c; Thorn Elemental): "You may have ~ assign its combat damage as though it weren't blocked": its controller chooses, as the damage is
   // assigned, whether it assigns all of it to what it attacks (it stays blocked, CR 509.1h, 509.3g)
+  // edh-d-25 (Outmaneuver): "assign their combat damage this turn as though they weren't blocked" is not a choice (a `mandatory` permission)
+  if (mustAssignAsUnblocked(g.s, att.id)) return defender !== null ? [{ target: defender, amount: power }] : []; // CR 510.1b
   if (mayAssignAsUnblocked(g.s, att.id)) {
     const yes = g.choose({
       kind: 'yesNo', player: g.obj(att.id).controller, yesLabel: 'Assign as though unblocked', noLabel: 'Assign to the blockers', rules: ['CR 510.1b', 'CR 510.1c'],
@@ -118,6 +155,12 @@ function assignAttacker(g: Game, att: AttackerState, c: Chars, power: number, as
     if (yes) return defender !== null ? [{ target: defender, amount: power }] : []; // CR 510.1b (attacking nothing: no damage)
   }
   if (blockers.length === 0) return trample && defender !== null ? [{ target: defender, amount: power }] : []; // CR 510.1c, 702.19d
+  // edhv31 (CR 702.22j): blocked by a creature with banding, the defending player (not the active player) divides the attacking creature's damage among the creatures
+  // blocking it as they choose; they can't assign it to a player, a planeswalker or a battle (not even with trample)
+  if (blockers.some((b) => hasBanding(g.s, b))) {
+    if (blockers.length === 1) return [{ target: blockers[0]!, amount: power }];
+    return askAssignment(g, att.id, c, power, blockers, null, false, assigned, att.defendingPlayer);
+  }
   if (!trample) {
     if (blockers.length === 1) return [{ target: blockers[0]!, amount: power }]; // CR 510.1c
     return askAssignment(g, att.id, c, power, blockers, null, false, assigned);
@@ -133,6 +176,8 @@ function assignBlocker(g: Game, id: ObjectId, c: Chars, power: number, blocking:
   const targets = blocking.filter((a) => g.s.objects[a]);
   if (targets.length === 0) return [];
   if (targets.length === 1) return [{ target: targets[0]!, amount: power }];
+  // edhv31 (CR 702.22k): blocking a creature with banding, the active player (not the defending player) divides the blocking creature's damage among the creatures it blocks
+  if (targets.some((a) => hasBanding(g.s, a))) return askAssignment(g, id, c, power, targets, null, false, assigned, g.s.turn.activePlayer);
   return askAssignment(g, id, c, power, targets, null, false, assigned);
 }
 
@@ -170,11 +215,17 @@ export function combatDamageStep(g: Game): void {
   g.log(`The ${label}.`, { rules: ['CR 510', ...(combat.firstStrikers.length > 0 ? ['CR 510.4'] : [])], level: 'info' });
 
   // CR 510.1: the active player assigns damage for their creatures, then the defending player (participants are in attackers-then-blockers order).
+  // edh-d-90 (CR 702.19c, 510.2; Thrasta ruling 2021-06-18): an attacker with trample over planeswalkers assigns after the active player's other attackers, so the damage they assign
+  // to the same planeswalker counts toward its loyalty (all of it is dealt at once, CR 510.2: the order of the assignments changes nothing else)
+  const overPwLast = (id: ObjectId): number => (combat.attackers.some((a) => a.id === id) && hasKeyword(charsOfObject(g.s, g.obj(id)), 'trample over planeswalkers') ? 1 : 0);
+  const isAttacker = (id: ObjectId): boolean => combat.attackers.some((a) => a.id === id);
+  participants = [...participants.filter((id) => isAttacker(id) && overPwLast(id) === 0), ...participants.filter((id) => isAttacker(id) && overPwLast(id) === 1), ...participants.filter((id) => !isAttacker(id))];
   const assigned = new Map<string, number>();
   const plan: { source: ObjectId; assignments: Assignment[] }[] = [];
   for (const id of participants) {
     const o = g.obj(id);
     const c = charsOfObject(g.s, o);
+    if (assignsNoCombatDamage(g.s, id)) continue; // edh-combat-6 (CR 510.1): "assigns no combat damage this combat"
     const nums = ptNumbers(c);
     // FAST5 T60, CR 510.1a: "assigns combat damage equal to its toughness rather than its power" (Doran, the Siege Tower; Bedrock Tortoise)
     const printed = assignsCombatDamageAsToughness(g.s, id, c) ? nums.toughness : nums.power;

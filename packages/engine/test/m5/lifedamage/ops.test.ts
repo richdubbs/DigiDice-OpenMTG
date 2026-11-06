@@ -124,7 +124,7 @@ describe('gainLife, loseLife (CR 119.3)', () => {
     const { state, result } = runStep(board(), BOLT, prog([{ op: 'gainLife', who: { ref: 'you' }, amount: 3 }]));
     expect(lifeOf(state, 'p1')).toBe(23);
     expect(result).toMatchObject({ performed: true, count: 1 }); // one player gained life (design 8.3)
-    expect(pipeline.proposals).toEqual([{ ev: 'life', change: 'gain', player: 'p1', amount: 3 }]);
+    expect(pipeline.proposals).toEqual([{ ev: 'life', change: 'gain', player: 'p1', amount: 3, effectController: 'p1' }]); // edh-d-54: a gain carries its effect's controller
   });
 
   it('CR 101.4, 608.2e: "Each player loses 2 life" proposes in APNAP order', () => {
@@ -168,7 +168,7 @@ describe('setLife (CR 119.5)', () => {
 
   it('CR 119.5: a player at 5 whose life total becomes 10 GAINS 5 life', () => {
     setTo(10, 5);
-    expect(pipeline.proposals).toEqual([{ ev: 'life', change: 'gain', player: 'p2', amount: 5 }]);
+    expect(pipeline.proposals).toEqual([{ ev: 'life', change: 'gain', player: 'p2', amount: 5, effectController: 'p1' }]); // edh-d-54: a gain carries its effect's controller
   });
 
   it('setting a life total to what it already is changes nothing', () => {

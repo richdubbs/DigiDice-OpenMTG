@@ -1,0 +1,19 @@
+# edh-c-8 (Commander effort, coordinator C, EDHREC ranks 19,376 to 20,000). After editing: npm run cards -- fixtures
+Mockery of Nature
+Drownyard Behemoth
+Distended Mindbender
+Warmonger's Chariot
+Spectral Bears
+Revoke Demise
+Exquisite Firecraft
+Scepter of Empires
+Power Plant Worker
+Blackmail
+Bala Ged Thief
+Corpse Cobble
+Gilded Light
+Nissa's Chosen
+Inviolability
+Tatterkite
+Hellraiser Goblin
+Tears of Rage

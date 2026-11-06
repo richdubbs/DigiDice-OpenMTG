@@ -5,7 +5,8 @@
  */
 import type { Action } from '../types/actions';
 import type { ObjectId, PlayerId } from '../types/ids';
-import { castOriginOf, type GameState } from '../types/state';
+import { castOriginOf, type ContinuousEffectRec, type GameState } from '../types/state';
+import type { AbilityDef } from '../types/ability';
 import { IllegalAction, type Game } from '../core/game';
 import { warnUnsupportedText } from '../core/manual';
 import { moveObject } from '../core/zones';
@@ -15,8 +16,9 @@ import { assertAllowed, deny, type Denial } from '../rules/denial';
 import { gameOf, hookpoints } from '../rules/hookpoints';
 import { sorceryTiming } from '../rules/timing';
 import { additionalLandPlays } from '../statics/hooks';
-import { graveyardLandKey, namedPermit, namedPermitLandTapped, namedSingleKey, outsideLandKey, playPermitted, topPermitFor } from '../statics/play-permits';
+import { graveyardLandUse, linkedLandUse, namedPermit, namedPermitLandTapped, namedSingleKey, outsideLandKey, playPermitted, topPermitFor } from '../statics/play-permits';
 import { installResolutionLandPlayer } from '../effects/cast-hook';
+import { permitOnUseTrigger } from '../triggers/stack';
 
 /** How many lands the player can play this turn (CR 305.2: one, plus what rule modifications and permissions add; WP16: statics/hooks.ts#additionalLandPlays). */
 export function landsAllowed(s: GameState, player: PlayerId): number {
@@ -75,13 +77,18 @@ export function playLand(g: Game, action: Extract<Action, { type: 'playLand' }>)
   const single = old.zone !== 'hand' ? namedSingleKey(g.s, player, action.card, true) : null;
   if (single !== null) g.s.turnActivations[single] = (g.s.turnActivations[single] ?? 0) + 1;
   // std-rx27 (CR 305.2): "During each of your turns, you may play a land ... from your graveyard": a once-each-turn graveyard land permission is spent
-  const gyLand = old.zone === 'graveyard' && single === null && !namedPermit(g.s, player, action.card, true) ? graveyardLandKey(g.s, player, action.card) : null;
+  const gyUse = old.zone === 'graveyard' && single === null && !namedPermit(g.s, player, action.card, true) ? graveyardLandUse(g.s, player, action.card) : null;
+  const gyLand = gyUse?.key ?? null;
   if (gyLand !== null) g.s.turnActivations[gyLand] = (g.s.turnActivations[gyLand] ?? 0) + 1;
   // trek-11 (CR 400.11b, 305.2): ... and so is the same permission's counter when the land is played from outside the game (one use a turn for both places)
   const outsideKey = outside ? outsideLandKey(g.s, player, action.card)?.key ?? null : null;
   if (outsideKey !== null) g.s.turnActivations[outsideKey] = (g.s.turnActivations[outsideKey] ?? 0) + 1;
+  // edh-d-100 (CR 305.1, 305.2, 601.3; Share the Spoils): a land played from exile with the active player's linked permission for a land or a spell: its once-each-turn use is spent
+  // (shared with the spells cast with it) and its "When they do, ..." triggers once the land is on the battlefield (PermissionDef.onUse)
+  const lnkUse = old.zone === 'exile' && single === null && !namedPermit(g.s, player, action.card, true) ? linkedLandUse(g.s, player, action.card) : null;
+  if (lnkUse?.key != null) g.s.turnActivations[lnkUse.key] = (g.s.turnActivations[lnkUse.key] ?? 0) + 1;
   const name = faceChars(g.s.defs[old.defId]!, check.face).name;
-  const from = castOriginOf(old); // cloud std-spm: "whenever you play a land from exile" reads the zone it was played from; trek-11: 'outside' for a card from outside the game (CR 400.11)
+  const from = castOriginOf(old, player); // edh-next-143: 'otherHand' for a land played from another player's hand (Sen Triplets); cloud std-spm: "whenever you play a land from exile" reads the zone it was played from; trek-11: 'outside' for a card from outside the game (CR 400.11)
   // CR 305.1 / 116.2a: the land goes straight onto the battlefield; it is never a spell.
   // std-exile-play-1-3 (CR 614.1c): "Each land played this way enters tapped" on the permission it is played with (statics/play-permits.ts#namedPermitLandTapped)
   const tapped = !outside && from !== 'hand' && namedPermitLandTapped(g.s, player, action.card);
@@ -90,7 +97,30 @@ export function playLand(g: Game, action: Extract<Action, { type: 'playLand' }>)
   g.player(player).landsPlayedThisTurn++; // CR 305.2a
   g.emit({ type: 'landPlayed', objectId: id, player, from });
   g.log(`${g.player(player).name} plays ${name}${outside ? ' from outside the game' : ''}.`, { rules: ['CR 305.1', 'CR 116.2a', ...(outside ? ['CR 400.11b'] : [])], level: 'action' });
+  // edh-zones-22 (CR 614.1c, 611.2; Serra Paragon): "If you do, it gains ...": the land played with a permission that gives abilities has them for as long as it is that object
+  if (gyUse?.entersAbilities !== undefined) grantAbilitiesToNewObject(g, id, gyUse.entersAbilities, gyUse.source ?? name);
+  if (lnkUse?.onUse !== undefined) permitOnUseTrigger(g, lnkUse.onUse, player, { ev: 'action', roles: { subject: { objects: [{ id, zone: 'battlefield' }] }, player: { players: [player] } }, before: {} });
   warnUnsupportedText(g, id); // e.g. "enters tapped" is not automated yet
+}
+
+/**
+ * edh-zones-22 (CR 613.1f, 611.2, 400.7; Serra Paragon): a layer 6 effect that gives the new object on the battlefield these abilities for as long as it is that object (a new
+ * object after it leaves has none, as effects/perform-events.ts#applyEnterFacts does for the facts of a replacement effect).
+ */
+function grantAbilitiesToNewObject(g: Game, id: ObjectId, abilities: readonly AbilityDef[], sourceName: string): void {
+  const o = g.obj(id);
+  const rec: ContinuousEffectRec = {
+    id: g.newEffectId(),
+    source: { id, zone: 'battlefield' },
+    sourceName,
+    controller: o.controller,
+    timestamp: o.timestamp, // it has them from the moment it enters (CR 613.7d)
+    startedTurn: g.s.turn.number,
+    duration: { d: 'permanent' }, // for as long as it is this object: a handle to a moved object is stale (CR 400.7, 611.2c)
+    effect: { s: 'continuous', affects: { ref: 'fixed', objects: [{ id, zone: 'battlefield' }] }, mods: [{ layer: 6, add: JSON.parse(JSON.stringify(abilities)) as AbilityDef[] }] },
+  };
+  g.s.continuousEffects.push(rec);
+  g.log(`${g.nameOf(id)} has ${abilities.map((a) => a.text).join('; ')}.`, { rules: ['CR 614.1c', 'CR 613.1f'], level: 'info' });
 }
 
 /**
@@ -123,7 +153,7 @@ installResolutionLandPlayer({
     const r = landDuringCheck(g.s, player, card);
     if ('denial' in r) return null;
     const name = faceChars(g.s.defs[g.obj(card).defId]!, r.face).name;
-    const from = g.obj(card).zone; // cloud std-spm (CR 305.1): the zone it is played from
+    const from = castOriginOf(g.obj(card), player); // cloud std-spm (CR 305.1): the zone it is played from; edh-next-143: another player's hand is 'otherHand'
     const id = moveObject(g, card, 'battlefield', { face: r.face, controller: player, cause: 'play land' }); // CR 305.1: it never is a spell
     if (!id) return null;
     g.player(player).landsPlayedThisTurn++; // CR 305.2a: it counts as the land played this turn

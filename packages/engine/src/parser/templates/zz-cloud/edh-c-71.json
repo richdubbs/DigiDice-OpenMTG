@@ -1,0 +1,461 @@
+[
+  {
+    "id": "sta.edhv71.obj.cantBeEquipped",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 301.5",
+      "CR 301.5c",
+      "CR 604.1",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be equipped",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beEquipped"
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature can't be equipped."
+      },
+      {
+        "text": "Enchanted permanent can't be equipped."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature can't be enchanted.",
+      "Enchanted creature can't be equipped unless you control a Plains.",
+      "Enchanted creature can't equip."
+    ]
+  },
+  {
+    "id": "rst.edhv71.cantattack.unless.defending.controls.enchantedPermanent",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 508.1c",
+      "CR 506.2",
+      "CR 303.4",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't attack unless defending player controls an enchantment or an enchanted permanent",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "onlyIf",
+      "action": "attack",
+      "when": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": {
+            "controller": {
+              "ref": "defending"
+            },
+            "anyOf": [
+              {
+                "types": [
+                  "Enchantment"
+                ]
+              },
+              {
+                "enchanted": true
+              }
+            ]
+          }
+        }
+      }
+    },
+    "consumes": [
+      "can't",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature can't attack unless defending player controls an enchantment or an enchanted permanent."
+      },
+      {
+        "text": "Enchanted permanent can't attack unless defending player controls an enchantment or an enchanted permanent."
+      }
+    ],
+    "counterExamples": [
+      "~ can't attack unless defending player controls an enchantment.",
+      "~ can't block unless defending player controls an enchantment or an enchanted permanent.",
+      "~ can't attack unless you control an enchantment or an enchanted permanent."
+    ]
+  },
+  {
+    "id": "trg.edhv71.selfAndOtherF.attack",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.1",
+      "CR 508.3a",
+      "CR 603.2"
+    ],
+    "pattern": "whenever ~ and at least one other {f:Filter} attack",
+    "build": {
+      "on": [
+        {
+          "ev": "attacks",
+          "attacker": {
+            "self": true
+          },
+          "withOther": "$f"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever",
+      "other",
+      "at least"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ and at least one other Warrior attack, you gain 2 life."
+      },
+      {
+        "text": "Whenever ~ and at least one other Goblin attack, ~ gets +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ and at least two other Warriors attack, you gain 2 life.",
+      "Whenever ~ and at least one other Warrior block, you gain 2 life.",
+      "Whenever ~ attacks, you gain 7 life."
+    ],
+    "weak": 1,
+    "priority": 1
+  },
+  {
+    "id": "sta.edhv71.attachedTo.pump.mustBeBlockedBy",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 509.1c",
+      "CR 303.4",
+      "CR 301.5"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} and must be blocked by ( a | an ) {f:Filter} if able",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": {
+          "ref": "attachedTo"
+        },
+        "mods": [
+          {
+            "layer": "7c",
+            "power": "$pt.p",
+            "toughness": "$pt.t"
+          }
+        ]
+      },
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "attachedTo"
+        },
+        "mode": "mustIfAble",
+        "action": "beBlocked",
+        "other": "$f"
+      }
+    ],
+    "consumes": [
+      "if",
+      "must",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature gets +2/+0 and must be blocked by a Dragon if able."
+      },
+      {
+        "text": "Enchanted creature gets +2/+0 and must be blocked by a Goblin if able."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +3/+1 and must be blocked if able.",
+      "Equipped creature gets +3/+1 and must be blocked by two or more creatures if able.",
+      "Equipped creature gets +3/+1 and must block an Eldrazi if able."
+    ]
+  },
+  {
+    "id": "eff.edhv71.exile.target.spiritDisturbEnchantment",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 115.1",
+      "CR 702.146a"
+    ],
+    "pattern": "exile target Spirit , creature with disturb , or enchantment",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "target",
+        "id": "",
+        "$target": {
+          "kind": "object",
+          "min": 1,
+          "max": 1,
+          "text": "target Spirit, creature with disturb, or enchantment",
+          "filter": {
+            "anyOf": [
+              {
+                "subtypes": [
+                  "Spirit"
+                ]
+              },
+              {
+                "types": [
+                  "Creature"
+                ],
+                "keyword": "disturb"
+              },
+              {
+                "types": [
+                  "Enchantment"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, exile target Spirit, creature with disturb, or enchantment."
+      },
+      {
+        "text": "{2}{W}, {T}: Exile target Spirit, creature with disturb, or enchantment."
+      }
+    ],
+    "counterExamples": [
+      "Exile target Spirit, creature, or enchantment.",
+      "Exile target Spirit, creature with flying, or enchantment.",
+      "Exile target Spirit, creature with disturb, or artifact."
+    ]
+  },
+  {
+    "id": "eff.edhv71.destroy.all.enchantments.colorOfYourChoice",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 105.4",
+      "CR 608.2c",
+      "CR 701.8a"
+    ],
+    "pattern": "destroy all enchantments of the color of your choice",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "chosenColor",
+        "link": "color"
+      },
+      {
+        "op": "destroy",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Enchantment"
+            ],
+            "chosen": {
+              "link": "color",
+              "quality": "color"
+            }
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "destroy",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Destroy all enchantments of the color of your choice."
+      },
+      {
+        "text": "Scry 1. Destroy all enchantments of the color of your choice."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all creatures of the color of your choice.",
+      "Destroy all enchantments of the chosen color.",
+      "Destroy all enchantments of the color of their choice."
+    ]
+  },
+  {
+    "id": "sta.edhv71.combat.players.cantCastInstants.orActivateNonMana",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 601.3",
+      "CR 602.5",
+      "CR 605.1a",
+      "CR 506.1",
+      "CR 101.2",
+      "CR 304.1"
+    ],
+    "pattern": "during combat , ( {p:Player} | players ) can't cast instant spells or activate abilities that aren't mana abilities",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "$when": "p",
+            "then": "$p",
+            "else": {
+              "ref": "each",
+              "who": "player"
+            }
+          },
+          "mode": "cant",
+          "action": "cast",
+          "other": {
+            "types": [
+              "Instant"
+            ]
+          },
+          "when": {
+            "cond": "turnOf",
+            "whose": "any",
+            "step": [
+              "beginCombat",
+              "declareAttackers",
+              "declareBlockers",
+              "combatDamage",
+              "endCombat"
+            ]
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "$when": "p",
+            "then": "$p",
+            "else": {
+              "ref": "each",
+              "who": "player"
+            }
+          },
+          "mode": "cant",
+          "action": "activate",
+          "exceptMana": true,
+          "when": {
+            "cond": "turnOf",
+            "whose": "any",
+            "step": [
+              "beginCombat",
+              "declareAttackers",
+              "declareBlockers",
+              "combatDamage",
+              "endCombat"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During combat, your opponents can't cast instant spells or activate abilities that aren't mana abilities."
+      },
+      {
+        "text": "When ~ enters, you gain 9 life.\nDuring combat, your opponents can't cast instant spells or activate abilities that aren't mana abilities."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, your opponents can't cast instant spells or activate abilities that aren't mana abilities.",
+      "During combat, your opponents can't cast spells or activate abilities that aren't mana abilities.",
+      "During combat, your opponents can't cast instant spells or activate abilities that aren't loyalty abilities.",
+      "Your opponents can't cast instant spells or activate abilities that aren't mana abilities."
+    ]
+  },
+  {
+    "id": "eff.edhv71.prevent.combat.twoGroupsWould.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 510.1",
+      "CR 120.2"
+    ],
+    "pattern": "prevent all combat damage {f:Filter} and {g:Filter} would deal {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "combat": true,
+            "source": {
+              "anyOf": [
+                "$f",
+                "$g"
+              ]
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. Prevent all combat damage red creatures and white creatures would deal this turn."
+      },
+      {
+        "text": "Prevent all combat damage artifact creatures and green creatures would deal this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all combat damage red creatures would deal this turn.",
+      "Prevent all damage red creatures and white creatures would deal this turn.",
+      "Prevent all combat damage red creatures and white creatures would be dealt this turn."
+    ]
+  }
+]

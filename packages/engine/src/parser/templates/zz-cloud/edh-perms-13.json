@@ -1,0 +1,82 @@
+[
+  {
+    "id": "trg.edhpm13.castSelfAndWhenever",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 601.2i",
+      "CR 113.6k"
+    ],
+    "pattern": "( when | whenever ) {e:Event} and whenever {f:Event}",
+    "build": {
+      "on": {
+        "$concat": [
+          "$e",
+          "$f"
+        ]
+      }
+    },
+    "consumes": [
+      "when",
+      "whenever",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "When you cast ~ and whenever ~ attacks, you gain 2 life."
+      },
+      {
+        "text": "When you cast ~ and whenever ~ attacks, target creature gets +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "When you cast ~ and whenever you gain life, you gain 2 life.",
+      "When you cast ~ and whenever ~ attacks while saddled, you gain 2 life.",
+      "When you cast ~ and whenever ~ blocks, you gain 2 life."
+    ]
+  },
+  {
+    "id": "eff.edhpm13.copy.token.andTappedAttacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 111.1",
+      "CR 508.4",
+      "CR 110.5b"
+    ],
+    "pattern": "create a token that's a copy of {o:Obj} and that's tapped and attacking",
+    "build": {
+      "op": "copy",
+      "what": "$o",
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "tapped": true,
+      "attacking": true
+    },
+    "subject": "none",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create a token that's a copy of target creature you control and that's tapped and attacking."
+      },
+      {
+        "text": "Whenever ~ attacks, create a token that's a copy of another target attacking creature you control and that's tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create a token that's a copy of target creature you control and that's tapped.",
+      "Whenever ~ attacks, create a token that's a copy of target creature you control and that's attacking.",
+      "Whenever ~ attacks, create two tokens that are copies of target creature you control and that are tapped and attacking."
+    ]
+  }
+]

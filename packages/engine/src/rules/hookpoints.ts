@@ -20,7 +20,7 @@ import type { ObjectId, PlayerId } from '../types/ids';
 import type { GameState } from '../types/state';
 import type { Chars } from './characteristics';
 import type { PaymentOption } from '../keywords/types';
-import type { CostDef } from '../types/ability';
+import type { CostDef, ObjectFilter } from '../types/ability';
 import { keywordProvider } from '../keywords/hooks';
 import { staticsProvider } from '../statics/hooks';
 import { holdStill } from '../statics/stable-scope';
@@ -29,6 +29,13 @@ import { holdStill } from '../statics/stable-scope';
 export interface CastVia {
   method?: string;
   fused?: boolean;
+  /**
+   * edh-cast-4 INTERFACE CHANGE (additive), CR 601.2b, 202.3e, 601.3: asked again once X is announced, with the spell on the stack: only the "can't cast" effects that judge the
+   * spell's mana value (a spell with {X} has the value chosen for X, which the first check cannot know; statics/hooks.ts#canCast).
+   */
+  xAnnounced?: true;
+  /** edh-cast-4 (additive), CR 107.3b, 202.3e: a free cast during a resolution (cascade) announces no X, so a spell with {X} in its mana cost is judged with X = 0. */
+  xZero?: true;
   /**
    * M6-0 (m6 design 2.6, INTERFACE CHANGE, additive): the characteristics a cast option gives the spell from the moment it is announced (face down, prototyped,
    * back face up: CR 708.4, 718.3a-b, 712.8c; actions/cast-options.ts#CastOptionProvider.charsOverride), so "can't cast" effects judge the spell it will be.
@@ -83,9 +90,13 @@ export interface RuleHookProvider {
   summoningSick?(g: GameLike, object: ObjectId, player: PlayerId, c: Chars): boolean | undefined; // haste: false = not subject to summoning sickness
   /** r4-fxz (additive): "you may activate abilities of creatures you control as though those creatures had haste" (CR 302.6, 602.5a, 609.4): true = its {T} and {Q} abilities may be activated, never its attacks */
   activatesAsThoughHaste?(g: GameLike, object: ObjectId, player: PlayerId, c: Chars): boolean | undefined;
+  /** edh-b-14 (CR 302.6, 508.1a, 609.4): true = the creature may attack that player or planeswalker as though it had haste (Frenzied Saddlebrute) */
+  attacksAsThoughHaste?(g: GameLike, object: ObjectId, defender: PlayerId | ObjectId): boolean | undefined;
   castsAsInstant?(g: GameLike, spell: ObjectId, player: PlayerId, c: Chars): boolean | undefined; // flash: true = may be cast any time it could be an instant
   /** r4-mech INTERFACE CHANGE (additive), CR 606.3: true = the player may activate the loyalty abilities of this permanent any time they could cast an instant. */
   loyaltyAsInstant?(g: GameLike, source: ObjectId, player: PlayerId): boolean | undefined;
+  /** edh-mana-keywords-8 INTERFACE CHANGE (additive), CR 702.6a, 602.5d: true = the player may activate the equip abilities of this permanent any time they could cast an instant. */
+  equipAsInstant?(g: GameLike, source: ObjectId, player: PlayerId): boolean | undefined;
   /** FAST5 T56 INTERFACE CHANGE (additive): the amounts of generic mana the permissions that let this spell be cast as though it had flash for a price ask (CR 601.2f, 601.3b). */
   castFlashCosts?(g: GameLike, spell: ObjectId, player: PlayerId, c: Chars): number[];
   /**
@@ -93,6 +104,10 @@ export interface RuleHookProvider {
    * ("if you behold a Dragon as an additional cost to cast it", CR 601.2b, 601.2f, 601.3b, 118.8).
    */
   castFlashAddCosts?(g: GameLike, spell: ObjectId, player: PlayerId, c: Chars): CostDef[];
+  /** edht4 INTERFACE CHANGE (additive): the target filters of the permissions that let this spell be cast as though it had flash if it targets a match ("if it targets a commander", CR 601.3b, 601.2c). */
+  castFlashIfTargets?(g: GameLike, spell: ObjectId, player: PlayerId, c: Chars): ObjectFilter[];
+  /** edh-d-44 INTERFACE CHANGE (additive): the largest X of each permission that lets this spell be cast as though it had flash with X at most that number ("if X is 3 or less", CR 601.3b, 107.3a). */
+  castFlashXLimit?(g: GameLike, spell: ObjectId, player: PlayerId, c: Chars): number[];
   /** Does a permission waive the keyword denial of this query (`Denial.waivedBy`)? CR 609.4. Only a denial marked `waivedBy` is ever dropped. */
   permits?(g: GameLike, query: PermitQuery): boolean;
   paymentOptions?(g: GameLike, spell: ObjectId, caster: PlayerId): PaymentOption[]; // convoke, improvise, delve, emerge: the options of the CASTER (CR 702.51a)
@@ -115,10 +130,16 @@ export interface Hookpoints {
   attackTaps(g: GameLike, attacker: ObjectId, player: PlayerId, c: Chars): boolean; // true unless some provider says false
   summoningSick(g: GameLike, object: ObjectId, player: PlayerId, c: Chars): boolean; // true unless some provider says haste
   activatesAsThoughHaste(g: GameLike, object: ObjectId, player: PlayerId, c: Chars): boolean; // r4-fxz: false unless some provider permits it
+  attacksAsThoughHaste(g: GameLike, object: ObjectId, defender: PlayerId | ObjectId): boolean; // edh-b-14: false unless some provider permits it
+  /** edh-d-25 (CR 509.1a, 609.4; Masako the Humorless): does a permission let a tapped creature block as though it were untapped? False unless some provider permits it. */
+  blocksAsThoughUntapped(g: GameLike, blocker: ObjectId, attacker: ObjectId): boolean;
   castsAsInstant(g: GameLike, spell: ObjectId, player: PlayerId, c: Chars): boolean; // false unless some provider says flash
   loyaltyAsInstant(g: GameLike, source: ObjectId, player: PlayerId): boolean; // r4-mech: false unless some provider permits it (CR 606.3)
+  equipAsInstant(g: GameLike, source: ObjectId, player: PlayerId): boolean; // edh-mana-keywords-8: false unless some provider permits it (CR 702.6a, 602.5d)
   castFlashCosts(g: GameLike, spell: ObjectId, player: PlayerId, c: Chars): number[]; // FAST5 T56: [] unless a permission lets it be cast as though it had flash for a price
   castFlashAddCosts(g: GameLike, spell: ObjectId, player: PlayerId, c: Chars): CostDef[]; // std-rx10: [] unless a permission lets it be cast so for an additional cost
+  castFlashXLimit(g: GameLike, spell: ObjectId, player: PlayerId, c: Chars): number[]; // edh-d-44: [] unless a permission lets it be cast as though it had flash with X up to a limit
+  castFlashIfTargets(g: GameLike, spell: ObjectId, player: PlayerId, c: Chars): ObjectFilter[]; // edht4: [] unless a permission lets it be cast as though it had flash if it targets a match
   paymentOptions(g: GameLike, spell: ObjectId, caster: PlayerId): PaymentOption[];
 }
 
@@ -159,10 +180,15 @@ export function createHookpoints(providers: () => Providers): Hookpoints {
     attackTaps: (g, attacker, player, c) => holdStill(g.s, () => providers().every((p) => p.attackTaps?.(g, attacker, player, c) !== false)),
     summoningSick: (g, object, player, c) => holdStill(g.s, () => !providers().some((p) => p.summoningSick?.(g, object, player, c) === false)),
     activatesAsThoughHaste: (g, object, player, c) => holdStill(g.s, () => providers().some((p) => p.activatesAsThoughHaste?.(g, object, player, c) === true)),
+    attacksAsThoughHaste: (g, object, defender) => holdStill(g.s, () => providers().some((p) => p.attacksAsThoughHaste?.(g, object, defender) === true)),
+    blocksAsThoughUntapped: (g, blocker, attacker) => holdStill(g.s, () => providers().some((p) => p.permits?.(g, { action: 'blockAsThough', subject: blocker, other: attacker, asThough: 'untapped' }) === true)),
     castsAsInstant: (g, spell, player, c) => holdStill(g.s, () => providers().some((p) => p.castsAsInstant?.(g, spell, player, c) === true)),
     loyaltyAsInstant: (g, source, player) => holdStill(g.s, () => providers().some((p) => p.loyaltyAsInstant?.(g, source, player) === true)),
+    equipAsInstant: (g, source, player) => holdStill(g.s, () => providers().some((p) => p.equipAsInstant?.(g, source, player) === true)),
     castFlashCosts: (g, spell, player, c) => holdStill(g.s, () => providers().flatMap((p) => p.castFlashCosts?.(g, spell, player, c) ?? [])),
     castFlashAddCosts: (g, spell, player, c) => holdStill(g.s, () => providers().flatMap((p) => p.castFlashAddCosts?.(g, spell, player, c) ?? [])),
+    castFlashXLimit: (g, spell, player, c) => holdStill(g.s, () => providers().flatMap((p) => p.castFlashXLimit?.(g, spell, player, c) ?? [])),
+    castFlashIfTargets: (g, spell, player, c) => holdStill(g.s, () => providers().flatMap((p) => p.castFlashIfTargets?.(g, spell, player, c) ?? [])),
     paymentOptions: (g, spell, caster) => holdStill(g.s, () => providers().flatMap((p) => p.paymentOptions?.(g, spell, caster) ?? [])),
   };
 }

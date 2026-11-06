@@ -22,6 +22,7 @@ import type { UnitEnv } from './units';
 import { parseWhole } from './units';
 import { selfZoneMention } from './trigger-zone';
 import { leftoverMarker } from './util';
+import { resolveFaceChoices, type Producer } from './links';
 
 /** What the driver lends: the display text of some tokens, and a ledger claim. */
 export interface DriverIO {
@@ -31,7 +32,7 @@ export interface DriverIO {
 
 const span = (t: readonly Tok[]): Range => (t.length === 0 ? [0, 0] : [t[0]!.start, t[t.length - 1]!.end]);
 
-export type Restrictions = Pick<ActivatedAbilityDef, 'sorcerySpeed' | 'limit' | 'onlyIf' | 'anyPlayer' | 'xMin' | 'tapForMana' | 'uncopiable'>;
+export type Restrictions = Pick<ActivatedAbilityDef, 'sorcerySpeed' | 'instantSpeed' | 'limit' | 'onlyIf' | 'anyPlayer' | 'opponentsOnly' | 'xMin' | 'xIs' | 'tapForMana' | 'spendOnlyChosen' | 'spendOnlyX' | 'uncopiable' | 'attackedPlayerOnly'>;
 
 export const TIMES: Readonly<Record<string, number>> = { once: 1, twice: 2, 'three times': 3, 'four times': 4 };
 
@@ -58,6 +59,8 @@ const DURING_ANY: Readonly<Record<string, Condition>> = {
   'during combat before blockers are declared': { cond: 'turnOf', whose: 'any', step: ['beginCombat', 'declareAttackers'] },
   'during the declare blockers step': { cond: 'turnOf', whose: 'any', step: 'declareBlockers' },
   'during the combat damage step': { cond: 'turnOf', whose: 'any', step: 'combatDamage' },
+  // edh-c-84 (CR 602.5b, 506.1, 510.4; Angus Mackenzie): every step before the combat damage step (the first strike damage step is a combat damage step too, CR 510.4), of any turn
+  'before the combat damage step': { cond: 'turnOf', whose: 'any', step: ['untap', 'upkeep', 'draw', 'main1', 'beginCombat', 'declareAttackers', 'declareBlockers'] },
   'during the end of combat step': { cond: 'turnOf', whose: 'any', step: 'endCombat' },
   'during any upkeep step': { cond: 'turnOf', whose: 'any', step: 'upkeep' },
   "during an opponent 's turn": { cond: 'turnOf', whose: 'opponent' },
@@ -147,12 +150,23 @@ function restrictionOf(p: Tok[], io: DriverIO, ue: UnitEnv): { fields: Restricti
   const w = p.map((t) => t.norm);
   const any = anyPlayerOf(w);
   if (any !== undefined) return any === null ? null : { fields: any, asked: false };
+  const opponents = opponentsOnlyOf(w); // edh-c-103
+  if (opponents !== undefined) return opponents === null ? null : { fields: opponents, asked: false };
+  const attacked = attackedPlayerOnlyOf(w); // edh-d-88
+  if (attacked !== undefined) return attacked === null ? null : { fields: attacked, asked: false };
   // std-rx12 (CR 107.3a, 602.2b): "X can't be 0." after the effect of an ability with X in its cost: the least X that may be announced (ActivatedAbilityDef.xMin)
   if (w.join(' ') === "x can't be 0 ." || w.join(' ') === "x can't be 0") return { fields: { xMin: 1 }, asked: false };
   // std-copy-1 (CR 707.10, 101.2): "This ability can't be copied." (ActivatedAbilityDef.uncopiable), alone or joined with "and X can't be 0" (Gogo, Master of Mimicry)
   const ownWords = w[w.length - 1] === '.' ? w.slice(0, -1).join(' ') : w.join(' ');
   if (ownWords === "this ability can't be copied") return { fields: { uncopiable: true }, asked: false };
+  // edh-next-54 (CR 602.5b, 506.1; Djinn of Infinite Deceits): "You can't activate this ability during combat." (ActivatedAbilityDef.onlyIf, any step of the combat phase of any turn, negated)
+  if (ownWords === "you can't activate this ability during combat") return { fields: { onlyIf: { cond: 'not', of: { cond: 'turnOf', whose: 'any', step: ['beginCombat', 'declareAttackers', 'declareBlockers', 'combatDamage', 'endCombat'] } } }, asked: false };
   if (ownWords === "this ability can't be copied and x can't be 0") return { fields: { uncopiable: true, xMin: 1 }, asked: false };
+  // edh-mana-keywords-8 (CR 106.6, 602.2b; Throne of Eldraine): "Spend only mana of the chosen color to activate this ability." (ActivatedAbilityDef.spendOnlyChosen, the link of "choose a color")
+  if (ownWords === 'spend only mana of the chosen color to activate this ability') return { fields: { spendOnlyChosen: 'color' }, asked: false };
+  // edh-next-85 (CR 107.3a, 106.6; Crypt Rats): "Spend only black mana on X." (ActivatedAbilityDef.spendOnlyX), the one color the X of the cost is paid with
+  const onlyX = /^spend only (white|blue|black|red|green) mana on x$/.exec(ownWords);
+  if (onlyX !== null) return { fields: { spendOnlyX: ({ white: 'W', blue: 'U', black: 'B', red: 'R', green: 'G' } as const)[onlyX[1] as 'white']! }, asked: false };
   const tapFor = tapForManaOf(p, ue);
   if (tapFor !== null) return { fields: { tapForMana: tapFor }, asked: false };
   if (w[0] !== 'activate') return null;
@@ -174,6 +188,7 @@ function restrictionOf(p: Tok[], io: DriverIO, ue: UnitEnv): { fields: Restricti
     const t = c.map((x) => x.norm).join(' ');
     const times = /^(once|twice|three times|four times) each (turn|combat)$/.exec(t);
     if (t === 'as a sorcery' && fields.sorcerySpeed === undefined) fields.sorcerySpeed = true; // CR 602.5d
+    else if (t === 'as an instant' && fields.instantSpeed === undefined) fields.instantSpeed = true; // edh-mana-keywords-2, CR 602.5e
     else if (times && fields.limit === undefined) fields.limit = { per: times[2] as 'turn' | 'combat', max: TIMES[times[1]!]! }; // CR 602.5b
     else if (t === 'during your turn') conds.push({ cond: 'turnOf', whose: 'you' });
     // CMD4 (CR 602.5b, 508.1, 506.1): "during your turn, before attackers are declared": your turn, up to the beginning of combat step, and not after your
@@ -221,6 +236,7 @@ const ANY_PLAYER_ONLY: Readonly<Record<string, Restrictions>> = {
   'during their turn': { onlyIf: { cond: 'turnOf', whose: 'you' } },
   'during their upkeep': { onlyIf: { cond: 'turnOf', whose: 'you', step: 'upkeep' } },
   'during their draw step': { onlyIf: { cond: 'turnOf', whose: 'you', step: 'draw' } },
+  'during any upkeep step': { onlyIf: { cond: 'turnOf', whose: 'any', step: 'upkeep' } }, // edh-c-54 (CR 503.1, 602.5b; Armageddon Clock): the upkeep step of any player's turn
 };
 
 /**
@@ -238,6 +254,34 @@ function anyPlayerOf(w: readonly string[]): Restrictions | null | undefined {
   return only === undefined ? null : { anyPlayer: true, ...JSON.parse(JSON.stringify(only)) as Restrictions };
 }
 
+
+/**
+ * edh-c-103, CR 602.2 (Detention Vortex): "Only your opponents may activate this ability." alone or with "and only as a sorcery" (`opponentsOnly`: an opponent of the controller activates it
+ * and controls it, CR 602.2a). Undefined when the sentence is not one; null when it carries a restriction this code does not read (the sentence then stays manual, never activated with
+ * the restriction dropped).
+ */
+function opponentsOnlyOf(w: readonly string[]): Restrictions | null | undefined {
+  const lead = ['only', 'your', 'opponents', 'may', 'activate', 'this', 'ability'];
+  if (!lead.every((x, i) => w[i] === x)) return undefined;
+  const end = w[w.length - 1] === '.' ? w.length - 1 : w.length;
+  if (end === lead.length) return { opponentsOnly: true };
+  if (w[lead.length] !== 'and' || w[lead.length + 1] !== 'only' || w.slice(lead.length + 2, end).join(' ') !== 'as a sorcery') return null;
+  return { opponentsOnly: true, sorcerySpeed: true };
+}
+
+/**
+ * edh-d-88, CR 602.2, 602.5b, 508.1 (Capricopian): "Only the player this creature is attacking may activate this ability and only during the declare attackers step." (`attackedPlayerOnly`:
+ * the player the source attacks activates it and controls it, CR 602.2a; the step of any turn). Also alone. Undefined when the sentence is not one; null when it carries a restriction this
+ * code does not read (the sentence then stays manual).
+ */
+function attackedPlayerOnlyOf(w: readonly string[]): Restrictions | null | undefined {
+  const lead = ['only', 'the', 'player', '~', 'is', 'attacking', 'may', 'activate', 'this', 'ability'];
+  if (!lead.every((x, i) => w[i] === x)) return undefined;
+  const end = w[w.length - 1] === '.' ? w.length - 1 : w.length;
+  if (end === lead.length) return { attackedPlayerOnly: true };
+  if (w[lead.length] !== 'and' || w[lead.length + 1] !== 'only' || w.slice(lead.length + 2, end).join(' ') !== 'during the declare attackers step') return null;
+  return { attackedPlayerOnly: true, onlyIf: { cond: 'turnOf', whose: 'any', step: 'declareAttackers' } };
+}
 
 /** What `activationLimits` found beyond the restrictions: the ability's own cost change and the templates that read it (T38). */
 export interface ActivationExtras { costChange?: NonNullable<ActivatedAbilityDef['costChange']>; costChangeIf?: Condition; templates: string[]; experimental: string[] }
@@ -278,6 +322,15 @@ export function activationLimits(pieces: Tok[][], io: DriverIO, ue: UnitEnv, opt
       io.claim(span(p), 'consumed', cc.d.templatesUsed.join(','));
       continue;
     }
+    // edh-next-132 (CR 107.3c, 607.2a; Prototype Portal, Soul Foundry): "X is the mana value of that card." / "... of the exiled card." after an effect that names "the exiled card" (the card
+    // linked to the source, CR 607.2a): the X of the activation cost is defined by the text (ActivatedAbilityDef.xIs), never announced. Only that sentence, last, after such an effect
+    const pw = p.map((t) => t.norm).join(' ').replace(/ \.$/, '');
+    if (rest.length > 0 && fields.xIs === undefined && (pw === 'x is the mana value of that card' || pw === 'x is the mana value of the exiled card') && rest.some((q) => q.map((t) => t.norm).join(' ').includes('the exiled card'))) {
+      fields.xIs = { q: 'stat', stat: 'manaValue', of: { ref: 'linked', link: 'exiled' } };
+      texts.push(io.text(p));
+      io.claim(span(p), 'consumed', 'activation-x-defined');
+      continue;
+    }
     const r = rest.length > 0 ? restrictionOf(p, io, ue) : null;
     if (r !== null) texts.push(io.text(p));
     const clash = r !== null && Object.keys(r.fields).some((k) => (fields as Record<string, unknown>)[k] !== undefined);
@@ -299,10 +352,12 @@ export function activationLimits(pieces: Tok[][], io: DriverIO, ue: UnitEnv, opt
 interface Used { templates: string[]; experimental: string[] }
 
 /** One cost part: the Cost hole (one reading, no marker), else a `cost` template (recorded in `used`), else null. */
-function costPartOf(tokens: Tok[], ue: UnitEnv, used: Used): CostDef | null {
+function costPartOf(tokens: Tok[], ue: UnitEnv, used: Used, choices?: readonly Producer[]): CostDef | null {
   const vals = new Map(runHole('Cost', tokens, 0, ue.env).filter((a) => a.end === tokens.length).map((a) => [canonicalJson(a.value), a.value]));
   if (vals.size === 1) {
-    const cost = [...vals.values()][0] as CostDef;
+    // edh-mana-keywords-6 (CR 607.2d, 614.12a): "Sacrifice a creature of the chosen type" (Etchings of the Chosen): the type another ability of the face chose as it
+    // entered, resolved as the face's other sentences are (lower/links.ts#resolveFaceChoices); with no or several such choices the placeholder stays and the part is manual
+    const cost = resolveFaceChoices([...vals.values()][0] as CostDef, choices);
     if (leftoverMarker(cost) === null) return JSON.parse(JSON.stringify(cost)) as CostDef;
   }
   if (vals.size > 1) return null; // ambiguous (guard G5)
@@ -347,10 +402,12 @@ export interface CostResult { cost: CostDef; understood: number; manual: { range
  * The cost of an activated ability (CR 602.1a, 118). The whole list through the Cost hole first; otherwise part by part (comma separated, CR 602.2b): a
  * part that does not parse is the manual cost part `{kind:'manual', text}` of design 6.6, and the parts understood are kept.
  */
-export function costOf(tokens: Tok[], io: DriverIO, ue: UnitEnv): CostResult {
+export function costOf(tokens: Tok[], io: DriverIO, ue: UnitEnv, choices?: readonly Producer[]): CostResult {
   const used: Used = { templates: [], experimental: [] };
-  const whole = costPartOf(tokens, ue, used);
+  const whole = costPartOf(tokens, ue, used, choices);
   if (whole !== null) { io.claim(span(tokens), 'consumed', 'cost'); return { cost: whole, understood: 1, manual: [], ...used }; }
+  const alternatives = wholeAlternatives(tokens, ue, used, choices);
+  if (alternatives !== null) { io.claim(span(tokens), 'consumed', 'cost'); return { cost: alternatives, understood: 1, manual: [], ...used }; }
   const parts: Tok[][] = [[]];
   for (const t of tokens) { if (t.kind === 'PUNCT' && t.norm === ',') { parts[parts.length - 1]!.push(t); parts.push([]); } else parts[parts.length - 1]!.push(t); }
   let cost: CostDef = {};
@@ -359,7 +416,7 @@ export function costOf(tokens: Tok[], io: DriverIO, ue: UnitEnv): CostResult {
   for (const withComma of parts) {
     const part = withComma[withComma.length - 1]?.norm === ',' ? withComma.slice(0, -1) : withComma;
     if (part.length === 0) continue;
-    const parsed = costPartOf(part, ue, used);
+    const parsed = costPartOf(part, ue, used, choices);
     const merged = parsed !== null ? mergeCost(cost, parsed) : null;
     if (merged !== null) { cost = merged; understood++; io.claim(span(withComma), 'consumed', 'cost'); continue; }
     const text = io.text(part);
@@ -371,10 +428,50 @@ export function costOf(tokens: Tok[], io: DriverIO, ue: UnitEnv): CostResult {
   return { cost, understood, manual, ...used };
 }
 
+/** The comma-separated parts of a cost, each understood, merged; null when one is not (no claims: a trial reading). */
+function partsCostOf(tokens: Tok[], ue: UnitEnv, used: Used, choices?: readonly Producer[]): { cost: CostDef; parts: number } | null {
+  const parts: Tok[][] = [[]];
+  for (const t of tokens) { if (t.kind === 'PUNCT' && t.norm === ',') parts.push([]); else parts[parts.length - 1]!.push(t); }
+  let cost: CostDef = {};
+  for (const part of parts) {
+    if (part.length === 0) return null;
+    const parsed = costPartOf(part, ue, used, choices);
+    const merged = parsed !== null ? mergeCost(cost, parsed) : null;
+    if (merged === null) return null;
+    cost = merged;
+  }
+  return { cost, parts: parts.length };
+}
+
+/**
+ * edh-next-147 (CR 601.2b, 602.2b, 118.3; Crystal Shard, ruling 2004-10-04: "You can pay either of the two costs (but not both at the same time)"): "{3}, {T} or {U}, {T}: ..."
+ * is a choice between two WHOLE activation costs, each of several comma-separated parts: the `oneOf` part whose options are those costs (FAST5X E27's choice, made as the
+ * ability is activated, rules/pay.ts#resolveOneOf). Read only when the part-by-part reading leaves a part not understood, at the one "or" whose two sides are each a whole
+ * cost of two or more parts (so "{1}, {T}, Pay 2 life or discard a card", whose choice is one part, keeps the part-level choice), and never two such "or"s (G5).
+ */
+function wholeAlternatives(tokens: Tok[], ue: UnitEnv, used: Used, choices?: readonly Producer[]): CostDef | null {
+  const trial: Used = { templates: [], experimental: [] };
+  if (partsCostOf(tokens, ue, trial, choices) !== null) return null;
+  const found: { cost: CostDef; used: Used }[] = [];
+  tokens.forEach((t, i) => {
+    if (t.kind !== 'WORD' || t.norm !== 'or') return;
+    const u: Used = { templates: [], experimental: [] };
+    const a = partsCostOf(tokens.slice(0, i), ue, u, choices);
+    const b = a === null ? null : partsCostOf(tokens.slice(i + 1), ue, u, choices);
+    if (a === null || b === null || a.parts < 2 || b.parts < 2) return;
+    if ([a.cost, b.cost].some((c) => (c.other ?? []).some((q) => q.kind === 'oneOf' || q.kind === 'manual'))) return;
+    found.push({ cost: { other: [{ kind: 'oneOf', options: [a.cost, b.cost] }] }, used: u });
+  });
+  if (found.length !== 1) return null;
+  used.templates.push(...found[0]!.used.templates);
+  used.experimental.push(...found[0]!.used.experimental);
+  return found[0]!.cost;
+}
+
 /** Where a cost part puts the source itself (CR 113.6m exception: "Sacrifice ~: Return ~ from your graveyard ..." functions on the battlefield). */
 const COST_PUTS_SELF: Readonly<Partial<Record<string, ZoneName>>> = { sacrifice: 'graveyard', discard: 'graveyard', exileFrom: 'exile', returnToHand: 'hand', putIntoLibrary: 'library' /* trek-9 */ };
 /** The zones core/legal.ts offers activated abilities from (CR 113.6): an ability that functions only elsewhere could never be activated there. */
-const OFFERED_ZONES: ReadonlySet<ZoneName> = new Set(['battlefield', 'hand', 'graveyard']);
+const OFFERED_ZONES: ReadonlySet<ZoneName> = new Set(['battlefield', 'hand', 'graveyard', 'command']); // edh-misc-2: core/legal.ts lists a player's commander's abilities in the command zone (M11-1, CR 113.6, 903.6)
 
 /**
  * trek-12 (CR 113.6, 602.5b, 400.7; Q, Stacking the Deck): does the restriction say the source must be in exile ("Activate only during your turn and only if ~ is
@@ -384,7 +481,17 @@ const OFFERED_ZONES: ReadonlySet<ZoneName> = new Set(['battlefield', 'hand', 'gr
 export function requiresSelfExiled(c: Condition | undefined): boolean {
   if (c === undefined) return false;
   if (c.cond === 'all') return c.of.some(requiresSelfExiled);
-  return c.cond === 'matches' && c.object.ref === 'self' && c.filter.zone === 'exile' && Object.keys(c.filter).length === 1;
+  if (c.cond !== 'matches' || c.object.ref !== 'self' || c.filter.zone !== 'exile') return false;
+  // edhn95 (CR 702.62b; Greater Gargadon): "Activate only if this card is suspended" (suspend and a time counter) is a restriction to exile too
+  const suspended = Object.keys(c.filter).length === 3 && c.filter.keyword === 'suspend' && c.filter.counters?.kind === 'time' && Object.keys(c.filter.counters).length === 1;
+  return Object.keys(c.filter).length === 1 || suspended;
+}
+
+/** edh-next-103: the restriction `~ is in your graveyard or on the battlefield` (a condition that holds in exactly those two zones). */
+function requiresSelfBattlefieldOrGraveyard(c: Condition | undefined): boolean {
+  if (c === undefined || c.cond !== 'any' || c.of.length !== 2) return false;
+  const zones = c.of.map((x) => (x.cond === 'matches' && x.object.ref === 'self' && Object.keys(x.filter).every((k) => k === 'zone' || k === 'owner') ? x.filter.zone : undefined));
+  return zones.includes('graveyard') && zones.includes('battlefield');
 }
 
 /**
@@ -409,8 +516,12 @@ export function activationZone(cost: CostDef, rest: string, onlyIf?: Condition):
   if (need.size > 1) return { manual: `the cost needs ~ in two zones at once (${[...need].sort().join(', ')}), so it can never be paid (CR 113.6j)` };
   const fromCost = [...need][0];
   const puts = new Set((cost.other ?? []).flatMap((p) => ('self' in p && p.self === true && COST_PUTS_SELF[p.kind] !== undefined ? [COST_PUTS_SELF[p.kind]!] : [])));
-  const m = selfZoneMention(rest);
-  const fromEffect = m !== null && !m.putThereFirst && !puts.has(m.zone) ? m.zone : undefined;
+  // edh-next-103: the restriction "~ is in your graveyard or on the battlefield" (either order) states the two zones itself: it is not a mention of ~ in the graveyard that the effect must agree with
+  const bothZones = requiresSelfBattlefieldOrGraveyard(onlyIf);
+  const m = selfZoneMention(bothZones ? rest.replace(/~ is (?:in your graveyard or on the battlefield|on the battlefield or in your graveyard)/gi, '~') : rest);
+  // edh-misc-2 (CR 113.6, 903.6; Derevi, Empyrial Tactician): "Put ~ onto the battlefield from the command zone" moves ~ out of the command zone, where the ability functions
+  const fromCommand: ZoneName | undefined = /(?:^|[^a-z])put ~ onto the battlefield from the command zone(?![a-z])/i.test(rest) ? 'command' : undefined;
+  const fromEffect = m !== null && !m.putThereFirst && !puts.has(m.zone) ? m.zone : fromCommand;
   if (fromCost !== undefined && fromEffect !== undefined && fromCost !== fromEffect) {
     return { manual: `the cost needs ~ on the ${fromCost} but the ability moves or checks ~ in the ${fromEffect}, so it can never be activated as written (CR 113.6j, 113.6m)` };
   }
@@ -423,6 +534,8 @@ export function activationZone(cost: CostDef, rest: string, onlyIf?: Condition):
   // the restriction alone puts the ability in exile, which core/legal.ts offers for the owner's face-up cards (CR 113.6, 602.2); a cost or an effect that names ~ in exile is not
   // read (as before: `exile` is not an offered zone for those, below)
   if (stated === undefined && fromRestriction !== undefined) return { zone: [fromRestriction] };
+  // edh-next-103 (CR 113.6m, 602.5b; Skyblade's Boon): "Activate only if ~ is on the battlefield or in your graveyard" (either order) is a statement that the ability functions in both zones
+  if (stated === undefined && bothZones) return { zone: ['battlefield', 'graveyard'] };
   const zone = stated;
   if (zone === undefined || zone === 'battlefield') return {};
   if (!OFFERED_ZONES.has(zone)) return { manual: `the ability functions only in the ${zone} (CR 113.6j, 113.6m), where this engine build offers no activation` };

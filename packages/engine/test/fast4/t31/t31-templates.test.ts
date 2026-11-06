@@ -183,7 +183,8 @@ function nearMisses(text: string): string[] {
   const out = [`${body} unless it is blue.`, `${body} instead.`, `${body} at random.`, `${body} twice.`];
   const swaps: [RegExp, string][] = [
     // (Cloud std-fin: ", then shuffle" and ", and shuffle" end the same instructions of a lead-in "if" or a search alike, CR 608.2c, 701.24a: no near miss)
-    [/\bor less\b/, 'or greater'], [/\bthen\b(?! shuffle)/, 'and'], [/\byour hand\b/, 'your graveyard'], [/\bits owner's control\b/, 'your control'], [/\btheir owner's control\b/, 'your control'],
+    // (and since edh-c-77 the step joiner reads ", and" between any two instructions like ", then": the near miss of "then" is "or")
+    [/\bor less\b/, 'or greater'], [/\bthen\b(?! shuffle)/, 'or'], [/\byour hand\b/, 'your graveyard'], [/\bits owner's control\b/, 'your control'], [/\btheir owner's control\b/, 'your control'],
     [/\bunder your control\b/, "under its owner's control"], [/\bthis turn\b/, 'until your next turn'], [/\bplay\b/, 'cast'], [/\bup to\b/, 'exactly'], [/\btapped\b/, 'untapped'],
     [/\bpower\b/, 'toughness'], [/\bflash\b/, 'flying'], [/\bon top\b/, 'on the bottom'],
   ];

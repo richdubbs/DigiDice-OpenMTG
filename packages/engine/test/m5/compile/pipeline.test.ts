@@ -63,11 +63,11 @@ describe('design 10.2: the capability degrade runs on every ability against `cap
     expect(def.automation.requiresEngine).toContain('op:damage');
   });
 
-  it('a keyword the engine does not implement is manual and names the capability (CR 702.38 amplify; FAST5X E28 implements persist, std-ry8 enlist)', () => {
-    const { def } = compile(creature('Amplify 1'));
+  it('a keyword the engine does not implement is manual and names the capability (CR 702.54 assist, amplify is implemented by edh-c-42; FAST5X E28 implements persist, std-ry8 enlist)', () => {
+    const { def } = compile(creature('Assist'));
     expect(abilities(def)[0]).toMatchObject({ kind: 'manual' });
-    expect((abilities(def)[0] as ManualAbilityDef).reason).toContain('keyword:amplify');
-    expect(def.automation.requiresEngine).toContain('keyword:amplify');
+    expect((abilities(def)[0] as ManualAbilityDef).reason).toContain('keyword:assist');
+    expect(def.automation.requiresEngine).toContain('keyword:assist');
   });
 
   it('with no capabilities at all nothing is automated (fail closed)', () => {
@@ -199,10 +199,11 @@ describe('the native recognizers of milestones 3/4 (cards/native.ts) below the p
   it('CR 614.1c: "enters with N counters" is automated (Endless One); CR 601.3, D14: a timing restriction the renderer cannot print yet stays manual', () => {
     expect(compiledDef('Endless One').automation.level).toBe('full');
     // FAST4 T32 automates "only during combat" (rst.t32.cast.self.combat, CR 506.1); p2-combat-flow-1 prints "during the declare blockers step" (render/stat.ts);
-    // "during an opponent's upkeep" is still left to the native recognizer
-    const { def, report } = compile(card('Cast this spell only during an opponent\'s upkeep.\nDraw a card.'));
-    expect(report.faces[0]!.nativeUngated).toEqual([0]);
-    expect(abilities(def)[0]).toMatchObject({ kind: 'manual', text: 'Cast this spell only during an opponent\'s upkeep.' }); // read as printed: core checks it by hand
+    // edh-c-32 prints "during an opponent's upkeep" (Festival); edh-d-3 prints "during an opponent's turn after their upkeep step" (Reset); "before attackers are declared" is still left to the native recognizer
+    const { def, report } = compile(card('Cast this spell only before attackers are declared.\nDraw a card.'));
+    // combined copy: edh-d-89 (Master Warcraft) reads "before attackers are declared" (a cast restriction up to the beginning of combat, no declare attackers step yet this turn)
+    expect(report.faces[0]!.nativeUngated).toEqual([]);
+    expect(abilities(def)[0]).toMatchObject({ kind: 'static', effects: [{ s: 'restrict', mode: 'onlyIf', action: 'cast' }] });
   });
 
   it('a line the parser understood is never replaced, and a line no recognizer reads stays manual', () => {
@@ -212,11 +213,11 @@ describe('the native recognizers of milestones 3/4 (cards/native.ts) below the p
     expect(abilities(def)[1]!.kind).toBe('manual');
   });
 
-  // W3 integration: ward is implemented since WP32 (keyword:ward), so the unimplemented keyword here was rampage (CR 702.23); CMD3 implements rampage, so it is absorb (CR 702.64).
-  it('a line that only partly matches a recognizer is not taken (milestone 4 "leftover" rule): "Flying, absorb 2" keeps absorb manual', () => {
-    const { def, report } = compile(creature('Flying, absorb 2'));
+  // W3 integration: ward is implemented since WP32 (keyword:ward), so the unimplemented keyword here was rampage (CR 702.23); CMD3 implements rampage, so it is absorb (CR 702.64); edh-c-54 implements absorb, so it was amplify (CR 702.38); edh-c-42 implements amplify, so (edh-c-114 implements frenzy) it is gravestorm (CR 702.69); was frenzy (CR 702.68, as m4/keywords).
+  it('a line that only partly matches a recognizer is not taken (milestone 4 "leftover" rule): "Flying, epic" keeps epic manual', () => {
+    const { def, report } = compile(creature('Flying, epic'));
     expect(kinds(def)).toEqual(['keyword', 'manual']);
-    expect(def.automation).toMatchObject({ level: 'partial', unsupported: ['absorb 2'] });
+    expect(def.automation).toMatchObject({ level: 'partial', unsupported: ['epic'] });
     expect(report.faces[0]!.nativeLines).toEqual([]);
   });
 });

@@ -1,0 +1,11 @@
+# edh-perms-11 (Commander lane edh-perms; test/cloud/edh-perms-11, golden edh-perms-11-review.json)
+# base power or toughness filter, "each other creature that shares a creature type with it", creature tokens plus a token, "you had enter", counters it had, "other than ~" after a counted group, "each other planeswalker" beside a creature group, cards exiled with it
+Sword of the Squeak
+Stoneforge Masterwork
+Queen Allenal of Ruadach
+Gyome, Master Chef
+Felisa, Fang of Silverquill
+Thundering Raiju
+Ajani, the Greathearted
+Unlicensed Hearse
+Ajani Steadfast

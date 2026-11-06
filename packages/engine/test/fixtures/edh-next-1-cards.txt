@@ -1,0 +1,16 @@
+# edh-next-1 (Commander lane edh-next, EDHREC ranks 5,001-6,500): its controller may create a token, you may have its controller create a tapped and attacking token, a land from among them onto the battlefield and the rest into the graveyard, Aura and Equipment statics, an additional card then a discard, a discard for each Shrine, each of its controller's opponents, N or more Equipment attached, enters tapped with counters, cost less as long as, can't be blocked as long as, may put a card from their hand onto the battlefield. After editing: npm run cards -- fixtures
+Brood Sliver
+Najeela, the Blade-Blossom
+Cavalier of Thorns
+Reprobation
+On Serra's Wings
+Glamdring
+Anvil of Bogardan
+Honden of Night's Reach
+Bounty Board
+Brass Knuckles
+Noble's Purse
+Gran-Gran
+Detective of the Month
+Show and Tell
+Braids, Conjurer Adept

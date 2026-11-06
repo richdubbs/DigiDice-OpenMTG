@@ -1,0 +1,506 @@
+[
+  {
+    "id": "eff.edhpm9.untap.itAndAll",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.26b",
+      "CR 608.2c"
+    ],
+    "pattern": "untap {o:Obj} and all {f:Filter}",
+    "build": {
+      "op": "untap",
+      "what": {
+        "ref": "union",
+        "of": [
+          "$o",
+          {
+            "ref": "each",
+            "filter": "$f"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Whenever this creature attacks, untap it and all Dwarves you control."
+      },
+      {
+        "text": "At the beginning of combat on your turn, untap target creature and all Dwarves you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever this creature attacks, untap it and each Dwarf you control.",
+      "Whenever this creature attacks, untap it or all Dwarves you control.",
+      "Whenever this creature attacks, tap it and all Dwarves you control."
+    ]
+  },
+  {
+    "id": "sta.edhpm9.attached.pump.grant.isColorSubtype",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 105.3",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4c"
+    ],
+    "pattern": "( enchanted | equipped ) creature gets {pt:PT} , has {a:Abilities} , and is ( a | an ) {c:Color} {st:Subtypes}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "set": "$st"
+          }
+        },
+        {
+          "layer": 5,
+          "colors": {
+            "set": [
+              "$c"
+            ]
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        },
+        {
+          "layer": "7c",
+          "power": "$pt.p",
+          "toughness": "$pt.t"
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Equipped creature gets +2/+2, has trample, and is a green Beast."
+      },
+      {
+        "text": "Enchanted creature gets +1/+1, has flying, and is a white Angel."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature gets +2/+2, has trample, and is a Beast.",
+      "Equipped creature gets +2/+2 and has trample, and is a green Beast.",
+      "Equipped creature gets +2/+2, has trample, and is a green Beast until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhpm9.enchanted.permanent.subtype.artifact.crew",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 702.122a"
+    ],
+    "pattern": "enchanted permanent is ( a | an ) {st:Subtypes} artifact with {a:Abilities} and it loses all other card types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "types": {
+            "set": [
+              "Artifact"
+            ]
+          },
+          "subtypes": {
+            "set": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted permanent is a Vehicle artifact with crew 4 and it loses all other card types."
+      },
+      {
+        "text": "Enchanted permanent is a Vehicle artifact with crew 2 and it loses all other card types."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted permanent is a Vehicle artifact with crew 4.",
+      "Enchanted permanent is a Vehicle artifact with crew 4 and it loses all other abilities.",
+      "Enchanted creature is a Vehicle artifact with crew 4 and it loses all other card types."
+    ]
+  },
+  {
+    "id": "eff.edhpm9.lose.fiveKeywords",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.11b",
+      "CR 702.12b",
+      "CR 702.18b",
+      "CR 702.16b",
+      "CR 702.21a",
+      "CR 611.2a",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Objs} lose hexproof , indestructible , protection , shroud , and ward {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "remove": [
+                "hexproof",
+                "indestructible",
+                "protection",
+                "shroud",
+                "ward"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}: Creatures your opponents control lose hexproof, indestructible, protection, shroud, and ward until end of turn."
+      },
+      {
+        "text": "Creatures target player controls lose hexproof, indestructible, protection, shroud, and ward until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{1}: Creatures your opponents control lose hexproof, indestructible, protection, and shroud until end of turn.",
+      "{1}: Creatures your opponents control lose hexproof, indestructible, protection, shroud, and ward.",
+      "{1}: Creatures your opponents control gain hexproof, indestructible, protection, shroud, and ward until end of turn."
+    ]
+  },
+  {
+    "id": "sta.edhpm9.selfAndEnchanted.pump.foreach.two",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 303.4",
+      "CR 107.1"
+    ],
+    "pattern": "~ and enchanted creature each get {pt:PT} for each {f:Filter} and {qt:PT} for each {g:Filter}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "self"
+          },
+          {
+            "ref": "attachedTo"
+          }
+        ]
+      },
+      "mods": [
+        {
+          "layer": "7c",
+          "power": {
+            "q": "math",
+            "op": "+",
+            "args": [
+              {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              },
+              {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$qt.p",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$g"
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "toughness": {
+            "q": "math",
+            "op": "+",
+            "args": [
+              {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              },
+              {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$qt.t",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$g"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "This creature and enchanted creature each get +1/+0 for each Elf you control and +0/+1 for each Aura you control."
+      },
+      {
+        "text": "This creature and enchanted creature each get +2/+2 for each Dwarf you control and +1/+1 for each Equipment you control."
+      }
+    ],
+    "counterExamples": [
+      "This creature and enchanted creature each get +1/+0 for each Elf you control.",
+      "This creature and enchanted creature each get +1/+0 for each Elf you control or +0/+1 for each Aura you control.",
+      "This creature and enchanted creature each get +1/+0 until end of turn for each Elf you control and +0/+1 for each Aura you control."
+    ]
+  },
+  {
+    "id": "sta.edhpm9.yourTurn.attached.grant.unblockable",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 509.1b",
+      "CR 500.1",
+      "CR 301.5"
+    ],
+    "pattern": "during your turn , ( enchanted | equipped ) creature has {a:Abilities} and can't be blocked",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "beBlocked"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, equipped creature has lifelink and can't be blocked."
+      },
+      {
+        "text": "During your turn, enchanted creature has shroud and can't be blocked."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, equipped creature has lifelink and can't be blocked by Walls.",
+      "During each opponent's turn, equipped creature has lifelink and can't be blocked.",
+      "During your turn, equipped creature has lifelink and can't block."
+    ]
+  },
+  {
+    "id": "sta.edhpm9.asLongAs.untap.othersUntapStep.group",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 502.3"
+    ],
+    "pattern": "as long as {c:Cond} , untap ( each | all ) {f:Filter} during each other player 's untap step",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "untapDuringOtherUntapSteps",
+          "of": "$f"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "all",
+      "other",
+      "each other",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control three or more Elves, untap all creatures you control during each other player's untap step."
+      },
+      {
+        "text": "As long as there are four or more quest counters on this enchantment, untap each artifact you control during each other player's untap step."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control three or more Elves, untap all creatures you control during your untap step.",
+      "As long as you control three or more Elves, tap all creatures you control during each other player's untap step.",
+      "untap all creatures you control during each other player's untap step."
+    ]
+  },
+  {
+    "id": "eff.edhpm9.eot.eachLoseAll.becomes",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.1f",
+      "CR 613.4b"
+    ],
+    "pattern": "{d:Dur} , each {f:Filter} loses all abilities and becomes ( a | an ) {c:Color} {st:Subtypes} with base power and toughness {pt:BasePT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 5,
+              "colors": {
+                "set": [
+                  "$c"
+                ]
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "until",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, each creature target player controls loses all abilities and becomes a green Snail with base power and toughness 1/2."
+      },
+      {
+        "text": "Until end of turn, each creature you control loses all abilities and becomes a white Goat with base power and toughness 0/3."
+      }
+    ],
+    "counterExamples": [
+      "Each creature target player controls loses all abilities and becomes a green Snail with base power and toughness 1/2.",
+      "Until end of turn, each creature target player controls loses flying and becomes a green Snail with base power and toughness 1/2.",
+      "Until end of turn, each creature target player controls loses all abilities and becomes a green Snail."
+    ]
+  }
+]

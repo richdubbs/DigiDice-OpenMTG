@@ -1,0 +1,14 @@
+# edh-c-12 (Commander effort, EDHREC ranks 18,126-18,750, second pass): see docs in the round record. After editing: npm run cards -- fixtures
+Loxodon Lifechanter
+Sanguine Statuette
+Mizzium Tank
+Fog on the Barrow-Downs
+Deep Freeze
+Vanguard's Shield
+Bonds of Faith
+Planar Collapse
+Hamlet Vanguard
+Cryptborn Horror
+Floating-Dream Zubera
+Roiling Terrain
+Runic Repetition

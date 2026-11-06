@@ -1,0 +1,10 @@
+# edh-c-24 (Commander lane edh-c, EDHREC ranks 20,001-20,500, first pass): a pump of two opposed groups, can't be blocked except by flyers, a roll of a given result, one amount of damage to two recipients, a graveyard shuffle of a chosen player, a cost cut for spells sharing a type with the source, a chosen-name cost cut, colorless Slivers, a must-attack-you effect. After editing: npm run cards -- fixtures
+Zealous Persecution
+Treetop Bracers
+Dee Kay, Finder of the Lost
+Sparksmith
+Repopulate
+Mistform Warchief
+Cheering Fanatic
+Ghostflame Sliver
+Alluring Siren

@@ -20,14 +20,23 @@ import { ZONES_HANDLERS } from './zones';
 import { OUTSIDE_HANDLERS } from './outside';
 import { R4_FXB_HANDLERS } from './r4-fxb';
 import { NEW_TARGETS_HANDLERS } from './new-targets';
+import { EDH_N74_HANDLERS } from './edh-next-74';
 import { NEXT_SPELL_HANDLERS } from './next-spell';
 import { REPORT_ACTION_HANDLERS } from './report-action';
+import { EDH_C84_HANDLERS } from './edh-c-84';
 import { BECOME_BLOCKED_HANDLERS } from './become-blocked';
+import { PAIR_HANDLERS } from './pair';
+import { TREK18_HANDLERS } from './trek-18';
+import { EDH_CB7_HANDLERS } from './edh-combat-7';
+import { EDH_D89_HANDLERS } from './edh-d-89';
 import { REMOVE_DAMAGE_HANDLERS } from './remove-damage';
+import { EDH_N131_HANDLERS } from './edh-next-131';
+import { EDH_N147_HANDLERS } from './edh-next-147';
 import './plot-ops'; // FAST5X E6: installs the plot special action's performer (core/special/plot.ts)
 import './foretell-ops'; // cloud r3-mech: installs the foretell special action's performer (core/special/foretell.ts, CR 702.143a)
 import './suspend-ops'; // std-rx22: installs the suspend special action's performer (core/special/suspend.ts, CR 702.62a)
 import './companion-ops'; // CMP1: installs the companion special action's performer (core/special/companion.ts)
+import './ignore-effect-ops'; // edh-next-143: installs the "pay to ignore this effect" special action's performer (core/special/ignore-effect.ts, CR 116.2d)
 
 export const OP_HANDLERS: OpHandlers = {
   ...CONTROL_HANDLERS,
@@ -43,9 +52,17 @@ export const OP_HANDLERS: OpHandlers = {
   ...R4_FXB_HANDLERS, // r4-fxb: changeTarget (CR 115.7a), extraStep (CR 500.9)
   ...NEW_TARGETS_HANDLERS, // E3XP: chooseNewTargets (CR 115.7d)
   ...NEXT_SPELL_HANDLERS, // Standard round 10: nextSpell (CR 601.2i, 611.2)
+  ...EDH_C84_HANDLERS, // edh-c-84: balance (CR 608.2e; Magus of the Balance, Restore Balance)
   ...REPORT_ACTION_HANDLERS, // std-mana-12: reportAction (CR 603.2; earthbend, firebend)
   ...BECOME_BLOCKED_HANDLERS, // p2-combat-flow-2: becomeBlocked (CR 509.1h)
   ...REMOVE_DAMAGE_HANDLERS, // trek-8: removeDamage (CR 120.6)
+  ...PAIR_HANDLERS, // edh-top-2: pair (CR 702.95)
+  ...TREK18_HANDLERS, // trek-18: endCombatPhase (CR 724.2), reselectAttack (CR 508.7)
+  ...EDH_CB7_HANDLERS, // edh-combat-7: controlBlocks (CR 509.1, 723.1)
+  ...EDH_N74_HANDLERS, // edh-next-74: doubleX (CR 107.3, 601.2b)
+  ...EDH_N131_HANDLERS, // edh-next-131: discardOrSacrifice (CR 101.4, 608.2d, 701.9a, 701.21a)
+  ...EDH_D89_HANDLERS, // edh-d-89: controlAttacks (CR 508.1a-b, 723.1)
+  ...EDH_N147_HANDLERS, // edh-next-147: putSticker (CR 123.3, 123.6)
 };
 
 installOpHandlers(OP_HANDLERS);

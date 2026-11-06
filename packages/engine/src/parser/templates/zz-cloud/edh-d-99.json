@@ -1,0 +1,692 @@
+[
+  {
+    "id": "eff.edhd99.search.libraryAndGraveyard.exactly.exileRest.chosenOnTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.23d",
+      "CR 401.4",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library and graveyard for {n:Qty} cards and exile the rest . put the chosen cards on top of your library in any order",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "alsoZones": [
+          "graveyard"
+        ],
+        "allZones": true,
+        "filter": {},
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "library",
+              "graveyard"
+            ],
+            "owner": "you",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            }
+          }
+        },
+        "to": {
+          "zone": "exile"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "chosen",
+      "the rest"
+    ],
+    "needs": [
+      "op:search.alsoZones",
+      "op:search.allZones"
+    ],
+    "examples": [
+      {
+        "text": "Search your library and graveyard for three cards and exile the rest. Put the chosen cards on top of your library in any order."
+      },
+      {
+        "text": "When ~ enters, search your library and graveyard for seven cards and exile the rest. Put the chosen cards on top of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Search your library and graveyard for three cards and exile the rest. Put the chosen cards on the bottom of your library in any order.",
+      "Search your library for three cards and exile the rest. Put the chosen cards on top of your library in any order.",
+      "Search your library and graveyard for up to three cards and exile the rest. Put the chosen cards on top of your library in any order."
+    ]
+  },
+  {
+    "id": "eff.edhd99.eachOpp.poisonAtLeast.exileTopFaceDown.lookPlay.anyColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1f",
+      "CR 406.3",
+      "CR 701.20e",
+      "CR 601.3",
+      "CR 611.2a",
+      "CR 609.4b",
+      "CR 400.7",
+      "CR 608.2c"
+    ],
+    "pattern": "each opponent who has {n:Qty} or more poison counters exiles the top card of their library face down . you may look at and play those cards for as long as they remain exiled , and you may spend mana as though it were mana of any color to cast those spells",
+    "build": [
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "as": "each",
+        "gather": "exiledFaceDown",
+        "do": [
+          {
+            "op": "if",
+            "cond": {
+              "cond": "compare",
+              "left": {
+                "q": "counters",
+                "on": {
+                  "ref": "bound",
+                  "name": "each"
+                },
+                "kind": "poison"
+              },
+              "op": ">=",
+              "right": "$n"
+            },
+            "then": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "topCards",
+                  "player": {
+                    "ref": "bound",
+                    "name": "each"
+                  },
+                  "count": 1
+                },
+                "to": {
+                  "zone": "exile",
+                  "faceDown": true
+                },
+                "as": "exiledFaceDown"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "look",
+        "who": {
+          "ref": "you"
+        },
+        "at": {
+          "ref": "bound",
+          "name": "exiledFaceDown"
+        }
+      },
+      {
+        "op": "effect",
+        "duration": {
+          "d": "remainsExiled"
+        },
+        "effects": [
+          {
+            "s": "permit",
+            "who": {
+              "ref": "you"
+            },
+            "action": "play",
+            "of": {
+              "is": {
+                "ref": "bound",
+                "name": "exiledFaceDown"
+              }
+            },
+            "anyManaColor": true
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each opponent who has two or more poison counters exiles the top card of their library face down. You may look at and play those cards for as long as they remain exiled, and you may spend mana as though it were mana of any color to cast those spells."
+      },
+      {
+        "text": "Whenever ~ attacks, each opponent who has five or more poison counters exiles the top card of their library face down. You may look at and play those cards for as long as they remain exiled, and you may spend mana as though it were mana of any color to cast those spells."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, each opponent who has two or more poison counters exiles the top card of their library face down. You may look at and play those cards for as long as they remain exiled.",
+      "At the beginning of your upkeep, each opponent who has two or more poison counters exiles the top card of their library. You may look at and play those cards for as long as they remain exiled, and you may spend mana as though it were mana of any color to cast those spells.",
+      "At the beginning of your upkeep, each opponent who has two or more poison counters exiles the top card of their library face down. You may look at and play those cards this turn, and you may spend mana as though it were mana of any color to cast those spells."
+    ]
+  },
+  {
+    "id": "eff.edhd99.repeat.eachOpp.revealTop.mayPayLifeMv.exileElseHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 101.4",
+      "CR 701.20a",
+      "CR 119.4",
+      "CR 202.3",
+      "CR 608.2d"
+    ],
+    "pattern": "repeat the following process for each opponent in turn order . reveal the top card of your library . that player may pay life equal to that card 's mana value . if they do , exile that card . otherwise , put it into your hand",
+    "build": [
+      {
+        "op": "forEach",
+        "over": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "as": "opp",
+        "do": [
+          {
+            "op": "reveal",
+            "who": {
+              "ref": "you"
+            },
+            "what": {
+              "ref": "topCards",
+              "player": {
+                "ref": "you"
+              },
+              "count": 1
+            },
+            "as": "revealed"
+          },
+          {
+            "op": "pay",
+            "who": {
+              "ref": "bound",
+              "name": "opp"
+            },
+            "cost": {
+              "other": [
+                {
+                  "kind": "payLife",
+                  "amount": {
+                    "q": "stat",
+                    "stat": "manaValue",
+                    "of": {
+                      "ref": "bound",
+                      "name": "revealed"
+                    }
+                  }
+                }
+              ]
+            },
+            "then": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "revealed"
+                },
+                "to": {
+                  "zone": "exile"
+                }
+              }
+            ],
+            "else": [
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "revealed"
+                },
+                "to": {
+                  "zone": "hand"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may",
+      "if",
+      "otherwise"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, repeat the following process for each opponent in turn order. Reveal the top card of your library. That player may pay life equal to that card's mana value. If they do, exile that card. Otherwise, put it into your hand."
+      },
+      {
+        "text": "Whenever ~ attacks, repeat the following process for each opponent in turn order. Reveal the top card of your library. That player may pay life equal to that card's mana value. If they do, exile that card. Otherwise, put it into your hand."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, repeat the following process for each opponent in turn order. Reveal the top card of your library. That player may pay life equal to that card's mana value. If they do, exile that card.",
+      "At the beginning of your end step, repeat the following process for each opponent in turn order. Reveal the top card of your library. That player may pay life equal to that card's mana value. If they do, put it into your hand. Otherwise, exile that card.",
+      "At the beginning of your end step, reveal the top card of your library. That player may pay life equal to that card's mana value. If they do, exile that card. Otherwise, put it into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhd99.activePlayer.mayEndTheTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 724.1",
+      "CR 608.2d",
+      "CR 102.1"
+    ],
+    "pattern": "the player whose turn it is may end the turn",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "active"
+      },
+      "do": [
+        {
+          "op": "endTurn"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: The player whose turn it is may end the turn."
+      },
+      {
+        "text": "When ~ enters, the player whose turn it is may end the turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: The player whose turn it is may end the phase.",
+      "{2}, {T}: The player whose turn it is ends the turn.",
+      "Whenever ~ attacks, each player may end the turn."
+    ]
+  },
+  {
+    "id": "sta.edhd99.pregame.reveal.firstUpkeep.lookPutBackExileRest",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 103.6",
+      "CR 103.6b",
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 701.20e",
+      "CR 401.4",
+      "CR 406.1"
+    ],
+    "pattern": "you may reveal ~ from your opening hand . if you do , at the beginning of your first upkeep , look at the top {n:Qty} cards of your library . you may put one of those cards back on top of your library . exile the rest",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "hand"
+      ],
+      "effects": [
+        {
+          "s": "pregame",
+          "action": "reveal",
+          "optional": true,
+          "then": [
+            {
+              "op": "delay",
+              "when": {
+                "at": "step",
+                "step": "upkeep",
+                "whose": "you",
+                "next": true
+              },
+              "do": [
+                {
+                  "op": "look",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "at": {
+                    "ref": "topCards",
+                    "player": {
+                      "ref": "you"
+                    },
+                    "count": "$n"
+                  },
+                  "as": "them"
+                },
+                {
+                  "op": "chooseObjects",
+                  "who": {
+                    "ref": "you"
+                  },
+                  "from": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "min": 0,
+                  "max": 1,
+                  "as": "chosen"
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "bound",
+                    "name": "chosen"
+                  },
+                  "to": {
+                    "zone": "library",
+                    "position": "top"
+                  }
+                },
+                {
+                  "op": "move",
+                  "what": {
+                    "ref": "each",
+                    "filter": {
+                      "is": {
+                        "ref": "bound",
+                        "name": "them"
+                      },
+                      "not": {
+                        "is": {
+                          "ref": "bound",
+                          "name": "chosen"
+                        }
+                      },
+                      "zone": "library"
+                    }
+                  },
+                  "to": {
+                    "zone": "exile"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "You may reveal ~ from your opening hand. If you do, at the beginning of your first upkeep, look at the top three cards of your library. You may put one of those cards back on top of your library. Exile the rest."
+      },
+      {
+        "text": "You may reveal this card from your opening hand. If you do, at the beginning of your first upkeep, look at the top six cards of your library. You may put one of those cards back on top of your library. Exile the rest."
+      }
+    ],
+    "counterExamples": [
+      "You may reveal ~ from your opening hand. If you do, at the beginning of your next upkeep, look at the top three cards of your library. You may put one of those cards back on top of your library. Exile the rest.",
+      "You may reveal ~ from your opening hand. If you do, at the beginning of your first upkeep, look at the top three cards of your library. You may put one of those cards back on top of your library. Put the rest into your graveyard.",
+      "You may reveal ~ from your opening hand. If you do, at the beginning of your first upkeep, look at the top three cards of your library. You may put two of those cards back on top of your library. Exile the rest."
+    ]
+  },
+  {
+    "id": "eff.edhd99.mayExile.oneCard.fromEachGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 406.1",
+      "CR 404.1"
+    ],
+    "pattern": "you may exile ( a | an ) {f:Filter} card from each graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "isCard": true,
+            "owner": {
+              "ref": "iterating"
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "perPlayer": {
+          "ref": "each",
+          "who": "player"
+        },
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Each player mills two cards. Then you may exile an artifact or enchantment card from each graveyard."
+      },
+      {
+        "text": "When ~ enters, you may exile a creature card from each graveyard."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, you may exile a creature card from each opponent's graveyard.",
+      "When ~ enters, exile a creature card from each graveyard.",
+      "When ~ enters, you may exile two creature cards from each graveyard."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhd99.dur.castFromAmongExiledWithSelf.anyColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 607.2a",
+      "CR 609.4b",
+      "CR 400.7"
+    ],
+    "pattern": "{d:Dur} , you may cast spells from among cards exiled with ~ , and you may spend mana as though it were mana of any color to cast those spells",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "anyManaColor": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target creature card from a graveyard.\n{2}: Until end of turn, you may cast spells from among cards exiled with ~, and you may spend mana as though it were mana of any color to cast those spells."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top card of each player's library.\nAt the beginning of your end step, until end of turn, you may cast spells from among cards exiled with ~, and you may spend mana as though it were mana of any color to cast those spells."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target creature card from a graveyard.\n{2}: Until end of turn, you may play cards exiled with ~, and you may spend mana as though it were mana of any color to cast those spells.",
+      "When ~ enters, exile target creature card from a graveyard.\n{2}: Until end of turn, you may cast spells from among cards exiled with ~, and you may spend mana as though it were mana of any type to cast those spells.",
+      "When ~ enters, exile target creature card from a graveyard.\n{2}: Until end of turn, you may cast spells from among cards exiled with ~."
+    ]
+  },
+  {
+    "id": "eff.edhd99.ifHandMoreThan.exileTheDifference",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 402.1",
+      "CR 406.1",
+      "CR 107.1"
+    ],
+    "pattern": "if {p:Player} has more than {n:Qty} cards in hand , they exile cards from their hand equal to the difference",
+    "build": [
+      {
+        "op": "if",
+        "cond": {
+          "cond": "compare",
+          "left": {
+            "q": "zoneSize",
+            "zone": "hand",
+            "of": "$p"
+          },
+          "op": ">",
+          "right": "$n"
+        },
+        "then": [
+          {
+            "op": "chooseObjects",
+            "who": "$p",
+            "from": {
+              "ref": "each",
+              "filter": {
+                "zone": "hand",
+                "owner": "$p"
+              }
+            },
+            "min": {
+              "q": "math",
+              "op": "-",
+              "args": [
+                {
+                  "q": "zoneSize",
+                  "zone": "hand",
+                  "of": "$p"
+                },
+                "$n"
+              ]
+            },
+            "max": {
+              "q": "math",
+              "op": "-",
+              "args": [
+                {
+                  "q": "zoneSize",
+                  "zone": "hand",
+                  "of": "$p"
+                },
+                "$n"
+              ]
+            },
+            "as": "exiled"
+          },
+          {
+            "op": "move",
+            "what": {
+              "ref": "bound",
+              "name": "exiled"
+            },
+            "to": {
+              "zone": "exile"
+            }
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target artifact. If its controller has more than three cards in hand, they exile cards from their hand equal to the difference."
+      },
+      {
+        "text": "Target player draws two cards. If that player has more than five cards in hand, they exile cards from their hand equal to the difference."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target artifact. If its controller has more than three cards in hand, they discard cards equal to the difference.",
+      "Destroy target artifact. If its controller has fewer than three cards in hand, they exile cards from their hand equal to the difference.",
+      "Destroy target artifact. If its controller has more than three cards in hand, they exile a card from their hand."
+    ]
+  }
+]

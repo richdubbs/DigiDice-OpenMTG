@@ -74,7 +74,7 @@ export function fallback(d: Decision): Action | null {
  * never stops the game (owner 2026-10-21): choose nothing where nothing may be chosen ("up to one target", CR 115.1, 601.2c), else the first legal
  * choices; keep the hand; resolve a manual text with no adjustments (the computer passes the trigger rather than halting). Exported for tests.
  */
-export function fallbacks(d: Decision): Action[] {
+export function fallbacks(d: Decision, view?: GameView): Action[] {
   if (d.kind === 'priority') return [{ type: 'pass', player: d.player }];
   const out: Action[] = [];
   const answer = (a: DecisionAnswer) => out.push({ type: 'answer', player: d.player, decisionId: d.id, answer: a });
@@ -93,6 +93,12 @@ export function fallbacks(d: Decision): Action[] {
       else if (all.length >= d.min) {
         answer({ kind: 'chooseTargets', targets: all.slice(0, d.min) });
         answer({ kind: 'chooseTargets', targets: all.slice(-d.min) });
+        // edh-d-83 (CR 115.1, 601.2c): "for each player, choose target ... that player controls" takes one object of each player (the owner's for a card in a graveyard): the first
+        // candidate of each, when there are enough players
+        const objs = view === undefined ? [] : d.objects.filter((id) => view.objects[id] !== undefined);
+        const keyOf = (id: string): string => { const o = view!.objects[id]!; return o.zone === 'graveyard' ? o.owner : o.controller; };
+        const firstOfEach = objs.filter((id, i) => objs.findIndex((x) => keyOf(x) === keyOf(id)) === i);
+        if (d.min > 1 && firstOfEach.length >= d.min) answer({ kind: 'chooseTargets', targets: firstOfEach.slice(0, d.min).map((id) => ({ kind: 'object' as const, id })) });
       }
       break;
     }
@@ -138,6 +144,9 @@ export function fallbacks(d: Decision): Action[] {
     case 'commanderZone':
       answer({ kind: 'commanderZone', command: true });
       answer({ kind: 'commanderZone', command: false });
+      break;
+    case 'shortcut': // shortcuts (engine docs/design/shortcuts.md 3): CR 727.2b, let another player's proposed shortcut run
+      answer({ kind: 'shortcut' });
       break;
     default:
       break;
@@ -197,7 +206,7 @@ export function runComputer(seat: GameConnection, opts: ComputerOptions): () => 
       let r: ActResult | null = action ? await seat.act(action) : null;
       if (r && !r.ok) console.error('[Computer] action rejected', action, r.error);
       // The fallbacks in turn until one is accepted (the one the catch above already sent is tried again only if nothing else works).
-      for (const fb of r?.ok ? [] : fallbacks(d)) {
+      for (const fb of r?.ok ? [] : fallbacks(d, view)) {
         if (stopped || seat.view().pending?.id !== d.id) break;
         r = await seat.act(fb);
         if (r.ok) break;

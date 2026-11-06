@@ -8,6 +8,7 @@
 import type { EffectStep } from '../types/ability';
 import type { Folded } from './fold';
 import { plain } from './clause';
+import { alt } from './text';
 import { K } from './kernel';
 import { keywordWords } from './kw';
 import type { RenderState } from './state';
@@ -21,7 +22,7 @@ export function nextTwoEachHave(list: EffectStep[], i: number, st: RenderState):
   const b = list[i + 1];
   if (!ok(a) || !ok(b) || JSON.stringify(a.keyword) !== JSON.stringify(b.keyword)) return null;
   const spell = (s: Next): string => K.np(s.filter!, st, { det: 'none', noZone: true, noController: true });
-  const text = `the next ${spell(a)} and the next ${spell(b)} you cast this turn each have ${keywordWords(a.keyword!, st)}`;
+  const text = `the next ${spell(a)} and the next ${spell(b)} you cast this turn ${alt('each have', 'have')} ${keywordWords(a.keyword!, st)}`; // trek-13: "have" without "each" (Võx, Child of the Collective), family next-two-have
   return { clauses: [plain(text)], consumed: 2 };
 }
 

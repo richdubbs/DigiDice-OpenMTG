@@ -29,11 +29,12 @@ import { charAbilitiesOfBase, keywordsOfAbilities, mayHaveRuleAbilities, ruleAbi
 import type { ApplyMods, CharAbility, ComputeAll, LiveEffect, ModContext, Order1a } from './api';
 import { LAYERS } from './api';
 import { counterEffects, counterMods, hasLayer, resolvedEffects, staticEffectsOf } from './live';
-import { evalCondition, evalQuantity, isPlayerRef, objectsOf, playerOf, type EvalCx } from './match';
+import { BASE_PT, evalCondition, evalQuantity, isPlayerRef, objectsOf, playerOf, type EvalCx } from './match';
 import { applyMods, layerApplier } from './mods';
 import { LAYER_1A } from './copy';
 import { FACE_DOWN_INTRINSIC, FACE_DOWN_RULE_EFFECTS, LAYER_1B } from './face-down';
 import { LAYER_3 } from './text-change';
+import { withNameStickers } from './stickers';
 import { MERGE_INTRINSIC, MERGE_RULE_EFFECTS } from './merge';
 import { SUSPECT_RULE_EFFECTS } from './suspect';
 import { HONE_RULE_EFFECTS } from './hone';
@@ -73,7 +74,7 @@ export const LAYER_TABLE: Readonly<Record<string, ApplyMods>> = {
 };
 
 /** Features this module implements (design 5.2; the capability is `feature:<name>`): `dependency`, the trial-application ordering of CR 613.8. */
-export const FEATURES: readonly string[] = ['dependency', 'layer6.addActivatedOf', 'layer6.addActivatedOf.limit', 'layer6.addActivatedOf.triggered' /* std-cardcopy-9 */]; // r5-static: "has all activated abilities of ..." (statics/mods.ts); std-craft-2: "... only once each turn"
+export const FEATURES: readonly string[] = ['dependency', 'layer6.addActivatedOf', 'layer6.addActivatedOf.limit', 'layer6.addActivatedOf.triggered' /* std-cardcopy-9 */, 'layer6.protectionFromOwnColors' /* edh-c-59 */, 'layer6.removeEnchant' /* edh-perms-4 */, 'layer6.removeAll.exceptMana' /* edh-d-46 */, 'layer6.addChosen' /* edhd63 */, 'layer6.addActivatedOf.loyalty' /* edh-next-124 */, 'layer6.addActivatedOf.spendColorAsAny' /* edh-next-141 */, 'layer6.keywordsOf' /* edh-d-102: statics/mods.ts#keywordsOf */, 'layer4.namedChosen' /* edh-next-146 */]; // r5-static: "has all activated abilities of ..." (statics/mods.ts); std-craft-2: "... only once each turn"
 
 const NO_CHARS: ReadonlyMap<ObjectId, Chars> = new Map();
 
@@ -85,8 +86,22 @@ const NO_CHARS: ReadonlyMap<ObjectId, Chars> = new Map();
  */
 export function startingChars(s: GameState, o: GameObject): Chars {
   const t = templateFor(s, o);
-  if (t) return fromTemplate(t.chars, t.chars.abilities, o, s.defs[o.defId]!);
-  return withAbilities(baseChars(s, o), o);
+  if (t) return withObjectFlags(s, o, fromTemplate(t.chars, t.chars.abilities, o, s.defs[o.defId]!));
+  return withObjectFlags(s, o, withAbilities(baseChars(s, o), o));
+}
+
+/**
+ * edh-mana-keywords-10 (CR 111.1, 601.2a; Emrakul, the World Anew: "protection from spells and from permanents that were cast this turn"): what protection can name that is
+ * no characteristic of the card: the object is a spell (on the stack, not an ability), or a permanent that was cast this turn (its cast record, core/resolve.ts). In place.
+ */
+function withObjectFlags(s: GameState, o: GameObject, c: Chars): Chars {
+  if (o.zone === 'stack' && o.kind !== 'ability') c.isSpell = true;
+  else if (o.zone === 'battlefield' && o.cast !== undefined && o.cast.turn === s.turn.number) c.castThisTurn = true;
+  // edh-replace-6 (CR 701.54e): "protection from Ring-bearers": the permanent its controller chose last as their Ring-bearer (the test of core/ring-state.ts#ringBearerPlayer, which statics/ may not import)
+  if (o.zone === 'battlefield' && !o.phasedOut && s.designations.ring?.[o.controller]?.bearer === o.id) c.ringBearer = true;
+  // edh-next-88 (CR 122.1, 702.16a; Geyadrone Dihada: "protection from permanents with corruption counters on them"): the kinds of counter the permanent has on it now
+  if (o.zone === 'battlefield') { const kinds = Object.keys(o.counters).filter((k) => (o.counters[k] ?? 0) > 0); if (kinds.length > 0) c.counterKinds = kinds; }
+  return c;
 }
 
 /** Turn a fresh base record into a starting `Chars` in place (see `startingChars`). */
@@ -153,7 +168,7 @@ export function intrinsicChars(s: GameState, o: GameObject): Chars {
   const t = templateFor(s, o);
   if (t) {
     t.withRule ??= [...t.chars.abilities, ...ruleAbilitiesFor(t.chars)];
-    c = fromTemplate(t.chars, t.withRule, o, s.defs[o.defId]!);
+    c = withObjectFlags(s, o, fromTemplate(t.chars, t.withRule, o, s.defs[o.defId]!));
   } else {
     c = startingChars(s, o);
     if (mayHaveRuleAbilities(c)) { // M6-6 INTERFACE CHANGE: a land (CR 305.6) or a Saga (CR 714.3a-b)
@@ -162,6 +177,7 @@ export function intrinsicChars(s: GameState, o: GameObject): Chars {
     }
   }
   for (const part of INTRINSIC_PARTS) c = part(s, o, c); // M6-0 (E16): face-down profile, merged permanent; before counters (empty in M6-0)
+  c = withNameStickers(o, c); // edh-next-147 (CR 123.6c): name stickers, a text-changing effect after the copiable values (no copy effect on this path)
   const mods = counterMods(o);
   if (mods.length > 0) c = applyMods(c, mods, o.id, s, NO_CHARS, { id: `ctr:${o.id}`, source: o.id, controller: o.controller, timestamp: o.timestamp });
   return c;
@@ -174,7 +190,7 @@ function fxOf(s: GameState, e: LiveEffect, chars: ReadonlyMap<ObjectId, Chars>):
   const src = e.origin?.source.id ?? e.source?.id ?? null;
   const controller = (e.origin && src ? chars.get(src)?.controller : undefined) ?? e.controller ?? (src ? s.objects[src]?.controller : undefined) ?? s.turn.activePlayer;
   // M6-0 (m6 design 2.5): a 1a effect's copiable values and a 1b effect's profile travel to the applier with the effect
-  return { id: e.id, source: src, controller, timestamp: e.timestamp, ...(e.copy ? { copy: e.copy } : {}), ...(e.faceDown ? { faceDown: e.faceDown } : {}) };
+  return { id: e.id, source: src, controller, timestamp: e.timestamp, ...(e.copy ? { copy: e.copy } : {}), ...(e.faceDown ? { faceDown: e.faceDown } : {}), ...(e.textOf ? { textOf: e.textOf } : {}), ...(e.asEntry ? { asEntry: true as const } : {}) };
 }
 
 /** The applier of one layer: the milestone 6 appliers for 1a, 1b and 3 (their owner's files), `applyMods` for the others (unchanged since milestone 5). */
@@ -188,7 +204,11 @@ const cxOf = (s: GameState, e: LiveEffect, chars: ReadonlyMap<ObjectId, Chars>):
 /** The objects an effect affects right now (CR 611.3a: a static ability is re-evaluated). Players are handled after objects (CR 613.10) and are not here. */
 export function matchSet(s: GameState, e: LiveEffect, chars: ReadonlyMap<ObjectId, Chars>): ObjectId[] {
   const aff = e.effect.affects;
-  return isPlayerRef(aff) ? [] : objectsOf(cxOf(s, e, chars), aff);
+  if (isPlayerRef(aff)) return [];
+  const ids = objectsOf(cxOf(s, e, chars), aff);
+  // edh-next-133 (CR 611.3d, 400.7b, 601.2a): a grant spells "gain ... as you cast them" applies to a card only while it is considered for casting (the castCheck overlay of
+  // statics/rule-sources.ts#overlayAsSpell has no stack record); a spell already cast has its own stored copy of the grant (actions/cast.ts#lockAsCastGrants), or none
+  return e.effect.asCast === true ? ids.filter((id) => s.objects[id]?.stack === undefined) : ids;
 }
 
 /**
@@ -247,7 +267,7 @@ function writesOf(e: LiveEffect, layer: Layer): Writes {
       case 5: classes.add('colors'); break;
       case 6:
         if ((m.add && m.add.length > 0) || m.addActivatedOf !== undefined) classes.add('abilities'); // r5-static: and the abilities it copies
-        if (m.removeAll || (m.remove && m.remove.length > 0) || (m.cantHave && m.cantHave.length > 0)) { classes.add('abilities'); denies = true; }
+        if (m.removeAll || (m.remove && m.remove.length > 0) || m.removeEnchant !== undefined || (m.cantHave && m.cantHave.length > 0)) { classes.add('abilities'); denies = true; }
         break;
       case '7a': case '7b': case '7c': case '7d': classes.add('pt'); break;
       default: break;
@@ -263,9 +283,9 @@ const READS: Record<string, readonly string[]> = {
   controller: ['controller'], controllerOf: ['controller'], you: ['controller'], opponent: ['controller'], anOpponent: ['controller'], devotion: ['controller'],
   types: ['types'], allTypes: ['types'], notTypes: ['types'], subtypes: ['types'], allSubtypes: ['types'], notSubtypes: ['types'], supertypes: ['types'], notSupertypes: ['types'],
   distinct: ['types', 'colors'], sharesWith: ['types', 'colors'],
-  colors: ['colors'], notColors: ['colors'], colorless: ['colors'], multicolored: ['colors'], monocolored: ['colors'],
+  colors: ['colors'], notColors: ['colors'], colorless: ['colors'], multicolored: ['colors'], monocolored: ['colors'], allColors: ['colors'], minCardTypes: ['types'] /* edh-d-86 */,
   power: ['pt'], toughness: ['pt'],
-  keyword: ['abilities'], notKeyword: ['abilities'], hasAbility: ['abilities'],
+  keyword: ['abilities'], notKeyword: ['abilities'], hasAbility: ['abilities'], abilityNotMana: ['abilities'],
 };
 
 const readsMemo = new WeakMap<object, ReadonlySet<string>>();
@@ -471,7 +491,7 @@ function applyGroup(s: GameState, input: LiveEffect[], layer: Layer, chars: Map<
     if (!started.has(next.id) && !stillExists(s, next, chars)) continue;
     const set = setOfEffect(s, next, chars, started); // the set is fixed once the effect has started (CR 613.6)
     started.set(next.id, { e: next, set });
-    const mods = next.effect.mods.filter((m) => m.layer === layer);
+    const mods = next.asEntry === true && layer === '1a' ? next.effect.mods : next.effect.mods.filter((m) => m.layer === layer); // edh-next-146 (CR 613.2a): an `asEntry` record's mods, all in 1a
     const fx = fxOf(s, next, chars);
     const apply = applierOf(layer);
     const updates = set.map((id) => [id, apply(chars.get(id)!, mods, id, s, chars, fx)] as const); // computed against the state BEFORE this effect (CR 613.8c)
@@ -579,12 +599,29 @@ function computeWith(s: GameState, standing: readonly LiveEffect[], stopAfter?: 
     // CR 613.3 / 613.4a: characteristic-defining effects first. CR 613.8a(c): a dependency exists only between two CDAs or two non-CDAs.
     applyGroup(s, here.filter((e) => e.effect.cda === true), layer, chars, started, discoverFor(true), trace);
     applyGroup(s, here.filter((e) => e.effect.cda !== true), layer, chars, started, discoverFor(false), trace);
+    // edh-next-147 (CR 123.6c, 613.1c): name stickers are text-changing effects (layer 3), after the copy effects of layer 1 (a sticker is not a copiable value, CR 123.1)
+    if (layer === 3) for (const [id, c] of chars) { const o = s.objects[id]; if (o?.nameStickers !== undefined && o.nameStickers.length > 0) chars.set(id, withNameStickers(o, { ...c, names: c.names.slice() })); }
     if (layer === '7a') withoutValue(chars, started, starsAtStart);
+    if (layer === '7b') zeroBasePT(s, chars);
+    if (layer === '7b') BASE_PT.set(chars, new Map(chars)); // edh-perms-11: the base values (CR 613.4b); later layers replace entries, never change one, so the copy keeps the 7b values
     if (layer === stopAfter) break;
   }
 
   for (const [id, c] of chars) chars.set(id, { ...c, keywords: keywordsOfAbilities(c.abilities) });
   return chars;
+}
+
+/**
+ * edh-mana-keywords-12 (CR 208.3, 613.4b; Luxior, Giada's Gift + Scryfall ruling 2022-04-29): a permanent that became a creature and has no power or toughness of its own (a planeswalker
+ * made a creature by an Equipment) has base power and toughness 0/0 unless another effect sets them. After layer 7b (the setting effects), before 7c (+N/+M and counters). Only a
+ * creature on the battlefield with a missing value; a printed or set number, and a "*" (CR 208.2), are never touched.
+ */
+function zeroBasePT(s: GameState, chars: Map<ObjectId, Chars>): void {
+  for (const [id, c] of chars) {
+    if (c.power !== undefined && c.toughness !== undefined) continue;
+    if (!c.types.includes('Creature') || s.objects[id]?.zone !== 'battlefield') continue;
+    chars.set(id, { ...c, power: c.power ?? '0', toughness: c.toughness ?? '0' });
+  }
 }
 
 /** M6-0: the effects that do not depend on characteristics: resolved effects (CR 611.2), counters (CR 613.4c) and the rule-generated ones (`RULE_EFFECTS`). */
@@ -632,6 +669,10 @@ export const computeAll: ComputeAll = (s) => {
         more = true;
       }
     }
-    if (!more) return chars;
+    if (!more) {
+      // edh-mana-keywords-10 (review): a copy effect or a face-down profile (layer 1) builds the characteristics anew, so the object flags are set again on the result
+      for (const [id, c] of chars) { const o = s.objects[id]; if (o) withObjectFlags(s, o, c); }
+      return chars;
+    }
   }
 };

@@ -1,0 +1,467 @@
+[
+  {
+    "id": "eff.edhn40.dayNight.becomes.day",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 731.1",
+      "CR 731.1a",
+      "CR 608.2c"
+    ],
+    "pattern": "it becomes day",
+    "build": {
+      "op": "designate",
+      "who": {
+        "ref": "you"
+      },
+      "what": "day"
+    },
+    "subject": "none",
+    "consumes": [
+      "becomes",
+      "day"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: If it's night, it becomes day. Draw a card."
+      },
+      {
+        "text": "Whenever ~ attacks, it becomes day."
+      }
+    ],
+    "counterExamples": [
+      "It becomes neither day nor night.",
+      "Whenever ~ attacks, it becomes day or night.",
+      "It becomes neither day nor night."
+    ]
+  },
+  {
+    "id": "eff.edhn40.dayNight.becomes.night",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 731.1",
+      "CR 731.1a",
+      "CR 608.2c"
+    ],
+    "pattern": "it becomes night",
+    "build": {
+      "op": "designate",
+      "who": {
+        "ref": "you"
+      },
+      "what": "night"
+    },
+    "subject": "none",
+    "consumes": [
+      "becomes",
+      "night"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: If it's day, it becomes night. Scry 1."
+      },
+      {
+        "text": "Whenever ~ attacks, it becomes night."
+      }
+    ],
+    "counterExamples": [
+      "It becomes neither day nor night.",
+      "Whenever ~ attacks, it becomes night or day.",
+      "It becomes neither day nor night."
+    ]
+  },
+  {
+    "id": "eff.edhn40.putThat.battlefieldTapped.underYou.rest.theirGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 608.2c",
+      "CR 400.3",
+      "CR 404.1",
+      "CR 110.2a"
+    ],
+    "pattern": "put {o:Obj} onto the battlefield tapped under your control and {r:Rest} into their graveyard",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "under",
+      "control",
+      "their",
+      "graveyard",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Target opponent reveals cards from the top of their library until they reveal an artifact card. Put that card onto the battlefield tapped under your control and the rest into their graveyard."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a player, that player reveals cards from the top of their library until they reveal a land card. Put that card onto the battlefield tapped under your control and the rest into their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target opponent reveals cards from the top of their library until they reveal a creature card. Put that card onto the battlefield tapped under their control and the rest into their graveyard.",
+      "{T}: Target opponent reveals cards from the top of their library until they reveal a creature card. Put that card onto the battlefield tapped under your control and the rest into your graveyard.",
+      "{T}: Target opponent reveals cards from the top of their library until they reveal a creature card. Put that card onto the battlefield tapped under your control and the rest on the bottom of their library."
+    ]
+  },
+  {
+    "id": "eff.edhn40.player.putsRest.theirGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20b",
+      "CR 608.2c",
+      "CR 400.3",
+      "CR 404.1",
+      "CR 110.2a"
+    ],
+    "pattern": "{p:Player} put[s] {r:Rest} into their graveyard",
+    "build": {
+      "op": "move",
+      "what": "$r",
+      "to": {
+        "zone": "graveyard"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "graveyard",
+      "their"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Target opponent reveals cards from the top of their library until they reveal a land card. Put that card onto the battlefield under your control. That player puts the rest of the revealed cards into their graveyard."
+      },
+      {
+        "text": "{1}, {T}: Target player reveals cards from the top of their library until they reveal an artifact card. Put that card onto the battlefield under your control. That player puts the rest of the revealed cards into their graveyard."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target opponent reveals cards from the top of their library until they reveal an artifact card. Put that card onto the battlefield under your control. That player puts the rest of the revealed cards into your graveyard.",
+      "{T}: Target opponent reveals cards from the top of their library until they reveal an artifact card. Put that card onto the battlefield under your control. That player puts the rest of the revealed cards into their hand."
+    ]
+  },
+  {
+    "id": "eff.edhn40.putThat.battlefield.underYou",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 110.2a",
+      "CR 701.20a",
+      "CR 608.2c"
+    ],
+    "pattern": "put {o:Obj} onto the battlefield under your control",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "under",
+      "control"
+    ],
+    "examples": [
+      {
+        "text": "{1}, {T}: Target opponent reveals cards from the top of their library until they reveal a creature card. Put that card onto the battlefield under your control."
+      },
+      {
+        "text": "Whenever ~ attacks, target player reveals cards from the top of their library until they reveal an artifact card. Put that card onto the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target opponent reveals cards from the top of their library until they reveal a creature card. Put that card onto the battlefield under their control.",
+      "{T}: Target opponent reveals cards from the top of their library until they reveal a creature card. Put that card onto the battlefield under your control tapped."
+    ]
+  },
+  {
+    "id": "eff.edhn40.choose2.groupGain.thatAbility",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "choose {k1:Keyword} or {k2:Keyword} . {o:Objs} gain that ability until end of turn",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "keywordChoice",
+        "link": "keywordChoice",
+        "options": [
+          "$k1.text",
+          "$k2.text"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k1.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfTurn"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k1"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k2.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "endOfTurn"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "add": [
+                      "$k2"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of each combat, choose flying or vigilance. Creatures you control gain that ability until end of turn."
+      },
+      {
+        "text": "Whenever you attack, choose reach or lifelink. Elves you control gain that ability until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each combat, choose flying or vigilance. Creatures you control gain that ability.",
+      "At the beginning of each combat, choose flying, vigilance, or menace. Creatures you control gain that ability until end of turn.",
+      "At the beginning of each combat, choose flying or vigilance. Creatures you control gain those abilities until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn40.choose.permanentType",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 607.2d",
+      "CR 110.4",
+      "CR 205.2a"
+    ],
+    "pattern": "choose a permanent type",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "cardType",
+      "as": "chosenPermanentType",
+      "link": "chosenPermanentType",
+      "options": [
+        "Artifact",
+        "Battle",
+        "Creature",
+        "Enchantment",
+        "Land",
+        "Planeswalker"
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "permanent"
+    ],
+    "examples": [
+      {
+        "text": "Choose a permanent type. Draw a card for each permanent you control of the chosen type."
+      },
+      {
+        "text": "Choose a permanent type. Exile all cards of the chosen type from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Choose a card type. Draw a card for each permanent you control of the chosen type.",
+      "Target opponent chooses a permanent type. Draw a card for each permanent you control of the chosen type.",
+      "Choose a permanent type other than land. Draw a card for each permanent you control of the chosen type."
+    ]
+  },
+  {
+    "id": "eff.edhn40.transform.anyNumber",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.27a",
+      "CR 608.2d",
+      "CR 701.27c"
+    ],
+    "pattern": "transform any number of {f:Filter}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": "any",
+        "as": "toTransform"
+      },
+      {
+        "op": "changeFace",
+        "what": {
+          "ref": "bound",
+          "name": "toTransform"
+        },
+        "to": "transform"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "transform"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, transform any number of Werewolves you control."
+      },
+      {
+        "text": "{T}: Transform any number of Human Werewolves you control. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, transform each Werewolf you control.",
+      "At the beginning of your upkeep, transform up to two Werewolves you control.",
+      "At the beginning of your upkeep, convert any number of Werewolves you control."
+    ]
+  },
+  {
+    "id": "eff.edhn40.thePlayer.putsThat.battlefield.rest.bottomAny",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 608.2c",
+      "CR 401.4",
+      "CR 110.2a",
+      "CR 400.3"
+    ],
+    "pattern": "the player puts {o:Obj} onto the battlefield and {r:Rest} on the bottom of their library in any order",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "battlefield",
+          "controller": "owner"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "chosen"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "player",
+      "any",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Destroy target artifact. Its controller reveals cards from the top of their library until they reveal an artifact card. The player puts that card onto the battlefield and the rest on the bottom of their library in any order."
+      },
+      {
+        "text": "{1}{U}, {T}: Exile target creature. That creature's owner reveals cards from the top of their library until they reveal a creature card. The player puts that card onto the battlefield and the rest on the bottom of their library in any order. Activate only as a sorcery."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Put target artifact on the bottom of its owner's library. That artifact's controller reveals cards from the top of their library until they reveal an artifact card. The player puts that card onto the battlefield and the rest on the bottom of their library in a random order.",
+      "{T}: Put target artifact on the bottom of its owner's library. That artifact's controller reveals cards from the top of their library until they reveal an artifact card. The player puts that card onto the battlefield and the rest on top of their library in any order."
+    ]
+  }
+]

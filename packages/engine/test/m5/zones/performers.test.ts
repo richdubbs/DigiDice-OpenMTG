@@ -21,28 +21,31 @@ const FILES = readdirSync(HANDLERS).filter((f) => /^(zones|tokens|token-)[\w-]*\
 const PERFORMERS: Record<string, string[]> = {
   'rules/destroy': ['addRegenerationShield'],
   'statics/links': ['setLink'],
+  'core/sba-objects': ['ceaseTokenInLibrary' /* edh-next-66 (CR 111.7, 704.5d): a token put into a library ceases to exist at once */],
 };
 
 /** Functions that only read the state (or the RNG of the state, design 8.8 rule 2). */
 const READERS: Record<string, string[]> = {
-  'rules/attachment': ['auraCanEnchantObject', 'enchantRestriction', 'isAura', 'isEquipment', 'isFortification'],
+  'rules/attachment': ['auraCanEnchantObject', 'auraCanEnchantPlayer' /* edh-perms-16 (CR 702.5a, 303.4): a pure reader */, 'auraTargetProgram' /* edh-cast-2 (CR 303.4a): builds the Aura's enchant target from its characteristics, pure */, 'enchantRestriction', 'isAura', 'isEquipment', 'isFortification'],
   'rules/characteristics': ['charsOfObject', 'controllerOf', 'faceChars', 'hasKeyword', 'isPermanentCard', 'ptNumbers'],
   'rules/filter': ['findObjects', 'matchesFilter'],
   'rules/hookpoints': ['gameOf', 'hookpoints'],
   'rules/random': ['randomIndex', 'randomOrder'],
+  'rules/history': ['formerIds' /* edh-next-130 (CR 400.7, 603.10a): the ids an object had before, read from last known information */],
   'rules/combat-state': ['attackerState', 'isBlocking'],
   'rules/restrictions': ['playerRestricted'],
   'rules/cant': ['cantDo', 'costUseDenial'], // WP31: "can't" checks (statics/hooks.ts#ruleDenial)
   'rules/abilities': ['abilityDefOnStack'],
+  'rules/merge': ['isMutating', 'MUTATE_TARGET'], // edh-cast-2 (CR 702.140a): reads whether a spell is cast as a mutating one and the constant naming its extra target group, pure
   'rules/targets': ['targetOptions', 'groupStat' /* std-cardcopy-7: the mana value a copy counts for a total (CR 202.3) */],
   'statics/links': ['readLink'],
   'statics/copy': ['charsFromCopiable', 'concreteSnapshot', 'copiableOrWhy'], // M6-2: the copiable values of an object (CR 707.2) and of a copy with exceptions (CR 707.9), pure
   // H1: the handle a library card renewed during this run has now (CR 400.2, 701.24b); FAST5X E28 review: `leavingTogether` writes no state, only the transient
   // `Game.leaving` snapshot of the characteristics of objects that leave in one event (CR 603.10a), which `moveObject` reads
-  'core/zones': ['leavingTogether', 'renewedHandle'],
+  'core/zones': ['leavingTogether', 'renewedHandle', 'zoneArray' /* edh-b-12: reads the ids of a zone, pure */],
   'core/view': ['cardLine', 'seersOf'], // FXH (audit C3): who may see a card, for a log line that names it only to them (CR 400.2)
   'rules/mode-instances': ['modeInstances'], // std-blb: the chosen modes as instances, each with its own target ids (CR 700.2d), pure: it reads only the definition
-  'statics/hooks': ['ruleDenial'], // std-copy-1: "can't be copied" (CR 707.10, 101.2) is a rule denial; tokens-copy.ts only asks it, it writes no state
+  'statics/hooks': ['ruleDenial', 'extraSpellCopies'], // std-copy-1: "can't be copied" (CR 707.10, 101.2) is a rule denial; tokens-copy.ts only asks it, it writes no state; edh-cast-13: extraSpellCopies, how many additional copies the rule effects give (a reader)
 };
 
 /** The value imports of a source file from rules/, core/ and statics/: `module -> names` (type-only imports excluded). */

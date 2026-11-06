@@ -197,12 +197,11 @@ describe('CR 115.1, 702.11b: "can\'t be the target of spells or abilities your o
 
 describe('CR 608.2h, 611.2c, 400.7: "That creature\'s owner can\'t cast spells with the same name as that creature until your next turn." (after a bounce) fails closed', () => {
   const MAGE = card('Test Mirror Warden', 'Creature — Bird Wizard', "When this creature enters, return target creature an opponent controls to its owner's hand. That creature's owner can't cast spells with the same name as that creature until your next turn.", ['3', '2']);
-  // The restriction parses, but a resolved effect fixes "that creature" to the objects still on the battlefield (effects/handlers/lasting-fix.ts): the
-  // returned card is a new object (CR 400.7), so the name would compare with nothing and the ban would never apply. Until the name is read from last known
-  // information (CR 608.2h) the card asks for an engine feature that is not registered and stays partial.
-  it('is not automated: it needs feature:restrict.other.lastingSharesWith', () => {
-    expect(full(MAGE)).toBe(false);
-    expect(MAGE.automation.level).not.toBe('full');
-    expect(JSON.stringify(MAGE.automation)).toContain('feature:restrict.other.lastingSharesWith');
+  // edh-mana-keywords-6 (CR 608.2h, 611.2c, 400.7): a resolved effect fixes "that creature" to the objects still where they were, and the returned card is a new object,
+  // so effects/handlers/lasting-fix.ts#fixNode now stores the NAME of the creature as it last existed (last known information) instead; the card is automated
+  // (this test pinned it partial until then). The played case is in cloud/edh-mana-keywords-6.
+  it('is automated: the restriction stores the name of the creature as it last existed (edh-mana-keywords-6)', () => {
+    expect(full(MAGE), JSON.stringify(MAGE.automation)).toBe(true);
+    expect(JSON.stringify(MAGE.automation)).not.toContain('feature:restrict.other.lastingSharesWith');
   });
 });

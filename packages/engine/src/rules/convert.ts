@@ -41,6 +41,8 @@ export interface ConvertInput {
   /** FAST5X E29 (CR 609.4b): mana of any type may pay the symbols of the cost being paid (not the filter abilities' own costs). */
   anyType?: boolean;
   anyColor?: boolean; // std-rx32 (CR 609.4b)
+  anyColorWith?: string; // edh-next-140 (CR 609.4b): mana of this type as though it were mana of any color
+  lifeFor?: ReadonlyMap<ManaType, number>; // edhc5 (CR 118.1): rules/solver.ts `SolveInput.lifeFor`
 }
 
 /** Every set of indices 0..n-1 (n <= MAX_CONVERTERS), non-empty, smallest first, then in index order. */
@@ -95,7 +97,7 @@ export function solveWithConverters(input: ConvertInput): ConverterPlan | null {
     }
     const inner = new Set<number>();
     for (let i = input.symbols.length; i < symbols.length; i++) inner.add(i);
-    const solution = solveBest({ symbols, providers, life: input.life, inner, ...(input.forceLife ? { forceLife: input.forceLife } : {}), ...(input.anyType ? { anyType: true } : {}), ...(input.anyColor ? { anyColor: true } : {}) });
+    const solution = solveBest({ symbols, providers, life: input.life, inner, ...(input.forceLife ? { forceLife: input.forceLife } : {}), ...(input.anyType ? { anyType: true } : {}), ...(input.anyColor ? { anyColor: true } : {}), ...(input.anyColorWith !== undefined ? { anyColorWith: input.anyColorWith } : {}), ...(input.lifeFor ? { lifeFor: input.lifeFor } : {}) });
     if (!solution) continue;
     // every filter ability of the set adds mana the cost being paid spends; otherwise a smaller set pays the same way, cheaper
     const spends = (c: ManaConverter): boolean => solution.used.some((u) => u.symbol < input.symbols.length && providers[u.providerId]!.source?.objectId === c.objectId);

@@ -9,7 +9,7 @@
       "CR 508.1",
       "CR 604.1"
     ],
-    "pattern": "you may exert ~ as ( it | he | she ) attacks",
+    "pattern": "you may exert ~ as ( it | he | she | ~ ) attacks",
     "build": {
       "s": "rule",
       "rule": "mayExertAsAttacks"
@@ -43,7 +43,7 @@
       "CR 508.1",
       "CR 603.12"
     ],
-    "pattern": "you may exert ~ as ( it | he | she ) attacks . when you do , {e:Effects}",
+    "pattern": "you may exert ~ as ( it | he | she | ~ ) attacks . when you do , {e:Effects}",
     "build": {
       "kind": "static",
       "effects": [

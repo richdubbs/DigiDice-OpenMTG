@@ -1,0 +1,40 @@
+{
+  "id": "d10",
+  "player": "p1",
+  "prompt": "Pay {1}{R} for Lightning Bolt.",
+  "rules": [
+    "CR 601.2g",
+    "CR 601.2h"
+  ],
+  "kind": "payCost",
+  "costText": "{1}{R}",
+  "manaSources": [
+    {
+      "objectId": "o11",
+      "abilityKey": "p:0:0",
+      "label": "Llanowar Elves: {T}: Add {G}.",
+      "produces": [
+        "G"
+      ]
+    },
+    {
+      "objectId": "o12",
+      "abilityKey": "r:basic:G",
+      "label": "Forest: {T}: Add {G}.",
+      "produces": [
+        "G"
+      ]
+    },
+    {
+      "objectId": "o13",
+      "abilityKey": "r:basic:R",
+      "label": "Mountain: {T}: Add {R}.",
+      "produces": [
+        "R"
+      ]
+    }
+  ],
+  "autoPayable": true,
+  "origin": "cast",
+  "cancellable": true
+}

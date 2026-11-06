@@ -155,7 +155,7 @@
     "id": "sta.cmd5.player.cant.cast.combat",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 604.1",
       "CR 601.3",

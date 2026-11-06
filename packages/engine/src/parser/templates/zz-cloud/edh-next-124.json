@@ -1,0 +1,363 @@
+[
+  {
+    "id": "sta.edhn124.has.allLoyaltyOf",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 606.1",
+      "CR 606.3",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} has all loyalty abilities of [( all | each )] {f:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "addActivatedOf": {
+                "ref": "each",
+                "filter": "$f"
+              },
+              "loyaltyOnly": true
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "~ has all loyalty abilities of all other planeswalkers you control."
+      },
+      {
+        "text": "~ has all loyalty abilities of planeswalkers your opponents control."
+      }
+    ],
+    "counterExamples": [
+      "~ has all loyalty abilities of target planeswalker.",
+      "~ has all static abilities of all other planeswalkers on the battlefield.",
+      "~ has no loyalty abilities of planeswalkers you control."
+    ]
+  },
+  {
+    "id": "eff.edhn124.exile.handOrPermanent.opponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 101.4",
+      "CR 406.1",
+      "CR 109.4"
+    ],
+    "pattern": "each opponent exile[s] ( a | an ) card from their hand or ( a | an ) permanent they control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "iterating"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": [
+              "hand",
+              "battlefield"
+            ],
+            "anyOf": [
+              {
+                "zone": "hand",
+                "owner": {
+                  "ref": "iterating"
+                },
+                "isCard": true
+              },
+              {
+                "zone": "battlefield",
+                "controller": {
+                  "ref": "iterating"
+                }
+              }
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "perPlayer": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "as": "ownExiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "ownExiled"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You gain 2 life. Each opponent exiles a card from their hand or a permanent they control."
+      },
+      {
+        "text": "Each opponent exiles a card from their hand or a permanent they control. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent exiles a card from your hand or a permanent they control.",
+      "Each opponent exiles a card from their hand or a permanent you control.",
+      "Each opponent exiles two cards from their hand or a permanent they control."
+    ]
+  },
+  {
+    "id": "sta.edhn124.untap.opponentsUntapStep.group",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 502.3",
+      "CR 102.3"
+    ],
+    "pattern": "untap ( each | all ) {f:Filter} during each opponent 's untap step",
+    "build": {
+      "s": "rule",
+      "rule": "untapDuringOtherUntapSteps",
+      "of": "$f",
+      "opponents": true
+    },
+    "consumes": [
+      "each",
+      "all",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "Untap all creatures you control during each opponent's untap step."
+      },
+      {
+        "text": "Untap each artifact you control during each opponent's untap step."
+      }
+    ],
+    "counterExamples": [
+      "Untap all permanents you control during your untap step.",
+      "Tap all permanents you control during each opponent's untap step.",
+      "Untap all permanents you control during each opponent's upkeep."
+    ]
+  },
+  {
+    "id": "sta.edhn124.draw.opponentsDrawStep",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 504.1",
+      "CR 504.2"
+    ],
+    "pattern": "you draw a card during each opponent 's draw step",
+    "build": {
+      "s": "rule",
+      "rule": "drawDuringOpponentsDrawSteps"
+    },
+    "examples": [
+      {
+        "text": "You draw a card during each opponent's draw step."
+      },
+      {
+        "text": "{5}{U}, {T}: You gain 9 life.\nYou draw a card during each opponent's draw step."
+      }
+    ],
+    "counterExamples": [
+      "You draw two cards during each opponent's draw step.",
+      "You draw a card during your draw step.",
+      "Each opponent draws a card during your draw step."
+    ],
+    "consumes": [
+      "each",
+      "during"
+    ]
+  },
+  {
+    "id": "eff.edhn124.choose.threeTargets",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 115.1",
+      "CR 601.2c",
+      "CR 608.2c"
+    ],
+    "pattern": "choose {a:Targets} , {b:Targets} , and {c:Targets}",
+    "build": {
+      "lower": "chooseTargets",
+      "what": {
+        "ref": "union",
+        "of": [
+          "$a",
+          "$b",
+          "$c"
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose up to one target artifact, up to one target creature, and up to one target enchantment. Untap the chosen permanents you control. Tap the chosen permanents you don't control."
+      },
+      {
+        "text": "Choose up to one target artifact, up to one target creature, and up to one target land. Untap the chosen permanents you control. Tap the chosen permanents you don't control. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Choose up to one target artifact, up to one target creature, and up to one target land.",
+      "Choose up to one target artifact, up to one target creature, and up to one target land. Draw a card.",
+      "Choose an artifact, a creature, and a land. Untap the chosen permanents you control."
+    ]
+  },
+  {
+    "id": "eff.edhn124.untap.chosen.youControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2b",
+      "CR 701.26b",
+      "CR 115.1"
+    ],
+    "pattern": "untap {o:Objs} you control",
+    "build": {
+      "op": "untap",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": "$o",
+          "controller": "you"
+        }
+      }
+    },
+    "examples": [
+      {
+        "text": "Choose up to one target artifact and up to one target creature. Untap the chosen permanents you control. Tap the chosen permanents you don't control."
+      },
+      {
+        "text": "Choose up to one target creature, up to one target land, and up to one target enchantment. Untap the chosen permanents you control. Tap the chosen permanents you don't control. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Untap the chosen permanents you control.",
+      "Untap target artifact you control and draw a card."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhn124.tap.chosen.youDontControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2b",
+      "CR 701.26a",
+      "CR 115.1"
+    ],
+    "pattern": "tap {o:Objs} you don't control",
+    "build": {
+      "op": "tap",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": "$o",
+          "not": {
+            "controller": "you"
+          }
+        }
+      }
+    },
+    "examples": [
+      {
+        "text": "Choose up to one target artifact and up to one target creature. Untap the chosen permanents you control. Tap the chosen permanents you don't control."
+      },
+      {
+        "text": "Choose up to one target creature, up to one target land, and up to one target enchantment. Untap the chosen permanents you control. Tap the chosen permanents you don't control. You gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "Tap the chosen permanents you don't control.",
+      "Tap target artifact you don't control and draw a card."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.edhn124.costmod.firstArtifactAbility.less",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 605.1a",
+      "CR 118.7"
+    ],
+    "pattern": "the first activated ability of an artifact you activate each turn costs {m:ManaCost} less to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": {
+                "types": [
+                  "Artifact"
+                ]
+              }
+            },
+            "caster": "you",
+            "firstEachTurn": true
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "The first activated ability of an artifact you activate each turn costs {1} less to activate."
+      },
+      {
+        "text": "{5}{U}, {T}: You gain 9 life.\nThe first activated ability of an artifact you activate each turn costs {3} less to activate."
+      }
+    ],
+    "counterExamples": [
+      "The first activated ability of an artifact you activate each turn costs {2} more to activate.",
+      "The activated abilities of artifacts you activate cost {2} less to activate.",
+      "The first activated ability of an artifact an opponent activates each turn costs {2} less to activate."
+    ],
+    "consumes": [
+      "each"
+    ]
+  }
+]

@@ -40,6 +40,9 @@ export function putCopyOnStack(g: Game, original: GameObject, controller: Player
   // CR 607.2q, 707.10: a linked ability refers only to cards exiled to pay the cost of the spell that became that permanent; a copy isn't cast and paid no
   // cost, so the permanent it becomes is linked to nothing the original's cost exiled (FAST5X E11 review: Champion of the Clachan and its cycle)
   delete stack.costsPaid.costLinks;
+  delete stack.castValues; // edh-next-126 (CR 707.10, 601.2i): nor any "as you cast" number
+  delete stack.castChecks; // edh-next-37 review (CR 707.10, 601.2i): a copy is not cast, so no "as you cast" condition held for it (Draconic Roar's ruling 2015-02-25: only a revealed Dragon card counts for a copy)
+  delete stack.costsPaid.convoked; // edh-mana-keywords-8 (CR 702.51a, 707.10): no creature convoked a copy; it was not cast
   stack.targets = targets.map((list) => list.map((t) => ({ ...t })));
   if (stack.flags) {
     stack.flags = stack.flags.filter((f) => !CAST_ONLY_FLAGS.has(f));
@@ -69,9 +72,10 @@ export function putCopyOnStack(g: Game, original: GameObject, controller: Player
  * with the characteristics of `original` (its definition and face; the original may be last known information, CR 608.2h). A copy of a card is never a card
  * (`kind: 'spellCopy'`): the `cast` op casts it at once (CR 707.12), and one left outside the stack ceases to exist (CR 707.10a, 704.5e). Returns its id.
  */
-export function createCardCopy(g: Game, original: Pick<GameObject, 'defId' | 'face'>, controller: PlayerId, zone: 'exile'): ObjectId {
+export function createCardCopy(g: Game, original: Pick<GameObject, 'defId' | 'face'>, controller: PlayerId, zone: 'exile' | 'hand'): ObjectId {
   const o = freshObject(g, { kind: 'spellCopy', defId: original.defId, owner: controller, controller, face: original.face }, zone);
   g.s.objects[o.id] = o;
-  g.s.zones[zone].push(o.id);
+  if (zone === 'hand') g.s.zones.hand[controller]!.push(o.id); // edh-next-132 (CR 707.12; God-Eternal Kefnet ruling 2019-05-03): the copy is created in its controller's hand
+  else g.s.zones[zone].push(o.id);
   return o.id;
 }

@@ -1,0 +1,10 @@
+# edh-c-54 (Commander effort, EDHREC ranks 18,001-18,500, third pass): see docs in the round record. After editing: npm run cards -- fixtures
+Exile
+Lymph Sliver
+Devoted Caretaker
+Sulfurous Blast
+Conjured Currency
+Uncle's Musings
+Armageddon Clock
+Regenerate
+Gangrenous Zombies

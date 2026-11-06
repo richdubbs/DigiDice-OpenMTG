@@ -25,6 +25,10 @@ import { localIndex } from '../../m5/parser/support';
 import review from '../../m5/golden/cards/cloud-c6-review.json';
 import r3refsReview from '../../m5/golden/cards/cloud-r3-refs-review.json';
 import trek5Review from '../../m5/golden/cards/trek-5-review.json';
+import edhPm3Review from '../../m5/golden/cards/edh-perms-3-review.json';
+import edhN85Review from '../../m5/golden/cards/edh-next-85-review.json'; // edh-next-85: Ghouls' Night Out reads eff.c6.choose.perPlayer.player in its golden entry
+import edhPl2Review from '../../m5/golden/cards/edh-players-2-review.json';
+import edhN122Review from '../../m5/golden/cards/edh-next-122-review.json'; // edh-next-122
 
 const C6 = c6 as Template[];
 const OPTS = defaultParseOptions({ templates: [...TEMPLATE_SET], capabilities: ENGINE_CAPABILITIES }); // what a decklist card gets (design 5.2; `needs`)
@@ -122,10 +126,10 @@ describe('C6: what the parser builds (CR 101.3, 101.4, 109.4, 608.2c, 608.2e)', 
 
 describe('C6 fails closed (design 6.4, 6.7): wordings the pieces do not read stay manual', () => {
   const cases: [string, string][] = [
-    ['"each opponent who can\'t" after "each player" (a part of the group, no reference stands for it)', "Each player discards a card. Each opponent who can't loses 3 life."],
+    // (edh-next-114 reads "Each opponent who can't" after "Each player discards a card" as the opponents among the players who can't: Liliana, Waker of the Dead)
     ['"who can\'t" after an instruction of two cards (whether "can\'t" means "fewer" is not decided)', "Each opponent discards two cards. Each opponent who can't loses 3 life."],
     ['"who can\'t" with nothing before it', "Each opponent who can't loses 3 life."],
-    ['one life total read for the whole group (it is per player: lint, CR 101.3)', "Each opponent sacrifices a creature of their choice. Each opponent who can't loses half their life, rounded up."],
+    // (edh-d-15 reads "Each opponent who can't loses half their life, rounded up" as a loop over the players who can't, each losing half of their own life: Skull Storm)
     ['a choice for each player that never names that player (lint)', 'For each player, choose an artifact. Destroy those artifacts.'],
     ['"chosen this way" with no choice before it', 'Destroy all creatures except creatures chosen this way.'],
     ['a pronoun inside the instruction of the group who can\'t: each of them is a candidate (CR 608.2c, design 6.4)', "Each opponent discards a card. Each opponent who can't loses 1 life for each creature they control."],
@@ -166,8 +170,11 @@ describe.skipIf(index === null)('C6 design 6.9, 6.10 (local index): synthetic ex
   }, 120_000);
   it('a template of WHOLE_REACH reads only golden cards: every card of the index that prints its opening words and uses it is in the review file', () => {
     // merge wave 6: r3-refs's "for each player, you choose" was folded into eff.c6.choose.perPlayer.player; its golden card (Winnowing) is in r3-refs's review file
+    // edh-perms-3: Breach the Multiverse reads eff.c6.choose.perPlayer.player in its golden entry (golden/cards/edh-perms-3-review.json)
+    // edh-players-2: All Is Dust reads eff.c6.player.sacrifice.all (the filter "that are one or more colors") in its golden entry (golden/cards/edh-players-2-review.json)
     // trek-5: Ensign Pavel Chekov reads eff.c6.choose.perPlayer.opponent in its golden entry (golden/cards/trek-5-review.json)
-    const golden = new Set([...(review as { card: string }[]), ...(r3refsReview as { card: string }[]), ...(trek5Review as { card: string }[])].map((g) => g.card));
+    // edh-next-122: Benthic Anomaly reads eff.c6.choose.perPlayer.opponent in its golden entry (golden/cards/edh-next-122-review.json)
+    const golden = new Set([...(review as { card: string }[]), ...(r3refsReview as { card: string }[]), ...(trek5Review as { card: string }[]), ...(edhPm3Review as { card: string }[]), ...(edhN85Review as { card: string }[]), ...(edhPl2Review as { card: string }[]), ...(edhN122Review as { card: string }[])].map((g) => g.card));
     const words = /for each (player|opponent), choose|sacrifices? all/i;
     for (const c of index ?? []) {
       if (!texts(c).some((x) => words.test(x))) continue;

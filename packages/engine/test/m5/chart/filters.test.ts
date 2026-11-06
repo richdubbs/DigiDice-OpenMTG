@@ -169,7 +169,7 @@ describe('WP6 Player / Recipient (CR 109.5, 115.4, 506.2, 102.1)', () => {
     ['each other player', { ref: 'each', who: 'otherPlayer' }],
     ['the active player', { ref: 'active' }],
     ['defending player', { ref: 'defending' }],
-    ['the chosen player', { ref: 'linked', link: '$link' }],
+    ['the chosen player', { ref: 'linked', link: 'opponent' }], // edh-replace-3 (CR 607.2d): read through the link of std-control-1 directly, not the '$link' placeholder
     ['that player', { ref: 'bound', name: '', $anaphor: { sort: 'player', number: 'singular', head: 'player', text: 'that player' } }],
     // FAST5X E25 (CR 109.5): "its controller" names the ability's source only when nothing else could be "it" (AnaphorInfo.selfLast)
     ['its controller', { ref: 'controllerOf', object: { ...itObj, $anaphor: { ...itObj.$anaphor, selfLast: true } } }],

@@ -1,0 +1,126 @@
+[
+  {
+    "id": "eff.edhz17.player.adds.anyColor",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.1",
+      "CR 106.4",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} adds one mana of any color",
+    "build": {
+      "op": "addMana",
+      "who": "$p",
+      "units": [
+        [
+          "W",
+          "U",
+          "B",
+          "R",
+          "G"
+        ]
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Target player adds one mana of any color."
+      },
+      {
+        "text": "At the beginning of each player's upkeep, that player adds one mana of any color."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Target player adds one mana of any type.",
+      "{T}: Target player adds two mana of any color.",
+      "{T}: Target player adds one mana of any color for each artifact they control.",
+      "{T}: Target player gains one mana of any color."
+    ]
+  },
+  {
+    "id": "eff.edhz17.put.self.ownersLibrary.nthFromTop",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.7",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "put ~ into ~ 's owner 's library third from the top",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "library",
+        "position": {
+          "nth": 3
+        }
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ dies, you may put ~ into ~'s owner's library third from the top."
+      },
+      {
+        "text": "{2}{B}, Sacrifice a creature: Put ~ into ~'s owner's library third from the top."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, you may put ~ into ~'s owner's graveyard third from the top.",
+      "When ~ dies, you may put ~ into ~'s owner's library second from the top."
+    ]
+  },
+  {
+    "id": "eff.edhz17.choose.cardInYourGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 404.1"
+    ],
+    "pattern": "choose ( a | an ) {f:Filter} card in your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Choose a creature card in your graveyard. You may cast it this turn."
+      },
+      {
+        "text": "Choose an artifact or enchantment card in your graveyard. You may cast it this turn."
+      }
+    ],
+    "counterExamples": [
+      "Choose target creature card in your graveyard. You may cast it this turn.",
+      "Choose a creature card in an opponent's graveyard. You may cast it this turn.",
+      "Choose up to two creature cards in your graveyard. You may cast them this turn."
+    ]
+  }
+]

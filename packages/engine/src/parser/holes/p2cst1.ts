@@ -41,6 +41,10 @@ const W_ARE_ATTACKING = P('are attacking');
 const W_EXACTLY_ONE_CREATURE_IS_ATTACKING = P('exactly one creature is attacking');
 const W_AN_OPPONENT_CAST = P('an opponent cast');
 const W_SPELLS_THIS_TURN = P('spells this turn');
+const W_AN_OPPONENT_GAINED_LIFE = P('an opponent gained life this turn'); // edh-c-30
+const W_AN_OPPONENT_HAD = P('an opponent had'); // edh-c-30
+const W_LANDS_ENTER_UNDER_THEIR = P('lands enter the battlefield under their control this turn'); // edh-c-30
+const W_CREATURES_ENTER_UNDER_THEIR = P('creatures enter the battlefield under their control this turn'); // edh-c-86 (Whiplash Trap): the same reading for creatures
 
 /**
  * p2-cost-statics-1 (CR 506.4, 508.1): how many creatures are attacking, as the traps' alternative costs say it ("If three or more creatures are attacking, you may pay
@@ -66,6 +70,19 @@ export function p2cst1CondAt(ctx: HoleCtx, pos: number): Alt[] {
     if (c.cmp.op !== '>=' || typeof c.cmp.value !== 'number' || c.cmp.value < 2) continue;
     const e = phraseAt(ctx, c.end, W_SPELLS_THIS_TURN);
     if (e >= 0) out.push({ end: e, value: { cond: 'compare', left: { q: 'happenedCount', event: { ev: 'cast' }, scope: 'turn', per: 'player', by: 'opponent' }, op: '>=', right: c.cmp.value } });
+  }
+  // edh-c-30 (CR 119.3, 118.9; Needlebite Trap): "an opponent gained life this turn": a life gain by an opponent this turn (the history, read at announcement as an alternative cost's `when`)
+  const og = phraseAt(ctx, pos, W_AN_OPPONENT_GAINED_LIFE);
+  if (og >= 0) out.push({ end: og, value: { cond: 'happened', event: { ev: 'life', change: 'gain', player: 'opponent' }, scope: 'turn' } });
+  // edh-c-30 (CR 305.1, 102.3, 118.9; Lavaball Trap): "an opponent had two or more lands enter the battlefield under their control this turn": at least one opponent, judged alone
+  // (edh-players-9's `happenedPlayers`), has that many lands entering under their control in this turn's history (read at announcement: model/forms.ts#isOpponentsHappenedPlayers)
+  const oh = phraseAt(ctx, pos, W_AN_OPPONENT_HAD);
+  if (oh >= 0) for (const c of cmpAt(ctx, oh)) {
+    if (c.cmp.op !== '>=' || typeof c.cmp.value !== 'number' || c.cmp.value < 2) continue;
+    for (const [w, type] of [[W_LANDS_ENTER_UNDER_THEIR, 'Land'], [W_CREATURES_ENTER_UNDER_THEIR, 'Creature']] as const) {
+      const e = phraseAt(ctx, c.end, w);
+      if (e >= 0) out.push({ end: e, value: { cond: 'compare', left: { q: 'happenedPlayers', of: { ref: 'each', who: 'opponent' }, event: { ev: 'zoneChange', to: 'battlefield', subject: { types: [type], controller: 'you' } }, scope: 'turn', times: { op: '>=', n: c.cmp.value } }, op: '>=', right: 1 } as Condition });
+    }
   }
   return out;
 }

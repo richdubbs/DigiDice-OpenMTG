@@ -1,0 +1,14 @@
+# edh-c-29 (Commander EDHREC ranks 22,501-23,000, first pass): enchanted creature has X and loses Y, each player returns all X cards from their graveyard to their hand, each player draws, discards and loses life, any player may have ~ deal damage to them, a player puts counters on a creature they control, base power 0, prevent N of that damage to you or a creature, a graveyard trigger on the first life gain each turn, you were dealt N or more damage this turn, an artifact or creature put into a graveyard this turn. After editing: npm run cards -- fixtures
+Boarded Window
+Ichor Shade
+Sky Tether
+Empty the Catacombs
+Urza's Guilt
+Book Burning
+Hunted Nightmare
+Island of Wak-Wak
+Hedron-Field Purists
+Deathless Knight
+Browbeat
+Fraying Line
+Singing Tree

@@ -4,10 +4,14 @@
  */
 import type { Game } from '../core/game';
 import type { EffectProgram, TargetSpec } from '../types/ability';
-import type { GameObject, ObjHandle, TargetChoice } from '../types/state';
+import type { GameObject, ObjHandle, StackTargetChoice, TargetChoice } from '../types/state';
 import { matchesFilter } from '../rules/filter';
 import { gameOf, hookpoints } from '../rules/hookpoints';
+import { controllerDealtCombatDamageBySourceThisTurn } from '../rules/history';
 import { playerPredMatches } from '../rules/predicates';
+import { equalToughnessHolds } from '../rules/targets';
+import { filterMentionsX, relaxUnannouncedX } from '../rules/filter-env';
+import { choosesXOnResolution } from '../types/x-on-resolution';
 import type { ExecCtx, TargetSlot } from './api';
 import './eval'; // installs the quantity evaluator that references and filters use
 import { filterCtxOf, resolvePlayers } from './refs';
@@ -20,8 +24,8 @@ function handleFor(g: Game, id: string): ObjHandle | null {
   return l ? { id, zone: l.leftZone } : null;
 }
 
-function slotFor(g: Game, choice: TargetChoice): TargetSlot {
-  return choice.kind === 'player' ? { handle: null, player: choice.id, legal: true } : { handle: handleFor(g, choice.id), legal: true };
+function slotFor(g: Game, choice: StackTargetChoice): TargetSlot {
+  return choice.kind === 'player' ? { handle: null, player: choice.id, legal: true } : { handle: handleFor(g, choice.id), legal: true, ...('for' in choice ? { for: choice.for } : {}) };
 }
 
 /**
@@ -65,6 +69,10 @@ function targetLegal(cx: ExecCtx, spec: TargetSpec, slot: TargetSlot): boolean {
     const p = s.players.find((x) => x.id === slot.player);
     if (!p || p.hasLost) return false;
     if (playerPredMatches(spec.players?.who ?? 'any', p.id, cx.controller, (ref) => resolvePlayers(cx, ref)) !== true) return false;
+    if (spec.players?.lostLife === true && p.turnStats.lifeLost <= 0) return false; // edh-c-34 (CR 608.2b, 119.3): still a player who has lost life this turn
+    if (spec.players?.activePlayer === true && s.turn.activePlayer !== p.id) return false; // trek-16 (CR 608.2b, 500.1): still the player whose turn it is
+    if (spec.players?.otherThan !== undefined) { const them = resolvePlayers(cx, spec.players.otherThan); if (them.length === 0 || them.includes(p.id)) return false; } // edh-cast-15 (CR 608.2b): still not the player the reference names
+    if (spec.players?.dealtCombatDamageBySource === true && !controllerDealtCombatDamageBySourceThisTurn(s, p.id, sourceId)) return false; // edh-cast-13 (CR 608.2b, 510.2): still the player the source dealt combat damage to
     return hookpoints.canBeTargeted(gameOf(s), p.id, sourceId, cx.controller) === null;
   }
   const h = slot.handle;
@@ -72,7 +80,8 @@ function targetLegal(cx: ExecCtx, spec: TargetSpec, slot: TargetSlot): boolean {
   if (!h || !o || o.zone !== h.zone) return false; // it left the zone it was in: it is a new object now (CR 400.7)
   if (o.id === cx.stackId) return false; // a spell never targets itself
   const ctx = filterCtxOf(cx);
-  const filter = spec.filter ?? {};
+  // edh-d-97 (CR 107.3f, 608.2b): before its controller has chosen the X they pay as it resolves, a comparison with X holds for some X (types/x-on-resolution.ts)
+  const filter = (xNotChosenYet(cx) ? relaxUnannouncedX(spec.filter) : spec.filter) ?? {};
   switch (spec.kind) {
     case 'object': case 'objectOrPlayer':
       if (o.kind === 'ability' || !matchesFilter(s, o, { ...filter, zone: filter.zone ?? 'battlefield' }, ctx)) return false;
@@ -95,6 +104,28 @@ function targetLegal(cx: ExecCtx, spec: TargetSpec, slot: TargetSlot): boolean {
   return hookpoints.canBeTargeted(gameOf(s), o.id, sourceId, cx.controller) === null;
 }
 
+/** edh-d-97: the resolving ability's X is the one its controller chooses as they pay, and they have not chosen it yet (types/x-on-resolution.ts). */
+const xNotChosenYet = (cx: ExecCtx): boolean => cx.stack !== null && cx.stack.x === undefined && choosesXOnResolution(cx.program);
+
+/**
+ * edh-d-97 (CR 107.3f, 608.2b; Relentless Dead): the controller has just chosen X as they pay (effects/handlers/pay.ts#payChosenX): every chosen target whose spec's
+ * filter reads X is checked again with that X ("another target Zombie creature card with mana value X"); one it no longer allows is illegal for the rest of the
+ * resolution, so the instructions that name it do nothing to it. A target that was illegal stays illegal.
+ */
+export function recheckXTargets(cx: ExecCtx): void {
+  for (const spec of cx.program.targets) {
+    if (!filterMentionsX(spec.filter)) continue;
+    for (const t of cx.targets.get(spec.id) ?? []) if (t.legal && !targetLegal(cx, spec, t)) t.legal = false;
+  }
+}
+
+/** edh-d-83: the player a per-player target is for now, as rules/targets.ts#perPlayerKey reads it at announcement (the owner of a card in a graveyard, else the controller). */
+function keyNow(cx: ExecCtx, spec: TargetSpec, id: string): string | undefined {
+  const o = cx.g.s.objects[id];
+  if (o === undefined) return undefined;
+  return spec.kind === 'object' && spec.filter?.zone === 'graveyard' ? o.owner : o.controller;
+}
+
 /** Fill in `slot.legal` for every chosen target. While it is computed all targets count as legal, so a filter that mentions another target of the ability can read it. */
 function checkAll(cx: ExecCtx): void {
   const specs = new Map(cx.program.targets.map((spec) => [spec.id, spec]));
@@ -105,6 +136,28 @@ function checkAll(cx: ExecCtx): void {
     for (const t of slots) verdicts.push([t, spec !== undefined && targetLegal(cx, spec, t)]);
   }
   for (const [t, ok] of verdicts) t.legal = ok;
+  // edh-d-83 (CR 115.1, 608.2b; Blatant Thievery ruling 2004-10-04: "If a permanent changes controller after being targeted but before this spell resolves, you won't gain control of
+  // that permanent"): a target of "for each player, ... target ... that player controls" that the player it was chosen for no longer controls (owns, in a graveyard) is illegal
+  for (const [id, slots] of cx.targets) {
+    const spec = specs.get(id);
+    // edh-next-146 review (CR 601.7a; Evangelize ruling 2006-09-25): also a target "of an opponent's choice they control" the opponent who chose it no longer controls
+    if (spec === undefined || (spec.perPlayer !== true && spec.perOpponent !== true && spec.chooserControls !== true)) continue;
+    for (const t of slots) if (t.legal && t.for !== undefined && t.handle !== null && keyNow(cx, spec, t.handle.id) !== t.for) t.legal = false;
+  }
+  // edh-c-74 (CR 608.2b, 601.2c, 110.2; Incriminate, Trial of Agony): the targets "controlled by the same player" no longer share one controller (one of them changed hands): the set
+  // is no longer what the spell named, so none of its targets is legal (the ability does not act on a set with two controllers; the controller of the whole set would be several players)
+  for (const [id, slots] of cx.targets) {
+    if (specs.get(id)?.sameController !== true) continue;
+    const owners = new Set(slots.filter((t) => t.legal && t.handle !== null).map((t) => cx.g.s.objects[t.handle!.id]?.controller));
+    if (owners.size > 1) for (const t of slots) t.legal = false;
+  }
+  // edh-next-126 (CR 608.2b, 115.1; V.A.T.S., ruling 2024-03-08): the legal targets "with equal toughness" no longer all have the same toughness: none of them is legal (the spell won't resolve)
+  for (const [id, slots] of cx.targets) {
+    const spec = specs.get(id);
+    if (spec?.equalToughness !== true) continue;
+    const live = slots.filter((t) => t.legal && t.handle !== null).map((t): TargetChoice => ({ kind: 'object', id: t.handle!.id }));
+    if (!equalToughnessHolds(cx.g.s, spec, live)) for (const t of slots) t.legal = false;
+  }
 }
 
 /**

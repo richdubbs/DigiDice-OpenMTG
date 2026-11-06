@@ -1,0 +1,447 @@
+[
+  {
+    "id": "eff.edhd95.eachPlayer.mayPlayOwnExiledCard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 611.2a",
+      "CR 400.3"
+    ],
+    "pattern": "{d:Dur} , each player may play the card they exiled this way",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "each",
+            "who": "player"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "bound",
+              "name": "",
+              "$anaphor": {
+                "sort": "set",
+                "number": "plural",
+                "participle": "exiled this way",
+                "text": "exiled this way"
+              }
+            }
+          },
+          "ownOnly": true
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "may",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, each player exiles the top card of their library. Until end of turn, each player may play the card they exiled this way."
+      },
+      {
+        "text": "When this creature enters, each player exiles the top card of their library. Until your next turn, each player may play the card they exiled this way."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, each player exiles the top card of their library. Until end of turn, each player may cast the card they exiled this way.",
+      "At the beginning of your upkeep, each player exiles the top card of their library. Until end of turn, you may play the cards exiled this way.",
+      "At the beginning of your upkeep, each player exiles the top card of their library. Each player may play the card they exiled this way."
+    ]
+  },
+  {
+    "id": "eff.edhd95.group.connive",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.50a",
+      "CR 701.50b",
+      "CR 701.50c",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:Objs} connive",
+    "build": {
+      "op": "forEach",
+      "over": "$o",
+      "as": "eachConniver",
+      "do": [
+        {
+          "op": "action",
+          "action": "connive",
+          "who": {
+            "ref": "controllerOf",
+            "object": {
+              "ref": "bound",
+              "name": "eachConniver"
+            }
+          },
+          "subject": {
+            "ref": "bound",
+            "name": "eachConniver"
+          }
+        }
+      ]
+    },
+    "needs": [
+      "action:connive"
+    ],
+    "examples": [
+      {
+        "text": "Each of up to two target Rogues you control connive."
+      },
+      {
+        "text": "Each of two target creatures you control connive."
+      }
+    ],
+    "counterExamples": [
+      "Each of two target creatures you control connive twice.",
+      "Each of two target creatures you control connives.",
+      "Each of two target creatures you control connive 2."
+    ]
+  },
+  {
+    "id": "eff.edhd95.mayHave.anyNumberOfThem.phaseOut",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 702.26b",
+      "CR 702.26d",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may have any number of {o:Them} phase out",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": "$o",
+        "min": 0,
+        "max": "any",
+        "as": "toPhase"
+      },
+      {
+        "op": "phaseOut",
+        "what": {
+          "ref": "bound",
+          "name": "toPhase"
+        }
+      }
+    ],
+    "consumes": [
+      "may",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Untap up to two target creatures you control. You may have any number of them phase out."
+      },
+      {
+        "text": "Put a +1/+1 counter on each of up to three target creatures you control. You may have any number of them phase out."
+      }
+    ],
+    "counterExamples": [
+      "Untap up to two target creatures you control. You may have one of them phase out.",
+      "Untap up to two target creatures you control. You may have any number of them phase in.",
+      "Untap up to two target creatures you control. Any number of them phase out."
+    ]
+  },
+  {
+    "id": "eff.edhd95.thoseAre.subtypes.inAddition",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 608.2c"
+    ],
+    "pattern": "those creatures are {st:PluralSubtype} in addition to their other types",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "plural",
+              "head": "creature",
+              "text": "those creatures"
+            }
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "add": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Return all creature cards from your graveyard to the battlefield. Those creatures are Zombies in addition to their other types."
+      },
+      {
+        "text": "Return up to two target creature cards from your graveyard to the battlefield. Those creatures are Spirits in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "Return all creature cards from your graveyard to the battlefield. Those creatures are Zombies.",
+      "Return all creature cards from your graveyard to the battlefield. Those creatures are Zombies in addition to their other types until end of turn.",
+      "Return all creature cards from your graveyard to the battlefield. Those creatures are black Zombies in addition to their other colors and types."
+    ]
+  },
+  {
+    "id": "eff.edhd95.counters.put.onChosen.anyCreature",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 115.10"
+    ],
+    "pattern": "put {n:Qty} {k:CounterKind} counter[s] on a creature",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ]
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "countersOn"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "countersOn"
+        },
+        "kind": "$k",
+        "count": "$n"
+      }
+    ],
+    "examples": [
+      {
+        "text": "You may put a +1/+1 counter on a creature. Then draw a card."
+      },
+      {
+        "text": "Put two -1/-1 counters on a creature."
+      }
+    ],
+    "counterExamples": [
+      "Put a +1/+1 counter on target creature. Then draw a card.",
+      "Put a +1/+1 counter on a creature an opponent controls.",
+      "Put a +1/+1 counter on each creature."
+    ]
+  },
+  {
+    "id": "trg.edhd95.atStepAndWhenEvent",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 513.1",
+      "CR 603.6c"
+    ],
+    "pattern": "at {e:Event} and when {f:Event}",
+    "build": {
+      "on": {
+        "$concat": [
+          "$e",
+          "$f"
+        ]
+      }
+    },
+    "examples": [
+      {
+        "text": "At the beginning of each end step and when ~ leaves the battlefield, you gain 2 life."
+      },
+      {
+        "text": "At the beginning of your upkeep and when ~ leaves the battlefield, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each end step or when ~ leaves the battlefield, you gain 2 life.",
+      "At the beginning of each end step, and when ~ leaves the battlefield, you gain 2 life.",
+      "At the beginning of each end step and when ~ enters, you lose 2 life."
+    ],
+    "consumes": [
+      "when",
+      "and"
+    ]
+  },
+  {
+    "id": "eff.edhd95.destroy.tokensCreatedWithSelf",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 701.8a",
+      "CR 111.1"
+    ],
+    "pattern": "destroy all tokens created with ~",
+    "build": {
+      "op": "destroy",
+      "what": {
+        "ref": "linked",
+        "link": "created"
+      }
+    },
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, create a 1/1 black Rat creature token.\nAt the beginning of your end step, destroy all tokens created with ~."
+      },
+      {
+        "text": "{T}: Create a 2/2 black Zombie creature token.\nWhen ~ leaves the battlefield, destroy all tokens created with ~."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Create a 2/2 black Zombie creature token.\nWhen ~ leaves the battlefield, destroy all tokens.",
+      "{T}: Create a 2/2 black Zombie creature token.\nWhen ~ leaves the battlefield, exile each token created with ~.",
+      "{T}: Create a 2/2 black Zombie creature token.\nWhen ~ leaves the battlefield, destroy all creatures created with ~."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "rid.edhd95.nextSpell.thatSpellCantBeCountered",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 601.2i",
+      "CR 611.2",
+      "CR 608.2c"
+    ],
+    "pattern": "that spell can't be countered",
+    "build": {
+      "$patchPrevious": {
+        "@after": [
+          {
+            "op": "nextSpell",
+            "who": "@previous.who",
+            "filter": "@previous.filter",
+            "rider": "cantBeCountered"
+          }
+        ]
+      }
+    },
+    "attachTo": "nextSpell",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "The next creature spell you cast this turn can be cast as though it had flash. That spell can't be countered."
+      },
+      {
+        "text": "The next instant spell you cast this turn costs {1} less to cast. That spell can't be countered."
+      }
+    ],
+    "counterExamples": [
+      "The next creature spell you cast this turn can be cast as though it had flash. That spell can be countered.",
+      "The next creature spell you cast this turn can be cast as though it had flash. That creature can't be blocked.",
+      "Draw a card. That spell can't be countered."
+    ]
+  },
+  {
+    "id": "rid.edhd95.nextSpell.thatCreatureEntersWithAdditionalCounter",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 122.6",
+      "CR 611.2",
+      "CR 608.2c"
+    ],
+    "pattern": "that creature enters with an additional {k:CounterKind} counter on it",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "filter.types": [
+            "Creature"
+          ]
+        },
+        "@after": [
+          {
+            "op": "nextSpell",
+            "who": "@previous.who",
+            "filter": "@previous.filter",
+            "rider": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": 1
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "attachTo": "nextSpell",
+    "examples": [
+      {
+        "text": "The next creature spell you cast this turn can be cast as though it had flash. That creature enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "The next creature spell you cast this turn can't be countered. That creature enters with an additional shield counter on it."
+      }
+    ],
+    "counterExamples": [
+      "The next creature spell you cast this turn can be cast as though it had flash. That creature enters with two additional +1/+1 counters on it.",
+      "The next creature spell you cast this turn can be cast as though it had flash. That creature enters tapped.",
+      "The next instant spell you cast this turn can't be countered. That creature enters with an additional +1/+1 counter on it."
+    ],
+    "consumes": [
+      "additional"
+    ]
+  }
+]

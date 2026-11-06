@@ -294,7 +294,8 @@ describe('keyword lines with several keywords (CR 702.10, 702.8)', () => {
       // Milestone 4 understands "Flying" too; the other text of Glorybringer stays manual (std-sos and cloud std-woe: Akoum Firebird's landfall return from the
       // graveyard is automated now, CR 113.6m)
       expect(hasKeyword(c, 'flying'), name).toBe(true);
-      expect(c.abilities.some((a) => a.def.kind === 'manual'), name).toBe(name === 'Glorybringer');
+      // edh-next-31: Glorybringer's exert line is automated now ("When you do, it deals ...": the exerted creature is the one candidate of "it"), so neither card has a manual ability
+      expect(c.abilities.some((a) => a.def.kind === 'manual'), name).toBe(false);
     }
   });
 
@@ -412,8 +413,8 @@ describe('mana added by hand (CR 106.3)', () => {
 
 describe('mana abilities the recognizer rejects can be activated by hand (CR 605.3b)', () => {
   // CMD5: a pain land's "This land deals 1 damage to you." is automated now (cloud/cmd5/cmd5-mana.test.ts); a mana ability with another instruction beside
-  // the mana ("Each opponent gains 1 life.", invented wording) is still one the player activates by hand
-  const GROVE = compileCard({ name: 'Test Gift Grove', layout: 'normal', mana_cost: '', type_line: 'Land', oracle_text: '{T}: Add {C}.\n{T}: Add {R} or {G}. Each opponent gains 1 life.', colors: [] } as OracleCard);
+  // the mana ("Each opponent discards a card.", invented wording; edh-fix-3: "gains 1 life" is a mana ability since edh-mana-keywords-4) is still one the player activates by hand
+  const GROVE = compileCard({ name: 'Test Gift Grove', layout: 'normal', mana_cost: '', type_line: 'Land', oracle_text: '{T}: Add {C}.\n{T}: Add {R} or {G}. Each opponent discards a card.', colors: [] } as OracleCard);
   it('Test Gift Grove: the ability with a rider is its own manual ability, offered as a mana action', () => {
     const def = GROVE;
     expect(def.faces[0]!.abilities.map((a) => a.kind)).toEqual(['activated', 'manual']);

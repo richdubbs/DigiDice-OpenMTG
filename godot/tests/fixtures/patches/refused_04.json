@@ -1,0 +1,1 @@
+{"name":"refused_04","before":{"a":{"b":[1,2]},"s":"x"},"ops":[{"op":"set","path":["a",0],"value":1}],"error":"An index into an object at [\"a\",0]."}

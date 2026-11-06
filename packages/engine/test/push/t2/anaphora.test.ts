@@ -92,8 +92,15 @@ describe('design 6.4 (unique-candidate rule), review of PUSH1 T2: the cost objec
     ['CR 121.1 (draw): "Draw a card. Exile it."', '{1}, Sacrifice ~: Draw a card. Exile it.', 'Artifact'],
     ['CR 701.17 (mill): "Mill two cards. Put a +1/+1 counter on it."', '{1}, Sacrifice ~: Mill two cards. Put a +1/+1 counter on it.', 'Artifact'],
     ['CR 701.21 (sacrifice): "Sacrifice a creature. Return it to the battlefield"', "{1}, Sacrifice ~: Sacrifice a creature. Return it to the battlefield under its owner's control.", 'Artifact'],
-    ['CR 701.21: "You may sacrifice a creature. If you do, return that card to the battlefield"', "{2}, {T}, Sacrifice ~: You may sacrifice a creature. If you do, return that card to the battlefield under its owner's control.", 'Artifact'],
   ];
+  // "You may sacrifice a creature. If you do, return that card to the battlefield" is read since the sacrifice binds the creature it chose (`as`, CR 608.2c, 400.7j):
+  // "that card" is that creature in the graveyard, never ~
+  it('CR 701.21: "You may sacrifice a creature. If you do, return that card to the battlefield" binds the sacrificed creature, never ~', () => {
+    const f = parsed("{2}, {T}, Sacrifice ~: You may sacrifice a creature. If you do, return that card to the battlefield under its owner's control.", 'Artifact');
+    expect(fullyAutomated(f)).toBe(true);
+    expect(JSON.stringify(f.abilities)).not.toMatch(/"(what|on|source)":\{"ref":"self"\}/);
+    expect(JSON.stringify(f.abilities)).toMatch(/"what":\{"ref":"bound","name":"[a-z]+"\}/);
+  });
   for (const [name, text, type] of cases) {
     it(`${name} never binds the pronoun to ~`, () => {
       const f = parsed(text, type);
@@ -148,9 +155,12 @@ describe('design 6.8 G6: the render-gate rows of the pump shapes', () => {
   });
 });
 
-describe('CR 603.2c: "one or more counters are put on" a SET of objects is one occurrence, which the engine does not group that way: not read', () => {
-  it('"Whenever one or more +1/+1 counters are put on one or more creatures you control, ..." stays manual (the engine counts each creature apart)', () => {
-    expect(fullyAutomated(parsed('Whenever one or more +1/+1 counters are put on one or more creatures you control, you gain 1 life.'))).toBe(false);
+describe('CR 603.2c: "one or more counters are put on" a SET of objects is one occurrence (read since edh-c-13 with batch + wholeBatch)', () => {
+  // edh-c-13 (parser/holes/event.ts, CR 603.2c): the set is one occurrence for the whole batch (batch + wholeBatch), so the wording is read since then
+  it('"Whenever one or more +1/+1 counters are put on one or more creatures you control, ..." is one trigger for the whole batch (edh-c-13)', () => {
+    const f = parsed('Whenever one or more +1/+1 counters are put on one or more creatures you control, you gain 1 life.');
+    expect(fullyAutomated(f)).toBe(true);
+    expect(f.abilities[0]).toMatchObject({ kind: 'triggered', trigger: { batch: true, wholeBatch: true } });
   });
   it('the singular reading is kept: "... are put on a creature you control" is automated, as a batch trigger', () => {
     const f = parsed('Whenever one or more +1/+1 counters are put on a creature you control, you gain 1 life.');

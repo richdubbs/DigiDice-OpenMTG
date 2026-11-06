@@ -40,6 +40,7 @@ export const CAST_COST_FEATURES: readonly string[] = [
   'alternativeCost.discardedThisTurn',
   'alternativeCost.tapReduces',
   'alternativeCost.exileOnLeave',
+  'alternativeCost.graveyardInstead', // edh-next-68 (CR 614.1a)
   // FAST5 T56 (CR 702.34a): flashback whose cost is the card's own mana cost, "The flashback cost is equal to its mana cost": actions/cast-options.ts#castOptionsOf
   'keyword.flashback.costIsManaCost',
   // cloud r3-mech (CR 702.187b): mayhem whose cost is the card's own mana cost: actions/cast-options.ts#castOptionsOf
@@ -53,4 +54,21 @@ export const CAST_COST_FEATURES: readonly string[] = [
   // std-costs-1 (CR 601.2b, 601.2f): "you may sacrifice any number of ... This spell costs {1} less to cast for each permanent sacrificed this way": the number is
   // announced with the optional cost and kept in `CostsPaid.counts` (actions/cast-costs.ts#announceOptionalCosts, actions/cast.ts#optionalCostMakesCastable)
   'additionalCost.announceCount',
+  // edh-perms-24 (CR 107.3, 601.2b): "Kicker {X}. X can't be 0.": the smallest X once an optional additional cost is paid: actions/cast.ts, actions/cast-costs.ts#announceOptionalCosts
+  'additionalCost.xMin',
+  // edh-cast-15 (CR 603.12, 707.10): "you may sacrifice one or more creatures. When you do, copy this spell for each creature sacrificed this way": actions/cast.ts#copyForEachTriggers
+  'additionalCost.copyForEach',
+  // edh-next-59 (CR 702.141a): encore whose cost is generic mana equal to the object's mana value: keywords/expand.ts
+  'keyword.costIsManaValue',
+  // edhn81 (CR 702.62a, 107.3a): "Suspend X--{X}{3}{U}. X can't be 0.": X is chosen as the suspend special action is taken: core/special/suspend.ts, effects/handlers/suspend-ops.ts
+  'keyword.suspend.x',
+  // edh-d-73 (CR 702.143a, 118.9; Dream Devourer): a granted foretell whose cost is the card's mana cost reduced by generic mana: core/special/foretell.ts keeps it, actions/cast-opt/foretell.ts casts for it
+  'keyword.foretell.costIsManaCostLess',
+  // edh-next-133 (CR 611.3d, 400.7b, 601.2a; Ashling, the Limitless): a static grant to spells you cast that each spell GAINS as it is cast (`ContinuousEffectDef.asCast`):
+  // actions/cast.ts#lockAsCastGrants stores it on the spell for the rest of the game, statics/layers.ts#matchSet keeps the static off spells already cast
+  'static.asCast',
+  // edh-d-102 (CR 702.94a, 118.9; Aminatou, Veil Piercer): a granted miracle whose cost is the card's mana cost reduced by generic mana: triggers/miracle.ts#miracleCosts
+  'keyword.miracle.costIsManaCostLess',
+  // edh-next-146 (CR 702.21b, 107.3; Minthara, Merciless Soul): "ward {X}, where X is ...": keywords/expand.ts pays {1} X times, X worked out as the ward trigger resolves
+  'keyword.ward.costX',
 ];

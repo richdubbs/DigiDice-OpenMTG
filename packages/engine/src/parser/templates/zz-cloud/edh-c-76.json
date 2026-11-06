@@ -1,0 +1,354 @@
+[
+  {
+    "id": "eff.edhv76.player.choosesCardInHand.discardsRest",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "player",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.9a",
+      "CR 102.1"
+    ],
+    "pattern": "{p:Player} chooses ( a | one ) card in their hand and discards the rest",
+    "build": [
+      {
+        "op": "forEach",
+        "over": "$p",
+        "as": "chooser",
+        "do": [
+          {
+            "op": "chooseObjects",
+            "who": {
+              "ref": "iterating"
+            },
+            "from": {
+              "ref": "each",
+              "filter": {
+                "zone": "hand",
+                "owner": {
+                  "ref": "iterating"
+                }
+              }
+            },
+            "min": 1,
+            "max": 1,
+            "as": "chosen"
+          },
+          {
+            "op": "discard",
+            "who": {
+              "ref": "iterating"
+            },
+            "count": "hand",
+            "filter": {
+              "not": {
+                "is": {
+                  "ref": "bound",
+                  "name": "chosen"
+                }
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "text": "Each opponent chooses a card in their hand and discards the rest."
+      },
+      {
+        "text": "Target opponent chooses one card in their hand and discards the rest."
+      }
+    ],
+    "counterExamples": [
+      "Target player chooses a card in their hand.",
+      "Target player chooses a card in your hand and discards the rest.",
+      "Target player chooses a card in their hand and exiles the rest."
+    ]
+  },
+  {
+    "id": "eff.edhv76.player.cantCast.filter.thatPlayersNextTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "player",
+    "cr": [
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 101.2",
+      "CR 500.1"
+    ],
+    "pattern": "{p:Player} can't cast {f:Filter} during that player 's next turn",
+    "build": {
+      "op": "forEach",
+      "over": "$p",
+      "as": "restricted",
+      "do": [
+        {
+          "op": "effect",
+          "duration": {
+            "d": "duringNextTurn",
+            "whose": {
+              "ref": "iterating"
+            }
+          },
+          "effects": [
+            {
+              "s": "restrict",
+              "subject": {
+                "ref": "iterating"
+              },
+              "mode": "cant",
+              "action": "cast",
+              "other": "$f"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "during",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent can't cast creature spells during that player's next turn."
+      },
+      {
+        "text": "Each player can't cast artifact spells during that player's next turn."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent can't cast instant or sorcery spells during your next turn.",
+      "Each opponent can't cast instant or sorcery spells during their next turn."
+    ]
+  },
+  {
+    "id": "sta.edhv76.enchanted.youControl.pump.otherwise.cantBlock",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 509.1b",
+      "CR 303.4"
+    ],
+    "pattern": "as long as you control enchanted creature , it gets {pt:PT} . otherwise , it can't block",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "attachedTo"
+        },
+        "filter": {
+          "controller": "you"
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "attachedTo"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ],
+      "otherwise": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "attachedTo"
+          },
+          "mode": "cant",
+          "action": "block"
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "otherwise",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control enchanted creature, it gets +1/+3. Otherwise, it can't block."
+      },
+      {
+        "text": "As long as you control enchanted creature, it gets +3/+0. Otherwise, it can't block."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control enchanted creature, it gets +2/+2. Otherwise, it can't attack.",
+      "As long as you control enchanted creature, it gets +2/+2. Then, it can't block.",
+      "As long as an opponent controls enchanted creature, it gets +2/+2. Otherwise, it can't block."
+    ]
+  },
+  {
+    "id": "eff.edhv76.dig.mayReveal.twoAndOr.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "you may reveal ( a | an ) {a:Filter} card and/or ( a | an ) {b:Filter} card from among {g:Seen} and put the revealed cards into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$a"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$b"
+            ],
+            "is": "$g",
+            "zone": "library",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            }
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosenB"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "chosen"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenB"
+            }
+          ]
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "bound",
+              "name": "chosen"
+            },
+            {
+              "ref": "bound",
+              "name": "chosenB"
+            }
+          ]
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "may",
+      "and/or"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. You may reveal an artifact card and/or an enchantment card from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top six cards of your library. You may reveal a creature card and/or an instant card from among them and put the revealed cards into your hand. Put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top four cards of your library. You may reveal a creature card or a land card from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in any order.",
+      "Look at the top four cards of your library. You may reveal a creature card and/or a land card from among them and put the revealed cards onto the battlefield. Put the rest on the bottom of your library in any order.",
+      "Look at the top four cards of your library. Reveal a creature card and/or a land card from among them and put the revealed cards into your hand. Put the rest on the bottom of your library in any order."
+    ]
+  },
+  {
+    "id": "eff.edhv76.thisTurn.whenever",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 603.7c",
+      "CR 514.2"
+    ],
+    "pattern": "this turn , whenever {e:Event} , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": "$e.0"
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "consumes": [
+      "this turn",
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "This turn, whenever a creature you control deals combat damage to a player, investigate."
+      },
+      {
+        "text": "This turn, whenever ~ deals combat damage to a player, draw two cards."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control deals combat damage to a player, investigate.",
+      "This turn, whenever a creature you control deals combat damage to a player unless you pay {1}, investigate.",
+      "Next turn, whenever a creature you control deals combat damage to a player, investigate."
+    ]
+  }
+]

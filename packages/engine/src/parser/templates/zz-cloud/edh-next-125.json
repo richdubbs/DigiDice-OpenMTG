@@ -1,0 +1,340 @@
+[
+  {
+    "id": "sta.edhn125.duringYourTurn.each.isPTSubtypeCreature.inAddition.hasAbilities",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.4b",
+      "CR 205.1b",
+      "CR 205.3m"
+    ],
+    "pattern": "during your turn , each {f:Filter} is ( a | an ) {pt:BasePT} {st:Subtypes} creature in addition to its other types and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "add": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "add": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "during",
+      "each",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, each noncreature artifact you control is a 3/3 Golem creature in addition to its other types and has haste."
+      },
+      {
+        "text": "During your turn, each non-Aura enchantment you control with mana value 3 or greater is a 5/5 Spirit creature in addition to its other types and has flying and \"Whenever this creature attacks, you gain 1 life.\""
+      }
+    ],
+    "counterExamples": [
+      "During your turn, each noncreature artifact you control is a 3/3 Golem creature and has haste.",
+      "During your turn, each noncreature artifact you control is a 3/3 Golem creature in addition to its other types and gains haste until end of turn.",
+      "During an opponent's turn, each noncreature artifact you control is a 3/3 Golem creature in addition to its other types and has haste."
+    ]
+  },
+  {
+    "id": "eff.edhn125.return.bf.ifX.thosePermanentsAreSizedCreatures",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 110.2",
+      "CR 400.7",
+      "CR 614.1c",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 107.3",
+      "CR 608.2c"
+    ],
+    "pattern": "return {o:Objs} to the battlefield . if x is {n:Qty} or ( more | greater ) , those permanents are {pt:BasePT} creatures in addition to their other types",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "becomes": {
+          "types": [
+            "Creature"
+          ],
+          "power": "$pt.p",
+          "toughness": "$pt.t",
+          "when": {
+            "cond": "compare",
+            "left": {
+              "q": "X"
+            },
+            "op": ">=",
+            "right": "$n"
+          }
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Return up to X target artifact cards each with mana value X or less from your graveyard to the battlefield. If X is 4 or more, those permanents are 3/3 creatures in addition to their other types."
+      },
+      {
+        "text": "Return up to X target enchantment cards with mana value X or less from your graveyard to the battlefield. If X is 5 or greater, those permanents are 5/5 creatures in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "Return up to X target artifact cards each with mana value X or less from your graveyard to the battlefield. If X is 4 or less, those permanents are 3/3 creatures in addition to their other types.",
+      "Return up to X target artifact cards each with mana value X or less from your graveyard to the battlefield. If X is 4 or more, those permanents are 3/3 creatures.",
+      "Return up to X target artifact cards each with mana value X or less from your graveyard to the battlefield. If X is 4 or more, those permanents are 3/3 creatures in addition to their other types until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhn125.becomes.ptArtifactCreature.countersOnEachThatBecame",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 702.96a"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {pt:BasePT} artifact creature . put {n:Qty} {k:CounterKind} counter[s] on each artifact that became a creature this way",
+    "build": [
+      {
+        "op": "effect",
+        "duration": {
+          "d": "permanent"
+        },
+        "effects": [
+          {
+            "s": "continuous",
+            "affects": "$o",
+            "mods": [
+              {
+                "layer": 4,
+                "types": {
+                  "add": [
+                    "Artifact",
+                    "Creature"
+                  ]
+                }
+              },
+              {
+                "layer": "7b",
+                "power": "$pt.p",
+                "toughness": "$pt.t"
+              }
+            ]
+          }
+        ],
+        "as": "becameThisWay"
+      },
+      {
+        "op": "putCounters",
+        "on": {
+          "ref": "bound",
+          "name": "becameThisWay",
+          "which": {
+            "allTypes": [
+              "Artifact",
+              "Creature"
+            ]
+          }
+        },
+        "kind": "$k",
+        "count": "$n"
+      }
+    ],
+    "subject": "object",
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Target noncreature artifact you control becomes a 1/1 artifact creature. Put two +1/+1 counters on each artifact that became a creature this way."
+      },
+      {
+        "text": "Target noncreature artifact becomes a 0/0 artifact creature. Put three +1/+1 counters on each artifact that became a creature this way."
+      }
+    ],
+    "counterExamples": [
+      "Target noncreature artifact you control becomes a 1/1 artifact creature. Put two +1/+1 counters on each artifact.",
+      "Target noncreature artifact you control becomes a 1/1 artifact creature. Put two +1/+1 counters on each creature that became an artifact this way.",
+      "Target noncreature artifact you control becomes a 1/1 artifact creature until end of turn. Put two +1/+1 counters on each artifact that became a creature this way.",
+      "Target artifact you control becomes a 1/1 artifact creature. Put two +1/+1 counters on each artifact that became a creature this way."
+    ]
+  },
+  {
+    "id": "eff.edhn125.return.allCostExiledExceptSelf.tappedOwners",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 400.7",
+      "CR 603.7c",
+      "CR 110.2",
+      "CR 614.1c",
+      "CR 118.3"
+    ],
+    "pattern": "return all cards exiled with ~ except ~ to the battlefield tapped under their owners' control",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "costExiled"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner",
+        "tapped": true
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "{4}, Exile ~ and two other artifacts you control: Create a 6/6 colorless Golem artifact creature token. When that token leaves the battlefield, return all cards exiled with ~ except ~ to the battlefield tapped under their owners' control."
+      },
+      {
+        "text": "{3}, Exile ~ and three other artifact creatures you control: Create a 9/9 colorless Construct artifact creature token with trample. When that token leaves the battlefield, return all cards exiled with ~ except ~ to the battlefield tapped under their owners' control."
+      }
+    ],
+    "counterExamples": [
+      "{4}, Exile ~ and two other artifacts you control: Create a 6/6 colorless Golem artifact creature token. When that token leaves the battlefield, return all cards exiled with ~ to the battlefield tapped under their owners' control.",
+      "{4}, Exile ~ and two other artifacts you control: Create a 6/6 colorless Golem artifact creature token. When that token leaves the battlefield, return all cards exiled with ~ except ~ to the battlefield under their owners' control.",
+      "{4}, Exile ~ and two other artifacts you control: Create a 6/6 colorless Golem artifact creature token. When that token leaves the battlefield, return all cards exiled with ~ except ~ to the battlefield tapped under your control."
+    ]
+  },
+  {
+    "id": "eff.edhn125.youAndPlayer.eachGainControlOfOthersCreatures.eot",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2c",
+      "CR 613.1b",
+      "CR 613.7b",
+      "CR 514.2"
+    ],
+    "pattern": "you and {p:Player} each gain control of all creatures the other controls until end of turn",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "$p"
+            }
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you"
+            }
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": "$p"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "each",
+      "other",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "Choose target opponent. You and that opponent each gain control of all creatures the other controls until end of turn."
+      },
+      {
+        "text": "You and target opponent each gain control of all creatures the other controls until end of turn. Those creatures gain trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "You and target opponent each gain control of all creatures the other controls.",
+      "You and target opponent each gain control of all artifacts the other controls until end of turn.",
+      "You and target opponent each gain control of a creature the other controls until end of turn."
+    ]
+  }
+]

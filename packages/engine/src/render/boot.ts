@@ -15,5 +15,6 @@ import { obj, player, specPhrase } from './refs';
 import { costAmount, staticEffect, staticEffects } from './stat';
 import { clause, steps } from './steps';
 import { withP2iv2 } from './p2iv2'; // p2-intervening-2: Oracle's words of its intervening "if" readings
+import { withEdhV33 } from './edhv33'; // edh-c-33: Oracle's words of "didn't attack", "attacked or blocked", "didn't play a land"
 
-Object.assign(K, { np, nounsOf, zoneTail, obj, player, specPhrase, qty, isNumber, cond: withP2iv2(cond), event, events, dur, cost, costParts, costVerbs, clause, steps, program, ability, staticEffect, staticEffects, costAmount });
+Object.assign(K, { np, nounsOf, zoneTail, obj, player, specPhrase, qty, isNumber, cond: withEdhV33(withP2iv2(cond)), event, events, dur, cost, costParts, costVerbs, clause, steps, program, ability, staticEffect, staticEffects, costAmount });

@@ -6,7 +6,7 @@
  */
 import type { CostDef, CostPart, KeywordActionName, ObjectFilter } from '../types/ability';
 import type { ObjectId, PlayerId } from '../types/ids';
-import { formatManaSymbol, type Color, type ManaCost, type ManaSymbol } from '../types/mana';
+import { formatManaSymbol, type Color, type ManaCost, type ManaSymbol, type ManaType } from '../types/mana';
 import type { GameState } from '../types/state';
 import { evalCount } from '../effects/eval';
 import { charsOfObject } from './characteristics';
@@ -14,9 +14,10 @@ import { deny, type Denial } from './denial';
 import { lifeBudget } from './life';
 import { playerRestricted } from './restrictions';
 import { cantDo, costUseDenial } from './cant';
+import { removableCounters, stunRemovalDenial } from './counters';
 import { countersAmong, countersFor, findAssignment, isPickPart, pickCandidates, pickFeasible, type PickPart } from './cost-pick';
 import { filterMentionsX, fixX, relaxUnannouncedX } from './filter-env';
-import type { SpendContext } from './sources';
+import { costKindOf, type SpendContext } from './sources';
 
 /** Pick parts may carry the objects the player already chose (a payment option such as convoke or delve names them while the total cost is being built). */
 interface Chosen {
@@ -32,11 +33,14 @@ interface Chosen {
  * confirms having paid by hand (declining cancels, CR 733.1).
  */
 export type PlanPart =
-  | (Chosen & { kind: 'sacrifice'; filter: ObjectFilter; count: number; self?: boolean; distinctNames?: true; atLeast?: number }) // r3-cost: no two with the same name (cost-pick.ts); std-mana-1: `atLeast`
+  | (Chosen & { kind: 'sacrifice'; filter: ObjectFilter; count: number; self?: boolean; distinctNames?: true; atLeast?: number; all?: true; half?: 'up'; /** edh-next-144: "up to N" */ atMost?: number; totalPower?: number }) // edh-next-147: `totalPower`, a threshold part (cost-pick.ts) // edh-next-106: `half`; r3-cost; edh-next-45: `all`: no two with the same name (cost-pick.ts); std-mana-1: `atLeast`
   | { kind: 'payLife'; amount: number }
-  | (Chosen & { kind: 'discard'; filter?: ObjectFilter; count: number; random?: boolean; self?: boolean; hand?: boolean })
+  | { kind: 'rollDie'; sides: number } // edh-d-49 (CR 706.2, 118.3): rolling a die is the cost (Clay Golem)
+  /** edh-top-15 (CR 701.3d, 118.3): unattach the permanent the part names (the source, or the Equipment that granted the ability); it must be attached to something. */
+  | (Chosen & { kind: 'unattach'; filter: ObjectFilter; count: number; self?: boolean })
+  | (Chosen & { kind: 'discard'; filter?: ObjectFilter; count: number; random?: boolean; self?: boolean; hand?: boolean; sameName?: true; distinctNames?: true }) // edh-next-90: all with different names; edh-c-111: all with the same name (cost-pick.ts)
   /** FAST5X E13: 'battlefield' (self, or a permanent you control), `orGraveyard` (craft materials, CR 702.167a-b), `atLeast` ("N or more", CR 601.2b). */
-  | (Chosen & { kind: 'exileFrom'; zone: 'graveyard' | 'hand' | 'battlefield' | 'stack'; filter?: ObjectFilter; count: number; self?: boolean; orGraveyard?: true; atLeast?: number; link?: string; total?: number; symbolTotal?: { color: Color; atLeast: number } }) // `link`: FAST5 T59 (CR 607.2q); `total`: std-costs-1, the exact total mana value of the objects (rules/cost-pick.ts)
+  | (Chosen & { kind: 'exileFrom'; zone: 'graveyard' | 'hand' | 'battlefield' | 'stack'; filter?: ObjectFilter; count: number; self?: boolean; orGraveyard?: true; atLeast?: number; link?: string; total?: number; symbolTotal?: { color: Color; atLeast: number }; /** edh-d-100: a total mana value of at least this (CR 202.3) */ mvTotal?: { atLeast: number }; /** edh-d-100: at least this many card types among them (CR 205.2a) */ typesAmong?: { atLeast: number } }) // `link`: FAST5 T59 (CR 607.2q); `total`: std-costs-1, the exact total mana value of the objects (rules/cost-pick.ts)
   /** `waterbend`: FAST5X E10, the artifacts and creatures tapped to pay generic mana of a waterbend cost (CR 701.67a; not a "tapped creature" of the cost). */
   | (Chosen & { kind: 'tapUntapped'; filter: ObjectFilter; count: number; other?: boolean; waterbend?: true })
   | (Chosen & { kind: 'tapPower'; filter: ObjectFilter; power: number; other?: boolean; as?: 'crew' | 'saddle' }) // `as`: FAST5X E3 (CR 702.122a, 702.171a)
@@ -47,10 +51,14 @@ export type PlanPart =
   | { kind: 'putCounters'; counter: string; count: number; self?: boolean; filter?: ObjectFilter }
   | (Chosen & { kind: 'returnToHand'; filter: ObjectFilter; count: number; self?: boolean; beamUp?: true }) // trek-1: `beamUp`, a beam me up cost (rules/cant.ts)
   /** trek-9 (CR 118.3, 401.4): the source itself, from your graveyard, to the top or the bottom of its owner's library. */
-  | (Chosen & { kind: 'putIntoLibrary'; zone: 'graveyard'; self: true; position: 'top' | 'bottom' })
-  | (Chosen & { kind: 'reveal'; filter?: ObjectFilter; count: number; self?: boolean })
+  | (Chosen & { kind: 'putIntoLibrary'; zone: 'graveyard' | 'battlefield'; self: true; position: 'top' | 'bottom' })
+  | (Chosen & { kind: 'reveal'; filter?: ObjectFilter; count: number; self?: boolean; hand?: true }) // edh-next-117: `hand`, "reveal your hand" (every card, none chosen)
+  /** edh-d-54 (CR 118.3, 400.3, 401.4): cards of the filter from exile (any owner the filter names) or your hand go to their owner's graveyard or the top of their owner's library. */
+  | (Chosen & { kind: 'moveCards'; from: 'exile' | 'hand'; filter?: ObjectFilter; count: number; to: 'graveyard' | 'libraryTop' })
   | { kind: 'mill'; count: number }
+  | { kind: 'draw'; count: number } // edh-c-48 (CR 702.24a, 121.2): drawing cards is the cost
   | { kind: 'payEnergy'; amount: number }
+  | { kind: 'addMana'; mana: ManaType[] } // edh-mana-keywords-12 (CR 702.24a, 106.4): adding mana is the cost
   /** CR 701.59a: exile cards from your graveyard with total mana value N or greater. */
   | (Chosen & { kind: 'collectEvidence'; amount: number; link?: string }) // `link`: std-rx27 (CR 607.2a)
   /** FAST5X E11, CR 701.4a: behold N [quality]: reveal such cards from your hand or choose such permanents you control (and exile them, `exile`). */
@@ -69,25 +77,35 @@ export type PlanPart =
   | { kind: 'waterbend'; amount: number }
   /** FAST5X E27 (CR 122.1f, 702.21a): the paying player gets this many poison counters. */
   | { kind: 'getCounters'; counter: 'poison'; amount: number }
+  /** edh-cast-14 (CR 118.1, 119.7; Invigorate): the paying player chooses an opponent, who gains this much life as the cost is paid (rules/pay-parts.ts). */
+  | { kind: 'opponentGainsLife'; amount: number }
+  /** edh-d-74 (CR 701.13a, 118.3; Thought Lash): the top cards of the payer's library are exiled as the cost is paid (rules/pay-parts.ts). */
+  | { kind: 'exileTop'; count: number }
+  /** edh-d-74 (CR 705.1-705.2, 118.3; Karplusan Minotaur): the payer flips a coin as the cost is paid (rules/pay-parts.ts). */
+  | { kind: 'flipCoin' }
   /**
    * FAST5X E27 (CR 601.2b, 602.2b, 118.12a): pay ONE of these costs, the player's choice among those they can pay. A plan with one is payable when some option
    * is (`planDenial`); rules/pay.ts#resolveOneOf replaces it with the chosen option before anything is paid.
    */
   | { kind: 'oneOf'; options: CostPlan[] }
   /** std-combat-5 (CR 608.2d, 118.3): reveal the value the source's choice `link` holds (rules/pay-parts.ts). */
-  | { kind: 'revealChosen'; link: string; what: 'creatureType' }
+  | { kind: 'revealChosen'; link: string; what: 'creatureType' | 'player' }
   | { kind: 'confirm'; text: string }
   | { kind: 'manual'; text: string };
 
 /** Every `CostPart` kind of the model, by its capability name `cost:<kind>` (design 5.2). All of them can be paid; the value forms they can't pay are not in `COST_FORMS`. */
 export const COST_PART_IMPLS: Readonly<Record<CostPart['kind'], true>> = {
-  sacrifice: true, payLife: true, discard: true, exileFrom: true, tapUntapped: true, tapPower: true, removeCounters: true, putCounters: true, returnToHand: true,
-  reveal: true, mill: true, payEnergy: true, action: true, manual: true, behold: true,
+  sacrifice: true, unattach: true /* edh-top-15 */, payLife: true, rollDie: true /* edh-d-49 */, discard: true, exileFrom: true, tapUntapped: true, tapPower: true, removeCounters: true, putCounters: true, returnToHand: true,
+  reveal: true, mill: true, draw: true /* edh-c-48 (CR 702.24a, 121.2) */, payEnergy: true, action: true, manual: true, behold: true,
   getCounters: true, oneOf: true, // FAST5X E27
   chooseObject: true, // std-costs-2 (CR 601.2b, 601.2h)
   revealChosen: true, // std-combat-5
   untapTapped: true, // p2-cost-parts-1 (CR 118.3, 701.26b)
   putIntoLibrary: true, // trek-9 (CR 118.3, 401.4)
+  moveCards: true, // edh-d-54 (CR 118.3, 400.3, 401.4)
+  addMana: true, // edh-mana-keywords-12 (CR 702.24a, 106.4)
+  opponentGainsLife: true, // edh-cast-14 (CR 118.1, 119.7)
+  exileTop: true, flipCoin: true, // edh-d-74 (CR 701.13a, 705.1, 118.3)
 };
 
 /** The keyword actions this build can pay as a cost (capabilities `cost:action.<name>`). `exert`, `behold` and the like stay manual until their keyword action exists. */
@@ -102,7 +120,7 @@ export const COST_ACTIONS: readonly KeywordActionName[] = ['collectEvidence', 'f
  * (a zone other than graveyard or hand): a cost that uses one stays a manual plan part and the spell or ability is not offered.
  */
 export const COST_FORMS: readonly string[] = [
-  'count.any', 'discard.self', 'discard.hand', 'removeCounters.filter', 'tapUntapped.other', ...COST_ACTIONS.map((a) => `action.${a}`),
+  'count.any', 'discard.self', 'discard.hand', 'reveal.hand' /* edh-next-117 */, 'removeCounters.filter', 'tapUntapped.other', ...COST_ACTIONS.map((a) => `action.${a}`),
   // CLOUD std-ecl: "Remove two counters from this creature" (no kind named): counters of any kinds, the payer's choice (CR 122.1, 118.3; rules/pay-parts.ts)
   // (cloud std-spm wrote the same cost; this one implementation serves both)
   'removeCounters.any',
@@ -125,6 +143,23 @@ export const COST_FORMS: readonly string[] = [
   'exileFrom.symbolTotal',
   // trek-1: the creature returned for a beam me up cost (Star Trek; CR 702 rule number unverified): rules/cost-pick.ts#costUse asks rules/cant.ts for `beBeamedUp`
   'returnToHand.beamUp',
+  // edh-c-111: "Discard two nonland cards with the same name" (CR 118.3, 201.2): rules/cost-pick.ts#findAssignment picks cards of one name
+  'discard.sameName',
+  // edh-next-90: "Discard three cards with different names" (CR 118.3, 201.2): rules/cost-pick.ts#findAssignment picks cards of different names
+  'discard.distinctNames',
+  // edh-next-45: "Sacrifice all creatures you control" (CR 601.2b, 118.3): every candidate pays (rules/pay.ts#resolveAnyCounts)
+  'sacrifice.all',
+  // edh-next-106: "Sacrifice half the lands you control, rounded up" (CR 601.2b, 118.3, 107.1a): rules/pay.ts#resolveAnyCounts counts the candidates
+  'sacrifice.half',
+  // edh-next-135: "Reveal the player you chose" (CR 608.2d, 118.3; Stalking Leonin): the player a secret choice holds (rules/pay-parts.ts)
+  'revealChosen.player',
+  // edh-next-144: "Sacrifice up to three permanents" (CR 601.2b, 118.3): announced, at most `atMost` (rules/pay.ts#resolveAnyCounts)
+  'sacrifice.atMost',
+  'sacrifice.totalPower', // edh-next-147
+  // edh-d-100: "with total mana value 30 or greater" (CR 118.3, 202.3): a threshold part (rules/cost-pick.ts)
+  'exileFrom.mvTotal',
+  // edh-d-100: "with four or more card types among them" (CR 118.3, 205.2a): a threshold part counting the union of card types (rules/cost-pick.ts)
+  'exileFrom.typesAmong',
 ];
 
 /**
@@ -152,6 +187,8 @@ export interface CostPlan {
   spend?: SpendContext;
   /** FAST5X E10: how many waterbend costs this plan pays (after rules/pay.ts#resolveWaterbend): each is "you waterbend" once it is paid (CR 701.67c). */
   waterbends?: number;
+  /** edh-mana-keywords-8 (CR 702.51a): the creatures the caster named to convoke this spell (applyPaymentOptions), kept in `CostsPaid.convoked`. */
+  convoked?: ObjectId[];
 }
 
 /** Short description of a cost part this engine build cannot pay (the text of its manual plan part). */
@@ -161,8 +198,9 @@ function unavailableText(part: CostPart): string {
     case 'tapPower': return 'Tap untapped creatures you control with total power N or more';
     case 'putCounters': return `Put ${part.counter} counters`;
     case 'payEnergy': return 'Pay energy';
-    case 'reveal': return 'Reveal a card from your hand';
+    case 'reveal': return part.hand === true ? 'Reveal your hand' : 'Reveal a card from your hand';
     case 'mill': return 'Mill cards';
+    case 'draw': return 'Draw cards';
     case 'action': return `Perform the keyword action ${part.action}`;
     default: return `Pay ${part.kind}`;
   }
@@ -201,19 +239,33 @@ export function toPlanPart(part: CostPart, xs: CostX): PlanPart {
       if (part.distinctNames === true && (c === null || 'any' in c)) return manual(); // r3-cost: a fixed number with different names only
       if (part.atLeast !== undefined && (c === null || c.any !== true)) return manual(); // std-mana-1: "N or more" is an announced count only
       // std-mana-1 (CR 601.2b, 118.3): "Sacrifice one or more artifacts": announced like "any number" but never fewer than N; until announced the plan needs N
+      // edh-next-147 (CR 118.3, 701.21a; Phyrexian Dreadnought): "any number of creatures with total power N or greater": a threshold part, no number announced (rules/cost-pick.ts)
+      if (part.totalPower !== undefined) return c === null || c.any !== true || part.self === true || part.distinctNames === true || part.all === true || part.half !== undefined || part.atLeast !== undefined ? manual() : { kind: 'sacrifice', filter: fx(part.filter), count: 0, totalPower: part.totalPower };
       if (part.atLeast !== undefined) return { kind: 'sacrifice', filter: fx(part.filter), count: part.atLeast, any: true, atLeast: part.atLeast };
+      // edh-next-45 (CR 601.2b, 118.3; Soulblast): "Sacrifice all creatures you control": the whole set, announced by the cost itself (rules/pay.ts#resolveAnyCounts)
+      if (part.all === true) return c === null || c.any !== true || part.self === true || part.distinctNames === true ? manual() : { kind: 'sacrifice', filter: fx(part.filter), count: 0, any: true, all: true };
+      // edh-next-144 (CR 601.2b, 118.3; Baba Lysaga, Night Witch): "Sacrifice up to three permanents": announced like "any number", never more than N (rules/pay.ts#resolveAnyCounts)
+      if (part.atMost !== undefined) return c === null || c.any !== true || part.self === true || part.distinctNames === true || part.all === true || part.half !== undefined || part.atLeast !== undefined ? manual() : { kind: 'sacrifice', filter: fx(part.filter), count: 0, any: true, atMost: part.atMost };
+      if (part.half === 'up') return c === null || c.any !== true || part.self === true || part.distinctNames === true || part.all === true || part.atLeast !== undefined ? manual() : { kind: 'sacrifice', filter: fx(part.filter), count: 0, any: true, half: 'up' }; // edh-next-106
       return c === null ? manual() : { kind: 'sacrifice', filter: fx(part.filter), ...c, ...(part.self ? { self: true } : {}), ...(part.distinctNames === true ? { distinctNames: true as const } : {}) };
+    }
+    case 'unattach': { // edh-top-15 (CR 701.3d, 118.3): exactly one permanent
+      const c = counted(part.count);
+      return c === null || c.any === true || c.count !== 1 ? manual() : { kind: 'unattach', filter: fx(part.filter), ...c, ...(part.self ? { self: true } : {}) };
     }
     case 'payLife': {
       const amount = n(part.amount);
       return amount === null ? manual() : { kind: 'payLife', amount };
     }
+    case 'rollDie': return Number.isInteger(part.sides) && part.sides >= 1 ? { kind: 'rollDie', sides: part.sides } : manual(); // edh-d-49 (CR 706.2): nothing to choose or lack
     case 'discard': {
       const c = counted(part.count);
       if (c === null) return manual();
       if (part.hand) return { kind: 'discard', hand: true, count: 0 }; // CR 701.9: discard your hand
       if (part.self) return { kind: 'discard', self: true, count: 1 }; // cycling: discard this card
-      return { kind: 'discard', ...(part.filter ? { filter: fx(part.filter) } : {}), ...c, ...(part.random ? { random: true } : {}) };
+      if (part.sameName === true && (part.random === true || !('count' in c) || typeof c.count !== 'number' || c.count < 2)) return manual(); // edh-c-111: a fixed number of two or more, chosen
+      if (part.distinctNames === true && (part.random === true || part.sameName === true || !('count' in c) || typeof c.count !== 'number' || c.count < 2)) return manual(); // edh-next-90: a fixed number of two or more, chosen
+      return { kind: 'discard', ...(part.filter ? { filter: fx(part.filter) } : {}), ...c, ...(part.random ? { random: true } : {}), ...(part.sameName === true ? { sameName: true as const } : {}), ...(part.distinctNames === true ? { distinctNames: true as const } : {}) };
     }
     case 'exileFrom': {
       const c0 = counted(part.count);
@@ -232,6 +284,16 @@ export function toPlanPart(part: CostPart, xs: CostX): PlanPart {
       if (part.symbolTotal !== undefined) {
         if (c0.any !== true || part.zone !== 'graveyard' || part.self === true || part.orGraveyard === true || part.atLeast !== undefined) return manual();
         return { kind: 'exileFrom', zone: 'graveyard', ...(part.filter ? { filter: fx(part.filter) } : {}), count: 0, symbolTotal: { ...part.symbolTotal }, ...(part.link !== undefined ? { link: part.link } : {}) };
+      }
+      // edh-d-100 (CR 118.3, 202.3; The Capitoline Triad): "any number of historic cards ... with total mana value 30 or greater": the same threshold part, counting mana values
+      // edh-d-100 (CR 118.3, 205.2a; Nethergoyf): "any number of other cards ... with four or more card types among them": a threshold part on the union of the cards' card types
+      if (part.typesAmong !== undefined) {
+        if (c0.any !== true || part.zone !== 'graveyard' || part.self === true || part.orGraveyard === true || part.atLeast !== undefined || part.symbolTotal !== undefined || part.totalManaValue !== undefined || part.mvTotal !== undefined) return manual();
+        return { kind: 'exileFrom', zone: 'graveyard', ...(part.filter ? { filter: fx(part.filter) } : {}), count: 0, typesAmong: { ...part.typesAmong }, ...(part.link !== undefined ? { link: part.link } : {}) };
+      }
+      if (part.mvTotal !== undefined) {
+        if (c0.any !== true || part.zone !== 'graveyard' || part.self === true || part.orGraveyard === true || part.atLeast !== undefined || part.symbolTotal !== undefined || part.totalManaValue !== undefined) return manual();
+        return { kind: 'exileFrom', zone: 'graveyard', ...(part.filter ? { filter: fx(part.filter) } : {}), count: 0, mvTotal: { ...part.mvTotal }, ...(part.link !== undefined ? { link: part.link } : {}) };
       }
       // FAST5X E13: "N or more" (CR 702.167a): announced like "any number" (CR 601.2b) but never fewer than N; until it is announced the plan needs N
       const c = part.atLeast !== undefined ? { count: part.atLeast, any: true as const, atLeast: part.atLeast } : c0;
@@ -267,14 +329,23 @@ export function toPlanPart(part: CostPart, xs: CostX): PlanPart {
       return c === null ? manual() : { kind: 'returnToHand', filter: fx(part.filter), ...c, ...(part.self ? { self: true } : {}), ...(part.beamUp === true ? { beamUp: true as const } : {}) }; // trek-1: beam me up
     }
     case 'putIntoLibrary': // trek-9 (CR 118.3, 401.4): the source itself from your graveyard only
-      return part.zone === 'graveyard' && part.self === true ? { kind: 'putIntoLibrary', zone: 'graveyard', self: true, position: part.position } : manual();
+      return (part.zone === 'graveyard' || part.zone === 'battlefield') && part.self === true ? { kind: 'putIntoLibrary', zone: part.zone, self: true, position: part.position } : manual(); // edh-d-34: or from the battlefield
+    case 'moveCards': { // edh-d-54: a fixed count only
+      const c = counted(part.count);
+      return c === null || c.any === true ? manual() : { kind: 'moveCards', from: part.from, ...(part.filter ? { filter: fx(part.filter) } : {}), count: c.count, to: part.to };
+    }
     case 'reveal': {
+      if (part.hand === true) return { kind: 'reveal', hand: true, count: 0 }; // edh-next-117 (CR 701.20a, 118.3): reveal your hand
       const c = counted(part.count);
       return c === null ? manual() : { kind: 'reveal', ...(part.filter ? { filter: fx(part.filter) } : {}), ...c, ...(part.self ? { self: true } : {}) };
     }
     case 'mill': {
       const count = n(part.count);
       return count === null ? manual() : { kind: 'mill', count };
+    }
+    case 'draw': { // edh-c-48 (CR 702.24a, 121.2)
+      const count = n(part.count);
+      return count === null ? manual() : { kind: 'draw', count };
     }
     case 'behold': {
       // FAST5X E11 (CR 701.4a): an "any number" behold is not printed; only a fixed count is paid automatically
@@ -286,6 +357,7 @@ export function toPlanPart(part: CostPart, xs: CostX): PlanPart {
       const c = counted(part.count);
       return c === null || c.any || part.filters.length === 0 || part.filters.some((f) => typeof f.zone !== 'string') ? manual() : { kind: 'chooseObject', filters: part.filters.map(fx), count: c.count };
     }
+    case 'addMana': return { kind: 'addMana', mana: [...part.mana] }; // edh-mana-keywords-12: nothing to choose or lack
     case 'payEnergy': {
       const amount = n(part.amount);
       return amount === null ? manual() : { kind: 'payEnergy', amount };
@@ -313,6 +385,16 @@ export function toPlanPart(part: CostPart, xs: CostX): PlanPart {
       // FAST5X E27 (CR 122.1f): "get N poison counters"
       const amount = n(part.amount);
       return amount === null || part.counter !== 'poison' ? manual() : { kind: 'getCounters', counter: 'poison', amount };
+    }
+    case 'exileTop': { // edh-d-74 (CR 701.13a, 118.3)
+      const count = n(part.count);
+      return count === null || count < 1 ? manual() : { kind: 'exileTop', count };
+    }
+    case 'flipCoin': return { kind: 'flipCoin' }; // edh-d-74 (CR 705.1): nothing to choose or lack
+    case 'opponentGainsLife': {
+      // edh-cast-14 (CR 118.1, 119.3): "have an opponent gain N life"
+      const amount = n(part.amount);
+      return amount === null || amount < 1 ? manual() : { kind: 'opponentGainsLife', amount };
     }
     case 'oneOf': {
       // FAST5X E27 (CR 601.2b, 118.12a): each option is a whole cost; one the build can't pay stays a manual part inside its option (that option is never payable)
@@ -362,6 +444,27 @@ export const costFilterHasX = (cost: CostDef | undefined): boolean => (cost?.oth
 /** The plan of several costs added together, with the announced X in every one of them (CR 601.2f, 107.3a). */
 export function planFromCostDefs(costs: readonly (CostDef | undefined)[], x: CostX): CostPlan {
   return costs.reduce<CostPlan>((plan, c) => addPlans(plan, planFromCostDef(c, x)), emptyPlan());
+}
+
+/**
+ * edh-next-85 (CR 107.3a, 601.2f, 106.6; Crypt Rats, Consume Spirit: "Spend only black mana on X."): applied to the TOTAL cost, after every cost change (reductions and increases work on
+ * generic mana, X included): up to X of the generic mana left becomes black mana marked `xOnly` (still generic mana for the rules that look at the symbols themselves, so no life can be
+ * paid for it, ruling of K'rrik, Son of Yawgmoth 2019-08-23). `spend.onlyX` names the color, `spend.x` the announced X.
+ */
+export function applyOnlyX(plan: CostPlan): CostPlan {
+  const sp = plan.spend as { onlyX?: Color; x?: number } | undefined;
+  if (sp?.onlyX === undefined || !(sp.x !== undefined && sp.x > 0)) return plan;
+  let left = sp.x;
+  const mana: ManaSymbol[] = [];
+  for (const m of plan.mana) {
+    if (m.kind === 'generic' && left > 0) {
+      const take = Math.min(left, m.amount);
+      left -= take;
+      for (let i = 0; i < take; i++) mana.push({ kind: 'colored', color: sp.onlyX, xOnly: true });
+      if (m.amount > take) mana.push({ kind: 'generic', amount: m.amount - take });
+    } else mana.push(m);
+  }
+  return { ...plan, mana };
 }
 
 export function planFromCostDef(cost: CostDef | undefined, x: CostX): CostPlan {
@@ -510,13 +613,16 @@ const COLOR_NAME: Readonly<Record<string, string>> = { W: 'white', U: 'blue', B:
 
 export function partText(p: PlanPart): string {
   if (p.kind === 'exileFrom' && p.symbolTotal !== undefined) return `Exile cards from your graveyard with ${p.symbolTotal.atLeast} or more ${COLOR_NAME[p.symbolTotal.color] ?? p.symbolTotal.color} mana symbols among their mana costs`; // std-cardcopy-7
+  if (p.kind === 'exileFrom' && p.mvTotal !== undefined) return `Exile cards from your graveyard with total mana value ${p.mvTotal.atLeast} or greater`; // edh-d-100
+  if (p.kind === 'exileFrom' && p.typesAmong !== undefined) return `Exile cards from your graveyard with ${p.typesAmong.atLeast} or more card types among them`; // edh-d-100
   if (p.kind === 'exileFrom' && p.orGraveyard) { // FAST5X E13: craft's materials (CR 702.167a)
     return `Exile ${'any' in p && p.any ? `${p.atLeast ?? 0} or more` : String(p.count)} from among permanents you control and/or cards in your graveyard`;
   }
   if ('any' in p && p.any) return `${VERB[p.kind] ?? 'Pay'} any number of cards or permanents`;
   switch (p.kind) {
-    case 'sacrifice': return p.self ? 'Sacrifice this permanent' : `Sacrifice ${plural(p.count, 'permanent')}${p.distinctNames ? ' with different names' : ''}`;
+    case 'sacrifice': return p.self ? 'Sacrifice this permanent' : p.totalPower !== undefined ? `Sacrifice any number of creatures with total power ${p.totalPower} or greater` : `Sacrifice ${plural(p.count, 'permanent')}${p.distinctNames ? ' with different names' : ''}`; // edh-next-147: a threshold part
     case 'payLife': return `Pay ${p.amount} life`;
+    case 'rollDie': return `Roll a d${p.sides}`; // edh-d-49
     case 'discard': return p.hand ? 'Discard your hand' : p.self ? 'Discard this card' : p.count === 1 && !p.random && discardedCards(p.filter) !== null ? `Discard ${discardedCards(p.filter)!}` : `Discard ${plural(p.count, 'card')}${p.random ? ' at random' : ''}`;
     case 'exileFrom':
       if (p.zone === 'battlefield' && p.total !== undefined) return `Exile ${p.count} or more permanents you control with total mana value ${p.total}`; // std-costs-1
@@ -527,11 +633,15 @@ export function partText(p: PlanPart): string {
     case 'tapPower': return `Tap any number of untapped ${p.other ? 'other ' : ''}creatures you control with total power ${p.power} or more`;
     case 'removeCounters': return `Remove ${plural(p.count, p.counter === 'any' ? 'counter' : `${p.counter} counter`)}${p.among ? ' from among permanents you control' : p.filter ? ' from a permanent you control' : ''}`; // CLOUD std-ecl: 'any' kind; r3-cost: among
     case 'putCounters': return `Put ${plural(p.count, `${p.counter} counter`)} on ${p.self ? 'this permanent' : 'a permanent you control'}`;
+    case 'unattach': return p.self ? 'Unattach this permanent' : 'Unattach the permanent that gave this ability'; // edh-top-15
     case 'returnToHand': return p.self ? 'Return this permanent to its owner\'s hand' : `Return ${plural(p.count, 'permanent')} to your hand`;
-    case 'reveal': return p.self ? 'Reveal this card from your hand' : `Reveal ${plural(p.count, 'card')} from your hand`;
-    case 'putIntoLibrary': return `Put this card from your ${p.zone} on the ${p.position} of your library`; // trek-9
+    case 'moveCards': return p.to === 'graveyard' ? `Put ${plural(p.count, 'card')} from ${p.from === 'exile' ? 'exile' : 'your hand'} into ${p.count === 1 ? 'its' : 'their'} owner's graveyard` : `Put ${plural(p.count, 'card')} from your ${p.from} on top of your library`; // edh-d-54
+    case 'reveal': return p.hand === true ? 'Reveal your hand' : p.self ? 'Reveal this card from your hand' : `Reveal ${plural(p.count, 'card')} from your hand`;
+    case 'putIntoLibrary': return p.zone === 'battlefield' ? `Put this permanent on the ${p.position} of its owner's library` : `Put this card from your ${p.zone} on the ${p.position} of your library`; // trek-9, edh-d-34
     case 'mill': return `Mill ${plural(p.count, 'card')}`;
+    case 'draw': return `Draw ${plural(p.count, 'card')}`; // edh-c-48
     case 'payEnergy': return `Pay ${p.amount} energy`;
+    case 'addMana': return `Add ${p.mana.map((t) => `{${t}}`).join('')}`; // edh-mana-keywords-12
     case 'collectEvidence': return `Collect evidence ${p.amount}`;
     case 'behold': {
       const q = [...(p.filter.supertypes ?? []).map((t) => t.toLowerCase()), ...(p.filter.subtypes ?? []), ...(p.filter.types ?? []).map((t) => t.toLowerCase())].join(' ') || 'card or permanent';
@@ -542,7 +652,10 @@ export function partText(p: PlanPart): string {
     case 'exert': return 'Exert this permanent';
     case 'waterbend': return `Waterbend {${p.amount}}`;
     case 'getCounters': return `Get ${plural(p.amount, `${p.counter} counter`)}`; // FAST5X E27
-    case 'revealChosen': return 'Reveal the creature type you chose'; // std-combat-5
+    case 'opponentGainsLife': return `Have an opponent gain ${p.amount} life`; // edh-cast-14
+    case 'exileTop': return `Exile the top ${p.count === 1 ? 'card' : `${p.count} cards`} of your library`; // edh-d-74
+    case 'flipCoin': return 'Flip a coin'; // edh-d-74
+    case 'revealChosen': return p.what === 'player' ? 'Reveal the player you chose' : 'Reveal the creature type you chose'; // std-combat-5; edh-next-135
     case 'oneOf': return p.options.map((o) => costText(o)).join(' or '); // FAST5X E27
     case 'confirm': case 'manual': return p.text;
   }
@@ -555,22 +668,25 @@ export function partsDenial(s: GameState, player: PlayerId, sourceId: ObjectId |
   const src = sourceId ? s.objects[sourceId] : undefined;
   if (plan.tap && (!src || src.tapped)) return deny('The permanent is already tapped, so its {T} cost can\'t be paid.', 'CR 118.3', 'CR 602.1a');
   if (plan.untap && (!src || !src.tapped)) return deny('The permanent is untapped, so its {Q} cost can\'t be paid.', 'CR 118.3');
+  // edh-players-22 (CR 122.1d, 614.17; Fear of Sleep Paralysis ruling 2024-09-20): a tapped permanent with a stun counter that can't be removed can't be untapped to pay {Q}
+  if (plan.untap && src && (src.counters['stun'] ?? 0) > 0 && stunRemovalDenial(s, src.id)) return deny('A stun counter can\'t be removed from the permanent, so it can\'t untap and its {Q} cost can\'t be paid.', 'CR 122.1d', 'CR 614.17', 'CR 118.3');
   const cantUntap = plan.untap && src ? cantDo(s, 'untap', src.id) : null; // WP31: CR 107.6, 614.17b
   if (cantUntap) return deny(`The permanent can't untap, so its {Q} cost can't be paid. ${cantUntap.message}`, 'CR 107.6', 'CR 614.17b');
   if (plan.loyalty !== undefined && plan.loyalty < 0 && (!src || (src.counters.loyalty ?? 0) < -plan.loyalty)) {
     return deny('The planeswalker doesn\'t have enough loyalty counters.', 'CR 606.4', 'CR 118.3');
   }
   // WP31 review: a +N loyalty cost puts loyalty counters on the permanent (CR 606.4), so it can't be paid when counters can't be put on it (CR 614.17b).
-  const cantPut = plan.loyalty !== undefined && plan.loyalty > 0 && src ? costUseDenial(s, player, src.id, 'putCounters') : null;
+  const cantPut = plan.loyalty !== undefined && plan.loyalty > 0 && src ? costUseDenial(s, player, src.id, 'putCounters', 'loyalty') : null;
   if (cantPut) return deny(`Loyalty counters can't be put on this permanent, so its +${plan.loyalty} cost can't be paid. ${cantPut.message}`, 'CR 606.4', 'CR 614.17b');
-  let life = lifeBudget(s, player);
+  const forCast = costKindOf(plan.spend); // edh-next-18 (CR 118.3): the cost of a spell or ability (restriction `forCosts`)
+  let life = lifeBudget(s, player, forCast);
   let energy = p.counters.energy ?? 0;
   for (const part of plan.other) {
     switch (part.kind) {
       case 'payLife':
         if (part.amount > 0 && playerRestricted(s, player, 'cantLoseLife')) return deny(`You can't pay ${part.amount} life: you can't lose life.`, 'CR 119.8', 'CR 119.4', 'CR 118.3');
-        if (part.amount > 0 && cantDo(s, 'payLife', player)) return deny(`You can't pay ${part.amount} life: a "can't pay life" effect forbids it.`, 'CR 119.4', 'CR 614.17b', 'CR 118.3'); // WP31
-        if (life < part.amount) return deny(`You can't pay ${part.amount} life with only ${life} life.`, 'CR 119.4', 'CR 118.3');
+        if (part.amount > 0 && cantDo(s, 'payLife', player, undefined, undefined, forCast)) return deny(`You can't pay ${part.amount} life: a "can't pay life" effect forbids it.`, 'CR 119.4', 'CR 614.17b', 'CR 118.3'); // WP31
+        if (part.amount > 0 && life < part.amount) return deny(`You can't pay ${part.amount} life with only ${life} life.`, 'CR 119.4', 'CR 118.3');
         life -= part.amount;
         break;
       case 'payEnergy':
@@ -578,14 +694,25 @@ export function partsDenial(s: GameState, player: PlayerId, sourceId: ObjectId |
         energy -= part.amount;
         break;
       case 'removeCounters':
-        if (!part.filter && (!src || countersFor(src.counters, part.counter) < part.count)) return deny(`Not enough ${part.counter === 'any' ? '' : `${part.counter} `}counters to remove.`, 'CR 118.3');
+        if (!part.filter && (!src || removableCounters(s, src.id, src.counters, part.counter) < part.count)) return deny(`Not enough ${part.counter === 'any' ? '' : `${part.counter} `}counters to remove.`, 'CR 118.3');
         // r3-cost (CR 118.3): "from among <permanents>": that many in all on the permanents it describes
         if (part.among && countersAmong(s, player, sourceId, part) < part.count) return deny(`Not enough ${part.counter === 'any' ? '' : `${part.counter} `}counters among those permanents to remove.`, 'CR 118.3', 'CR 122.1');
         break;
       case 'putCounters':
         if (part.self && (!src || src.zone !== 'battlefield')) return deny('There is nothing to put counters on.', 'CR 118.3');
-        if (part.self && src && costUseDenial(s, player, src.id, 'putCounters')) return deny('Counters can\'t be put on this permanent, so this cost can\'t be paid.', 'CR 122.6', 'CR 614.17b'); // WP31
+        if (part.self && src && costUseDenial(s, player, src.id, 'putCounters', part.counter)) return deny('Counters can\'t be put on this permanent, so this cost can\'t be paid.', 'CR 122.6', 'CR 614.17b'); // WP31
         break;
+      case 'draw': { // edh-c-48 (CR 121.2b, 118.3): a cost that draws cards can't be paid when the player can't draw them, or can't draw more than one card each turn and this cost draws several
+        const total = plan.other.reduce((n, x) => n + (x.kind === 'draw' ? x.count : 0), 0);
+        if (cantDo(s, 'draw', player)) return deny("You can't draw cards, so this cost can't be paid.", 'CR 121.2b', 'CR 118.3');
+        if (total > 1) {
+          const t = p.turnStats;
+          const before = t.cardsDrawn;
+          t.cardsDrawn = before + total - 1;
+          try { if (cantDo(s, 'draw', player)) return deny("You can't pay a cost that includes drawing multiple cards.", 'CR 121.2b', 'CR 118.3'); } finally { t.cardsDrawn = before; }
+        }
+        break;
+      }
       case 'mill':
         if ((s.zones.library[player]?.length ?? 0) < part.count) return deny(`You can't mill ${part.count} cards: your library has fewer.`, 'CR 701.17b', 'CR 118.3');
         break;
@@ -594,7 +721,7 @@ export function partsDenial(s: GameState, player: PlayerId, sourceId: ObjectId |
         if (!src || src.zone !== 'battlefield') return deny('Only a permanent on the battlefield can be exerted.', 'CR 701.43c', 'CR 118.3');
         break;
       case 'forage': {
-        const f = forageOptions(s, player); // WP31 review: only what a "can't" effect lets the player exile or sacrifice (CR 614.17b)
+        const f = forageOptions(s, player, forCast); // WP31 review: only what a "can't" effect lets the player exile or sacrifice (CR 614.17b)
         if (f.yard.length < 3 && f.food.length === 0) return deny('You can\'t forage: you have neither three cards in your graveyard you can exile nor a Food you can sacrifice.', 'CR 701.61a', 'CR 118.3', 'CR 614.17b');
         break;
       }
@@ -602,12 +729,14 @@ export function partsDenial(s: GameState, player: PlayerId, sourceId: ObjectId |
         // WP31 review: "discard your hand" can't be paid when a "can't" effect forbids discarding a card of it (CR 701.9, 614.17b). A spell being cast is not
         // in the hand by then (CR 601.2a).
         const spell = plan.spend?.kind === 'spell' ? plan.spend.id : undefined;
-        const cant = part.hand ? (s.zones.hand[player] ?? []).filter((id) => id !== spell).map((id) => cantDo(s, 'discard', player, id)).find((d) => d !== null) : undefined;
+        const cant = part.hand ? (s.zones.hand[player] ?? []).filter((id) => id !== spell).map((id) => costUseDenial(s, player, id, 'discard')).find((d) => d !== null) : undefined; // edh-next-136: with the effect's cause, as every discard cost (CR 109.5; Tamiyo, Collector of Tales)
         if (cant) return deny(`You can't discard your hand. ${cant.message}`, 'CR 701.9', 'CR 614.17b');
         break;
       }
-      case 'revealChosen': // std-combat-5 (CR 118.3, 608.2d): nothing was chosen (or the source is gone): there is nothing to reveal
-        if (!src || (src.links?.[part.link]?.values ?? []).length === 0) return deny('Nothing was chosen, so there is nothing to reveal.', 'CR 118.3', 'CR 607.2d');
+      case 'revealChosen': // std-combat-5 (CR 118.3, 608.2d): nothing was chosen (or the source is gone): there is nothing to reveal; edh-next-135: a chosen player too
+        // review (ruling 2017-08-25 of Stalking Leonin): a secret choice another player made (a permanent whose control changed) can't be revealed by you either
+        if (src?.links?.[part.link]?.secret !== undefined && !src.links[part.link]!.secret!.includes(player)) return deny('You did not make that secret choice, so you can\'t reveal it.', 'CR 118.3', 'CR 607.2d');
+        if (!src || (part.what === 'player' ? src.links?.[part.link]?.players ?? [] : src.links?.[part.link]?.values ?? []).length === 0) return deny('Nothing was chosen, so there is nothing to reveal.', 'CR 118.3', 'CR 607.2d');
         break;
       case 'getCounters': {
         // FAST5X E27 (CR 122.1f, 614.17b): a player who can't get counters can't pay "get N poison counters"
@@ -615,6 +744,17 @@ export function partsDenial(s: GameState, player: PlayerId, sourceId: ObjectId |
         if (cant) return deny(`You can't get poison counters, so this cost can't be paid. ${cant.message}`, 'CR 122.1f', 'CR 614.17b', 'CR 118.3');
         break;
       }
+      case 'exileTop':
+        // edh-d-74 (CR 701.13a, 118.3; Thought Lash ruling 2008-10-01): "If your library has no cards in it, you can't activate the last ability"; the same for several cards
+        { // a cost paid several times (a cumulative upkeep with several age counters) needs all its cards at once: the parts are summed
+          const total = plan.other.reduce((n, x) => n + (x.kind === 'exileTop' ? x.count : 0), 0);
+          if ((s.zones.library[player]?.length ?? 0) < total) return deny(`You can't exile ${total} cards from the top of your library: it has fewer.`, 'CR 701.13a', 'CR 118.3');
+        }
+        break;
+      case 'opponentGainsLife':
+        // edh-cast-14 (CR 119.7, 118.3; Scryfall ruling 2020-08-07 of Invigorate): an opponent who can't gain life can't be chosen; a replacement of the gain does not stop the payment
+        if (!opponentsWhoCanGain(s, player).length) return deny('No opponent can gain life, so this cost can\'t be paid.', 'CR 119.7', 'CR 118.3');
+        break;
       case 'confirm':
         break;
       case 'manual':
@@ -626,6 +766,11 @@ export function partsDenial(s: GameState, player: PlayerId, sourceId: ObjectId |
   // Each object can pay only one part (two "Sacrifice a creature" parts need two creatures, CR 118.3).
   if (!findAssignment(s, player, sourceId, plan, [], false)) return deny('Those cost parts need the same permanents or cards, so they can\'t all be paid.', 'CR 118.3');
   return null;
+}
+
+/** edh-cast-14 (CR 119.7): the opponents of `player` still in the game who can gain life. */
+export function opponentsWhoCanGain(s: GameState, player: PlayerId): PlayerId[] {
+  return s.players.filter((p) => p.id !== player && !p.hasLost && !playerRestricted(s, p.id, 'cantGainLife')).map((p) => p.id);
 }
 
 /** CR 701.61a: does the player control a Food? */
@@ -645,10 +790,10 @@ export function foods(s: GameState, player: PlayerId): ObjectId[] {
  * CR 701.61a, 614.17b (WP31 review): what can pay a forage: the graveyard cards a "can't" effect lets the player exile and the Foods it lets the player
  * sacrifice ("cards in graveyards can't be exiled", "artifacts can't be sacrificed").
  */
-export function forageOptions(s: GameState, player: PlayerId): { yard: ObjectId[]; food: ObjectId[] } {
+export function forageOptions(s: GameState, player: PlayerId, castOrActivate: boolean | 'mana' = false): { yard: ObjectId[]; food: ObjectId[] } {
   return {
     yard: (s.zones.graveyard[player] ?? []).filter((id) => costUseDenial(s, player, id, 'exile') === null),
-    food: foods(s, player).filter((id) => costUseDenial(s, player, id, 'sacrifice') === null),
+    food: foods(s, player).filter((id) => costUseDenial(s, player, id, 'sacrifice', undefined, castOrActivate) === null),
   };
 }
 

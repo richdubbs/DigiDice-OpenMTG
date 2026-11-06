@@ -7,12 +7,21 @@
  * ability: nothing goes on the stack and nobody can respond. Loading this module installs it; effects/funnels.ts loads it.
  */
 import { installUntilReturner } from '../core/durations';
+import { phaseInPermanent } from '../rules/phasing';
 import type { EffectStep } from '../types/ability';
 import type { ObjHandle, UntilMoveRec, ZoneKind } from '../types/state';
 import type { ExecCtx } from './api';
 import { runSteps } from './run';
 
-installUntilReturner((g, ended: readonly UntilMoveRec[]) => {
+installUntilReturner((g, endedAll: readonly UntilMoveRec[]) => {
+  // edh-perms-22 (CR 702.26, 610.3, 610.3d): what phased out until the event phases in at once, tapped when the effect said so; it does not move
+  for (const r of endedAll) {
+    if (r.phase === undefined) continue;
+    const back = r.objects.flatMap((o) => (g.s.objects[o.object.id]?.zone === 'battlefield' ? phaseInPermanent(g, o.object.id, r.phase!.tapped) : []));
+    if (back.length > 0) g.log(`${r.sourceName} left the battlefield: ${back.map((id) => g.nameOf(id)).join(', ')} phase${back.length === 1 ? 's' : ''} in${r.phase.tapped ? ' tapped' : ''}.`, { rules: ['CR 610.3', 'CR 702.26c', 'CR 702.26g'], level: 'info' });
+  }
+  const ended = endedAll.filter((r) => r.phase === undefined);
+  if (ended.length === 0) return;
   const first = ended[0]!;
   const byZone = new Map<ZoneKind, ObjHandle[]>();
   for (const r of ended) {
@@ -22,12 +31,14 @@ installUntilReturner((g, ended: readonly UntilMoveRec[]) => {
     }
   }
   const names = [...new Set(ended.map((r) => r.sourceName))].join(', ');
-  g.log(`${names} left the battlefield: what ${ended.length === 1 ? 'it' : 'they'} exiled until then returns.`, { rules: ['CR 610.3', 'CR 610.3c', 'CR 610.3d'], level: 'info' });
+  // edh-players-18 (CR 610.3, 725.3): a record that waits for a player to become the monarch is not about the source leaving
+  const monarch = ended.every((r) => r.duration.event.ev === 'monarch');
+  g.log(`${monarch ? 'A player became the monarch' : `${names} left the battlefield`}: what ${ended.length === 1 ? 'it' : 'they'} exiled until then returns.`, { rules: ['CR 610.3', 'CR 610.3c', 'CR 610.3d'], level: 'info' });
   const steps: EffectStep[] = [...byZone].map(([zone, objects]) => ({
     op: 'move',
     what: { ref: 'fixed', objects: objects.map((h) => ({ id: h.id, zone: h.zone })) },
     to: zone === 'battlefield' ? { zone, controller: 'owner' } : { zone: zone as Exclude<ZoneKind, 'battlefield'> },
-    span: `Return the cards exiled until ${names} left the battlefield.`,
+    span: monarch ? 'Return the cards exiled until a player became the monarch.' : `Return the cards exiled until ${names} left the battlefield.`,
   }));
   const cx: ExecCtx = {
     g, source: { ...first.source }, stackId: null, controller: first.controller, program: { targets: [], steps }, stack: null, targets: new Map(), event: null,

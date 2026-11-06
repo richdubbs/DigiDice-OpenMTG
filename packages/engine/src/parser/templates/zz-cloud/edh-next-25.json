@@ -1,0 +1,227 @@
+[
+  {
+    "id": "eff.edhn25.then.you.return.upTo.graveyardToHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c"
+    ],
+    "pattern": "^ then you return up to {n:Qty} {f:Filter} card[s] from your graveyard to your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "consumes": [
+      "then",
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Each player mills three cards. Then you return up to two creature cards from your graveyard to your hand."
+      },
+      {
+        "text": "Target player mills two cards. Then you return up to two artifact cards from your graveyard to your hand."
+      }
+    ],
+    "counterExamples": [
+      "Each player mills three cards. Then you return up to two creature cards from a graveyard to your hand.",
+      "Each player mills three cards. Then you return up to two creature cards from your graveyard to the battlefield.",
+      "Each player mills three cards. Then you may return up to two creature cards from your graveyard to your hand.",
+      "Each player mills three cards. Then they return up to two creature cards from your graveyard to your hand."
+    ]
+  },
+  {
+    "id": "eff.edhn25.mill.thenPut.anyNumber.milledThisWay.hand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.17a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7j"
+    ],
+    "pattern": "mill {n:Qty} cards , then put any number of {f:Filter} cards milled this way into your hand",
+    "build": [
+      {
+        "op": "mill",
+        "who": {
+          "ref": "you"
+        },
+        "count": "$n",
+        "as": "milled"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": {
+              "ref": "bound",
+              "name": "milled"
+            },
+            "zone": "any"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "then",
+      "this way",
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Mill five cards, then put any number of creature cards milled this way into your hand."
+      },
+      {
+        "text": "Mill three cards, then put any number of land cards milled this way into your hand. You gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Mill five cards, then put each creature card milled this way into your hand.",
+      "Mill five cards, then put any number of creature cards milled this way onto the battlefield.",
+      "Mill five cards, then put any number of creature cards into your hand.",
+      "Mill five cards, then put any number of creature cards milled this way into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhn25.player.loseLife.mill",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 119.3",
+      "CR 701.17a",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life and mill[s] {m:Qty} card[s]",
+    "build": [
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$n"
+      },
+      {
+        "op": "mill",
+        "who": "$p",
+        "count": "$m"
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Each player loses 2 life and mills a card."
+      },
+      {
+        "text": "Target player loses 3 life and mills two cards."
+      }
+    ],
+    "counterExamples": [
+      "Each player mills a card and loses 2 life.",
+      "Each player loses 2 life, then mills a card.",
+      "Each player loses 2 life and discards a card."
+    ]
+  },
+  {
+    "id": "eff.edhn25.may.reveal.putCounters",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20a",
+      "CR 122.1",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may reveal {o:Obj} and put ( a | one ) quest counter on {t:Obj}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "reveal",
+          "who": {
+            "ref": "you"
+          },
+          "what": "$o"
+        },
+        {
+          "op": "putCounters",
+          "on": "$t",
+          "kind": "quest",
+          "count": 1
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may look at the top card of your library. If it's a land card, you may reveal it and put a quest counter on this creature."
+      },
+      {
+        "text": "{T}: Look at the top card of your library. If it's an Elf card, you may reveal it and put one quest counter on this artifact."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Look at the top card of your library. If it's an Elf card, reveal it and put a quest counter on this artifact.",
+      "{T}: Look at the top card of your library. If it's an Elf card, you may reveal it and put a quest counter on target creature.",
+      "{T}: Look at the top card of your library. If it's an Elf card, you may reveal it and put two quest counters on this artifact.",
+      "{T}: Look at the top card of your library. If it's an Elf card, you may reveal it and draw a card."
+    ]
+  }
+]

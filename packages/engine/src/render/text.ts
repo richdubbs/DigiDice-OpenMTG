@@ -181,6 +181,8 @@ export function pluralize(noun: string): string {
   const lower = noun.toLowerCase();
   const irregular = IRREGULAR_PLURALS[lower];
   const cased = (s: string): string => (noun[0] !== undefined && noun[0] === noun[0].toUpperCase() && noun[0] !== noun[0].toLowerCase() ? s[0]!.toUpperCase() + s.slice(1) : s);
+  // edh-b-9 (family spawn-plural; Azlask: "Scions and Spawns you control"): Oracle also writes "Spawns"
+  if (lower === 'spawn') return alt(cased('spawn'), cased('spawns'));
   if (irregular !== undefined) return cased(irregular);
   // last word of a multi-word noun ("planeswalker card") is the one that takes the plural
   const sp = noun.lastIndexOf(' ');

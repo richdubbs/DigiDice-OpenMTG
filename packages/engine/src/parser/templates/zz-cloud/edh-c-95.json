@@ -1,0 +1,206 @@
+[
+  {
+    "id": "rid.edhv95.instead.damage.toIt",
+    "kind": "rider",
+    "cr": [
+      "CR 614.15",
+      "CR 608.2c",
+      "CR 120.3"
+    ],
+    "pattern": "if {c:Cond} , ( it | ~ ) deals {n:Qty} damage to it instead",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "damage",
+            "source": "@previous.source",
+            "to": "@previous.to",
+            "amount": "$n"
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "damage",
+    "consumes": [
+      "if",
+      "instead"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, it deals 1 damage to target creature defending player controls. If that creature is a Dragon, ~ deals 3 damage to it instead."
+      },
+      {
+        "text": "Whenever ~ attacks, it deals 2 damage to target creature. If that creature is a land creature, it deals 4 damage to it instead."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, it deals 1 damage to target creature. If that creature is a Dragon, ~ deals 3 damage to it.",
+      "Whenever ~ attacks, it deals 1 damage to target creature. If that creature is a Dragon, ~ deals 3 damage to target creature instead.",
+      "Whenever ~ attacks, it deals 1 damage to target creature. If that creature is a Dragon, ~ deals 3 damage to each creature instead."
+    ],
+    "status": "stable",
+    "since": 9
+  },
+  {
+    "id": "eff.edhv95.gainlife.x.perSpentColor",
+    "kind": "effect",
+    "cr": [
+      "CR 119.3",
+      "CR 608.2c",
+      "CR 601.2h"
+    ],
+    "pattern": "^ you gain x life if {g} was spent to cast ~ and x life if {w} was spent to cast ~",
+    "build": {
+      "op": "gainLife",
+      "who": {
+        "ref": "you"
+      },
+      "amount": {
+        "q": "math",
+        "op": "*",
+        "args": [
+          {
+            "q": "X"
+          },
+          {
+            "q": "colorsSpent",
+            "among": [
+              "G",
+              "W"
+            ]
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You gain X life if {G} was spent to cast ~ and X life if {W} was spent to cast ~."
+      }
+    ],
+    "counterExamples": [
+      "You gain X life if {G} was spent to cast ~ and X life if {R} was spent to cast ~.",
+      "You gain X life if {W} was spent to cast ~ and X life if {G} was spent to cast ~ and X life if {U} was spent to cast ~.",
+      "You gain X life if {G} was spent to cast ~."
+    ],
+    "status": "stable",
+    "since": 9
+  },
+  {
+    "id": "abl.edhv95.grant.ifDevoured",
+    "kind": "static",
+    "cr": [
+      "CR 702.82b",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "{o:Obj} (has | have) {a:Abilities} if it devoured a creature",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "chosenNumber",
+          "link": "devoured"
+        },
+        "op": ">=",
+        "right": 1
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "~ has haste and menace if it devoured a creature."
+      },
+      {
+        "text": "~ has haste if it devoured a creature."
+      }
+    ],
+    "counterExamples": [
+      "~ has flying if it devoured two creatures.",
+      "~ has flying unless it devoured a creature.",
+      "~ has flying if it devoured a creature this turn."
+    ],
+    "status": "stable",
+    "since": 9
+  },
+  {
+    "id": "eff.edhv95.return.enchanted.andAuras",
+    "kind": "effect",
+    "cr": [
+      "CR 400.3",
+      "CR 303.4",
+      "CR 704.5m",
+      "CR 608.2c"
+    ],
+    "pattern": "return enchanted creature and all auras attached to ( it | that creature ) to their owners' hands",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "attachedTo"
+          },
+          {
+            "ref": "each",
+            "filter": {
+              "subtypes": [
+                "Aura"
+              ],
+              "attachedToObject": {
+                "ref": "attachedTo"
+              }
+            }
+          }
+        ]
+      },
+      "to": {
+        "zone": "hand"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, return enchanted creature and all Auras attached to it to their owners' hands."
+      },
+      {
+        "text": "When ~ dies, return enchanted creature and all auras attached to that creature to their owners' hands."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, return enchanted creature and all Equipment attached to it to their owners' hands.",
+      "At the beginning of your upkeep, return enchanted creature and all Auras attached to it to your hand.",
+      "At the beginning of your upkeep, return enchanted creature and all Auras to their owners' hands."
+    ],
+    "status": "stable",
+    "since": 9
+  }
+]

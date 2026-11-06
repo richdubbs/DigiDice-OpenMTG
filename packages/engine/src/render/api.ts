@@ -45,6 +45,11 @@ export interface RenderContext {
    * "kicked with its {1}{R} kicker" (the cast record's kicker names "kicker", "kicker:2", CR 702.33f).
    */
   kickerCosts?: string[];
+  /**
+   * edh-next-35 ADDITION (optional, backward compatible; Devouring Greed, CR 601.2b, 608.2h): the plural noun the face's optional additional cost sacrifices ("you may sacrifice any number of
+   * Spirits" -> ["spirits"]), so a spell's "for each Spirit sacrificed this way" is said with it (a spell's additional cost is an ability of its own: no shared render state).
+   */
+  costSacrificeNouns?: string[];
 }
 
 /**

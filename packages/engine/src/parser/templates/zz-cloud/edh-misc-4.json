@@ -1,0 +1,241 @@
+[
+  {
+    "id": "sta.edhx4.self.everyNonbasicLandType",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3i",
+      "CR 305.6",
+      "CR 613.1d",
+      "CR 604.1"
+    ],
+    "pattern": "~ is every nonbasic land type",
+    "build": {
+      "s": "continuous",
+      "cda": true,
+      "affects": {
+        "ref": "self"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": [
+              "Cave",
+              "Desert",
+              "Gate",
+              "Lair",
+              "Locus",
+              "Mine",
+              "Planet",
+              "Power-Plant",
+              "Sphere",
+              "Tower",
+              "Town",
+              "Urza's"
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "every",
+      "nonbasic"
+    ],
+    "examples": [
+      {
+        "text": "~ is every nonbasic land type. (It is a Cave, a Desert and so on.)"
+      },
+      {
+        "text": "{2}, {T}: You gain 3 life.\n~ is every nonbasic land type. (Every land type that isn't basic.)"
+      }
+    ],
+    "counterExamples": [
+      "~ is every basic land type.",
+      "~ is every nonbasic land type in addition to its other types until end of turn.",
+      "~ is every creature type.",
+      "~ is the chosen nonbasic land type."
+    ]
+  },
+  {
+    "id": "eff.edhx4.double.unspentMana",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 106.4",
+      "CR 106.1",
+      "CR 605.1a"
+    ],
+    "pattern": "double the amount of each type of unspent mana you have",
+    "build": [
+      {
+        "op": "addMana",
+        "who": {
+          "ref": "you"
+        },
+        "dynamic": {
+          "kind": "ofType",
+          "type": "W",
+          "count": {
+            "q": "unspentMana",
+            "type": "W"
+          }
+        }
+      },
+      {
+        "op": "addMana",
+        "who": {
+          "ref": "you"
+        },
+        "dynamic": {
+          "kind": "ofType",
+          "type": "U",
+          "count": {
+            "q": "unspentMana",
+            "type": "U"
+          }
+        }
+      },
+      {
+        "op": "addMana",
+        "who": {
+          "ref": "you"
+        },
+        "dynamic": {
+          "kind": "ofType",
+          "type": "B",
+          "count": {
+            "q": "unspentMana",
+            "type": "B"
+          }
+        }
+      },
+      {
+        "op": "addMana",
+        "who": {
+          "ref": "you"
+        },
+        "dynamic": {
+          "kind": "ofType",
+          "type": "R",
+          "count": {
+            "q": "unspentMana",
+            "type": "R"
+          }
+        }
+      },
+      {
+        "op": "addMana",
+        "who": {
+          "ref": "you"
+        },
+        "dynamic": {
+          "kind": "ofType",
+          "type": "G",
+          "count": {
+            "q": "unspentMana",
+            "type": "G"
+          }
+        }
+      },
+      {
+        "op": "addMana",
+        "who": {
+          "ref": "you"
+        },
+        "dynamic": {
+          "kind": "ofType",
+          "type": "C",
+          "count": {
+            "q": "unspentMana",
+            "type": "C"
+          }
+        }
+      }
+    ],
+    "consumes": [
+      "double",
+      "each",
+      "unspent"
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}, {T}: Double the amount of each type of unspent mana you have."
+      },
+      {
+        "text": "{2}, {T}, Sacrifice ~: Double the amount of each type of unspent mana you have."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Double the amount of each type of unspent mana your opponents have.",
+      "{3}, {T}: Double the amount of unspent mana you have.",
+      "{3}, {T}: Triple the amount of each type of unspent mana you have."
+    ]
+  },
+  {
+    "id": "eff.edhx4.proliferate.thenChoose.permanents",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.34a",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 122.1"
+    ],
+    "pattern": "proliferate , then choose any number of permanents you control that had a counter put on them this way",
+    "build": [
+      {
+        "op": "action",
+        "action": "proliferate",
+        "who": {
+          "ref": "you"
+        },
+        "as": "proliferated"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "controller": "you",
+            "is": {
+              "ref": "bound",
+              "name": "proliferated"
+            }
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "proliferate",
+      "then",
+      "any number",
+      "counter",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Proliferate, then choose any number of permanents you control that had a counter put on them this way. Untap those permanents."
+      },
+      {
+        "text": "Proliferate, then choose any number of permanents you control that had a counter put on them this way. Those permanents get +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Proliferate, then choose any number of permanents you control. Untap those permanents.",
+      "Proliferate, then choose any number of permanents your opponents control that had a counter put on them this way. Untap those permanents.",
+      "Proliferate, then choose up to two permanents you control that had a counter put on them this way. Untap those permanents."
+    ]
+  }
+]

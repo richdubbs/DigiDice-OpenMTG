@@ -139,6 +139,7 @@ function classLevelParts(def: ClassLevelDef): LayoutPart[] {
     // CR 716.2a: "[Cost]: This Class's level becomes N. Activate only if this Class is level N-1 and only as a sorcery."
     const levelUp: ActivatedAbilityDef = {
       kind: 'activated',
+      keyword: 'classLevel', // edh-d-31 (CR 716.2a, 106.6; Sorcerer Class): mana spent only "to gain a Class level" pays this ability (SpendContext.keyword)
       text: def.text.split('\n')[0]!,
       cost: def.cost,
       sorcerySpeed: true,

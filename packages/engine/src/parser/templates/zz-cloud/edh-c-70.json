@@ -1,0 +1,370 @@
+[
+  {
+    "id": "eff.edhv70.prevent.all.to.objs.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 120.3",
+      "CR 115.1"
+    ],
+    "pattern": "prevent all damage that would be dealt ( to {o:Targets} {d:Dur} | {d:Dur} to {o:Targets} )",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt this turn to up to three target creatures."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to up to three target artifact creatures this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt to up to two target creatures.",
+      "Prevent all damage that would be dealt by up to two target creatures this turn.",
+      "Prevent all combat damage that would be dealt to up to two target creatures this turn."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv70.nextDamage.redirect.recipient",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 614.1a",
+      "CR 614.9",
+      "CR 615.7",
+      "CR 611.2c",
+      "CR 115.4"
+    ],
+    "pattern": "the next {n:Qty} damage that would be dealt to {o:Obj} {d:Dur} is dealt to {t:Recipient} instead",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": "$t",
+            "amount": "$n"
+          },
+          "shield": {
+            "uses": "all",
+            "amount": "$n"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "{1}: The next 1 damage that would be dealt to ~ this turn is dealt to any target instead."
+      },
+      {
+        "text": "{2}{W}: The next 2 damage that would be dealt to target creature this turn is dealt to any target instead."
+      }
+    ],
+    "counterExamples": [
+      "{1}: The next 1 damage that would be dealt to ~ is dealt to any target instead.",
+      "{1}: The next 1 damage that would be dealt to ~ this turn is dealt to any target.",
+      "{1}: Prevent the next 2 damage that would be dealt to ~ this turn."
+    ]
+  },
+  {
+    "id": "eff.edhv70.becomesColorChoice.indefinite",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 105.3",
+      "CR 608.2d",
+      "CR 611.2a",
+      "CR 613.1e"
+    ],
+    "pattern": "{o:Obj} becomes the color of your choice",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "color",
+        "as": "chosenColor",
+        "link": "chosenColor"
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "chosenColor",
+          "equals": "W"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "permanent"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "W"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "chosenColor",
+          "equals": "U"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "permanent"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "U"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "chosenColor",
+          "equals": "B"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "permanent"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "B"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "chosenColor",
+          "equals": "R"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "permanent"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "R"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "chosenColor",
+          "equals": "G"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": {
+              "d": "permanent"
+            },
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 5,
+                    "colors": {
+                      "set": [
+                        "G"
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}, {T}: Target permanent you control becomes the color of your choice."
+      },
+      {
+        "text": "When ~ enters, target creature becomes the color of your choice."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Target permanent you control becomes the color of your choice until end of turn.",
+      "{2}, {T}: Target permanent you control becomes the colors of your choice.",
+      "{2}, {T}: Target permanent you control becomes the color of your choice and gains hexproof."
+    ]
+  },
+  {
+    "id": "eff.edhv70.damage.unlessSacrificeEnchanted",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12a",
+      "CR 118.3",
+      "CR 120.3",
+      "CR 303.4",
+      "CR 701.21a"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {p:Player} unless they sacrifice that artifact",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "other": [
+          {
+            "kind": "sacrifice",
+            "filter": {
+              "is": {
+                "ref": "attachedTo"
+              }
+            },
+            "count": 1
+          }
+        ]
+      },
+      "else": [
+        {
+          "op": "damage",
+          "source": "$src",
+          "to": "$p",
+          "amount": "$n"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of the upkeep of enchanted artifact's controller, ~ deals 3 damage to that player unless they sacrifice that artifact."
+      },
+      {
+        "text": "At the beginning of the upkeep of enchanted artifact's controller, ~ deals 1 damage to that player unless they sacrifice that artifact."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of the upkeep of enchanted artifact's controller, ~ deals 3 damage to that player unless they sacrifice an artifact.",
+      "At the beginning of the upkeep of enchanted artifact's controller, ~ deals 3 damage to that player if they sacrifice that artifact.",
+      "At the beginning of the upkeep of enchanted artifact's controller, ~ deals 3 damage to that player unless you sacrifice that artifact."
+    ]
+  }
+]

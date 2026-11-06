@@ -82,7 +82,7 @@ describe('attach (CR 701.3)', () => {
     const eq = find(s, 'Bonesplitter', 'battlefield');
     const r = runProgram(s, { name: 'Bonesplitter', kind: 'activated', sourceId: eq }, prog([{ op: 'attach', what: { ref: 'self' }, to: null }]));
     expect(r.state.objects[eq]!.attachedTo).toBeUndefined();
-    expect(r.cx.g.events).toContainEqual({ type: 'attached', objectId: eq, to: null });
+    expect(r.cx.g.events).toContainEqual({ type: 'attached', objectId: eq, to: null, from: find(s, 'Hill Giant', 'battlefield') }); // edh-perms-10: the permanent it left
   });
 });
 
@@ -136,7 +136,8 @@ describe('phasing (CR 702.26, 502.1)', () => {
     const bears = find(s, 'Grizzly Bears', 'battlefield', 'p2');
     const aura = find(s, 'Pacifism', 'battlefield');
     const r = runProgram(s, { name: 'Lightning Bolt', targets: [[chosenObject(bears)]] }, prog([{ op: 'phaseOut', what: { ref: 'target', id: 't0' } }], [creature]));
-    expect(r.results[0]!.count).toBe(2);
+    // edh-d-39 (CR 702.26g, 608.2c): the instruction phased out ONE permanent; the Aura phased out indirectly with it, so "for each creature that phased out this way" counts 1 (both are phased out below)
+    expect(r.results[0]!.count).toBe(1);
     expect([r.state.objects[bears]!.phasedOut, r.state.objects[aura]!.phasedOut]).toEqual([true, true]);
     expect(r.cx.g.events.filter((e) => e.type === 'phasedOut').map((e) => (e as { objectId: string }).objectId)).toEqual([bears, aura]);
     // CR 702.26d: not a zone change: no zoneChanged event, same objects
@@ -195,7 +196,7 @@ describe('exchange (CR 701.12)', () => {
     const s = tweak(board(), (t) => { t.players[1]!.life = 7; });
     const r = runProgram(s, { name: 'Lightning Bolt', targets: [[chosenPlayer('p2')]] }, prog([{ op: 'exchange', a: { ref: 'you' }, b: { ref: 'target', id: 't0' }, what: 'life' }], [{ id: 't0', kind: 'player', min: 1, max: 1, text: 'target player' }]));
     expect(r.state.players.map((p) => p.life)).toEqual([7, 20]);
-    expect(pipeline.proposals).toEqual([{ ev: 'life', change: 'loss', player: 'p1', amount: 13 }, { ev: 'life', change: 'gain', player: 'p2', amount: 13 }]);
+    expect(pipeline.proposals).toEqual([{ ev: 'life', change: 'loss', player: 'p1', amount: 13 }, { ev: 'life', change: 'gain', player: 'p2', amount: 13, effectController: 'p1' }]); // edh-d-54: a gain carries its effect's controller
   });
 
   it('CR 701.12a, 119.7: if a player can\'t gain life, no part of the exchange happens', () => {

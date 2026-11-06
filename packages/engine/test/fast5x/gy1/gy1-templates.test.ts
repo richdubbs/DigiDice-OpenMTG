@@ -90,10 +90,11 @@ describe('GY1 guard G9 (design 6.8): examples and counter-examples', () => {
 
 describe('GY1: the real cards', () => {
   it('the cards whose blocker was this sentence compile full; the ones with another blocker do not', () => {
-    for (const name of ['Crucible of Worlds', 'Ramunap Excavator', 'Perennial Behemoth', 'Icetill Explorer', 'Mole Man, Moloid Master', 'Ancient Greenwarden']) {
+    for (const name of ['Crucible of Worlds', 'Ramunap Excavator', 'Perennial Behemoth', 'Icetill Explorer', 'Mole Man, Moloid Master', 'Ancient Greenwarden', 'Conduit of Worlds' /* its other blocker, "choose target nonland permanent card in your graveyard ... you may cast that card", reads since the edh rounds (CR 601.2, 117.1c) */]) {
       expect(compileCard(getCard(name)).automation.level, name).toBe('full');
     }
-    for (const name of ['Conduit of Worlds', 'Szarel, Genesis Shepherd']) expect(compileCard(getCard(name)).automation.level, name).not.toBe('full');
+    // edh-perms-18: Szarel, Genesis Shepherd's other sentence (the sacrifice trigger "during your turn") is automated since then, so it is full too
+    expect(compileCard(getCard('Szarel, Genesis Shepherd')).automation.level).toBe('full');
     // cloud r3-mech: Glacierwood Siege's other sentences (the Siege's choice and its Temur ability, CR 614.12a, 607.2d) are automated since then
     expect(compileCard(getCard('Glacierwood Siege')).automation.level).toBe('full');
   });

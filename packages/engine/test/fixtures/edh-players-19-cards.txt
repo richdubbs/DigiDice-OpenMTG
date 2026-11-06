@@ -1,0 +1,6 @@
+# edh-players-19 (Commander lane edh-players; test/cloud/edh-players-19, golden edh-players-19-review.json)
+# an emblem for a target player; a delayed trigger on either of two chosen creatures; none-or-two modes; the player who puts counters; damage dealt by a batch
+Ob Nixilis Reignited
+Tamiyo, Field Researcher
+Lolth, Spider Queen
+Shadrix Silverquill

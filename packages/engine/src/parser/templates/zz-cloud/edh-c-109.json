@@ -1,0 +1,259 @@
+[
+  {
+    "id": "eff.edhv109.linked.returnEach.filter.battlefield.you",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "return each {f:Filter} card exiled with ( it | ~ ) to the battlefield under your control",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "exile",
+          "isCard": true,
+          "anyOf": [
+            "$f"
+          ]
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{3}: Exile target creature you control.\nSacrifice ~: Return each creature card exiled with ~ to the battlefield under your control."
+      },
+      {
+        "text": "{3}: Exile target artifact you control.\nSacrifice ~: Return each artifact card exiled with ~ to the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "{3}: Exile target creature you control.\nSacrifice ~: Return each creature card exiled with ~ to the battlefield under its owner's control.",
+      "{3}: Exile target creature you control.\nSacrifice ~: Return each creature card exiled with ~ to your hand.",
+      "Sacrifice ~: Return each creature card exiled with ~ to the battlefield under your control."
+    ]
+  },
+  {
+    "id": "eff.edhv109.linked.returnAll.battlefield.owners",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 110.2",
+      "CR 400.7"
+    ],
+    "pattern": "return all cards exiled with ( it | ~ ) to the battlefield under their owners' control",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "exile",
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "{3}: Exile target creature you control.\nWhen ~ dies, return all cards exiled with it to the battlefield under their owners' control."
+      },
+      {
+        "text": "{3}, {T}: Exile target artifact you control.\nWhen ~ leaves the battlefield, return all cards exiled with ~ to the battlefield under their owners' control."
+      }
+    ],
+    "counterExamples": [
+      "{3}: Exile target creature you control.\nWhen ~ dies, return all cards exiled with it to the battlefield under your control.",
+      "{3}: Exile target creature you control.\nWhen ~ dies, return each card exiled with it to the battlefield under its owner's control.",
+      "{3}: Exile target creature you control.\nWhen ~ dies, return all cards exiled with it to the battlefield tapped under their owners' control."
+    ]
+  },
+  {
+    "id": "eff.edhv109.counters.removeUpTo.any.objectOrPlayer",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 608.2d",
+      "CR 115.1"
+    ],
+    "pattern": "remove up to {n:Qty} counter[s] from {o:AnyTarget}",
+    "build": {
+      "op": "removeCounters",
+      "from": "$o",
+      "kind": "any",
+      "count": "$n",
+      "upTo": true
+    },
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Remove up to three counters from target artifact, creature, or opponent."
+      },
+      {
+        "text": "Remove up to two counters from target creature or player."
+      }
+    ],
+    "counterExamples": [
+      "Remove three counters from target artifact, creature, or opponent.",
+      "Remove up to three counters from each artifact, creature, or opponent.",
+      "Remove up to three +1/+1 counters from target artifact, creature, or opponent."
+    ]
+  },
+  {
+    "id": "eff.edhv109.pump.triple.duration",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 115.1"
+    ],
+    "pattern": "{d:Dur} , {a:Obj} gets {pa:PT} , {b:Obj} gets {pb:PT} , and {c:Obj} gets {pc:PT}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$a",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pa.p",
+              "toughness": "$pa.t"
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": "$b",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pb.p",
+              "toughness": "$pb.t"
+            }
+          ]
+        },
+        {
+          "s": "continuous",
+          "affects": "$c",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pc.p",
+              "toughness": "$pc.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Until end of turn, target creature gets +3/+3, up to one other target creature gets +2/+2, and up to one other target creature gets +1/+1."
+      },
+      {
+        "text": "Until end of turn, target creature you control gets +1/+1, target creature an opponent controls gets -2/-0, and target artifact creature gets -3/-3."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, target creature gets +3/+3, up to one other target creature gets +2/+2, or up to one other target creature gets +1/+1.",
+      "Target creature gets +3/+3, up to one other target creature gets +2/+2, and up to one other target creature gets +1/+1 until end of turn.",
+      "Until end of turn, target creature gets +3/+3, up to one other target creature gets +2/+2, and up to one other target creature gains flying."
+    ]
+  },
+  {
+    "id": "eff.edhv109.mayHave.basePT.xx.whereX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 107.3",
+      "CR 611.2c",
+      "CR 613.4b"
+    ],
+    "pattern": "you may have the base power and toughness of {o:Obj} become x/x {d:Dur} , where x is {q:Qty}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "effect",
+          "duration": "$d",
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": "$o",
+              "mods": [
+                {
+                  "layer": "7b",
+                  "power": "$q",
+                  "toughness": "$q"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, you may have the base power and toughness of another target creature you control become X/X until end of turn, where X is ~'s power."
+      },
+      {
+        "text": "Whenever ~ attacks, you may have the base power and toughness of target creature you control become X/X until end of turn, where X is the number of lands you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, the base power and toughness of another target creature you control become X/X until end of turn, where X is ~'s power.",
+      "Whenever ~ attacks, you may have the power and toughness of another target creature you control become X/X until end of turn, where X is ~'s power.",
+      "Whenever ~ attacks, you may have the base power and toughness of another target creature you control become X/X, where X is ~'s power."
+    ]
+  }
+]

@@ -1,0 +1,341 @@
+[
+  {
+    "id": "rep.edhv1.enters.counter.forEach.onSelf",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 608.2h"
+    ],
+    "pattern": "~ enters with ( a | an ) {k:CounterKind} counter on ~ for each {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": "$f"
+                  }
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "each other"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with a +1/+1 counter on ~ for each artifact you control."
+      },
+      {
+        "text": "~ enters with a +1/+1 counter on ~ for each Goblin card in your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with a +1/+1 counter on target creature for each Goblin you control.",
+      "~ enters with a +1/+1 counter on ~ for each time it was blocked.",
+      "~ enters with a +1/+1 counter on ~ for each Goblin you control unless it is blue."
+    ]
+  },
+  {
+    "id": "eff.edhv1.discard.you.filter",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "weak": 1,
+    "cr": [
+      "CR 701.9a",
+      "CR 701.9b",
+      "CR 109.5"
+    ],
+    "pattern": "discard {f:DiscardDesc}",
+    "build": {
+      "op": "discard",
+      "who": {
+        "ref": "you"
+      },
+      "count": 1,
+      "filter": "$f"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Draw a card, then discard a nonland card."
+      },
+      {
+        "text": "Discard a creature card."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card, then discard a nonland card at random.",
+      "Discard a creature.",
+      "Draw a card, then discard a nonland card unless you control a Goblin."
+    ]
+  },
+  {
+    "id": "trg.edhv1.opponent.shuffles",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 603.2",
+      "CR 701.24"
+    ],
+    "pattern": "whenever an opponent shuffles their library",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "shuffle",
+          "actor": "opponent"
+        }
+      ]
+    },
+    "consumes": [
+      "whenever"
+    ],
+    "examples": [
+      {
+        "text": "Whenever an opponent shuffles their library, you gain 1 life."
+      },
+      {
+        "text": "Whenever an opponent shuffles their library, draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you shuffle your library, you gain 1 life.",
+      "Whenever an opponent searches their library, you gain 1 life.",
+      "Whenever an opponent shuffles their graveyard, you gain 1 life."
+    ]
+  },
+  {
+    "id": "cm.edhv1.equipCosts.less.you",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 702.6a"
+    ],
+    "pattern": "equip costs you pay cost {m:ManaCost} less",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "keyword": "equip",
+              "kind": "activated"
+            },
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Equip costs you pay cost {2} less."
+      },
+      {
+        "text": "Equip costs you pay cost {3} less."
+      }
+    ],
+    "counterExamples": [
+      "Equip costs you pay cost {2} more.",
+      "Equip costs your opponents pay cost {2} less.",
+      "Equip costs you pay cost {2} less for each creature you control."
+    ]
+  },
+  {
+    "id": "abl.edhv1.aslong.each.pump",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "as long as {c:Cond} , each {f:Filter} gets {pt:PT}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "As long as it's your turn, each creature you control that's a Soldier or a Knight gets +1/+1."
+      },
+      {
+        "text": "As long as you control an Island, each Merfolk you control gets +2/+2."
+      }
+    ],
+    "counterExamples": [
+      "As long as it's your turn, each creature you control that's a Soldier or a Knight gets +1/+1 until end of turn.",
+      "Until end of turn, each creature you control gets +1/+1.",
+      "As long as it's your turn, each creature you control that's a Soldier or a Knight gets +1/+1 unless you control an Island."
+    ]
+  },
+  {
+    "id": "rep.edhv1.damage.plus.noncreatureSource.toCreatureBattleOrOpponent",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 609.7",
+      "CR 102.3"
+    ],
+    "pattern": "if a noncreature source you control would deal damage to a creature , battle , or opponent , it deals that much damage plus {n:Qty} instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "source": {
+          "controller": "you",
+          "notTypes": [
+            "Creature"
+          ]
+        },
+        "recipient": {
+          "object": {
+            "types": [
+              "Creature",
+              "Battle"
+            ]
+          },
+          "player": "opponent"
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "add": "$n"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a noncreature source you control would deal damage to a creature, battle, or opponent, it deals that much damage plus 3 instead."
+      },
+      {
+        "text": "If a noncreature source you control would deal damage to a creature, battle, or opponent, it deals that much damage plus 4 instead."
+      }
+    ],
+    "counterExamples": [
+      "If a noncreature source you control would deal damage to a creature, battle, or opponent, it deals double that damage instead.",
+      "If a source you control would deal damage to a creature, battle, or opponent, it deals that much damage plus 2 instead.",
+      "If a noncreature source an opponent controls would deal damage to a creature, battle, or opponent, it deals that much damage plus 2 instead.",
+      "If a noncreature source you control would deal damage to a creature or opponent, it deals that much damage plus 2 instead."
+    ]
+  },
+  {
+    "id": "eff.edhv1.grant.each.targets.durFirst",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 115.1"
+    ],
+    "pattern": "{d:Dur} , {o:Objs} each gain {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, up to two target creatures you control each gain trample."
+      },
+      {
+        "text": "Until end of turn, two target creatures each gain flying and vigilance."
+      }
+    ],
+    "counterExamples": [
+      "Until end of turn, up to two target creatures each lose trample.",
+      "Up to two target creatures each gain trample.",
+      "Until end of turn, creatures you control each gain trample."
+    ]
+  }
+]

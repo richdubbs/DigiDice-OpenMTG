@@ -1,0 +1,265 @@
+[
+  {
+    "id": "sta.edhn32.all.grant.mustAttack",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 508.1d"
+    ],
+    "pattern": "all {f:Filter} have {a:Abilities} and attack each combat if able",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "mustIfAble",
+          "action": "attack"
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "if",
+      "each",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "All Goblins have haste and attack each combat if able."
+      },
+      {
+        "text": "All creatures have trample and attack each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "All creatures have haste and attack this combat if able.",
+      "All creatures have haste and block each combat if able.",
+      "All creatures have haste and attack each combat.",
+      "All creatures have haste as long as it's your turn and attack each combat if able."
+    ]
+  },
+  {
+    "id": "rep.edhn32.damage.prevent.all",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 615.1",
+      "CR 120.3",
+      "CR 109.2"
+    ],
+    "pattern": "if {e:DamageWould} , prevent that damage",
+    "build": {
+      "s": "replace",
+      "replaces": "$e",
+      "body": {
+        "b": "prevent",
+        "amount": "all"
+      }
+    },
+    "consumes": [
+      "if",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "If a blue source you control would deal damage to a permanent or player, prevent that damage."
+      },
+      {
+        "text": "If a spell would deal damage to an opponent, prevent that damage."
+      }
+    ],
+    "counterExamples": [
+      "If a blue source you control would deal damage to a permanent or player, prevent half that damage.",
+      "If a blue source you control would deal damage to a permanent or player, you may prevent that damage.",
+      "If a blue source you control would deal damage to a permanent or player, prevent that damage and draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhn32.mayPay.oneOrMoreEnergy",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 107.14",
+      "CR 118.12",
+      "CR 608.2d"
+    ],
+    "pattern": "you may pay one or more {e}",
+    "build": {
+      "op": "pay",
+      "who": {
+        "ref": "you"
+      },
+      "cost": {
+        "other": [
+          {
+            "kind": "payEnergy",
+            "amount": 1
+          }
+        ]
+      },
+      "anyAmount": true
+    },
+    "consumes": [
+      "may",
+      "one or more"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, you may pay one or more {E}. If you do, draw that many cards."
+      },
+      {
+        "text": "When this creature dies, you may pay one or more {E}. When you do, it deals that much damage to target creature."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, you may pay one or more {R}. If you do, draw that many cards.",
+      "At the beginning of your upkeep, you may pay one or more {E}{E}. If you do, draw that many cards.",
+      "At the beginning of your upkeep, pay one or more {E}. If you do, draw that many cards."
+    ]
+  },
+  {
+    "id": "rid.edhn32.entersWith.itsACreature",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 608.2c",
+      "CR 122.6",
+      "CR 400.7"
+    ],
+    "pattern": "it enters with {m:Qty} additional {k:CounterKind} counter[s] on it if it's a creature",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to.zone": "battlefield"
+        },
+        "to": {
+          "countersIf": {
+            "@new": [
+              {
+                "if": {
+                  "types": [
+                    "Creature"
+                  ]
+                },
+                "counters": [
+                  {
+                    "kind": "$k",
+                    "count": "$m"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Return target permanent card from your graveyard to the battlefield. It enters with two additional +1/+1 counters on it if it's a creature."
+      },
+      {
+        "text": "Return target historic permanent card from your graveyard to the battlefield. It enters with an additional +1/+1 counter on it if it's a creature."
+      }
+    ],
+    "counterExamples": [
+      "Return target permanent card from your graveyard to the battlefield. It enters with two +1/+1 counters on it if it's a creature.",
+      "Return target permanent card from your graveyard to its owner's hand. It enters with two additional +1/+1 counters on it if it's a creature.",
+      "Return target permanent card from your graveyard to the battlefield. It enters with two additional +1/+1 counters on it if it's an artifact."
+    ],
+    "attachTo": "move"
+  },
+  {
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "id": "eff.edhn32.dig.putHand.rest.topAny",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4"
+    ],
+    "pattern": "put {n:Qty} of {g:Seen} into your hand and {r:Rest} on top of your library in any order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": "$r",
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen"
+        }
+      }
+    ],
+    "examples": [
+      {
+        "text": "Look at the top eight cards of your library. Put two of them into your hand and the rest on top of your library in any order."
+      },
+      {
+        "text": "Look at the top seven cards of your library. Put one of those cards into your hand and the rest on top of your library in any order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. Put two of them into your hand and the rest on top of your library in a random order.",
+      "Look at the top six cards of your library. Put two of them into your hand and the rest on the bottom of your library in any order.",
+      "Look at the top six cards of your library. Put two of them into your hand and the rest on top of target player's library in any order."
+    ]
+  }
+]

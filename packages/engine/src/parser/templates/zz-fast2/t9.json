@@ -545,7 +545,8 @@
                     "colors": "$f.colors",
                     "notColors": "$f.notColors",
                     "keyword": "$f.keyword",
-                    "controller": "$f.controller"
+                    "controller": "$f.controller",
+                    "sharesWith": "$f.sharesWith"
                   }
                 }
               }
@@ -616,7 +617,8 @@
                     "colors": "$f.colors",
                     "notColors": "$f.notColors",
                     "keyword": "$f.keyword",
-                    "controller": "$f.controller"
+                    "controller": "$f.controller",
+                    "sharesWith": "$f.sharesWith"
                   }
                 }
               },
@@ -639,7 +641,8 @@
                     "colors": "$f.colors",
                     "notColors": "$f.notColors",
                     "keyword": "$f.keyword",
-                    "controller": "$f.controller"
+                    "controller": "$f.controller",
+                    "sharesWith": "$f.sharesWith"
                   }
                 }
               }
@@ -715,7 +718,8 @@
                         "colors": "$f.colors",
                         "notColors": "$f.notColors",
                         "keyword": "$f.keyword",
-                        "controller": "$f.controller"
+                        "controller": "$f.controller",
+                    "sharesWith": "$f.sharesWith"
                       }
                     }
                   }
@@ -793,7 +797,8 @@
                         "colors": "$f.colors",
                         "notColors": "$f.notColors",
                         "keyword": "$f.keyword",
-                        "controller": "$f.controller"
+                        "controller": "$f.controller",
+                    "sharesWith": "$f.sharesWith"
                       }
                     }
                   }
@@ -871,7 +876,8 @@
                         "colors": "$f.colors",
                         "notColors": "$f.notColors",
                         "keyword": "$f.keyword",
-                        "controller": "$f.controller"
+                        "controller": "$f.controller",
+                    "sharesWith": "$f.sharesWith"
                       }
                     }
                   }
@@ -901,7 +907,8 @@
                         "colors": "$f.colors",
                         "notColors": "$f.notColors",
                         "keyword": "$f.keyword",
-                        "controller": "$f.controller"
+                        "controller": "$f.controller",
+                    "sharesWith": "$f.sharesWith"
                       }
                     }
                   }

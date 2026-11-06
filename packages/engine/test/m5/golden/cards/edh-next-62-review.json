@@ -1,0 +1,942 @@
+[
+ {
+  "card": "Colfenor's Plans",
+  "expect": "full",
+  "verified": "edh-next-62 review (EDHREC top 20,000), by hand against the Oracle text and the rules cited (sta.edhn62.look.linked.andPlay,): when it enters exile the top seven cards of your library face down (linked, CR 607.2a); you may look at the cards exiled with it (static lookAt of the linked cards, CR 406.3, 400.2) and play lands and cast spells from among them (CR 601.3, 305.1); skip your draw step; one spell each turn; ruling 2013-04-15: you keep looking after it leaves (revealedTo, zones-move.ts); CR cites from memory, unverified (cloud session)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "topCards",
+          "player": {
+           "ref": "you"
+          },
+          "count": 7
+         },
+         "to": {
+          "zone": "exile",
+          "faceDown": true
+         },
+         "link": "exiled"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "lookAt",
+        "of": {
+         "is": {
+          "ref": "linked",
+          "link": "exiled"
+         }
+        }
+       },
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "play",
+        "of": {
+         "is": {
+          "ref": "linked",
+          "link": "exiled"
+         }
+        }
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "replace",
+        "replaces": {
+         "ev": "step",
+         "step": "draw",
+         "whose": "you"
+        },
+        "body": {
+         "b": "skip"
+        }
+       }
+      ]
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "restrict",
+        "subject": {
+         "ref": "you"
+        },
+        "mode": "cant",
+        "action": "cast",
+        "max": 1
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Kheru Mind-Eater",
+  "expect": "full",
+  "verified": "edh-next-62 review (EDHREC top 20,000), by hand against the Oracle text and the rules cited (sta.edhn62.look.linked.andPlay, eff.edhn62.player.exilesFromHand.faceDown,): menace; whenever it deals combat damage to a player, that player (the event's recipient) exiles a card of their own choice from their hand face down (CR 406.3, 608.2d); you may look at and play lands and cast spells from among cards exiled with it (CR 607.2a, 601.3); ruling 2017-08-25: once looked at, kept; CR cites from memory, unverified (cloud session)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "menace"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "source": {
+          "self": true
+         },
+         "combat": true,
+         "recipient": {
+          "player": "any"
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "event",
+          "role": "recipient"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "zone": "hand",
+           "owner": {
+            "ref": "event",
+            "role": "recipient"
+           }
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "exiled"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "exiled"
+         },
+         "to": {
+          "zone": "exile",
+          "faceDown": true
+         },
+         "link": "exiled"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "lookAt",
+        "of": {
+         "is": {
+          "ref": "linked",
+          "link": "exiled"
+         }
+        }
+       },
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "play",
+        "of": {
+         "is": {
+          "ref": "linked",
+          "link": "exiled"
+         }
+        }
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Gustha's Scepter",
+  "expect": "full",
+  "verified": "edh-next-62 review (EDHREC top 20,000), by hand against the Oracle text and the rules cited (eff.edhn62.exileFromYourHand.faceDown, eff.edhn62.look.named.remainsExiled, eff.edhn62.linked.returnOwned.hand, eff.edhn62.linked.putAll.ownersGraveyard,): {T}: exile a card from your hand face down (you choose), you may look at it for as long as it remains exiled (CR 406.3, 611.2b, 400.7); {T}: return a card you own exiled with it to your hand (CR 607.2a, 108.3); when you lose control, put all cards exiled with it into their owners' graveyards (CR 400.3); CR cites from memory, unverified (cloud session)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "zone": "hand",
+           "owner": {
+            "ref": "you"
+           }
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "exiled"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "exiled"
+         },
+         "to": {
+          "zone": "exile",
+          "faceDown": true
+         },
+         "link": "exiled"
+        },
+        {
+         "op": "effect",
+         "duration": {
+          "d": "remainsExiled"
+         },
+         "effects": [
+          {
+           "s": "permit",
+           "who": {
+            "ref": "you"
+           },
+           "action": "lookAt",
+           "of": {
+            "is": {
+             "ref": "bound",
+             "name": "exiled"
+            }
+           }
+          }
+         ]
+        }
+       ]
+      }
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "linked",
+            "link": "exiled"
+           },
+           "zone": "any",
+           "isCard": true,
+           "owner": "you"
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "returned"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "returned"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        }
+       ]
+      }
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "controlChange",
+         "object": {
+          "self": true
+         },
+         "from": "you"
+        },
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "from": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "linked",
+            "link": "exiled"
+           },
+           "zone": "exile"
+          }
+         },
+         "to": {
+          "zone": "graveyard"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Steward of the Harvest",
+  "expect": "full",
+  "verified": "edh-next-62 review (EDHREC top 20,000), by hand against the Oracle text and the rules cited (sta.edhn62.group.have.allActivatedOf.landCardsExiledWith,): when it enters exile up to three target land cards from your graveyard (linked, CR 607.2a); creatures you control have all activated abilities of all land cards exiled with it (CR 613.1f, 604.1; ruling 2025: lands' intrinsic mana abilities included); CR cites from memory, unverified (cloud session)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "zoneChange",
+         "subject": {
+          "self": true
+         },
+         "to": "battlefield"
+        }
+       ]
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 0,
+         "max": 3,
+         "filter": {
+          "types": [
+           "Land"
+          ],
+          "zone": "graveyard",
+          "owner": "you",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "link": "exiled"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "each",
+         "filter": {
+          "types": [
+           "Creature"
+          ],
+          "controller": "you"
+         }
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "addActivatedOf": {
+           "ref": "each",
+           "filter": {
+            "types": [
+             "Land"
+            ],
+            "zone": "exile",
+            "is": {
+             "ref": "linked",
+             "link": "exiled"
+            }
+           }
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Myr Welder",
+  "expect": "full",
+  "verified": "edh-next-62 review (EDHREC top 20,000), by hand against the Oracle text and the rules cited (sta.edhn62.self.has.allActivatedOf.cardsExiledWithIt,): imprint: {T}: exile target artifact card from a graveyard; it has all activated abilities of all cards exiled with it (CR 613.1f, 607.2a; ruling 2011: damage comes from the Welder); CR cites from memory, unverified (cloud session)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [
+        {
+         "id": "t0",
+         "kind": "object",
+         "min": 1,
+         "max": 1,
+         "filter": {
+          "types": [
+           "Artifact"
+          ],
+          "zone": "graveyard",
+          "isCard": true
+         }
+        }
+       ],
+       "steps": [
+        {
+         "op": "move",
+         "what": {
+          "ref": "target",
+          "id": "t0"
+         },
+         "to": {
+          "zone": "exile"
+         },
+         "link": "exiled"
+        }
+       ]
+      },
+      "label": "Imprint"
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "continuous",
+        "affects": {
+         "ref": "self"
+        },
+        "mods": [
+         {
+          "layer": 6,
+          "addActivatedOf": {
+           "ref": "linked",
+           "link": "exiled"
+          }
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Rogue Class",
+  "expect": "full",
+  "verified": "edh-next-62 review (EDHREC top 20,000), by hand against the Oracle text and the rules cited (eff.edhn62.look.named.remainsExiled, sta.edhn62.play.linked.anyManaColor,): level 1: whenever a creature you control deals combat damage to a player, exile the top card of that player's library face down and you may look at it for as long as it remains exiled (CR 406.3, 611.2b); level 2 menace; level 3: you may play cards exiled with this Class and spend mana as though any color to cast those spells (anyManaColor, CR 609.4b, 107.4c, 601.3); CR cites from memory, unverified (cloud session)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "classLevel",
+      "level": 1,
+      "abilities": [
+       {
+        "kind": "triggered",
+        "trigger": {
+         "on": [
+          {
+           "ev": "damage",
+           "source": {
+            "types": [
+             "Creature"
+            ],
+            "controller": "you"
+           },
+           "combat": true,
+           "recipient": {
+            "player": "any"
+           }
+          }
+         ]
+        },
+        "effect": {
+         "targets": [],
+         "steps": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "topCards",
+            "player": {
+             "ref": "event",
+             "role": "recipient"
+            },
+            "count": 1
+           },
+           "to": {
+            "zone": "exile",
+            "faceDown": true
+           },
+           "as": "them",
+           "link": "exiled"
+          },
+          {
+           "op": "effect",
+           "duration": {
+            "d": "remainsExiled"
+           },
+           "effects": [
+            {
+             "s": "permit",
+             "who": {
+              "ref": "you"
+             },
+             "action": "lookAt",
+             "of": {
+              "is": {
+               "ref": "bound",
+               "name": "them"
+              }
+             }
+            }
+           ]
+          }
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "kind": "classLevel",
+      "level": 2,
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 1
+        },
+        {
+         "kind": "colored",
+         "color": "U"
+        },
+        {
+         "kind": "colored",
+         "color": "B"
+        }
+       ]
+      },
+      "abilities": [
+       {
+        "kind": "static",
+        "effects": [
+         {
+          "s": "continuous",
+          "affects": {
+           "ref": "each",
+           "filter": {
+            "types": [
+             "Creature"
+            ],
+            "controller": "you"
+           }
+          },
+          "mods": [
+           {
+            "layer": 6,
+            "add": [
+             {
+              "kind": "keyword",
+              "keyword": "menace"
+             }
+            ]
+           }
+          ]
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "kind": "classLevel",
+      "level": 3,
+      "cost": {
+       "mana": [
+        {
+         "kind": "generic",
+         "amount": 2
+        },
+        {
+         "kind": "colored",
+         "color": "U"
+        },
+        {
+         "kind": "colored",
+         "color": "B"
+        }
+       ]
+      },
+      "abilities": [
+       {
+        "kind": "static",
+        "effects": [
+         {
+          "s": "permit",
+          "who": {
+           "ref": "you"
+          },
+          "action": "play",
+          "of": {
+           "is": {
+            "ref": "linked",
+            "link": "exiled"
+           }
+          },
+          "anyManaColor": true
+         }
+        ]
+       }
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Bane Alley Broker",
+  "expect": "full",
+  "verified": "edh-next-62 review (EDHREC top 20,000), by hand against the Oracle text and the rules cited (sta.edhn62.look.linked, eff.edhn62.linked.returnOne.ownersHand,): {T}: draw a card, then exile a card from your hand face down (CR 406.3); you may look at cards exiled with it (CR 607.2a); {U}{B},{T}: return a card exiled with it to its owner's hand (CR 400.3). Outside the EDHREC top 20,000: opened as a model of the same wordings, listed as held-out; CR cites from memory, unverified (cloud session)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "activated",
+      "cost": {
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "draw",
+         "who": {
+          "ref": "you"
+         },
+         "count": 1
+        },
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "zone": "hand",
+           "owner": {
+            "ref": "you"
+           }
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "exiled"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "exiled"
+         },
+         "to": {
+          "zone": "exile",
+          "faceDown": true
+         },
+         "link": "exiled"
+        }
+       ]
+      }
+     },
+     {
+      "kind": "static",
+      "effects": [
+       {
+        "s": "permit",
+        "who": {
+         "ref": "you"
+        },
+        "action": "lookAt",
+        "of": {
+         "is": {
+          "ref": "linked",
+          "link": "exiled"
+         }
+        }
+       }
+      ]
+     },
+     {
+      "kind": "activated",
+      "cost": {
+       "mana": [
+        {
+         "kind": "colored",
+         "color": "U"
+        },
+        {
+         "kind": "colored",
+         "color": "B"
+        }
+       ],
+       "tap": true
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "chooseObjects",
+         "who": {
+          "ref": "you"
+         },
+         "from": {
+          "ref": "each",
+          "filter": {
+           "is": {
+            "ref": "linked",
+            "link": "exiled"
+           },
+           "zone": "any",
+           "isCard": true
+          }
+         },
+         "min": 1,
+         "max": 1,
+         "as": "linkedReturned"
+        },
+        {
+         "op": "move",
+         "what": {
+          "ref": "bound",
+          "name": "linkedReturned"
+         },
+         "to": {
+          "zone": "hand"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "card": "Intet, the Dreamer",
+  "expect": "full",
+  "verified": "edh-next-62 review (EDHREC top 20,000), by hand against the Oracle text and the rules cited (eff.edhn62.look.named.remainsExiled,): flying; on combat damage to a player you may pay {2}{U}; if you do, exile the top card of your library face down, you may look at it for as long as it remains exiled (CR 406.3, 611.2b) and play it without paying its mana cost for as long as Intet remains on the battlefield (CR 118.9, 611.2b); CR cites from memory, unverified (cloud session)",
+  "faces": [
+   {
+    "abilities": [
+     {
+      "kind": "keyword",
+      "keyword": "flying"
+     },
+     {
+      "kind": "triggered",
+      "trigger": {
+       "on": [
+        {
+         "ev": "damage",
+         "source": {
+          "self": true
+         },
+         "combat": true,
+         "recipient": {
+          "player": "any"
+         }
+        }
+       ]
+      },
+      "effect": {
+       "targets": [],
+       "steps": [
+        {
+         "op": "pay",
+         "who": {
+          "ref": "you"
+         },
+         "cost": {
+          "mana": [
+           {
+            "kind": "generic",
+            "amount": 2
+           },
+           {
+            "kind": "colored",
+            "color": "U"
+           }
+          ]
+         },
+         "then": [
+          {
+           "op": "move",
+           "what": {
+            "ref": "topCards",
+            "player": {
+             "ref": "you"
+            },
+            "count": 1
+           },
+           "to": {
+            "zone": "exile",
+            "faceDown": true
+           },
+           "as": "them"
+          },
+          {
+           "op": "effect",
+           "duration": {
+            "d": "remainsExiled"
+           },
+           "effects": [
+            {
+             "s": "permit",
+             "who": {
+              "ref": "you"
+             },
+             "action": "lookAt",
+             "of": {
+              "is": {
+               "ref": "bound",
+               "name": "them"
+              }
+             }
+            }
+           ]
+          },
+          {
+           "op": "effect",
+           "duration": {
+            "d": "whileSource",
+            "as": "onBattlefield"
+           },
+           "effects": [
+            {
+             "s": "permit",
+             "who": {
+              "ref": "you"
+             },
+             "action": "play",
+             "of": {
+              "is": {
+               "ref": "bound",
+               "name": "them"
+              }
+             },
+             "costChange": {
+              "kind": "set",
+              "cost": {}
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     }
+    ]
+   }
+  ]
+ }
+]

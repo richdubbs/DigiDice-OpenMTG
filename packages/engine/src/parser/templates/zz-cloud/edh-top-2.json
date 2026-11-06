@@ -1,0 +1,182 @@
+[
+  {
+    "id": "sta.edht2.paired.each.has",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.95",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as ( ~ | this creature ) is paired with another creature , each of those creatures has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "matches",
+        "object": {
+          "ref": "self"
+        },
+        "filter": {
+          "paired": true
+        }
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "pair"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "another",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "As long as ~ is paired with another creature, each of those creatures has flying."
+      },
+      {
+        "text": "As long as this creature is paired with another creature, each of those creatures has \"{T}: Scry 1.\""
+      }
+    ],
+    "counterExamples": [
+      "As long as ~ is paired with another creature, each of those creatures gets +2/+0.",
+      "As long as ~ is paired with another creature, each other creature has flying.",
+      "As long as ~ is equipped, each of those creatures has flying."
+    ]
+  },
+  {
+    "id": "eff.edht2.becomes.artifact.losesOthers",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 613.7"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes} artifact with {a:Abilities} and loses all other card types and abilities",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact"
+                ]
+              },
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": 6,
+              "removeAll": true,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "all",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Target creature becomes a Food artifact with \"{1}, {T}, Sacrifice this artifact: Scry 2\" and loses all other card types and abilities."
+      },
+      {
+        "text": "Target permanent becomes a Clue artifact with \"{2}, Sacrifice this artifact: Draw a card\" and loses all other card types and abilities."
+      }
+    ],
+    "counterExamples": [
+      "Target creature becomes a Food artifact with \"{1}, {T}, Sacrifice this artifact: Scry 2\" and loses all other abilities.",
+      "Target creature becomes a Food artifact with \"{1}, {T}, Sacrifice this artifact: Scry 2\" in addition to its other types.",
+      "Target creature becomes a colorless Food artifact with \"{1}, {T}, Sacrifice this artifact: Scry 2\" and loses all other card types and abilities until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edht2.poison.toNine",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1f",
+      "CR 104.3d",
+      "CR 608.2c"
+    ],
+    "pattern": "if {p:Player} has fewer than {n:Qty} poison counters , they get a number of poison counters equal to the difference",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": "$p",
+          "kind": "poison"
+        },
+        "op": "<",
+        "right": "$n"
+      },
+      "then": [
+        {
+          "op": "putCounters",
+          "on": "$p",
+          "kind": "poison",
+          "count": {
+            "q": "math",
+            "op": "-",
+            "args": [
+              "$n",
+              {
+                "q": "counters",
+                "on": "$p",
+                "kind": "poison"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "If target player has fewer than six poison counters, they get a number of poison counters equal to the difference."
+      },
+      {
+        "text": "If target opponent has fewer than ten poison counters, they get a number of poison counters equal to the difference."
+      }
+    ],
+    "counterExamples": [
+      "If target player has fewer than six poison counters, they get three poison counters.",
+      "If target player has more than six poison counters, they get a number of poison counters equal to the difference.",
+      "If target player has fewer than six poison counters, you get a number of poison counters equal to the difference."
+    ]
+  }
+]

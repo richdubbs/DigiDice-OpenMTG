@@ -1,0 +1,6 @@
+# edh-players-18 (Commander lane edh-players; test/cloud/edh-players-18, golden edh-players-18-review.json)
+# batch recipients ("the number of opponents dealt damage this way"), "the player is your opponent", "until an opponent becomes the monarch", "would draw two or more cards", a mana-keep rider after "If you do"
+Hordewing Skaab
+Fevered Visions
+Alms Collector
+Neheb, Dreadhorde Champion

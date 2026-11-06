@@ -1,0 +1,347 @@
+[
+  {
+    "id": "rid.edhpm10.entersWith.ifMv",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 608.2c",
+      "CR 202.3",
+      "CR 122.6"
+    ],
+    "pattern": "if that card has mana value {n:Qty} or less , it enters with {m:Qty} additional {k:CounterKind} counter[s] on it",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "to.zone": "battlefield"
+        },
+        "to": {
+          "countersIf": {
+            "@new": [
+              {
+                "if": {
+                  "manaValue": {
+                    "op": "<=",
+                    "value": "$n"
+                  }
+                },
+                "counters": [
+                  {
+                    "kind": "$k",
+                    "count": "$m"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. You may put a creature card from among them onto the battlefield. If that card has mana value 2 or less, it enters with two additional +1/+1 counters on it. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may put a creature card from among them onto the battlefield. If that card has mana value 4 or less, it enters with four additional +1/+1 counters on it. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. You may put a creature card from among them onto the battlefield. If that card has mana value 2 or more, it enters with two additional +1/+1 counters on it. Put the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You may put a creature card from among them into your hand. If that card has mana value 2 or less, it enters with two additional +1/+1 counters on it. Put the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You may put a creature card from among them onto the battlefield. If that card has mana value 2 or less, it enters with two +1/+1 counters on it. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "rid.edhpm10.entersWith.ifCreature",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 608.2c",
+      "CR 122.6"
+    ],
+    "pattern": "if it enters as a creature , it enters with ( an | a ) additional {k:CounterKind} counter on it",
+    "build": {
+      "$patchPrevious": {
+        "@into": true,
+        "@require": {
+          "to.zone": "battlefield"
+        },
+        "to": {
+          "countersIf": {
+            "@new": [
+              {
+                "if": {
+                  "types": [
+                    "Creature"
+                  ]
+                },
+                "counters": [
+                  {
+                    "kind": "$k",
+                    "count": 1
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Exile target artifact you control. Return that card to the battlefield under its owner's control at the beginning of the next end step. If it enters as a creature, it enters with an additional +1/+1 counter on it."
+      },
+      {
+        "text": "Exile target creature you control. Return that card to the battlefield under its owner's control at the beginning of the next end step. If it enters as a creature, it enters with an additional -1/-1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Exile target artifact you control. Return that card to the battlefield under its owner's control at the beginning of the next end step. If it enters as a creature, it enters with two additional +1/+1 counters on it.",
+      "Exile target artifact you control. Return that card to its owner's hand at the beginning of the next end step. If it enters as a creature, it enters with an additional +1/+1 counter on it.",
+      "Exile target artifact you control. Return that card to the battlefield under its owner's control at the beginning of the next end step. If it enters as a creature, it enters with an +1/+1 counter on it."
+    ]
+  },
+  {
+    "id": "rid.edhpm10.entersWith.eachOfThem.byType",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 608.2c",
+      "CR 122.6",
+      "CR 306.5b"
+    ],
+    "pattern": "each of them enters with an additional {k1:CounterKind} counter on it if it's a creature and an additional {k2:CounterKind} counter on it if it's a planeswalker",
+    "build": {
+      "$patchPrevious": {
+        "@into": true,
+        "@require": {
+          "to.zone": "battlefield"
+        },
+        "to": {
+          "countersIf": {
+            "@new": [
+              {
+                "if": {
+                  "types": [
+                    "Creature"
+                  ]
+                },
+                "counters": [
+                  {
+                    "kind": "$k1",
+                    "count": 1
+                  }
+                ]
+              },
+              {
+                "if": {
+                  "types": [
+                    "Planeswalker"
+                  ]
+                },
+                "counters": [
+                  {
+                    "kind": "$k2",
+                    "count": 1
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "move",
+    "consumes": [
+      "each",
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Exile up to two target creatures and/or planeswalkers you control. At the beginning of the next end step, return each of them to the battlefield under its owner's control. Each of them enters with an additional +1/+1 counter on it if it's a creature and an additional loyalty counter on it if it's a planeswalker."
+      },
+      {
+        "text": "Exile any number of target creatures and/or planeswalkers you control. At the beginning of the next end step, return each of them to the battlefield under its owner's control. Each of them enters with an additional -1/-1 counter on it if it's a creature and an additional loyalty counter on it if it's a planeswalker."
+      }
+    ],
+    "counterExamples": [
+      "Exile up to two target creatures and/or planeswalkers you control. At the beginning of the next end step, return each of them to the battlefield under its owner's control. Each of them enters with an additional +1/+1 counter on it if it's a creature and two additional loyalty counters on it if it's a planeswalker.",
+      "Exile up to two target creatures and/or planeswalkers you control. At the beginning of the next end step, return each of them to the battlefield under its owner's control. Each of them enters with an additional +1/+1 counter on it if it's a planeswalker and an additional loyalty counter on it if it's a creature.",
+      "Exile up to two target creatures and/or planeswalkers you control. At the beginning of the next end step, return each of them to its owner's hand. Each of them enters with an additional +1/+1 counter on it if it's a creature and an additional loyalty counter on it if it's a planeswalker."
+    ]
+  },
+  {
+    "id": "eff.edhpm10.becomes.creature.withAbilities",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 604.3"
+    ],
+    "pattern": "{o:Obj} becomes a creature with {a:Abilities}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Creature"
+                ]
+              },
+              "subtypes": {
+                "set": []
+              }
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target land you control becomes a creature with haste and \"This creature's power and toughness are each equal to the number of Forests you control.\" It's still a land."
+      },
+      {
+        "text": "Target land you control becomes a creature with trample and \"This creature's power and toughness are each equal to the number of Forests you control.\" It's still a land."
+      }
+    ],
+    "counterExamples": [
+      "Target land you control becomes a 2/2 creature with haste and \"This creature's power and toughness are each equal to the number of Forests you control.\" It's still a land.",
+      "Target land you control becomes a creature with haste and \"This creature's power and toughness are each equal to the number of Forests you control.\" until end of turn. It's still a land.",
+      "Target land you control becomes a creature. It's still a land."
+    ]
+  },
+  {
+    "id": "rid.edhpm10.copy.token.entersTappedAttacking",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 508.4",
+      "CR 508.4a",
+      "CR 707.2",
+      "CR 110.5b"
+    ],
+    "pattern": "the token enters tapped and attacking",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "result": "token"
+        },
+        "tapped": {
+          "@new": true
+        },
+        "attacking": {
+          "@new": true
+        }
+      }
+    },
+    "attachTo": "copy",
+    "consumes": [
+      "tapped",
+      "attacking"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create a token that's a copy of target creature you control. The token enters tapped and attacking."
+      },
+      {
+        "text": "Whenever ~ attacks, create a token that's a copy of target attacking creature. The token enters tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create a token that's a copy of another target attacking creature. The token enters tapped.",
+      "Whenever ~ attacks, create two tokens that are copies of another target attacking creature. The tokens enter tapped and attacking.",
+      "Whenever ~ attacks, draw a card. The token enters tapped and attacking."
+    ]
+  },
+  {
+    "id": "eff.edhpm10.become.artifactCreatures.permanent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 611.2a",
+      "CR 613.1d",
+      "CR 613.4b"
+    ],
+    "pattern": "{o:Objs} become {pt:BasePT} artifact creatures",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "types": {
+                "set": [
+                  "Artifact",
+                  "Creature"
+                ]
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Any number of target noncreature artifacts you control become 3/3 artifact creatures."
+      },
+      {
+        "text": "Noncreature artifacts you control become 2/2 artifact creatures."
+      }
+    ],
+    "counterExamples": [
+      "Any number of target noncreature artifacts you control become 3/3 artifact creatures until end of turn.",
+      "Any number of target noncreature artifacts you control become 3/3 enchantment creatures.",
+      "Any number of target noncreature artifacts you control become 3/3 artifact creatures with flying."
+    ]
+  }
+]

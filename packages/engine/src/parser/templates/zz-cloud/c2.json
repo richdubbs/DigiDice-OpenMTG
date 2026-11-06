@@ -36,7 +36,7 @@
     "id": "sta.c2.maxhand.your.equalto",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 402.2",
       "CR 514.1",
@@ -70,7 +70,7 @@
     "id": "sta.c2.maxhand.player.n",
     "kind": "static",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 402.2",
       "CR 514.1",

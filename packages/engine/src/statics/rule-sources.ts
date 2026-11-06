@@ -18,7 +18,8 @@
  * (`ruleSourcesPresent`). Milestone 3 and 4 games never pay more than that.
  */
 import { stableScopeFor } from './stable-scope';
-import type { AbilityDef, CostModDef, Duration, KeywordAbilityDef, ObjectFilter, ObjRef, PermissionDef, PlayerRef, RestrictionDef, RuleModDef, StaticEffect } from '../types/ability';
+import { readLink } from './links';
+import type { AbilityDef, CostModDef, Duration, KeywordAbilityDef, ObjectFilter, ObjRef, PermissionDef, PlayerPred, PlayerRef, RestrictionDef, RuleModDef, StaticEffect } from '../types/ability';
 import type { CardDef } from '../types/card';
 import type { ObjectId, PlayerId } from '../types/ids';
 import { manaValue } from '../types/mana';
@@ -30,7 +31,7 @@ import { computeAll, intrinsicChars } from './layers';
 import { layerSourcesPresent, numOf } from './live';
 import { suspectedPresent } from './suspect';
 import { whileObjectHolds } from './while-object';
-import { LAYER_READS_VERIFY, noteLayerRead, READ_TAPPED, trackingLayerReads } from './layer-reads';
+import { LAYER_READS_VERIFY, noteLayerRead, READ_COMBAT, READ_TAPPED, trackingLayerReads } from './layer-reads';
 import { evalCondition, filterMatches, isPlayerRef, objectsOf, playersOf, type EvalCx } from './match';
 
 /** The `StaticEffect` kinds this module collects. */
@@ -54,6 +55,11 @@ export interface RuleSource {
   readonly text: string;
   /** FAST5X E2: the turn a resolved effect began (`ContinuousEffectRec.startedTurn`); absent for a static ability (`PermissionDef.laterTurn`, CR 702.185a). */
   readonly startedTurn?: number;
+  /**
+   * edh-c-94 (CR 502.3, 611.2a; Blinding Beam): a resolved effect lasting through the next untap step of a player ("Creatures don't untap during target player's next
+   * untap step", `throughNextUntap` with `whose`): the player (relative to `controller`, or fixed). It applies only in an untap step of that player (statics/hooks.ts#untapPrevented).
+   */
+  readonly untapStepOf?: PlayerPred;
 }
 
 // ---- Does anything in this game produce a rule effect? -------------------------------------------------------------------------------------------------
@@ -408,7 +414,7 @@ function collectSourcesOf(s: GameState, view: CharsView, ids: readonly ObjectId[
   for (const rec of s.continuousEffects) {
     if (!isRuleEffect(rec.effect) || !durationActive(s, view, rec)) continue;
     const src = rec.source && s.objects[rec.source.id]?.zone === rec.source.zone ? rec.source.id : null; // CR 400.7
-    out.push({ effect: rec.effect, source: src, controller: rec.controller, timestamp: rec.timestamp, order: [rec.timestamp, 1, numOf(rec.id), 0, 0], name: rec.sourceName, text: '', startedTurn: rec.startedTurn });
+    out.push({ effect: rec.effect, source: src, controller: rec.controller, timestamp: rec.timestamp, order: [rec.timestamp, 1, numOf(rec.id), 0, 0], name: rec.sourceName, text: '', startedTurn: rec.startedTurn, ...(rec.duration.d === 'throughNextUntap' && rec.duration.whose !== undefined ? { untapStepOf: rec.duration.whose } : {}) });
   }
   return out.sort((a, b) => compareOrder(a.order, b.order));
 }
@@ -422,6 +428,16 @@ function compareOrder(a: readonly number[], b: readonly number[]): number {
 }
 
 /**
+ * edh-d-88 (CR 611.2a, 500.8; Trench Behemoth): is this the combat phase a `duringNextCombat` duration names: a combat phase of a turn of one of its players that began after the effect began?
+ * (core/steps.ts#endCombatPhase ends the record as that combat phase ends, so a later one never is.) A duration not fixed (no `after`, no fixed players) never applies.
+ */
+export function duringNextCombatNow(s: GameState, d: Extract<Duration, { d: 'duringNextCombat' }>): boolean {
+  noteLayerRead(READ_COMBAT); // the combat in progress: a volatile layer input (statics/layer-reads.ts)
+  if (!s.combat || d.after === undefined || d.whose.ref !== 'fixed' || !('players' in d.whose) || !d.whose.players.includes(s.turn.activePlayer)) return false;
+  return s.turn.number > d.after.turn || s.combat.number > d.after.combat; // (the combat's own number: the combat phases of this turn so far, rules/combat-state.ts#newCombat)
+}
+
+/**
  * Is a resolved effect still in force? "Until end of turn / combat" records are removed by core/steps.ts and the other durations by the code that ends them
  * (WP15); "for as long as" (CR 611.2b) is judged here, so a stale record never applies (the same test statics/live.ts makes for continuous effects).
  */
@@ -430,7 +446,9 @@ function durationActive(s: GameState, view: CharsView, rec: ContinuousEffectRec)
   if (d.d === 'asLongAs') return evalCondition({ s, all: view, source: rec.source?.id ?? null, controller: rec.controller }, d.cond);
   if (d.d === 'whileObject') return whileObjectHolds(s, d); // std-rx32 (CR 611.2b)
   // std-control-1 (CR 500.7): dormant in the turn it began in (core/durations.ts#nextTurnBegins); audit-fix-2: with `turn`, during that extra turn only
+  if (d.d === 'duringNextTurn' && d.whose !== undefined) return false; // edh-c-76: dormant until that player's next turn begins (core/durations.ts#nextTurnBegins turns it into endOfTurn)
   if (d.d === 'duringNextTurn') return d.turn === undefined ? s.turn.number > rec.startedTurn : s.turn.extraTurnId === d.turn && s.turn.number > rec.startedTurn;
+  if (d.d === 'duringNextCombat') return duringNextCombatNow(s, d); // edh-d-88 (CR 611.2a, 500.8)
   if (d.d !== 'whileSource') return true;
   const o = rec.source ? s.objects[rec.source.id] : undefined;
   if (!o || !rec.source || o.zone !== rec.source.zone) return false; // CR 611.2b, 400.7
@@ -439,6 +457,7 @@ function durationActive(s: GameState, view: CharsView, rec: ContinuousEffectRec)
     case 'controlled': return (view.get(o.id)?.controller ?? o.controller) === rec.controller;
     case 'attached': return o.attachedTo !== undefined;
     case 'tapped': noteLayerRead(READ_TAPPED); return o.tapped;
+    case 'controlledTapped': noteLayerRead(READ_TAPPED); return o.tapped && (view.get(o.id)?.controller ?? o.controller) === rec.controller; // edh-next-50 (CR 611.2b)
   }
 }
 
@@ -446,6 +465,16 @@ function durationActive(s: GameState, view: CharsView, rec: ContinuousEffectRec)
 
 /** The evaluation context of a source: "you" is its controller, `self` its object. */
 export const cxOf = (ctx: RuleContext, src: RuleSource): EvalCx => ({ s: ctx.view.s, all: ctx.view, source: src.source, controller: src.controller });
+
+/**
+ * edhn81 (CR 122.2, 400.7; Skullbriar, the Walking Grave): does this object, as it has abilities in the zone it is in now, keep its counters as it moves to a zone other than
+ * a hand or a library? A rule modification `countersRemain` of its own (the source is the object itself), functioning in its current zone. The caller decides the destination.
+ */
+export function countersRemainOnMove(s: GameState, id: ObjectId): boolean {
+  const ctx = ruleContext(s);
+  if (!ctx) return false;
+  return ctx.sources.some((src) => src.effect.s === 'rule' && src.effect.rule === 'countersRemain' && src.source === id);
+}
 
 // ---- Static goad (Cloud C3, batch 3) -----------------------------------------------------------------------------------------------------------------------
 
@@ -526,6 +555,11 @@ export function staticGoadersOf(s: GameState, id: ObjectId): readonly PlayerId[]
 
 /** Does the reference (a player reference or an object reference) include this player or object? */
 export function refIncludes(cx: EvalCx, ref: ObjRef | PlayerRef, who: ObjectId | PlayerId): boolean {
+  // edh-c-66 (CR 607.2d, 402.2; Cursed Rack): a linked reference that names players ("The chosen player's maximum hand size is four") is a player reference: the source's link keeps players, not objects
+  if (ref.ref === 'linked' && cx.source !== null) {
+    const players = readLink(cx.s.objects[cx.source], ref.link)?.players;
+    if (players !== undefined && players.length > 0) return players.includes(who);
+  }
   if (isPlayerRef(ref)) return playersOf(cx, ref).includes(who);
   return objRefIncludes(cx, ref, who);
 }
@@ -619,7 +653,7 @@ export function overlayAsSpell(s: GameState, id: ObjectId, caster: GameObject['c
   if (hit !== undefined) return hit;
   // p2-exile-play-1 (CR 601.2a): the zone it would be cast from, as the cast record says it once cast (statics/match.ts reads `castFrom` there for a card not yet on the
   // stack): "Noncreature spells you cast from exile have convoke" reaches a card in exile
-  const from = { ...(o.cast ?? {}), from: castOriginOf(o) } as NonNullable<GameObject['cast']>;
+  const from = { ...(o.cast ?? {}), from: castOriginOf(o, caster) } as NonNullable<GameObject['cast']>;
   let out: GameState = { ...s, objects: { ...s.objects, [id]: { ...o, zone: 'stack' as const, controller: caster, cast: from } }, zones: { ...s.zones, stack: [...s.zones.stack, id] } };
   // std-rx26 (CR 601.2a, 601.2f): the keyword a waiting "the next spell you cast this turn has convoke" rider would give this card as it is put on the stack
   // (core/turn-effects.ts#lockNextSpellKeywords makes the same record when it is cast), so castCheck sees the cost the cast will pay

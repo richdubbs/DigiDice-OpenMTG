@@ -12,5 +12,94 @@
   ],
   "reminder": "When you cast this spell, you may reveal the top {n} cards of your library. You may cast spells with the same name as this spell from among those cards without paying their mana costs. Put the rest on the bottom of your library.",
   "multiple": "independent",
-  "status": "planned"
+  "status": "implemented",
+  "expand": [
+    {
+      "kind": "triggered",
+      "text": "When you cast this spell, you may reveal the top N cards of your library, where N is its ripple number. You may cast spells with the same name as this spell from among the revealed cards without paying their mana costs. Put the rest on the bottom of your library in any order.",
+      "zone": [
+        "stack"
+      ],
+      "trigger": {
+        "on": [
+          {
+            "ev": "cast",
+            "player": "you",
+            "spell": {
+              "self": true
+            }
+          }
+        ]
+      },
+      "effect": {
+        "targets": [],
+        "steps": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "reveal",
+                "who": {
+                  "ref": "you"
+                },
+                "what": {
+                  "ref": "topCards",
+                  "player": {
+                    "ref": "you"
+                  },
+                  "count": "$amount"
+                },
+                "as": "rippled"
+              },
+              {
+                "op": "cast",
+                "who": {
+                  "ref": "you"
+                },
+                "what": {
+                  "ref": "each",
+                  "filter": {
+                    "is": {
+                      "ref": "bound",
+                      "name": "rippled"
+                    },
+                    "zone": "library",
+                    "sharesWith": {
+                      "with": {
+                        "ref": "self"
+                      },
+                      "quality": "name"
+                    }
+                  }
+                },
+                "free": true,
+                "select": {}
+              },
+              {
+                "op": "move",
+                "what": {
+                  "ref": "each",
+                  "filter": {
+                    "is": {
+                      "ref": "bound",
+                      "name": "rippled"
+                    },
+                    "zone": "library"
+                  }
+                },
+                "to": {
+                  "zone": "library",
+                  "position": "bottom",
+                  "order": "chosen"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }

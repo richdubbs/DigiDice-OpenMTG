@@ -123,7 +123,7 @@ describe('std-combat-2 guard G9 (design 6.8): near-miss mutations fail or differ
   }
 });
 
-describe('std-combat-2 guard G2 (design 6.8): a nonsense word never leaves an automated card', () => {
+describe('std-combat-2 guard G2 (design 6.8): a nonsense word never leaves an automated card', { timeout: 60_000 }, () => {
   for (const t of MECH) {
     it(`${t.id}: replacing any one word of an example by an invented word makes the card not fully automated (a mode's name, a flavor word, aside)`, () => {
       for (const e of t.examples) {

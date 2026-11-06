@@ -1,0 +1,12 @@
+# edh-zones-13 (Commander effort, lane edh-zones; test/cloud/edh-zones-13, golden edh-zones-13-review.json): sentences after an "If you do" branch join its then, search "not named" / "that each have different names" / "exactly N", for each card type put into your hand, tapped and attacking from among them, any number into your hand and the rest into your graveyard (counted), "and/or" search with one tapped and the other in hand, "shares a creature type ... and has mana value equal to 1 plus that creature's", shuffle then reveal until, "~ and enchanted creature each get +X/+X", the bottom of that player's library, exile a library and shuffle the hand into it
+Trail of Crumbs
+Tiamat
+Atraxa, Grand Unifier
+Winota, Joiner of Forces
+Dihada, Binder of Wills
+Burning-Rune Demon
+Navigation Orb
+Pyre of Heroes
+Creative Technique
+Nighthowler
+Jace, the Mind Sculptor

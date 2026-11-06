@@ -1,0 +1,376 @@
+[
+  {
+    "id": "eff.edhd29.search.putAttachedToPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 701.23a",
+      "CR 303.4f",
+      "CR 303.4g",
+      "CR 702.5a"
+    ],
+    "pattern": "you may search your library for ( a | an ) {f:Filter} card , put it onto the battlefield attached to {p:Player} , then shuffle",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "you"
+          },
+          "zone": "library",
+          "filter": "$f",
+          "max": 1,
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "you"
+            },
+            "attachedToPlayer": "$p"
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When ~ dies, you may search your library for a Curse card, put it onto the battlefield attached to target opponent, then shuffle."
+      },
+      {
+        "text": "When ~ enters, you may search your library for an Aura card, put it onto the battlefield attached to target player, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, you may search your library for a Curse card, put it onto the battlefield, then shuffle.",
+      "When ~ dies, you may search your library for a Curse card, put it onto the battlefield attached to target creature, then shuffle.",
+      "When ~ dies, you search your library for a Curse card, put it onto the battlefield attached to target player, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhd29.return.transformedAttachedObject",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.7",
+      "CR 712.14a",
+      "CR 303.4f",
+      "CR 303.4g",
+      "CR 110.2"
+    ],
+    "pattern": "return {o:Obj} to the battlefield transformed under your control attached to {a:Obj}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "transformed": true,
+        "attachedTo": "$a"
+      }
+    },
+    "subject": "none",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "When ~ dies, return it to the battlefield transformed under your control attached to target creature an opponent controls."
+      },
+      {
+        "text": "When ~ dies, return it to the battlefield transformed under your control attached to target land."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, return it to the battlefield under your control attached to target creature an opponent controls.",
+      "When ~ dies, return it to the battlefield transformed attached to target creature an opponent controls.",
+      "When ~ dies, return it to the battlefield transformed under your control attached to target player."
+    ]
+  },
+  {
+    "id": "eff.edhd29.return.transformedAttachedPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.7",
+      "CR 712.14a",
+      "CR 303.4f",
+      "CR 303.4g",
+      "CR 702.5a"
+    ],
+    "pattern": "return {o:Obj} to the battlefield transformed under your control attached to {p:Player}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "transformed": true,
+        "attachedToPlayer": "$p"
+      }
+    },
+    "subject": "none",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "When ~ dies, return it to the battlefield transformed under your control attached to target player."
+      },
+      {
+        "text": "At the beginning of your end step, return ~ to the battlefield transformed under your control attached to target opponent."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, return it to the battlefield under your control attached to target opponent.",
+      "When ~ dies, return it to the battlefield transformed attached to target opponent.",
+      "When ~ dies, return it to the battlefield transformed under your control attached to target creature."
+    ]
+  },
+  {
+    "id": "eff.edhd29.sacrificeChoice.thenLoseLife",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.21a",
+      "CR 608.2d",
+      "CR 119.3"
+    ],
+    "pattern": "{p:Player} sacrifice[s] ( a | an ) {f:Filter} of their choice , then that player loses {n:Qty} life",
+    "build": [
+      {
+        "op": "sacrificeChoice",
+        "who": "$p",
+        "filter": "$f",
+        "count": 1
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$n"
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, target opponent sacrifices a creature of their choice, then that player loses 2 life."
+      },
+      {
+        "text": "At the beginning of your upkeep, target player sacrifices a nonland permanent of their choice, then that player loses 1 life."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, target opponent sacrifices a creature of their choice, then loses 2 life.",
+      "At the beginning of your upkeep, target opponent sacrifices a creature of their choice, then you lose 2 life.",
+      "At the beginning of your upkeep, target opponent sacrifices a creature of your choice, then that player loses 2 life."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhd29.forEach.mayAttachEquipment",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.3a",
+      "CR 301.5c",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "for each of {o:Objs} , you may attach ( an | a ) Equipment you control to it",
+    "build": {
+      "op": "forEach",
+      "over": "$o",
+      "as": "each",
+      "do": [
+        {
+          "op": "may",
+          "who": {
+            "ref": "you"
+          },
+          "do": [
+            {
+              "op": "chooseObjects",
+              "who": {
+                "ref": "you"
+              },
+              "from": {
+                "ref": "each",
+                "filter": {
+                  "subtypes": [
+                    "Equipment"
+                  ],
+                  "controller": "you",
+                  "not": {
+                    "attachedToObject": "$o"
+                  }
+                }
+              },
+              "min": 1,
+              "max": 1,
+              "as": "attachChoice"
+            },
+            {
+              "op": "attach",
+              "what": {
+                "ref": "bound",
+                "name": "attachChoice"
+              },
+              "to": {
+                "ref": "bound",
+                "name": "each"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Create three 1/1 white Soldier creature tokens. For each of those tokens, you may attach an Equipment you control to it."
+      },
+      {
+        "text": "Create two 2/2 red Rebel creature tokens. They gain haste until end of turn. For each of those creatures, you may attach an Equipment you control to it."
+      }
+    ],
+    "counterExamples": [
+      "Create three 1/1 white Soldier creature tokens. For each of those tokens, you may attach an Aura you control to it.",
+      "Create three 1/1 white Soldier creature tokens. For each of those tokens, attach an Equipment you control to it.",
+      "Create three 1/1 white Soldier creature tokens. For each of those tokens, you may attach an Equipment an opponent controls to it."
+    ]
+  },
+  {
+    "id": "eff.edhd29.return.attachedToPlayer",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 400.7",
+      "CR 303.4f",
+      "CR 303.4g",
+      "CR 702.5a",
+      "CR 110.2"
+    ],
+    "pattern": "return {o:Obj} to the battlefield attached to {p:Player}",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "attachedToPlayer": "$p"
+      }
+    },
+    "subject": "none",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "When ~ dies, return it to the battlefield attached to target opponent."
+      },
+      {
+        "text": "Whenever an Aura is put into your graveyard from the battlefield, return it to the battlefield attached to you at the beginning of your next end step."
+      }
+    ],
+    "counterExamples": [
+      "When ~ dies, return it to the battlefield attached to target creature.",
+      "When ~ dies, return it to the battlefield under your control.",
+      "When ~ dies, return it to the battlefield transformed attached to target opponent."
+    ]
+  },
+  {
+    "id": "eff.edhd29.may.attachToOpponent",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.3a",
+      "CR 303.4",
+      "CR 702.5a",
+      "CR 601.7a"
+    ],
+    "pattern": "you may attach ( a | an ) {f:Filter} to one of your opponents",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [
+        {
+          "op": "chooseObjects",
+          "who": {
+            "ref": "you"
+          },
+          "from": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "min": 1,
+          "max": 1,
+          "as": "attachChoice"
+        },
+        {
+          "op": "attach",
+          "what": {
+            "ref": "bound",
+            "name": "attachChoice"
+          },
+          "to": {
+            "ref": "anOpponent"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your end step, you may attach a Curse attached to you to one of your opponents. If you do, gain 3 life."
+      },
+      {
+        "text": "At the beginning of your upkeep, you may attach an Aura you control to one of your opponents."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your end step, you may attach a Curse attached to you to target opponent.",
+      "At the beginning of your end step, you attach a Curse attached to you to one of your opponents.",
+      "At the beginning of your end step, you may attach a Curse attached to you to each of your opponents."
+    ]
+  }
+]

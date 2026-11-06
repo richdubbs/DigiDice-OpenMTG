@@ -13,8 +13,12 @@
  */
 import type { Game } from '../core/game';
 import type { ObjectId, PlayerId } from '../types/ids';
-import { addCounters } from './counters';
+import { addCounters, stunRemovalDenial } from './counters';
 import { charsOfObject, controllerOf } from './characteristics';
+import { bandOf } from './combat-state';
+import { asAttachedChoices } from '../statics/hooks';
+import { setLink } from '../statics/links';
+import { CREATURE_TYPES } from '../statics/subtypes';
 
 /**
  * CR 701.26a: tap an untapped permanent. Returns whether it changed (an already tapped permanent can't be tapped again). FAST5X E20 INTERFACE CHANGE (additive):
@@ -46,6 +50,10 @@ export const RULED_COUNTER_KINDS: readonly string[] = Object.freeze(['stun']);
 export function stunInsteadOfUntap(g: Game, id: ObjectId): boolean {
   const o = g.obj(id);
   if (!o.tapped || !Object.hasOwn(o.counters, 'stun') || (o.counters['stun'] ?? 0) <= 0) return false;
+  if (stunRemovalDenial(g.s, id)) { // edh-players-22 (CR 122.1d, 614.17; Fear of Sleep Paralysis, ruling 2024-09-20): the replacement still applies, but the counter can't be removed: it stays and the permanent stays tapped
+    g.log(`${g.nameOf(id)} doesn't untap, and its stun counter can't be removed.`, { rules: ['CR 122.1d', 'CR 614.17'] });
+    return true;
+  }
   addCounters(g, id, 'stun', -1);
   g.log(`${g.nameOf(id)} doesn't untap: a stun counter is removed from it instead.`, { rules: ['CR 122.1d', 'CR 614.1a'] });
   return true;
@@ -68,20 +76,47 @@ export function untapPermanent(g: Game, id: ObjectId): boolean {
  */
 export function attachPermanent(g: Game, id: ObjectId, to: ObjectId | PlayerId): void {
   const o = g.obj(id);
-  if (o.attachedTo !== undefined && o.attachedTo !== to) g.emit({ type: 'attached', objectId: id, to: null }); // CR 701.3d
+  if (o.attachedTo !== undefined && o.attachedTo !== to) g.emit({ type: 'attached', objectId: id, to: null, ...hostFrom(g, o.attachedTo) }); // CR 701.3d
+  chooseAsAttached(g, id, to); // edh-next-146 (CR 701.3a, 607.2d)
   o.attachedTo = to;
   o.timestamp = g.newTimestamp(); // CR 613.7e
   g.emit({ type: 'attached', objectId: id, to });
+}
+
+/**
+ * edh-next-146 (CR 701.3a, 607.2d, 201.3, 205.3m; Psychic Paper): "As this Equipment becomes attached to a creature, choose a creature card name and a creature type.": the choices the
+ * attachment's own `chooseAsAttached` rule lists for this host are made by its controller as it becomes attached (part of the event: no stack, nobody can respond), each kept in its
+ * link, which keeps only the last value chosen ("the last chosen name"). A host the rule's `of` does not match (or a player) asks nothing.
+ */
+export function chooseAsAttached(g: Game, id: ObjectId, to: ObjectId | PlayerId): void {
+  const choices = asAttachedChoices(g.s, id, to);
+  if (choices.length === 0) return;
+  const o = g.obj(id);
+  const player = controllerOf(g.s, id);
+  const rules = ['CR 701.3a', 'CR 607.2d'];
+  const name = g.nameOf(id);
+  for (const ch of choices) {
+    const prompt = `As ${name} becomes attached to ${g.nameOf(to as ObjectId)}, choose ${ch.what === 'color' ? 'a color' : ch.what === 'creatureType' ? 'a creature type' : ch.cardKind === 'creature' ? 'a creature card name' : 'a card name'}.`;
+    const value = ch.what === 'color'
+      ? g.choose({ kind: 'chooseColor', player, prompt, options: ['W', 'U', 'B', 'R', 'G'], rules }).color // kept as the letter, as an "as it enters" color choice is (effects/bodies/m5.ts)
+      : g.choose({ kind: 'chooseName', player, prompt, what: ch.what, ...(ch.what === 'creatureType' ? { options: [...CREATURE_TYPES] } : {}), ...(ch.cardKind !== undefined ? { cardKind: ch.cardKind } : {}), rules }).name;
+    setLink(o, ch.link, { values: [value] });
+    g.log(`${name} becomes attached with ${value} chosen.`, { rules, level: 'info' });
+  }
 }
 
 /** CR 701.3d: unattach an attachment; it stays on the battlefield attached to nothing. Returns whether it was attached. */
 export function unattachPermanent(g: Game, id: ObjectId): boolean {
   const o = g.obj(id);
   if (o.attachedTo === undefined) return false;
+  const from = hostFrom(g, o.attachedTo);
   delete o.attachedTo;
-  g.emit({ type: 'attached', objectId: id, to: null });
+  g.emit({ type: 'attached', objectId: id, to: null, ...from });
   return true;
 }
+
+/** edh-perms-10 (CR 701.3d): what an unattach event names as the permanent it left: an object (a card or token), never a player. */
+export const hostFrom = (g: Game, host: ObjectId | PlayerId): { from?: ObjectId } => (g.s.objects[host] !== undefined ? { from: host } : {});
 
 /**
  * CR 508.4: a creature put onto the battlefield attacking (or that an effect says is attacking) becomes an attacking creature in the current combat, attacking
@@ -91,7 +126,10 @@ export function unattachPermanent(g: Game, id: ObjectId): boolean {
 export function addAttacker(g: Game, id: ObjectId, defender: PlayerId | ObjectId, defendingPlayer: PlayerId): void {
   const c = g.s.combat;
   if (!c || c.attackers.some((a) => a.id === id)) return;
-  c.attackers.push({ id, defender, defendingPlayer, blockedBy: [], blocked: false });
+  // edh-d-90 (CR 702.19e): one put onto the battlefield attacking a planeswalker is marked so, as a declared attacker is (core/combat.ts)
+  const pw = g.s.objects[defender];
+  const atPw = pw !== undefined && charsOfObject(g.s, pw).types.includes('Planeswalker');
+  c.attackers.push({ id, defender, defendingPlayer, blockedBy: [], blocked: false, ...(atPw ? { atPlaneswalker: true as const } : {}) });
 }
 
 /**
@@ -149,6 +187,63 @@ export function entersAttackingAsReturned(g: Game, id: ObjectId, how: { defender
   addAttacker(g, id, how.defender, how.defendingPlayer);
   g.log(`${g.nameOf(id)} enters tapped and attacking ${how.defender === how.defendingPlayer ? g.player(how.defendingPlayer).name : g.nameOf(how.defender)}, as the creature returned to pay for it was.`, { rules: [rule, 'CR 508.4', 'CR 508.4d'], level: 'action' });
   return true;
+}
+
+/**
+ * edh-combat-4 (CR 506.3e, 509.3a; Brimaz, King of Oreskos): the creatures just put onto the battlefield "blocking" an attacking creature. Each becomes a blocking
+ * creature when it is a creature (never a battle, CR 506.3a, 506.3f) controlled by the player the attacker attacks (that player, a planeswalker they control or a
+ * battle they protect: `AttackerState.defendingPlayer`, CR 506.3e); otherwise it enters but is never a blocking creature. It was never declared as a blocker, so no
+ * "whenever ~ blocks" ability triggers (CR 509.3a); the attacker "becomes blocked by a creature" (CR 509.3d) and, if it was unblocked, "becomes blocked" (CR 509.3c): `blockerEntered`. Restrictions on blocking don't apply to it (CR 509.1b is about the declaration). The attacker is
+ * a blocked creature (CR 509.1h, 506.4). Returns the ids that became blocking creatures.
+ */
+export function enterBlocking(g: Game, ids: readonly ObjectId[], attackerId: ObjectId): ObjectId[] {
+  const combat = g.s.combat;
+  const att = combat?.attackers.find((a) => a.id === attackerId);
+  if (!combat || !att || !g.s.objects[attackerId] || g.s.objects[attackerId]!.zone !== 'battlefield') return [];
+  const out: ObjectId[] = [];
+  for (const id of ids) {
+    const o = g.s.objects[id];
+    if (!o || o.zone !== 'battlefield' || combat.blockers.some((b) => b.id === id)) continue;
+    const c = charsOfObject(g.s, o);
+    if (!c.types.includes('Creature') || c.types.includes('Battle')) continue; // CR 506.3a, 506.3f
+    if (controllerOf(g.s, o) !== att.defendingPlayer) continue; // CR 506.3e: it blocks only a creature attacking its controller (or what they control or protect)
+    const wasBlocked = att.blocked;
+    att.blockedBy.push(id);
+    att.blocked = true;
+    combat.blockers.push({ id, blocking: [attackerId], defendingPlayer: att.defendingPlayer });
+    // edhv31 (CR 702.22h): the rest of the attacker's band becomes blocked by that same creature
+    for (const m of bandOf(g.s, attackerId)) {
+      if (m.id === attackerId || m.blockedBy.includes(id)) continue;
+      const mWasBlocked = m.blocked;
+      m.blockedBy.push(id);
+      m.blocked = true;
+      combat.blockers.find((b) => b.id === id)!.blocking.push(m.id);
+      g.emit({ type: 'blockerEntered', blocker: id, attacker: m.id, attackerWasBlocked: mWasBlocked, blockCount: m.blockedBy.length });
+    }
+    g.emit({ type: 'blockerEntered', blocker: id, attacker: attackerId, attackerWasBlocked: wasBlocked, blockCount: att.blockedBy.length }); // CR 509.3c-d: "becomes blocked [by a creature]" abilities see it, "blocks" ones do not
+    out.push(id);
+  }
+  if (out.length > 0) g.log(`${out.map((id) => g.nameOf(id)).join(', ')} ${out.length === 1 ? 'is' : 'are'} blocking ${g.nameOf(attackerId)}.`, { rules: ['CR 506.3e', 'CR 509.3a'], level: 'action' });
+  return out;
+}
+
+/**
+ * trek-18 (CR 508.7c-d, 506.2; used by effects/handlers/trek-18.ts#reselectAttack): what a creature controlled by `ctl` may be attacking: each opponent of `ctl` (the defending
+ * players), the planeswalkers they control and the battles they protect, as `enterAttackingChoosing` lists them.
+ */
+export function attackableDefenders(g: Game, ctl: PlayerId): { id: string; label: string; player: PlayerId }[] {
+  const s = g.s;
+  const defenders = g.opponents(ctl).map((p) => p.id);
+  const options: { id: string; label: string; player: PlayerId }[] = defenders.map((p) => ({ id: p, label: g.player(p).name, player: p }));
+  for (const pid of s.zones.battlefield) {
+    const x = s.objects[pid]!;
+    if (x.phasedOut) continue;
+    const xc = charsOfObject(s, x);
+    const xctl = controllerOf(s, x);
+    if (xc.types.includes('Planeswalker') && defenders.includes(xctl)) options.push({ id: x.id, label: g.nameOf(x.id), player: xctl });
+    else if (xc.types.includes('Battle') && x.protector !== undefined && defenders.includes(x.protector)) options.push({ id: x.id, label: g.nameOf(x.id), player: x.protector });
+  }
+  return options;
 }
 
 /**

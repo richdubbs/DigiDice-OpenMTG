@@ -1,0 +1,97 @@
+[
+  {
+    "id": "eff.edhv114.eot.play.linked.owned",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 611.2a",
+      "CR 601.3",
+      "CR 305.1",
+      "CR 108.3"
+    ],
+    "pattern": "until end of turn , you may play cards you own exiled with ~",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "play",
+          "of": {
+            "is": {
+              "ref": "linked",
+              "link": "exiled"
+            }
+          },
+          "ownOnly": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "may",
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Look at the top card of your library, then exile it face down.\n{1}, {T}: Until end of turn, you may play cards you own exiled with ~."
+      },
+      {
+        "text": "{1}, {T}: Exile the top card of your library.\nWhenever ~ attacks, until end of turn, you may play cards you own exiled with ~."
+      }
+    ],
+    "counterExamples": [
+      "{1}, {T}: Exile the top card of your library.\nWhenever ~ attacks, until end of turn, you may play cards exiled with ~.",
+      "{1}, {T}: Exile the top card of your library.\nWhenever ~ attacks, until your next turn, you may play cards you own exiled with ~.",
+      "{1}, {T}: Exile the top card of your library.\nWhenever ~ attacks, until end of turn, you may play cards an opponent owns exiled with ~."
+    ]
+  },
+  {
+    "id": "eff.edhv114.play.obj.free",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.9",
+      "CR 601.2",
+      "CR 305.1",
+      "CR 608.2g"
+    ],
+    "pattern": "you may play {o:Obj} without paying its mana cost",
+    "build": {
+      "op": "cast",
+      "who": {
+        "ref": "you"
+      },
+      "what": "$o",
+      "free": true,
+      "optional": true,
+      "play": true
+    },
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Reveal the top card of your library. You may play that card without paying its mana cost. If you don't, put it into your graveyard."
+      },
+      {
+        "text": "Reveal the top card of your library. You may play it without paying its mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top card of your library. You may play that card.",
+      "Reveal the top card of your library. You may play that card without paying its mana cost twice.",
+      "Reveal the top card of your library. You may play that card by paying its mana cost."
+    ]
+  }
+]

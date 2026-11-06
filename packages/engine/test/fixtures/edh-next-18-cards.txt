@@ -1,0 +1,7 @@
+# edh-next-18 (Commander lane edh-next, EDHREC ranks 5,001-6,500, fifth pass): the next spell can be cast as though it had flash, players can't pay life or sacrifice to cast or activate, Tromokratis, a doubling of damage this turn. After editing: npm run cards -- fixtures
+Quicken
+Progenitor's Icon
+Angel of Jubilation
+Yasharn, Implacable Earth
+Tromokratis
+Insult // Injury

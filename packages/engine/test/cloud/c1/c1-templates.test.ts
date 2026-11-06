@@ -24,6 +24,8 @@ const C1 = c1 as Template[];
 /** Design 6.9 evidence for a stable template: three hand-verified golden cards, or, for a sentence only one real card prints, that card. */
 const WHOLE_CORPUS: Readonly<Record<string, { cards: readonly string[]; line: RegExp }>> = {
   'eff.c1.target.cantbecountered': { cards: ['Vexing Shusher'], line: /(^|\n|: |\. )Target spell can't be countered\./ },
+  // edh-players-2: promoted on the one card that prints the sentence (Bound // Determined says "Other spells ..." and stays manual: the 6.9 deviation is named in that round's record)
+  'eff.c1.spells.cantbecountered.thisturn': { cards: ['Veil of Summer'], line: /(^|\n|: |\. )Spells you control can't be countered this turn\./ },
 };
 const OPTS = defaultParseOptions({ templates: [...TEMPLATE_SET], capabilities: ENGINE_CAPABILITIES }); // what a decklist card gets (design 5.2; `needs`)
 

@@ -11,6 +11,8 @@
 import type { CardType } from '../../types/card';
 import type { EffectStep } from '../../types/ability';
 import { charsOfObject } from '../../rules/characteristics';
+import { matchesFilter } from '../../rules/filter';
+import { filterCtxOf } from '../refs';
 import type { StepHandler } from '../api';
 import { runSteps } from '../run';
 import { bindAs, byHand, firstPlayer, NOTHING } from './zones-util';
@@ -18,7 +20,7 @@ import { bindAs, byHand, firstPlayer, NOTHING } from './zones-util';
 type ActionStep = Extract<EffectStep, { op: 'action' }>;
 
 /** Capability names (`feature:action.native.<name>`) of the native action of this module. */
-export const MELD_PAIR_FEATURES: readonly string[] = ['action.native.meldPair'];
+export const MELD_PAIR_FEATURES: readonly string[] = ['action.native.meldPair', 'action.native.meldPair.attacking' /* edh-d-89: `partner`, `entersAttacking` (CR 508.4) */];
 
 /** The card types a meld partner is named by in its pair's condition ("a creature named", "a land named", "an artifact named"). */
 const PARTNER_TYPES: readonly CardType[] = ['Creature', 'Land', 'Artifact', 'Enchantment', 'Planeswalker'];
@@ -46,7 +48,7 @@ const meldPair: StepHandler<ActionStep> = (cx, st) => {
     const o = g.s.objects[id];
     if (!o || o.phasedOut || o.owner !== player || o.controller !== player) return false;
     const c = charsOfObject(g.s, o);
-    return c.name === meld.partner && partnerTypes.some((t) => c.types.includes(t));
+    return c.name === meld.partner && partnerTypes.some((t) => c.types.includes(t)) && (st.partner === undefined || matchesFilter(g.s, o, st.partner, filterCtxOf(cx))); // edh-d-89: the one the condition named
   });
   if (candidates.length === 0) {
     g.log(`Nothing is melded: ${g.player(player).name} doesn't own and control a permanent named ${meld.partner}.`, { rules: ['CR 701.42a', 'CR 603.4'], level: 'info' });
@@ -58,7 +60,7 @@ const meldPair: StepHandler<ActionStep> = (cx, st) => {
   bindAs(cx, PARTNER, [{ id: partner, zone: 'battlefield' }]);
   return runSteps(cx, [
     { op: 'move', what: { ref: 'union', of: [{ ref: 'self' }, { ref: 'bound', name: PARTNER }] }, to: { zone: 'exile' }, as: BOTH },
-    { op: 'action', action: 'meld', subject: { ref: 'bound', name: BOTH }, who: st.who, arg: meld.result },
+    { op: 'action', action: 'meld', subject: { ref: 'bound', name: BOTH }, who: st.who, arg: meld.result, ...(st.entersAttacking === true ? { entersAttacking: true } : {}) },
   ] as EffectStep[]);
 };
 

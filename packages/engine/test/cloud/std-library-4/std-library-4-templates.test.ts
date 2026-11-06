@@ -188,9 +188,9 @@ describe('std-library-4 Cond (CR 603.4, 406.1): "a card was put into exile this 
 });
 
 describe('std-library-4 engine capabilities (CR 119.4, 614.1a)', () => {
-  it('the payLife replacement form is registered; the trigger form "whenever you pay life" is not (fail closed)', () => {
+  it('the payLife replacement form is registered; the trigger form "whenever you pay life" is registered by edh-next-109 (lifePaid event, rules/life.ts#payLife)', () => {
     expect(ENGINE_CAPABILITIES.has('feature:replace.on.action.payLife')).toBe(true);
-    expect(ENGINE_CAPABILITIES.has('feature:ev.action.payLife')).toBe(false);
+    expect(ENGINE_CAPABILITIES.has('feature:ev.action.payLife')).toBe(true); // edh-next-109 (was false before the event existed)
   });
 });
 

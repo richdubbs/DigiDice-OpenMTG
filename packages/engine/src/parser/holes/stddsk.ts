@@ -34,3 +34,15 @@ export const notSameNameCard: HoleFn = (ctx, pos) =>
     })
     // the zone of the card is the template's ("search your library for"), so the hole's "no zone stated" note does not apply; every other note stays
     .map((a) => ({ ...a, ...(a.flags ? { flags: a.flags.filter((x) => x !== 'zone-unstated') } : {}) }));
+
+/**
+ * edh-c-51 (CR 400.1, 701.9a; Persecute, Tsabo's Decree): `CardsOfTemplateZone`, the description of cards whose zone the template states ("... reveals their hand and
+ * discards all <cards>": the cards of the hand): the `Filter` readings of cards of an earlier choice ("of that color", "of that type", "with that name") with no zone of their own and no controller, only the `zone-unstated` note of the hole dropped.
+ */
+export const cardsOfTemplateZone: HoleFn = (ctx, pos) =>
+  ctx.call('Filter', pos)
+    .filter((a) => {
+      const f = a.value as { zone?: unknown; controller?: unknown; owner?: unknown; chosen?: unknown } | null;
+      return f !== null && typeof f === 'object' && f.chosen !== undefined && f.zone === undefined && f.controller === undefined && f.owner === undefined;
+    })
+    .map((a) => ({ ...a, ...(a.flags ? { flags: a.flags.filter((x) => x !== 'zone-unstated') } : {}) }));

@@ -133,8 +133,9 @@ describe('std-rx7 keyword casualty (CR 702.153a)', () => {
     const d = compileCard(card('Example Relic', 'Instant', 'Casualty 3\nYou gain 2 life.'));
     expect(d.automation.level).toBe('full');
   });
-  it('"Casualty X" with its own rider stays manual (fails closed: the copy\'s exceptions are not read)', () => {
-    const d = compileCard(card('Example Relic', 'Legendary Planeswalker — Bolas', 'Casualty X. The copy isn\'t legendary and has starting loyalty X.\n+1: You gain 1 life.', { loyalty: '3' } as never));
+  it('"Casualty X" with a rider other than the one edh-next-137 reads stays manual (fails closed: the copy\'s exceptions are not read)', () => {
+    // edh-next-137 (CR 702.153a, 707.9b; Ob Nixilis, the Adversary): "The copy isn't legendary and has starting loyalty X." is read now; another rider is not
+    const d = compileCard(card('Example Relic', 'Legendary Planeswalker — Bolas', 'Casualty X. The copy isn\'t legendary and has starting loyalty 2.\n+1: You gain 1 life.', { loyalty: '3' } as never));
     expect(d.automation.level).not.toBe('full');
   });
 });

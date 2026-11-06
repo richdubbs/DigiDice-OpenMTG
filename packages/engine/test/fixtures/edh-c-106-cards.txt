@@ -1,0 +1,8 @@
+# edh-c-106 (Commander EDHREC ranks 25,001-25,500, third pass): "the other creature" of a damage / block trigger, "enters with a counter for each other spell cast this turn", "can block <filter> as though it had reach", "unless you pay <cost>, <instructions>", "sacrifice a <filter> of an opponent's choice", "that card" after a random discard, "unless that player sacrifices ... or discards a card". After editing: npm run cards -- fixtures
+Venomous Fangs
+Venom
+Dragon Hunter
+Storm Entity
+Kindle the Carnage
+Forbidden Ritual
+Demonic Hordes

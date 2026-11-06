@@ -22,9 +22,12 @@ describe('CR 601.2i, 109.2, 400.7 (wave 7 merge): "another spell" only where the
     const SAGE = card('Test Sage', 'Sorcery', "When you cast this spell, if you've cast another spell this turn, copy this spell.\nYou gain 2 life.");
     expect(SAGE.automation.level).toBe('full');
   });
-  it('a creature\'s enters trigger ("draw a card if you\'ve cast another blue spell this turn"): not automated (its own spell would count)', () => {
+  it('a creature\'s enters trigger ("draw a card if you\'ve cast another blue spell this turn"): automated since edh-c-53 (the history reader leaves out the spell the permanent resolved from; played in cloud/edh-c-53)', () => {
     const THIEF = card('Test Thief', 'Creature — Faerie Rogue', "Flying\nWhen this creature enters, draw a card if you've cast another blue spell this turn.", ['2', '1']);
-    expect(THIEF.automation.level).not.toBe('full');
-    expect(manualSomewhere(THIEF)).toBe(true);
+    expect(THIEF.automation.level).toBe('full');
+  });
+  it('another kind of ability of a permanent keeps the refusal: an activated ability that asks "another spell" is not automated', () => {
+    const ARTIFACT = card('Test Gadget', 'Artifact', "{T}: Draw a card if you've cast another blue spell this turn.");
+    expect(ARTIFACT.automation.level).not.toBe('full');
   });
 });

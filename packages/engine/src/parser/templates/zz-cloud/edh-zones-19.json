@@ -1,0 +1,77 @@
+[
+  {
+    "id": "eff.edhz19.dig.anyNumber.bf.totalMv",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 202.3",
+      "CR 110.2a"
+    ],
+    "pattern": "put any number of {f:Filter} cards with total mana value {m:Qty} or less from among {g:Seen} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen",
+        "groupLimit": {
+          "stat": "manaValue",
+          "cmp": {
+            "op": "<=",
+            "value": "$m"
+          }
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "needs": [
+      "op:chooseObjects.groupLimit"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top six cards of your library. Put any number of artifact cards with total mana value 5 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "When this creature dies, look at the top five cards of your library. Put any number of creature cards with total mana value 3 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top six cards of your library. Put any number of artifact cards with total mana value 5 or greater from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. Put any number of artifact cards with total power 5 or less from among them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top six cards of your library. Put any number of artifact cards with total mana value 5 or less from among them into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  }
+]

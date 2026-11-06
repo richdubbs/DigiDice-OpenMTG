@@ -2,7 +2,7 @@
  * Cloud r3-mech: small hole grammars of its templates (parser/templates/zz-cloud/r3-mech.json).
  *
  * `SiegeWord`: one of the words a Siege chooses between as it enters ("As this enchantment enters, choose Khans or Dragons.", "... choose Abzan or Mardu."):
- * the two factions of Fate Reforged and the five clans of Tarkir: Dragonstorm. A closed list (guard G2: any other word yields no parse); these words name no
+ * the two factions of Fate Reforged and the five clans of Tarkir: Dragonstorm (edht4: and the factions of Mirrodin Besieged and Struggle for Project Purity). A closed list (guard G2: any other word yields no parse); these words name no
  * game object and have no rules meaning of their own, the bulleted ability labelled with the chosen word is the one the permanent has (parser/segment.ts
  * #siegeMode, CR 614.12a, 607.2d). Value: the word as printed (capitalized).
  */
@@ -10,6 +10,10 @@ import type { HoleFn } from './core';
 
 const SIEGE_WORDS: Readonly<Record<string, string>> = {
   khans: 'Khans', dragons: 'Dragons', abzan: 'Abzan', jeskai: 'Jeskai', mardu: 'Mardu', sultai: 'Sultai', temur: 'Temur',
+  // edht4: the factions of Mirrodin Besieged ("choose Mirran or Phyrexian") and of Struggle for Project Purity ("choose Brotherhood or Enclave"), words with no rules meaning of their own
+  mirran: 'Mirran', phyrexian: 'Phyrexian', brotherhood: 'Brotherhood', enclave: 'Enclave',
+  // edhn115: the factions of Fallout's Battle of Hoover Dam ("choose NCR or Legion")
+  ncr: 'NCR', legion: 'Legion',
 };
 
 /** The words a Siege's choice may name (lower case), for parser/segment.ts. */

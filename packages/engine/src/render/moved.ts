@@ -19,31 +19,32 @@ export function movedInfo(kind: MovedKind, nouns: string[]): RefInfo {
 /** One plain wording of each kind (the participle "<words> this way"). */
 const PLAIN_WORDS: Record<MovedKind, string> = {
   destroyed: 'destroyed', exiled: 'exiled', discarded: 'discarded', sacrificed: 'sacrificed', graveyard: 'put into a graveyard', battlefield: 'put onto the battlefield', hand: 'returned to their owners\' hands',
-  top: 'put on top of a library', // r5-fxz: never printed so (wordsOf: "you put on top of your library")
+  milled: 'milled', top: 'put on top of a library', // r5-fxz: never printed so (wordsOf: "you put on top of your library")
 };
 
 /**
  * A zone where a card of each kind is a card (afterwards, or before it moved: a discarded card in the hand, a card put onto the battlefield from wherever it was),
  * so that a description of a card is printed "card", never "nontoken permanent" (CR 109.2); the zone words are not printed.
  */
-const CARD_ZONE: Record<MovedKind, 'graveyard' | 'exile' | 'hand' | 'library'> = { destroyed: 'graveyard', exiled: 'exile', discarded: 'hand', sacrificed: 'graveyard', graveyard: 'graveyard', battlefield: 'hand', hand: 'hand', top: 'library' };
+const CARD_ZONE: Record<MovedKind, 'graveyard' | 'exile' | 'hand' | 'library'> = { destroyed: 'graveyard', exiled: 'exile', discarded: 'hand', sacrificed: 'graveyard', graveyard: 'graveyard', battlefield: 'hand', hand: 'hand', top: 'library', milled: 'graveyard' };
 
 /**
  * The words "<participle> this way" of a kind and the description they leave to the noun phrase: "your graveyard" and "your hand" say the owner (the parser adds
  * `owner: 'you'` for them, CR 400.3), so the description loses it. Oracle prints "exiled" and "put into exile", "put into a graveyard" and "put into graveyards".
  */
-function wordsOf(kind: MovedKind, which: ObjectFilter): { words: string; rest: ObjectFilter; owned?: true } {
+/** `their` (edh-c-100, Coerced Confession): the instruction acted on ONE other player (a target), whose graveyard "their" names (CR 701.17a); a group of players has no such word. */
+function wordsOf(kind: MovedKind, which: ObjectFilter, their = false): { words: string; rest: ObjectFilter; owned?: true } {
   const { owner, ...rest } = which;
   if (owner === 'you' && kind === 'graveyard') return { words: 'put into your graveyard this way', rest, owned: true };
-  if (owner === 'you' && kind === 'hand') return { words: 'returned to your hand this way', rest, owned: true };
+  if (owner === 'you' && kind === 'hand') return { words: alt('returned to your hand this way', 'put into your hand this way', 'you put into your hand this way'), rest, owned: true }; // edh-d-35 (family put-into-hand-this-way)
   // r5-fxz (CR 701.25a, 701.22a): the cards a surveil or a scry of yours left on top of your library
   if (owner === 'you' && kind === 'top') return { words: 'you put on top of your library', rest, owned: true };
   if (kind === 'top') throw new NoRenderer('the cards another player put on top of their library');
   if (owner !== undefined) throw new NoRenderer('a description of moved objects with an owner');
   const words: Record<MovedKind, string> = {
     destroyed: 'destroyed this way', exiled: alt('exiled this way', 'put into exile this way'), discarded: 'discarded this way', sacrificed: 'sacrificed this way',
-    graveyard: alt('put into a graveyard this way', 'put into graveyards this way'), battlefield: 'put onto the battlefield this way',
-    hand: alt("returned to their owners' hands this way", "returned to its owner's hand this way"), top: 'you put on top of your library',
+    graveyard: alt('put into a graveyard this way', 'put into graveyards this way', ...(their ? ['put into their graveyard this way'] : [])), battlefield: 'put onto the battlefield this way',
+    hand: alt("returned to their owners' hands this way", "returned to its owner's hand this way"), top: 'you put on top of your library', milled: 'milled this way',
   };
   return { words: words[kind], rest };
 }
@@ -53,6 +54,11 @@ function movedNp(f: ObjectFilter, kind: MovedKind, st: RenderState, o: { det: 'a
   if (f.controller !== undefined || f.zone !== undefined) throw new NoRenderer('a description of moved objects with a controller or a zone');
   const zone = f.isCard === true ? CARD_ZONE[kind] : undefined;
   return K.np(zone !== undefined ? { ...f, zone } : f, st, { ...o, ...(zone !== undefined ? { noZone: true } : {}) });
+}
+
+/** edh-perms-20: the cards a mill trigger matched as a plural noun phrase without zone words ("nonland cards"). */
+export function milledCardsNp(f: ObjectFilter, st: RenderState): string {
+  return movedNp(f, 'milled', st, { det: 'none', plural: true });
 }
 
 /** The kind of the instruction named `step`, as its renderer recorded it. */
@@ -65,7 +71,7 @@ function kindOf(step: string, st: RenderState): MovedKind {
 /** "for each creature destroyed this way" (singular) and "creatures destroyed this way" (plural, "the number of ..."): render/qty.ts#countParts. */
 export function movedCountParts(q: Extract<Quantity, { q: 'resultCount' }>, st: RenderState): { plural: string; singular: string } {
   const kind = kindOf(q.step, st);
-  const { words, rest: withController } = wordsOf(kind, q.which!);
+  const { words, rest: withController } = wordsOf(kind, q.which!, st.info.get(`r:${q.step}`)?.onePlayer === true);
   // pc-tokens-1 (CR 608.2c, 608.2h, 400.7; Ceaseless Conflict): "for each nontoken creature you controlled that was destroyed this way": the controller as the object
   // last existed is said by a relative clause (parser/holes/moved-words.ts#RELATIVE_FRONTS); only "you", which the passive words alone cannot say
   if (withController.controller === 'you') {
@@ -73,6 +79,15 @@ export function movedCountParts(q: Extract<Quantity, { q: 'resultCount' }>, st: 
     return {
       plural: `${movedNp(rest, kind, st, { det: 'none', plural: true })} you controlled that were ${words}`,
       singular: `${movedNp(rest, kind, st, { det: 'none', forEach: true })} you controlled that was ${words}`,
+    };
+  }
+  // edh-players-16 (CR 608.2c, 608.2h, 400.7; Deadly Tempest): "the number of creatures they controlled that were destroyed this way": the player the group iterates
+  const ctl = withController.controller;
+  if (typeof ctl === 'object' && ctl.ref === 'iterating') {
+    const { controller: _controller, ...rest } = withController;
+    return {
+      plural: `${movedNp(rest, kind, st, { det: 'none', plural: true })} they controlled that were ${words}`,
+      singular: `${movedNp(rest, kind, st, { det: 'none', forEach: true })} they controlled that was ${words}`,
     };
   }
   const rest = withController;
@@ -90,6 +105,12 @@ export function movedCountPhrase(q: Extract<Quantity, { q: 'resultCount' }>, st:
  */
 export function movedAtLeastPhrase(q: Extract<Quantity, { q: 'resultCount' }>, n: number, st: RenderState): string | null {
   const kind = st.info.get(`r:${q.step}`)?.moved;
+  // edh-perms-22 (CR 608.2c, 608.2h, 400.7; Flood of Tears): "if you return four or more nontoken permanents you control this way": permanents of yours (as they last existed) a move to the hand moved
+  if (kind === 'hand') {
+    const { controller, ...rest } = q.which ?? {};
+    if (controller !== 'you' || rest.owner !== undefined || rest.anyOf !== undefined || rest.zone !== undefined) return null;
+    return `you return ${numWord(n)} or more ${movedNp(rest, kind, st, { det: 'none', plural: true })} you control this way`;
+  }
   if (kind !== 'exiled' && kind !== 'sacrificed' && kind !== 'discarded') return null;
   const which = q.which ?? {};
   if (which.isCard !== true || which.owner !== undefined || which.controller !== undefined || which.anyOf !== undefined) return null;
@@ -136,7 +157,8 @@ export function movedCondPhrase(c: Extract<Condition, { cond: 'did' }>, st: Rend
   // std-combat-1 (CR 603.12, 608.2c; family moved-this-way-condition): the reflexive trigger's "When you put one or more Equipment onto the battlefield this way",
   // the same `did` as "you put an Equipment ..." (one or more such objects; parser/holes/moved.ts reads "one or more" and a plural description the same way)
   const some = alt(one, `one or more ${movedNp(rest, kind, st, { det: 'none', plural: true })}`);
-  return active === undefined || owned === true ? passive : alt(passive, `you ${active[0]} ${some} ${active[1]}`);
+  // edh-next-56 (CR 603.12; Hidetsugu, Devouring Chaos): ... and in the present tense of an exile, "When you exile a nonland card this way, ..." (family moved-this-way-present-exile)
+  return active === undefined || owned === true ? passive : alt(passive, `you ${active[0]} ${some} ${active[1]}`, ...(kind === 'exiled' ? [`you exile ${some} ${active[1]}`] : []));
 }
 
 /** Cloud r3-moved: the kind of what each cost reference names (parser/lower/conditions.ts#costMovedCond); a cost that exiled ~ itself is not "exiled this way". */
@@ -166,7 +188,9 @@ function costMovedCondPhrase(c: Extract<Condition, { cond: 'matches' }>, st: Ren
   if (rest.anyOf !== undefined || owner !== undefined || (controller !== undefined && (controller !== 'you' || kind !== 'sacrificed'))) return null;
   if (controller === 'you') return `you sacrificed ${movedNp(rest, kind, st, { det: 'a' })} this way`;
   const { words } = wordsOf(kind, rest);
-  return `${alt(movedNp(rest, kind, st, { det: 'a' }), `at least one ${movedNp(rest, kind, st, { det: 'none' })}`)} ${alt('was', 'is')} ${words}`;
+  // edh-d-53 (CR 602.2b, 608.2h; Lethal Throwdown): and, of what a cost sacrificed, "the modified creature was sacrificed" (no "this way")
+  const theCost = kind === 'sacrificed' ? [`the ${movedNp(rest, kind, st, { det: 'none' })} was sacrificed`] : [];
+  return alt(`${alt(movedNp(rest, kind, st, { det: 'a' }), `at least one ${movedNp(rest, kind, st, { det: 'none' })}`)} ${alt('was', 'is')} ${words}`, ...theCost);
 }
 
 /**
@@ -176,6 +200,10 @@ function costMovedCondPhrase(c: Extract<Condition, { cond: 'matches' }>, st: Ren
 export function movedGroupNp(ref: ObjRef, st: RenderState): string | null {
   if (ref.ref !== 'bound') return null;
   const r = st.info.get(`r:${ref.name}`);
+  if (r?.moved === 'sacrificed' && r.thisWay !== undefined) { // edh-perms-20: the one specific noun ("creature", beside the generic "permanent")
+    const specific = r.nouns.filter((n) => n !== 'permanent' && n !== 'card');
+    if (specific.length === 1) return `${pluralize(specific[0]!)} ${r.thisWay}`;
+  }
   return r?.moved === 'discarded' && r.thisWay !== undefined ? `cards ${r.thisWay}` : null;
 }
 
@@ -192,6 +220,8 @@ export function costCountParts(of: ObjRef, st: RenderState): { plural: string; s
   if (part === undefined || (of.ref === 'costExiled' && (of as { self?: true }).self === true)) return null;
   const [key, verb] = part;
   const own = st.info.get(key)?.nouns ?? [];
-  const nouns = own.length > 0 ? own : of.ref === 'costSacrificed' ? ['creature', 'artifact', 'permanent'] : ['card'];
+  // edh-next-35: the plural noun of the face's own additional cost ("any number of Spirits") is the first choice for a spell (RenderContext.costSacrificeNouns)
+  const faceNouns = of.ref === 'costSacrificed' ? (st.ctx.costSacrificeNouns ?? []).map((n) => (n.endsWith('s') ? n.slice(0, -1) : n)) : [];
+  const nouns = own.length > 0 ? own : faceNouns.length > 0 ? faceNouns : of.ref === 'costSacrificed' ? ['creature', 'artifact', 'permanent'] : ['card'];
   return { plural: alt(...nouns.map((n) => `${pluralize(n)} ${verb} this way`)), singular: alt(...nouns.map((n) => `${n} ${verb} this way`)) };
 }

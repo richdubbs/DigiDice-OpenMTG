@@ -1,0 +1,328 @@
+[
+  {
+    "id": "eff.edhn35.move.allExiledWith.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "put all cards exiled with ( it | ~ ) onto the battlefield",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "exile",
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target creature card from a graveyard.\nAt the beginning of your upkeep, put all cards exiled with ~ onto the battlefield."
+      },
+      {
+        "text": "{1}: Exile target artifact card from a graveyard.\nWhen ~ leaves the battlefield, put all cards exiled with it onto the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target creature card from a graveyard.\nAt the beginning of your upkeep, put all cards exiled with ~ into your hand.",
+      "When ~ enters, exile target creature card from a graveyard.\nAt the beginning of your upkeep, put a card exiled with ~ onto the battlefield.",
+      "When ~ enters, exile target creature card from a graveyard.\nAt the beginning of your upkeep, put all cards exiled with ~ onto the battlefield tapped."
+    ]
+  },
+  {
+    "id": "eff.edhn35.return.allExiledWith.battlefield.underYourControl",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 607.2a",
+      "CR 110.2a",
+      "CR 400.7"
+    ],
+    "pattern": "return all cards exiled with ( it | ~ ) to the battlefield under your control",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "is": {
+            "ref": "linked",
+            "link": "exiled"
+          },
+          "zone": "exile",
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, exile target creature card from a graveyard.\nAt the beginning of your end step, return all cards exiled with ~ to the battlefield under your control."
+      },
+      {
+        "text": "{2}: Exile target artifact card from a graveyard.\nWhen ~ leaves the battlefield, return all cards exiled with it to the battlefield under your control."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target creature card from a graveyard.\nAt the beginning of your end step, return all cards exiled with ~ to the battlefield under their owners' control.",
+      "When ~ enters, exile target creature card from a graveyard.\nAt the beginning of your end step, return a card exiled with ~ to the battlefield under your control.",
+      "When ~ enters, exile target creature card from a graveyard.\nAt the beginning of your end step, return all cards exiled with ~ to your hand."
+    ]
+  },
+  {
+    "id": "sta.edhn35.self.cantAttackUnlessPay.perCounter",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 508.1h",
+      "CR 508.1d",
+      "CR 122.1",
+      "CR 118.12a"
+    ],
+    "pattern": "~ can't attack unless you pay {1} for each +1/+1 counter on it",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "attackTax",
+          "of": {
+            "is": {
+              "ref": "self"
+            }
+          },
+          "defenders": "any",
+          "value": {
+            "q": "counters",
+            "on": {
+              "ref": "self"
+            },
+            "kind": "+1/+1"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "unless",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Vigilance, reach, haste\n~ can't attack unless you pay {1} for each +1/+1 counter on it."
+      },
+      {
+        "text": "Trample, haste, reach\n~ can't attack unless you pay {1} for each +1/+1 counter on it."
+      }
+    ],
+    "counterExamples": [
+      "~ can't attack or block unless you pay {1} for each +1/+1 counter on it.",
+      "~ can't attack unless you pay {2} for each +1/+1 counter on it.",
+      "~ can't attack unless you pay {1} for each -1/-1 counter on it.",
+      "~ can't attack unless you pay {1}."
+    ]
+  },
+  {
+    "id": "eff.edhn35.kicked.itDamagesEqual",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "priority": 1,
+    "cr": [
+      "CR 702.33a",
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 115.1"
+    ],
+    "pattern": "if ~ was kicked , it deals damage equal to {n:Qty} to {o:Obj}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "wasCast",
+        "kicked": true
+      },
+      "then": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": "$o",
+          "amount": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Destroy target artifact. If ~ was kicked, it deals damage equal to that artifact's mana value to target creature."
+      },
+      {
+        "text": "Destroy target enchantment. If ~ was kicked, it deals damage equal to that enchantment's mana value to target creature or planeswalker."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target artifact. If ~ wasn't kicked, it deals damage equal to that artifact's mana value to target creature.",
+      "Destroy target artifact. If ~ was kicked, that artifact deals damage equal to its mana value to target creature.",
+      "Destroy target artifact. If ~ was kicked, it deals damage equal to that artifact's mana value to each creature."
+    ]
+  },
+  {
+    "id": "eff.edhn35.loselife.plusForEachCostSacrificed",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "player",
+    "cr": [
+      "CR 119.3",
+      "CR 601.2b",
+      "CR 601.2h",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] {n:Qty} life plus {m:Qty} life for each {f:Filter} sacrificed this way",
+    "build": {
+      "op": "loseLife",
+      "who": "$p",
+      "amount": {
+        "q": "math",
+        "op": "+",
+        "args": [
+          "$n",
+          {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$m",
+              {
+                "q": "count",
+                "of": {
+                  "ref": "costSacrificed"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast this spell, you may sacrifice any number of Goblins.\nTarget player loses 2 life plus 2 life for each Goblin sacrificed this way."
+      },
+      {
+        "text": "As an additional cost to cast this spell, you may sacrifice any number of Zombies.\nTarget opponent loses 1 life plus 3 life for each Zombie sacrificed this way."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast this spell, you may sacrifice any number of Goblins.\nTarget player loses 2 life for each Goblin sacrificed this way.",
+      "As an additional cost to cast this spell, you may sacrifice any number of Goblins.\nTarget player loses 2 life plus 2 life for each Goblin sacrificed this turn.",
+      "As an additional cost to cast this spell, you may sacrifice any number of Goblins.\nTarget player gains 2 life plus 2 life for each Goblin sacrificed this way."
+    ]
+  },
+  {
+    "id": "rid.edhn35.sacrifice.eachPlayerAllLands.insteadIf",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 701.21a",
+      "CR 608.2e",
+      "CR 101.4"
+    ],
+    "pattern": "each player sacrifices all lands they control instead if {c:Cond}",
+    "build": {
+      "$patchPrevious": {
+        "@replace": true,
+        "@require": {
+          "op": "sacrificeChoice",
+          "filter.types": [
+            "Land"
+          ]
+        },
+        "op": "if",
+        "cond": "$c",
+        "then": [
+          {
+            "op": "sacrificeChoice",
+            "who": {
+              "ref": "each",
+              "who": "player"
+            },
+            "filter": {
+              "types": [
+                "Land"
+              ],
+              "controller": {
+                "ref": "iterating"
+              }
+            },
+            "count": 1,
+            "mode": "all"
+          }
+        ],
+        "else": [
+          "@previous"
+        ]
+      }
+    },
+    "attachTo": "sacrificeChoice",
+    "consumes": [
+      "each",
+      "all",
+      "instead",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Target player sacrifices a land of their choice. Each player sacrifices all lands they control instead if you control a Forest."
+      },
+      {
+        "text": "Target player sacrifices a land of their choice. Each player sacrifices all lands they control instead if you have no cards in hand."
+      }
+    ],
+    "counterExamples": [
+      "Target player sacrifices a land of their choice. Each player sacrifices all lands they control if you control a Forest.",
+      "Target player sacrifices a land of their choice. Each opponent sacrifices all lands they control instead if you control a Forest.",
+      "Target player sacrifices a creature of their choice. Each player sacrifices all lands they control instead if you control a Forest."
+    ],
+    "priority": 1
+  }
+]

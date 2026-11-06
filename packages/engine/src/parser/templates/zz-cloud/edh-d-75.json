@@ -1,0 +1,239 @@
+[
+  {
+    "id": "eff.edhd75.itIs.goaded.restOfGame",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.15a",
+      "CR 701.15b",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{o:ItIs} goaded for the rest of the game",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack",
+          "goad": true
+        }
+      ]
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent gains control of target creature you control. It's goaded for the rest of the game."
+      },
+      {
+        "text": "At the beginning of your end step, target opponent gains control of up to one target creature you control. Put two +1/+1 counters on it. It's goaded for the rest of the game."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, target opponent gains control of target creature you control. It's goaded until end of turn.",
+      "When ~ enters, target opponent gains control of target creature you control. It's tapped for the rest of the game.",
+      "When ~ enters, target opponent gains control of target creature you control. It isn't goaded for the rest of the game."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "sta.edhd75.opponents.attackWithOne",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 508.1d",
+      "CR 506.4"
+    ],
+    "pattern": "each opponent must attack with at least one creature each combat if able",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "controller": "opponent"
+        }
+      },
+      "mode": "mustIfAble",
+      "action": "attack",
+      "atLeastOne": true
+    },
+    "consumes": [
+      "each",
+      "must",
+      "at least",
+      "if",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent must attack with at least one creature each combat if able."
+      },
+      {
+        "text": "At the beginning of your end step, you gain 3 life.\nEach opponent must attack with at least one creature each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent must attack with at least one creature each combat.",
+      "Each opponent must attack with at least one creature this combat if able.",
+      "Each opponent must block with at least one creature each combat if able.",
+      "Each opponent must attack with two creatures each combat if able."
+    ]
+  },
+  {
+    "id": "sta.edhd75.opponents.attackYouOrWalkerWithOne",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 508.1d",
+      "CR 506.4"
+    ],
+    "pattern": "each opponent must attack you or a planeswalker you control with at least one creature each combat if able",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "each",
+        "filter": {
+          "types": [
+            "Creature"
+          ],
+          "controller": "opponent"
+        }
+      },
+      "mode": "mustIfAble",
+      "action": "attack",
+      "atLeastOne": true,
+      "other": {
+        "types": [
+          "Planeswalker"
+        ],
+        "controller": "you"
+      },
+      "otherPlayer": {
+        "ref": "you"
+      }
+    },
+    "consumes": [
+      "each",
+      "must",
+      "at least",
+      "if",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Each opponent must attack you or a planeswalker you control with at least one creature each combat if able."
+      },
+      {
+        "text": "At the beginning of your end step, create a Treasure token.\nEach opponent must attack you or a planeswalker you control with at least one creature each combat if able."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent must attack you or a planeswalker you control with at least one creature each combat.",
+      "Each opponent must attack you or a planeswalker you control with each creature each combat if able.",
+      "Each opponent must attack you with at least one creature each combat if able.",
+      "Each opponent must attack you or a creature you control with at least one creature each combat if able."
+    ]
+  },
+  {
+    "id": "sta.edhd75.mustBeBlocked.exactlyOne",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1c",
+      "CR 509.1b"
+    ],
+    "pattern": "{o:Obj} must be blocked by exactly one creature if able",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "mustIfAble",
+      "action": "beBlocked",
+      "exactly": 1
+    },
+    "consumes": [
+      "must",
+      "exactly",
+      "if",
+      "if able"
+    ],
+    "examples": [
+      {
+        "text": "Enchanted creature must be blocked by exactly one creature if able."
+      },
+      {
+        "text": "Equipped creature must be blocked by exactly one creature if able."
+      }
+    ],
+    "counterExamples": [
+      "Enchanted creature must be blocked by exactly one creature.",
+      "Enchanted creature must be blocked by exactly two creatures if able.",
+      "Enchanted creature must be blocked by at least one creature if able.",
+      "Enchanted creature can't be blocked by exactly one creature."
+    ]
+  },
+  {
+    "id": "eff.edhd75.copyTokens.tappedAttacking.whereX",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 111.1",
+      "CR 508.4",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "create x tokens that are copies of {o:Obj} and that are tapped and attacking , where x is {q:Qty}",
+    "build": {
+      "lower": "whereX",
+      "value": "$q",
+      "steps": [
+        {
+          "op": "copy",
+          "what": "$o",
+          "result": "token",
+          "who": {
+            "ref": "you"
+          },
+          "count": {
+            "q": "X"
+          },
+          "tapped": true,
+          "attacking": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks, create X tokens that are copies of it and that are tapped and attacking, where X is the number of creatures defending player controls."
+      },
+      {
+        "text": "Whenever ~ attacks, create X tokens that are copies of ~ and that are tapped and attacking, where X is the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, create X tokens that are copies of it and that are tapped, where X is the number of creatures defending player controls.",
+      "Whenever ~ attacks, create X tokens that are copies of it and that are attacking, where X is the number of creatures defending player controls.",
+      "Whenever ~ attacks, create X tokens that are copies of it and that are tapped and blocking, where X is the number of creatures defending player controls."
+    ]
+  }
+]

@@ -1,0 +1,136 @@
+[
+  {
+    "id": "trg.edhn113.you.investigate.firstTime",
+    "kind": "trigger",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.2",
+      "CR 603.2c",
+      "CR 701.16a"
+    ],
+    "pattern": "whenever you investigate for the first time each turn",
+    "build": {
+      "on": [
+        {
+          "ev": "action",
+          "verb": "investigate",
+          "actor": "you"
+        }
+      ],
+      "first": "turn"
+    },
+    "consumes": [
+      "whenever",
+      "first",
+      "each"
+    ],
+    "needs": [
+      "feature:trigger.first"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you investigate for the first time each turn, draw a card."
+      },
+      {
+        "text": "Whenever you investigate for the first time each turn, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you investigate for the second time each turn, draw a card.",
+      "Whenever an opponent investigates for the first time each turn, draw a card.",
+      "Whenever you scry for the first time each turn, draw a card."
+    ]
+  },
+  {
+    "id": "eff.edhn113.investigate.additionalTime",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.16a",
+      "CR 608.2c"
+    ],
+    "pattern": "investigate an additional time",
+    "build": {
+      "op": "action",
+      "action": "investigate",
+      "who": {
+        "ref": "you"
+      },
+      "n": 1
+    },
+    "consumes": [
+      "additional"
+    ],
+    "subject": "none",
+    "needs": [
+      "action:investigate"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card, then investigate an additional time."
+      },
+      {
+        "text": "Scry 1, then investigate an additional time."
+      }
+    ],
+    "counterExamples": [
+      "Investigate an additional card.",
+      "Investigate two additional times."
+    ]
+  },
+  {
+    "id": "eff.edhn113.returnHand.unlessTargetHasSelfDeal",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 120.3",
+      "CR 118.12a",
+      "CR 400.3"
+    ],
+    "pattern": "return {o:Obj} to your hand unless {p:Player} has ~ deal {n:Qty} damage to them",
+    "build": {
+      "op": "may",
+      "who": "$p",
+      "do": [
+        {
+          "op": "damage",
+          "source": {
+            "ref": "self"
+          },
+          "to": "$p",
+          "amount": "$n"
+        }
+      ],
+      "otherwise": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "hand"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature you control dies, return that card to your hand unless target opponent has ~ deal 3 damage to them."
+      },
+      {
+        "text": "Whenever an artifact you control is put into your graveyard from the battlefield, return that card to your hand unless target player has ~ deal 2 damage to them."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control dies, return that card to your hand unless target opponent has ~ deal 3 damage to you.",
+      "Whenever a creature you control dies, return that card to your hand unless target opponent pays {2}.",
+      "Whenever a creature you control dies, return that card to your hand unless target opponent has ~ deal 3 damage to them instead."
+    ]
+  }
+]

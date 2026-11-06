@@ -1,0 +1,200 @@
+[
+  {
+    "id": "eff.edhz3.shuffle.obj.ownersLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "shuffle {o:Obj} into its owner 's library",
+    "build": [
+      {
+        "op": "move",
+        "what": "$o",
+        "to": {
+          "zone": "library",
+          "owner": {
+            "ref": "ownerOf",
+            "object": "$o"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": "$o"
+        }
+      }
+    ],
+    "subject": "none",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Destroy target land. Shuffle target creature into its owner's library."
+      },
+      {
+        "text": "When ~ dies, shuffle target artifact into its owner's library."
+      }
+    ],
+    "counterExamples": [
+      "Destroy target land. Shuffle target creature into your library.",
+      "Destroy target land. Put target creature into its owner's library.",
+      "Destroy target land. Shuffle target creature into its owner's graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhz3.player.puts.graveyard.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 400.3",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} put[s] all the cards from their graveyard on the bottom of their library in a random order",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": "graveyard",
+          "owner": "$p"
+        }
+      },
+      "to": {
+        "zone": "library",
+        "owner": "$p",
+        "position": "bottom",
+        "order": "random"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "all",
+      "random"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, target opponent puts all the cards from their graveyard on the bottom of their library in a random order."
+      },
+      {
+        "text": "Target player puts all the cards from their graveyard on the bottom of their library in a random order. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Target player puts all the cards from their graveyard on top of their library in a random order.",
+      "Target player puts all the cards from their hand on the bottom of their library in a random order.",
+      "Target player puts all the cards from their graveyard on the bottom of their library in any order."
+    ]
+  },
+  {
+    "id": "eff.edhz3.shuffle.selfAndGraveyard.ownersLibrary",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.24a",
+      "CR 400.3",
+      "CR 401.1"
+    ],
+    "pattern": "shuffle ~ and your graveyard into their owner 's library",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "union",
+          "of": [
+            {
+              "ref": "self"
+            },
+            {
+              "ref": "each",
+              "filter": {
+                "zone": "graveyard",
+                "owner": "you"
+              }
+            }
+          ]
+        },
+        "to": {
+          "zone": "library"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "ownerOf",
+          "object": {
+            "ref": "self"
+          }
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: You gain 7 life. Shuffle ~ and your graveyard into their owner's library."
+      },
+      {
+        "text": "{1}, {T}, Sacrifice a creature: Shuffle ~ and your graveyard into their owner's library."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: You gain 7 life. Shuffle ~ and your hand into their owner's library.",
+      "{3}, {T}: You gain 7 life. Shuffle ~ and your graveyard into your library.",
+      "{3}, {T}: You gain 7 life. Shuffle ~ and target creature into their owners' libraries."
+    ]
+  },
+  {
+    "id": "eff.edhz3.return.fromYourGraveyard.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 400.7",
+      "CR 110.2",
+      "CR 400.3"
+    ],
+    "pattern": "return {o:Obj} from your graveyard to the battlefield",
+    "build": {
+      "op": "move",
+      "what": "$o",
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        }
+      }
+    },
+    "subject": "none",
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Return target creature card from your graveyard to your hand. Return that card from your graveyard to the battlefield instead if you control a Wizard."
+      },
+      {
+        "text": "Return target artifact card from your graveyard to your hand. Return that card from your graveyard to the battlefield instead if you control a Knight."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from your graveyard to your hand. Return that card from your graveyard to the battlefield tapped instead if you control a Wizard.",
+      "Return target creature card from your graveyard to your hand. Return that card from your graveyard to the battlefield under an opponent's control instead if you control a Wizard.",
+      "Return target creature card from your graveyard to your hand. Return that card from a graveyard to the battlefield instead if you control a Wizard."
+    ]
+  }
+]

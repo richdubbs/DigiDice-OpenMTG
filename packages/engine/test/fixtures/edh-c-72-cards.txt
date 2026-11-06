@@ -1,0 +1,7 @@
+# edh-c-72 (Commander lane edh-c, EDHREC ranks 26,501-27,000, second pass). After editing: npm run cards -- fixtures
+Anti-Magic Aura
+Revoke Privileges
+Gift of the Woods
+Ritual of Subdual
+Grind // Dust
+Ferocity

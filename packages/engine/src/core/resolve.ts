@@ -7,10 +7,10 @@
  * game by hand (docs/ARCHITECTURE.md). Permanent spells (CR 608.3) are resolved here: they enter the battlefield, an Aura attached to its target (CR 303.4f).
  */
 import { setLink } from '../statics/links';
-import type { AltCostDelay, EffectProgram, TargetSpec } from '../types/ability';
+import type { AltCostDelay, EffectProgram, KeywordAbilityDef, TargetSpec } from '../types/ability';
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { GameObject } from '../types/state';
-import { enchantRestriction, isAura } from '../rules/attachment';
+import { auraRestriction, isAura } from '../rules/attachment';
 import { charsOfObject, controllerOf, faceChars, hasKeyword, hasSubtype, isPermanentCard, type Chars } from '../rules/characteristics';
 import { entersAttackingAsReturned } from '../rules/status';
 import { recheckTargets } from '../rules/targets';
@@ -34,6 +34,24 @@ export function leaveStack(g: Game, obj: GameObject, resolved: boolean): void {
   const info = obj.stack!;
   const def = g.s.defs[obj.defId]!;
   const half = info.fused ? undefined : faceChars(def, info.face ?? 0);
+  // edh-top-2 (CR 702.99a, 702.99c; cipher): as the spell resolves, its controller may exile the card encoded on a creature they control. The card goes from the stack
+  // straight to exile (never the graveyard: no replacement of "put into a graveyard" competes, flashback changes nothing); only a spell that is a card (a copy of a spell
+  // is not represented by one). The static ability of the card that functions in exile reads the link `encoded` (keywords/data/cipher.json).
+  if (resolved && obj.kind === 'card' && half && hasKeyword(half, 'cipher')) {
+    const options = g.s.zones.battlefield.filter((id) => { const o = g.s.objects[id]; return o !== undefined && o.controller === obj.controller && !o.phasedOut && charsOfObject(g.s, o).types.includes('Creature'); });
+    if (options.length > 0) {
+      const host = g.choose({ kind: 'chooseObjects', player: obj.controller, prompt: `${faceChars(def, info.face ?? 0).name}: you may exile it encoded on a creature you control.`, options, min: 0, max: 1, rules: ['CR 702.99a'] }).ids[0];
+      if (host !== undefined && g.s.objects[host]?.zone === 'battlefield') {
+        const n = moveObject(g, obj.id, 'exile', { cause: 'cipher' });
+        const card = n === null ? undefined : g.maybeObj(n);
+        if (card !== undefined && card.zone === 'exile') {
+          setLink(card, 'encoded', { objects: [{ id: host, zone: 'battlefield' }] });
+          g.log(`${g.nameOf(card.id)} is encoded on ${g.nameOf(host)}.`, { rules: ['CR 702.99a', 'CR 702.99b'], level: 'action' });
+        }
+        return;
+      }
+    }
+  }
   if (info.costsPaid.alternative === 'flashback') {
     moveObject(g, obj.id, 'exile', { cause: 'flashback' }); // CR 702.34a
   } else if (info.exileOnLeave === true) {
@@ -103,10 +121,10 @@ function resolvePermanentSpell(g: Game, obj: GameObject, c: Chars): void {
   const face = info.face ?? obj.face;
   const controller = obj.controller;
   const oldId = obj.id;
-  const auraTarget = isAura(c) && enchantRestriction(c) ? info.targets[0]?.[0] : undefined; // CR 303.4a
+  const auraTarget = isAura(c) && auraRestriction(c) ? info.targets[0]?.[0] : undefined; // CR 303.4a
   // WP31, CR 303.4i: an Aura spell that can't legally be attached to what it targets ("can't be enchanted" effects, CR 101.2) doesn't enter the battlefield;
   // it is put into its owner's graveyard (CR 608.3e). The target itself was legal (CR 608.3b), so the spell resolves.
-  const cantAttach = auraTarget ? hookpoints.canAttach(gameOf(g.s), obj.id, auraTarget.id) : null;
+  const cantAttach = auraTarget && g.s.objects[auraTarget.id]?.zone !== 'graveyard' ? hookpoints.canAttach(gameOf(g.s), obj.id, auraTarget.id) : null; // edh-perms-4: protection and "can't be enchanted" are about permanents; an Aura that enchants a card in a graveyard (Animate Dead) is not stopped by them (CR 702.16a, 113.6)
   if (cantAttach) {
     moveObject(g, obj.id, 'graveyard', { cause: 'resolve' });
     g.emit({ type: 'resolved', objectId: obj.id });
@@ -120,10 +138,14 @@ function resolvePermanentSpell(g: Game, obj: GameObject, c: Chars): void {
   for (const p of RESOLVE_PERMANENT_PARTS) if (p.options) opts = p.options(g, obj, opts);
   if (info.entersAttacking) opts = { ...opts, tapped: true }; // FAST5X E7, CR 702.190b: "enters the battlefield tapped and attacking"
   const cast = castRecordOf(obj, g.s.turn.number); // CR 400.7d, 607.2i: the permanent remembers how its spell was cast (kicker, alternative cost, X)
+  const keptGrants = info.isCopy === true ? [] : grantsKeptOnBattlefield(g, obj); // edh-next-144 (CR 400.7b, 611.3d)
   // trek-8 re-review (CR 702.190b, 508.4): a replacement effect that makes it enter attacking (Kira Nerys) joins the combat the way the sneak cost says
   const byBefore = g.enterAttackingBy;
   const how = info.entersAttacking;
   if (how) g.enterAttackingBy = (ids) => ids.filter((id) => entersAttackingAsReturned(g, id, how));
+  // edh-d-77 (CR 607.2q, 614.1c; Murktide Regent): the cards a cost exiled are linked to the spell while it enters, so a replacement effect as it enters ("enters with a +1/+1 counter on it for
+  // each instant and sorcery card exiled with it") reads them; the permanent records them under the link again below
+  if (!info.isCopy) for (const [link, objects] of Object.entries(info.costsPaid.costLinks ?? {})) setLink(g.obj(oldId), link, { objects });
   let moved: ObjectId | null;
   try {
     moved = moveObject(g, oldId, 'battlefield', opts);
@@ -140,12 +162,14 @@ function resolvePermanentSpell(g: Game, obj: GameObject, c: Chars): void {
     return;
   }
   if (cast) g.obj(newId).cast = cast;
+  keepGrants(g, newId, controller, keptGrants); // edh-next-144 (CR 400.7b, 611.3d)
   // FAST5X E11 (CR 607.2q): what a cost of the spell exiled for a linked ability ("behold a Goblin and exile it" ... "When this creature leaves the battlefield,
   // return the exiled card to its owner's hand") is remembered by the permanent the spell became, under that link. Only a cast spell paid that cost: a copy
   // (CR 707.10) links nothing (rules/stack-objects.ts#putCopyOnStack drops the links; this guard keeps it so).
   if (!info.isCopy) for (const [link, objects] of Object.entries(info.costsPaid.costLinks ?? {})) setLink(g.obj(newId), link, { objects });
   g.log(`${name} resolves and enters the battlefield under ${g.player(controller).name}'s control.`, { rules: ['CR 608.3', 'CR 608.3a'], level: 'info' });
   if (info.altDelay && info.costsPaid.alternative !== undefined) altCostDelay(g, info.altDelay, newId, controller, `${name}: its ${info.costsPaid.alternative.split(':')[0]} cost was paid`);
+  if (info.offTimingSacrifice === true && info.isCopy !== true) offTimingSacrifice(g, newId, controller, name); // edh-perms-4 (CR 601.3b, 603.7)
   if (info.entersAttacking) entersAttackingAsReturned(g, newId, info.entersAttacking);
   if (newId && auraTarget) {
     // CR 303.4f: an Aura spell that resolves enters the battlefield attached to the object or player it was targeting.
@@ -166,4 +190,48 @@ function altCostDelay(g: Game, delay: AltCostDelay, permanent: ObjectId, control
   const handle = { id: permanent, zone: 'battlefield' as const };
   createDelayedTrigger(g, { source: handle, controller, when: delay.when, do: delay.do, captured: { permanent: [handle] } });
   g.log(`${why}, so a delayed triggered ability is created.`, { rules: ['CR 702.185a', 'CR 603.7'], level: 'info' });
+}
+
+/**
+ * edh-perms-4 (CR 601.3b, 603.7, 701.21a; Necromancy): "If you cast it any time a sorcery couldn't have been cast, the controller of the permanent it becomes sacrifices it at the beginning of the
+ * next cleanup step": the static ability of the spell creates a delayed triggered ability as the permanent spell resolves (like warp's, `altCostDelay`). Its controller is the player who controlled
+ * the spell; the permanent is captured with the zone it entered, so if it leaves the battlefield first it is a new object and the ability does nothing (CR 400.7); whoever controls the
+ * permanent then sacrifices it, whoever controlled the spell.
+ */
+function offTimingSacrifice(g: Game, permanent: ObjectId, controller: PlayerId, name: string): void {
+  const handle = { id: permanent, zone: 'battlefield' as const };
+  const it = { ref: 'bound' as const, name: 'permanent' };
+  createDelayedTrigger(g, {
+    source: handle, controller, when: { at: 'step', step: 'cleanup' },
+    do: [{ op: 'sacrificeChoice', who: { ref: 'controllerOf', object: it }, filter: { is: it }, count: 1 }],
+    captured: { permanent: [handle] },
+  });
+  g.log(`${name} was cast at a time a sorcery couldn't have been cast: its controller sacrifices it at the beginning of the next cleanup step.`, { rules: ['CR 601.3b', 'CR 603.7'], level: 'info' });
+}
+
+/**
+ * edh-next-144 (CR 400.7b, 611.3d, 702.152a; Henzie "Toolbox" Torre): the keywords a static ability grants to a permanent SPELL whose abilities include one that functions on the battlefield
+ * ("Each creature spell you cast with mana value 4 or greater has blitz": "As long as this permanent's blitz cost was paid, it has haste and ..."): the permanent the spell becomes keeps that
+ * ability for the rest of the game (no duration stated). Only the keywords of KEPT_ON_BATTLEFIELD (blitz); a keyword the card prints itself is not granted, so nothing is added for it.
+ */
+const KEPT_ON_BATTLEFIELD: ReadonlySet<string> = new Set(['blitz']);
+function grantsKeptOnBattlefield(g: Game, spell: GameObject): KeywordAbilityDef[] {
+  const out: KeywordAbilityDef[] = [];
+  const abilities = charsOfObject(g.s, spell).abilities;
+  // review finding (edh-next-144, CR 702.152b): a permanent with a blitz of its own keeps no granted one: each instance's "as long as its blitz cost was paid" can't tell which
+  // instance was paid, so a second instance would give haste and the dies-draw twice
+  const own = new Set(abilities.filter((a) => a.origin !== 'granted' && (a.def as KeywordAbilityDef).kind === 'keyword').map((a) => (a.def as KeywordAbilityDef).keyword));
+  for (const a of abilities) {
+    const d = a.def as KeywordAbilityDef;
+    if (a.origin === 'granted' && d.kind === 'keyword' && KEPT_ON_BATTLEFIELD.has(d.keyword) && !own.has(d.keyword) && !out.some((x) => x.keyword === d.keyword) && !out.some((x) => JSON.stringify(x) === JSON.stringify(d))) out.push(structuredClone(d));
+  }
+  return out;
+}
+function keepGrants(g: Game, id: ObjectId, controller: PlayerId, kept: readonly KeywordAbilityDef[]): void {
+  if (kept.length === 0) return;
+  g.s.continuousEffects.push({
+    id: g.newEffectId(), source: null, sourceName: g.nameOf(id), controller, timestamp: g.newTimestamp(), startedTurn: g.s.turn.number, duration: { d: 'permanent' },
+    effect: { s: 'continuous', affects: { ref: 'fixed', objects: [{ id, zone: 'battlefield' }] }, mods: [{ layer: 6, add: kept.map((k) => structuredClone(k)) }] },
+  });
+  g.log(`${g.nameOf(id)} keeps ${kept.map((k) => k.keyword).join(', ')} granted to it as a spell (it functions on the battlefield).`, { rules: ['CR 400.7b', 'CR 611.3d'], level: 'info' });
 }

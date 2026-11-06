@@ -1,0 +1,1 @@
+{"name":"ops_03","before":{"a":1},"ops":[{"op":"set","path":[],"value":{"b":2}},{"op":"set","path":["c"],"value":3}],"after":{"b":2,"c":3}}

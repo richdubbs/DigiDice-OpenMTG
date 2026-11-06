@@ -1,0 +1,4 @@
+# edh-top-9 (Commander lane edh-top): exchange control with "if you don't or can't make an exchange" and "this ability still resolves if its target becomes illegal", hexproof from activated and triggered abilities, "you get energy, then sacrifice that creature unless you pay", a modal header with a restriction before the modes, doubling the counters you have. After editing: npm run cards -- fixtures
+Gilded Drake
+Volatile Stormdrake
+Aetheric Amplifier

@@ -1,0 +1,6 @@
+# edh-players-22 (Commander lane edh-players; test/cloud/edh-players-22, golden edh-players-22-review.json)
+# stun counters that can't be removed; a spell or ability an opponent controls destroys a permanent; hexproof waiver for opponents; prowl
+Fear of Sleep Paralysis
+Karmic Justice
+Detection Tower
+Notorious Throng

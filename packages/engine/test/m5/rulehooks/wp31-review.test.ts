@@ -38,10 +38,10 @@ describe('CR 101.2, 614.17: a restriction\'s `other` where the call-site has non
     expect(capabilitiesOf(drawOther)).not.toContain('feature:restrict.other');
     expect(ENGINE_CAPABILITIES.has('feature:restrict.other.draw')).toBe(false);
     expect(levelOf([drawOther])).not.toBe('full');
-    for (const a of ['attack', 'block', 'beBlocked', 'beBlockedBy', 'beTargeted', 'cast', 'castFromZone', 'activate', 'playLand', 'beAttached', 'beEnchanted', 'beEquipped', 'dealDamage', 'receiveDamage', 'sacrifice', 'discard', 'beCountered']) {
+    for (const a of ['attack', 'block', 'beBlocked', 'beBlockedBy', 'beTargeted', 'cast', 'castFromZone', 'activate', 'playLand', 'beAttached', 'beEnchanted', 'beEquipped', 'dealDamage', 'receiveDamage', 'sacrifice', 'discard', 'beCountered', 'search' /* edh-zones-14: the three search call-sites pass the source */]) {
       expect(ENGINE_CAPABILITIES.has(`feature:restrict.other.${a}`), a).toBe(true);
     }
-    for (const a of ['draw', 'search', 'untap', 'transform', 'enter', 'leave', 'beExiled', 'beDestroyed', 'beRegenerated', 'haveCountersPut', 'payLife', 'beSacrificed', 'gainLife', 'loseLife']) {
+    for (const a of ['draw', 'untap', 'transform', 'enter', 'leave', 'beExiled', 'beDestroyed', 'beRegenerated', 'haveCountersPut', 'payLife', 'beSacrificed', 'gainLife', 'loseLife']) {
       expect(ENGINE_CAPABILITIES.has(`feature:restrict.other.${a}`), a).toBe(false);
     }
   });

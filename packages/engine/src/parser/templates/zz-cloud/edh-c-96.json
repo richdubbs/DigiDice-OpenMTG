@@ -1,0 +1,303 @@
+[
+  {
+    "id": "eff.edhv96.player.discard.forEachCounterOn",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 122.1",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} discard[s] a card for each {k:CounterKind} counter on {o:Obj}",
+    "build": {
+      "op": "discard",
+      "who": "$p",
+      "count": {
+        "q": "counters",
+        "on": "$o",
+        "kind": "$k"
+      }
+    },
+    "subject": "player",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, target opponent discards a card for each gnaw counter on ~."
+      },
+      {
+        "text": "Whenever you cast a spell, target opponent discards a card for each hoard counter on ~."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, target opponent discards two cards for each gnaw counter on ~.",
+      "At the beginning of your upkeep, target opponent discards a card at random for each gnaw counter on ~."
+    ]
+  },
+  {
+    "id": "eff.edhv96.land.becomes.basicType",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 305.7",
+      "CR 613.1d",
+      "CR 611.2a",
+      "CR 205.3i"
+    ],
+    "pattern": "{o:Obj} becomes ( a | an ) {st:Subtypes}",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target land becomes a Forest."
+      },
+      {
+        "text": "Target land becomes an Island."
+      }
+    ],
+    "counterExamples": [
+      "Target land becomes a Forest until end of turn.",
+      "Target land becomes a Forest in addition to its other types."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "eff.edhv96.losesYourChoiceOfThree",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 611.2c",
+      "CR 613.1f",
+      "CR 702.1"
+    ],
+    "pattern": "{o:Obj} loses your choice of {k1:Keyword} , {k2:Keyword} , or {k3:Keyword} {d:Dur}",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "option",
+        "as": "keywordChoice",
+        "link": "keywordChoice",
+        "options": [
+          "$k1.text",
+          "$k2.text",
+          "$k3.text"
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k1.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "remove": [
+                      "$k1.keyword"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k2.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "remove": [
+                      "$k2.keyword"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "chosen",
+          "link": "keywordChoice",
+          "equals": "$k3.text"
+        },
+        "then": [
+          {
+            "op": "effect",
+            "duration": "$d",
+            "effects": [
+              {
+                "s": "continuous",
+                "affects": "$o",
+                "mods": [
+                  {
+                    "layer": 6,
+                    "remove": [
+                      "$k3.keyword"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "subject": "object",
+    "examples": [
+      {
+        "text": "Target creature loses your choice of reach, haste, or vigilance until end of turn."
+      },
+      {
+        "text": "Target creature loses your choice of flying, menace, or trample until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "Target creature loses your choice of reach or haste until end of turn.",
+      "Target creature loses reach, haste, and vigilance until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhv96.player.losesAllCounters",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.1f",
+      "CR 120.3",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "{p:Player} lose[s] all {k:CounterKind} counters",
+    "build": {
+      "op": "removeCounters",
+      "from": "$p",
+      "kind": "$k",
+      "count": "all"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Target opponent loses all poison counters. ~ deals that much damage to that player."
+      },
+      {
+        "text": "Target player loses all rad counters. ~ deals that much damage to that player."
+      }
+    ],
+    "counterExamples": [
+      "Target player loses two poison counters. ~ deals that much damage to that player.",
+      "Target player loses all poison counters. ~ deals twice that much damage to that player."
+    ],
+    "consumes": [
+      "all"
+    ]
+  },
+  {
+    "id": "eff.edhv96.exile.nCardsFromYourGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 404.1",
+      "CR 608.2d"
+    ],
+    "pattern": "exile {n:Count} cards from your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "owner": "you",
+            "isCard": true
+          }
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "exiledChoice"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "exiledChoice"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Mill two cards. At the beginning of the next end step, exile two cards from your graveyard."
+      },
+      {
+        "text": "Exile four cards from your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Exile two target cards from your graveyard.",
+      "Exile two cards from an opponent's graveyard."
+    ],
+    "weak": 1
+  }
+]

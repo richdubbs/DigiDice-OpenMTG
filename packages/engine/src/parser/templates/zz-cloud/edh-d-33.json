@@ -1,0 +1,282 @@
+[
+  {
+    "id": "sta.edhd33.stack.cond.cantCounter.cantPrevent",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 101.2",
+      "CR 615.12",
+      "CR 604.1"
+    ],
+    "pattern": "if {c:Cond} , ~ can't be countered and the damage can't be prevented",
+    "weak": 1,
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "cant",
+          "action": "beCountered"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {}
+          },
+          "mode": "cant",
+          "action": "preventDamage",
+          "other": {
+            "self": true
+          }
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "who": "player"
+          },
+          "mode": "cant",
+          "action": "preventDamage",
+          "other": {
+            "self": true
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "If you control no creatures, this spell can't be countered and the damage can't be prevented."
+      },
+      {
+        "text": "If you have no cards in hand, this spell can't be countered and the damage can't be prevented."
+      }
+    ],
+    "counterExamples": [
+      "If you have no cards in hand, this spell can't be countered.",
+      "If you have no cards in hand, this spell can't be countered and the damage can't be reduced.",
+      "This spell can't be countered and the damage can't be prevented."
+    ]
+  },
+  {
+    "id": "eff.edhd33.dig.putAllDesc.seen.hand.rest.graveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 400.3"
+    ],
+    "pattern": "put all {f:CardsDesc} from among {g:Seen} into your hand and the rest into your graveyard",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Reveal the top four cards of your library. Put all cards with mana value 2 or less from among them into your hand and the rest into your graveyard."
+      },
+      {
+        "text": "Choose a card name, then reveal the top three cards of your library. Put all cards with the chosen name from among them into your hand and the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Reveal the top four cards of your library. Put all cards with mana value 2 or less from among them into your graveyard and the rest into your hand.",
+      "Reveal the top four cards of your library. Put a card with mana value 2 or less from among them into your hand and the rest into your graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhd33.return.eachN.graveyard.hand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 400.3",
+      "CR 701.20a"
+    ],
+    "pattern": "return ( a | an ) {f:Filter} to your hand for each {n:Qty}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": "$n",
+        "max": "$n",
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Reveal any number of red cards in your hand. Return an artifact card from your graveyard to your hand for each card revealed this way."
+      },
+      {
+        "text": "Reveal any number of black cards in your hand. Return a creature card from your graveyard to your hand for each card revealed this way."
+      }
+    ],
+    "counterExamples": [
+      "Return target creature card from your graveyard to your hand for each Elf you control.",
+      "Return a creature card from your graveyard to the battlefield for each Elf you control.",
+      "Return up to three creature cards from your graveyard to your hand for each Elf you control."
+    ]
+  },
+  {
+    "id": "eff.edhd33.player.cantAttackYou.dur",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 508.1b",
+      "CR 506.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "{p:Player} can't attack you {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "$p"
+            }
+          },
+          "mode": "cant",
+          "action": "attackPlayer",
+          "otherPlayer": {
+            "ref": "you"
+          }
+        }
+      ]
+    },
+    "subject": "player",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent can't attack you this turn."
+      },
+      {
+        "text": "Each opponent can't attack you this combat."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent can't attack you.",
+      "Target opponent can't attack you or planeswalkers you control this turn.",
+      "Target opponent can't block you this turn."
+    ]
+  },
+  {
+    "id": "eff.edhd33.player.mayPay.xWhere",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 107.3a",
+      "CR 608.2h",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} may pay {x} , where x is {q:Qty}",
+    "build": {
+      "op": "pay",
+      "who": "$p",
+      "cost": {
+        "mana": [
+          {
+            "kind": "generic",
+            "amount": 1
+          }
+        ]
+      },
+      "times": "$q"
+    },
+    "subject": "player",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature attacks you, its controller may pay {X}, where X is the number of cards in your hand. If they don't, you gain 1 life."
+      },
+      {
+        "text": "At the beginning of each upkeep, that player may pay {X}, where X is the number of cards in their hand. If they don't, you draw a card."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature attacks you, its controller may pay {X}. If they don't, you gain 1 life.",
+      "Whenever a creature attacks you, its controller may pay {X} life, where X is the number of cards in your hand.",
+      "Whenever a creature attacks you, its controller pays {X}, where X is the number of cards in your hand."
+    ]
+  }
+]

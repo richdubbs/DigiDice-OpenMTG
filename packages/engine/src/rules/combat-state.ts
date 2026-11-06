@@ -28,10 +28,21 @@ export const defendingPlayerOf = (s: GameState, id: ObjectId) => attackerState(s
 
 /** p2-combat-flow-2 (CR 509.1h, 506.4): an attacking creature that is not blocked becomes blocked, with no creature blocking it; whether it changed. */
 export function makeBlocked(s: GameState, id: ObjectId): boolean {
+  return makeBlockedIds(s, id).length > 0;
+}
+
+/** edhv31 (CR 702.22i): as makeBlocked, naming every attacker that became blocked: if one member of a band would become blocked due to an effect, the entire band becomes blocked. */
+export function makeBlockedIds(s: GameState, id: ObjectId): ObjectId[] {
+  const changed: ObjectId[] = [];
+  for (const m of bandOf(s, id)) if (!m.blocked) { m.blocked = true; changed.push(m.id); }
+  return changed;
+}
+
+/** edhv31 (CR 702.22c, 702.22f): the attackers in the same band as this one (itself included; just itself when it is in no band). */
+export function bandOf(s: GameState, id: ObjectId): AttackerState[] {
   const a = s.combat?.attackers.find((x) => x.id === id);
-  if (a === undefined || a.blocked) return false;
-  a.blocked = true;
-  return true;
+  if (a === undefined) return [];
+  return a.band === undefined ? [a] : s.combat!.attackers.filter((x) => x.band === a.band);
 }
 
 /**

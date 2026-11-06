@@ -16,7 +16,7 @@
 import { deepFreeze } from '../util/clone';
 import type { AbilityDef, KeywordAbilityDef } from '../types/ability';
 import { KEYWORD_DATA_FILES } from './data';
-import { expandKeyword } from './expand';
+import { expandKeyword, flashbackCostChange } from './expand';
 import { SPECIAL_BY_KEYWORD } from './special';
 import { keywordDataSetProblems } from './validate';
 import type { ExpandContext, KeywordDef, KeywordDefData, KeywordHooks, KeywordRegistry, SpecialActionDef } from './types';
@@ -66,6 +66,7 @@ export function createKeywordRegistry(files: readonly unknown[], special: Readon
     expand(kw: KeywordAbilityDef, ctx: ExpandContext): AbilityDef[] {
       const def = lookup(kw.keyword);
       if (def === undefined) throw new KeywordRegistryError(`unknown keyword "${kw.keyword}": it is not in the keyword library, so it must stay a manual node (design 7.1.5)`);
+      if (def.name === 'flashback' && kw.costChange !== undefined) return flashbackCostChange(kw, ctx); // edh-next-48 (CR 601.2f, 702.34a): the cost change on the flashback line
       // Only `implemented` keywords act through their data. `native` ones are acted on by engine code, `planned` ones by nothing (design 7.1).
       if (def.status !== 'implemented') return [];
       return expandKeyword(def, kw, ctx);

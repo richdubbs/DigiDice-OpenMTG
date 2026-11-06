@@ -1,0 +1,520 @@
+[
+  {
+    "id": "abl.edhv26.kicked.counters2.grant",
+    "kind": "static",
+    "cr": [
+      "CR 702.33d",
+      "CR 702.33e",
+      "CR 614.1c",
+      "CR 613.1f",
+      "CR 122.1b",
+      "CR 400.7d"
+    ],
+    "pattern": "if ~ was kicked , it enters with {n:Qty} {k:CounterKind} counters and a {j:CounterKind} counter on it and with {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "wasCast",
+        "kicked": true
+      },
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "$k",
+                "count": "$n"
+              },
+              {
+                "kind": "$j",
+                "count": 1
+              }
+            ]
+          }
+        },
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "If ~ was kicked, it enters with two +1/+1 counters and a flying counter on it and with haste."
+      },
+      {
+        "text": "If ~ was kicked, it enters with three +1/+1 counters and a trample counter on it and with vigilance."
+      }
+    ],
+    "counterExamples": [
+      "If ~ wasn't kicked, it enters with two +1/+1 counters and a trample counter on it and with haste.",
+      "If ~ was kicked, it enters with two +1/+1 counters and two trample counters on it and with haste.",
+      "If ~ was kicked, it enters with two +1/+1 counters and a trample counter on target creature and with haste."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "sta.edhv26.duringYourTurn.self.isSubtype.basePT",
+    "kind": "static",
+    "cr": [
+      "CR 205.1a",
+      "CR 205.1b",
+      "CR 613.1d",
+      "CR 613.4b",
+      "CR 611.3a"
+    ],
+    "pattern": "during your turn , ~ is ( a | an ) {st:Subtypes} with base power and toughness {pt:BasePT}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "self"
+          },
+          "mods": [
+            {
+              "layer": 4,
+              "subtypes": {
+                "set": "$st"
+              }
+            },
+            {
+              "layer": "7b",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "During your turn, ~ is a Bear with base power and toughness 4/2."
+      },
+      {
+        "text": "During your turn, ~ is a Wizard with base power and toughness 1/3."
+      }
+    ],
+    "counterExamples": [
+      "During your turn, ~ is a Bear with base power and toughness 4/2 until end of turn.",
+      "During an opponent's turn, ~ is a Bear with base power and toughness 4/2.",
+      "During your turn, ~ is a Bear."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "sta.edhv26.creatures.cantBeTargetedBySpells",
+    "kind": "static",
+    "cr": [
+      "CR 115.1",
+      "CR 101.2",
+      "CR 702.11"
+    ],
+    "pattern": "{o:Objs} can't be the targets of spells",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beTargeted",
+      "other": {
+        "stackKind": "spell"
+      }
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Lands can't be the targets of spells."
+      },
+      {
+        "text": "Artifacts can't be the targets of spells."
+      }
+    ],
+    "counterExamples": [
+      "Lands can't be the targets of spells or abilities.",
+      "Lands you control can't be the targets of spells.",
+      "Lands can't be the targets of abilities."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "eff.edhv26.player.draw.lose.get.energy2",
+    "kind": "effect",
+    "cr": [
+      "CR 121.1",
+      "CR 119.3",
+      "CR 107.14",
+      "CR 122.1",
+      "CR 608.2c"
+    ],
+    "pattern": "{p:Player} draw[s] {a:Qty} card[s] , lose[s] {b:Qty} life , and get[s] {e}{e}",
+    "build": [
+      {
+        "op": "draw",
+        "who": "$p",
+        "count": "$a"
+      },
+      {
+        "op": "loseLife",
+        "who": "$p",
+        "amount": "$b"
+      },
+      {
+        "op": "putCounters",
+        "on": "$p",
+        "kind": "energy",
+        "count": 2
+      }
+    ],
+    "subject": "player",
+    "examples": [
+      {
+        "text": "Target player draws three cards, loses 1 life, and gets {E}{E}."
+      },
+      {
+        "text": "You draw one card, lose 3 life, and get {E}{E}."
+      }
+    ],
+    "counterExamples": [
+      "You draw two cards, lose 2 life, and get {E}.",
+      "You draw two cards, lose 2 life, and get {E}{E}{E}.",
+      "You draw two cards and lose 7 life."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "eff.edhv26.destroy.obj.andSelf",
+    "kind": "effect",
+    "cr": [
+      "CR 701.8a",
+      "CR 700.4",
+      "CR 608.2c"
+    ],
+    "pattern": "destroy {o:Obj} and ~",
+    "build": {
+      "op": "destroy",
+      "what": {
+        "ref": "union",
+        "of": [
+          "$o",
+          {
+            "ref": "self"
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever ~ becomes blocked by a creature, destroy that creature and ~."
+      },
+      {
+        "text": "Whenever ~ deals combat damage to a creature, destroy that creature and ~."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ becomes blocked by a creature, destroy target land.",
+      "Whenever ~ becomes blocked by a creature, destroy that creature and target land.",
+      "Whenever ~ becomes blocked by a creature, sacrifice that creature and ~."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "rep.edhv26.damage.toAttached.redirectController",
+    "kind": "static",
+    "cr": [
+      "CR 614.9",
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 303.4",
+      "CR 301.5"
+    ],
+    "pattern": "all damage that would be dealt to ( enchanted | equipped ) creature is dealt to its controller instead",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": {
+                  "ref": "attachedTo"
+                }
+              }
+            }
+          },
+          "body": {
+            "b": "redirect",
+            "to": {
+              "ref": "controllerOf",
+              "object": {
+                "ref": "attachedTo"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "all",
+      "would",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "All damage that would be dealt to equipped creature is dealt to its controller instead."
+      },
+      {
+        "text": "Equipped creature gets +2/+11.\nAll damage that would be dealt to equipped creature is dealt to its controller instead."
+      }
+    ],
+    "counterExamples": [
+      "All damage that would be dealt to enchanted creature is dealt to you instead.",
+      "All damage that would be dealt to equipped creature is dealt to target player instead.",
+      "All combat damage that would be dealt to equipped creature is dealt to its controller instead."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "eff.edhv26.destroy.all.typeOfYourChoice",
+    "kind": "effect",
+    "cr": [
+      "CR 205.3m",
+      "CR 608.2c",
+      "CR 701.8a"
+    ],
+    "pattern": "destroy all creatures of the creature type of your choice",
+    "build": [
+      {
+        "op": "chooseValue",
+        "who": {
+          "ref": "you"
+        },
+        "what": "creatureType",
+        "as": "chosenCreatureType",
+        "link": "chosenCreatureType"
+      },
+      {
+        "op": "destroy",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Creature"
+            ],
+            "chosen": {
+              "link": "chosenCreatureType",
+              "quality": "creatureType"
+            }
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "all",
+      "of your choice"
+    ],
+    "examples": [
+      {
+        "text": "Scry 1. Destroy all creatures of the creature type of your choice."
+      },
+      {
+        "text": "Draw a card. Destroy all creatures of the creature type of your choice."
+      }
+    ],
+    "counterExamples": [
+      "Destroy all creatures of the color of your choice.",
+      "Destroy all lands of the creature type of your choice.",
+      "Destroy target creature of the creature type of your choice."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "sta.edhv26.loyaltyAbilities.oppPlaneswalkers.costMore",
+    "kind": "static",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 606.1",
+      "CR 118.7"
+    ],
+    "pattern": "loyalty abilities of planeswalkers your opponents control cost {m:ManaCost} more to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": {
+                "types": [
+                  "Planeswalker"
+                ],
+                "controller": "opponent"
+              },
+              "kind": "loyalty"
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Loyalty abilities of planeswalkers your opponents control cost {3} more to activate."
+      },
+      {
+        "text": "Loyalty abilities of planeswalkers your opponents control cost {2} more to activate."
+      }
+    ],
+    "counterExamples": [
+      "Loyalty abilities of planeswalkers your opponents control cost {1} less to activate.",
+      "Loyalty abilities of planeswalkers you control cost {1} more to activate.",
+      "Activated abilities of planeswalkers your opponents control cost {1} more to activate."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "sta.edhv26.self.cantattack.ifAnotherCreature",
+    "kind": "static",
+    "cr": [
+      "CR 508.1c",
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 101.2"
+    ],
+    "pattern": "~ can't attack if there's {f:Filter} on the battlefield",
+    "build": {
+      "s": "restrict",
+      "subject": {
+        "ref": "self"
+      },
+      "mode": "cant",
+      "action": "attack",
+      "when": {
+        "cond": "exists",
+        "of": {
+          "ref": "each",
+          "filter": "$f"
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't attack if there's another land on the battlefield."
+      },
+      {
+        "text": "~ can't attack if there's another Goblin on the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "~ can't block if there's another land on the battlefield.",
+      "~ can't attack unless there's another land on the battlefield.",
+      "~ can't attack if there's a land on the battlefield."
+    ],
+    "since": 9,
+    "status": "stable"
+  },
+  {
+    "id": "eff.edhv26.damage.unlessTheyControlNOrMore",
+    "kind": "effect",
+    "cr": [
+      "CR 608.2c",
+      "CR 120.3",
+      "CR 109.5"
+    ],
+    "pattern": "{src:Obj} deal[s] {n:Qty} damage to {p:Player} unless they control two or more {f:Filter}",
+    "build": {
+      "op": "damage",
+      "source": "$src",
+      "to": "$p",
+      "amount": "$n",
+      "guard": {
+        "cond": "not",
+        "of": {
+          "cond": "exists",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "anyOf": [
+                "$f"
+              ],
+              "controller": "$p"
+            }
+          },
+          "atLeast": 2
+        }
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "Draw a card. ~ deals 3 damage to target player unless they control two or more Goblins."
+      },
+      {
+        "text": "Draw a card. ~ deals 2 damage to target opponent unless they control two or more artifacts."
+      }
+    ],
+    "counterExamples": [
+      "Draw a card. ~ deals 3 damage to target player unless you control two or more Goblins.",
+      "Draw a card. ~ deals 3 damage to target player if they control two or more Goblins.",
+      "Draw a card. ~ deals 3 damage to target player unless they control three or more Goblins."
+    ],
+    "since": 9,
+    "status": "stable"
+  }
+]

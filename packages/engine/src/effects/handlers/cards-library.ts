@@ -16,14 +16,18 @@ import { HIDDEN_ZONES } from '../../types/state';
 import { cantDo } from '../../rules/cant';
 import { charsOfObject } from '../../rules/characteristics';
 import { matchesFilter } from '../../rules/filter';
+import { groupStat } from '../../rules/targets';
 import type { ExecCtx, StepResult } from '../api';
 import { evalCount } from '../eval';
 import { performAction, performShuffle } from '../perform';
 import { proposeResult } from '../propose';
 import { performBringIntoGame } from '../perform-direct';
 import { outsideMatches } from './outside';
+import { beginSearchControl, exileFoundCards } from './search-control'; // edh-next-119
+import { controllerOfPlayer } from '../../core/player-control'; // edh-next-119
 import { filterCtxOf, readInfo, resolvePlayers } from '../refs';
 import { runSteps } from '../run';
+import { surveilExtraLooks } from '../../statics/hooks'; // edh-d-96
 import { allPlayers, bindObjects, cardCount, cardsWord, logAction, moveAsAction, namesOf, NOTHING, playerName, playersOf, result } from './cards-util';
 
 type Step<K extends EffectStep['op']> = Extract<EffectStep, { op: K }>;
@@ -47,27 +51,33 @@ export function scryHandler(cx: ExecCtx, st: Step<'scry'>): StepResult {
   const g = cx.g;
   // p2-replace-events-3 (CR 701.22a, 614.1a): each player's scry is proposed first, so "If you would scry a number of cards, draw that many cards instead" replaces
   // it (effects/proposal-kinds/scry.ts); replaced, that player does not scry (the replacement's instructions did instead)
-  const plans = playersOf(cx, st.who).filter((p) => proposeResult(g, { ev: 'scry', player: p, count: n }) !== null).map((p) => {
-    const looked = library(g, p).slice(0, n);
+  // edh-b-6 (CR 701.22a, 614.1a; Kenessos, Priest of Thassa): a `modify.count` body changes the number of cards ("scry that many cards plus one instead"): the final event's number is scried
+  const plans = playersOf(cx, st.who).flatMap((p) => {
+    const res = proposeResult(g, { ev: 'scry', player: p, count: n });
+    if (res === null) return [];
+    const k = res.event.ev === 'scry' ? res.event.count : n;
+    const looked = library(g, p).slice(0, k);
     showCards(g, looked, [p]); // CR 701.20e: only the scrying player looks
-    if (looked.length === 0) return { p, looked, top: [], bottom: [] };
+    if (looked.length === 0) return [{ p, looked, top: [] as string[], bottom: [] as string[], k }];
     const bottom = g.choose({
       kind: 'chooseObjects', player: p, options: looked, min: 0, max: looked.length, ordered: true,
-      prompt: `Scry ${n}: choose the cards to put on the bottom of your library, in order (the first one ends up highest).`, rules: ['CR 701.22a'],
+      prompt: `Scry ${k}: choose the cards to put on the bottom of your library, in order (the first one ends up highest).`, rules: ['CR 701.22a'],
     }).ids;
     const top = orderOnTop(g, p, looked.filter((id) => !bottom.includes(id)), 'CR 701.22a');
-    return { p, looked, top, bottom };
+    return [{ p, looked, top, bottom, k }];
   });
   let count = 0;
   const kept: LastKnown[] = []; // r5-fxz: the cards left on top, as they were there (StepResult.kept)
-  for (const { p, looked, top, bottom } of plans) {
+  for (const { p, looked, top, bottom, k } of plans) {
     const named = { top: namesOf(g, top), bottom: namesOf(g, bottom) }; // before the reorder: a reordered card becomes a new object (CR 701.20d)
     for (const id of top) { const i = readInfo(cx, { id, zone: 'library' }); if (i) kept.push(i); }
     reorderLibrary(g, p, top, bottom); // CR 701.22c: the cards move after every player has decided
     count += looked.length;
-    performAction(g, { verb: 'scry', actor: p }); // CR 701.22d: "whenever you scry" triggers after the whole process
-    logAction(cx, `${playerName(g, p)} scries ${n}, putting ${cardsWord(top.length)} on top and ${cardsWord(bottom.length)} on the bottom.`, ['CR 701.22a'], {
-      players: [p], text: `${playerName(g, p)} scries ${n}: on top ${named.top || 'nothing'}; on the bottom ${named.bottom || 'nothing'}.`,
+    performAction(g, { verb: 'scry', actor: p, x: looked.length }); // CR 701.22d: "whenever you scry" triggers after the whole process; edh-next-38 (CR 701.22a): x = the cards looked at (the event's amount)
+    // edh-d-96 (CR 701.22a; The Temporal Anchor): "whenever you choose to put one or more cards on the bottom of your library while scrying": the number of cards put on the bottom is the event's amount
+    if (bottom.length > 0) performAction(g, { verb: 'scryBottom', actor: p, x: bottom.length });
+    logAction(cx, `${playerName(g, p)} scries ${k}, putting ${cardsWord(top.length)} on top and ${cardsWord(bottom.length)} on the bottom.`, ['CR 701.22a'], {
+      players: [p], text: `${playerName(g, p)} scries ${k}: on top ${named.top || 'nothing'}; on the bottom ${named.bottom || 'nothing'}.`,
     });
   }
   // CR 701.22d, 603.12: the player scried even if no card could be looked at (T3 review: a reflexive "when you do" reads this, as triggers read the event)
@@ -80,12 +90,20 @@ export function surveilHandler(cx: ExecCtx, st: Step<'surveil'>): StepResult {
   if (n === undefined || n === 0) return NOTHING;
   const g = cx.g;
   const plans = playersOf(cx, st.who).map((p) => {
-    const looked = library(g, p).slice(0, n);
+    // edh-d-96 (CR 701.25a, 609.3; Enhanced Surveillance): "You may look at an additional two cards each time you surveil": each such permanent the surveiling player controls
+    // offers its own additional cards (rulings 2018-10-05), part of what is surveiled
+    let k = n;
+    for (const extra of surveilExtraLooks(g.s, p)) {
+      if (library(g, p).length <= k) break;
+      const yes = g.choose({ kind: 'yesNo', player: p, prompt: `Surveil ${k}: look at an additional ${extra} cards?`, yesLabel: 'Look at them', noLabel: "Don't", rules: ['CR 701.25a', 'CR 609.3'] }).yes;
+      if (yes) k += extra;
+    }
+    const looked = library(g, p).slice(0, k);
     showCards(g, looked, [p]);
     if (looked.length === 0) return { p, looked, top: [], toGraveyard: [] };
     const toGraveyard = g.choose({
       kind: 'chooseObjects', player: p, options: looked, min: 0, max: looked.length,
-      prompt: `Surveil ${n}: choose the cards to put into your graveyard.`, rules: ['CR 701.25a'],
+      prompt: `Surveil ${k}: choose the cards to put into your graveyard.`, rules: ['CR 701.25a'],
     }).ids;
     const top = orderOnTop(g, p, looked.filter((id) => !toGraveyard.includes(id)), 'CR 701.25a');
     return { p, looked, top, toGraveyard };
@@ -155,6 +173,17 @@ function zoneIds(g: Game, zone: ZoneKind, owner: PlayerId): ObjectId[] {
   return z[zone].filter((id) => g.s.objects[id]?.owner === owner);
 }
 
+/**
+ * edh-zones-14 (CR 701.23a, 614.1a): the cards of the zone a search looks at. A search of a library is proposed first (effects/proposal-kinds/search.ts), so "that player
+ * searches the top four cards of that library instead" (Aven Mindcensor) limits the cards to the top N; any other zone is searched whole.
+ */
+function searchableIds(g: Game, p: PlayerId, zone: ZoneKind, owner: PlayerId): ObjectId[] {
+  const ids = zoneIds(g, zone, owner);
+  if (zone !== 'library') return ids;
+  const final = proposeResult(g, { ev: 'search', player: p, owner, zone })?.event;
+  return final?.ev === 'search' && final.top !== undefined ? ids.slice(0, final.top) : ids; // the top of a library is the first card
+}
+
 /** "for a card with a stated quality" (CR 701.23b) vs "for a card" (701.23d): any field other than where to look is a quality. */
 const hasStatedQuality = (f: ObjectFilter): boolean => Object.entries(f).some(([k, v]) => v !== undefined && k !== 'zone' && k !== 'owner');
 
@@ -173,13 +202,16 @@ function fewest(cx: ExecCtx, st: Step<'search'>, hidden: boolean): number {
 }
 
 /** The value forms of the search op this module runs (model/cap-walk.ts emits them; model/capabilities.ts registers them). */
-export const OP_FORMS: readonly string[] = ['op:search.differentNames',
+export const OP_FORMS: readonly string[] = ['op:search.differentNames', 'op:search.differentPowers' /* edh-next-135 (CR 701.23a, 208.1): #pickDifferentPowers */,
   // CLOUD std-dft (CR 701.23a, 701.24a): "search your library and/or graveyard", "If you search your library this way, shuffle"
   'op:search.alsoZones', 'op:shuffle.ifSearched',
   'op:search.and', // CLOUD C9: 'op:search.and'
   'op:search.allZones', // r4-refs (CR 701.23a): "search target opponent's graveyard, hand, and library", every zone listed
   'op:search.alsoOutside', // std-rx30 (CR 400.11b): "search your library and/or outside the game"
-  'op:search.shareLandType']; // pc-zones-2 (CR 205.3i): "basic land cards that share a land type"
+  'op:search.shareLandType', // pc-zones-2 (CR 205.3i): "basic land cards that share a land type"
+  'op:search.groupLimit', // edh-zones-10 (CR 202.3, 608.2d): "any number of creature cards with total mana value 6 or less"
+  'op:search.publicRequired']; // edh-c-32 (CR 701.23b): "all cards with the same name", the ones in a public zone are found
+
 
 /**
  * FAST5 T42 (CR 201.2, 701.23d; Reach the Horizon): "up to two basic land cards and/or Town cards with different names". The searcher takes the cards one at a time,
@@ -201,6 +233,29 @@ function pickDifferentNames(cx: ExecCtx, p: PlayerId, owner: PlayerId, zone: str
     picked.push(one[0]!);
     const taken = namesOfCard(one[0]!);
     pool = pool.filter((id) => id !== one[0] && !namesOfCard(id).some((n) => taken.includes(n)));
+  }
+  return picked;
+}
+
+/**
+ * edh-next-135 (CR 701.23a, 208.1; Threats Undetected, ruling 2022-09-09): "up to four creature cards with different powers": the cards are taken one at a time, each with a power no card taken
+ * before has (powers are numbers: a 1/1 and a 2/1 differ); the searcher may stop after `min` cards.
+ */
+function pickDifferentPowers(cx: ExecCtx, p: PlayerId, owner: PlayerId, zone: string, candidates: ObjectId[], min: number, max: number): ObjectId[] {
+  const g = cx.g;
+  const powerOf = (id: ObjectId): number => groupStat(g.s, { kind: 'object', id }, 'power');
+  const picked: ObjectId[] = [];
+  let pool = candidates;
+  while (picked.length < max && pool.length > 0) {
+    const need = picked.length < min ? 1 : 0;
+    const one = g.choose({
+      kind: 'chooseObjects', player: p, options: pool, min: need, max: 1,
+      prompt: `Search ${owner === p ? 'your' : `${playerName(g, owner)}'s`} ${zone} for a card with a power different from the others (${picked.length + 1} of up to ${max}).`, rules: ['CR 701.23a', 'CR 701.23d', 'CR 208.1'],
+    }).ids;
+    if (one.length === 0) break;
+    picked.push(one[0]!);
+    const taken = powerOf(one[0]!);
+    pool = pool.filter((id) => id !== one[0] && powerOf(id) !== taken);
   }
   return picked;
 }
@@ -265,27 +320,43 @@ export function searchHandler(cx: ExecCtx, st: Step<'search'>): StepResult {
   const found: ObjHandle[] = [];
   const hidden = HIDDEN_ZONES.includes(st.zone); // CR 400.2: a hand is a hidden zone, also when its owner searches it
   const searched: { owner: PlayerId; zone: ZoneKind }[] = []; // r5-moved: every zone this step searched (CR 701.23a), as searchZones reports it
+  let foundCount = 0; // edh-next-119: the cards found, also those a search rule exiled as they were found (search-control.ts)
   for (const p of playersOf(cx, st.who)) {
-    const cant = st.zone === 'library' ? cantDo(g.s, 'search', p) : null; // WP31: "can't search libraries" (CR 701.23, 101.2): no search; a "then shuffle" step still shuffles
-    if (cant) {
-      g.log(`${playerName(g, p)} can't search libraries. ${cant.message}`, { rules: ['CR 701.23a', 'CR 101.2'], level: 'info' });
-      continue;
-    }
     const owners = st.owner ? playersOf(cx, st.owner) : [p];
     for (const owner of owners) {
-      const ids = zoneIds(g, st.zone, owner);
+      // WP31: "can't search libraries" (CR 701.23, 101.2): no search; a "then shuffle" step still shuffles. edh-zones-14: asked per library, with the source only for the searcher's
+      // OWN library (Ashiok, Dream Render: "can't cause their controller to search their library", statics/hooks.ts#verdict)
+      const cant = st.zone === 'library' ? cantDo(g.s, 'search', p, owner === p ? cx.source.id : undefined) : null;
+      if (cant) {
+        g.log(`${playerName(g, p)} can't search libraries. ${cant.message}`, { rules: ['CR 701.23a', 'CR 101.2'], level: 'info' });
+        continue;
+      }
+      const ownLibrary = st.zone === 'library' && owner === p; // edh-next-119 (CR 723.2): "while they're searching their libraries"
+      const endControl = ownLibrary ? beginSearchControl(g, p) : () => {};
+      const ids = searchableIds(g, p, st.zone, owner);
       if (hidden) showCards(g, ids, [p]); // CR 701.23a
       const ctx = filterCtxOf(cx);
       const candidates = ids.filter((id) => matchesFilter(g.s, g.s.objects[id]!, { ...st.filter, zone: st.zone }, ctx));
       const max = Math.min(evalCount(st.max, { cx }), candidates.length);
       const min = Math.min(fewest(cx, st, hidden), max);
+      // edh-zones-10 (CR 202.3, 608.2d): the total of a statistic over the cards found together stays within the limit; the searcher may take fewer (a hidden zone, CR 701.23b)
+      const limit = st.groupLimit === undefined ? undefined : {
+        stat: st.groupLimit.stat, op: st.groupLimit.cmp.op, value: evalCount(st.groupLimit.cmp.value, { cx }),
+        values: Object.fromEntries(candidates.map((id) => [id, groupStat(g.s, { kind: 'object', id }, st.groupLimit!.stat)])),
+      };
       const picked = st.and !== undefined ? pickOneOfEach(cx, p, owner, st.zone, ids, [st.filter, ...st.and], hidden) // CLOUD C9
-        : max === 0 ? [] : st.differentNames === true ? pickDifferentNames(cx, p, owner, st.zone, candidates, min, max) : st.shareLandType === true ? pickSharingLandType(cx, p, owner, st.zone, candidates, min, max) : min === candidates.length ? candidates : g.choose({
+        : max === 0 ? [] : limit !== undefined ? g.choose({
+          kind: 'chooseObjects', player: p, options: candidates, min: 0, max, limit,
+          prompt: `Search ${owner === p ? 'your' : `${playerName(g, owner)}'s`} ${st.zone} (${st.groupLimit!.stat} total limit).`, rules: ['CR 701.23a', 'CR 701.23b', 'CR 202.3', 'CR 608.2d'],
+        }).ids : st.differentNames === true ? pickDifferentNames(cx, p, owner, st.zone, candidates, min, max) : st.differentPowers === true ? pickDifferentPowers(cx, p, owner, st.zone, candidates, min, max) : st.shareLandType === true ? pickSharingLandType(cx, p, owner, st.zone, candidates, min, max) : min === candidates.length ? candidates : g.choose({
         kind: 'chooseObjects', player: p, options: candidates, min, max,
         prompt: `Search ${owner === p ? 'your' : `${playerName(g, owner)}'s`} ${st.zone} (${min === max ? max : `${min} to ${max}`}).`, rules: ['CR 701.23a', 'CR 701.23b', 'CR 701.23d'],
       }).ids;
-      found.push(...picked.map((id): ObjHandle => ({ id, zone: st.zone })));
       if (st.reveal === true) showCards(g, picked, allPlayers(g)); // CR 701.20a
+      foundCount += picked.length;
+      const pickedHandles = picked.map((id): ObjHandle => ({ id, zone: st.zone }));
+      found.push(...(ownLibrary ? exileFoundCards(cx, p, pickedHandles) : pickedHandles)); // edh-next-119 (CR 614.1a): exiled as found, the effect can't see them
+      endControl();
       performAction(g, { verb: 'search', actor: p, owner, zone: st.zone }); // CR 701.23a: this zone was searched
       searched.push({ owner, zone: st.zone });
       const where = `${owner === p ? 'their' : `${playerName(g, owner)}'s`} ${st.zone}`;
@@ -300,7 +371,7 @@ export function searchHandler(cx: ExecCtx, st: Step<'search'>): StepResult {
   // may yield nothing): "When you search your library this way, ..." (Prishe's Wanderings) and "If you search your library this way, ..." read this; `count` stays what
   // was found. A player who can't search libraries (CR 101.2) searched nothing. Merge wave 8: the audit's D2 rule (a search is carried out when a zone is searched,
   // even if nothing is found: "If you search your library this way" after "you may search", control.ts#mayHandler) is this same rule; one is kept
-  return { performed: searched.length > 0, count: found.length, searched };
+  return { performed: searched.length > 0, count: foundCount, searched };
 }
 
 /**
@@ -315,13 +386,17 @@ function searchWithOutside(cx: ExecCtx, st: Step<'search'>): StepResult {
   const found: ObjHandle[] = [];
   const searched: { owner: PlayerId; zone: ZoneKind }[] = [];
   if (st.zone !== 'library' || st.owner !== undefined || (st.alsoZones?.length ?? 0) > 0) { bindObjects(cx, st.as, []); return NOTHING; }
+  let foundCount = 0; // edh-next-119
   for (const p of playersOf(cx, st.who)) {
-    const cant = cantDo(g.s, 'search', p); // WP31 (CR 101.2): "can't search libraries" leaves the cards outside the game
-    const ids = cant ? [] : zoneIds(g, 'library', p);
+    const foundBefore = found.length;
+    const cant = cantDo(g.s, 'search', p, cx.source.id); // WP31 (CR 101.2): "can't search libraries" leaves the cards outside the game
+    const endControl = cant ? () => {} : beginSearchControl(g, p); // edh-next-119 (CR 723.2)
+    const ids = cant ? [] : searchableIds(g, p, 'library', p);
     if (!cant) showCards(g, ids, [p]); // CR 701.23a
     const ctx = filterCtxOf(cx);
     const inLibrary = ids.filter((id) => matchesFilter(g.s, g.s.objects[id]!, { ...st.filter, zone: 'library' }, ctx));
-    const outside = [...new Set((g.s.outside?.[p] ?? []).filter((d) => outsideMatches(g, d, st.filter)))];
+    // edh-next-119 (CR 723.4, 723.5b; Emrakul ruling 2025-01-24): while another player controls the searcher, the cards outside the game are not offered: their controller can't see them or have the player choose one
+    const outside = controllerOfPlayer(g.s, p) !== p ? [] : [...new Set((g.s.outside?.[p] ?? []).filter((d) => outsideMatches(g, d, st.filter)))];
     const nameOf = (opt: string): string => (opt.startsWith('obj:') ? g.nameOf(opt.slice(4)) : g.s.defs[opt.slice(5)]!.name);
     const options = [...inLibrary.map((id) => `obj:${id}`), ...outside.map((d) => `card:${d}`)];
     const max = Math.min(evalCount(st.max, { cx }), new Set(options.map(nameOf)).size);
@@ -341,6 +416,9 @@ function searchWithOutside(cx: ExecCtx, st: Step<'search'>): StepResult {
       if (id !== null) found.push({ id, zone: 'library' });
     }
     if (st.reveal === true) showCards(g, found.map((h) => h.id), allPlayers(g)); // CR 701.20a
+    foundCount += found.length - foundBefore;
+    if (!cant) found.splice(foundBefore, found.length - foundBefore, ...exileFoundCards(cx, p, found.slice(foundBefore))); // edh-next-119 (CR 614.1a)
+    endControl();
     if (!cant) {
       performAction(g, { verb: 'search', actor: p, owner: p, zone: 'library' }); // CR 701.23a
       searched.push({ owner: p, zone: 'library' });
@@ -348,7 +426,7 @@ function searchWithOutside(cx: ExecCtx, st: Step<'search'>): StepResult {
     logAction(cx, `${playerName(g, p)} searches their library and outside the game and finds ${found.length === 0 ? 'nothing' : namesOf(g, found.map((h) => h.id))}${st.reveal === true && found.length > 0 ? ', revealing them' : ''}.`, ['CR 701.23a', 'CR 400.11b', 'CR 701.20a']);
   }
   bindObjects(cx, st.as, found);
-  return { performed: searched.length > 0 || found.length > 0, count: found.length, searched };
+  return { performed: searched.length > 0 || foundCount > 0, count: foundCount, searched };
 }
 
 /**
@@ -363,10 +441,11 @@ function searchZones(cx: ExecCtx, st: Step<'search'>): StepResult {
   const found: ObjHandle[] = [];
   const searched: { owner: PlayerId; zone: ZoneKind }[] = [];
   const listed = [st.zone, ...(st.alsoZones ?? [])] as ZoneKind[];
+  let foundCount = 0; // edh-next-119
   for (const p of playersOf(cx, st.who)) {
     const owners = st.owner ? playersOf(cx, st.owner) : [p];
     for (const owner of owners) {
-      const cant = cantDo(g.s, 'search', p); // WP31 (CR 101.2): "can't search libraries" removes the library only
+      const cant = cantDo(g.s, 'search', p, owner === p ? cx.source.id : undefined); // WP31 (CR 101.2): "can't search libraries" removes the library only; edh-zones-14: the source for the searcher's own library
       if (cant && listed.includes('library')) g.log(`${playerName(g, p)} can't search libraries. ${cant.message}`, { rules: ['CR 701.23a', 'CR 101.2'], level: 'info' });
       const offered = listed.filter((z) => z !== 'library' || !cant);
       if (offered.length === 0) continue;
@@ -378,25 +457,36 @@ function searchZones(cx: ExecCtx, st: Step<'search'>): StepResult {
         options: offered.map((z) => ({ id: z, label: `${whose} ${z}` })),
       }).ids as ZoneKind[]).filter((z) => offered.includes(z));
       if (zones.length === 0) continue;
+      const ownLibrary = owner === p && zones.includes('library'); // edh-next-119 (CR 723.2; ruling 2020-11-10: with the library, every zone of the search)
+      const endControl = ownLibrary ? beginSearchControl(g, p) : () => {};
       const hidden = zones.some((z) => HIDDEN_ZONES.includes(z));
       const ctx = filterCtxOf(cx);
       const candidates: ObjHandle[] = [];
       for (const zone of zones) {
-        const ids = zoneIds(g, zone, owner);
+        const ids = searchableIds(g, p, zone, owner);
         if (HIDDEN_ZONES.includes(zone)) showCards(g, ids, [p]); // CR 701.23a
         for (const id of ids) if (matchesFilter(g.s, g.s.objects[id]!, { ...st.filter, zone }, ctx)) candidates.push({ id, zone });
       }
       const max = Math.min(evalCount(st.max, { cx }), candidates.length);
       const min = Math.min(fewest(cx, st, hidden), max);
       // r3-refs (CR 201.2, 701.23a): "a card named A and/or a card named B" in several zones: the cards taken have different names, as in one zone (pickDifferentNames)
-      const pickedIds = max === 0 ? [] : st.differentNames === true ? pickDifferentNames(cx, p, owner, zones.join(' and '), candidates.map((h) => h.id), min, max)
+      // edh-c-32 (CR 701.23b; Eradicate ruling 2005-02-01): "all cards with the same name": the matching cards of a public zone (a graveyard) are found, and only those of a hidden zone
+      // (hand, library) may be left; the searcher chooses among the hidden ones
+      const forced = st.publicRequired === true ? candidates.filter((h) => !HIDDEN_ZONES.includes(h.zone)).map((h) => h.id) : [];
+      const optional = forced.length > 0 ? candidates.filter((h) => !forced.includes(h.id)) : candidates;
+      const pickedIds = forced.length > 0 ? [...forced, ...(optional.length === 0 ? [] : g.choose({
+        kind: 'chooseObjects', player: p, options: optional.map((h) => h.id), min: 0, max: optional.length,
+        prompt: `Search ${whose} ${zones.join(' and ')} (any number more).`, rules: ['CR 701.23a', 'CR 701.23b'],
+      }).ids)] : max === 0 ? [] : st.differentNames === true ? pickDifferentNames(cx, p, owner, zones.join(' and '), candidates.map((h) => h.id), min, max)
         : min === candidates.length ? candidates.map((h) => h.id) : g.choose({
         kind: 'chooseObjects', player: p, options: candidates.map((h) => h.id), min, max,
         prompt: `Search ${whose} ${zones.join(' and ')} (${min === max ? max : `${min} to ${max}`}).`, rules: ['CR 701.23a', 'CR 701.23b', 'CR 701.23d'],
       }).ids;
       const picked = candidates.filter((h) => pickedIds.includes(h.id));
-      found.push(...picked);
       if (st.reveal === true) showCards(g, picked.map((h) => h.id), allPlayers(g)); // CR 701.20a
+      foundCount += picked.length;
+      found.push(...(ownLibrary ? exileFoundCards(cx, p, picked) : picked)); // edh-next-119 (CR 614.1a)
+      endControl();
       for (const zone of zones) {
         performAction(g, { verb: 'search', actor: p, owner, zone }); // CR 701.23a: this zone was searched
         searched.push({ owner, zone });
@@ -410,7 +500,7 @@ function searchZones(cx: ExecCtx, st: Step<'search'>): StepResult {
     }
   }
   bindObjects(cx, st.as, found);
-  return { performed: searched.length > 0, count: found.length, searched }; // r5-moved (CR 701.23a): performed when a zone was searched, as searchHandler
+  return { performed: searched.length > 0, count: foundCount, searched }; // r5-moved (CR 701.23a): performed when a zone was searched, as searchHandler
 }
 
 /**

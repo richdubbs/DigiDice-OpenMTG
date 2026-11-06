@@ -1,0 +1,681 @@
+[
+  {
+    "id": "cm.edhd45.ability.less.ifTargetsTwo",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2c",
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 115.1",
+      "CR 118.7"
+    ],
+    "pattern": "this ability costs {m:ManaCost} less to activate if it targets two {f:Filter}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "abilities": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "math",
+              "op": "min",
+              "args": [
+                1,
+                {
+                  "q": "math",
+                  "op": "floorDiv",
+                  "args": [
+                    {
+                      "q": "spellTargetCount",
+                      "filter": "$f"
+                    },
+                    2
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Tap target creature. This ability costs {1} less to activate if it targets two creatures you control."
+      },
+      {
+        "text": "{2}, {T}: Tap target creature. This ability costs {3} less to activate if it targets two tapped creatures."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Tap target creature. This ability costs {2} more to activate if it targets two creatures you control.",
+      "{3}, {T}: Tap target creature. This ability costs {2} less to activate unless it targets two creatures you control.",
+      "{3}, {T}: Tap target creature. This ability costs {2} less to cast if it targets two creatures you control."
+    ]
+  },
+  {
+    "id": "cm.edhd45.additional.sacrificeAny.lessForEachAndOther",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 118.8",
+      "CR 701.21a",
+      "CR 604.1"
+    ],
+    "pattern": "as an additional cost to cast ~ , you may sacrifice any number of {f:Filter} . ~ costs {m:ManaCost} less to cast for each permanent sacrificed this way and {z:ManaCost} less to cast for each other {g:Filter} you've sacrificed this turn",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "sacrifice",
+                "filter": "$f",
+                "count": "any"
+              }
+            ]
+          },
+          "optional": true,
+          "name": "sacrificed",
+          "announceCount": true
+        },
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "costCount",
+                  "name": "sacrificed"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        },
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$z.0.amount",
+                {
+                  "q": "happenedCount",
+                  "event": {
+                    "ev": "action",
+                    "verb": "sacrifice",
+                    "actor": "you",
+                    "object": "$g"
+                  },
+                  "scope": "turn"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional",
+      "may",
+      "any number",
+      "each",
+      "other",
+      "each other",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, you may sacrifice any number of artifacts and/or creatures. ~ costs {3} less to cast for each permanent sacrificed this way and {3} less to cast for each other artifact or creature you've sacrificed this turn."
+      },
+      {
+        "text": "As an additional cost to cast ~, you may sacrifice any number of artifacts. ~ costs {1} less to cast for each permanent sacrificed this way and {1} less to cast for each other artifact you've sacrificed this turn."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, you may sacrifice any number of artifacts. ~ costs {1} more to cast for each permanent sacrificed this way and {1} less to cast for each other artifact you've sacrificed this turn.",
+      "As an additional cost to cast ~, you may sacrifice any number of artifacts. ~ costs {1} less to cast for each permanent sacrificed this way and {1} less to cast for each artifact your opponents have sacrificed this turn.",
+      "As an additional cost to cast ~, you may sacrifice any number of artifacts. ~ costs {1} less to cast for each permanent sacrificed this way."
+    ],
+    "needs": [
+      "feature:additionalCost.announceCount"
+    ]
+  },
+  {
+    "id": "cm.edhd45.additional.removeCountersAny.lessForEach",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2b",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 118.8",
+      "CR 122.1",
+      "CR 604.1"
+    ],
+    "pattern": "as an additional cost to cast ~ , you may remove any number of {k:CounterKind} counters from among {f:Filter} . ~ costs {m:ManaCost} less to cast for each counter removed this way",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack"
+      ],
+      "effects": [
+        {
+          "s": "additionalCost",
+          "cost": {
+            "other": [
+              {
+                "kind": "removeCounters",
+                "counter": "$k",
+                "count": 1,
+                "filter": "$f",
+                "among": true,
+                "anyNumber": true
+              }
+            ]
+          },
+          "optional": true,
+          "name": "removed",
+          "announceCount": true
+        },
+        {
+          "s": "costMod",
+          "applies": {
+            "self": true,
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": {
+              "q": "math",
+              "op": "*",
+              "args": [
+                "$m.0.amount",
+                {
+                  "q": "costCount",
+                  "name": "removed"
+                }
+              ]
+            },
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "needs": [
+      "feature:additionalCost.announceCount"
+    ],
+    "consumes": [
+      "additional",
+      "may",
+      "any number",
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As an additional cost to cast ~, you may remove any number of +1/+1 counters from among creatures you control. ~ costs {1} less to cast for each counter removed this way."
+      },
+      {
+        "text": "As an additional cost to cast ~, you may remove any number of charge counters from among artifacts you control. ~ costs {3} less to cast for each counter removed this way."
+      }
+    ],
+    "counterExamples": [
+      "As an additional cost to cast ~, you may remove any number of +1/+1 counters from among creatures you control. ~ costs {2} more to cast for each counter removed this way.",
+      "As an additional cost to cast ~, you may remove two +1/+1 counters from among creatures you control. ~ costs {2} less to cast for each counter removed this way.",
+      "As an additional cost to cast ~, you may remove any number of +1/+1 counters from among creatures you control. ~ costs {2} less to cast for each card exiled this way."
+    ]
+  },
+  {
+    "id": "cm.edhd45.flashback.you.less",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.34a",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 118.9",
+      "CR 604.1"
+    ],
+    "pattern": "flashback costs you pay cost {m:ManaCost} less",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {},
+            "via": "flashback",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Flashback costs you pay cost {1} less."
+      },
+      {
+        "text": "Flashback costs you pay cost {3} less."
+      }
+    ],
+    "counterExamples": [
+      "Flashback costs you pay cost {2} more.",
+      "Flashback costs your opponents pay cost {2} less.",
+      "Kicker costs you pay cost {2} less."
+    ]
+  },
+  {
+    "id": "cm.edhd45.flashback.opp.more",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.34a",
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 118.9",
+      "CR 604.1"
+    ],
+    "pattern": "flashback costs your opponents pay cost {m:ManaCost} more",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {},
+            "via": "flashback",
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "Flashback costs your opponents pay cost {1} more."
+      },
+      {
+        "text": "Flashback costs your opponents pay cost {3} more."
+      }
+    ],
+    "counterExamples": [
+      "Flashback costs your opponents pay cost {2} less.",
+      "Flashback costs you pay cost {2} more.",
+      "Kicker costs your opponents pay cost {2} more."
+    ]
+  },
+  {
+    "id": "rep.edhd45.enters.choose.twoColors",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 105.1"
+    ],
+    "pattern": "as ~ enters , choose two colors",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "color",
+                "link": "color",
+                "min": 2,
+                "max": 2
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As this creature enters, choose two colors."
+      },
+      {
+        "text": "As this creature enters, choose two colors."
+      }
+    ],
+    "counterExamples": [
+      "As this creature enters, choose a color and a creature type.",
+      "As this creature enters, choose three colors.",
+      "As this creature enters, choose two colors other than white."
+    ]
+  },
+  {
+    "id": "cm.edhd45.spells.less.forEachChosenColor",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 105.1",
+      "CR 607.2d"
+    ],
+    "pattern": "each spell you cast costs {m:ManaCost} less to cast for each of the chosen colors it is",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {},
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "mana": "$m",
+            "times": {
+              "q": "chosenColorsOf",
+              "link": "color"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As this creature enters, choose two colors.\nEach spell you cast costs {2} less to cast for each of the chosen colors it is."
+      },
+      {
+        "text": "As this creature enters, choose two colors.\nEach spell you cast costs {3} less to cast for each of the chosen colors it is."
+      }
+    ],
+    "counterExamples": [
+      "As this creature enters, choose two colors.\nEach spell you cast costs {1} more to cast for each of the chosen colors it is.",
+      "As this creature enters, choose two colors.\nEach spell your opponents cast costs {1} less to cast for each of the chosen colors it is.",
+      "As this creature enters, choose two colors.\nEach spell you cast costs {1} less to cast for each of the chosen colors."
+    ]
+  },
+  {
+    "id": "sta.edhd45.triggerMod.beingDealtDamage",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 120.1",
+      "CR 603.2"
+    ],
+    "pattern": "if {f:Filter} being dealt damage causes a triggered ability of a permanent you control to trigger , that ability triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "damage",
+            "recipient": {
+              "object": "$f"
+            }
+          },
+          "abilitiesOf": {
+            "controller": "you"
+          },
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If a Wizard you control being dealt damage causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+      },
+      {
+        "text": "If an artifact you control being dealt damage causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time."
+      }
+    ],
+    "counterExamples": [
+      "If a creature you control being dealt damage causes a triggered ability of a permanent you control to trigger, that ability triggers two additional times.",
+      "If a creature you control dealing damage causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+      "If a creature you control being dealt damage causes a triggered ability of a permanent your opponents control to trigger, that ability triggers an additional time."
+    ]
+  },
+  {
+    "id": "rid.edhd45.payUnless.reducedPerDomain",
+    "kind": "rider",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 118.12",
+      "CR 118.7",
+      "CR 305.6",
+      "CR 608.2c"
+    ],
+    "pattern": "this cost is reduced by {m:ManaCost} for each basic land type among lands you control",
+    "build": {
+      "$patchPrevious": {
+        "@require": {
+          "op": "pay",
+          "reduceBy": null
+        },
+        "reduceBy": {
+          "@new": {
+            "q": "math",
+            "op": "*",
+            "args": [
+              "$m.0.amount",
+              {
+                "q": "math",
+                "op": "+",
+                "args": [
+                  {
+                    "q": "math",
+                    "op": "min",
+                    "args": [
+                      1,
+                      {
+                        "q": "count",
+                        "of": {
+                          "ref": "each",
+                          "filter": {
+                            "types": [
+                              "Land"
+                            ],
+                            "subtypes": [
+                              "Plains"
+                            ],
+                            "controller": "you"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "q": "math",
+                    "op": "min",
+                    "args": [
+                      1,
+                      {
+                        "q": "count",
+                        "of": {
+                          "ref": "each",
+                          "filter": {
+                            "types": [
+                              "Land"
+                            ],
+                            "subtypes": [
+                              "Island"
+                            ],
+                            "controller": "you"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "q": "math",
+                    "op": "min",
+                    "args": [
+                      1,
+                      {
+                        "q": "count",
+                        "of": {
+                          "ref": "each",
+                          "filter": {
+                            "types": [
+                              "Land"
+                            ],
+                            "subtypes": [
+                              "Swamp"
+                            ],
+                            "controller": "you"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "q": "math",
+                    "op": "min",
+                    "args": [
+                      1,
+                      {
+                        "q": "count",
+                        "of": {
+                          "ref": "each",
+                          "filter": {
+                            "types": [
+                              "Land"
+                            ],
+                            "subtypes": [
+                              "Mountain"
+                            ],
+                            "controller": "you"
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "q": "math",
+                    "op": "min",
+                    "args": [
+                      1,
+                      {
+                        "q": "count",
+                        "of": {
+                          "ref": "each",
+                          "filter": {
+                            "types": [
+                              "Land"
+                            ],
+                            "subtypes": [
+                              "Forest"
+                            ],
+                            "controller": "you"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "attachTo": "pay",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, sacrifice ~ unless you pay {8}. This cost is reduced by {1} for each basic land type among lands you control."
+      },
+      {
+        "text": "At the beginning of your upkeep, sacrifice ~ unless you pay {12}. This cost is reduced by {3} for each basic land type among lands you control."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of your upkeep, sacrifice ~ unless you pay {8}. This cost is increased by {1} for each basic land type among lands you control.",
+      "At the beginning of your upkeep, sacrifice ~ unless you pay {8}. This cost is reduced by {1} for each land type among lands you control.",
+      "At the beginning of your upkeep, sacrifice ~. This cost is reduced by {1} for each basic land type among lands you control."
+    ]
+  }
+]

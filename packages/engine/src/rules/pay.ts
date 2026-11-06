@@ -16,13 +16,13 @@
 import type { ObjectId, PlayerId } from '../types/ids';
 import type { ManaSymbol, ManaType } from '../types/mana';
 import type { BeheldSnapshot, GameObject, GameState, ManaUnit, ObjHandle } from '../types/state';
-import type { ActivatedInfo } from './abilities';
-import { abilityCostModsFor, abilityManaCost } from '../statics/costmods';
+import { findAbility, type ActivatedInfo } from './abilities';
+import { abilityCostModsFor, abilityLifeCost, abilityManaCost } from '../statics/costmods';
 import type { PayCostDecision } from '../types/decisions';
 import { IllegalAction, type Game } from '../core/game';
 import { assertAllowed } from './denial';
-import { canonicalManaSymbols, costText, hasOneOf, hasWaterbend, manaCostText, oneOfPlans, partText, partsDenial, planDenial, planFromCostDef, WATERBEND_TAPS, waterbendCap, waterbendWith, type CostPlan, type PlanPart } from './cost';
-import { findAssignment, isExactPart, isPickPart, isRandomPart, isSelfPart, isThresholdPart, pickCandidates, pickCount, pickOptions, thresholdOf, valueOf, type PickPart } from './cost-pick';
+import { canonicalManaSymbols, costText, countX, hasOneOf, hasWaterbend, manaCostText, oneOfPlans, partText, partsDenial, planDenial, planFromCostDef, WATERBEND_TAPS, waterbendCap, waterbendWith, type CostPlan, type PlanPart } from './cost';
+import { findAssignment, isExactPart, isPickPart, isRandomPart, isSelfPart, isThresholdPart, pickCandidates, pickCount, pickOptions, thresholdOf, thresholdTotal, valueOf, type PickPart } from './cost-pick';
 import { payPart, putCostCounters } from './pay-parts';
 import { cantDo } from './cant';
 import { stunInsteadOfUntap } from './status';
@@ -30,12 +30,18 @@ import { lifeBudget, payLife } from './life';
 import { activateManaAbility, installManaCostRules } from './mana';
 import { payWithOf, solveWithConverters, type ConverterPlan } from './convert';
 import { hasOnlyOneWayToPay } from './pay-ways';
-import { isPhyrexian, solve, solveBest } from './solver';
-import { buildProviders, extraManaModes, manaSources, spendAllows, spendOptions, type Provider, type SpendContext } from './sources';
+import { staticAnyColorEverywhere } from '../statics/play-permits';
+import { isPhyrexian, lifeColorOf, solve, solveBest } from './solver';
+import { lifeForColors } from './life-for';
+import { buildProviders, costKindOf, extraManaModes, manaSources, spendAllows, spendOptions, type Provider, type SpendContext } from './sources';
 
 export interface Paid {
   manaSpent: ManaUnit[];
   lifePaid: number;
+  /** edh-d-49 (CR 706.2, 602.2b): the result of the die a `rollDie` part rolled (CostsPaid.rolled, read as the result by the ability's effect). */
+  rolled?: number;
+  /** edh-top-2 (CR 107.4f, 702.150a): the Phyrexian mana symbols of the mana cost that were paid with life (CostsPaid.phyrexianLife). Absent when none. */
+  phyrexianLife?: number;
   /** New objects created by cost payments (the sacrificed card in the graveyard, ...). */
   costObjects: ObjectId[];
   /** FAST3 T18: the permanents sacrificed for a `sacrifice` part, by their battlefield ids (CostsPaid.sacrificed: last known information, CR 608.2h). */
@@ -44,6 +50,8 @@ export interface Paid {
   returned?: ObjectId[];
   /** T35: the permanents tapped for a `tapUntapped` part (CostsPaid.tapped: "the tapped creature's power", station CR 702.184a). */
   tapped?: ObjectId[];
+  /** edh-next-141: the permanents unattached for an `unattach` part of another object than the source (CostsPaid.unattached: "that Equipment's mana value", CR 701.3d). */
+  unattached?: ObjectId[];
   /**
    * FAST5X E3 INTERFACE CHANGE (additive): the creatures tapped for a crew or saddle cost (a `tapPower` part with `as`), by their battlefield ids: they crewed
    * or saddled the source as they were tapped (CR 702.122b, 702.171c). Absent when there is none.
@@ -83,9 +91,20 @@ export function resolveAnyCounts(g: Game, player: PlayerId, sourceId: ObjectId |
     if (!('any' in part) || !part.any) continue;
     const pick = part as PickPart;
     // FAST5X E13: "N or more" (craft, CR 702.167a) announces at least N
-    const min = pick.kind === 'exileFrom' || pick.kind === 'sacrifice' ? pick.atLeast ?? 0 : 0; // std-mana-1: and "sacrifice one or more"
     let max = pickCandidates(g.s, player, sourceId, current, pick).length;
+    if (pick.kind === 'sacrifice' && typeof pick.atMost === 'number') max = Math.min(max, pick.atMost); // edh-next-144: "sacrifice up to three permanents" (CR 601.2b, 118.3)
+    // edh-next-45 (CR 601.2b, 118.3; Soulblast): "sacrifice all creatures you control" is no choice of a number: every candidate pays
+    const min = pick.kind === 'sacrifice' && pick.all === true ? max : pick.kind === 'exileFrom' || pick.kind === 'sacrifice' ? pick.atLeast ?? 0 : 0; // std-mana-1: and "sacrifice one or more"
     const withCount = (n: number): CostPlan => ({ ...current, other: current.other.map((p, j) => (j === i ? ({ ...pick, count: n } as PlanPart) : p)) });
+    // edh-next-106 (CR 601.2b, 118.3, 107.1a; Tectonic Split): "sacrifice half the lands you control, rounded up" is no choice of a number: half of the candidates, rounded up
+    if (pick.kind === 'sacrifice' && pick.half === 'up') {
+      const half = Math.ceil(max / 2);
+      if (half > 0 && !findAssignment(g.s, player, sourceId, withCount(half), [], true)) throw new IllegalAction(`You can't pay "${partText(part)}" for ${label}.`, ['CR 601.2b', 'CR 118.3']);
+      const fixedHalf = { ...pick, count: half } as PickPart & { any?: boolean };
+      delete fixedHalf.any;
+      current = { ...current, other: current.other.map((p, j) => (j === i ? (fixedHalf as PlanPart) : p)) };
+      continue;
+    }
     while (max > min && !findAssignment(g.s, player, sourceId, withCount(max), [], true)) max--;
     if (max < min || (min > 0 && !findAssignment(g.s, player, sourceId, withCount(min), [], true))) throw new IllegalAction(`You can't pay "${partText(part)}" for ${label}.`, ['CR 601.2b', 'CR 118.3']);
     const n = max === min ? min : g.choose({ kind: 'chooseNumber', player, prompt: `How many for "${partText(part)}" (cost of ${label})?`, min, max, cancellable: true, rules: ['CR 601.2b', 'CR 107.3a'] }).n;
@@ -212,7 +231,7 @@ export function payPlan(g: Game, player: PlayerId, sourceId: ObjectId | null, gi
 
   // What is left to pay once the taps are done: no tap costs, the other parts in their order.
   // CR 601.2h: first the costs that don't involve random elements or moving cards from the library to a public zone, in any order, then the rest.
-  const late = (part: PlanPart): boolean => isRandomPart(part) || part.kind === 'mill';
+  const late = (part: PlanPart): boolean => isRandomPart(part) || part.kind === 'mill' || part.kind === 'draw' /* edh-c-48: a card from the library to the hand (CR 601.2h) */;
   const untapped = plan.other.filter((part) => part.kind !== 'tapUntapped' && part.kind !== 'tapPower' && part.kind !== 'untapTapped');
   const removals = [...untapped.filter((part) => !late(part)), ...untapped.filter(late)];
   const rest = (from: number): CostPlan => ({ mana: [], tap: false, untap: false, other: removals.slice(from), ...(plan.spend ? { spend: plan.spend } : {}) });
@@ -231,6 +250,7 @@ export function payPlan(g: Game, player: PlayerId, sourceId: ObjectId | null, gi
     const r = how.fromPool ? payFromPool(g, player, plan.mana, label, how.fromPool, plan.spend) : payMana(g, player, plan.mana, label, exclude, reserved, plan.spend, how.origin, how.announcedX === true);
     paid.manaSpent.push(...r.spent);
     paid.lifePaid += r.life;
+    if (r.phyrexian) paid.phyrexianLife = (paid.phyrexianLife ?? 0) + r.phyrexian; // edh-top-2
   }
 
   // 3. Everything else, one part at a time and in order (a discarded card can be exiled from the graveyard by the next part).
@@ -244,13 +264,13 @@ export function payPlan(g: Game, player: PlayerId, sourceId: ObjectId | null, gi
   // #putCostCounters, cause 'cost', by the activating player), so "if you would put one or more counters on a permanent" (Innkeeper's Talent) applies to them and
   // "if an EFFECT would put" (Doubling Season) does not (CR 614.16); the "can't" check stays a backstop before them.
   if (plan.loyalty !== undefined && src && plan.loyalty > 0) {
-    if (cantDo(g.s, 'haveCountersPut', src.id)) throw new IllegalAction(`Loyalty counters can't be put on ${g.nameOf(src.id)}, so the cost of ${label} can't be paid.`, ['CR 606.4', 'CR 614.17b']);
+    if (cantDo(g.s, 'haveCountersPut', src.id, undefined, 'loyalty')) throw new IllegalAction(`Loyalty counters can't be put on ${g.nameOf(src.id)}, so the cost of ${label} can't be paid.`, ['CR 606.4', 'CR 614.17b']);
     putCostCounters(g, player, src.id, 'loyalty', plan.loyalty); // FAST5X E21: the activating player puts them (CR 606.4, 122.6)
   }
   removals.forEach((part, i) => {
     let picked: ObjectId[] = [];
     if (isPickPart(part) && !isRandomPart(part)) picked = isSelfPart(part) ? [sourceId!] : choosePicks(g, player, sourceId, rest(i), [], 0, part as PickPart, label);
-    payPart(g, player, sourceId, part, picked, label, paid);
+    payPart(g, player, sourceId, part, picked, label, paid, costKindOf(plan.spend));
   });
   // FAST5X E10, CR 701.67c: the player waterbent once for each waterbend cost paid, however it was paid ("whenever you waterbend", triggers/normalize.ts)
   for (let i = 0; i < (plan.waterbends ?? 0); i++) g.emit({ type: 'actionPerformed', verb: 'waterbend', actor: player });
@@ -265,16 +285,20 @@ function choosePicks(g: Game, player: PlayerId, sourceId: ObjectId | null, plan:
   const threshold = isThresholdPart(part);
   if (!threshold && options.length === count) return [...options]; // no choice to make
   const [what, rules] = pickPrompt(part);
+  // edh-next-147 (CR 118.3): a threshold sacrifice states its total on the decision (`limit`), so a chooser (a bot too) can see how much power it must reach
+  const limit = part.kind === 'sacrifice' && part.totalPower !== undefined
+    ? { limit: { stat: 'power' as const, op: '>=' as const, value: part.totalPower, values: Object.fromEntries(options.map((id) => [id, valueOf(g.s, part, id)])) } } : {};
   const ids = g.choose({
-    kind: 'chooseObjects', player, prompt: threshold ? `${what} to pay for ${label}.` : `${what} ${count} to pay for ${label}.`, options, min: count, max: threshold ? options.length : count, cancellable: true, rules,
+    kind: 'chooseObjects', player, prompt: threshold ? `${what} to pay for ${label}.` : `${what} ${count} to pay for ${label}.`, options, min: count, max: threshold ? options.length : count, cancellable: true, rules, ...limit,
   }).ids;
   if (threshold && isExactPart(part)) {
     // std-costs-1 (CR 118.3, 107.3a): exactly the announced total mana value
     const total = ids.reduce((n, id) => n + valueOf(g.s, part, id), 0);
     if (total !== thresholdOf(part)) throw new IllegalAction(`Those permanents have total mana value ${total}; exactly ${thresholdOf(part)} is needed.`, rules);
   } else if (threshold) {
-    const total = ids.reduce((n, id) => n + valueOf(g.s, part, id), 0);
-    if (total < thresholdOf(part)) throw new IllegalAction(`Those ${part.kind === 'tapPower' ? 'creatures have total power' : part.kind === 'exileFrom' ? 'cards have mana symbols of that color' : 'cards have total mana value'} ${total}; ${thresholdOf(part)} or more is needed.`, rules);
+    const total = thresholdTotal(g.s, part, ids); // edh-d-100: a union of card types for `typesAmong`
+    const what = part.kind === 'tapPower' || part.kind === 'sacrifice' ? 'creatures have total power' : part.kind === 'exileFrom' && part.typesAmong !== undefined ? 'cards have card types among them' : part.kind === 'exileFrom' && part.mvTotal !== undefined ? 'cards have total mana value' : part.kind === 'exileFrom' ? 'cards have mana symbols of that color' : 'cards have total mana value';
+    if (total < thresholdOf(part)) throw new IllegalAction(`Those ${what} ${total}; ${thresholdOf(part)} or more is needed.`, rules);
   }
   const forced = plan.other.map((_, i) => (i < index ? chosen[i] ?? [] : i === index ? ids : []));
   if (!findAssignment(g.s, player, sourceId, plan, forced, true)) {
@@ -286,16 +310,20 @@ function choosePicks(g: Game, player: PlayerId, sourceId: ObjectId | null, plan:
 function pickPrompt(part: PickPart): [string, string[]] {
   switch (part.kind) {
     case 'discard': return ['Discard', ['CR 701.9', 'CR 118.3']];
-    case 'sacrifice': return ['Sacrifice', ['CR 701.21', 'CR 118.3']];
+    case 'sacrifice': return part.totalPower !== undefined ? [`Sacrifice creatures you control with total power ${part.totalPower} or more`, ['CR 701.21', 'CR 118.3', 'CR 208.1']] : ['Sacrifice', ['CR 701.21', 'CR 118.3']]; // edh-next-147: a threshold sacrifice
+    case 'unattach': return ['Unattach', ['CR 701.3d', 'CR 118.3']]; // edh-top-15
     case 'returnToHand': return ['Return to your hand', ['CR 118.3']];
-    case 'putIntoLibrary': return [`Put this card from your ${part.zone} on the ${part.position} of your library`, ['CR 401.4', 'CR 118.3']]; // trek-9
+    case 'putIntoLibrary': return [part.zone === 'battlefield' ? `Put this permanent on the ${part.position} of its owner's library` : `Put this card from your ${part.zone} on the ${part.position} of your library`, ['CR 401.4', 'CR 118.3']]; // trek-9, edh-d-34
     case 'exileFrom':
       if (part.orGraveyard) return ['Exile from among permanents you control and/or cards in your graveyard', ['CR 702.167a', 'CR 118.3']]; // FAST5X E13
       if (part.total !== undefined) return [`Exile ${part.count} or more permanents you control with total mana value exactly ${part.total}`, ['CR 118.3', 'CR 107.3a']]; // std-costs-1
       if (part.symbolTotal !== undefined) return [`Exile cards from your graveyard with ${part.symbolTotal.atLeast} or more mana symbols of that color among their mana costs`, ['CR 118.3', 'CR 107.4']]; // std-cardcopy-7
+      if (part.mvTotal !== undefined) return [`Exile cards from your graveyard with total mana value ${part.mvTotal.atLeast} or greater`, ['CR 118.3', 'CR 202.3']]; // edh-d-100
+      if (part.typesAmong !== undefined) return [`Exile cards from your graveyard with ${part.typesAmong.atLeast} or more card types among them`, ['CR 118.3', 'CR 205.2a']]; // edh-d-100
       return [part.zone === 'battlefield' ? 'Exile' : `Exile from your ${part.zone}`, ['CR 118.3']];
     case 'tapUntapped': return ['Tap', ['CR 118.3']];
     case 'untapTapped': return ['Untap', ['CR 701.26b', 'CR 118.3']]; // p2-cost-parts-1
+    case 'moveCards': return [part.to === 'graveyard' ? `Put from ${part.from} into its owner's graveyard` : `Put from your ${part.from} on top of your library`, ['CR 400.3', 'CR 401.4', 'CR 118.3']]; // edh-d-54
     case 'tapPower': return [`Tap untapped creatures with total power ${part.power} or more`, ['CR 702.122a', 'CR 118.3']];
     case 'collectEvidence': return [`Exile cards from your graveyard with total mana value ${part.amount} or more`, ['CR 701.59a', 'CR 118.3']];
     case 'reveal': return ['Reveal from your hand', ['CR 701.20a', 'CR 118.3']];
@@ -349,20 +377,22 @@ function activationsOf(providers: Provider[], used: { providerId: number; type: 
  * Pay the mana part. `exclude` are permanents another part of the cost will sacrifice (they can't be sacrificed twice);
  * `lifeReserved` is life the other parts will still pay (CR 119.4).
  */
-function payMana(g: Game, player: PlayerId, given: ManaSymbol[], label: string, exclude: ReadonlySet<ObjectId>, lifeReserved: number, spend?: SpendContext, origin?: PayCostDecision['origin'], announcedX = false): { spent: ManaUnit[]; life: number } {
+function payMana(g: Game, player: PlayerId, given: ManaSymbol[], label: string, exclude: ReadonlySet<ObjectId>, lifeReserved: number, spend?: SpendContext, origin?: PayCostDecision['origin'], announcedX = false): { spent: ManaUnit[]; life: number; phyrexian?: number } {
   const symbols = canonicalManaSymbols(given); // CMDF: "{2}{W}", not "{W}{2}" (the base cost then the commander tax, CR 903.8)
   const allows = spendAllows(g.s, player, spend);
   const p = g.player(player);
-  const life = Math.max(0, lifeBudget(g.s, player) - lifeReserved);
+  const life = Math.max(0, lifeBudget(g.s, player, costKindOf(spend)) - lifeReserved);
   const sources = manaSources(g.s, player, exclude, spend);
   const providers = buildProviders(sources, p.manaPool, undefined, allows);
-  const opts = spendOptions(spend); // FAST5X E29 (CR 609.4b): "mana of any type can be spent to cast that spell"; std-rx32: "... of any color"
-  const anyType = opts.anyType === true || opts.anyColor === true;
+  const lifeFor = lifeForColors(g.s, player, spend); // edhc5 (CR 118.1): K'rrik; the Defilers
+  const opts = { ...spendOptions(spend, staticAnyColorEverywhere(g.s, player)), ...(lifeFor ? { lifeFor } : {}) }; // edh-mana-keywords-4: the player's "spend mana as though it were mana of any color"; FAST5X E29 (CR 609.4b): "mana of any type can be spent to cast that spell"; std-rx32: "... of any color"
+  const anyType = opts.anyType === true || opts.anyColor === true || opts.anyColorWith !== undefined; // edh-next-140
   const plan = solveBest({ symbols, providers, life, ...opts });
   // FAST5X E5 (CR 605.3a): only when the ordinary sources can't pay, a payment that also activates filter abilities (rules/convert.ts)
   const converters = extraManaModes(g.s, player, exclude, spend).converters;
   const convPlan: ConverterPlan | null = plan === null && converters.length > 0 ? solveWithConverters({ symbols, sources, pool: p.manaPool, converters, life, allows, ...opts }) : null;
-  const onlyWay = plan !== null && converters.length === 0 && !announcedX && !anyType && hasOnlyOneWayToPay(symbols, sources, p.manaPool, allows);
+  const lifeSymbols = symbols.flatMap((sym, i) => (lifeColorOf(sym, lifeFor) !== null ? [i] : [])); // edhc5: the symbols the player may pay with life by choice
+  const onlyWay = plan !== null && converters.length === 0 && !announcedX && !anyType && hasOnlyOneWayToPay(symbols, sources, p.manaPool, allows) && lifeSymbols.length === 0;
   const text = manaCostText(symbols);
   const ans = g.choose({
     kind: 'payCost',
@@ -372,6 +402,7 @@ function payMana(g: Game, player: PlayerId, given: ManaSymbol[], label: string, 
     manaSources: describeManaSources(g, player, exclude, spend),
     autoPayable: plan !== null || convPlan !== null,
     ...(onlyWay ? { onlyWay: true as const } : {}),
+    ...(lifeSymbols.length > 0 ? { lifeSymbols } : {}),
     ...(origin !== undefined ? { origin } : {}),
     cancellable: true,
     rules: ['CR 601.2g', 'CR 601.2h'],
@@ -396,12 +427,15 @@ function payMana(g: Game, player: PlayerId, given: ManaSymbol[], label: string, 
   } else {
     for (const a of ans.activations) {
       if (exclude.has(a.objectId)) throw new IllegalAction(`${g.nameOf(a.objectId)} is being sacrificed to pay another part of this cost, so it can't make mana.`, ['CR 118.3']);
+      // edh-mana-keywords-2 (CR 602.5e, 605.3a): "Activate only as an instant." can't be activated while a cost is being paid (no one could cast an instant now)
+      const named = findAbility(g.s, a.objectId, a.abilityKey);
+      if (named?.def.kind === 'activated' && named.def.instantSpeed === true) throw new IllegalAction(`${g.nameOf(a.objectId)}'s mana ability can be activated only as an instant, so it can't be used to pay a cost.`, ['CR 602.5e', 'CR 605.3a']);
       activateManaAbility(g, player, a.objectId, a.abilityKey, a.color ? { color: a.color } : {});
     }
     forceLife = new Set(ans.lifeForPhyrexian ?? []);
     for (const i of forceLife) {
       const sym = symbols[i];
-      if (!sym || !isPhyrexian(sym)) throw new IllegalAction(`Symbol number ${i + 1} of ${text} is not a Phyrexian mana symbol, so it can't be paid with life.`, ['CR 107.4f']);
+      if (!sym || (!isPhyrexian(sym) && lifeColorOf(sym, lifeFor) === null)) throw new IllegalAction(`Symbol number ${i + 1} of ${text} is not a Phyrexian mana symbol, so it can't be paid with life.`, ['CR 107.4f']);
     }
   }
 
@@ -419,11 +453,11 @@ function payMana(g: Game, player: PlayerId, given: ManaSymbol[], label: string, 
   for (const i of poolIdx) spent.unshift(...p.manaPool.splice(i, 1));
   let paidLife = 0;
   for (const i of sol.lifeSymbols) {
-    if (!payLife(g, player, 2, `paying ${manaCostText([symbols[i]!])} with life`, ['CR 107.4f', 'CR 119.4'])) throw new IllegalAction(`You can't pay 2 life for ${manaCostText([symbols[i]!])}.`, ['CR 119.4', 'CR 119.8']);
+    if (!payLife(g, player, 2, `paying ${manaCostText([symbols[i]!])} with life`, ['CR 107.4f', 'CR 119.4'], costKindOf(spend))) throw new IllegalAction(`You can't pay 2 life for ${manaCostText([symbols[i]!])}.`, ['CR 119.4', 'CR 119.8']);
     paidLife += 2;
   }
   g.log(`${p.name} pays ${text}${spent.length ? ` with ${spent.map((u) => `{${u.type}}`).join('')}` : ''}${paidLife ? ` and ${paidLife} life` : ''}.`, { rules: ['CR 601.2h'], level: 'info' });
-  return { spent, life: paidLife };
+  return { spent, life: paidLife, phyrexian: sol.lifeSymbols.filter((i) => isPhyrexian(symbols[i]!)).length };
 }
 
 /**
@@ -431,7 +465,7 @@ function payMana(g: Game, player: PlayerId, given: ManaSymbol[], label: string, 
  * planned the payment, chooses the mana spent). Each type takes the first unit of that type without a spending restriction, preferring mana that is not snow
  * (a snow unit may be planned for a {S} of the cost being paid, CR 107.4h). Used for the cost of a filter ability (`PayOptions.fromPool`).
  */
-function payFromPool(g: Game, player: PlayerId, given: ManaSymbol[], label: string, types: readonly ManaType[], spend?: SpendContext): { spent: ManaUnit[]; life: number } {
+function payFromPool(g: Game, player: PlayerId, given: ManaSymbol[], label: string, types: readonly ManaType[], spend?: SpendContext): { spent: ManaUnit[]; life: number; phyrexian?: number } {
   const symbols = canonicalManaSymbols(given); // CMDF: in the order a mana cost is written
   const p = g.player(player);
   const text = manaCostText(symbols);
@@ -457,7 +491,7 @@ function payFromPool(g: Game, player: PlayerId, given: ManaSymbol[], label: stri
  * cost is built and paid as any activated ability's, the mana for the ability itself (restricted mana pays only if it allows that ability, CR 106.6).
  */
 function manaAbilityPlan(sourceId: ObjectId, cost: Parameters<typeof planFromCostDef>[0], x = 0): CostPlan {
-  return { ...planFromCostDef(cost, x), spend: { kind: 'ability', id: sourceId } }; // p2-mana-1: `x`, the announced X of rules/mana.ts#counterXPart (0 before it is announced)
+  return { ...planFromCostDef(cost, x), spend: { kind: 'ability', id: sourceId, mana: true as const, ...(countX(cost?.mana) > 0 ? { xCost: true as const } : {}) } }; // edh-d-3: mana, a mana ability's cost (CR 605.1a); edh-mana-keywords-11: xCost (CR 107.3); p2-mana-1: `x`, the announced X of rules/mana.ts#counterXPart (0 before it is announced)
 }
 /**
  * Cloud std-woe (CR 601.2f, 602.2b, 605.1a): the plan with the mana other objects' static abilities take off its cost ("Activated abilities of lands you control cost
@@ -466,7 +500,9 @@ function manaAbilityPlan(sourceId: ObjectId, cost: Parameters<typeof planFromCos
 function modifiedManaAbilityPlan(s: GameState, player: PlayerId, source: GameObject, info: ActivatedInfo, x = 0): CostPlan | null {
   const plan = manaAbilityPlan(source.id, info.def.cost, x);
   const mana = abilityManaCost(s, player, source, info.def, plan.mana);
-  return mana === null ? null : { ...plan, mana };
+  if (mana === null) return null;
+  const life = abilityLifeCost(s, player, source, info.def); // edh-next-106 (CR 601.2f, 119.4, 605.1a): "cost an additional 1 life to activate"
+  return { ...plan, mana, ...(life > 0 ? { other: [...plan.other, { kind: 'payLife' as const, amount: life }] } : {}) };
 }
 installManaCostRules({
   denial: (s, player, source, info) => {
@@ -479,9 +515,16 @@ installManaCostRules({
     const modified = modifiedManaAbilityPlan(g.s, player, source, info, x ?? 0);
     if (modified === null) throw new IllegalAction(`The engine can't work out the cost change of ${label}.`, ['CR 601.2f', 'CR 602.2b']);
     const plan = resolveAnyCounts(g, player, source.id, modified, label);
-    payPlan(g, player, source.id, plan, label, payWith ? { fromPool: payWith } : {});
+    const paid = payPlan(g, player, source.id, plan, label, payWith ? { fromPool: payWith } : {});
+    return paid.exiled !== undefined || (paid.sacrificed?.length ?? 0) > 0 ? { ...(paid.exiled !== undefined ? { exiled: paid.exiled } : {}), ...((paid.sacrificed?.length ?? 0) > 0 ? { sacrificed: paid.sacrificed! } : {}) } : undefined; // edh-top-2: Food Chain's "the exiled creature"; edh-next-47: Szeras' "the sacrificed creature"
   },
   // std-rx28 (CR 601.2f, 602.2b, 605.1a): another object's static ability increases or sets the cost (statics/costmods.ts#abilityCostModsFor); one it can't evaluate counts
   // too (its payment then reports the unknown amount, never a free activation)
   increased: (s, player, source, info) => abilityCostModsFor(s, player, source, info.def).some((h) => h.def.change.kind !== 'reduce' || h.unknown === true),
+  // edh-perms-23 (CR 107.3a, 601.2b; rules/mana.ts#counterXPart): X of "Tap X untapped tokens you control" is announced up to the permanents that part could tap
+  maxX: (s, player, source, info) => {
+    const plan = manaAbilityPlan(source.id, info.def.cost, 0);
+    const part = plan.other.find((p) => p.kind === 'tapUntapped' || p.kind === 'sacrifice'); // edh-next-97: or the permanents a "Sacrifice X" part could take
+    return part === undefined ? 0 : pickCandidates(s, player, source.id, plan, part as PickPart).length;
+  },
 });

@@ -1,0 +1,343 @@
+[
+  {
+    "id": "eff.edhd38.blockTax.lasting.announcedX",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 509.1c",
+      "CR 509.1d",
+      "CR 509.1e",
+      "CR 509.1f",
+      "CR 604.1",
+      "CR 611.2a",
+      "CR 107.3"
+    ],
+    "pattern": "{d:Dur} , {f:Filter} can't block unless their controller pays {x} for each blocking creature they control",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "rule",
+          "rule": "blockTax",
+          "of": "$f",
+          "value": {
+            "q": "X"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "can't",
+      "unless",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{X}{G}: This turn, creatures with flying can't block unless their controller pays {X} for each blocking creature they control."
+      },
+      {
+        "text": "{X}{W}: Until end of turn, green creatures can't block unless their controller pays {X} for each blocking creature they control."
+      }
+    ],
+    "counterExamples": [
+      "{X}{G}: This turn, creatures with flying can block unless their controller pays {X} for each blocking creature they control.",
+      "{X}{G}: This turn, creatures with flying can't block if their controller pays {X} for each blocking creature they control.",
+      "{X}{G}: This turn, creatures with flying can't block unless their controller pays {X} for each attacking creature they control."
+    ],
+    "subject": "none"
+  },
+  {
+    "id": "sta.edhd38.group.grant.mustAttack.pumpOthers",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.1f",
+      "CR 613.4c",
+      "CR 508.1d",
+      "CR 107.3",
+      "CR 109.1"
+    ],
+    "pattern": "each {f:Filter} has {a:Abilities} , attacks each combat if able , and gets +x/+0 , where x is the number of {g:Filter}",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": "$a"
+            },
+            {
+              "layer": "7c",
+              "power": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "$merge": [
+                      "$g",
+                      {
+                        "other": false,
+                        "not": {
+                          "is": {
+                            "ref": "subject"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              },
+              "toughness": 0
+            }
+          ]
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mode": "mustIfAble",
+          "action": "attack"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "if",
+      "if able",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Each Goblin you control has trample, attacks each combat if able, and gets +X/+0, where X is the number of other Goblins you control."
+      },
+      {
+        "text": "Each Zombie you control has menace, attacks each combat if able, and gets +X/+0, where X is the number of other Zombies you control."
+      }
+    ],
+    "counterExamples": [
+      "Each Goblin you control has trample, attacks each combat if able, and gets +0/+X, where X is the number of other Goblins you control.",
+      "Each Goblin you control has trample, blocks each combat if able, and gets +X/+0, where X is the number of other Goblins you control.",
+      "Each Goblin you control has trample and gets +X/+0, where X is the number of other Goblins you control.",
+      "Each Goblin you control has trample, attacks each combat if able, and gets +X/+0, where X is the number of Goblins you control."
+    ]
+  },
+  {
+    "id": "sta.edhd38.self.mustBeBlocked.min",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 509.1c",
+      "CR 509.1b",
+      "CR 107.1"
+    ],
+    "pattern": "~ must be blocked if able , and ~ must be blocked by {n:Qty} or more creatures if able",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "mustIfAble",
+          "action": "beBlocked"
+        },
+        {
+          "s": "restrict",
+          "subject": {
+            "ref": "self"
+          },
+          "mode": "mustIfAble",
+          "action": "beBlocked",
+          "min": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "must",
+      "if",
+      "if able",
+      "and",
+      "or more"
+    ],
+    "examples": [
+      {
+        "text": "~ must be blocked if able, and ~ must be blocked by three or more creatures if able."
+      },
+      {
+        "text": "~ must be blocked if able, and ~ must be blocked by four or more creatures if able."
+      }
+    ],
+    "counterExamples": [
+      "~ must be blocked by two or more creatures if able.",
+      "~ must be blocked if able, and ~ must block two or more creatures if able.",
+      "~ must be blocked if able, and ~ can't be blocked by two or more creatures if able.",
+      "~ must be blocked if able, and ~ must be blocked by two or fewer creatures if able."
+    ]
+  },
+  {
+    "id": "sta.edhd38.aslong.pump.foreach",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c"
+    ],
+    "pattern": "as long as {c:Cond} , {o:Obj} gets +1/+1 for each {f:Filter}",
+    "build": {
+      "kind": "static",
+      "condition": "$c",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              },
+              "toughness": {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": "$f"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "As long as it's your turn, ~ gets +1/+1 for each Golem you control."
+      },
+      {
+        "text": "As long as enchanted permanent is an artifact, it gets +1/+1 for each artifact and/or enchantment you control."
+      }
+    ],
+    "counterExamples": [
+      "As long as it's your turn, ~ gets +1/+1 for each Golem you control until end of turn.",
+      "As long as it's your turn, ~ gets +2/+2 for each Golem you control.",
+      "If it's your turn, ~ gets +1/+1 for each Golem you control.",
+      "As long as it's your turn, ~ gets +1/+1 for each other Golem you control."
+    ]
+  },
+  {
+    "id": "eff.edhd38.put.self.hand.battlefield.tappedAttacking",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 113.6m",
+      "CR 602.2",
+      "CR 110.2a",
+      "CR 508.4",
+      "CR 400.7"
+    ],
+    "pattern": "put ~ from your hand onto the battlefield tapped and attacking",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true,
+        "attacking": true
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{1}{G}: Put this card from your hand onto the battlefield tapped and attacking."
+      },
+      {
+        "text": "{2}{U}{B}: Put this card from your hand onto the battlefield tapped and attacking."
+      }
+    ],
+    "counterExamples": [
+      "{2}{G}{G}: Put this card from your graveyard onto the battlefield tapped and attacking.",
+      "{2}{G}{G}: Put this card from your hand onto the battlefield tapped.",
+      "{2}{G}{G}: Put this card from your hand onto the battlefield attacking."
+    ]
+  },
+  {
+    "id": "eff.edhd38.delay.objAttacksOpponent.thisTurn",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 508.1",
+      "CR 508.3a",
+      "CR 508.1b"
+    ],
+    "pattern": "whenever {o:Obj} attacks one of your opponents this turn , {x:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "attacks",
+          "attacker": {
+            "is": "$o"
+          },
+          "defender": "opponent"
+        }
+      },
+      "do": "$x",
+      "duration": {
+        "d": "endOfTurn"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "whenever",
+      "this turn"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +2/+0 until end of turn. Whenever that creature attacks one of your opponents this turn, you draw a card."
+      },
+      {
+        "text": "Target creature gets +1/+1 until end of turn. Whenever it attacks one of your opponents this turn, you gain 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +2/+0 until end of turn. Whenever that creature attacks one of your opponents, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature attacks you this turn, you draw a card.",
+      "Target creature gets +2/+0 until end of turn. Whenever that creature blocks one of your opponents this turn, you draw a card."
+    ]
+  }
+]

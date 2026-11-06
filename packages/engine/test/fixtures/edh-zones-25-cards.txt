@@ -1,0 +1,4 @@
+# edh-zones-25 (Commander effort, lane edh-zones; test/cloud/edh-zones-25, golden edh-zones-25-review.json): Nissa's Pilgrimage ("the rest" of a search + spell mastery "instead of two"), Haunting Voyage (return up to N to the battlefield, foretold "all ... instead"), Conspiracy Theorist (discard batch of nonland cards, exile one of them)
+Nissa's Pilgrimage
+Haunting Voyage
+Conspiracy Theorist

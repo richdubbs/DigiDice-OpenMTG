@@ -1,0 +1,307 @@
+[
+  {
+    "id": "trg.edhn17.event.during.opponentsTurn",
+    "kind": "trigger",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.1",
+      "CR 603.2",
+      "CR 500.1",
+      "CR 102.1"
+    ],
+    "pattern": "( when | whenever ) {e:Event} during an opponent 's turn",
+    "build": {
+      "on": "$e",
+      "while": {
+        "cond": "turnOf",
+        "whose": "opponent"
+      }
+    },
+    "consumes": [
+      "when",
+      "whenever",
+      "during"
+    ],
+    "needs": [
+      "feature:trigger.while"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you draw a card during an opponent's turn, you gain 1 life."
+      },
+      {
+        "text": "Whenever you cast a creature spell during an opponent's turn, scry 2."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you draw a card during your turn, you gain 1 life.",
+      "Whenever you draw a card during an opponent's next turn, you gain 1 life.",
+      "Whenever you draw a card during an opponent's upkeep, you gain 1 life."
+    ],
+    "priority": -1
+  },
+  {
+    "id": "rst.edhn17.you.cast.onlyOwnTurn.max2",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.2i",
+      "CR 101.2",
+      "CR 102.1"
+    ],
+    "pattern": "you can cast spells only during your turn and you can cast no more than two spells each turn",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "you"
+        },
+        "mode": "onlyIf",
+        "action": "cast",
+        "when": {
+          "cond": "turnOf",
+          "whose": "you"
+        }
+      },
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "you"
+        },
+        "mode": "cant",
+        "action": "cast",
+        "max": 2
+      }
+    ],
+    "consumes": [
+      "can",
+      "only",
+      "during",
+      "no more than",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "You can cast spells only during your turn and you can cast no more than two spells each turn. Creatures you control get +1/+1."
+      },
+      {
+        "text": "You can cast spells only during your turn and you can cast no more than two spells each turn. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "You can cast spells only during your turn and you can cast no more than three spells each turn.",
+      "You can cast spells only during your turn and you can cast no more than one spell each turn.",
+      "You can cast spells only during an opponent's turn and you can cast no more than two spells each turn.",
+      "Each player can cast spells only during their own turn and can cast no more than two spells each turn."
+    ]
+  },
+  {
+    "id": "eff.edhn17.prevent.next.dealtBy.obj",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 615.7",
+      "CR 611.2a"
+    ],
+    "pattern": "prevent the next {n:Qty} damage that would be dealt by {o:Obj} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "is": "$o"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "$n"
+          },
+          "shield": {
+            "uses": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "{3}, {T}: Prevent the next 3 damage that would be dealt by target creature this turn."
+      },
+      {
+        "text": "Prevent the next 2 damage that would be dealt by target attacking creature this turn. Draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{3}, {T}: Prevent all damage that would be dealt by target creature this turn.",
+      "{3}, {T}: Prevent the next 3 damage that would be dealt to target creature this turn.",
+      "{3}, {T}: Prevent the next 3 damage that would be dealt by target creature."
+    ]
+  },
+  {
+    "id": "sta.edhn17.each.isSubtype.inAdditionCreatureTypes.hasAbilities",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 613.1d",
+      "CR 613.1f",
+      "CR 205.3m",
+      "CR 205.1b"
+    ],
+    "pattern": "each {f:Filter} is ( a | an ) {st:Subtypes} in addition to its other creature types and has {a:Abilities}",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Each tapped creature is a Wall in addition to its other creature types and has defender."
+      },
+      {
+        "text": "Each artifact creature you control is a Golem in addition to its other creature types and has flying."
+      }
+    ],
+    "counterExamples": [
+      "Each tapped creature is a Wall and has defender.",
+      "Each tapped creature is a Wall in addition to its other creature types.",
+      "Each tapped creature is a Wall in addition to its other creature types and loses all abilities."
+    ]
+  },
+  {
+    "id": "sta.edhn17.subtypeCreatures.attack.nodefender.eachPlayer",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 609.4",
+      "CR 702.3b"
+    ],
+    "pattern": "{st:Subtypes} creatures can attack as though they didn't have defender",
+    "priority": 1,
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "each",
+            "who": "player"
+          },
+          "action": "attackAsThoughNoDefender",
+          "of": {
+            "types": [
+              "Creature"
+            ],
+            "subtypes": "$st"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "as though",
+      "not"
+    ],
+    "examples": [
+      {
+        "text": "Plant creatures can attack as though they didn't have defender."
+      },
+      {
+        "text": "Golem creatures can attack as though they didn't have defender."
+      }
+    ],
+    "counterExamples": [
+      "Plant creatures can block as though they didn't have defender.",
+      "Plant creatures can attack as though they didn't have flying.",
+      "Plant creatures can attack this turn as though they didn't have defender."
+    ]
+  },
+  {
+    "id": "rst.edhn17.you.cantPlayLandsOrCastFromHand",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 305.1",
+      "CR 601.3",
+      "CR 101.2",
+      "CR 102.1"
+    ],
+    "pattern": "you can't play lands or cast spells from your hand",
+    "build": [
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "you"
+        },
+        "mode": "cant",
+        "action": "playLand",
+        "other": {
+          "zone": "hand"
+        }
+      },
+      {
+        "s": "restrict",
+        "subject": {
+          "ref": "you"
+        },
+        "mode": "cant",
+        "action": "castFromZone",
+        "fromZones": [
+          "hand"
+        ]
+      }
+    ],
+    "consumes": [
+      "can't",
+      "or"
+    ],
+    "examples": [
+      {
+        "text": "You can't play lands or cast spells from your hand. Creatures you control get +1/+1."
+      },
+      {
+        "text": "You can't play lands or cast spells from your hand. Artifacts you control have hexproof."
+      }
+    ],
+    "counterExamples": [
+      "You can't play lands or cast spells from your graveyard.",
+      "You can't play lands from your hand.",
+      "Each opponent can't play lands or cast spells from their hand."
+    ]
+  }
+]

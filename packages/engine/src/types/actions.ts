@@ -45,6 +45,13 @@ export type Action =
   /** Change this player's auto-pass stops. */
   | { type: 'setStops'; player: PlayerId; stops: StopSettings }
   /**
+   * Shortcuts INTERFACE CHANGE (additive; docs/design/shortcuts.md 2): CR 727.2a (cited from memory, unverified), the player with priority proposes to repeat
+   * their last `steps` actions of this turn (with every pass and every answer that came with them) `times` times. Each other player is then asked (a
+   * `shortcut` decision) before anything runs; the engine then plays the passes one by one (core/shortcut-run.ts). `1 <= steps <= SHORTCUT_MAX_STEPS`,
+   * `1 <= times <= SHORTCUT_MAX_TIMES` (core/shortcut.ts).
+   */
+  | { type: 'shortcut'; player: PlayerId; steps: number; times: number }
+  /**
    * Internal: the start-of-game procedure (CR 103). Issued by createGame only. M12-2 INTERFACE CHANGE (additive, internal): `concessions`, the players
    * who conceded while the procedure waited for a decision (CR 104.3a, m12 design D11), each with the number of answers given before they conceded:
    * written by core/apply.ts into the suspended action only, never by a client.

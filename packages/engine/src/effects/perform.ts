@@ -73,6 +73,11 @@ export function performRecordDiscarded(stack: StackInfo, handles: readonly ObjHa
   if (handles.length > 0) stack.costsPaid = { ...stack.costsPaid, discarded: [...(stack.costsPaid.discarded ?? []), ...handles] };
 }
 
+/** edh-next-131 (CR 118.12, 400.7j, 608.2h): the cards a payment an effect asked for exiled ("you may exile a creature card from your graveyard. If you do, ... a copy of that card"), read by `{ref:'costExiled'}`. */
+export function performRecordExiled(stack: StackInfo, ids: readonly ObjectId[]): void {
+  if (ids.length > 0) stack.costsPaid = { ...stack.costsPaid, exiled: { ...(stack.costsPaid.exiled ?? { others: [] }), others: [...(stack.costsPaid.exiled?.others ?? []), ...ids] } };
+}
+
 /** CR 607.2d: what a linked ability remembers is kept on the source object, as long as it is still the object the ability belongs to (CR 400.7, 607.2a). */
 export function performLink(g: Game, source: ObjHandle, link: LinkId, value: LinkValue): void {
   const o = g.s.objects[source.id];

@@ -47,7 +47,11 @@ describe('design 6.4, CR 608.2c, 122.1: an instruction that only puts counters o
     expect(keepsFocus({ op: 'putCounters', on: { ref: 'each', who: 'opponent' }, kind: 'poison', count: 1 })).toBe(false);
     expect(keepsFocus({ op: 'putCounters', on: { ref: 'self' }, kind: '+1/+1', count: 1 })).toBe(false);
     expect(keepsFocus({ op: 'putCounters', on: { ref: 'you' }, kind: 'energy', count: 2, guard: { cond: 'true' } })).toBe(false);
-    expect(keepsFocus({ op: 'gainLife', who: { ref: 'you' }, amount: 2 })).toBe(false);
+    // edh-d-87 (CR 608.2c, 119.3; Sapling of Colfenor): your own unconditioned life gain or loss works on no object either and now keeps the focus (outdated negative updated); a player's
+    // other than yours, or one with a condition, still ends it
+    expect(keepsFocus({ op: 'gainLife', who: { ref: 'you' }, amount: 2 })).toBe(true);
+    expect(keepsFocus({ op: 'gainLife', who: { ref: 'each', who: 'opponent' }, amount: 2 })).toBe(false);
+    expect(keepsFocus({ op: 'gainLife', who: { ref: 'you' }, amount: 2, guard: { cond: 'true' } })).toBe(false);
   });
   it('"... You get {E}{E}. You lose life equal to its power.": "its" is the token, read and rendered back (gate)', () => {
     expect(ok(KEPT), JSON.stringify(parsed(brute(KEPT)).diagnostics)).toBe(true);

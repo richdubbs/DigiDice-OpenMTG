@@ -223,7 +223,7 @@ describe('becomes, counters, actions, tokens, dice, resolution', () => {
   it('every kind the model has and the engine can emit is registered as a capability, and only those (`dieRoll` since the rollDie handler of WP15 emits `dieRolled`, see capabilities.test.ts)', () => {
     expect(Object.keys(EVENT_MATCHERS).sort()).toEqual(
       // M6-4: `dayNight` (core/designations.ts emits it, triggers/forms-dfc.ts#EMITS)
-      ['action', 'attacks', 'attacksUnblocked' /* std-rx35 (CR 509.1h) */, 'activate', 'becomes', 'becomesBlocked', 'beginTurn', 'blocks', 'cast', 'coinFlip' /* cloud r3-mech (CR 705.2) */, 'counters', 'createToken', 'damage', 'dayNight', 'dieRoll', 'draw', 'life', 'loseGame' /* M12-3 (CR 603.9) */, 'controlChange' /* Standard round 3, r3-trig (CR 108.4) */, 'resolves', 'state', 'step', 'zoneChange', 'abilityTriggered' /* std-copy-6 (CR 603.2): triggers/collect.ts#metaEvents */].sort(),
+      ['action', 'attacks', 'attacksUnblocked' /* std-rx35 (CR 509.1h) */, 'activate', 'becomes', 'becomesBlocked', 'beginTurn', 'blocks', 'cast', 'coinFlip' /* cloud r3-mech (CR 705.2) */, 'counters', 'createToken', 'damage', 'damagePrevented' /* edh-replace-3 (CR 615.13) */, 'reveal' /* edh-next-144 (CR 701.20a, 607.2) */, 'dayNight', 'dieRoll', 'draw', 'life', 'loseGame' /* M12-3 (CR 603.9) */, 'monarch' /* edh-players-18 (CR 725.3) */, 'controlChange' /* Standard round 3, r3-trig (CR 108.4) */, 'resolves', 'state', 'step', 'zoneChange', 'abilityTriggered' /* std-copy-6 (CR 603.2): triggers/collect.ts#metaEvents */].sort(),
     );
   });
 });

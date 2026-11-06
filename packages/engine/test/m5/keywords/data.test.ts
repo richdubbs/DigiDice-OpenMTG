@@ -106,6 +106,10 @@ describe('statuses follow design 7.4 (implemented only where every mechanism exi
     const stdRx17 = ['dash', 'exploit', 'graft'];
     // std-rx15 (wave 2, slice s12): devour N and devour <type> N (CR 702.82a-b)
     const stdRx15 = ['devour'];
+    // edh-c-42: amplify (CR 702.38a), a replacement that reveals cards from the hand as the permanent enters; recover (CR 702.59a), a trigger of the card in the graveyard
+    const edhC42 = ['amplify', 'recover'];
+    // edh-d-13: transfigure (CR 702.71), a sorcery-speed activated ability from the battlefield that sacrifices the creature
+    const edhD13 = ['transfigure'];
     // std-rx24 (wave 2, EDH lane rx24): umbra armor (a replacement body, CR 702.89a), jump-start (a graveyard permission that exiles the spell, CR 702.133a),
     // champion (an exile cost linked to the source, CR 702.72a, 607.2k)
     const stdRx24 = ['champion', 'jump-start', 'umbra armor'];
@@ -125,15 +129,33 @@ describe('statuses follow design 7.4 (implemented only where every mechanism exi
     const trek1 = ['beam me up'];
     // pc-keywords-mana-1 (precon lane keywords-mana): overload, an alternative cost whose spell has no targets and says "each" (effects/overload.ts, actions/cast.ts, effects/run.ts)
     const pcKeywordsMana1 = ['overload'];
-    expect(byStatus('implemented')).toEqual([...cmd3, ...stdRl, ...stdRx7, ...stdRx17, ...stdRx15, ...stdRx24, ...stdRx22, ...stdRy7, ...stdRy8, ...stdRy3, ...p2Misc1, ...trek1, ...pcKeywordsMana1, ...[
+    // edh-mana-keywords-7 (Commander lane edh-mana-keywords): reconfigure (attach and unattach abilities and "not a creature while attached", CR 702.151a-b), backup (a trigger that grants the abilities printed below it, CR 702.165a), demonstrate (a cast trigger, CR 702.144a)
+    const edhMk7 = ['backup', 'demonstrate', 'reconfigure'];
+    // edh-c-54 (CR 702.64a): absorb, an expansion that prevents N damage dealt to the creature
+    const edhC54 = ['absorb', 'frenzy' /* edh-c-114 (CR 702.68a): a trigger of the creature that attacks and isn't blocked */];
+    // edh-top-2 (Commander lane edh-top): soulbond (CR 702.95a, two triggered abilities) and cipher (CR 702.99a, a replacement of the spell's move and a static ability in exile); compleated is native (core/zones.ts)
+    const edhTop2 = ['cipher', 'soulbond'];
+    // edh-cast-15 (Commander lane edh-cast): ripple (a cast trigger that reveals, casts the copies free and puts the rest on the bottom, CR 702.60a)
+    const edhCast15 = ['ripple'];
+    // edh-combat-7 (Commander lane edh-combat): offering (CR 702.48; actions/cast.ts, rules/payment-options.ts)
+    const edhCb7 = ['offering'];
+    // edh-c-8 (Commander effort, coordinator C): emerge (CR 702.119; the alternative cost named emerge that actions/cast.ts reduces by the sacrificed creature's mana value)
+    const edhC8 = ['emerge'];
+    // edh-b-11 (Commander effort, coordinator B): poisonous (CR 702.70a-b; a combat-damage trigger that gives the damaged player poison counters)
+    const edhB11 = ['poisonous'];
+    // edh-c-31 (Commander effort, coordinator C): banding (CR 702.22; bands declared with the attack, blocked as a group, damage divided by the other side's player: core/combat.ts, core/combat-damage.ts)
+    const edhC31 = ['banding'];
+    // edh-next-100 (concept round emblem-cleave): cleave (CR 702.148; an alternative cost named cleave, SpellAbilityDef.cleave: parser/cleave.ts, actions/cast.ts, effects/run.ts)
+    const edhN100 = ['cleave'];
+    expect(byStatus('implemented')).toEqual([...cmd3, ...stdRl, ...stdRx7, ...stdRx17, ...stdRx15, ...stdRx24, ...stdRx22, ...stdRy7, ...stdRy8, ...stdRy3, ...p2Misc1, ...trek1, ...pcKeywordsMana1, ...edhN100, ...edhMk7, ...edhTop2, ...edhCast15, ...edhCb7, ...edhC8, ...edhB11, ...edhC54, ...edhC31, ...edhC42, ...edhD13, ...[
       'affinity', 'aftermath', 'bargain' /* FAST5X E1 */, 'battle cry' /* FAST5X E28 */, 'blitz' /* CMD2 */, 'bloodthirst' /* CMD4 */, 'boast' /* cloud r3-mech */, 'bushido', 'buyback', 'cascade', 'changeling', 'choose a background' /* cmd1, CR 702.124k */, 'commander ninjutsu' /* M11-4 */, 'conspire' /* M6-12 */, 'convoke', 'craft' /* FAST5X E13 */, 'crew', 'cumulative upkeep', 'cycling', 'daybound', 'deathtouch', 'decayed' /* FAST5X E28 */, 'defender', 'delve' /* std-tdm */, 'dethrone' /* CMD4 */, 'devoid', 'doctor\'s companion' /* cmd1, CR 702.124m */,
-      'double strike', 'dredge', 'embalm' /* M6-12 */, 'enchant', 'encore' /* M6-12 */, 'entwine', 'equip', 'escape', 'eternalize' /* M6-12 */, 'evoke', 'exalted', 'exhaust', 'extort' /* FAST5X E28 */, 'fear', 'firebending' /* FAST5 MX6 */, 'first strike', 'flash', 'flying', 'for mirrodin!' /* T35 */, 'freerunning' /* CMD2 */, 'fuse', 'gift' /* FAST5X E1 */, 'harmonize' /* FAST5X E6 */, 'haste', 'hexproof', 'hideaway' /* FAST5X E26 */, 'horsemanship', 'impending' /* FAST5X E26 */, 'improvise' /* FAST5X E26 */,
-      'increment' /* FAST5X E9 */, 'indestructible', 'infect', 'intimidate', 'job select' /* FAST5X E9 */, 'kicker', 'landwalk', 'level up' /* M6-6 */, 'lifelink', 'madness' /* M6-12 */, 'max speed' /* FAST5X-4 */, 'mayhem' /* FAST5X E6 */, 'melee' /* M12-3 */, 'menace', 'mentor' /* CMD4 */, 'mobilize' /* FAST5X E9 */, 'multikicker', 'myriad' /* M6-12 */, 'ninjutsu', 'offspring' /* M6-12 */, 'paradigm' /* FAST5X E26 */, 'partner', 'partner with' /* M11-4 */, 'persist' /* FAST5X E28 */, 'power-up' /* T35 */, 'protection', 'prowess', 'ravenous' /* CMD4 */, 'reach', 'rebound',
-      'replicate' /* M6-12 */, 'riot' /* FAST5X E28 */, 'saddle' /* FAST5X E3 */, 'shadow', 'shroud', 'skulk', 'sneak' /* FAST5X E7 */, 'split second', 'spree' /* FAST5X E1 */, 'squad' /* M6-12 */, 'start your engines!' /* FAST5X-4 */, 'station' /* T35 */, 'storied' /* FAST5X E18 */, 'storm', 'teamwork' /* FAST5X E11 */, 'tiered' /* FAST5X E11 */, 'toxic', 'trample', 'typecycling', 'undaunted' /* CMD4 */, 'undying' /* FAST5X E28 */, 'unearth', 'vigilance', 'ward', 'warp' /* FAST5X E2 */, 'web-slinging' /* FAST5X E7 */, 'wither',
+      'double strike', 'dredge', 'embalm' /* M6-12 */, 'enchant', 'encore' /* M6-12 */, 'entwine', 'equip', 'escalate' /* edh-mana-keywords-2 */, 'escape', 'eternalize' /* M6-12 */, 'evoke', 'exalted', 'exhaust', 'extort' /* FAST5X E28 */, 'fear', 'firebending' /* FAST5 MX6 */, 'first strike', 'flash', 'flying', 'forecast' /* edh-next-36 */, 'for mirrodin!' /* T35 */, 'freerunning' /* CMD2 */, 'fuse', 'gift' /* FAST5X E1 */, 'harmonize' /* FAST5X E6 */, 'haste', 'hexproof', 'hideaway' /* FAST5X E26 */, 'horsemanship', 'impending' /* FAST5X E26 */, 'improvise' /* FAST5X E26 */,
+      'increment' /* FAST5X E9 */, 'indestructible', 'infect', 'intimidate', 'job select' /* FAST5X E9 */, 'kicker', 'living metal' /* edh-next-76 */, 'landwalk', 'level up' /* M6-6 */, 'lifelink', 'madness' /* M6-12 */, 'max speed' /* FAST5X-4 */, 'mayhem' /* FAST5X E6 */, 'melee' /* M12-3 */, 'menace', 'mentor' /* CMD4 */, 'mobilize' /* FAST5X E9 */, 'multikicker', 'myriad' /* M6-12 */, 'ninjutsu', 'offspring' /* M6-12 */, 'paradigm' /* FAST5X E26 */, 'partner', 'partner with' /* M11-4 */, 'persist' /* FAST5X E28 */, 'power-up' /* T35 */, 'protection', 'prowess', 'prowl' /* edh-players-22 */, 'ravenous' /* CMD4 */, 'reach', 'rebound',
+      'replicate' /* M6-12 */, 'riot' /* FAST5X E28 */, 'saddle' /* FAST5X E3 */, 'shadow', 'shroud', 'skulk', 'sneak' /* FAST5X E7 */, 'splice' /* edh-next-69 */, 'split second', 'spree' /* FAST5X E1 */, 'squad' /* M6-12 */, 'start your engines!' /* FAST5X-4 */, 'station' /* T35 */, 'storied' /* FAST5X E18 */, 'storm', 'gravestorm' /* edh-d-3 */, 'teamwork' /* FAST5X E11 */, 'tiered' /* FAST5X E11 */, 'toxic', 'trample', 'trample over planeswalkers' /* edh-d-90 */, 'tribute' /* edh-c-37 */, 'typecycling', 'undaunted' /* CMD4 */, 'undying' /* FAST5X E28 */, 'unearth', 'vigilance', 'ward', 'warp' /* FAST5X E2 */, 'web-slinging' /* FAST5X E7 */, 'wither',
     ]].sort());
     // M6-3: the face-down keywords (actions/cast-opt/face-down.ts, core/special/turn-face-up.ts); M6-4: disturb, more than meets the eye (actions/cast-opt/back-face.ts),
     // nightbound (core/day-night.ts); M6-6: prototype (actions/cast-opt/prototype.ts), read ahead (statics/levels.ts); M6-9: mutate (actions/cast-opt/mutate.ts, core/resolve-parts/mutate.ts)
-    expect(byStatus('native')).toEqual(['bestow' /* std-ry7: actions/cast-opt/bestow.ts */, 'companion' /* CMP1: core/special/companion.ts */, 'disguise', 'disturb', 'flashback', 'foretell' /* cloud r3-mech: core/special/foretell.ts, actions/cast-opt/foretell.ts */, 'megamorph', 'miracle' /* FAST5X E26: triggers/miracle.ts */, 'more than meets the eye', 'morph', 'mutate', 'nightbound', 'plot' /* FAST5X E6 */, 'prototype', 'read ahead']);
+    expect(byStatus('native')).toEqual(['bestow' /* std-ry7: actions/cast-opt/bestow.ts */, 'companion' /* CMP1: core/special/companion.ts */, 'compleated' /* edh-top-2: core/zones.ts#enterWithPrintedCounters */, 'disguise', 'disturb', 'flashback', 'foretell' /* cloud r3-mech: core/special/foretell.ts, actions/cast-opt/foretell.ts */, 'megamorph', 'miracle' /* FAST5X E26: triggers/miracle.ts */, 'more than meets the eye', 'morph', 'mutate', 'nightbound', 'plot' /* FAST5X E6 */, 'prototype', 'read ahead']);
     expect(byStatus('implemented').length + byStatus('native').length + byStatus('planned').length).toBe(all.length);
   });
 

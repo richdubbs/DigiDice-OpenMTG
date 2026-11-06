@@ -21,7 +21,7 @@ function capture(): Io & { lines: string[]; errors: string[] } {
 
 // M12F (STATUS "Wave M12" gap 9): whole-fixture work (compiling, the CLI, the smoke run) sits near Vitest's 5 s default under load: an explicit
 // timeout for every test here (a test's own longer one still applies).
-describe('WP25 CLI arguments', { timeout: 60_000 }, () => {
+describe('WP25 CLI arguments', { timeout: 240_000 }, () => {
   it('reads valued options in both spellings, flags, and an optional value for --diff', () => {
     const a = parseArgs(['coverage', '--top', '7', '--every=3', '--fixtures', '--diff', 'base.json', '--mine']);
     expect(a.positional).toEqual(['coverage']);
@@ -33,7 +33,7 @@ describe('WP25 CLI arguments', { timeout: 60_000 }, () => {
   });
 });
 
-describe('WP25 CLI commands on the fixture set', { timeout: 60_000 }, () => {
+describe('WP25 CLI commands on the fixture set', { timeout: 240_000 }, () => {
   it('try: a sentence is parsed as a synthetic card and traced (tokens, chart, templates, gate, ledger, level)', async () => {
     const io = capture();
     expect(await main(['try', 'Target player draws four cards.', '--type', 'Sorcery'], io)).toBe(0);
@@ -67,7 +67,7 @@ describe('WP25 CLI commands on the fixture set', { timeout: 60_000 }, () => {
     expect(code).toBe(0);
     expect(io.lines[0]).toMatch(/^Coverage of the fixture set \(\d+ of \d+ cards\)/);
     expect(JSON.parse(readFileSync(json, 'utf8')).levels.cards).toBe(fixtureRuns().length);
-  }, 180_000); // M5Z: the fixture set grew from 195 to 246 cards; inside a full-suite run this CLI pass can exceed Vitest's 5 s default.
+  }, 480_000); // M5Z: the fixture set grew from 195 to 246 cards; inside a full-suite run this CLI pass can exceed Vitest's 5 s default. Over 180 s under load at about 3,000 cards (Commander combined copy)
   // 2026-10-21: 54 s alone on a 4-CPU cloud machine, over 60 s in a loaded shard, so 180 s
   it('coverage --diff exits 1 and lists the violation when a formerly automated unit changed (a doctored baseline)', async () => {
     const base = parseSnapshot(readFileSync(defaultSnapshotPath('fixtures'), 'utf8'));
@@ -79,7 +79,7 @@ describe('WP25 CLI commands on the fixture set', { timeout: 60_000 }, () => {
     const io = capture();
     expect(await main(['coverage', '--fixtures', '--diff', file], io)).toBe(1);
     expect(io.lines.join('\n')).toContain(`VIOLATION changed: ${base.cards[key]!.name} unit ${unit}`);
-  }, 60_000); // FAST5X E28: a whole-fixture pass (709 cards) takes over the default 5 s on a loaded machine
+  }, 240_000); // FAST5X E28: a whole-fixture pass (709 cards) takes over the default 5 s on a loaded machine; about 70 s alone at about 3,000 cards (Commander combined copy)
   it('coverage --mine, unmatched, snapshot --out, mutate', async () => {
     let io = capture();
     expect(await main(['coverage', '--fixtures', '--mine', '--top', '5'], io)).toBe(0);
@@ -94,7 +94,7 @@ describe('WP25 CLI commands on the fixture set', { timeout: 60_000 }, () => {
     io = capture();
     expect(await main(['mutate', '--fixtures', '--g2', '30'], io)).toBe(0);
     expect(io.lines.join('\n')).toMatch(/G2 nonsense words: \d+ mutations of 30 cards; .* 0 VIOLATION/);
-  }, 900_000); // merge of lines C and D: mutate checks every template's near misses, and the merged set (about 1,620 templates) takes about 135 s alone (109 s before); merge wave 7: 2,126 templates, about 280 s alone on a shared 4-CPU machine (240 s was the limit); merge train 20261021T1919: 2,631 templates, 415-494 s in a sharded suite run (480 s was the limit)
+  }, 3_600_000); // Commander combined copy: about 980 s alone (about 3,300 templates); merge of lines C and D: mutate checks every template's near misses, and the merged set (about 1,620 templates) takes about 135 s alone (109 s before); merge wave 7: 2,126 templates, about 280 s alone on a shared 4-CPU machine (240 s was the limit); merge train 20261021T1919: 2,631 templates, 415-494 s in a sharded suite run (480 s was the limit); 2026-11-03, about 4,770 templates: 1,740 s under load on a 4-CPU cloud machine (1,800 s was the limit)
   it('coverage --promote proposes and checks templates from a reviewed file', async () => {
     const ability = fullEngine().run(synthetic('Sample Source', 'Instant', 'Sample Source deals 6 damage to any target.')).parse.faces[0]!.abilities[0]!;
     const file = path.join(mkdtempSync(path.join(tmpdir(), 'wp25-cli-')), 'reviewed.json');
@@ -102,7 +102,7 @@ describe('WP25 CLI commands on the fixture set', { timeout: 60_000 }, () => {
     const io = capture();
     expect(await main(['coverage', '--fixtures', '--promote', file], io)).toBe(0);
     expect(io.lines.join('\n')).toContain('proposed promoted.damage.0 (experimental): ~ deals {n0:Qty} damage to {t0:Recipient}');
-  }, 120_000);
+  }, 900_000); // a whole-fixture pass: over 120 s under load at about 3,000 cards (Commander combined copy); 2026-11-03, about 4,770 templates: 343 s under load on a 4-CPU cloud machine (300 s was the limit)
   // QT: about 25 s, the whole release gate R1 again (smoke, mutations, G10 diff: each also has its own test in the default suite); a slow test
   // (npm run test:all). The merge step also runs the gate itself: npm run cards -- coverage --fixtures --gate R1 --diff.
   itSlow('coverage --gate on the fixture set PASSES every check (exit 0, no FAIL line), prints the CI jobs and writes the backlog', async () => {
@@ -136,7 +136,7 @@ describe('WP25 CLI commands on the fixture set', { timeout: 60_000 }, () => {
  * and the regeneration belongs in the same commit as the pipeline change (the WP18 merge), before any template package merges, so the template
  * packages are diffed against it.
  */
-describe('WP25 guard G10 (W3b: of the GAME path): the fixture set against the committed baseline', { timeout: 60_000 }, () => {
+describe('WP25 guard G10 (W3b: of the GAME path): the fixture set against the committed baseline', { timeout: 240_000 }, () => {
   const base = parseSnapshot(readFileSync(defaultSnapshotPath('fixtures'), 'utf8'));
   it('was written by the pipeline that runs now, the default compiler (else: regenerate it in the commit that changes the pipeline)', () => {
     expect(base.pipeline, `${BASELINE_STALE}: the baseline was written by "${base.pipeline}", the coverage tools now run "${gameEngine().pipeline()}"`).toBe(gameEngine().pipeline());
@@ -148,13 +148,13 @@ describe('WP25 guard G10 (W3b: of the GAME path): the fixture set against the co
     const d = refineWithRuns(diffSnapshots(base, now), base, new Map(runs.map((r) => [cardKey(r), r])), engine.caps);
     expect(d.violations).toEqual([]);
     expect(d.removed).toEqual([]);
-  }, 60_000); // FAST5X E28: a whole-fixture pass (709 cards) takes over the default 5 s on a loaded machine
+  }, 240_000); // FAST5X E28: a whole-fixture pass (709 cards) takes over the default 5 s on a loaded machine; about 70 s alone at about 3,000 cards (Commander combined copy)
   it('a baseline from another pipeline makes the check fail with the regeneration command, never skip', () => {
     expect(BASELINE_STALE).toContain('npm run cards -- snapshot --fixtures');
   });
 });
 
-describe('WP25 G10: a baseline written after the change under review is refused (it would hide the change)', { timeout: 60_000 }, () => {
+describe('WP25 G10: a baseline written after the change under review is refused (it would hide the change)', { timeout: 240_000 }, () => {
   const engine = fullEngine();
   const snapWith = (templates: readonly Template[]) => buildSnapshot(fixtureRuns().slice(0, 3), { pipeline: engine.pipeline(), compilerVersion: engine.compilerVersion, templates, caps: engine.caps });
   it('the same template hash as the working tree, while the working tree changes templates: refused', () => {
@@ -169,7 +169,7 @@ describe('WP25 G10: a baseline written after the change under review is refused 
   });
 });
 
-describe('WP25 the template work queue is built from the tuning half only (design 6.12)', { timeout: 60_000 }, () => {
+describe('WP25 the template work queue is built from the tuning half only (design 6.12)', { timeout: 240_000 }, () => {
   it('unmatched and --mine say so and list no held-out card', async () => {
     let io = capture();
     expect(await main(['unmatched', '--fixtures', '--top', '10'], io)).toBe(0);
@@ -177,5 +177,5 @@ describe('WP25 the template work queue is built from the tuning half only (desig
     io = capture();
     expect(await main(['coverage', '--fixtures', '--mine', '--top', '10'], io)).toBe(0);
     expect(io.lines[0]).toMatch(/^Work queue from the tuning half only/);
-  }, 120_000); // FAST5X E19: two whole-fixture passes (478 cards) take over the default 5 s on a loaded machine; merge train 20261021T1919: 44-52 s alone, 60 s was too close
+  }, 720_000); // Commander combined copy: about 130 s alone at about 3,000 cards; FAST5X E19: two whole-fixture passes (478 cards) take over the default 5 s on a loaded machine; merge train 20261021T1919: 44-52 s alone, 60 s was too close; 2026-11-03: 296 s under load on a 4-CPU cloud machine (360 s was the limit)
 });

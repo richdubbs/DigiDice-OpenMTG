@@ -70,8 +70,8 @@ describe('NeedDecision replay determinism (design 8.8)', () => {
     const last = states.at(-2)!; // suspended at the last decision
     const answers = [...last.suspended!.answers, (actions.at(-1) as Extract<Action, { type: 'answer' }>).answer];
     const once = run(last.suspended!.base, last.suspended!.action, answers);
-    // applyAction counts the answer actions (`actionCount`); everything the resolution did is identical.
-    expect({ ...once.state, actionCount: 0 }).toEqual({ ...states.at(-1)!, actionCount: 0 });
+    // applyAction counts the answer actions (`actionCount`) and records the settled action for shortcuts (`turnActions`, CR 727); everything the resolution did is identical.
+    expect({ ...once.state, actionCount: 0, turnActions: [] }).toEqual({ ...states.at(-1)!, actionCount: 0, turnActions: [] });
   }));
 
   it('every intermediate state is reproduced by re-execution: each suspended run, replayed, asks the same pending decision', () => withFakes(() => {

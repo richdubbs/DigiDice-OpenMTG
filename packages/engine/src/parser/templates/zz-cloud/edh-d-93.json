@@ -1,0 +1,339 @@
+[
+  {
+    "id": "eff.edhd93.dig.putUpTo.bf.tapped.rest.bottomRandom",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 401.4",
+      "CR 110.2a"
+    ],
+    "pattern": "put up to {m:Qty} {f:Filter} cards from among {g:Seen} onto the battlefield tapped and the rest on the bottom of your library in a random order",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "$m",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        },
+        "as": "putOntoBattlefield"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "library",
+          "position": "bottom",
+          "order": "random"
+        }
+      }
+    ],
+    "consumes": [
+      "up to",
+      "random",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. Put up to two land cards from among them onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Reveal the top seven cards of your library. Put up to three creature cards from among them onto the battlefield tapped and the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. Put up to two land cards from among them onto the battlefield and the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. Put up to two land cards from among them onto the battlefield tapped and the rest into your graveyard.",
+      "Look at the top five cards of your library. Put up to two land cards from among them onto the battlefield tapped and the rest on the bottom of your library in any order."
+    ]
+  },
+  {
+    "id": "eff.edhd93.proliferate.difference.ifFewerPut",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 701.34a",
+      "CR 608.2c",
+      "CR 608.2h"
+    ],
+    "pattern": "if {c:FewerPut} , proliferate a number of times equal to the difference",
+    "build": {
+      "op": "action",
+      "action": "proliferate",
+      "who": {
+        "ref": "you"
+      },
+      "n": {
+        "q": "math",
+        "op": "-",
+        "args": [
+          "$c.right",
+          "$c.left"
+        ]
+      },
+      "guard": "$c"
+    },
+    "needs": [
+      "action:proliferate"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. Put up to two land cards from among them onto the battlefield tapped and the rest on the bottom of your library in a random order. If you put fewer than two lands onto the battlefield this way, proliferate a number of times equal to the difference."
+      },
+      {
+        "text": "Reveal the top seven cards of your library. Put up to three creature cards from among them onto the battlefield tapped and the rest on the bottom of your library in a random order. If you put fewer than three creatures onto the battlefield this way, proliferate a number of times equal to the difference."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. Put up to two land cards from among them onto the battlefield tapped and the rest on the bottom of your library in a random order. If you put fewer than two lands onto the battlefield this way, proliferate.",
+      "Look at the top five cards of your library. Put up to two land cards from among them onto the battlefield tapped and the rest on the bottom of your library in a random order. If you put fewer than two lands into your hand this way, proliferate a number of times equal to the difference."
+    ],
+    "consumes": [
+      "if"
+    ]
+  },
+  {
+    "id": "eff.edhd93.draw.ifYouControlObj",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 121.1",
+      "CR 108.4"
+    ],
+    "pattern": "draw a card if you control {o:Obj}",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "playerIs",
+        "who": {
+          "ref": "controllerOf",
+          "object": "$o"
+        },
+        "is": "you"
+      },
+      "then": [
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature becomes tapped, draw a card if you control that creature."
+      },
+      {
+        "text": "Whenever a creature becomes tapped, draw a card if you control that creature. If you don't control it, its controller loses 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature becomes tapped, draw a card if you don't control that creature.",
+      "Whenever a creature becomes tapped, draw a card if an opponent controls that creature.",
+      "Whenever a creature becomes tapped, draw two cards if you control that creature or a Wizard."
+    ]
+  },
+  {
+    "id": "eff.edhd93.ifYouDontControlObj.itsControllerLoses",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 119.3",
+      "CR 108.4"
+    ],
+    "pattern": "if you don't control {o:Obj} , its controller loses {n:Qty} life",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "not",
+        "of": {
+          "cond": "playerIs",
+          "who": {
+            "ref": "controllerOf",
+            "object": "$o"
+          },
+          "is": "you"
+        }
+      },
+      "then": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "controllerOf",
+            "object": "$o"
+          },
+          "amount": "$n"
+        }
+      ]
+    },
+    "consumes": [
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "Whenever a creature becomes untapped, draw a card if you control that creature. If you don't control it, its controller loses 1 life."
+      },
+      {
+        "text": "Whenever a creature becomes tapped, draw a card if you control that creature. If you don't control it, its controller loses 2 life."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature becomes tapped, draw a card if you control that creature. If you don't control it, its owner loses 2 life.",
+      "Whenever a creature becomes tapped, draw a card if you control that creature. If you don't control it, its controller gains 2 life.",
+      "Whenever a creature becomes tapped, draw a card if you control that creature. If you control it, its controller loses 2 life."
+    ]
+  },
+  {
+    "id": "sta.edhd93.triggerMod.playerDrawing",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.2d",
+      "CR 121.1"
+    ],
+    "pattern": "if a player drawing a card causes a triggered ability of a permanent you control to trigger , ( that ability | it ) triggers an additional time",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "triggerMod",
+          "cause": {
+            "ev": "draw",
+            "player": "any"
+          },
+          "abilitiesOf": {
+            "controller": "you"
+          },
+          "additional": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "If a player drawing a card causes a triggered ability of a permanent you control to trigger, it triggers an additional time."
+      },
+      {
+        "text": "If a player drawing a card causes a triggered ability of a permanent you control to trigger, it triggers an additional time.\nWhenever a player draws a card, you gain 1 life."
+      }
+    ],
+    "counterExamples": [
+      "If a player discarding a card causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+      "If an opponent drawing a card causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time.",
+      "If a player drawing a card causes a triggered ability of a permanent an opponent controls to trigger, that ability triggers an additional time.",
+      "If a player drawing a card causes a triggered ability of a permanent you control to trigger, that ability triggers two additional times."
+    ]
+  },
+  {
+    "id": "eff.edhd93.ifCountersMoved.gainThatMuch.draw",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 122.5",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 119.3",
+      "CR 121.1"
+    ],
+    "pattern": "if {c:CountersMoved} , you gain that much life and draw a card",
+    "build": {
+      "op": "if",
+      "cond": "$c",
+      "then": [
+        {
+          "op": "gainLife",
+          "who": {
+            "ref": "you"
+          },
+          "amount": "$c.left"
+        },
+        {
+          "op": "draw",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "that much"
+    ],
+    "examples": [
+      {
+        "text": "{2}: Move all +1/+1 counters from target artifact you control onto target creature. If one or more +1/+1 counters are moved this way, you gain that much life and draw a card."
+      },
+      {
+        "text": "{T}: Move all charge counters from target artifact you control onto another target artifact. If one or more charge counters are moved this way, you gain that much life and draw a card."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Move all +1/+1 counters from target artifact you control onto target creature. If one or more +1/+1 counters are moved this way, you lose that much life and draw a card.",
+      "{2}: Move all +1/+1 counters from target artifact you control onto target creature. If one or more +1/+1 counters are put this way, you gain that much life and draw a card.",
+      "{2}: Draw a card. If one or more +1/+1 counters are moved this way, you gain that much life and draw a card."
+    ]
+  }
+]

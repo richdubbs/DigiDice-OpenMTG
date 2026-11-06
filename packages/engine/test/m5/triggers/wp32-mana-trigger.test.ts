@@ -103,8 +103,8 @@ const barbs = synth({
 });
 
 // CMD5: a pain land's "This land deals 1 damage to you." is automated now (cloud/cmd5/cmd5-mana.test.ts); a mana ability with another instruction beside the
-// mana ("Each opponent gains 1 life.", invented wording) is still one the player activates by hand
-const grove = compileCard({ name: 'Test Gift Grove', layout: 'normal', mana_cost: '', type_line: 'Land', oracle_text: '{T}: Add {C}.\n{T}: Add {R} or {G}. Each opponent gains 1 life.', colors: [] } as OracleCard);
+// mana ("Each opponent discards a card.", invented wording; edh-fix-3: "gains 1 life" is a mana ability since edh-mana-keywords-4) is still one the player activates by hand
+const grove = compileCard({ name: 'Test Gift Grove', layout: 'normal', mana_cost: '', type_line: 'Land', oracle_text: '{T}: Add {C}.\n{T}: Add {R} or {G}. Each opponent discards a card.', colors: [] } as OracleCard);
 const painLand = compileCard({ name: 'Test Ache Grove', layout: 'normal', mana_cost: '', type_line: 'Land', oracle_text: '{T}: Add {C}.\n{T}: Add {R} or {G}. This land deals 1 damage to you.', colors: [] } as OracleCard);
 
 describe('CR 605.1b, 605.4a: a mana ability activated by hand (one the engine does not understand) is still an activation', () => {

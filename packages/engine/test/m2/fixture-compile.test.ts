@@ -15,7 +15,7 @@ describe('milestone 2 fixture: generated Oracle data compiles', { timeout: 60_00
       expect(def.faces.length, name).toBeGreaterThanOrEqual(1);
       for (const face of def.faces) expect(face.typeLine, `${name} / ${face.name}`).not.toBe('');
     }
-  }, 120_000); // every fixture card is compiled: the set grows with every package, so the default 5 s is not enough on a busy machine
+  }, 1_800_000); // every fixture card is compiled: the set grows with every package (about 100 s alone at 3,300 cards in 2026-10), so 120 s timed out in whole-engine runs (30 min since 2026-11-05: about 450 s in whole-engine runs at 6,610 fixture cards)
 
   it('is sorted by name and has unique names', () => {
     const names = fixtureCardNames();

@@ -579,7 +579,7 @@
     "id": "eff.stdmkm.each.opponent.loselife.unless.they",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 118.12a",
       "CR 119.3",

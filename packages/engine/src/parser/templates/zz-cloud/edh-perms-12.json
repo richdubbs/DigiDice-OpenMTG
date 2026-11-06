@@ -1,0 +1,327 @@
+[
+  {
+    "id": "eff.edhpm12.counters.put.you",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 122.6",
+      "CR 608.2c"
+    ],
+    "pattern": "you put {n:Qty} {k:CounterKind} counter[s] on {o:Objs}",
+    "build": {
+      "op": "putCounters",
+      "on": "$o",
+      "kind": "$k",
+      "count": "$n"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "At the beginning of each opponent's upkeep, they lose 2 life and you put two -1/-1 counters on up to one target creature they control."
+      },
+      {
+        "text": "At the beginning of each opponent's upkeep, that player loses 2 life and you put two -1/-1 counters on target creature that player controls."
+      }
+    ],
+    "counterExamples": [
+      "At the beginning of each opponent's upkeep, they lose 1 life and each opponent puts a -1/-1 counter on up to one target creature they control.",
+      "At the beginning of each opponent's upkeep, they lose 1 life and you put a -1/-1 counter on up to one target creature they control for each Dog you control."
+    ]
+  },
+  {
+    "id": "rep.edhpm12.enters.tappedUnlessRevealOr",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 701.20a",
+      "CR 118.12"
+    ],
+    "pattern": "as ~ enters , you may {c:Cost} . ~ enters tapped unless you revealed ( a | an ) {f:Filter} card this way or {k:Cond}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tappedUnlessPay": "$c",
+            "tappedUnless": "$k"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "unless",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, you may reveal a Wizard card from your hand. ~ enters tapped unless you revealed a Wizard card this way or you control a Wizard."
+      },
+      {
+        "text": "As ~ enters, you may reveal an Elf card from your hand. ~ enters tapped unless you revealed an Elf card this way or you control a Forest."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, you may reveal a Wizard card from your hand. If you don't, ~ enters tapped.",
+      "As ~ enters, you may reveal a Wizard card from your hand. ~ enters tapped unless you revealed a Wizard card this way and you control a Wizard.",
+      "As ~ enters, reveal a Wizard card from your hand. ~ enters tapped unless you revealed a Wizard card this way or you control a Wizard."
+    ]
+  },
+  {
+    "id": "sta.edhpm12.attached.has.keywordAndMobilizeXPower",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.181a",
+      "CR 604.1",
+      "CR 613.1f",
+      "CR 301.5a",
+      "CR 303.4a",
+      "CR 107.3",
+      "CR 208.1"
+    ],
+    "pattern": "( enchanted | equipped ) creature has {a:Abilities} and mobilize x , where x is its power",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "attachedTo"
+      },
+      "mods": [
+        {
+          "layer": 6,
+          "add": {
+            "$concat": [
+              "$a",
+              [
+                {
+                  "kind": "keyword",
+                  "keyword": "mobilize",
+                  "amount": {
+                    "q": "stat",
+                    "stat": "power",
+                    "of": {
+                      "ref": "self"
+                    }
+                  },
+                  "text": "mobilize X"
+                }
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "Equipped creature has haste and mobilize X, where X is its power."
+      },
+      {
+        "text": "Enchanted creature has haste and mobilize X, where X is its power."
+      }
+    ],
+    "counterExamples": [
+      "Equipped creature has menace and mobilize X, where X is its toughness.",
+      "Equipped creature has menace and mobilize 2.",
+      "Equipped creature has menace and mobilize X, where X is the number of creatures you control."
+    ]
+  },
+  {
+    "id": "eff.edhpm12.chooseUpTo.destroyRest",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 701.8a",
+      "CR 109.1"
+    ],
+    "pattern": "choose up to {n:Qty} {f:Filter} , then destroy the rest",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ]
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "chosenKept"
+      },
+      {
+        "op": "destroy",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosenKept"
+              }
+            }
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Destroy all lands. Choose up to two creatures, then destroy the rest."
+      },
+      {
+        "text": "Choose up to one artifact, then destroy the rest."
+      }
+    ],
+    "counterExamples": [
+      "Choose up to two creatures, then sacrifice the rest.",
+      "Choose up to two creatures you control, then destroy the rest.",
+      "Choose up to two creatures, then exile the rest."
+    ]
+  },
+  {
+    "id": "eff.edhpm12.startingWithYou.eachPlayerMayChoose",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 608.2c"
+    ],
+    "pattern": "starting with you , each player may choose ( a | an ) {f:Filter}",
+    "build": {
+      "op": "chooseObjects",
+      "who": {
+        "ref": "each",
+        "who": "player"
+      },
+      "startingWith": {
+        "ref": "you"
+      },
+      "from": {
+        "ref": "each",
+        "filter": "$f"
+      },
+      "min": 0,
+      "max": 1,
+      "as": "chosen"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, starting with you, each player may choose a creature you don't control. Exile each permanent chosen this way."
+      },
+      {
+        "text": "When ~ enters, starting with you, each player may choose a land you don't control. Sacrifice each permanent chosen this way."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, each player may choose a creature you don't control. Destroy each permanent chosen this way.",
+      "When ~ enters, starting with you, each player chooses a creature you don't control. Destroy each permanent chosen this way.",
+      "When ~ enters, starting with you, each opponent may choose a creature you don't control. Destroy each permanent chosen this way."
+    ]
+  },
+  {
+    "id": "eff.edhpm12.return.another.battlefield",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2d",
+      "CR 400.7",
+      "CR 109.2"
+    ],
+    "pattern": "return another {f:Filter} to the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "other": true,
+            "zone": "$f.zone"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "regrow"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "regrow"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "another"
+    ],
+    "examples": [
+      {
+        "text": "Each player sacrifices a creature. If you sacrificed a creature this way, return another permanent card from your graveyard to the battlefield."
+      },
+      {
+        "text": "Sacrifice a creature. If you do, return another creature card from your graveyard to the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "Each player sacrifices a creature. If you sacrificed a creature this way, return another permanent card from your graveyard to your hand.",
+      "Sacrifice a creature. If you do, return a creature card from your graveyard to the battlefield.",
+      "Sacrifice a creature. If you do, return another creature card from your graveyard to the battlefield tapped."
+    ]
+  }
+]

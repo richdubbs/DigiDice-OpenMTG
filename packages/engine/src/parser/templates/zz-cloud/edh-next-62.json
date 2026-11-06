@@ -1,0 +1,581 @@
+[
+ {
+  "id": "sta.edhn62.look.linked.andPlay",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 607.2a",
+   "CR 406.3",
+   "CR 400.2",
+   "CR 601.3",
+   "CR 305.1",
+   "CR 611.3a"
+  ],
+  "pattern": "you may look at ( the cards | cards ) exiled with ~ , and you may play lands and cast spells from among those cards",
+  "build": [
+   {
+    "s": "permit",
+    "who": {
+     "ref": "you"
+    },
+    "action": "lookAt",
+    "of": {
+     "is": {
+      "ref": "linked",
+      "link": "exiled"
+     }
+    }
+   },
+   {
+    "s": "permit",
+    "who": {
+     "ref": "you"
+    },
+    "action": "play",
+    "of": {
+     "is": {
+      "ref": "linked",
+      "link": "exiled"
+     }
+    }
+   }
+  ],
+  "consumes": [
+   "may"
+  ],
+  "examples": [
+   {
+    "text": "Whenever ~ deals combat damage to a player, exile the top card of that player's library face down.\nYou may look at the cards exiled with ~, and you may play lands and cast spells from among those cards."
+   },
+   {
+    "text": "When ~ enters, exile the top seven cards of your library face down.\nYou may look at cards exiled with ~, and you may play lands and cast spells from among those cards."
+   }
+  ],
+  "counterExamples": [
+   "When ~ enters, exile the top seven cards of your library face down.\nYou may look at the cards exiled with ~, and you may play lands from among those cards.",
+   "When ~ enters, exile the top seven cards of your library face down.\nYou may look at the cards exiled with ~ any time, and you may play lands and cast spells from among those cards.",
+   "When ~ enters, exile the top seven cards of your library face down.\nYou may look at the cards exiled with ~, and you may cast spells from among those cards."
+  ]
+ },
+ {
+  "id": "eff.edhn62.player.exilesFromHand.faceDown",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 406.1",
+   "CR 406.3",
+   "CR 608.2d",
+   "CR 400.7"
+  ],
+  "pattern": "{p:Player} exiles a card from their hand face down",
+  "build": [
+   {
+    "op": "chooseObjects",
+    "who": "$p",
+    "from": {
+     "ref": "each",
+     "filter": {
+      "zone": "hand",
+      "owner": "$p"
+     }
+    },
+    "min": 1,
+    "max": 1,
+    "as": "exiled"
+   },
+   {
+    "op": "move",
+    "what": {
+     "ref": "bound",
+     "name": "exiled"
+    },
+    "to": {
+     "zone": "exile",
+     "faceDown": true
+    }
+   }
+  ],
+  "subject": "player",
+  "examples": [
+   {
+    "text": "Whenever ~ deals combat damage to a player, that player exiles a card from their hand face down."
+   },
+   {
+    "text": "Target opponent exiles a card from their hand face down."
+   }
+  ],
+  "counterExamples": [
+   "Target opponent exiles a card from their hand face up.",
+   "Target opponent exiles two cards from their hand face down.",
+   "Target opponent exiles a card from their graveyard face down."
+  ]
+ },
+ {
+  "id": "eff.edhn62.exileFromYourHand.faceDown",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 406.1",
+   "CR 406.3",
+   "CR 608.2d",
+   "CR 400.7"
+  ],
+  "pattern": "exile a card from your hand face down",
+  "build": [
+   {
+    "op": "chooseObjects",
+    "who": {
+     "ref": "you"
+    },
+    "from": {
+     "ref": "each",
+     "filter": {
+      "zone": "hand",
+      "owner": {
+       "ref": "you"
+      }
+     }
+    },
+    "min": 1,
+    "max": 1,
+    "as": "exiled"
+   },
+   {
+    "op": "move",
+    "what": {
+     "ref": "bound",
+     "name": "exiled"
+    },
+    "to": {
+     "zone": "exile",
+     "faceDown": true
+    }
+   }
+  ],
+  "subject": "none",
+  "examples": [
+   {
+    "text": "{T}: Exile a card from your hand face down."
+   },
+   {
+    "text": "Draw a card, then exile a card from your hand face down."
+   }
+  ],
+  "counterExamples": [
+   "{T}: Exile two cards from your hand face down.",
+   "{T}: Exile a card from your graveyard face down.",
+   "{T}: Exile a card from your hand."
+  ]
+ },
+ {
+  "id": "sta.edhn62.group.have.allActivatedOf.landCardsExiledWith",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 604.1",
+   "CR 613.1f",
+   "CR 607.2a"
+  ],
+  "pattern": "{f:Filter} have all activated abilities of all land cards exiled with ~",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "continuous",
+     "affects": {
+      "ref": "each",
+      "filter": "$f"
+     },
+     "mods": [
+      {
+       "layer": 6,
+       "addActivatedOf": {
+        "ref": "each",
+        "filter": {
+         "types": [
+          "Land"
+         ],
+         "zone": "exile",
+         "is": {
+          "ref": "linked",
+          "link": "exiled"
+         }
+        }
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "consumes": [
+   "all"
+  ],
+  "examples": [
+   {
+    "text": "When ~ enters, exile up to three target land cards from your graveyard.\nCreatures you control have all activated abilities of all land cards exiled with ~."
+   },
+   {
+    "text": "Whenever ~ attacks, exile target land card from a graveyard.\nElves you control have all activated abilities of all land cards exiled with ~."
+   }
+  ],
+  "counterExamples": [
+   "When ~ enters, exile up to three target land cards from your graveyard.\nCreatures you control have all triggered abilities of all land cards exiled with ~.",
+   "When ~ enters, exile up to three target land cards from your graveyard.\nCreatures you control have all activated abilities of all creature cards exiled with ~.",
+   "When ~ enters, exile up to three target land cards from your graveyard.\nCreatures you control have all activated abilities of all land cards in your graveyard."
+  ]
+ },
+ {
+  "id": "sta.edhn62.self.has.allActivatedOf.cardsExiledWithIt",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 604.1",
+   "CR 613.1f",
+   "CR 607.2a"
+  ],
+  "pattern": "~ has all activated abilities of all cards exiled with ( it | ~ )",
+  "build": {
+   "kind": "static",
+   "effects": [
+    {
+     "s": "continuous",
+     "affects": {
+      "ref": "self"
+     },
+     "mods": [
+      {
+       "layer": 6,
+       "addActivatedOf": {
+        "ref": "linked",
+        "link": "exiled"
+       }
+      }
+     ]
+    }
+   ]
+  },
+  "consumes": [
+   "all"
+  ],
+  "examples": [
+   {
+    "text": "{T}: Exile target artifact card from a graveyard.\nThis creature has all activated abilities of all cards exiled with it."
+   },
+   {
+    "text": "{T}: Exile target artifact card from a graveyard.\n~ has all activated abilities of all cards exiled with ~."
+   }
+  ],
+  "counterExamples": [
+   "{T}: Exile target artifact card from a graveyard.\nThis creature has all triggered abilities of all cards exiled with it.",
+   "{T}: Exile target artifact card from a graveyard.\nThis creature has all activated abilities of all artifact cards exiled with it.",
+   "{T}: Exile target artifact card from a graveyard.\nThis creature has all activated abilities of all cards in your graveyard."
+  ]
+ },
+ {
+  "id": "eff.edhn62.look.named.remainsExiled",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 406.3",
+   "CR 611.2b",
+   "CR 400.7"
+  ],
+  "pattern": "you may look at {o:Obj} for as long as it remains exiled",
+  "build": {
+   "op": "effect",
+   "duration": {
+    "d": "remainsExiled"
+   },
+   "effects": [
+    {
+     "s": "permit",
+     "who": {
+      "ref": "you"
+     },
+     "action": "lookAt",
+     "of": {
+      "is": "$o"
+     }
+    }
+   ]
+  },
+  "consumes": [
+   "may",
+   "until"
+  ],
+  "examples": [
+   {
+    "text": "{T}: Exile a card from your hand face down. You may look at it for as long as it remains exiled."
+   },
+   {
+    "text": "Whenever ~ attacks, exile the top card of your library face down. You may look at that card for as long as it remains exiled."
+   }
+  ],
+  "counterExamples": [
+   "{T}: Exile a card from your hand face down. You may look at it this turn.",
+   "{T}: Exile a card from your hand face down. You may look at it for as long as ~ remains on the battlefield.",
+   "{T}: Exile a card from your hand face down. You may play it for as long as it remains exiled."
+  ]
+ },
+ {
+  "id": "eff.edhn62.linked.returnOwned.hand",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 607.2a",
+   "CR 400.3",
+   "CR 608.2d",
+   "CR 108.3"
+  ],
+  "pattern": "return a card you own exiled with ~ to your hand",
+  "build": [
+   {
+    "op": "chooseObjects",
+    "who": {
+     "ref": "you"
+    },
+    "from": {
+     "ref": "each",
+     "filter": {
+      "is": {
+       "ref": "linked",
+       "link": "exiled"
+      },
+      "zone": "any",
+      "isCard": true,
+      "owner": "you"
+     }
+    },
+    "min": 1,
+    "max": 1,
+    "as": "returned"
+   },
+   {
+    "op": "move",
+    "what": {
+     "ref": "bound",
+     "name": "returned"
+    },
+    "to": {
+     "zone": "hand"
+    }
+   }
+  ],
+  "consumes": [
+   "you",
+   "own"
+  ],
+  "examples": [
+   {
+    "text": "{T}: Exile a card from your hand face down.\n{T}: Return a card you own exiled with ~ to your hand."
+   },
+   {
+    "text": "Whenever ~ attacks, exile the top card of target opponent's library.\n{1}: Return a card you own exiled with ~ to your hand."
+   }
+  ],
+  "counterExamples": [
+   "{T}: Exile a card from your hand face down.\n{T}: Return a card exiled with ~ to your hand.",
+   "{T}: Exile a card from your hand face down.\n{T}: Return two cards you own exiled with ~ to your hand.",
+   "{T}: Exile a card from your hand face down.\n{T}: Return a card you own exiled with ~ to the battlefield."
+  ]
+ },
+ {
+  "id": "eff.edhn62.linked.putAll.ownersGraveyard",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "priority": 1,
+  "cr": [
+   "CR 607.2a",
+   "CR 400.3",
+   "CR 404.1"
+  ],
+  "pattern": "put all cards exiled with ~ into their owner 's graveyard",
+  "build": {
+   "op": "move",
+   "what": {
+    "ref": "each",
+    "filter": {
+     "is": {
+      "ref": "linked",
+      "link": "exiled"
+     },
+     "zone": "exile"
+    }
+   },
+   "to": {
+    "zone": "graveyard"
+   }
+  },
+  "consumes": [
+   "all"
+  ],
+  "examples": [
+   {
+    "text": "{T}: Exile a card from your hand face down.\nWhen ~ is turned face up, put all cards exiled with ~ into their owner's graveyard."
+   },
+   {
+    "text": "Whenever ~ becomes tapped, exile the top card of your library face down.\n{4}: Put all cards exiled with ~ into their owner's graveyard."
+   }
+  ],
+  "counterExamples": [
+   "{T}: Exile a card from your hand face down.\nWhen you lose control of ~, put all cards exiled with ~ into their owner's hand.",
+   "{T}: Exile a card from your hand face down.\nWhen you lose control of ~, put all cards exiled with ~ into your graveyard.",
+   "{4}: Put all cards exiled with ~ into their owner's graveyard."
+  ]
+ },
+ {
+  "id": "sta.edhn62.play.linked.anyManaColor",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 607.2a",
+   "CR 601.3",
+   "CR 305.1",
+   "CR 609.4b",
+   "CR 107.4c"
+  ],
+  "pattern": "you may play cards exiled with ~ , and you may spend mana as though it were mana of any color to cast those spells",
+  "build": {
+   "s": "permit",
+   "who": {
+    "ref": "you"
+   },
+   "action": "play",
+   "of": {
+    "is": {
+     "ref": "linked",
+     "link": "exiled"
+    }
+   },
+   "anyManaColor": true
+  },
+  "consumes": [
+   "may",
+   "as though"
+  ],
+  "examples": [
+   {
+    "text": "Whenever ~ attacks, exile the top card of your library face down.\nYou may play cards exiled with ~, and you may spend mana as though it were mana of any color to cast those spells."
+   },
+   {
+    "text": "When ~ enters, exile the top two cards of target opponent's library.\nYou may play cards exiled with ~, and you may spend mana as though it were mana of any color to cast those spells."
+   }
+  ],
+  "counterExamples": [
+   "When ~ enters, exile the top two cards of target opponent's library.\nYou may play cards exiled with ~, and mana of any type can be spent to cast those spells.",
+   "When ~ enters, exile the top two cards of target opponent's library.\nYou may play cards exiled with ~, and you may spend mana as though it were mana of any color to cast spells.",
+   "When ~ enters, exile the top two cards of target opponent's library.\nYou may cast cards exiled with ~, and you may spend mana as though it were mana of any color to cast those spells."
+  ]
+ },
+ {
+  "id": "sta.edhn62.look.linked",
+  "kind": "static",
+  "since": 8,
+  "status": "stable",
+  "cr": [
+   "CR 607.2a",
+   "CR 406.3",
+   "CR 400.2"
+  ],
+  "pattern": "you may look at ( the cards | cards ) exiled with ~",
+  "build": {
+   "s": "permit",
+   "who": {
+    "ref": "you"
+   },
+   "action": "lookAt",
+   "of": {
+    "is": {
+     "ref": "linked",
+     "link": "exiled"
+    }
+   }
+  },
+  "consumes": [
+   "may"
+  ],
+  "examples": [
+   {
+    "text": "{3}{U}{R}, {T}: Exile the top three cards of your library face down.\nYou may look at cards exiled with ~."
+   },
+   {
+    "text": "Whenever ~ deals combat damage to a player, exile the top card of that player's library face down.\nYou may look at the cards exiled with ~."
+   }
+  ],
+  "counterExamples": [
+   "{3}{U}{R}, {T}: Exile the top three cards of your library face down.\nYou may look at cards exiled with ~ any time.",
+   "{3}{U}{R}, {T}: Exile the top three cards of your library face down.\nYou may look at the top card of your library.",
+   "{3}{U}{R}, {T}: Exile the top three cards of your library face down.\nYou may look at cards you own exiled with ~."
+  ]
+ },
+ {
+  "id": "eff.edhn62.linked.returnOne.ownersHand",
+  "kind": "effect",
+  "since": 8,
+  "status": "stable",
+  "subject": "none",
+  "cr": [
+   "CR 607.2a",
+   "CR 608.2d",
+   "CR 400.3"
+  ],
+  "pattern": "return a card exiled with ~ to its owner 's hand",
+  "build": [
+   {
+    "op": "chooseObjects",
+    "who": {
+     "ref": "you"
+    },
+    "from": {
+     "ref": "each",
+     "filter": {
+      "is": {
+       "ref": "linked",
+       "link": "exiled"
+      },
+      "zone": "any",
+      "isCard": true
+     }
+    },
+    "min": 1,
+    "max": 1,
+    "as": "linkedReturned"
+   },
+   {
+    "op": "move",
+    "what": {
+     "ref": "bound",
+     "name": "linkedReturned"
+    },
+    "to": {
+     "zone": "hand"
+    }
+   }
+  ],
+  "examples": [
+   {
+    "text": "{T}: Draw a card, then exile a card from your hand face down.\n{U}{B}, {T}: Return a card exiled with ~ to its owner's hand."
+   },
+   {
+    "text": "Whenever ~ attacks, exile the top card of your library face down.\n{2}: Return a card exiled with ~ to its owner's hand."
+   }
+  ],
+  "counterExamples": [
+   "{T}: Draw a card, then exile a card from your hand face down.\n{U}{B}, {T}: Return a card exiled with ~ to your hand.",
+   "{T}: Draw a card, then exile a card from your hand face down.\n{U}{B}, {T}: Return two cards exiled with ~ to their owner's hand.",
+   "{U}{B}, {T}: Return a card exiled with ~ to its owner's hand."
+  ]
+ }
+]

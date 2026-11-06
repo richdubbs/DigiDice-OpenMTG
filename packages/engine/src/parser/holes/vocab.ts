@@ -13,7 +13,13 @@ import type { Lexicon, ParseOptions } from '../types';
 /** FAST5 T59: subtypes whose Oracle plural is spelled like the singular although the generated lexicon says otherwise. */
 const SAME_PLURAL: ReadonlySet<string> = new Set(['spacecraft', 'equipment']); // std-rg: Oracle writes "Equipment" for the plural too ("any number of target Equipment you control")
 
+/** edh-b-9 (Azlask, the Swelling Scourge): subtypes whose generated plural equals the singular but that Oracle writes with an "s" in the plural ("Scions and Spawns you control"): that spelling names the plural too. */
+const EXTRA_PLURAL: Readonly<Record<string, string>> = { spawn: 'spawns' };
+
 /** `both`: the plural is spelled like the singular (Eldrazi, Merfolk, Plains, Sheep): the entry is `plural: false, both: true` and means either number. */
+/** edhn81: counter kinds printed on cards but absent from the Comprehensive Rules (Intrepid Adversary's valor counters). */
+const EXTRA_COUNTER_KINDS: readonly string[] = ['valor', 'ember' /* edhn89: Smoldering Egg */, 'soul' /* edhn102: Hostile Hostel */, 'page' /* edhn123: Tasha, the Witch Queen (CR 122.1) */, 'silver' /* edhn136: Karn, Scion of Urza (CR 122.1) */, 'hit' /* edhd85: Ravenloft Adventurer (CR 122.1) */, 'duty' /* edhd85: Immortal Obligation (CR 122.1) */];
+
 export interface WordEntry { name: string; plural: boolean; both?: boolean }
 export interface SubtypeEntry extends WordEntry { cls: string }
 export interface KeywordEntry { name: string; params: string[] }
@@ -79,6 +85,8 @@ function build(lex: Lexicon, keywords: ParseOptions['keywords']): Vocab {
       subtypes.set(singular, { name: st.singular, plural: false, cls: st.class });
       if (!subtypes.has(plural)) subtypes.set(plural, { name: st.singular, plural: true, cls: st.class });
     }
+    const extra = EXTRA_PLURAL[singular];
+    if (extra !== undefined && !subtypes.has(extra)) subtypes.set(extra, { name: st.singular, plural: true, cls: st.class });
     maxWords = Math.max(maxWords, singular.split(' ').length, plural.split(' ').length);
     // pc-keywords-mana-1 (CR 205.3i): the land type "Urza's" (Urza's Mine, Urza's Tower, Urza's Power-Plant) has a possessive: two tokens for the tokenizer ("urza", "'s"),
     // as in a keyword name below
@@ -93,6 +101,8 @@ function build(lex: Lexicon, keywords: ParseOptions['keywords']): Vocab {
   for (const c of lex.colors) if (/^[WUBRG]$/.test(c.color)) colors.set(key(c.word), c.color as Color);
 
   const counterKinds = new Set<string>(lex.counterKinds.map(key));
+  // edhn81 (CR 122.1b: a counter's name is whatever the card says): kinds named on printed cards that the Comprehensive Rules do not (the lexicon is generated from the rules text)
+  for (const k of EXTRA_COUNTER_KINDS) counterKinds.add(key(k));
 
   const predefined = new Map<string, WordEntry>();
   for (const n of lex.predefinedTokens.map((p) => p.name)) {

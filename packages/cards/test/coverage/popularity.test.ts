@@ -144,7 +144,7 @@ describe('COV1 CLI on the fixture set (offline, fake bulk file)', () => {
     expect(written.formats).toHaveLength(REPORT_FORMATS.length);
     expect(written.edhrec[0]!.cards).toBe(1);
     expect(written.whole.cards).toBeGreaterThan(100);
-  }, 60_000);
+  }, 240_000); // the whole fixture set compiled: over 60 s alone at about 3,000 cards (Commander combined copy, 2026-10-28)
   it('unmatched --weight played prints the weighting and the ranked shapes; another weighting is refused', async () => {
     const io = capture();
     expect(await main(['unmatched', '--fixtures', '--weight', 'played', '--bulk', path.join(dir, 'missing.jsonl.gz'), '--top', '5'], io)).toBe(0);
@@ -153,5 +153,5 @@ describe('COV1 CLI on the fixture set (offline, fake bulk file)', () => {
     expect(io.errors.join('\n')).toContain('EDHREC ranks not available');
     const bad = capture();
     expect(await main(['unmatched', '--fixtures', '--weight', 'price'], bad)).toBe(2);
-  }, 60_000);
+  }, 240_000); // a whole-fixture pass: about 68 s alone at about 3,000 cards (Commander combined copy, 2026-10-28)
 });

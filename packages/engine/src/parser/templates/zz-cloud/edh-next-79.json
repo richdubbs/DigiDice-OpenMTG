@@ -1,0 +1,252 @@
+[
+  {
+    "id": "eff.edhn79.return.bf.owner.tapped.theirNextUpkeep",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 503.1",
+      "CR 110.2",
+      "CR 400.7",
+      "CR 608.2h"
+    ],
+    "pattern": "return {o:Obj} to the battlefield tapped under its owner 's control at the beginning of their next upkeep",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "upkeep",
+        "next": true,
+        "whose": {
+          "ref": "ownerOf",
+          "object": "$o"
+        }
+      },
+      "do": [
+        {
+          "op": "move",
+          "what": "$o",
+          "to": {
+            "zone": "battlefield",
+            "controller": "owner",
+            "tapped": true
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "tapped",
+      "their",
+      "next",
+      "upkeep"
+    ],
+    "examples": [
+      {
+        "text": "Return ~ to the battlefield tapped under its owner's control at the beginning of their next upkeep."
+      },
+      {
+        "text": "When ~ dies, return it to the battlefield tapped under its owner's control at the beginning of their next upkeep."
+      }
+    ],
+    "counterExamples": [
+      "Return ~ to the battlefield tapped under its owner's control at the beginning of your next upkeep.",
+      "Return ~ to the battlefield under its owner's control at the beginning of their next upkeep."
+    ]
+  },
+  {
+    "id": "eff.edhn79.exile.anyNumber.youControl",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 406.3",
+      "CR 400.7",
+      "CR 701.13a"
+    ],
+    "pattern": "exile any number of {f:Filter} you control",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "controller": "you"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number"
+    ],
+    "examples": [
+      {
+        "text": "Exile any number of artifacts you control."
+      },
+      {
+        "text": "At the beginning of your end step, exile any number of nontoken creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Exile two artifacts you control.",
+      "Exile any number of artifacts you own and control.",
+      "Exile any number of target artifacts you control."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "dl.edhn79.nextCombat.lead",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7a",
+      "CR 506.1",
+      "CR 507.1"
+    ],
+    "pattern": "at the beginning of the next combat , {e:Effects}",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "step",
+        "step": "beginCombat",
+        "next": true
+      },
+      "do": "$e"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Exile all creatures you control. At the beginning of the next combat, return those cards to the battlefield under their owner's control."
+      },
+      {
+        "text": "Exile target creature you control. At the beginning of the next combat, return that card to the battlefield under its owner's control."
+      }
+    ],
+    "counterExamples": [
+      "Exile all creatures you control. At the beginning of the next combat this turn, return those cards to the battlefield under their owner's control.",
+      "Exile all creatures you control. At the beginning of combat on your turn, return those cards to the battlefield under their owner's control."
+    ],
+    "consumes": [
+      "next"
+    ]
+  },
+  {
+    "id": "rep.edhn79.enters.choose.number",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 607.2d",
+      "CR 107.1"
+    ],
+    "pattern": "as ~ enters , choose a number",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "choose": [
+              {
+                "what": "number",
+                "link": "chosenNumber",
+                "min": 0
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "As ~ enters, choose a number.\nFlying"
+      },
+      {
+        "text": "As this enchantment enters, choose a number.\nFlying"
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, choose a number between 0 and 5.",
+      "As ~ enters, choose a number greater than 2.",
+      "As ~ enters, an opponent chooses a number."
+    ]
+  },
+  {
+    "id": "sta.edhn79.obj.cantBeTargeted.abilitiesByOpponents",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 115.1",
+      "CR 113.7a",
+      "CR 101.2"
+    ],
+    "pattern": "{o:Obj} can't be the target of abilities your opponents control",
+    "build": {
+      "s": "restrict",
+      "subject": "$o",
+      "mode": "cant",
+      "action": "beTargeted",
+      "other": {
+        "controller": "opponent",
+        "stackKind": "ability"
+      }
+    },
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "~ can't be the target of abilities your opponents control."
+      },
+      {
+        "text": "Enchanted creature can't be the target of abilities your opponents control."
+      }
+    ],
+    "counterExamples": [
+      "~ can't be the target of spells or abilities your opponents control.",
+      "~ can't be the target of abilities you control.",
+      "~ can't be the target of spells your opponents control."
+    ]
+  }
+]

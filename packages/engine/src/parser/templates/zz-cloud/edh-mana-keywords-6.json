@@ -1,0 +1,42 @@
+[
+  {
+    "id": "eff.edhmk6.mana.selfColors",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 105.2",
+      "CR 106.1b",
+      "CR 106.5",
+      "CR 605.1a"
+    ],
+    "pattern": "add {n:Qty} mana of any of ~ 's colors",
+    "build": {
+      "op": "addMana",
+      "who": {
+        "ref": "you"
+      },
+      "dynamic": {
+        "kind": "colorsOf",
+        "of": {
+          "ref": "self"
+        },
+        "count": "$n"
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{T}: Add one mana of any of ~'s colors."
+      },
+      {
+        "text": "{2}, {T}: Add two mana of any of ~'s colors."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Add one mana of any of ~'s types.",
+      "{T}: Add one mana of any of its colors.",
+      "{T}: Add one mana of any of enchanted creature's colors."
+    ]
+  }
+]

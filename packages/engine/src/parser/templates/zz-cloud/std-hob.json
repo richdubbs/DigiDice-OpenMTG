@@ -408,6 +408,7 @@
     "id": "eff.stdhob.each.grant",
     "kind": "effect",
     "since": 8,
+    "weak": 1,
     "status": "stable",
     "cr": [
       "CR 611.2a",

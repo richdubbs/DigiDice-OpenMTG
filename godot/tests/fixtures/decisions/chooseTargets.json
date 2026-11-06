@@ -1,0 +1,24 @@
+{
+  "id": "d9",
+  "player": "p1",
+  "prompt": "Choose 1 target(s): any target (for Lightning Bolt).",
+  "rules": [
+    "CR 601.2c",
+    "CR 115.1"
+  ],
+  "kind": "chooseTargets",
+  "targetText": "any target",
+  "objects": [
+    "o10",
+    "o11",
+    "o20",
+    "o21"
+  ],
+  "players": [
+    "p1",
+    "p2"
+  ],
+  "min": 1,
+  "max": 1,
+  "cancellable": true
+}

@@ -22,7 +22,8 @@ export const delveHooks: Pick<KeywordHooks, 'paymentOptions'> = {
         key: 'delve',
         describe: 'Exile cards from your graveyard: each pays for {1}.',
         reduces: { generic: cards },
-        cost: { other: [{ kind: 'exileFrom', zone: 'graveyard', count: 'any' }] },
+        // edh-d-77 (CR 607.2a, 607.2q, 702.66a; Ethereal Forager, Murktide Regent): the cards exiled this way are linked to the permanent the spell becomes ("cards exiled with it")
+        cost: { other: [{ kind: 'exileFrom', zone: 'graveyard', count: 'any', link: 'exiled' }] },
       },
     ];
   },

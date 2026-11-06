@@ -10,6 +10,7 @@
  * `BOOTSTRAP_TEMPLATES` (parser/templates/bootstrap.json) are the twelve seed templates of design 6.3 plus the minimum for Lightning Bolt, Giant Growth, Doom
  * Blade, Llanowar Elves, Serra Angel and Glorious Anthem; the template packages WP19-WP23 add the rest.
  */
+import { cleaveCards, mergeCleave } from './cleave';
 import type { AbilityDef, Condition, CostDef, KeywordAbilityDef, ManualAbilityDef } from '../types/ability';
 import { TARGETED_PLAYER_LINK } from '../types/ability';
 import type { OracleCard } from '../types/card';
@@ -28,6 +29,7 @@ import type { UnitEnv } from './lower/units';
 import { NOT_GATED, verifyAbility } from './lower/verify';
 import { classifyAbility } from '../model/classify';
 import { memoParse } from './parse-memo';
+import { aliasChosenLandTypeLink } from './chosen-land-type';
 import type { AutomationLevel } from '../types/automation';
 import { KICKER_MARK, faceKickerCosts, kickerNameOf } from './holes/p2cs1';
 
@@ -40,6 +42,16 @@ const RANK: Readonly<Record<AutomationLevel, number>> = { manual: 0, partial: 1,
 function spellAdditionalCost(abilities: readonly AbilityDef[]): CostDef | undefined {
   const costs = abilities.flatMap((a) => (a.kind === 'static' ? a.effects.flatMap((e) => (e.s === 'additionalCost' ? [e] : [])) : []));
   const c = costs[0];
+  // edh-d-53 (CR 601.2b, 608.2h; Lethal Throwdown): "sacrifice a creature or sacrifice a modified creature": every option of the one choice is a sacrifice of one permanent, so
+  // "the modified creature was sacrificed" / "the sacrificed creature" asks about it whichever was paid; the description is what all the options share
+  if (costs.length >= 2 && c !== undefined && costs.every((x) => x.choiceGroup !== undefined && x.choiceGroup === c.choiceGroup && x.optional !== true && x.repeatable !== true)) {
+    const parts = costs.map((x) => (x.cost.other?.length === 1 && x.cost.mana === undefined && Object.keys(x.cost).length === 1 ? x.cost.other[0] : undefined));
+    if (parts.every((p) => p !== undefined && p.kind === 'sacrifice' && p.count === 1 && p.self !== true)) {
+      const filters = parts.map((p) => (p as unknown as { filter: Record<string, unknown> }).filter);
+      const common = Object.fromEntries(Object.entries(filters[0]!).filter(([k, v]) => filters.every((f) => JSON.stringify(f[k]) === JSON.stringify(v))));
+      if (common['types'] !== undefined) return { other: [{ ...(parts[0] as object), filter: common }] } as unknown as CostDef;
+    }
+  }
   return costs.length === 1 && c !== undefined && c.optional !== true && c.repeatable !== true && c.choiceGroup === undefined ? c.cost : undefined;
 }
 
@@ -54,6 +66,21 @@ export function cardHasXCost(card: OracleCard): boolean {
     || /^as an additional cost to cast (?:this spell|~|[^,.\n]+), blight x\.(?: x can't be greater than [^.\n]+\.)?(?: \([^)\n]*\))?$/im.test(t)
     // r5-cost (CR 701.67a, 107.3a): "..., waterbend {X}." (Crashing Wave; rules/cost.ts#costHasX reads the waterbend amount)
     || /^as an additional cost to cast (?:this spell|~|[^,.\n]+), waterbend \{x\}\.(?: \([^)\n]*\))?$/im.test(t)
+    // edh-b-13 (CR 107.3a, 702.143a; Starnheim Unleashed): "Foretell {X}{X}{W}": the foretell cost is an alternative cost with X, announced as the foretold card is cast (actions/cast.ts#baseHasX); cast any other way X is 0 (CR 107.3b)
+    || /^foretell (?:\{[^}\n]+\})*\{x\}(?:\{[^}\n]+\})*(?: \([^)\n]*\))?$/im.test(t)
+    // edh-next-82 (CR 107.3a, 702.173a; Monastery Raid): "Freerunning {X}{R}": the freerunning cost is an alternative cost with X, announced as the spell is cast for it (actions/cast.ts#baseHasX)
+    || /^freerunning (?:\{[^}\n]+\})*\{x\}(?:\{[^}\n]+\})*(?: \([^)\n]*\))?$/im.test(t)
+    // edh-next-138 (CR 107.3a, 107.3b, 702.35a; From Under the Floorboards): "Madness {X}{B}{B}": the madness cost is an alternative cost with X, announced as the spell is cast for it
+    // (actions/cast.ts#baseHasX); cast any other way X is 0
+    || /^madness (?:\{[^}\n]+\})*\{x\}(?:\{[^}\n]+\})*(?: \([^)\n]*\))?$/im.test(t)
+    // edh-next-137 (CR 702.153a, 601.2b, 107.3a; Ob Nixilis, the Adversary): "Casualty X": the optional sacrifice of a creature with power X or greater, X announced as the spell is
+    // cast with that cost paid (actions/cast.ts: rules/cost.ts#costHasX sees the X of the part's filter); not paid, X is 0 (CR 107.3b)
+    || /^casualty x\.(?: the copy isn't legendary and has starting loyalty x\.)?(?: \([^)\n]*\))?$/im.test(t)
+    // edh-perms-24 (CR 107.3, 601.2b, 702.33a; Thieving Skydiver): "Kicker {X}. X can't be 0." (the kicker cost, announced with X by actions/cast.ts)
+    // edh-next-23 (Verdeloth the Ancient): "Kicker {X}" alone, X free to be 0 (CR 107.3, 702.33a)
+    || /^kicker \{x\}(?:\. x can't be 0)?\.?(?: \([^)\n]*\))?$/im.test(t)
+    // edh-d-14 (CR 107.3, 702.33a; Kangee, Aerie Keeper): "Kicker {X}{2}": the same announcement of X, with other symbols beside it in the kicker cost
+    || /^kicker (?:\{[^}\n]+\})*\{x\}(?:\{[^}\n]+\})*\.?(?: \([^)\n]*\))?$/im.test(t)
     // std-ry4 (CR 107.3a, 601.2b, 601.2f): the other cost parts whose count is X ("discard X cards [at random]", "sacrifice X lands", "exile X creature cards from
     // your graveyard", "return X Swamps you control to their owner's hand") and a sacrifice whose filter reads X ("an artifact or creature with mana value X"):
     // rules/cost.ts#costHasX sees the X of a part's count or filter, so the cast announces it like the X of a mana cost
@@ -136,7 +163,10 @@ export const EXILED_LINK = 'exiled';
  * FAST5X E26: the keywords whose expansion exiles a card and records it under `EXILED_LINK` (CR 607.2a): hideaway (CR 702.75a, keywords/data/hideaway.json;
  * a test pins the expansion's link).
  */
-export const EXILED_LINK_KEYWORDS: ReadonlySet<string> = new Set(['hideaway']);
+export const EXILED_LINK_KEYWORDS: ReadonlySet<string> = new Set(['hideaway', 'delve' /* edh-d-77 (CR 607.2a, 702.66a): the cards the delve payment exiled */]);
+
+/** edh-d-77 (CR 607.2q, 702.66a): delve links the cards it exiled to the permanent the spell becomes, so only on a permanent face (an instant's or sorcery's delve cards are never linked). */
+const linkKeyword = (a: { keyword: string }, permanentFace: boolean): boolean => EXILED_LINK_KEYWORDS.has(a.keyword) && (a.keyword !== 'delve' || permanentFace);
 
 /** Visit every object node of a JSON value; `fn` may return false to skip the node's children. */
 function walkJson(v: unknown, fn: (n: Record<string, unknown>) => boolean | void): void {
@@ -144,7 +174,8 @@ function walkJson(v: unknown, fn: (n: Record<string, unknown>) => boolean | void
   if (v === null || typeof v !== 'object') return;
   const n = v as Record<string, unknown>;
   if (fn(n) === false) return;
-  for (const x of Object.values(n)) walkJson(x, fn);
+  // edh-next-130 (CR 607.2a, 607.1; Hofri Ghostforge): the abilities a token copy gains in its exceptions read the TOKEN's own link (the copy step's `linkCopied` fills it): no link of this face
+  for (const [k, x] of Object.entries(n)) if (!(k === 'except' && n['op'] === 'copy' && typeof n['linkCopied'] === 'string')) walkJson(x, fn);
 }
 
 const exilesWithoutLink = (n: Record<string, unknown>): boolean =>
@@ -186,6 +217,12 @@ function evidenceCostParts(n: Record<string, unknown>): Record<string, unknown>[
 }
 
 function exileCostParts(n: Record<string, unknown>): Record<string, unknown>[] {
+  // edh-c-77 (CR 607.2a, 607.2k; Wormfang Drake): "sacrifice it unless you exile a creature you control other than this creature": the `pay` step's exile part is exiled with the object
+  // (effects/handlers/pay.ts#performLink remembers it for the source), "the exiled card" of its leaves trigger reads it
+  if (n['op'] === 'pay') {
+    const other = (n['cost'] as { other?: unknown } | undefined)?.other;
+    return Array.isArray(other) ? (other as Record<string, unknown>[]).filter((p) => p['kind'] === 'exileFrom' && p['link'] === undefined) : [];
+  }
   if (n['s'] !== 'additionalCost') return [];
   const other = (n['cost'] as { other?: unknown } | undefined)?.other;
   return Array.isArray(other) ? (other as Record<string, unknown>[]).filter((p) => p['kind'] === 'exileFrom' && p['link'] === undefined) : [];
@@ -200,13 +237,37 @@ function exileCostParts(n: Record<string, unknown>): Record<string, unknown>[] {
 /** std-rx28: the abilities that read `costBeheld` with no behold additional cost on the face, or `costReturned` with no web-slinging or sneak on it. */
 function costReadersWithoutCost(abilities: readonly AbilityDef[]): number[] {
   const beholds = abilities.some((a) => a.kind === 'static' && a.effects.some((e) => e.s === 'additionalCost' && (e.cost.other ?? []).some((p) => p.kind === 'behold')));
-  const returns = abilities.some((a) => a.kind === 'keyword' && (a.keyword === 'web-slinging' || a.keyword === 'sneak'));
+  // edh-d-46 (CR 118.3, 608.2h; Wonderscape Sage): or an activated ability whose cost returns a permanent that is not the source (model/lint-card.ts)
+  const returns = abilities.some((a) => (a.kind === 'keyword' && (a.keyword === 'web-slinging' || a.keyword === 'sneak')) || (a.kind === 'activated' && (a.cost.other ?? []).some((p) => p.kind === 'returnToHand' && !('self' in p && p.self === true))));
   // std-costs-2: and `costChosenObject` with no additional cost that chooses an object
   const chooses = abilities.some((a) => a.kind === 'static' && a.effects.some((e) => e.s === 'additionalCost' && (e.cost.other ?? []).some((p) => p.kind === 'chooseObject')));
+  // edh-perms-8: and `costSacrificed` in a spell ability with no sacrifice in an additional cost of the face: "Sacrifice a creature. You draw cards equal to the sacrificed creature's power" sacrifices by an instruction, not a cost
+  const sacCost = (c: unknown): boolean => JSON.stringify(c).includes('"kind":"sacrifice"');
+  const sacrifices = abilities.some((a) => a.kind === 'static' && a.effects.some((e) => e.s === 'additionalCost' && sacCost(e.cost)));
+  // edh-next-104 (CR 601.2b, 608.2h; Burn at the Stake): and `costTapped` in a spell ability with no tapping additional cost on the face: "Tap any number of untapped creatures you control. ... the number of creatures tapped this way" taps by an instruction, not a cost
+  const tapsCost = abilities.some((a) => a.kind === 'static' && a.effects.some((e) => e.s === 'additionalCost' && (e.cost.other ?? []).some((p) => p.kind === 'tapUntapped')));
+  const revealRule = abilities.some((a) => a.kind === 'static' && a.effects.some((e) => e.s === 'rule' && e.rule === 'revealFirstDraw')); // edh-next-144
+  const notesLife = JSON.stringify(abilities).includes('"what":"lifeTotal"'); // edh-next-144
   const out: number[] = [];
   abilities.forEach((a, i) => {
     let bad = false;
+    walkJson(a, (n) => { if (n['ref'] === 'costTapped' && a.kind === 'spell' && !tapsCost) bad = true; if (n['ref'] === 'costSacrificed' && a.kind === 'spell' && !sacrifices) bad = true; });
+    // edh-players-20 (CR 109.4, 603.2c; Nelly Borca): "the controller of those creatures" of a batch trigger names ONE player only where the engine groups the batch by controller
+    // (triggers/occurrences.ts#bySourceController: damage dealt by an opponent's creatures); any other whole batch could hold the creatures of several players
+    if (a.kind === 'triggered' && a.trigger.wholeBatch === true) {
+      const grouped = a.trigger.on.every((p) => p.ev === 'damage' && p.source?.controller === 'opponent' && p.recipient?.player !== undefined && p.recipient.object === undefined);
+      walkJson(a.effect, (n) => { const o = n['object'] as { ref?: string; role?: string } | undefined; if (n['ref'] === 'controllerOf' && o?.ref === 'event' && o.role === 'source' && !grouped) bad = true; });
+    }
+    // edh-next-145 (CR 205.3m, 601.2c, 601.2h; Cryptic Gateway): "shares a <quality> with each creature tapped this way" (`sharesWith.each` over `costTapped`) only in an activated ability whose
+    // cost taps creatures, and never in a target's description (targets are chosen before the costs are paid, so nothing is tapped yet)
+    const tapsCreatures = a.kind === 'activated' && (a.cost.other ?? []).some((p) => p.kind === 'tapUntapped' && JSON.stringify(p.filter?.types ?? []) === '["Creature"]');
+    walkJson(a, (n) => { const sw = n['sharesWith'] as { each?: boolean } | undefined; if (sw?.each === true && !tapsCreatures) bad = true; });
+    if (a.kind === 'activated' || a.kind === 'triggered' || a.kind === 'spell') for (const t of (a as { effect?: { targets?: unknown[] } }).effect?.targets ?? []) walkJson(t as Record<string, unknown>, (n) => { if ((n['sharesWith'] as { each?: boolean } | undefined)?.each === true) bad = true; });
     walkJson(a, (n) => { if ((n['ref'] === 'costBeheld' && !beholds) || (n['ref'] === 'costReturned' && !returns) || (n['ref'] === 'costChosenObject' && !chooses)) bad = true; });
+    // edh-next-144 (CR 607.2, 119.1): "Whenever you reveal ... this way" with no "reveal the first card you draw" rule on the face, and "the last noted life total" with no note of a life total
+    // on the face (as it enters or by an instruction), read nothing that ever happens: manual, never a guess
+    if (a.kind === 'triggered' && a.trigger.on.some((p) => p.ev === 'reveal') && !revealRule) bad = true;
+    walkJson(a, (n) => { if (n['q'] === 'chosenNumber' && n['link'] === 'notedLife' && !notesLife) bad = true; });
     if (bad) out.push(i);
   });
   return out;
@@ -229,11 +290,17 @@ export function linkExiled(abilities: readonly AbilityDef[], permanentFace = tru
     const mine = consumers.length === 1 ? abilities[consumers[0]!]! : undefined;
     const elsewhere = abilities.some((a, i) => {
       if (consumers.includes(i)) return false;
-      if (a.kind === 'keyword' && EXILED_LINK_KEYWORDS.has(a.keyword)) return true;
+      if (a.kind === 'keyword' && linkKeyword(a, permanentFace)) return true;
       let r = evidenceCostParts(a as unknown as Record<string, unknown>).length > 0;
       walkJson(a, (n) => { if (exilesWithoutLink(n) || (permanentFace && exileCostParts(n).length > 0) || replacementExilesWithoutLink(n)) r = true; });
       return r;
     });
+    // edh-zones-12 (CR 607.2a; Mimic Vat): several readers that each exile on their own (a trigger that exiles a card and returns the others; an activated ability that
+    // copies one and exiles the token at the end step): the link store is the object's, so each is its own producer, when each is selfLinkable and nothing else exiles
+    if (mine === undefined && consumers.length > 1 && permanentFace && !elsewhere && consumers.every((i) => selfLinkable(abilities[i]!))) {
+      for (const i of consumers) producers.set(i, withExiledLink(abilities[i]!));
+      return { producers, unlinked: [], consumers };
+    }
     if (mine === undefined || !permanentFace || elsewhere || !selfLinkable(mine)) return { producers, unlinked: consumers, consumers };
     producers.set(consumers[0]!, withExiledLink(mine));
     return { producers, unlinked: [], consumers };
@@ -243,7 +310,7 @@ export function linkExiled(abilities: readonly AbilityDef[], permanentFace = tru
   if (permanentFace) abilities.forEach((a, i) => { if (!consumers.includes(i)) walkJson(a, (n) => { if (exileCostParts(n).length > 0) costs.push(i); }); });
   // std-rx27 (CR 607.2a, 701.59a): an activated ability's collect evidence cost, when no instruction or spell cost of the face exiles
   const evidence: number[] = [];
-  if (permanentFace && found.length === 0 && costs.length === 0 && !abilities.some((a) => a.kind === 'keyword' && EXILED_LINK_KEYWORDS.has(a.keyword))) abilities.forEach((a, i) => { if (!consumers.includes(i) && evidenceCostParts(a as unknown as Record<string, unknown>).length > 0) evidence.push(i); });
+  if (permanentFace && found.length === 0 && costs.length === 0 && !abilities.some((a) => a.kind === 'keyword' && linkKeyword(a, permanentFace))) abilities.forEach((a, i) => { if (!consumers.includes(i) && evidenceCostParts(a as unknown as Record<string, unknown>).length > 0) evidence.push(i); });
   if (evidence.length === 1) {
     const copy = JSON.parse(JSON.stringify(abilities[evidence[0]!])) as AbilityDef;
     for (const part of evidenceCostParts(copy as unknown as Record<string, unknown>)) part['link'] = EXILED_LINK;
@@ -252,7 +319,11 @@ export function linkExiled(abilities: readonly AbilityDef[], permanentFace = tru
   }
   // FAST5X E26 (CR 702.75a, 607.2a): a hideaway keyword is the instruction that exiles: its expansion (keywords/data/hideaway.json) records the card it exiles
   // face down under this link itself, so the keyword line needs no rewrite; it must be the face's only exiling instruction as well
-  const keywordProducers = abilities.filter((a, i) => !consumers.includes(i) && a.kind === 'keyword' && EXILED_LINK_KEYWORDS.has(a.keyword)).length;
+  const keywordProducers = abilities.filter((a, i) => !consumers.includes(i) && a.kind === 'keyword' && linkKeyword(a, permanentFace)).length;
+  // edh-next-73 (CR 607.2a, 702.75a; Evercoat Ursine: "Hideaway 3, hideaway 3" ... "if there are cards exiled with it, you may play one of them"): the SAME hideaway keyword twice records both cards under this
+  // one link, and a reader that names only the group (never "the exiled card", which would be ambiguous) reads them all; nothing else on the face exiles
+  const sameKeyword = new Set(abilities.filter((a, i) => !consumers.includes(i) && a.kind === 'keyword' && linkKeyword(a, permanentFace)).map((a) => (a as { keyword: string }).keyword)).size === 1;
+  if (keywordProducers > 1 && sameKeyword && found.length === 0 && costs.length === 0 && consumers.every((i) => readsOnlyAsGroup(abilities[i]!))) return { producers, unlinked: [], consumers };
   if (keywordProducers > 0) return { producers, unlinked: keywordProducers === 1 && found.length === 0 && costs.length === 0 ? [] : consumers, consumers };
   // r5-refs (CR 607.2a): every card the one exiling ability exiled is "exiled with ~", whichever of its instructions exiled it ("target opponent exiles a creature
   // they control, then they exile a card from their graveyard"): one ABILITY that exiles, not one instruction
@@ -267,7 +338,8 @@ export function linkExiled(abilities: readonly AbilityDef[], permanentFace = tru
   }
   // std-cardcopy-9 (CR 607.2a): several abilities that exile are all linked to "cards exiled with ~" (Koh, the Face Stealer: its enters and its dies triggers);
   // "the exiled card" (a bare link reference) still needs exactly one, as the card it names must be one
-  if (new Set(found).size > 1 && !consumers.every((i) => readsOnlyExiledWith(abilities[i]!))) return { producers, unlinked: consumers, consumers };
+  // edh-d-77 (CR 607.2a; Yggdrasil, Rebirth Engine): or a reader that picks among the group ("put a creature card exiled with ~ onto the battlefield", zone 'any') or counts it: readsOnlyAsGroup
+  if (new Set(found).size > 1 && !consumers.every((i) => readsOnlyExiledWith(abilities[i]!) || readsOnlyAsGroup(abilities[i]!))) return { producers, unlinked: consumers, consumers };
   for (const i of new Set([...found, ...costs])) producers.set(i, withExiledLink(abilities[i]!));
   return { producers, unlinked: [], consumers };
 }
@@ -281,10 +353,26 @@ function mentionsExile(a: AbilityDef): boolean {
   walkJson(a, (n) => {
     const is = n['is'] as Record<string, unknown> | undefined;
     if (n['zone'] === 'exile' && is?.['ref'] === 'linked' && is['link'] === EXILED_LINK) return false;
+    // edh-d-100 (CR 607.2a; Share the Spoils): the "When they do, exile the top card of their library" of a linked permission (`onUse`), whose exile the template already links: the
+    // permission still reads the cards the face's OTHER exiling ability exiled (that one is linked as usual), so its own linked exile is no exile of an unlinked reader
+    if (n['s'] === 'permit' && permitOnUseLinkedOnly(n)) return false;
+    // edh-d-100 (CR 607.2a; Knowledge Pool: "that player exiles it. If the player does, they may cast a spell from among other cards exiled with ~"): a move into exile the template already
+    // links under "exiled" records its card with the face's other exiling ability, so the reader is no unlinked exiler (selfLinkable never counted such a move: no formerly linked face changes)
+    if (n['op'] === 'move' && n['link'] === EXILED_LINK && (n['to'] as Record<string, unknown> | undefined)?.['zone'] === 'exile' && Object.keys(n['to'] as Record<string, unknown>).length === 1) return false;
     if (n['zone'] === 'exile') found = true;
+    if (n['op'] === 'pay' && exileCostParts(n).length > 0) found = true; // edhn102 (CR 607.2a, 118.12): "you may exile a creature card from your graveyard" exiles too (selfLinkable)
     return undefined;
   });
   return found;
+}
+
+/** edh-d-100 (CR 607.2a): a permission whose `onUse` steps are each a `move` to exile already linked under "exiled", its `of` naming the linked cards only (no zone of its own). */
+function permitOnUseLinkedOnly(n: Record<string, unknown>): boolean {
+  const use = n['onUse'] as { steps?: unknown } | undefined;
+  if (use === undefined || !Array.isArray(use.steps) || use.steps.length === 0) return false;
+  const of = n['of'] as Record<string, unknown> | undefined;
+  if (of === undefined || of['zone'] !== undefined || Object.keys(of).length !== 1) return false;
+  return use.steps.every((st) => { const r = st as Record<string, unknown>; return r['op'] === 'move' && r['link'] === EXILED_LINK && (r['to'] as Record<string, unknown> | undefined)?.['zone'] === 'exile'; });
 }
 
 /** std-cardcopy-2: does the node hold a layer-6 grant of "this card's other abilities" (`otherAbilitiesOfCard`)? */
@@ -313,8 +401,34 @@ export function fillOtherAbilities(abilities: readonly AbilityDef[]): { producer
   return { producers, unlinked: [], consumers };
 }
 
+/**
+ * edh-mana-keywords-7 (CR 702.165a, 702.165c-d): "Backup N ... it also gains the non-backup abilities of this creature printed below this one until end of turn": the
+ * keyword's `below` is a copy of every ability of the face printed after the keyword line, written here once all of them are lowered. Only when each of them is understood
+ * in full (no manual ability, no manual step): an ability that is not understood cannot be granted, so the keyword is returned in `unlinked` (it becomes manual; never a
+ * guess). The copies drop their source ranges and provenance, as a quoted ability has none. Pure: changed abilities are copies.
+ */
+export function fillBackupAbilities(abilities: readonly AbilityDef[]): { producers: Map<number, AbilityDef>; unlinked: number[]; consumers: number[] } {
+  const consumers: number[] = [];
+  abilities.forEach((a, i) => { if (a.kind === 'keyword' && a.keyword === 'backup') consumers.push(i); });
+  const producers = new Map<number, AbilityDef>();
+  // edh-next-87 (CR 702.165a, 702.165c; Conclave Sledge-Captain "Backup 1, backup 1, backup 1"): several backup abilities printed one right after the other (one keyword line) are
+  // above the same abilities, so each grants those below the last of them; backup abilities apart (or with a backup below) stay unlinked
+  if (consumers.length === 0) return { producers, unlinked: consumers, consumers };
+  if (consumers.some((c, k) => k > 0 && c !== consumers[k - 1]! + 1)) return { producers, unlinked: consumers, consumers };
+  const at = consumers[consumers.length - 1]!;
+  const below = abilities.slice(at + 1);
+  let understood = true;
+  for (const o of below) { if (o.kind === 'manual') understood = false; walkJson(o, (n) => { if (n['op'] === 'manual') understood = false; }); }
+  if (!understood) return { producers, unlinked: consumers, consumers };
+  const copies = below.map((o) => { const c = JSON.parse(JSON.stringify(o)) as Record<string, unknown>; delete c['src']; delete c['prov']; return c as unknown as AbilityDef; });
+  for (const c of consumers) producers.set(c, { ...(JSON.parse(JSON.stringify(abilities[c])) as KeywordAbilityDef), below: JSON.parse(JSON.stringify(copies)) as AbilityDef[] });
+  return { producers, unlinked: [], consumers };
+}
+
 /** r5-moved: its linked readings of "the exiled card(s)" (zz-cloud/r5-moved.json); an unlinked reader falls back to the reading it had without them (applyLink; the walk is r3-refs' `readsExiledLink`, merge wave 8). */
 const R5MOVED_LINKED: ReadonlySet<string> = new Set(['eff.r5moved.linked.put.hand', 'eff.r5moved.linked.return.hands',
+  // edh-d-6 (CR 607.2a; Living Lore): the casts of "the exiled card" (by you, by its owner) fall back to the reading they had before when no instruction of the face can be linked
+  'eff.edhd6.mayCast.exiledCard.free', 'eff.edhd6.exiledOwner.mayCastFree',
   // p2-refs-1 (CR 607.2a): the plural returns "to their owner's hand", "to the battlefield [tapped] under their owner's / owners' control"
   'eff.p2refs1.linked.return.hand.owner', 'eff.p2refs1.linked.return.battlefield.owners', 'eff.p2refs1.linked.return.battlefield.tapped.owners',
 ]);
@@ -352,6 +466,24 @@ function readsOnlyExiledWith(a: AbilityDef): boolean {
 }
 
 /**
+ * edh-next-73 (CR 607.2a): every read of the link "exiled" in the ability picks among the group ("a card exiled with ~", `from: {ref:'each', filter:{is:{ref:'linked'}, zone:'any'}}`, or a count),
+ * never "the exiled card" itself: the reads are all the `is` of a filter (in exile or anywhere) or the group of a count.
+ */
+function readsOnlyAsGroup(a: AbilityDef): boolean {
+  let all = 0;
+  let group = 0;
+  walkJson(a, (n) => {
+    if (n['ref'] === 'linked' && n['link'] === EXILED_LINK) all++;
+    const is = n['is'] as Record<string, unknown> | undefined;
+    if ((n['zone'] === 'exile' || n['zone'] === 'any') && is?.['ref'] === 'linked' && is['link'] === EXILED_LINK) group++;
+    const of = n['of'] as Record<string, unknown> | undefined;
+    if (n['q'] === 'count' && of?.['ref'] === 'linked' && of['link'] === EXILED_LINK) group++;
+    return undefined;
+  });
+  return all > 0 && all === group;
+}
+
+/**
  * TREK-6 (CR 607.2a): an ability that exiles cards itself and reads, besides, only "<cards> exiled with ~" (never "the exiled card"): the cards ITS earlier
  * resolutions exiled (Borg Cube: "assimilate a creature card exiled with it. If you can't, exile up to one target creature."). The link store is the object's, so one
  * ability is its own producer. Only when every exile in it is a plain `move` to exile (no `until`, no exile cost, no `exileUntil`) and at least one is, so that
@@ -363,23 +495,73 @@ function selfLinkable(a: AbilityDef): boolean {
   let moves = 0;
   let zones = 0;
   let other = false;
+  const payParts = new Set<unknown>();
   walkJson(a, (n) => {
     const is = n['is'] as Record<string, unknown> | undefined;
     if (n['ref'] === 'linked' && n['link'] === EXILED_LINK) reads++;
     // the description of the cards read, "<cards> exiled with ~": in exile (the hole's filter) or in any zone (a template's choice among them)
     if ((n['zone'] === 'exile' || n['zone'] === 'any') && is?.['ref'] === 'linked' && is['link'] === EXILED_LINK) { described++; return undefined; }
+    // edh-next-56 (CR 607.2a; Court of Locthwain): a permission for the cards the object's ability exiled ("you may cast a spell from among cards exiled with ~"): `of.is` the link itself, read as the description
+    const ofIs = (n['of'] as Record<string, unknown> | undefined)?.['is'] as Record<string, unknown> | undefined;
+    if (n['s'] === 'permit' && ofIs?.['ref'] === 'linked' && ofIs['link'] === EXILED_LINK) { described++; return undefined; }
+    // edh-next-73 (CR 607.2a; Profane Procession): the count of the cards the object's ability exiled ("Then if there are three or more cards exiled with ~, transform it"), read as the description
+    const countOf = n['q'] === 'count' ? (n['of'] as Record<string, unknown> | undefined) : undefined;
+    if (countOf?.['ref'] === 'linked' && countOf['link'] === EXILED_LINK) { described++; return undefined; }
+    // edh-d-61 (CR 607.2a, 202.3; Azor's Gateway): the number of different mana values among the cards the object's ability exiled ("If cards with five or more different mana values are exiled with ~"), read as the description
+    const amongOf = n['q'] === 'distinct' ? (n['among'] as Record<string, unknown> | undefined) : undefined;
+    if (amongOf?.['ref'] === 'linked' && amongOf['link'] === EXILED_LINK) { described++; return undefined; }
+    // edh-next-73 (review): "you may play one of them without paying its mana cost" names the cards an EARLIER ability exiled (its "if there are cards exiled with it"); in an ability that exiles
+    // itself "them" would mean this resolution's cards, which the link would not say: never self-linked
+    if (n['op'] === 'cast' && n['play'] === true && n['free'] === true) other = true;
     if (n['zone'] === 'exile') zones++;
     // a card exiled face down has no characteristics (CR 406.3a, rules/base-parts/face-down.ts): a choice among "cards exiled with ~" by their types would see every one of them
     // (Scarlet Witch, Chaotic Avenger), so a face-down exile is never read here
     const faceDown = n['op'] === 'move' && typeof n['to'] === 'object' && n['to'] !== null && (n['to'] as Record<string, unknown>)['faceDown'] === true;
     if (exilesWithoutLink(n)) { if (n['op'] === 'move' && n['until'] === undefined && !faceDown) moves++; else other = true; }
-    if (exileCostParts(n).length > 0 || n['kind'] === 'exileFrom') other = true;
+    // edhn102 (CR 607.2a, 118.12; Creeping Inn: "you may exile a creature card from your graveyard. If you do, ... the number of creature cards exiled with this creature"): a plain `pay` step
+    // whose only exiling part is "exile a <filter> card from your graveyard" (no total, no count of symbols) is an exiling instruction of this ability like a `move` (pay.ts#performLink records the card)
+    if (n['op'] === 'pay') {
+      const ps = exileCostParts(n);
+      const plain = ps.length > 0 && ps.every((x) => x['zone'] === 'graveyard' && x['self'] === undefined && x['orGraveyard'] === undefined && x['totalManaValue'] === undefined && x['symbolTotal'] === undefined && x['atLeast'] === undefined);
+      if (plain) { for (const x of ps) payParts.add(x); moves += ps.length; zones += ps.length; }
+      else if (ps.length > 0) other = true;
+    } else if (exileCostParts(n).length > 0) other = true;
+    if (n['kind'] === 'exileFrom' && !payParts.has(n)) other = true;
     return undefined;
   });
   return !other && reads > 0 && reads === described && moves > 0 && zones === moves;
 }
 
 /** A copy of an ability whose `move` to exile records what it exiled under the link "exiled" (CR 607.2a, design 3.9). */
+/**
+ * edh-d-95 (CR 607.2a, 111.1; Tombstone Stairwell): "destroy all tokens created with ~" in one ability (`{ref:'linked', link:'created'}`) reads the tokens ANOTHER ability of this face created:
+ * the producer is the ONE other ability whose instructions create tokens (`createToken`), each of which gets `link: 'created'` (effects/handlers/tokens-create.ts adds what it makes to the
+ * object's link store). Nothing to do when an instruction of the face already links what it creates (edh-perms-21's own template). With no such ability, or several, the readers are
+ * `unlinked` (manual, never a guess). Pure: a changed ability is a copy.
+ */
+export function linkCreated(abilities: readonly AbilityDef[]): { producers: Map<number, AbilityDef>; unlinked: number[]; consumers: number[] } {
+  const consumers: number[] = [];
+  let linked = false;
+  abilities.forEach((a, i) => {
+    let reads = false;
+    walkJson(a, (n) => { if (n['ref'] === 'linked' && n['link'] === 'created') reads = true; if (n['link'] === 'created' && typeof n['op'] === 'string') linked = true; });
+    if (reads) consumers.push(i);
+  });
+  const producers = new Map<number, AbilityDef>();
+  if (consumers.length === 0 || linked) return { producers, unlinked: [], consumers };
+  const makers: number[] = [];
+  abilities.forEach((a, i) => {
+    let makes = false;
+    walkJson(a, (n) => { if (n['op'] === 'createToken' || (n['op'] === 'copy' && n['result'] === 'token')) makes = true; });
+    if (makes && !consumers.includes(i)) makers.push(i);
+  });
+  if (makers.length !== 1) return { producers, unlinked: consumers, consumers };
+  const copy = JSON.parse(JSON.stringify(abilities[makers[0]!])) as AbilityDef;
+  walkJson(copy, (n) => { if ((n['op'] === 'createToken' || (n['op'] === 'copy' && n['result'] === 'token')) && n['link'] === undefined) n['link'] = 'created'; });
+  producers.set(makers[0]!, copy);
+  return { producers, unlinked: [], consumers };
+}
+
 export function withExiledLink(def: AbilityDef): AbilityDef {
   const copy = JSON.parse(JSON.stringify(def)) as AbilityDef;
   walkJson(copy, (n) => {
@@ -402,6 +584,22 @@ const OTHER_PLAYER_TARGET = /\btarget (?:players|opponents)\b|\bany (?:other )?t
  * no target player itself and the face's other abilities name exactly one target player between them, and nothing else that may target a player. A cheap
  * look at the words: `linkTargetedPlayer` checks the lowered abilities afterwards (exactly one such target spec), and the gate checks the text.
  */
+/**
+ * edh-d-92 (CR 607.2a; The Aesir Escape Valhalla, "III — Return this Saga and the exiled card to their owner's hand."): an ability that says "the exiled card" and has no word of
+ * exiling besides it may read the card another ability of the face exiled, when some other ability of the face says "exile" (FaceInfo.linkedExiled). The face pass
+ * (linkExiled) still needs exactly one producer.
+ */
+export function exiledCardLinkable(s: AbilitySegment, all: readonly AbilitySegment[]): boolean {
+  if (!/\bthe exiled card\b/i.test(s.text) || /\bexil/i.test(s.text.replace(/\bthe exiled card\b/gi, ''))) return false;
+  // review fix (Summoner's Egg, Clone Shell: "turn the exiled card face up. If it's a creature card, put it onto the battlefield"): a bare pronoun of the same ability could only name the linked
+  // card too, which the anaphora pass does not offer it (Mention.linked is named by "the exiled card" only), so it would take another antecedent: such an ability is not linked here (fail closed)
+  if (/\b(it|its|it's)\b/i.test(s.text.replace(/^[^,]*\b(when|whenever|at)\b[^,]*,/i, ''))) return false;
+  // the exile it names is of ONE card: an instruction of another ability that exiles several ("exile all cards from target player's graveyard") is no producer of "the exiled card"
+  // (singular); such a reader is left to the readings that existed before (fail closed)
+  const exiling = all.filter((o) => o !== s && /\bexile/i.test(o.text)).flatMap((o) => o.text.split(/(?<=\.)\s+/).filter((x) => /\bexile/i.test(x)));
+  return exiling.length > 0 && exiling.every((x) => !/\b(cards|all|each|any number|up to|two|three|four|five|six|seven|x|them|those|artifacts|creatures|permanents|lands|enchantments|planeswalkers|battles|spells|tokens|nonland permanents)\b/i.test(x));
+}
+
 export function playerLinkable(s: AbilitySegment, all: readonly AbilitySegment[]): boolean {
   if (!/\bthat player\b/i.test(s.text) || (s.text.match(ONE_TARGET_PLAYER) ?? []).length > 0 || OTHER_PLAYER_TARGET.test(s.text)) return false;
   const others = all.filter((o) => o !== s);
@@ -448,6 +646,13 @@ export const CHOSEN_OBJECT_LINK = 'chosen';
 /** std-control-1: the link of "the chosen player" another ability of the face chose as an opponent ("As ~ enters / transforms into ~, choose an opponent."). */
 export const CHOSEN_OPPONENT_LINK = 'opponent';
 
+/** edh-d-11: a granted "protection from the chosen player" (quality `chosen:player`) reads the link of the player the face chose as it entered (CHOSEN_OPPONENT_LINK). */
+const readsChosenPlayerQuality = (a: AbilityDef): boolean => {
+  let reads = false;
+  walkJson(a, (n) => { if (n['kind'] === 'keyword' && n['quality'] === 'chosen:player') reads = true; });
+  return reads;
+};
+
 const readsLink = (a: AbilityDef, link: string): boolean => {
   let reads = false;
   walkJson(a, (n) => { if (n['ref'] === 'linked' && n['link'] === link) reads = true; });
@@ -470,14 +675,83 @@ export function linkChosenObject(abilities: readonly AbilityDef[]): { producers:
   const one = (n: Record<string, unknown>): boolean => n['op'] === 'chooseObjects' && n['max'] === 1 && n['link'] === undefined && n['perPlayer'] === undefined && n['startingWith'] === undefined
     && n['random'] === undefined && n['guard'] === undefined && JSON.stringify(n['who']) === '{"ref":"you"}';
   let anyChoice = 0;
-  abilities.forEach((a, i) => { if (!consumers.includes(i)) walkJson(a, (n) => { if (n['op'] === 'chooseObjects') anyChoice++; }); });
+  // edh-next-146 (CR 614.12a, 607.2d; Dauntless Bodyguard): or the one "As ~ enters, choose another creature you control." of the face (an enters body's `chooseObject` without a link)
+  const entersChoice = (n: Record<string, unknown>): boolean => n['b'] === 'enters' && typeof n['chooseObject'] === 'object' && n['chooseObject'] !== null && (n['chooseObject'] as Record<string, unknown>)['link'] === undefined;
+  abilities.forEach((a, i) => { if (!consumers.includes(i)) walkJson(a, (n) => { if (n['op'] === 'chooseObjects' || entersChoice(n)) anyChoice++; }); });
   const found = abilities.flatMap((a, i) => (consumers.includes(i) ? [] : topSteps(a).filter(one).map((step) => ({ i, step }))));
-  if (found.length !== 1 || anyChoice !== 1) return { producers, unlinked: consumers, consumers };
+  const entering = abilities.flatMap((a, i) => (!consumers.includes(i) && a.kind === 'static' && a.effects.length === 1 && a.effects[0]!.s === 'replace' && entersChoice(a.effects[0]!.body as unknown as Record<string, unknown>) ? [i] : []));
+  if (found.length + entering.length !== 1 || anyChoice !== 1) return { producers, unlinked: consumers, consumers };
+  if (entering.length === 1) {
+    const copy = JSON.parse(JSON.stringify(abilities[entering[0]!])) as AbilityDef;
+    walkJson(copy, (n) => { if (entersChoice(n)) (n['chooseObject'] as Record<string, unknown>)['link'] = CHOSEN_OBJECT_LINK; });
+    producers.set(entering[0]!, copy);
+    return { producers, unlinked: [], consumers };
+  }
   const copy = JSON.parse(JSON.stringify(abilities[found[0]!.i])) as AbilityDef;
   for (const s of topSteps(copy)) if (one(s)) s['link'] = CHOSEN_OBJECT_LINK;
   producers.set(found[0]!.i, copy);
   return { producers, unlinked: [], consumers };
 }
+
+/** trek-13: the link of "the Borg assimilated with ~" in another ability of the face than the assimilate (`{ref:'linked', link: ASSIMILATED_LINK}`, CR 607.2a). */
+export const ASSIMILATED_LINK = 'assimilated';
+
+/**
+ * trek-13 (CR 607.2a, 400.7; The Best of Both Worlds): "Exile the Borg assimilated with ~, then return it ..." in one ability (`{ref:'linked', link: ASSIMILATED_LINK}`) is the
+ * creature another ability of this face assimilated ("I -- Assimilate target nonartifact creature an opponent controls."). The producer is the ONE top-level assimilate of one
+ * target (a single object) in the face's OTHER abilities, whose target spec gets `link` (effects/run.ts#rememberTargets remembers the creature on the source). With none or
+ * several, the reader cannot know what it reads: it is returned in `unlinked` (it becomes manual). Pure: changed abilities are copies.
+ */
+export function linkAssimilated(abilities: readonly AbilityDef[]): { producers: Map<number, AbilityDef>; unlinked: number[]; consumers: number[] } {
+  const consumers = abilities.flatMap((a, i) => (readsLink(a, ASSIMILATED_LINK) ? [i] : []));
+  const producers = new Map<number, AbilityDef>();
+  if (consumers.length === 0) return { producers, unlinked: [], consumers };
+  const one = (n: Record<string, unknown>): boolean => n['op'] === 'action' && n['action'] === 'assimilate' && n['guard'] === undefined && JSON.stringify(n['who']) === '{"ref":"you"}'
+    && (n['subject'] as Record<string, unknown> | undefined)?.['ref'] === 'target';
+  let anyAssimilate = 0;
+  abilities.forEach((a, i) => { if (!consumers.includes(i)) walkJson(a, (n) => { if (n['op'] === 'action' && n['action'] === 'assimilate') anyAssimilate++; }); });
+  const stepsOf = (a: AbilityDef): Record<string, unknown>[] => (a.kind === 'chapter' ? (a.effect.steps as unknown as Record<string, unknown>[]) : topSteps(a));
+  const found = abilities.flatMap((a, i) => (consumers.includes(i) ? [] : stepsOf(a).filter(one).map((step) => ({ i, step }))));
+  if (found.length !== 1 || anyAssimilate !== 1) return { producers, unlinked: consumers, consumers };
+  const id = String((found[0]!.step['subject'] as Record<string, unknown>)['id']);
+  const copy = JSON.parse(JSON.stringify(abilities[found[0]!.i])) as AbilityDef;
+  let tagged = 0;
+  walkJson(copy, (n) => { if (n['id'] === id && n['kind'] === 'object' && typeof n['text'] === 'string' && n['max'] === 1 && n['perOpponent'] === undefined && n['link'] === undefined) { n['link'] = ASSIMILATED_LINK; tagged++; } });
+  if (tagged !== 1) return { producers, unlinked: consumers, consumers };
+  producers.set(found[0]!.i, copy);
+  return { producers, unlinked: [], consumers };
+}
+
+/** edh-next-139 (CR 607.2c; Havengul Mystery): the link of "the creature put onto the battlefield with ~" (a trigger's subject) and the one instruction of another ability that put it there. */
+export const PUT_ONTO_WITH_LINK = 'putOntoWith';
+
+/**
+ * edh-next-139 (CR 607.2c, 603.6c, 603.10a; Havengul Mystery): "When the creature put onto the battlefield with ~ leaves the battlefield, ..." (`{is:{ref:'linked', link: PUT_ONTO_WITH_LINK}}`)
+ * reads what ONE instruction of another ability of this face put onto the battlefield: the one top-level `move` to the battlefield of the face's other abilities, which gets the link (the
+ * object's link store remembers what it moved). None or several such moves (or one already linked): the reader can't know what it reads and is manual.
+ */
+export function linkPutOntoWith(abilities: readonly AbilityDef[]): { producers: Map<number, AbilityDef>; unlinked: number[]; consumers: number[] } {
+  const consumers = abilities.flatMap((a, i) => (readsLink(a, PUT_ONTO_WITH_LINK) ? [i] : []));
+  const producers = new Map<number, AbilityDef>();
+  if (consumers.length === 0) return { producers, unlinked: [], consumers };
+  const toBattlefield = (n: Record<string, unknown>): boolean => n['op'] === 'move' && (n['to'] as Record<string, unknown> | undefined)?.['zone'] === 'battlefield';
+  let anyMove = 0;
+  abilities.forEach((a, i) => { if (!consumers.includes(i)) walkJson(a, (n) => { if (toBattlefield(n)) anyMove++; }); });
+  const found = abilities.flatMap((a, i) => (consumers.includes(i) ? [] : topSteps(a).filter((n) => toBattlefield(n) && n['link'] === undefined && n['guard'] === undefined).map((step) => ({ i, step }))));
+  if (found.length !== 1 || anyMove !== 1) return { producers, unlinked: consumers, consumers };
+  const copy = JSON.parse(JSON.stringify(abilities[found[0]!.i])) as AbilityDef;
+  const at = topSteps(abilities[found[0]!.i]!).indexOf(found[0]!.step);
+  (topSteps(copy)[at] as Record<string, unknown>)['link'] = PUT_ONTO_WITH_LINK;
+  producers.set(found[0]!.i, copy);
+  return { producers, unlinked: [], consumers };
+}
+
+/** edh-c-75 (CR 614.12a, 607.2d; Canker Abomination): an "enters" body whose counters read the opponent its own choice made (choices are made first), the one body being producer and reader. */
+const countersReadChoice = (enters: Record<string, unknown>): boolean => {
+  let reads = false;
+  walkJson(enters['counters'] ?? [], (n) => { if (n['ref'] === 'linked' && n['link'] === CHOSEN_OPPONENT_LINK) reads = true; });
+  return reads;
+};
 
 /**
  * std-control-1 (CR 607.2d, 614.12a, 712.20): "the chosen player" in one ability (`{ref:'linked', link: CHOSEN_OPPONENT_LINK}`, "When the chosen player loses the game, you
@@ -485,15 +759,41 @@ export function linkChosenObject(abilities: readonly AbilityDef[]): { producers:
  * opponent." (a `during` body's `chooseValue`) with that link. Nothing to rewrite (the producer's template writes the link); with none or several, the readers are unlinked.
  */
 export function linkChosenOpponent(abilities: readonly AbilityDef[]): { producers: Map<number, AbilityDef>; unlinked: number[]; consumers: number[] } {
-  const consumers = abilities.flatMap((a, i) => (readsLink(a, CHOSEN_OPPONENT_LINK) ? [i] : []));
+  const consumers = abilities.flatMap((a, i) => (readsLink(a, CHOSEN_OPPONENT_LINK) || readsChosenPlayerQuality(a) ? [i] : []));
   const producers = new Map<number, AbilityDef>();
   if (consumers.length === 0) return { producers, unlinked: [], consumers };
   let made = 0;
   abilities.forEach((a, i) => walkJson(a, (n) => {
-    if (n['b'] === 'enters' && Array.isArray(n['choose'])) for (const c of n['choose'] as Record<string, unknown>[]) if (c['link'] === CHOSEN_OPPONENT_LINK) made += consumers.includes(i) ? 2 : 1;
+    if (n['b'] === 'enters' && Array.isArray(n['choose'])) for (const c of n['choose'] as Record<string, unknown>[]) if (c['link'] === CHOSEN_OPPONENT_LINK) made += consumers.includes(i) && !countersReadChoice(n) ? 2 : 1;
     if (n['op'] === 'chooseValue' && n['link'] === CHOSEN_OPPONENT_LINK) made += consumers.includes(i) || n['what'] !== 'opponent' ? 2 : 1;
   }));
   return { producers, unlinked: made === 1 ? [] : consumers, consumers };
+}
+
+/**
+ * edh-players-11 (CR 118.9, 601.2b, 607.2i; Baleful Mastery): "if the {1}{B} cost was paid" in one ability reads the alternative cost another ability of this face states ("You may
+ * pay {1}{B} rather than pay this spell's mana cost."): the condition (`wasCast` with `via: 'alternative'` and the cost it names, `viaCost`) is kept only when the face has exactly one
+ * alternative cost named `alternative` and its mana cost is that cost, with nothing else on it (no zone, condition or other cost part); otherwise its reader is manual. Nothing
+ * is rewritten (the renderer prints `viaCost` back), so there are no producers.
+ */
+export function linkAltCostNamed(abilities: readonly AbilityDef[]): { producers: Map<number, AbilityDef>; unlinked: number[]; consumers: number[] } {
+  const consumers: number[] = [];
+  const wanted = new Map<number, string>();
+  abilities.forEach((a, i) => walkJson(a, (n) => {
+    if (n['cond'] === 'wasCast' && n['via'] === 'alternative' && Array.isArray(n['viaCost'])) {
+      if (!consumers.includes(i)) consumers.push(i);
+      wanted.set(i, JSON.stringify(n['viaCost']));
+    }
+  }));
+  const own: string[] = [];
+  for (const a of abilities) walkJson(a, (n) => {
+    if (n['s'] === 'alternativeCost') {
+      const cost = (n['cost'] ?? {}) as Record<string, unknown>;
+      const plain = n['name'] === 'alternative' && n['from'] === undefined && n['when'] === undefined && Object.keys(cost).length === 1 && Array.isArray(cost['mana']);
+      own.push(plain ? JSON.stringify(cost['mana']) : '?');
+    }
+  });
+  return { producers: new Map(), unlinked: consumers.filter((i) => own.length !== 1 || own[0] !== wanted.get(i)), consumers };
 }
 
 /** A copy of an ability whose target spec `id` remembers the player it affects under TARGETED_PLAYER_LINK (CR 607.1). */
@@ -507,6 +807,8 @@ export function withPlayerLink(def: AbilityDef, id: string): AbilityDef {
 const ENTERS_CHOICES: Readonly<Record<string, { link: string; what: string }>> = {
   color: { link: 'color', what: 'color' }, 'creature type': { link: 'type', what: 'creatureType' }, 'card type': { link: 'cardType', what: 'cardType' },
   'basic land type': { link: 'landType', what: 'landType' },
+  'planeswalker type': { link: 'pwType', what: 'planeswalkerType' }, // edh-d-94 (CR 205.3j, 607.2d): "As ~ enters, choose a planeswalker type." (rep.edhd94.enters.choose.planeswalkerType)
+  'land type': { link: 'landType', what: 'landType' }, // edh-d-72 (CR 205.3i, 607.2d): "As ~ enters, choose a land type." (Traveler's Cloak)
   'odd or even': { link: 'oddEven', what: 'oddEven' }, // r3-choose (CR 202.3, 607.2d): "As ~ enters, choose odd or even." (rep.r3choose.enters.choose.oddEven)
   // std-rx6 (CR 201.3, 607.2d): "As ~ enters, choose a card name." and "..., look at an opponent's hand, then choose any card name." (zz-cloud/std-rx6.json)
   'card name': { link: 'cardName', what: 'cardName' },
@@ -517,7 +819,9 @@ const ENTERS_NUMBER = { link: 'chosenNumber', what: 'number' };
 // std-re (CR 205.3m, 607.2d): "choose Elemental, Elf, Faerie, Giant, Goblin, Kithkin, Merfolk, or Treefolk" (eff.cost.enters.choose.lorwynTribe) chooses a creature
 // type too, from that list: "the chosen type" of the face's other abilities reads it as it reads "choose a creature type"
 // std-rx28 (CR 205.2a, 607.2d): "..., then choose a card type other than creature." (Arachne, Psionic Weaver) chooses a card type too
-const ENTERS_CHOICE = /(?:^|\. )As (?:~|it|this [a-z]+) enters(?: the battlefield)?, (?:look at an opponent's hand, then )?choose (?:an? (color|creature type|card type|basic land type|card name|nonland card name)(?: other than creature)?|any (card name|nonland card name)|(odd or even)|(elemental, elf, faerie, giant, goblin, kithkin, merfolk, or treefolk)|(a number between \d+ and \d+))\.(?:$| )/i;
+const ENTERS_CHOICE = /(?:^|\. )As (?:~|it|this [a-z]+) enters(?: the battlefield)?, (?:look at an opponent's hand, then )?choose (?:an? (color|creature type|card type|basic land type|planeswalker type|land type|card name|nonland card name)(?: other than creature(?: or land)?)?|any (card name|nonland card name)|(odd or even)|(elemental, elf, faerie, giant, goblin, kithkin, merfolk, or treefolk)|(a number(?: between \d+ and \d+)?)|(two colors))\.(?:$| )/i; // edh-next-79: "choose a number" (rep.edhn79.enters.choose.number) too
+/** edh-d-72 (CR 614.12a, 607.2d; Callous Oppressor): "As ~ enters, an opponent chooses a creature type." (rep.edhd72.enters.opponentChooses.creaturetype, link `type`) is "the chosen type" of the face's other abilities too. */
+const ENTERS_OPPONENT_CHOICE = /(?:^|\. )As (?:~|it|this [a-z]+) enters(?: the battlefield)?, an opponent chooses a creature type\./i;
 /** std-rx28: "When ~ enters, choose a [land | nonland] card name." (eff.stdrx28.choose.landCardName: link `cardName`, as an entering choice of a card name), the whole ability. */
 const ENTERS_TRIGGER_NAME = /^When (?:~|this [a-z]+) enters(?: the battlefield)?, choose a (?:non)?land card name\.$/i;
 /** std-costs-2: an additional cost that starts with choosing a creature type (AdditionalCostDef.chooseType). */
@@ -536,15 +840,21 @@ const SECRET_TYPE_CHOICE = /(?:^|\. |, )(?:[Tt]hen )?secretly choose [A-Z][a-z]+
 export function faceChoices(s: AbilitySegment, all: readonly AbilitySegment[]): { link: string; what: string }[] {
   return all.filter((o) => o !== s).flatMap((o) => {
     const m = ENTERS_CHOICE.exec(o.text);
-    if (m) return [m[5] !== undefined ? ENTERS_NUMBER : ENTERS_CHOICES[m[4] !== undefined ? 'creature type' : (m[1] ?? m[2] ?? m[3])!.toLowerCase()]!];
+    if (m) return [m[6] !== undefined ? ENTERS_CHOICES['color']! /* edh-d-45: two colors */ : m[5] !== undefined ? ENTERS_NUMBER : ENTERS_CHOICES[m[4] !== undefined ? 'creature type' : (m[1] ?? m[2] ?? m[3])!.toLowerCase()]!];
     // std-rx28 (CR 603.2, 607.2d): "When ~ enters, choose a land card name." (Petrified Hamlet): its effect's choice is "the chosen name" of the face's other abilities
+    if (ENTERS_OPPONENT_CHOICE.test(o.text)) return [ENTERS_CHOICES['creature type']!]; // edh-d-72
     if (ENTERS_TRIGGER_NAME.test(o.text)) return [{ link: 'cardName', what: 'cardName' }];
+    // edh-c-84 (CR 614.12a, 607.2d, 201.3; Alhammarret, High Arbiter): "As ~ enters, each opponent reveals their hand. You choose the name of a nonland card revealed this way." is "the chosen name" of the face's other abilities
+    if (/^as .* enters, each opponent reveals their hand\. you choose the name of a nonland card revealed this way\.?$/i.test(o.text.replace(/\s+/g, ' ').trim())) return [{ link: 'cardName', what: 'cardName' }];
     // std-costs-2 (CR 601.2b, 607.2d): "As an additional cost to cast ~, you may choose a creature type and ..." (eff.stdcosts2.additional.chooseType.behold, link
     // `costType`): the spell's "the chosen type" reads the type chosen as that cost was announced
     if (COST_TYPE_CHOICE.test(o.text)) return [{ link: 'costType', what: 'creatureType' }];
     // std-combat-5 (CR 608.2d, 607.2d): "... Then secretly choose Human, Merfolk, or Goblin." (eff.stdcombat5.secretlyChoose.creatureTypeList, link `type`): "the chosen type" of
     // the face's other abilities reads it, as it reads "As ~ enters, choose a creature type"
     if (SECRET_TYPE_CHOICE.test(o.text)) return [ENTERS_CHOICES['creature type']!];
+    // edh-next-146 (CR 614.12a, 607.2d; Dauntless Bodyguard): "As ~ enters, choose another creature you control." is "the chosen creature" of the face's other abilities (an object,
+    // CHOSEN_OBJECT_LINK; linkChosenObject checks afterwards that the choice lowered)
+    if (/^as ~ enters, choose another [a-z ]+ you control\.?$/i.test(o.text.replace(/\s+/g, ' ').trim())) return [{ link: CHOSEN_OBJECT_LINK, what: 'object' }];
     return ENTERS_TYPE_LIST.test(o.text) ? [ENTERS_CHOICES['card type']!] : [];
   });
 }
@@ -557,6 +867,9 @@ export function linkChosen(abilities: readonly AbilityDef[], readers: readonly n
   const made: { i: number; link: string; what: string; cost?: true }[] = [];
   abilities.forEach((a, i) => walkJson(a, (n) => {
     if (n['b'] === 'enters' && Array.isArray(n['choose'])) for (const c of n['choose'] as Record<string, unknown>[]) made.push({ i, link: String(c['link']), what: String(c['what']) });
+    // edh-next-138 (CR 614.12a, 607.2d; Phyrexian Processor): "As ~ enters, pay any amount of life." keeps the amount paid as the object's number
+    const pl = n['b'] === 'enters' ? n['payLifeAny'] : undefined;
+    if (pl !== null && typeof pl === 'object' && !Array.isArray(pl)) made.push({ i, link: String((pl as Record<string, unknown>)['link']), what: 'number' });
     // std-costs-2 (CR 601.2b, 607.2d): an additional cost that chooses a creature type as it is announced (AdditionalCostDef.chooseType)
     const ct = n['s'] === 'additionalCost' ? n['chooseType'] : undefined;
     if (ct !== null && typeof ct === 'object' && !Array.isArray(ct)) made.push({ i, link: String((ct as Record<string, unknown>)['link']), what: String((ct as Record<string, unknown>)['what']), cost: true });
@@ -571,7 +884,8 @@ export function linkChosen(abilities: readonly AbilityDef[], readers: readonly n
       const c = n['chosen'];
       if (c !== null && typeof c === 'object' && !Array.isArray(c) && typeof (c as Record<string, unknown>)['quality'] === 'string') reads.push(c as { link: string; quality: string });
       // std-rx5 (CR 607.2d): "the chosen number" another ability chose as the object entered (not one this ability chooses itself, lower/links.ts)
-      if (n['q'] === 'chosenNumber' && typeof n['link'] === 'string' && !ownNumberChoice) reads.push({ link: n['link'], quality: 'number' });
+      // edh-next-144 (CR 607.2d): "the last noted life total for ~" reads a note of a life total (`what: 'lifeTotal'`), never a chosen number
+      if (n['q'] === 'chosenNumber' && typeof n['link'] === 'string' && !ownNumberChoice) reads.push({ link: n['link'], quality: n['link'] === 'notedLife' ? 'lifeTotal' : 'number' });
     });
     const fromFace = reads.filter((r) => made.some((m) => m.link === r.link));
     if (fromFace.length === 0) continue;
@@ -714,10 +1028,12 @@ function resolveKickerCosts<T extends { abilities: AbilityDef[]; gateForms: (Abi
 
 function parseFace(ctx: FaceContext, opts: ParseOptions, cardHasX: boolean, cyclingX = false): FaceParse {
   const seg = frontEnd(ctx, opts);
-  const face: FaceInfo = { pre: seg.pre, selfHeads: [...ctx.types, ...ctx.subtypes].map((w) => w.toLowerCase()), ...(/(^|[:.]\s+)(until end of turn,\s+)?\s*~ becomes an? (?!copy)[^.:]*\bcreature\b/i.test(seg.pre.parse) ? { animates: true } : {}) };
+  const face: FaceInfo = { pre: seg.pre, selfHeads: [...ctx.types, ...ctx.subtypes].map((w) => w.toLowerCase()), ...(/(^|[:.]\s+)(until end of turn,\s+)?\s*(?:~ becomes|you may have\s+~ become) an? (?!copy)[^.:]*\bcreature\b/i.test(seg.pre.parse) || /(^|[:.]\s+)during your turn,\s+~ is an? (?!copy)[^.:]*\bcreature\b/i.test(seg.pre.parse) /* edh-next-137 (CR 613.1d, 109.2; Gideon Blackblade): "During your turn, ~ is a 4/4 ... creature" */ ? { animates: true } : {}) /* edh-next-129 (Ebony Fly): also "you may have ~ become" */ };
   // p2-counters-state-1 (CR 702.33f): the face's kicker costs, for "kicked with its {1}{R} kicker" (parser/holes/p2cs1.ts) in the parser and the renderer
   const kickerCosts = faceKickerCosts(ctx.text);
-  const renderCtx: RenderContext = { selfNames: [ctx.name, ...ctx.otherNames], selfTypes: printedTypes(ctx), ...(kickerCosts.length > 0 ? { kickerCosts } : {}) };
+  // edh-next-35 (Devouring Greed): the noun of "you may sacrifice any number of Spirits" in the additional cost, for the spell's "for each Spirit sacrificed this way" (RenderContext.costSacrificeNouns)
+  const costSacrificeNouns = [...ctx.text.matchAll(/additional cost to cast (?:this spell|~|[^,.]*?), you may sacrifice (?:any number of|one or more) ([a-z][a-z' -]*?)(?: you control)?\./gi)].map((m) => m[1]!.toLowerCase());
+  const renderCtx: RenderContext = { selfNames: [ctx.name, ...ctx.otherNames], selfTypes: printedTypes(ctx), ...(kickerCosts.length > 0 ? { kickerCosts } : {}), ...(costSacrificeNouns.length > 0 ? { costSacrificeNouns } : {}) };
   const text = seg.pre.normalized;
   let ledger = seg.ledger;
   const diagnostics: Diagnostic[] = [...seg.diagnostics];
@@ -740,10 +1056,13 @@ function parseFace(ctx: FaceContext, opts: ParseOptions, cardHasX: boolean, cycl
    */
   const exileProducerPossible = (s: AbilitySegment): boolean => {
     const at = seg.abilities.indexOf(s);
-    if (at < 0 || seg.abilities.slice(at + 1).some((o) => /\bexile/i.test(o.text))) return true;
+    // edh-zones-12 (CR 607.2a; Mimic Vat): another ability that itself reads the link ("exiled with ~") is a reader too, its own producer when linkExiled finds every reader selfLinkable
+    // (else the readers are all made manual there), so it is no producer this reader could be refused for
+    if (at < 0 || seg.abilities.slice(at + 1).some((o) => /\bexile/i.test(o.text) && !/\bexiled with\b/i.test(o.text))) return true;
     let found = false;
     for (const a of abilities) {
       if (a.kind === 'keyword' && EXILED_LINK_KEYWORDS.has(a.keyword)) found = true;
+      if (readsExiledLink(a)) continue;
       walkJson(a, (n) => { if (exilesWithoutLink(n) || exileCostParts(n).length > 0) found = true; });
     }
     return found;
@@ -936,6 +1255,9 @@ function parseFace(ctx: FaceContext, opts: ParseOptions, cardHasX: boolean, cycl
     // LNK1 (CR 607.1): "that player" may be the player another ability of this face targets (FaceInfo.linkedPlayer)
     if (playerLinkable(s, seg.abilities)) face.linkedPlayer = true;
     else delete face.linkedPlayer;
+    // edh-d-92 (CR 607.2a): "the exiled card" may be the card another ability of this face exiled (FaceInfo.linkedExiled)
+    if (exiledCardLinkable(s, seg.abilities)) face.linkedExiled = true;
+    else delete face.linkedExiled;
     // CLOUD C5 (CR 607.2d): "the chosen color" may be the color another ability of this face chose as the object entered (FaceInfo.choices)
     const choices = faceChoices(s, seg.abilities);
     if (choices.length > 0) face.choices = choices;
@@ -944,6 +1266,7 @@ function parseFace(ctx: FaceContext, opts: ParseOptions, cardHasX: boolean, cycl
     doAbility(s);
     if (choices.length > 0) for (let i = first; i < abilities.length; i++) choiceReaders.push(i);
     delete face.linkedPlayer;
+    delete face.linkedExiled;
     delete face.choices;
     // FAST3 T18: the spell's one mandatory additional cost, once its line is lowered (Oracle writes it first): "the sacrificed creature" of the spell line
     // names what it sacrificed (lower/ability.ts#sacrificedMentions, CR 601.2b); an optional, repeatable or either-or cost names nothing for sure
@@ -997,16 +1320,25 @@ function parseFace(ctx: FaceContext, opts: ParseOptions, cardHasX: boolean, cycl
   };
   // CR 607.2a: "the exiled card" in one ability reads what another ability of this face exiled (WP23)
   applyLink(linkExiled(abilities, ctx.types.some((t) => PERMANENT_CARD_TYPES.has(t.toLowerCase()))), UNLINKED_EXILED);
+  // edh-d-95 (CR 607.2a): "tokens created with ~" in one ability reads what another ability of this face created
+  applyLink(linkCreated(abilities), `unlinked: "tokens created with ~" needs exactly one other ability on this face that creates tokens (CR 607.2a)`);
   // CLOUD C5 (CR 607.2d): "the chosen color" in one ability is the color another ability of this face chose as the object entered
   applyLink(linkChosen(abilities, choiceReaders), `unlinked: "the chosen color" / "the chosen type" needs exactly one "As ~ enters, choose ..." of that kind on this face (CR 607.2d)`);
   // LNK1 (CR 607.1): "that player" in one ability is the player another ability of this face targeted
   applyLink(linkTargetedPlayer(abilities), `unlinked: "that player" needs exactly one target player in another ability on this face (CR 607.1)`);
   // std-control-1 (CR 607.2d): "the chosen creature" / "the chosen player" in one ability is what another ability of this face chose
   applyLink(linkChosenObject(abilities), `unlinked: "the chosen creature" needs exactly one choice of one object in another ability on this face (CR 607.2d)`);
+  // trek-13 (CR 607.2a): "the Borg assimilated with ~" in one ability is the creature another ability of this face assimilated
+  applyLink(linkAssimilated(abilities), `unlinked: "the Borg assimilated with ~" needs exactly one assimilate of one target in another ability on this face (CR 607.2a)`);
+  // edh-next-139 (CR 607.2c): "the creature put onto the battlefield with ~" in one ability is what another ability of this face put onto the battlefield
+  applyLink(linkPutOntoWith(abilities), `unlinked: "the creature put onto the battlefield with ~" needs exactly one instruction on this face that puts a permanent onto the battlefield (CR 607.2c)`);
   applyLink(linkChosenOpponent(abilities), `unlinked: "the chosen player" needs exactly one "choose an opponent" as ~ enters or transforms on this face (CR 607.2d)`);
+  // edh-players-11 (CR 118.9, 601.2b): "if the {1}{B} cost was paid" in one ability is the alternative cost another ability of this face states, at that mana cost
+  applyLink(linkAltCostNamed(abilities), `unlinked: "the {cost} cost was paid" needs exactly one alternative cost on this face whose mana cost is that cost (CR 118.9)`);
   // std-rx28 (CR 701.4a, 702.188a): "the creature you chose or the card you revealed" and "the returned creature" read a cost of this face (a behold additional cost,
   // web-slinging or sneak); with no such cost the ability reads nothing and is manual (model/lint-card.ts#costReferenceIssues says the same card-wide)
   // std-cardcopy-2 (CR 611.2a, 613.1f): "It gains this card's other abilities" grants copies of the other abilities of this face, each understood in full
+  applyLink(fillBackupAbilities(abilities), `unlinked: backup needs every ability printed below it understood in full (CR 702.165a)`);
   applyLink(fillOtherAbilities(abilities), `unlinked: "this card's other abilities" needs every other ability of this face understood in full (CR 613.1f)`);
   applyLink({ producers: new Map(), consumers: [], unlinked: costReadersWithoutCost(abilities) }, `unlinked: "the creature you chose or the card you revealed" needs a behold cost, "the returned creature" web-slinging or sneak, on this face (CR 701.4a, 702.188a)`);
   for (const t of experimental) diagnostics.push({ level: 'info', code: 'experimental', message: `experimental template ${t}: the card is capped at partial (design 6.9)` });
@@ -1015,9 +1347,21 @@ function parseFace(ctx: FaceContext, opts: ParseOptions, cardHasX: boolean, cycl
 }
 
 /** Contract C1: never throws. P1: the same card parsed again with the same options is answered from a short memo of frozen results (parser/parse-memo.ts). */
-export const parseCard: ParseCard = (card: OracleCard, opts: ParseOptions): ParseResult => memoParse(card, withMeldNames(card, opts), parseFresh);
+export const parseCard: ParseCard = (card: OracleCard, opts: ParseOptions): ParseResult => memoParse(card, withMeldNames(card, opts), parseFreshCleave);
 
-/** The options of one meld card per options object and card name: the same object every time, so the memo (parse-memo.ts) keeps working. */
+/** edh-next-100 (CR 702.148a): a card with cleave is read as printed, and in its two readings (parser/cleave.ts); any other card is read as printed only. */
+function parseFreshCleave(card: OracleCard, opts: ParseOptions): ParseResult {
+  const plain = parseFresh(card, opts);
+  const two = cleaveCards(card);
+  if (two === null) return plain;
+  try {
+    return mergeCleave(card, plain, parseFresh(two.n, opts), parseFresh(two.c, opts));
+  } catch {
+    return plain;
+  }
+}
+
+/** The options of one meld card per options object, card name and related names: the same object every time, so the memo (parse-memo.ts) keeps working. */
 const MELD_OPTIONS = new WeakMap<ParseOptions, Map<string, ParseOptions>>();
 
 /**
@@ -1027,19 +1371,22 @@ const MELD_OPTIONS = new WeakMap<ParseOptions, Map<string, ParseOptions>>();
  * meld card does not parse (fail closed). Any other card, or options that carry an index, are unchanged.
  */
 function withMeldNames(card: OracleCard, opts: ParseOptions): ParseOptions {
-  if (card === null || typeof card !== 'object' || opts.cardNames !== undefined || !Array.isArray(card.all_parts)) return opts;
+  if (card === null || typeof card !== 'object' || opts.cardNames !== undefined) return opts;
   // M11-4 (CR 702.124j): "Partner with Toothy, Imaginary Friend" names the other card of the pair, which Scryfall lists as a `combo_piece` of the card: the same
   // reading of exactly the related names (parser/tokenize.ts reads a card name after "partner with" as one word when it is in the set)
   const partnerWith = card.layout !== 'meld' && typeof card.oracle_text === 'string' && /^Partner with /m.test(card.oracle_text);
+  if (!Array.isArray(card.all_parts) && (card.layout === 'meld' || partnerWith)) return opts;
   const parts = partnerWith ? ['combo_piece'] : ['meld_part', 'meld_result'];
   const names = card.layout !== 'meld' && !partnerWith
     ? namedComboPieces(card)
-    : card.all_parts.filter((p) => parts.includes(p.component) && typeof p.name === 'string' && p.name !== card.name).map((p) => p.name);
+    : card.all_parts!.filter((p) => parts.includes(p.component) && typeof p.name === 'string' && p.name !== card.name).map((p) => p.name);
   if (names.length === 0) return opts;
   let byCard = MELD_OPTIONS.get(opts);
   if (!byCard) MELD_OPTIONS.set(opts, (byCard = new Map()));
-  let out = byCard.get(card.name);
-  if (!out) byCard.set(card.name, (out = { ...opts, cardNames: new Set(names) }));
+  // keyed by the names too: two cards of one name (a test's "Example Relic") can have different related parts, and the options object is shared (edh-fix-6)
+  const key = [card.name, ...names].join('\u0000');
+  let out = byCard.get(key);
+  if (!out) byCard.set(key, (out = { ...opts, cardNames: new Set(names) }));
   return out;
 }
 
@@ -1050,18 +1397,31 @@ function withMeldNames(card: OracleCard, opts: ParseOptions): ParseOptions {
  * text is followed by one of them: with the index set, the Name hole reads nothing else, so a card naming any other card keeps the old reading.
  */
 function namedComboPieces(card: OracleCard): string[] {
-  const all = card.all_parts!.filter((p) => p.component === 'combo_piece' && typeof p.name === 'string' && p.name !== card.name).map((p) => p.name);
+  // edh-cast-2 (CR 201.2): the card's own name after "named" ("you've cast another spell named Approach of the Second Sun this game") is one name too: the text
+  // normalization writes "~" for the card's name everywhere else, and a "named" phrase keeps the printed name
+  // (only a name without a comma: with an index set the Name hole reads nothing else, so a card whose other names the old reading spells out, "create Jumblebones, a
+  // legendary ... token", keeps it; a comma name ("Korlash, Heir to Blackblade") keeps its old reading too, which edh-cast-2 leaves unchanged on purpose)
+  if (typeof card.name !== 'string') return []; // WP17 contract C1: parseCard never throws, even on a broken object without a name
+  // edh-c-92 (CR 201.2; Baru, Fist of Krosa): a comma name too, "Discard another card named Baru, Fist of Krosa" (grandeur): the cost was split at the comma. Safe because the loop below returns [] (the old reading) when ANY "named" of the text is followed by another name
+  const own = card.name.includes('//') ? [] : [card.name];
+  // edh-next-107 (CR 201.2, 711.4; Forging the Tyrite Sword: "a card named Halvar, God of Battle"): a double-faced related card is listed with both face names ("Halvar, God of Battle // Sword of the Realms");
+  // either face's own name is a name a text can give it (the face that is up names it, CR 711.4; the library search finds the front face), so each face name is a name too
+  const faceNames = (n: string): string[] => (n.includes(' // ') ? n.split(' // ') : [n]);
+  const all = [...(card.all_parts ?? []).filter((p) => p.component === 'combo_piece' && typeof p.name === 'string' && p.name !== card.name).flatMap((p) => faceNames(p.name)), ...own];
   if (all.length === 0) return [];
-  const texts = [card.oracle_text, ...(card.card_faces ?? []).map((f) => f.oracle_text)].filter((t): t is string => typeof t === 'string');
+  const texts = [card.oracle_text, ...(card.card_faces ?? []).map((f) => f?.oracle_text)].filter((t): t is string => typeof t === 'string');
   const used = new Set<string>();
   for (const t of texts) {
+    // edh-c-92: with an index set the Name hole reads nothing else, so a card whose text also spells out a name with a comma that no index holds ("create Jumblebones, a legendary
+    // 2/1 black Skeleton creature token", Ozox, the Clattering King) keeps the old reading when its own name has a comma
+    if (all.some((n) => n === card.name && n.includes(',')) && /\b[Cc]reate [A-Z][a-z]/.test(t)) return [];
     for (const m of t.matchAll(/\bnamed /g)) {
-      // "named Dragonstorm Globe or Boulderborn Dragon": every name of the list, each one a combo piece
+      // "named Dragonstorm Globe or Boulderborn Dragon", edh-c-8: "named Crown of Empires and Throne of Empires": every name of the list, each one a combo piece
       for (let at = m.index! + m[0].length; ;) {
         const hit = all.filter((n) => t.startsWith(n, at)).sort((a, b) => b.length - a.length)[0];
         if (hit === undefined) return [];
         used.add(hit);
-        const next = /^(?:,? or |, (?:and\/)?or |, )(?=[A-Z])/.exec(t.slice(at + hit.length));
+        const next = /^(?:,? or |,? and |, (?:and\/)?or |, )(?=[A-Z])/.exec(t.slice(at + hit.length));
         if (next === null) break;
         at += hit.length + next[0].length;
       }
@@ -1081,7 +1441,8 @@ function parseFresh(card: OracleCard, opts: ParseOptions): ParseResult {
   const cyclingX = cyclingHasX(card);
   const faces = contexts.map((ctx) => {
     try {
-      return parseFace(ctx, opts, cardHasX, cyclingX);
+      const face = parseFace(ctx, opts, cardHasX, cyclingX);
+      return { ...face, abilities: aliasChosenLandTypeLink(face.abilities) }; // edh-next-106 (CR 607.2d; Thran Portal): the link of a land type choice
     } catch (e) {
       return errorFace(typeof ctx.text === 'string' ? ctx.text : '', e);
     }

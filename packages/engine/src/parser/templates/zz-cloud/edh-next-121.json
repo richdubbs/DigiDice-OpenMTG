@@ -1,0 +1,541 @@
+[
+  {
+    "id": "eff.edhn121.mayRollAgain",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 706.2",
+      "CR 706.3a",
+      "CR 608.2d"
+    ],
+    "pattern": "you may roll again",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "you"
+      },
+      "do": [],
+      "@rollAgain": true
+    },
+    "consumes": [
+      "may",
+      "again"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Roll a d12.\n1-8 | Create a Treasure token.\n9-12 | Create two of those tokens. You may roll again."
+      },
+      {
+        "text": "Whenever ~ attacks, roll a d6.\n1-3 | Draw a card.\n4-6 | Create a 1/1 red Goblin creature token. You may roll again."
+      }
+    ],
+    "counterExamples": [
+      "You may roll again.",
+      "{2}, {T}: Roll a d12.\n1-6 | You may roll again.\n7-12 | Draw a card.",
+      "{2}, {T}: Roll a d12.\n1-6 | Draw a card.\n7-12 | You may roll again. Create a Treasure token.",
+      "{2}, {T}: Roll a d12.\n1-6 | Draw a card.\n7-12 | Create a Treasure token. You may roll the die again."
+    ]
+  },
+  {
+    "id": "eff.edhn121.eachExileUntil.shuffleRest",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "player",
+    "cr": [
+      "CR 406.1",
+      "CR 401.1",
+      "CR 701.24a",
+      "CR 400.3",
+      "CR 608.2c",
+      "CR 101.4"
+    ],
+    "pattern": "{p:Player} exiles cards from the top of their library until they exile {f:DiscardDesc} , then shuffles the rest into their library",
+    "build": [
+      {
+        "op": "exileUntil",
+        "who": "$p",
+        "filter": "$f",
+        "as": "hit",
+        "exiled": "exiled"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "exiled"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "hit"
+              }
+            },
+            "zone": "exile"
+          }
+        },
+        "to": {
+          "zone": "library"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": "$p"
+      }
+    ],
+    "consumes": [
+      "until",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "{4}, {T}: Each opponent exiles cards from the top of their library until they exile an instant or sorcery card, then shuffles the rest into their library. You may cast up to two instant and/or sorcery spells from among cards exiled this way without paying their mana costs."
+      },
+      {
+        "text": "Whenever ~ attacks, target opponent exiles cards from the top of their library until they exile a creature card, then shuffles the rest into their library."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent exiles cards from the top of their library until they exile an instant or sorcery card, then puts the rest on the bottom of their library.",
+      "Each opponent exiles cards from the top of their library until they exile an instant or sorcery card, then shuffles the rest into your library.",
+      "Each opponent reveals cards from the top of their library until they reveal an instant or sorcery card, then shuffles the rest into their library."
+    ]
+  },
+  {
+    "id": "eff.edhn121.cast.upTo.instantSorcery.free.fromAmong",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2g",
+      "CR 601.2",
+      "CR 118.9",
+      "CR 304.1",
+      "CR 307.1"
+    ],
+    "pattern": "you may cast up to {n:Qty} instant and/or sorcery spells from among {g:Them} without paying their mana costs",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "types": [
+              "Instant",
+              "Sorcery"
+            ],
+            "is": "$g",
+            "zone": "exile"
+          }
+        },
+        "min": 0,
+        "max": "$n",
+        "as": "cast"
+      },
+      {
+        "op": "cast",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "cast"
+        },
+        "free": true
+      }
+    ],
+    "consumes": [
+      "may",
+      "up to",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "Exile the top five cards of your library. You may cast up to two instant and/or sorcery spells from among them without paying their mana costs."
+      },
+      {
+        "text": "{4}, {T}: Each opponent exiles cards from the top of their library until they exile an instant or sorcery card, then shuffles the rest into their library. You may cast up to two instant and/or sorcery spells from among cards exiled this way without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "Exile the top five cards of your library. You may cast up to two instant and/or sorcery spells from among them.",
+      "Exile the top five cards of your library. You may cast up to two creature spells from among them without paying their mana costs.",
+      "Exile the top five cards of your library. You may cast up to two instant and/or sorcery spells from your hand without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.edhn121.dieRow.xIs",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 706.3a",
+      "CR 107.3",
+      "CR 608.2h"
+    ],
+    "pattern": "x is {n:Qty}",
+    "build": {
+      "op": "let",
+      "name": "X",
+      "value": "$n",
+      "@rowX": true
+    },
+    "examples": [
+      {
+        "text": "{5}, {T}: Roll a d20. Each opponent exiles cards from the top of their library until they exile an instant or sorcery card, then shuffles the rest into their library. You may cast up to X instant and/or sorcery spells from among cards exiled this way without paying their mana costs.\n1-9 | X is one.\n10-18 | X is two.\n19-20 | X is three."
+      },
+      {
+        "text": "{2}, {T}: Roll a d20. Each opponent exiles cards from the top of their library until they exile an instant or sorcery card, then shuffles the rest into their library. You may cast up to X instant and/or sorcery spells from among cards exiled this way without paying their mana costs.\n1-14 | X is one.\n15-20 | X is two."
+      }
+    ],
+    "counterExamples": [
+      "X is one.",
+      "Roll a d6. Draw X cards.\n1-3 | X is one.\n4-6 | Draw a card.",
+      "Roll a d6. Draw a card.\n1-3 | X is one.\n4-6 | X is two.",
+      "{X}: Roll a d6. Draw X cards.\n1-3 | X is one.\n4-6 | X is two."
+    ]
+  },
+  {
+    "id": "eff.edhn121.return.self.transformed.selfOwner",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 712.14a",
+      "CR 400.7",
+      "CR 110.2",
+      "CR 201.5",
+      "CR 608.2c"
+    ],
+    "pattern": "return ~ to the battlefield transformed under ~ 's owner 's control",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": "owner",
+        "transformed": true
+      }
+    },
+    "examples": [
+      {
+        "text": "Whenever you cast an instant or sorcery spell during your turn, flip a coin. If you lose the flip, ~ deals 1 damage to you. If you win the flip, you may exile ~. If you do, return ~ to the battlefield transformed under ~'s owner's control."
+      },
+      {
+        "text": "{2}, {T}: You may exile ~. If you do, return ~ to the battlefield transformed under ~'s owner's control."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: You may exile ~. If you do, return ~ to the battlefield under ~'s owner's control.",
+      "{2}, {T}: You may exile ~. If you do, return ~ to the battlefield transformed under your control.",
+      "{2}, {T}: You may exile ~. If you do, return ~ to its owner's hand."
+    ],
+    "weak": 1
+  },
+  {
+    "id": "rep.edhn121.enters.additionalLoyalty.forEach",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 122.6",
+      "CR 306.5b"
+    ],
+    "pattern": "~ enters with an additional loyalty counter on ~ for each {n:Qty}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "counters": [
+              {
+                "kind": "loyalty",
+                "count": "$n"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "~ enters with an additional loyalty counter on ~ for each creature spell you've cast this turn."
+      },
+      {
+        "text": "~ enters with an additional loyalty counter on ~ for each artifact spell you've cast this turn."
+      }
+    ],
+    "counterExamples": [
+      "~ enters with an additional +1/+1 counter on ~ for each instant and sorcery spell you've cast this turn.",
+      "~ enters with a loyalty counter on target creature for each instant and sorcery spell you've cast this turn.",
+      "~ enters with an additional loyalty counter on ~."
+    ]
+  },
+  {
+    "id": "eff.edhn121.dur.spells.youCast.less",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 611.2a",
+      "CR 611.2b"
+    ],
+    "pattern": "{d:Dur} , {f:Filter} you cast cost {m:ManaCost} less to cast",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": "$f",
+            "caster": "you"
+          },
+          "change": {
+            "kind": "reduce",
+            "generic": "$m.0.amount",
+            "floor": "zero"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "until"
+    ],
+    "examples": [
+      {
+        "text": "+1: Until your next turn, instant and sorcery spells you cast cost {2} less to cast."
+      },
+      {
+        "text": "{T}: Until end of turn, creature spells you cast cost {2} less to cast."
+      }
+    ],
+    "counterExamples": [
+      "+1: Until your next turn, instant and sorcery spells you cast cost {1} more to cast.",
+      "+1: Until your next turn, instant and sorcery spells your opponents cast cost {1} less to cast.",
+      "+1: Until your next turn, instant and sorcery spells you cast cost {1} less to cast for each creature you control."
+    ]
+  },
+  {
+    "id": "eff.edhn121.permit.castInstantSorcery.fromAmong.thisTurn.free",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 601.3",
+      "CR 611.2a",
+      "CR 118.9",
+      "CR 608.2c",
+      "CR 304.1",
+      "CR 307.1"
+    ],
+    "pattern": "you may cast instant and sorcery spells from among {g:Them} this turn without paying their mana costs",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "is": "$g"
+          },
+          "costChange": {
+            "kind": "set",
+            "cost": {}
+          },
+          "onlyTypes": [
+            "Instant",
+            "Sorcery"
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "without"
+    ],
+    "examples": [
+      {
+        "text": "-8: Exile the top eight cards of your library. You may cast instant and sorcery spells from among them this turn without paying their mana costs."
+      },
+      {
+        "text": "{5}, {T}: Exile the top three cards of your library. You may cast instant and sorcery spells from among them this turn without paying their mana costs."
+      }
+    ],
+    "counterExamples": [
+      "-8: Exile the top eight cards of your library. You may cast instant and sorcery spells from among them this turn.",
+      "-8: Exile the top eight cards of your library. You may cast instant and sorcery spells from among them without paying their mana costs.",
+      "-8: Exile the top eight cards of your library. You may cast creature spells from among them this turn without paying their mana costs."
+    ]
+  },
+  {
+    "id": "eff.edhn121.exile.randomFromEachOpponentGraveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2d",
+      "CR 406.1",
+      "CR 404.1",
+      "CR 101.4",
+      "CR 400.7"
+    ],
+    "pattern": "exile a card at random from each opponent 's graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "zone": "graveyard",
+            "isCard": true,
+            "owner": {
+              "ref": "iterating"
+            }
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "random": true,
+        "perPlayer": {
+          "ref": "each",
+          "who": "opponent"
+        },
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "exile"
+        }
+      }
+    ],
+    "consumes": [
+      "random",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, exile a card at random from each opponent's graveyard. You may cast any number of spells from among cards exiled this way without paying their mana costs. Then each player who owns a spell you cast this way loses life equal to its mana value."
+      },
+      {
+        "text": "Whenever ~ attacks, exile a card at random from each opponent's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks, exile a card from each opponent's graveyard.",
+      "Whenever ~ attacks, exile a card at random from each player's graveyard.",
+      "Whenever ~ attacks, exile two cards at random from each opponent's graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhn121.eachOwnerOfCastSpell.losesLife.manaValue",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "subject": "none",
+    "cr": [
+      "CR 608.2c",
+      "CR 119.3",
+      "CR 202.3",
+      "CR 108.3",
+      "CR 400.7h"
+    ],
+    "pattern": "each player who owns a spell you cast this way loses life equal to its mana value",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "bound",
+        "name": "@castThisWay"
+      },
+      "as": "castSpell",
+      "do": [
+        {
+          "op": "loseLife",
+          "who": {
+            "ref": "ownerOf",
+            "object": {
+              "ref": "bound",
+              "name": "castSpell"
+            }
+          },
+          "amount": {
+            "q": "stat",
+            "stat": "manaValue",
+            "of": {
+              "ref": "bound",
+              "name": "castSpell"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "At the beginning of your upkeep, exile a card at random from each opponent's graveyard. You may cast any number of spells from among cards exiled this way without paying their mana costs. Then each player who owns a spell you cast this way loses life equal to its mana value."
+      },
+      {
+        "text": "Whenever ~ attacks, exile the top card of each player's library. You may cast any number of spells from among them without paying their mana costs. Then each player who owns a spell you cast this way loses life equal to its mana value."
+      }
+    ],
+    "counterExamples": [
+      "Each player who owns a spell you cast this way loses life equal to its mana value.",
+      "At the beginning of your upkeep, exile a card at random from each opponent's graveyard. You may cast any number of spells from among cards exiled this way without paying their mana costs. Then each player who owns a spell you cast this way gains life equal to its mana value.",
+      "At the beginning of your upkeep, exile a card at random from each opponent's graveyard. You may cast any number of spells from among cards exiled this way without paying their mana costs. Then each player who controls a spell you cast this way loses life equal to its mana value."
+    ]
+  }
+]

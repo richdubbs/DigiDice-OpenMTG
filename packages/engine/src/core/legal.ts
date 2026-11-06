@@ -183,7 +183,9 @@ function* listIn(s: GameState, player: PlayerId, publicOnly = false): Generator<
 
   // Activated abilities: of permanents the player controls, and of cards in other zones that function there. M11-1 (`feature:zone.command`, CR 113.6,
   // 702.49d): the player's cards in the command zone (commander ninjutsu); emblems are not cards and keep their abilities out of this list.
-  const commandCards = z.command.filter((id) => s.objects[id]?.kind === 'card' && s.objects[id]?.owner === player);
+  // edh-next-100 (CR 114.4, 113.6, 602.2; Ob Nixilis of the Black Oath): and the activated abilities of the player's emblems: an emblem is no card, but its abilities function in the
+  // command zone (core/emblems.ts gives each the zone) and its controller activates them (CR 114.2)
+  const commandCards = z.command.filter((id) => (s.objects[id]?.kind === 'card' && s.objects[id]?.owner === player) || (s.objects[id]?.kind === 'emblem' && s.objects[id]?.controller === player));
   // trek-12 (CR 113.6, 602.2, 108.3): an ability granted to a card in exile that says it functions there ("... Activate only during your turn and only if this card is
   // exiled.", Q, Stacking the Deck): its owner activates it (a card in exile has no controller); only a face-up card, its abilities being public (CR 406.3)
   const exileCards = z.exile.filter((id) => { const o = s.objects[id]; return o?.kind === 'card' && o.owner === player && !o.faceDown; });

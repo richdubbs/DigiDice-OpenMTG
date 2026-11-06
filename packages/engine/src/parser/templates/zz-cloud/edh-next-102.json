@@ -1,0 +1,172 @@
+[
+  {
+    "id": "eff.edhn102.thenIf.counters.removeTransformUntap",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 122.1",
+      "CR 701.27a",
+      "CR 712.9",
+      "CR 701.26b",
+      "CR 608.2c"
+    ],
+    "pattern": "then if there are {n:Qty} or more {k:CounterKind} counters on {o:Obj} , remove those counters , transform it , then untap it",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "compare",
+        "left": {
+          "q": "counters",
+          "on": "$o",
+          "kind": "$k"
+        },
+        "op": ">=",
+        "right": "$n"
+      },
+      "then": [
+        {
+          "op": "removeCounters",
+          "from": "$o",
+          "kind": "$k",
+          "count": "all"
+        },
+        {
+          "op": "changeFace",
+          "what": "$o",
+          "to": "transform"
+        },
+        {
+          "op": "untap",
+          "what": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "then",
+      "if",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "{T}: Put a wisp counter on ~. Then if there are three or more wisp counters on it, remove those counters, transform it, then untap it."
+      },
+      {
+        "text": "{T}: Put a charge counter on ~. Then if there are four or more charge counters on it, remove those counters, transform it, then untap it."
+      }
+    ],
+    "counterExamples": [
+      "{T}: Put a charge counter on ~. Then if there are four or fewer charge counters on it, remove those counters, transform it, then untap it.",
+      "{T}: Put a charge counter on ~. Then if there are four or more charge counters on it, remove those counters, transform it, then tap it.",
+      "{T}: Put a charge counter on ~. Then if there are four or more charge counters on it, remove a counter, transform it, then untap it."
+    ]
+  },
+  {
+    "id": "eff.edhn102.delay.phaseIn.whenUntappedOrLeaves",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.26b",
+      "CR 702.26c",
+      "CR 603.7",
+      "CR 603.7c",
+      "CR 608.2c"
+    ],
+    "pattern": "when ~ becomes untapped or leaves the battlefield , {o:Obj} phases in",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "becomes",
+          "what": "untapped",
+          "object": {
+            "self": true
+          }
+        },
+        "or": [
+          {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "from": "battlefield"
+          }
+        ]
+      },
+      "do": [
+        {
+          "op": "phaseIn",
+          "what": "$o"
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "when"
+    ],
+    "examples": [
+      {
+        "text": "{2}, {T}: Untap another target nonland permanent, then it phases out. It can't phase in for as long as ~ remains tapped. When ~ becomes untapped or leaves the battlefield, that permanent phases in."
+      },
+      {
+        "text": "{1}, {T}: Target creature phases out. When ~ becomes untapped or leaves the battlefield, that creature phases in."
+      }
+    ],
+    "counterExamples": [
+      "{2}, {T}: Untap another target nonland permanent, then it phases out. When ~ becomes tapped or leaves the battlefield, that permanent phases in.",
+      "{2}, {T}: Untap another target nonland permanent, then it phases out. When ~ becomes untapped or leaves the battlefield, that permanent phases out.",
+      "{2}, {T}: Untap another target nonland permanent, then it phases out. When ~ leaves the battlefield, that permanent phases in."
+    ]
+  },
+  {
+    "id": "eff.edhn102.goaded.plural.whileSource",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.15a",
+      "CR 701.15b",
+      "CR 701.15c",
+      "CR 611.2a",
+      "CR 611.2b",
+      "CR 608.2c"
+    ],
+    "pattern": "{o:Objs} are goaded for as long as ~ remains on the battlefield",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "whileSource",
+        "as": "onBattlefield"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "mustIfAble",
+          "action": "attack",
+          "goad": true
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, create two 1/1 white Warrior creature tokens. The tokens are goaded for as long as ~ remains on the battlefield."
+      },
+      {
+        "text": "When ~ enters, each player creates two 1/1 white Warrior creature tokens. Those tokens are goaded for as long as ~ remains on the battlefield."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, create two 1/1 white Warrior creature tokens. The tokens are goaded for as long as ~ remains tapped.",
+      "When ~ enters, create two 1/1 white Warrior creature tokens. The tokens are tapped for as long as ~ remains on the battlefield.",
+      "When ~ enters, create two 1/1 white Warrior creature tokens. The tokens aren't goaded for as long as ~ remains on the battlefield."
+    ]
+  }
+]

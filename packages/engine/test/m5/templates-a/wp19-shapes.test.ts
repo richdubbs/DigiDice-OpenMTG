@@ -142,12 +142,13 @@ describe('WP19 costs: the most frequent cost parts of the corpus (analysis 7.4; 
 
   it('CR 602.2b, design 6.6: a cost part no template or hole states is a manual cost part; the parts understood are kept', () => {
     // cloud std-spm / CLOUD std-ecl: "Remove a counter from ~" is a cost of any kind of counter now (cost:removeCounters.any, rules/pay-parts.ts, CR 118.3), so another unstated part stands here
-    const r = parse('Artifact Creature — Golem', '{2}, Put a card from your hand on top of your library: Draw a card.');
+    // edh-d-54: "Put a card from your hand on top of your library" is the cost part moveCards now; another unstated part stands here (a card from your graveyard)
+    const r = parse('Artifact Creature — Golem', '{2}, Put a card from your graveyard on top of your library: Draw a card.');
     const a = r.defs[0] as { kind: string; cost?: CostDef };
     expect(a.kind).toBe('activated');
     expect(automated(r.defs)).toBe(false);
     expect(a.cost?.mana).toEqual([{ kind: 'generic', amount: 2 }]);
-    expect(a.cost?.other).toEqual([{ kind: 'manual', text: 'Put a card from your hand on top of your library' }]);
+    expect(a.cost?.other).toEqual([{ kind: 'manual', text: 'Put a card from your graveyard on top of your library' }]);
   });
 });
 

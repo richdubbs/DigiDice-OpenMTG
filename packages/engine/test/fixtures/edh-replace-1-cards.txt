@@ -1,0 +1,14 @@
+# edh-replace-1 (Commander lane edh-replace; test/cloud/edh-replace-1, golden edh-replace-1-review.json)
+# double and halve damage (opponents / sources / combat / equipped), prevent half or all but N, halve an opponent's counters, prevent-and-reflect, prevent-and-create tokens, N times X damage, exactly-N hand, counters-on-it win, Ferocious counter instead
+Inkshield
+Solphim, Mayhem Dominus
+Gisela, Blade of Goldnight
+Deflecting Palm
+Crackle with Power
+Vorinclex, Monstrous Raider
+Triskaidekaphile
+Twenty-Toed Toad
+Temple Altisaur
+The Sound of Drums
+Inquisitor's Flail
+Stubborn Denial

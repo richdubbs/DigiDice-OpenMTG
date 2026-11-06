@@ -54,7 +54,7 @@
     "id": "eff.trek3.grant.each.ifCond",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 608.2c",
       "CR 611.2a",

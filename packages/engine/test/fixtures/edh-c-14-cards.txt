@@ -1,0 +1,16 @@
+# edh-c-14 (Commander EDHREC ranks 16,251-16,875, second pass): "it connives" after a trigger of the object itself, choose an opponent at random + attacks that player this combat if able, loses half their life rounded down, target opponent chosen at random, search ... and reveal that card, reveal those cards and put one onto the battlefield tapped and the other into your hand, target creature you control with the greatest power, different kinds of counters among permanents, put a counter on ~ then it deals damage equal to its power, you and another target player each draw, return two lands to their owner's hand, a cycling ability, a guarded pump of a target, remove counters from among permanents and sacrifice ~. After editing: npm run cards -- fixtures
+Ruhan of the Fomori
+Raving Dead
+Witch Hunt
+Scurrilous Sentry
+Illuminator Virtuoso
+Wild Research
+Peregrination
+Triumph of Gerrard
+Perrie, the Pulverizer
+Captain Ripley Vance
+Splinter, Aging Champion
+Khalni Gem
+Zenith Flare
+Savage Swipe
+The Filigree Sylex

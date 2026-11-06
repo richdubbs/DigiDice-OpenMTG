@@ -1,0 +1,366 @@
+[
+  {
+    "id": "eff.edhv15.dig.mayPut.bf.powerAtLeast",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 208.1"
+    ],
+    "pattern": "you may put ( a | an ) {f:Filter} card with power {n:Qty} or greater from among {g:Seen} onto the battlefield",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "power": {
+              "op": ">=",
+              "value": "$n"
+            },
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. You may put a creature card with power 4 or greater from among them onto the battlefield. Put the rest on the bottom of your library in any order."
+      },
+      {
+        "text": "When this creature enters, look at the top six cards of your library. You may put an artifact card with power 2 or greater from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. You may put a creature card with power 4 or less from among them onto the battlefield. Put the rest on the bottom of your library in any order.",
+      "Look at the top five cards of your library. You may put a creature card with power 4 or greater from among them into your hand. Put the rest on the bottom of your library in any order."
+    ]
+  },
+  {
+    "id": "eff.edhv15.dig.putOne.graveyard",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 701.20e",
+      "CR 608.2d",
+      "CR 404.1"
+    ],
+    "pattern": "put one of {g:Seen} into your graveyard",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "toGraveyard"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "toGraveyard"
+        },
+        "to": {
+          "zone": "graveyard"
+        }
+      }
+    ],
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Look at the top two cards of your library. Put one of them into your graveyard."
+      },
+      {
+        "text": "Look at the top three cards of your library. Put one of them into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top two cards of your library. Put each of them into your graveyard.",
+      "Look at the top two cards of your library. Put one of them into your hand."
+    ]
+  },
+  {
+    "id": "eff.edhv15.dig.revealAny.putThem.hand",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 701.20a",
+      "CR 701.20e",
+      "CR 608.2c",
+      "CR 608.2d"
+    ],
+    "pattern": "you may reveal any number of {f:CardsDesc} from among {g:Seen} and put them into your hand",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "anyOf": [
+              "$f"
+            ],
+            "is": "$g",
+            "zone": "library"
+          }
+        },
+        "min": 0,
+        "max": "any",
+        "as": "chosen"
+      },
+      {
+        "op": "reveal",
+        "who": {
+          "ref": "you"
+        },
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "any number",
+      "may",
+      "and"
+    ],
+    "examples": [
+      {
+        "text": "Look at the top five cards of your library. You may reveal any number of artifact cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order."
+      },
+      {
+        "text": "Look at the top four cards of your library. You may reveal any number of land cards from among them and put them into your hand. Put the rest into your graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Look at the top five cards of your library. You may reveal any number of artifact cards from among them and put them onto the battlefield. Put the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You may reveal up to two artifact cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order.",
+      "Look at the top five cards of your library. You must reveal any number of artifact cards from among them and put them into your hand. Put the rest on the bottom of your library in a random order."
+    ]
+  },
+  {
+    "id": "eff.edhv15.pump.dur.forEach.itsColors",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 105.2",
+      "CR 613.4c",
+      "CR 611.2a",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Obj} gets {pt:PT} {d:Dur} for each of its colors",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "distinct",
+                    "what": "colors",
+                    "among": "$o"
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "distinct",
+                    "what": "colors",
+                    "among": "$o"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Target creature gets +1/+1 until end of turn for each of its colors."
+      },
+      {
+        "text": "Target creature you control gets +1/+0 until end of turn for each of its colors."
+      }
+    ],
+    "counterExamples": [
+      "Target creature gets +1/+1 for each of its colors.",
+      "Target creature gets +1/+1 until end of turn for each of its creature types.",
+      "Target creature gets +1/+1 until end of turn for each of your colors."
+    ]
+  },
+  {
+    "id": "eff.edhv15.untap.next.eachOfThose",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 502.3",
+      "CR 611.2a",
+      "CR 611.2c"
+    ],
+    "pattern": "each of {o:Objs} doesn't untap during its controller 's next untap step",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "throughNextUntap"
+      },
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "untapDuringUntapStep"
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each",
+      "not",
+      "next",
+      "during"
+    ],
+    "examples": [
+      {
+        "text": "When ~ enters, tap up to two target creatures. Each of those creatures doesn't untap during its controller's next untap step."
+      },
+      {
+        "text": "When ~ enters, tap up to three target artifacts. Each of those artifacts doesn't untap during its controller's next untap step."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, tap up to two target creatures. Each of those creatures doesn't untap during your next untap step.",
+      "When ~ enters, tap up to two target creatures. Each of those creatures untaps during its controller's next untap step.",
+      "When ~ enters, tap up to two target creatures. Each of those creatures doesn't untap during its controller's next end step."
+    ]
+  },
+  {
+    "id": "eff.edhv15.gainControl.thoseCreatures",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 108.3",
+      "CR 611.2a",
+      "CR 613.1b",
+      "CR 608.2c"
+    ],
+    "pattern": "you gain control of those creatures",
+    "build": {
+      "op": "effect",
+      "duration": {
+        "d": "permanent"
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "bound",
+            "name": "",
+            "$anaphor": {
+              "sort": "object",
+              "number": "plural",
+              "text": "those creatures"
+            }
+          },
+          "mods": [
+            {
+              "layer": 2,
+              "controller": {
+                "ref": "you"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [],
+    "examples": [
+      {
+        "text": "Each opponent chooses a creature with flying they control. You gain control of those creatures."
+      },
+      {
+        "text": "Each opponent chooses a green creature they control. You gain control of those creatures."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent chooses a green creature they control. You gain control of those creatures until end of turn.",
+      "Each opponent chooses a green creature they control. You gain control of those artifacts.",
+      "Each opponent chooses a green creature they control. Each opponent gains control of those creatures."
+    ]
+  }
+]

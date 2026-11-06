@@ -1,0 +1,374 @@
+[
+  {
+    "id": "rep.edhv84.self.combatDamageToPlayer.instead.counters.mill",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 510.2",
+      "CR 120.3",
+      "CR 122.1",
+      "CR 701.17"
+    ],
+    "pattern": "if ~ would deal combat damage to a player , instead put that many +1/+1 counters on ~ and that player mills that many cards",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": {
+              "self": true
+            },
+            "recipient": {
+              "player": "any"
+            },
+            "combat": true
+          },
+          "body": {
+            "b": "instead",
+            "do": [
+              {
+                "op": "putCounters",
+                "on": {
+                  "ref": "self"
+                },
+                "kind": "+1/+1",
+                "count": {
+                  "q": "eventAmount"
+                }
+              },
+              {
+                "op": "mill",
+                "who": {
+                  "ref": "event",
+                  "role": "recipient"
+                },
+                "count": {
+                  "q": "eventAmount"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "would",
+      "instead",
+      "that many"
+    ],
+    "examples": [
+      {
+        "text": "If ~ would deal combat damage to a player, instead put that many +1/+1 counters on ~ and that player mills that many cards."
+      },
+      {
+        "text": "If this enchantment would deal combat damage to a player, instead put that many +1/+1 counters on this enchantment and that player mills that many cards."
+      }
+    ],
+    "counterExamples": [
+      "If ~ would deal damage to a player, instead put that many +1/+1 counters on ~ and that player mills that many cards.",
+      "If ~ would deal combat damage to a player, instead put that many +1/+1 counters on ~ and that player exiles that many cards from the top of their library.",
+      "If ~ would deal combat damage to a creature, instead put that many +1/+1 counters on ~ and that player mills that many cards.",
+      "If ~ would deal combat damage to a player, instead put that many -1/-1 counters on ~ and that player mills that many cards."
+    ]
+  },
+  {
+    "id": "sta.edhv84.spells.opp.chosenName.more",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 118.7",
+      "CR 201.3",
+      "CR 607.2d",
+      "CR 604.1"
+    ],
+    "pattern": "spells your opponents cast with the chosen name cost {m:ManaCost} more to cast",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "spells": {
+              "chosen": {
+                "link": "cardName",
+                "quality": "cardName"
+              }
+            },
+            "caster": "opponent"
+          },
+          "change": {
+            "kind": "increase",
+            "generic": "$m.0.amount"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen"
+    ],
+    "examples": [
+      {
+        "text": "As this enchantment enters, choose any card name.\nSpells your opponents cast with the chosen name cost {1} more to cast."
+      },
+      {
+        "text": "As this enchantment enters, choose any nonland card name.\nSpells your opponents cast with the chosen name cost {3} more to cast."
+      }
+    ],
+    "counterExamples": [
+      "As this enchantment enters, choose any card name.\nSpells your opponents cast with the chosen name cost {2} less to cast.",
+      "As this enchantment enters, choose any card name.\nSpells you cast with the chosen name cost {2} more to cast.",
+      "As this enchantment enters, choose any card name.\nSpells your opponents cast with the chosen name cost {2} more to cast this turn."
+    ]
+  },
+  {
+    "id": "sta.edhv84.abilities.chosenName.more.exceptMana",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 605.1a",
+      "CR 118.7",
+      "CR 201.3",
+      "CR 607.2d"
+    ],
+    "pattern": "activated abilities of sources with ( the chosen name | that name ) cost {m:ManaCost} more to activate unless they're mana abilities",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": {
+                "zone": "any",
+                "chosen": {
+                  "link": "cardName",
+                  "quality": "cardName"
+                }
+              },
+              "exceptMana": true
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "increase",
+            "mana": "$m"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "chosen",
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "As this enchantment enters, choose any nonland card name.\nActivated abilities of sources with the chosen name cost {1} more to activate unless they're mana abilities."
+      },
+      {
+        "text": "As this enchantment enters, choose any card name.\nActivated abilities of sources with that name cost {3} more to activate unless they're mana abilities."
+      }
+    ],
+    "counterExamples": [
+      "As this enchantment enters, choose any nonland card name.\nActivated abilities of sources with the chosen name cost {3} less to activate unless they're mana abilities.",
+      "As this enchantment enters, choose any nonland card name.\nActivated abilities of sources you control cost {3} more to activate unless they're mana abilities.",
+      "As this enchantment enters, choose any nonland card name.\nCreature spells with the chosen name cost {3} more to cast unless they're mana abilities."
+    ]
+  },
+  {
+    "id": "rep.edhv84.enters.revealHands.choose.nonlandName",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 614.12a",
+      "CR 701.20a",
+      "CR 607.2d",
+      "CR 201.3"
+    ],
+    "pattern": "as ~ enters , each opponent reveals their hand . you choose the name of a nonland card revealed this way",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "revealHands": "eachOpponent",
+            "choose": [
+              {
+                "what": "cardName",
+                "link": "cardName",
+                "cardKind": "nonland",
+                "fromRevealed": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "reveals",
+      "revealed",
+      "nonland",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters, each opponent reveals their hand. You choose the name of a nonland card revealed this way."
+      },
+      {
+        "text": "As this enchantment enters, each opponent reveals their hand. You choose the name of a nonland card revealed this way."
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters, each opponent reveals their hand. You choose the name of a land card revealed this way.",
+      "As ~ enters, target opponent reveals their hand. You choose the name of a nonland card revealed this way.",
+      "As ~ attacks, each opponent reveals their hand. You choose the name of a nonland card revealed this way."
+    ]
+  },
+  {
+    "id": "eff.edhv84.balance.lands",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2e",
+      "CR 701.21a",
+      "CR 101.4"
+    ],
+    "pattern": "each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the fewest , then sacrifices the rest",
+    "build": {
+      "op": "balance",
+      "parts": [
+        "lands"
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "fewest",
+      "rest",
+      "then",
+      "chooses"
+    ],
+    "examples": [
+      {
+        "text": "Each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the fewest, then sacrifices the rest."
+      },
+      {
+        "text": "You gain 1 life. Each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the fewest, then sacrifices the rest."
+      }
+    ],
+    "counterExamples": [
+      "Each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the most, then sacrifices the rest.",
+      "Each player chooses a number of creatures they control equal to the number of creatures controlled by the player who controls the fewest, then sacrifices the rest.",
+      "Each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the fewest, then discards the rest."
+    ]
+  },
+  {
+    "id": "rid.edhv84.balance.creaturesThenCards",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2e",
+      "CR 701.21a",
+      "CR 701.9a"
+    ],
+    "pattern": "players sacrifice creatures and discard cards the same way",
+    "build": {
+      "$patchPrevious": {
+        "parts": [
+          "lands",
+          "creatures",
+          "cards"
+        ]
+      }
+    },
+    "attachTo": "balance",
+    "consumes": [
+      "same"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Draw a card. Each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the fewest, then sacrifices the rest. Players sacrifice creatures and discard cards the same way."
+      },
+      {
+        "text": "You gain 1 life. Each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the fewest, then sacrifices the rest. Players sacrifice creatures and discard cards the same way."
+      }
+    ],
+    "counterExamples": [
+      "Each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the fewest, then sacrifices the rest. Players sacrifice creatures and discard cards the same way next turn.",
+      "Each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the fewest, then sacrifices the rest. Players sacrifice artifacts and discard cards the same way."
+    ]
+  },
+  {
+    "id": "rid.edhv84.balance.cardsThenCreatures",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2e",
+      "CR 701.21a",
+      "CR 701.9a"
+    ],
+    "pattern": "players discard cards and sacrifice creatures the same way",
+    "build": {
+      "$patchPrevious": {
+        "parts": [
+          "lands",
+          "cards",
+          "creatures"
+        ]
+      }
+    },
+    "attachTo": "balance",
+    "consumes": [
+      "same"
+    ],
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Draw a card. Each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the fewest, then sacrifices the rest. Players discard cards and sacrifice creatures the same way."
+      },
+      {
+        "text": "You gain 1 life. Each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the fewest, then sacrifices the rest. Players discard cards and sacrifice creatures the same way."
+      }
+    ],
+    "counterExamples": [
+      "Each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the fewest, then sacrifices the rest. Players discard cards and sacrifice creatures the same way next turn.",
+      "Each player chooses a number of lands they control equal to the number of lands controlled by the player who controls the fewest, then sacrifices the rest. Players discard cards and sacrifice artifacts the same way."
+    ]
+  }
+]

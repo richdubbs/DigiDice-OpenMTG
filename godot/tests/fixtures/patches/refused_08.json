@@ -1,0 +1,1 @@
+{"name":"refused_08","before":{"a":{"b":[1,2]},"s":"x"},"ops":[{"op":"del","path":[]}],"error":"A delete operation without a key."}

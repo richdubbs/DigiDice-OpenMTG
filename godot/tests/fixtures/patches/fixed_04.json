@@ -1,0 +1,1 @@
+{"name":"keys reordered","before":{"a":1,"b":2,"c":3},"ops":[{"op":"keys","path":[],"keys":["c","a","b"]}],"after":{"c":3,"a":1,"b":2}}

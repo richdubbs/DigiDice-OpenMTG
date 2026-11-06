@@ -1,0 +1,8 @@
+# edh-perms-13 (Commander lane edh-perms; test/cloud/edh-perms-13, golden edh-perms-13-review.json)
+# "each player who controls an F", "each player other than its controller", "When you cast this spell and whenever ~ attacks", "you may have it become a copy of another target F", "if you're not the monarch", "a token that's a copy of F and that's tapped and attacking"
+Fade from History
+Fractured Identity
+Cityscape Leveler
+Sunfrill Imitator
+Court of Vantress
+Flamerush Rider

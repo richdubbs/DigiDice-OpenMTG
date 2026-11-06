@@ -1,0 +1,778 @@
+[
+  {
+    "id": "eff.edhd46.untap.upToX.greatestPowerAmong",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.26b",
+      "CR 107.3",
+      "CR 208.1",
+      "CR 608.2c"
+    ],
+    "pattern": "untap up to x {f:Filter} , where x is the greatest power among {g:Objs}",
+    "build": [
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "min": 0,
+        "max": {
+          "q": "stat",
+          "stat": "power",
+          "of": "$g",
+          "agg": "max"
+        },
+        "as": "untap"
+      },
+      {
+        "op": "untap",
+        "what": {
+          "ref": "bound",
+          "name": "untap"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "up to"
+    ],
+    "examples": [
+      {
+        "text": "Whenever you attack with one or more creatures, untap up to X artifacts, where X is the greatest power among those creatures."
+      },
+      {
+        "text": "Whenever you attack with one or more creatures, untap up to X lands you control, where X is the greatest power among those creatures."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack with one or more creatures, untap up to X artifacts, where X is the greatest toughness among those creatures.",
+      "Whenever you attack with one or more creatures, untap up to X artifacts."
+    ]
+  },
+  {
+    "id": "sta.edhd46.lose.allAbilities.exceptMana",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 613.1f",
+      "CR 605.1a",
+      "CR 113.6"
+    ],
+    "pattern": "{o:Objs} lose all abilities except mana abilities",
+    "build": {
+      "s": "continuous",
+      "affects": "$o",
+      "mods": [
+        {
+          "layer": 6,
+          "removeAll": true,
+          "exceptMana": true
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "All artifacts lose all abilities except mana abilities."
+      },
+      {
+        "text": "Creatures your opponents control lose all abilities except mana abilities."
+      }
+    ],
+    "counterExamples": [
+      "All artifacts lose all abilities.",
+      "All artifacts lose all abilities except triggered abilities.",
+      "All artifacts lose all abilities except mana abilities until end of turn."
+    ],
+    "consumes": [
+      "all",
+      "except"
+    ]
+  },
+  {
+    "id": "sta.edhd46.areBasic.two",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.4a",
+      "CR 613.1d",
+      "CR 604.1"
+    ],
+    "pattern": "{f:Filter} and {g:Filter} are basic",
+    "build": [
+      {
+        "s": "continuous",
+        "affects": {
+          "ref": "each",
+          "filter": "$f"
+        },
+        "mods": [
+          {
+            "layer": 4,
+            "supertypes": {
+              "add": [
+                "Basic"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "s": "continuous",
+        "affects": {
+          "ref": "each",
+          "filter": "$g"
+        },
+        "mods": [
+          {
+            "layer": 4,
+            "supertypes": {
+              "add": [
+                "Basic"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "examples": [
+      {
+        "text": "Artifacts you control and artifact cards in your graveyard are basic."
+      },
+      {
+        "text": "Creatures you control and creature cards in your library are basic."
+      }
+    ],
+    "counterExamples": [
+      "Artifacts you control and artifact cards in your graveyard are legendary.",
+      "Artifacts you control are basic.",
+      "Artifacts you control and artifact cards in your graveyard are basic until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhd46.choose.basicLandType",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 205.3i",
+      "CR 305.7"
+    ],
+    "pattern": "choose a basic land type",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "landType",
+      "options": [
+        "Plains",
+        "Island",
+        "Swamp",
+        "Mountain",
+        "Forest"
+      ],
+      "as": "chosenCreatureType",
+      "link": "chosenCreatureType"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "{2}: Choose a basic land type. Each land you control becomes that type until end of turn."
+      },
+      {
+        "text": "{1}: Choose a basic land type. Each land an opponent controls becomes that type until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{2}: Choose a basic land type at random.",
+      "{2}: Choose a land type.",
+      "{2}: Choose target basic land type."
+    ]
+  },
+  {
+    "id": "eff.edhd46.choose.opponentControlsMore",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2d",
+      "CR 102.2",
+      "CR 109.4"
+    ],
+    "pattern": "choose an opponent who controls more {f:Filter} than you",
+    "build": {
+      "op": "chooseValue",
+      "who": {
+        "ref": "you"
+      },
+      "what": "opponent",
+      "controlsMore": "$f",
+      "as": "chosenPlayer"
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "When this creature dies, choose an opponent who controls more lands than you."
+      },
+      {
+        "text": "When this creature dies, choose an opponent who controls more creatures than you."
+      }
+    ],
+    "counterExamples": [
+      "When this creature dies, choose an opponent who controls fewer lands than you.",
+      "When this creature dies, choose a player who controls more lands than you.",
+      "When this creature dies, choose an opponent who controls more lands than target player."
+    ]
+  },
+  {
+    "id": "eff.edhd46.search.numberEqualToDifference.oneBfRestHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 701.20a",
+      "CR 107.1",
+      "CR 608.2c"
+    ],
+    "pattern": "search your library for a number of {f:Filter} cards equal to the difference , reveal those cards , put one of them onto the battlefield tapped and the rest into your hand , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "min": 0,
+        "max": {
+          "q": "math",
+          "op": "max",
+          "args": [
+            0,
+            {
+              "q": "math",
+              "op": "-",
+              "args": [
+                {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": {
+                      "types": [
+                        "Land"
+                      ],
+                      "controller": {
+                        "ref": "bound",
+                        "name": "chosenPlayer"
+                      }
+                    }
+                  }
+                },
+                {
+                  "q": "count",
+                  "of": {
+                    "ref": "each",
+                    "filter": {
+                      "types": [
+                        "Land"
+                      ],
+                      "controller": "you"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "chooseObjects",
+        "who": {
+          "ref": "you"
+        },
+        "from": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "zone": "library"
+          }
+        },
+        "min": 1,
+        "max": 1,
+        "as": "chosen"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "chosen"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          },
+          "tapped": true
+        }
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "each",
+          "filter": {
+            "is": {
+              "ref": "bound",
+              "name": "search"
+            },
+            "not": {
+              "is": {
+                "ref": "bound",
+                "name": "chosen"
+              }
+            },
+            "zone": "library"
+          }
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "the difference",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When this creature dies, choose an opponent who controls more lands than you. Search your library for a number of Swamp cards equal to the difference, reveal those cards, put one of them onto the battlefield tapped and the rest into your hand, then shuffle."
+      },
+      {
+        "text": "When this creature dies, choose an opponent who controls more lands than you. Search your library for a number of Forest cards equal to the difference, reveal those cards, put one of them onto the battlefield tapped and the rest into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "When this creature dies, choose an opponent who controls more lands than you. Search your library for a number of Swamp cards equal to the difference, reveal those cards, put them into your hand, then shuffle.",
+      "When this creature dies, choose an opponent who controls more lands than you. Search your library for up to three Forest cards, reveal those cards, put one of them onto the battlefield tapped and the rest into your hand, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhd46.eachPlayerFewerLands.searchUpToDifference.bfTapped",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 109.4",
+      "CR 101.4",
+      "CR 608.2e",
+      "CR 701.23a",
+      "CR 110.2"
+    ],
+    "pattern": "each player who controls fewer lands than the player who controls the most lands searches their library for a number of basic land cards less than or equal to the difference , puts those cards onto the battlefield tapped , then shuffles",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "controlsMost",
+        "filter": {
+          "types": [
+            "Land"
+          ]
+        },
+        "below": true
+      },
+      "as": "fewerLands",
+      "do": [
+        {
+          "op": "search",
+          "who": {
+            "ref": "iterating"
+          },
+          "zone": "library",
+          "filter": {
+            "supertypes": [
+              "Basic"
+            ],
+            "types": [
+              "Land"
+            ]
+          },
+          "min": 0,
+          "max": {
+            "q": "math",
+            "op": "-",
+            "args": [
+              {
+                "q": "mostByController",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ]
+                  }
+                }
+              },
+              {
+                "q": "count",
+                "of": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Land"
+                    ],
+                    "controller": {
+                      "ref": "iterating"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "as": "search"
+        },
+        {
+          "op": "move",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          },
+          "to": {
+            "zone": "battlefield",
+            "controller": {
+              "ref": "iterating"
+            },
+            "tapped": true
+          }
+        },
+        {
+          "op": "shuffle",
+          "who": {
+            "ref": "iterating"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "the difference",
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "When this creature dies, each player who controls fewer lands than the player who controls the most lands searches their library for a number of basic land cards less than or equal to the difference, puts those cards onto the battlefield tapped, then shuffles."
+      },
+      {
+        "text": "Whenever this creature attacks, each player who controls fewer lands than the player who controls the most lands searches their library for a number of basic land cards less than or equal to the difference, puts those cards onto the battlefield tapped, then shuffles."
+      }
+    ],
+    "counterExamples": [
+      "When this creature dies, each player who controls fewer lands than the player who controls the most lands searches their library for a number of basic land cards less than or equal to the difference, puts those cards onto the battlefield untapped, then shuffles.",
+      "When this creature dies, each player who controls fewer creatures than the player who controls the most creatures searches their library for a number of basic land cards less than or equal to the difference, puts those cards onto the battlefield tapped, then shuffles."
+    ]
+  },
+  {
+    "id": "eff.edhd46.search.additional.ifOpponentMoreLands.toHand",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.23a",
+      "CR 608.2c",
+      "CR 109.4",
+      "CR 115.1"
+    ],
+    "pattern": "search your library for a {f:Filter} card . if {p:Player} controls more lands than you , you may search your library for an additional {g:Filter} card . reveal those cards , put them into your hand , then shuffle",
+    "build": [
+      {
+        "op": "search",
+        "who": {
+          "ref": "you"
+        },
+        "zone": "library",
+        "filter": "$f",
+        "max": 1,
+        "reveal": true,
+        "as": "search"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "search"
+        },
+        "to": {
+          "zone": "hand"
+        }
+      },
+      {
+        "op": "if",
+        "cond": {
+          "cond": "compare",
+          "left": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Land"
+                ],
+                "controller": "$p"
+              }
+            }
+          },
+          "op": ">",
+          "right": {
+            "q": "count",
+            "of": {
+              "ref": "each",
+              "filter": {
+                "types": [
+                  "Land"
+                ],
+                "controller": "you"
+              }
+            }
+          }
+        },
+        "then": [
+          {
+            "op": "may",
+            "who": {
+              "ref": "you"
+            },
+            "do": [
+              {
+                "op": "search",
+                "who": {
+                  "ref": "you"
+                },
+                "zone": "library",
+                "filter": "$g",
+                "max": 1,
+                "reveal": true,
+                "as": "searchExtra"
+              },
+              {
+                "op": "move",
+                "what": {
+                  "ref": "bound",
+                  "name": "searchExtra"
+                },
+                "to": {
+                  "zone": "hand"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "op": "shuffle",
+        "who": {
+          "ref": "you"
+        }
+      }
+    ],
+    "subject": "none",
+    "consumes": [
+      "if",
+      "may",
+      "then",
+      "additional",
+      "reveal"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for a Forest card. If target opponent controls more lands than you, you may search your library for an additional Forest card. Reveal those cards, put them into your hand, then shuffle."
+      },
+      {
+        "text": "Search your library for a Swamp card. If target player controls more lands than you, you may search your library for an additional Swamp card. Reveal those cards, put them into your hand, then shuffle."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for a Forest card. If target opponent controls more creatures than you, you may search your library for an additional Forest card. Reveal those cards, put them into your hand, then shuffle.",
+      "Search your library for a Forest card. If target opponent controls more lands than you, you may search your library for an additional Forest card. Reveal those cards, put them onto the battlefield, then shuffle."
+    ]
+  },
+  {
+    "id": "eff.edhd46.ifKicked.untapAllPutThisWay.become.creatures",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 702.33a",
+      "CR 701.26b",
+      "CR 205.1a",
+      "CR 613.1d",
+      "CR 613.1e",
+      "CR 613.4b",
+      "CR 611.2a"
+    ],
+    "pattern": "if ~ was kicked , untap all {f:Filter} put onto the battlefield this way . they become {pt:BasePT} {c:Color} creatures with {a:Abilities} that are still lands",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "wasCast",
+        "kicked": true
+      },
+      "then": [
+        {
+          "op": "untap",
+          "what": {
+            "ref": "bound",
+            "name": "search"
+          }
+        },
+        {
+          "op": "effect",
+          "duration": {
+            "d": "permanent"
+          },
+          "effects": [
+            {
+              "s": "continuous",
+              "affects": {
+                "ref": "bound",
+                "name": "search"
+              },
+              "mods": [
+                {
+                  "layer": 4,
+                  "types": {
+                    "add": [
+                      "Creature"
+                    ]
+                  }
+                },
+                {
+                  "layer": 5,
+                  "colors": {
+                    "set": [
+                      "$c"
+                    ]
+                  }
+                },
+                {
+                  "layer": "7b",
+                  "power": "$pt.p",
+                  "toughness": "$pt.t"
+                },
+                {
+                  "layer": 6,
+                  "add": "$a"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "if",
+      "still",
+      "this way",
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Search your library for up to three Mountain cards, put them onto the battlefield tapped, then shuffle.\nIf this spell was kicked, untap all Mountains put onto the battlefield this way. They become 4/4 red creatures with haste that are still lands."
+      },
+      {
+        "text": "Search your library for up to three Swamp cards, put them onto the battlefield tapped, then shuffle.\nIf this spell was kicked, untap all Swamps put onto the battlefield this way. They become 2/2 black creatures with haste that are still lands."
+      }
+    ],
+    "counterExamples": [
+      "Search your library for up to three Mountain cards, put them onto the battlefield tapped, then shuffle.\nIf this spell was kicked, untap all Mountains put onto the battlefield this way. They become 4/4 red creatures with haste.",
+      "Search your library for up to three Mountain cards, put them onto the battlefield tapped, then shuffle.\nIf this spell was kicked, untap all Mountains put onto the battlefield this way. They become 4/4 red creatures with haste that are still lands until end of turn."
+    ]
+  },
+  {
+    "id": "eff.edhd46.discard.unlessReturnedLandNonbasicType",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.3i",
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 701.9a"
+    ],
+    "pattern": "discard a card unless that land had a nonbasic land type",
+    "build": {
+      "op": "if",
+      "cond": {
+        "cond": "not",
+        "of": {
+          "cond": "matches",
+          "object": {
+            "ref": "costReturned"
+          },
+          "filter": {
+            "subtypes": [
+              "Cave",
+              "Desert",
+              "Gate",
+              "Lair",
+              "Locus",
+              "Mine",
+              "Planet",
+              "Power-Plant",
+              "Sphere",
+              "Tower",
+              "Town",
+              "Urza's"
+            ]
+          }
+        }
+      },
+      "then": [
+        {
+          "op": "discard",
+          "who": {
+            "ref": "you"
+          },
+          "count": 1
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "unless"
+    ],
+    "examples": [
+      {
+        "text": "{1}, Return a land you control to its owner's hand: Scry 2. Then discard a card unless that land had a nonbasic land type."
+      },
+      {
+        "text": "{T}, Return a land you control to its owner's hand: Draw two cards. Discard a card unless that land had a nonbasic land type."
+      }
+    ],
+    "counterExamples": [
+      "{1}, Return a land you control to its owner's hand: Scry 2. Then discard a card unless that land had a basic land type.",
+      "{1}, Return a land you control to its owner's hand: Scry 2. Then discard a card unless that creature had a nonbasic land type."
+    ]
+  }
+]

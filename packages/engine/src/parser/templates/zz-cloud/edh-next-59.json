@@ -1,0 +1,398 @@
+[
+  {
+    "id": "sta.edhn59.each.scavenge.manacost",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.97a",
+      "CR 118.9",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "each {f:Filter} has scavenge . ( the | its ) scavenge cost is equal to ( its | that card 's ) mana cost",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "scavenge",
+                  "text": "scavenge",
+                  "costIsManaCost": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "equal"
+    ],
+    "examples": [
+      {
+        "text": "Each creature card in your graveyard has scavenge. The scavenge cost is equal to its mana cost."
+      },
+      {
+        "text": "Each Zombie card in your graveyard has scavenge. Its scavenge cost is equal to that card's mana cost."
+      }
+    ],
+    "counterExamples": [
+      "Each creature card in your graveyard has scavenge. The scavenge cost is equal to its power.",
+      "Each creature card in your graveyard has scavenge {2}. The scavenge cost is equal to its mana cost."
+    ]
+  },
+  {
+    "id": "sta.edhn59.each.encore.manavalue",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.141a",
+      "CR 107.3",
+      "CR 202.3",
+      "CR 604.1",
+      "CR 613.1f"
+    ],
+    "pattern": "each {f:Filter} has encore {x} , where x is its mana value",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": "$f"
+          },
+          "mods": [
+            {
+              "layer": 6,
+              "add": [
+                {
+                  "kind": "keyword",
+                  "keyword": "encore",
+                  "text": "encore",
+                  "costIsManaValue": true
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "each",
+      "where"
+    ],
+    "examples": [
+      {
+        "text": "Each Sliver creature card in your graveyard has encore {X}, where X is its mana value."
+      },
+      {
+        "text": "Each outlaw creature card in your graveyard has encore {X}, where X is its mana value."
+      }
+    ],
+    "counterExamples": [
+      "Each Sliver creature card in your graveyard has encore {X}, where X is its power.",
+      "Each Sliver creature card in your graveyard has encore {2}, where X is its mana value."
+    ]
+  },
+  {
+    "id": "sta.edhn59.once.cast.among.milled",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 404.1",
+      "CR 400.7",
+      "CR 611.3a",
+      "CR 701.17a"
+    ],
+    "pattern": "once during each of your turns , you may cast {f:Filter} from among cards in your graveyard that were milled this turn",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "$merge": [
+              "$f",
+              {
+                "putThereThisTurn": true,
+                "putThereFrom": "mill"
+              }
+            ]
+          },
+          "from": "graveyard",
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "each",
+      "may",
+      "this"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast a spell from among cards in your graveyard that were milled this turn."
+      },
+      {
+        "text": "Once during each of your turns, you may cast a creature spell from among cards in your graveyard that were milled this turn."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast a spell from among cards in your graveyard that were milled.",
+      "Once during each of your turns, you may cast a spell from among cards in your hand that were milled this turn."
+    ]
+  },
+  {
+    "id": "sta.edhn59.once.cast.among.notBattlefield",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 404.1",
+      "CR 400.7",
+      "CR 611.3a"
+    ],
+    "pattern": "once during each of your turns , you may cast {f:Filter} from among cards in your graveyard that were put there from anywhere other than the battlefield this turn",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "$merge": [
+              "$f",
+              {
+                "putThereThisTurn": true,
+                "putThereFrom": "notBattlefield"
+              }
+            ]
+          },
+          "from": "graveyard",
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "each",
+      "may",
+      "this",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast a creature spell from among cards in your graveyard that were put there from anywhere other than the battlefield this turn."
+      },
+      {
+        "text": "Once during each of your turns, you may cast an artifact spell from among cards in your graveyard that were put there from anywhere other than the battlefield this turn."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast a creature spell from among cards in your graveyard that were put there from the battlefield this turn.",
+      "Once during each of your turns, you may cast a creature spell from among cards in your hand that were put there from anywhere other than the battlefield this turn."
+    ]
+  },
+  {
+    "id": "eff.edhn59.return.self.fromGraveyard.tappedAttacking.counter",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 113.6m",
+      "CR 400.7",
+      "CR 508.4",
+      "CR 614.1c"
+    ],
+    "pattern": "return ~ from your graveyard to the battlefield tapped and attacking with ( a | an ) {k:CounterKind} counter on it",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "self"
+      },
+      "to": {
+        "zone": "battlefield",
+        "controller": {
+          "ref": "you"
+        },
+        "tapped": true,
+        "attacking": true,
+        "counters": [
+          {
+            "kind": "$k",
+            "count": 1
+          }
+        ]
+      }
+    },
+    "subject": "none",
+    "examples": [
+      {
+        "text": "Whenever you attack with three or more creatures, you may pay {R}{R}. If you do, return ~ from your graveyard to the battlefield tapped and attacking with a +1/+1 counter on it."
+      },
+      {
+        "text": "Whenever you attack, you may pay {G}. If you do, return ~ from your graveyard to the battlefield tapped and attacking with a finality counter on it."
+      }
+    ],
+    "counterExamples": [
+      "Whenever you attack, you may pay {G}. If you do, return ~ from your graveyard to the battlefield tapped and attacking with two finality counters on it.",
+      "Whenever you attack, you may pay {G}. If you do, return ~ from exile to the battlefield tapped and attacking with a finality counter on it.",
+      "Whenever you attack, you may pay {G}. If you do, return ~ from your graveyard to the battlefield tapped with a finality counter on it."
+    ]
+  },
+  {
+    "id": "eff.edhn59.return.self.fromGraveyard.thenAttachEventCreature",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 113.6m",
+      "CR 400.7",
+      "CR 301.5c",
+      "CR 701.3a"
+    ],
+    "pattern": "return ~ from your graveyard to the battlefield , then attach it to that creature",
+    "build": [
+      {
+        "op": "move",
+        "what": {
+          "ref": "self"
+        },
+        "to": {
+          "zone": "battlefield",
+          "controller": {
+            "ref": "you"
+          }
+        },
+        "as": "moved"
+      },
+      {
+        "op": "attach",
+        "what": {
+          "ref": "bound",
+          "name": "moved"
+        },
+        "to": {
+          "ref": "event",
+          "role": "subject"
+        }
+      }
+    ],
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "Whenever a 1/1 creature you control enters, you may return ~ from your graveyard to the battlefield, then attach it to that creature."
+      },
+      {
+        "text": "Whenever a creature you control enters, you may return ~ from your graveyard to the battlefield, then attach it to that creature."
+      }
+    ],
+    "counterExamples": [
+      "Whenever a creature you control enters, you may return ~ from your graveyard to the battlefield, then attach it to target creature.",
+      "Whenever a creature you control enters, you may return ~ from your graveyard to your hand, then attach it to that creature.",
+      "Whenever a creature you control enters, you may return ~ from exile to the battlefield, then attach it to that creature."
+    ],
+    "consumes": [
+      "then"
+    ]
+  },
+  {
+    "id": "sta.edhn59.once.cast.gy.mvAtMost.qty",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.3",
+      "CR 601.3e",
+      "CR 404.1",
+      "CR 202.3",
+      "CR 611.3a"
+    ],
+    "pattern": "once during each of your turns , you may cast {f:Filter} from your graveyard with mana value less than or equal to {q:Qty}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "turnOf",
+        "whose": "you"
+      },
+      "effects": [
+        {
+          "s": "permit",
+          "who": {
+            "ref": "you"
+          },
+          "action": "cast",
+          "of": {
+            "$merge": [
+              "$f",
+              {
+                "manaValue": {
+                  "op": "<=",
+                  "value": "$q"
+                }
+              }
+            ]
+          },
+          "from": "graveyard",
+          "oncePerTurn": true
+        }
+      ]
+    },
+    "consumes": [
+      "once",
+      "during",
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Once during each of your turns, you may cast an artifact or Human spell from your graveyard with mana value less than or equal to the number of quest counters on ~."
+      },
+      {
+        "text": "Once during each of your turns, you may cast a creature spell from your graveyard with mana value less than or equal to the number of creatures you control."
+      }
+    ],
+    "counterExamples": [
+      "Once during each of your turns, you may cast a creature spell from your hand with mana value less than or equal to the number of creatures you control.",
+      "Once during each of your turns, you may cast a creature spell from your graveyard with mana value greater than the number of creatures you control."
+    ]
+  }
+]

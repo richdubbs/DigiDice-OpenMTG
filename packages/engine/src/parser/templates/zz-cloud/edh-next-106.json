@@ -1,0 +1,252 @@
+[
+  {
+    "id": "sta.edhn106.landsAndCards.arePluralSubtype",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 205.1b",
+      "CR 611.3a",
+      "CR 613.1d",
+      "CR 108.3",
+      "CR 205.3i"
+    ],
+    "pattern": "lands you control and land cards you own that aren't on the battlefield are {st:PluralSubtype} in addition to their other types",
+    "build": {
+      "s": "continuous",
+      "affects": {
+        "ref": "union",
+        "of": [
+          {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Land"
+              ],
+              "controller": "you"
+            }
+          },
+          {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Land"
+              ],
+              "owner": "you",
+              "isCard": true,
+              "zone": [
+                "hand",
+                "graveyard",
+                "library",
+                "exile",
+                "command"
+              ]
+            }
+          }
+        ]
+      },
+      "mods": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "in addition",
+      "other",
+      "aren't"
+    ],
+    "examples": [
+      {
+        "text": "Lands you control and land cards you own that aren't on the battlefield are Forests in addition to their other types.\n{6}: You gain 5 life."
+      },
+      {
+        "text": "{6}: You gain 5 life.\nLands you control and land cards you own that aren't on the battlefield are Swamps in addition to their other types."
+      }
+    ],
+    "counterExamples": [
+      "Lands you control are Forests in addition to their other types.",
+      "Lands you control and land cards you own that aren't on the battlefield are Forest in addition to their other types.",
+      "Lands you control and land cards you own that aren't on the battlefield are Forests."
+    ]
+  },
+  {
+    "id": "rep.edhn106.enters.tappedMay.radCounters",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12a",
+      "CR 122.1",
+      "CR 725.1"
+    ],
+    "pattern": "you may have ~ enter tapped . if you do , you get {n:Qty} rad counters",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tappedMay": {
+              "then": [
+                {
+                  "op": "putCounters",
+                  "on": {
+                    "ref": "you"
+                  },
+                  "kind": "rad",
+                  "count": "$n"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "may",
+      "if"
+    ],
+    "examples": [
+      {
+        "text": "You may have ~ enter tapped. If you do, you get three rad counters.\n{6}: You gain 5 life."
+      },
+      {
+        "text": "You may have ~ enter tapped. If you do, you get four rad counters."
+      }
+    ],
+    "counterExamples": [
+      "You may have ~ enter tapped. If you do, you get two poison counters.",
+      "You may have ~ enter tapped. You get two rad counters.",
+      "You may have ~ enter tapped. If you don't, you get two rad counters."
+    ]
+  },
+  {
+    "id": "rep.edhn106.youDiscard.byOpponent.revealTopLibrary",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.9a",
+      "CR 614.1a",
+      "CR 701.20a",
+      "CR 401.4",
+      "CR 400.7"
+    ],
+    "pattern": "if a spell or ability an opponent controls causes you to discard ( a | one ) card , you may reveal that card and put it on top of your library instead of putting it anywhere else",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "owner": "you"
+            },
+            "from": "hand",
+            "cause": "discard",
+            "byOpponent": true
+          },
+          "optional": true,
+          "body": {
+            "b": "modify",
+            "destination": {
+              "zone": "library",
+              "position": "top"
+            }
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "if",
+      "may",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a spell or ability an opponent controls causes you to discard one card, you may reveal that card and put it on top of your library instead of putting it anywhere else.\n{6}: You gain 5 life."
+      },
+      {
+        "text": "{6}: You gain 5 life.\nIf a spell or ability an opponent controls causes you to discard one card, you may reveal that card and put it on top of your library instead of putting it anywhere else."
+      }
+    ],
+    "counterExamples": [
+      "If a spell or ability you control causes you to discard a card, you may reveal that card and put it on top of your library instead of putting it anywhere else.",
+      "If a spell or ability an opponent controls causes you to discard a card, you may reveal that card and put it on the bottom of your library instead of putting it anywhere else.",
+      "If a spell or ability an opponent controls causes you to discard a card, put it on top of your library instead of putting it anywhere else."
+    ]
+  },
+  {
+    "id": "sta.edhn106.manaAbilitiesOfSelf.costLife",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 601.2f",
+      "CR 602.2b",
+      "CR 605.1a",
+      "CR 119.4",
+      "CR 118.3"
+    ],
+    "pattern": "mana abilities of ~ cost an additional {n:Count} life to activate",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "costMod",
+          "applies": {
+            "abilities": {
+              "source": {
+                "self": true
+              },
+              "kind": "mana"
+            },
+            "caster": "any"
+          },
+          "change": {
+            "kind": "increase",
+            "life": "$n"
+          }
+        }
+      ]
+    },
+    "consumes": [
+      "additional"
+    ],
+    "examples": [
+      {
+        "text": "Mana abilities of ~ cost an additional 3 life to activate.\n{6}: You gain 5 life."
+      },
+      {
+        "text": "{6}: You gain 5 life.\nMana abilities of ~ cost an additional 2 life to activate."
+      }
+    ],
+    "counterExamples": [
+      "Mana abilities of ~ cost an additional 1 life to cast.",
+      "Abilities of ~ cost an additional 1 life to activate.",
+      "Mana abilities of creatures you control cost an additional 1 life to activate.",
+      "Mana abilities of ~ cost {1} more to activate."
+    ]
+  }
+]

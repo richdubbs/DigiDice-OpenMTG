@@ -67,7 +67,7 @@
     "id": "eff.p2cdr1.rollDie.d6",
     "kind": "effect",
     "since": 8,
-    "status": "experimental",
+    "status": "stable",
     "cr": [
       "CR 706.1",
       "CR 706.2"

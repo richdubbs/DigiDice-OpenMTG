@@ -1,0 +1,181 @@
+[
+  {
+    "id": "eff.edhd14.nextCreatureCard.play.flash",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 601.3b",
+      "CR 702.8a",
+      "CR 611.2",
+      "CR 305.1"
+    ],
+    "pattern": "the next creature card you play this turn can be played as though it had flash",
+    "build": {
+      "op": "nextSpell",
+      "who": {
+        "ref": "you"
+      },
+      "filter": {
+        "types": [
+          "Creature"
+        ],
+        "stackKind": "spell",
+        "zone": "stack"
+      },
+      "rider": "flash"
+    },
+    "subject": "none",
+    "consumes": [
+      "next",
+      "as though"
+    ],
+    "examples": [
+      {
+        "text": "{T}: The next creature card you play this turn can be played as though it had flash."
+      },
+      {
+        "text": "{2}, {T}: The next creature card you play this turn can be played as though it had flash."
+      }
+    ],
+    "counterExamples": [
+      "The next creature card you cast this turn can be played as though it had flash.",
+      "The next creature card an opponent plays this turn can be played as though it had flash.",
+      "The next artifact card you play this turn can be played as though it had flash.",
+      "The next creature card you play this turn can be played as though it had haste."
+    ]
+  },
+  {
+    "id": "kw.edhd14.equip.creatureToken",
+    "kind": "ability",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 702.6a",
+      "CR 702.6c",
+      "CR 111.1"
+    ],
+    "pattern": "equip creature token {c:ManaCost}",
+    "build": {
+      "kind": "keyword",
+      "keyword": "equip",
+      "cost": {
+        "mana": "$c"
+      },
+      "filter": {
+        "types": [
+          "Creature"
+        ],
+        "token": true,
+        "controller": "you"
+      }
+    },
+    "examples": [
+      {
+        "text": "Equip creature token {2}"
+      },
+      {
+        "text": "Equip creature token {2}{R}"
+      }
+    ],
+    "counterExamples": [
+      "Equip creature token",
+      "Equip creature tokens {2}",
+      "Equip nontoken creature {2}"
+    ]
+  },
+  {
+    "id": "rep.edhd14.enters.tapped.creaturesPlayedByOpponents",
+    "kind": "static",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.12",
+      "CR 601.2i",
+      "CR 305.1"
+    ],
+    "pattern": "creatures played by your opponents enter tapped",
+    "build": {
+      "kind": "static",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "opponent",
+              "token": false,
+              "isCopy": false
+            },
+            "from": "stack",
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "tapped": true
+          }
+        }
+      ]
+    },
+    "examples": [
+      {
+        "text": "creatures played by your opponents enter tapped."
+      },
+      {
+        "text": "CREATURES PLAYED BY YOUR OPPONENTS ENTER TAPPED."
+      }
+    ],
+    "counterExamples": [
+      "Creatures played by you enter tapped.",
+      "Creatures your opponents control enter tapped and attacking.",
+      "Artifacts played by your opponents enter tapped.",
+      "Creatures played by your opponents enter untapped."
+    ]
+  },
+  {
+    "id": "eff.edhd14.token.forEachTappedThisWay",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 608.2c",
+      "CR 608.2h",
+      "CR 111.2",
+      "CR 701.26a"
+    ],
+    "pattern": "create a {t:TokenDesc} for each creature tapped this way",
+    "build": {
+      "op": "createToken",
+      "who": {
+        "ref": "you"
+      },
+      "count": {
+        "q": "resultCount",
+        "step": "tappedThisWay"
+      },
+      "token": "$t"
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "this way"
+    ],
+    "examples": [
+      {
+        "text": "Tap any number of untapped creatures you control. Create a 2/2 white Soldier creature token for each creature tapped this way."
+      },
+      {
+        "text": "Whenever ~ attacks, tap any number of untapped creatures you control. Create a 3/3 green Beast creature token with trample for each creature tapped this way."
+      }
+    ],
+    "counterExamples": [
+      "Tap any number of untapped creatures you control. Create a 4/4 white Angel creature token with flying for each artifact tapped this way.",
+      "Tap any number of untapped creatures you control. Create a 4/4 white Angel creature token with flying.",
+      "Tap any number of untapped creatures you control. Target player creates a 1/1 white Soldier creature token for each creature tapped this way."
+    ]
+  }
+]

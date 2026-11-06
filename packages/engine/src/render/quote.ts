@@ -22,12 +22,18 @@ import { nestedState, type RenderState } from './state';
 export function quotedAbility(a: AbilityDef, st: RenderState, noun: string, token?: TokenDef): string {
   const inner = nestedState(st);
   if (token !== undefined) inner.ctx = { ...st.ctx, selfTypes: [...(token.types ?? []), ...(token.subtypes ?? [])] };
+  // edh-b-3 (CR 113.7a, 303.4; Rune of Might): an Aura's quoted ability belongs to the object it is granted to, not to the Aura: what that object is attached to is not read from the
+  // Aura's types ("As long as enchanted permanent is an Equipment, it has "Equipped creature gets +1/+1 and has trample."", where the granted ability's "equipped creature" is not "enchanted creature")
+  else if (st.ctx.selfTypes?.some((t) => t.toLowerCase() === 'aura')) inner.ctx = { ...st.ctx, selfTypes: undefined };
   // Oracle says "this token" (the wording of almost every token) or, for a token that has a name of its own, sometimes that name instead: both are the token
   const own = token?.name !== undefined && token.predefined === undefined && !((token.subtypes ?? []).length > 0 && (token.subtypes ?? []).join(' ') === token.name) ? token.name : undefined;
   const self = own === undefined ? `this ${noun}` : alt(`this ${noun}`, own);
   // T55 (CR 207.2c): an ability word inside the quotes is part of the quoted text, "Landfall — Whenever a land you control enters, ..." (no rules meaning)
   const label = a.label !== undefined ? `${a.label} -- ` : '';
-  const text = hoistFinalPeriod(K.ability(a, inner).replace(/~/g, self));
+  // edhv31 (CR 702.24a; Mana Chains, Dreams of the Dead): a granted cumulative upkeep with a mana cost is quoted like one with a dash cost: "Cumulative upkeep {1}."
+  const stopped = (t: string): string => (a.kind === 'keyword' && a.keyword === 'cumulative upkeep' && !t.endsWith('.') ? `${t}.` : t);
+  // edh-next-139 (CR 201.5a; Toggo, Goblin Weaponsmith's Rock): inside a quote of the named token's quoted ability, "¤" (the grantor, parser/holes/token.ts#nameAsSelf) is that token, by its name
+  const text = hoistFinalPeriod(stopped(K.ability(a, inner).replace(/~/g, self).replace(/¤/g, own ?? '¤')));
   // FAST5 T68 (CR 606.4): the loyalty cost of a granted loyalty ability is written in brackets inside the quotes, "[+1]: Add {R}.", "[-8]: Create ..." (a planeswalker's own
   // loyalty abilities print it bare)
   const bracketed = a.kind === 'activated' && a.cost.loyalty !== undefined ? text.replace(/^([+\-−]?\d+):/, '[$1]:') : text;

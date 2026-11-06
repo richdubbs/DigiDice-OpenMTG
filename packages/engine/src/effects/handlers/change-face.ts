@@ -14,8 +14,9 @@ import type { GameObject } from '../../types/state';
 import { faceChars } from '../../rules/characteristics';
 import { cantDo } from '../../rules/cant';
 import type { ExecCtx, StepHandler } from '../api';
-import { performTransform } from '../perform-direct';
+import { performTransform, performTurnExiledFaceUp } from '../perform-direct';
 import { bindAs, byHand, did, permanentsOf } from './zones-util';
+import { resolveObjs } from '../refs';
 import { DFC_OPS } from './dfc-ops';
 import { FACE_OPS } from './face-ops';
 
@@ -75,6 +76,18 @@ function cantTransform(cx: ExecCtx, o: GameObject): { skip: string } | { manual:
 
 /** "Transform ~", "transform target Werewolf" (`to: 'transform'`); the other forms through `CHANGE_FACE` (resolved by hand while they have no entry). */
 export const changeFace: StepHandler<Step<'changeFace'>> = (cx, st) => {
+  // edh-d-101 (CR 406.3, 400.2; The Creation of Avacyn): "Turn the exiled card face up.": each face-down card in exile the step names is turned face up where it is (it stays the same
+  // object: nothing moves). It is a card, not a permanent, so no "turned face up" event happens (CR 708.8 is about permanents); every player may now see it
+  if (st.inExile === true) {
+    if (st.to !== 'faceUp' || st.manifest === true) return byHand(cx, st, 'only "turn ... face up" is read for cards in exile');
+    const done = resolveObjs(cx, st.what).filter((h) => {
+      if (h.zone !== 'exile' || !performTurnExiledFaceUp(cx.g, h.id)) return false;
+      cx.g.log(`A face-down card in exile is turned face up: it is ${cx.g.nameOf(h.id)}.`, { rules: ['CR 406.3'], level: 'action' });
+      return true;
+    });
+    bindAs(cx, st.as, done);
+    return did(done.length);
+  }
   const key: ChangeFaceTo = st.manifest ? 'manifest' : st.to;
   if (key !== 'transform') {
     const op = CHANGE_FACE[key];

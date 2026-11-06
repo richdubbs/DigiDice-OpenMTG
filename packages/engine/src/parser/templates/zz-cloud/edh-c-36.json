@@ -1,0 +1,425 @@
+[
+  {
+    "id": "eff.edhv36.prevent.groupToPlayers.dur",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 120.3"
+    ],
+    "pattern": "prevent all damage that {g:Filter} would deal to players {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "source": "$g",
+            "recipient": {
+              "player": "any"
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that red creatures would deal to players this turn."
+      },
+      {
+        "text": "Draw a card. Prevent all damage that creatures with flying would deal to players this turn."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that red creatures would deal to players.",
+      "Prevent all combat damage that red creatures would deal to players this turn.",
+      "Prevent all damage that red creatures would deal to you this turn."
+    ]
+  },
+  {
+    "id": "sta.edhv36.aslong.exactlyOne.thatCreature.pumpgrant",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 604.1",
+      "CR 611.3a",
+      "CR 613.4c",
+      "CR 613.1f"
+    ],
+    "pattern": "as long as you control exactly one creature , that creature get[s] {pt:PT} and has {a:Abilities}",
+    "build": {
+      "kind": "static",
+      "condition": {
+        "cond": "compare",
+        "left": {
+          "q": "count",
+          "of": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you"
+            }
+          }
+        },
+        "op": "==",
+        "right": 1
+      },
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "each",
+            "filter": {
+              "types": [
+                "Creature"
+              ],
+              "controller": "you"
+            }
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            },
+            {
+              "layer": 6,
+              "add": "$a"
+            }
+          ]
+        }
+      ]
+    },
+    "consumes": [
+      "as long as"
+    ],
+    "examples": [
+      {
+        "text": "As long as you control exactly one creature, that creature gets +2/+2 and has vigilance."
+      },
+      {
+        "text": "As long as you control exactly one creature, that creature gets +2/+2 and has trample and haste."
+      }
+    ],
+    "counterExamples": [
+      "As long as you control exactly two creatures, that creature gets +3/+1 and has lifelink.",
+      "As long as you control exactly one creature, that creature gets +3/+1 and loses lifelink.",
+      "As long as you control exactly one creature, that creature gets +3/+1 and has lifelink until end of turn."
+    ],
+    "priority": 1
+  },
+  {
+    "id": "eff.edhv36.prevent.toObj.dur.counterPerPrevented",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 615.1a",
+      "CR 611.2a",
+      "CR 615.5",
+      "CR 122.1"
+    ],
+    "pattern": "prevent all damage that would be dealt to {o:Obj} {d:Dur} . for each 1 damage prevented this way , put a {k:CounterKind} counter on that creature",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "damage",
+            "recipient": {
+              "object": {
+                "is": "$o"
+              }
+            }
+          },
+          "body": {
+            "b": "prevent",
+            "amount": "all",
+            "then": [
+              {
+                "op": "putCounters",
+                "on": {
+                  "ref": "event",
+                  "role": "object"
+                },
+                "kind": "$k",
+                "count": {
+                  "q": "preventedAmount"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "prevent",
+      "all",
+      "would",
+      "this way",
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "Prevent all damage that would be dealt to target artifact creature this turn. For each 1 damage prevented this way, put a +1/+1 counter on that creature."
+      },
+      {
+        "text": "Prevent all damage that would be dealt to target creature this turn. For each 1 damage prevented this way, put a time counter on that creature."
+      }
+    ],
+    "counterExamples": [
+      "Prevent all damage that would be dealt to target creature this turn. For each 2 damage prevented this way, put a +1/+1 counter on that creature.",
+      "Prevent all damage that would be dealt to target creature. For each 1 damage prevented this way, put a +1/+1 counter on that creature.",
+      "Prevent all damage that would be dealt to target creature this turn. For each 1 damage prevented this way, put a +1/+1 counter on target creature."
+    ]
+  },
+  {
+    "id": "eff.edhv36.pump.group.dur.forEach.scaled",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 608.2h"
+    ],
+    "pattern": "{o:Objs} get {pt:PT} {d:Dur} for each {f:Filter}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": "$o",
+          "mods": [
+            {
+              "layer": "7c",
+              "power": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.p",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              },
+              "toughness": {
+                "q": "math",
+                "op": "*",
+                "args": [
+                  "$pt.t",
+                  {
+                    "q": "count",
+                    "of": {
+                      "ref": "each",
+                      "filter": "$f"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "weak": 1,
+    "examples": [
+      {
+        "text": "Creatures you control get +0/+1 until end of turn for each Wizard you control."
+      },
+      {
+        "text": "Goblins you control get +1/+0 until end of turn for each artifact you control."
+      }
+    ],
+    "counterExamples": [
+      "Creatures you control get +0/+1 for each Wizard you control.",
+      "Creatures you control get +0/+1 until end of turn for each Wizard you control and each Elf you control.",
+      "Creatures you control get +0/+1 until your next turn for each Wizard you control."
+    ]
+  },
+  {
+    "id": "eff.edhv36.exile.allCards.playerHandAndGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 701.13a",
+      "CR 406.1",
+      "CR 404.1",
+      "CR 400.7"
+    ],
+    "pattern": "exile all cards from {p:Player} 's hand and graveyard",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "each",
+        "filter": {
+          "zone": [
+            "hand",
+            "graveyard"
+          ],
+          "owner": "$p",
+          "isCard": true
+        }
+      },
+      "to": {
+        "zone": "exile"
+      }
+    },
+    "subject": "none",
+    "consumes": [
+      "all"
+    ],
+    "examples": [
+      {
+        "text": "Exile all cards from target opponent's hand and graveyard."
+      },
+      {
+        "text": "Draw a card. Exile all cards from target player's hand and graveyard."
+      }
+    ],
+    "counterExamples": [
+      "Exile all cards from target player's hand.",
+      "Exile all cards from target player's hand and library.",
+      "Exile all cards from target player's hand and graveyard unless they pay {3}."
+    ]
+  },
+  {
+    "id": "rep.edhv36.damageToFilter.minus",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1a",
+      "CR 120.3",
+      "CR 609.7"
+    ],
+    "pattern": "if a source would deal damage to {f:Filter} , it deals that much damage minus {n:Qty} to that creature instead",
+    "build": {
+      "s": "replace",
+      "replaces": {
+        "ev": "damage",
+        "recipient": {
+          "object": "$f"
+        }
+      },
+      "body": {
+        "b": "modify",
+        "amount": {
+          "add": {
+            "q": "math",
+            "op": "-",
+            "args": [
+              0,
+              "$n"
+            ]
+          }
+        }
+      }
+    },
+    "consumes": [
+      "if",
+      "would",
+      "that much",
+      "instead"
+    ],
+    "examples": [
+      {
+        "text": "If a source would deal damage to an artifact creature you control, it deals that much damage minus 1 to that creature instead."
+      },
+      {
+        "text": "If a source would deal damage to a Goblin you control, it deals that much damage minus 2 to that creature instead."
+      }
+    ],
+    "counterExamples": [
+      "If a source would deal damage to a creature you control, it deals that much damage plus 1 to that creature instead.",
+      "If a source would deal damage to a creature you control, it deals that much damage minus 1 to that creature.",
+      "If a source would deal damage to a creature you control, it deals that much damage minus 1 to you instead."
+    ]
+  },
+  {
+    "id": "eff.edhv36.pump.selfAnd.each",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 611.2c",
+      "CR 613.4c",
+      "CR 115.1"
+    ],
+    "pattern": "~ and {o:Objs} each get {pt:PT} {d:Dur}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "continuous",
+          "affects": {
+            "ref": "union",
+            "of": [
+              {
+                "ref": "self"
+              },
+              "$o"
+            ]
+          },
+          "mods": [
+            {
+              "layer": "7c",
+              "power": "$pt.p",
+              "toughness": "$pt.t"
+            }
+          ]
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "each"
+    ],
+    "examples": [
+      {
+        "text": "{0}: ~ and up to one other target creature each get +3/+3 until end of turn."
+      },
+      {
+        "text": "{1}, {T}: ~ and target creature you control each get +1/+1 until end of turn."
+      }
+    ],
+    "counterExamples": [
+      "{0}: ~ and up to one other target creature each get +3/+3.",
+      "{0}: ~ and up to one other target creature each get +3/+3 until your next turn.",
+      "{0}: ~ and up to one other target creature each gain flying until end of turn."
+    ]
+  }
+]

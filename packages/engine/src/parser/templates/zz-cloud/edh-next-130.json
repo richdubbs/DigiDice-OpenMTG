@@ -1,0 +1,535 @@
+[
+  {
+    "id": "eff.edhn130.copyToken.thatCreature.typesSet",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.1a",
+      "CR 111.1",
+      "CR 603.10a"
+    ],
+    "pattern": "create a token that's a copy of that creature , except {x:CopyExceptTokenSet}",
+    "build": {
+      "op": "copy",
+      "what": {
+        "ref": "bound",
+        "name": "",
+        "$anaphor": {
+          "sort": "object",
+          "number": "singular",
+          "head": "creature",
+          "text": "that creature"
+        }
+      },
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": "$x",
+      "lastOnBattlefield": true
+    },
+    "subject": "none",
+    "consumes": [
+      "except"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another creature you control dies, create a token that's a copy of that creature, except it's a Clue artifact with \"{2}, Sacrifice this token: Draw a card\" and it loses all other card types."
+      },
+      {
+        "text": "Whenever a creature an opponent controls dies, create a token that's a copy of that creature, except it's a Treasure artifact with \"{T}, Sacrifice this token: Add one mana of any color\" and it loses all other card types."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another creature you control dies, create a token that's a copy of that card, except it's a Clue artifact with \"{2}, Sacrifice this token: Draw a card\" and it loses all other card types.",
+      "Whenever another creature you control dies, create a token that's a copy of that creature, except it's a Clue artifact with \"{2}, Sacrifice this token: Draw a card\"."
+    ]
+  },
+  {
+    "id": "eff.edhn130.eachOtherOpponent.copySelf.attackingThem",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 608.2f",
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 111.1",
+      "CR 506.2",
+      "CR 508.4",
+      "CR 205.4a"
+    ],
+    "pattern": "for each other opponent , create a token that's a copy of ~ tapped and attacking that player , except {x:CopyExceptToken}",
+    "build": {
+      "op": "forEach",
+      "over": {
+        "ref": "otherOpponents",
+        "than": {
+          "ref": "event",
+          "role": "defender"
+        }
+      },
+      "as": "each",
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "self"
+          },
+          "result": "token",
+          "who": {
+            "ref": "you"
+          },
+          "tapped": true,
+          "attacking": {
+            "defender": {
+              "ref": "bound",
+              "name": "each"
+            }
+          },
+          "except": "$x",
+          "as": "copies"
+        }
+      ],
+      "gather": "copies"
+    },
+    "subject": "none",
+    "consumes": [
+      "each other",
+      "each",
+      "other",
+      "except"
+    ],
+    "needs": [
+      "feature:createToken.attackingWhom"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ attacks a player, for each other opponent, create a token that's a copy of ~ tapped and attacking that player, except it isn't legendary."
+      },
+      {
+        "text": "Whenever ~ attacks a player, for each other opponent, create a token that's a copy of ~ tapped and attacking that player, except it's 1/1."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ attacks a player, for each opponent, create a token that's a copy of ~ tapped and attacking that player, except it isn't legendary.",
+      "Whenever ~ attacks a player, for each other opponent, create a token that's a copy of ~ tapped and attacking you, except it isn't legendary."
+    ]
+  },
+  {
+    "id": "eff.edhn130.linked.returnGraveyard",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 607.2a",
+      "CR 607.1",
+      "CR 400.7",
+      "CR 404.1"
+    ],
+    "pattern": "return the exiled card to its owner 's graveyard",
+    "build": {
+      "op": "move",
+      "what": {
+        "ref": "linked",
+        "link": "exiled"
+      },
+      "to": {
+        "zone": "graveyard"
+      }
+    },
+    "subject": "none",
+    "priority": 1,
+    "examples": [
+      {
+        "text": "When ~ enters, exile target artifact card from a graveyard.\nWhen ~ leaves the battlefield, return the exiled card to its owner's graveyard."
+      },
+      {
+        "text": "When ~ enters, exile target creature card from an opponent's graveyard.\nWhen ~ dies, return the exiled card to its owner's graveyard."
+      }
+    ],
+    "counterExamples": [
+      "When ~ enters, exile target artifact card from a graveyard.\nWhen ~ leaves the battlefield, return the exiled card to its owner's library.",
+      "When ~ enters, exile target artifact card from a graveyard.\nWhen ~ leaves the battlefield, return the exiled cards to its owner's graveyard."
+    ]
+  },
+  {
+    "id": "eff.edhn130.copyToken.thatCreature.typeAdded.hasLinked",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "priority": 1,
+    "cr": [
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 205.1b",
+      "CR 603.10a",
+      "CR 607.2a",
+      "CR 113.1a"
+    ],
+    "pattern": "create a token that's a copy of that creature , except it's a {st:Subtypes} in addition to its other types and it has {a:Abilities}",
+    "build": {
+      "op": "copy",
+      "what": {
+        "ref": "bound",
+        "name": "",
+        "$anaphor": {
+          "sort": "object",
+          "number": "singular",
+          "head": "creature",
+          "text": "that creature"
+        }
+      },
+      "result": "token",
+      "who": {
+        "ref": "you"
+      },
+      "except": [
+        {
+          "layer": 4,
+          "subtypes": {
+            "add": "$st"
+          }
+        },
+        {
+          "layer": 6,
+          "add": "$a"
+        }
+      ],
+      "lastOnBattlefield": true,
+      "linkCopied": "exiled"
+    },
+    "subject": "none",
+    "consumes": [
+      "except",
+      "in addition",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "Whenever another nontoken creature you control dies, exile it. If you do, create a token that's a copy of that creature, except it's a Zombie in addition to its other types and it has \"When this token leaves the battlefield, return the exiled card to its owner's graveyard.\""
+      },
+      {
+        "text": "Whenever another creature you control dies, exile it. If you do, create a token that's a copy of that creature, except it's a Spirit in addition to its other types and it has flying."
+      }
+    ],
+    "counterExamples": [
+      "Whenever another nontoken creature you control dies, exile it. If you do, create a token that's a copy of that creature, except it's a Zombie and it has flying.",
+      "Whenever another nontoken creature you control dies, exile it. If you do, create a token that's a copy of that card, except it's a Spirit in addition to its other types and it has flying."
+    ]
+  },
+  {
+    "id": "sta.edhn130.entersOrFaceUp.mayCopy.untilFaceDown",
+    "kind": "static",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 614.1c",
+      "CR 614.1e",
+      "CR 614.12",
+      "CR 708.8",
+      "CR 708.11",
+      "CR 707.2",
+      "CR 707.9b",
+      "CR 611.2a",
+      "CR 610.3"
+    ],
+    "pattern": "as ~ enters or is turned face up , you may choose another creature on the battlefield . if you do , until ~ is turned face down , it becomes a copy of that creature , except {x:CopyExcept}",
+    "build": {
+      "kind": "static",
+      "zone": [
+        "stack",
+        "battlefield"
+      ],
+      "effects": [
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "zoneChange",
+            "subject": {
+              "self": true
+            },
+            "to": "battlefield"
+          },
+          "body": {
+            "b": "enters",
+            "copy": {
+              "of": {
+                "types": [
+                  "Creature"
+                ],
+                "other": true
+              },
+              "optional": true,
+              "except": "$x",
+              "duration": {
+                "d": "until",
+                "event": {
+                  "ev": "becomes",
+                  "what": "turnedFaceDown",
+                  "object": {
+                    "self": true
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "s": "replace",
+          "replaces": {
+            "ev": "becomes",
+            "what": "turnedFaceUp",
+            "object": {
+              "self": true
+            }
+          },
+          "body": {
+            "b": "during",
+            "do": [
+              {
+                "op": "chooseObjects",
+                "who": {
+                  "ref": "you"
+                },
+                "from": {
+                  "ref": "each",
+                  "filter": {
+                    "types": [
+                      "Creature"
+                    ],
+                    "other": true
+                  }
+                },
+                "min": 0,
+                "max": 1,
+                "as": "copied"
+              },
+              {
+                "op": "if",
+                "cond": {
+                  "cond": "did",
+                  "step": "copied"
+                },
+                "then": [
+                  {
+                    "op": "effect",
+                    "duration": {
+                      "d": "until",
+                      "event": {
+                        "ev": "becomes",
+                        "what": "turnedFaceDown",
+                        "object": {
+                          "self": true
+                        }
+                      }
+                    },
+                    "effects": [
+                      {
+                        "s": "continuous",
+                        "affects": {
+                          "ref": "self"
+                        },
+                        "mods": [
+                          {
+                            "layer": "1a",
+                            "copyOf": {
+                              "ref": "bound",
+                              "name": "copied"
+                            },
+                            "except": "$x"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "needs": [
+      "body:during",
+      "feature:replace.on.turnFaceUp"
+    ],
+    "consumes": [
+      "another",
+      "except",
+      "if you do",
+      "until",
+      "may",
+      "if",
+      "other"
+    ],
+    "examples": [
+      {
+        "text": "As ~ enters or is turned face up, you may choose another creature on the battlefield. If you do, until ~ is turned face down, it becomes a copy of that creature, except it has flying."
+      },
+      {
+        "text": "As ~ enters or is turned face up, you may choose another creature on the battlefield. If you do, until ~ is turned face down, it becomes a copy of that creature, except it has \"At the beginning of your end step, you may turn this creature face down.\""
+      }
+    ],
+    "counterExamples": [
+      "As ~ enters or is turned face up, you may choose another creature on the battlefield. If you do, until end of turn, it becomes a copy of that creature, except it has flying.",
+      "As ~ enters, you may choose another creature on the battlefield. If you do, until ~ is turned face down, it becomes a copy of that creature, except it has flying."
+    ]
+  },
+  {
+    "id": "rid.edhn130.castCopiesIfAble.free",
+    "kind": "rider",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 707.12",
+      "CR 707.10",
+      "CR 601.2",
+      "CR 608.2c"
+    ],
+    "pattern": "cast the copies if able without paying their mana costs",
+    "build": {
+      "$patchPrevious": {
+        "op": "cast",
+        "result": null,
+        "copyIn": "exile",
+        "optional": false,
+        "free": true,
+        "@require": {
+          "what.ref": "bound",
+          "result": "spell",
+          "newTargets": null,
+          "except": null,
+          "as": null,
+          "count": null
+        }
+      }
+    },
+    "examples": [
+      {
+        "text": "Exile target instant card from your graveyard and target sorcery card from an opponent's graveyard. Copy those cards. Cast the copies if able without paying their mana costs."
+      },
+      {
+        "text": "Exile two target instant cards from your graveyard. Copy those cards. Cast the copies if able without paying their mana costs. Exile ~."
+      }
+    ],
+    "counterExamples": [
+      "Exile two target instant cards from your graveyard. Copy those cards. Cast the copies if able.",
+      "Copy target instant spell. Cast the copies if able without paying their mana costs."
+    ],
+    "attachTo": "copy",
+    "consumes": [
+      "if able",
+      "if"
+    ]
+  },
+  {
+    "id": "eff.edhn130.next.loyaltyAbility.copy",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 603.7",
+      "CR 603.7b",
+      "CR 707.10",
+      "CR 606.3",
+      "CR 602.2"
+    ],
+    "pattern": "copy the next loyalty ability you activate this turn when you activate it",
+    "build": {
+      "op": "delay",
+      "when": {
+        "at": "event",
+        "event": {
+          "ev": "activate",
+          "player": "you",
+          "ability": "loyalty"
+        }
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": {
+            "ref": "event",
+            "role": "spell"
+          },
+          "result": "spell",
+          "who": {
+            "ref": "you"
+          }
+        }
+      ],
+      "duration": {
+        "d": "endOfTurn"
+      },
+      "once": true
+    },
+    "subject": "none",
+    "consumes": [
+      "when",
+      "next"
+    ],
+    "examples": [
+      {
+        "text": "Whenever ~ deals combat damage to a player, copy the next loyalty ability you activate this turn when you activate it."
+      },
+      {
+        "text": "When ~ enters, copy the next loyalty ability you activate this turn when you activate it. You may choose new targets for the copy."
+      }
+    ],
+    "counterExamples": [
+      "Whenever ~ deals combat damage to a player, copy the next loyalty ability you activate when you activate it.",
+      "Whenever ~ deals combat damage to a player, copy the next activated ability you activate this turn when you activate it."
+    ]
+  },
+  {
+    "id": "eff.edhn130.eachOpponentMay.copyToken",
+    "kind": "effect",
+    "since": 8,
+    "status": "stable",
+    "cr": [
+      "CR 101.4",
+      "CR 608.2d",
+      "CR 707.2",
+      "CR 111.1"
+    ],
+    "pattern": "each opponent may create a token that's a copy of {o:Obj}",
+    "build": {
+      "op": "may",
+      "who": {
+        "ref": "each",
+        "who": "opponent"
+      },
+      "do": [
+        {
+          "op": "copy",
+          "what": "$o",
+          "result": "token",
+          "who": {
+            "ref": "iterating"
+          }
+        }
+      ]
+    },
+    "subject": "none",
+    "consumes": [
+      "each",
+      "may"
+    ],
+    "examples": [
+      {
+        "text": "Choose target artifact you control. Create a token that's a copy of that artifact. Each opponent may create a token that's a copy of that artifact. For each opponent who does, create a token that's a copy of that artifact."
+      },
+      {
+        "text": "Each opponent may create a token that's a copy of target creature you control."
+      }
+    ],
+    "counterExamples": [
+      "Each opponent creates a token that's a copy of target creature you control.",
+      "Each player may create a token that's a copy of target creature you control."
+    ]
+  }
+]

@@ -1,0 +1,1 @@
+{"name":"an element removed from the middle","before":{"l":["a","b","c","d","e"]},"ops":[{"op":"splice","path":["l"],"at":2,"del":1,"add":[]}],"after":{"l":["a","b","d","e"]}}

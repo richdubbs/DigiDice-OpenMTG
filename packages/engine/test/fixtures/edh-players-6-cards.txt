@@ -1,0 +1,14 @@
+# edh-players-6 (Commander lane edh-players; test/cloud/edh-players-6, golden edh-players-6-review.json)
+# loyalty activations per turn (Oath of Teferi, The Chain Veil, The Immortal Sun); a count of each opponent's own zone (Folio of Fancies, One Ring to Rule Them All, Mjolnir); pay X at most the life gained; each opponent may ... if they don't; this object attacked this turn
+Oath of Teferi
+The Chain Veil
+The Immortal Sun
+Folio of Fancies
+Mjölnir, Storm Hammer
+Well of Lost Dreams
+Mask of Griselbrand
+Agent Frank Horrigan
+Professor Onyx
+Fandaniel, Telophoroi Ascian
+Braids, Arisen Nightmare
+Jin-Gitaxias, Core Augur

@@ -7,6 +7,7 @@
  */
 import type { EffectStep } from '../types/ability';
 import { plain } from './clause';
+import { ALT_CLOSE, ALT_OPEN, ALT_SEP } from './text';
 import type { Folded } from './fold';
 import { K } from './kernel';
 import type { RenderState } from './state';
@@ -21,9 +22,11 @@ function damageToRandomObject(list: EffectStep[], i: number, st: RenderState): F
   const { to: _to, ...rest } = b;
   const said = K.steps([{ ...rest, to: { ref: 'self' } } as EffectStep], st);
   const self = K.obj({ ref: 'self' }, st, 'object').text;
-  const at = said.lastIndexOf(` to ${self}`);
-  if (at < 0) return null;
-  const text = `${said.slice(0, at)} to ${K.np(a.from.filter, st, { det: 'a' })} chosen at random${said.slice(at + ` to ${self}`.length)}`;
+  // edh-fix-3 (edh-replace-3: damage to the source itself is said "itself" as well as "~"): the recipient is either wording (the group steps-life.ts#damageClause made, found as it was written, not a new group)
+  const recipient = [` to ${ALT_OPEN}itself${ALT_SEP}${self}${ALT_CLOSE}`, ` to ${self}`].find((r) => said.lastIndexOf(r) >= 0);
+  if (recipient === undefined) return null;
+  const at = said.lastIndexOf(recipient);
+  const text = `${said.slice(0, at)} to ${K.np(a.from.filter, st, { det: 'a' })} chosen at random${said.slice(at + recipient.length)}`;
   return { clauses: [plain(text, { standalone: true })], consumed: 2 };
 }
 

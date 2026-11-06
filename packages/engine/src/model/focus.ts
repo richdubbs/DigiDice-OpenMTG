@@ -33,7 +33,7 @@ const WORKED_ON: Readonly<Record<string, string>> = {
 };
 
 /** Player references that always name exactly one player (the top card of each player's library is several cards, never "it"). */
-const ONE_PLAYER_REFS: ReadonlySet<string> = new Set(['you', 'target', 'event', 'defending', 'active', 'controllerOf', 'ownerOf', 'anOpponent', 'linked', 'iterating', 'seat', 'costChosen']);
+const ONE_PLAYER_REFS: ReadonlySet<string> = new Set(['you', 'target', 'event', 'defending', 'active', 'controllerOf', 'ownerOf', 'anOpponent', 'linked', 'iterating', 'seat', 'costChosen', 'randomOpponent' /* trek-17 */]);
 
 /** std-rs: does the player reference always name exactly one player (ONE_PLAYER_REFS)? */
 export const namesOnePlayer = (ref: unknown): boolean => isRec(ref) && ONE_PLAYER_REFS.has(String(ref['ref']));
@@ -86,6 +86,9 @@ function workedRefs(step: Rec): Rec[] | null {
       else if (e['s'] === 'restrict') { if (!add(e['subject'])) return null; }
       else return null;
     }
+  } else if (op === 'attach' && step['to'] === null) {
+    // edh-next-76 (CR 701.3d, 608.2c; Elbrus, the Binding Blade): "unattach ~, then transform it": an unattach has one party, the object unattached, which "it" names next
+    if (!add(step['what'])) return null;
   } else if (Object.hasOwn(WORKED_ON, op)) {
     if (!add(step[WORKED_ON[op]!])) return null;
   } else return null;
@@ -117,7 +120,22 @@ export function chosenOne(step: Rec): Rec | null {
  * value." (Satya, Aetherflux Genius: "its" is the token). Only `you`, unconditioned: counters on a target player, on each opponent or on an object end the focus as before.
  */
 export function keepsFocus(step: unknown): boolean {
+  // edh-next-25 (CR 608.2c, 119.3; Hidetsugu and Kairi): a target player's life loss works on no object either: "Exile the top card of your library. Target opponent loses life
+  // equal to its mana value. If it's an instant or sorcery card, you may cast it without paying its mana cost." goes on about the exiled card
+  if (isRec(step) && step['op'] === 'loseLife' && step['guard'] === undefined && isRec(step['who']) && step['who']['ref'] === 'target') return true;
+  // edh-d-87 (CR 608.2c, 119.3; Sapling of Colfenor): your own life gain or loss works on no object either: "Reveal the top card of your library. If it's a creature card, you gain life
+  // equal to that card's toughness, lose life equal to its power, then put it into your hand." goes on about the revealed card (only `you`, unconditioned, no other field)
+  if (isRec(step) && (step['op'] === 'gainLife' || step['op'] === 'loseLife') && step['guard'] === undefined && step['also'] === undefined && isRec(step['who']) && step['who']['ref'] === 'you'
+    && Object.keys(step['who']).length === 1 && Object.keys(step).every((k) => k === 'op' || k === 'who' || k === 'amount')) return true;
   return isRec(step) && step['op'] === 'putCounters' && step['guard'] === undefined && isRec(step['on']) && step['on']['ref'] === 'you' && Object.keys(step['on']).length === 1;
+}
+
+/**
+ * edh-top-7 (CR 701.24a, 608.2c; Hoarding Broodlord): your shuffling your library works on no object either, so "Search your library for a card, exile it face down, then shuffle. For
+ * as long as that card remains exiled, you may play it." goes on about the card that was exiled. Only `you`, unconditioned.
+ */
+export function shufflesYourLibrary(step: unknown): boolean {
+  return isRec(step) && step['op'] === 'shuffle' && step['guard'] === undefined && isRec(step['who']) && step['who']['ref'] === 'you' && Object.keys(step['who']).length === 1 && Object.keys(step).every((k) => k === 'op' || k === 'who');
 }
 
 /** What an instruction does to the focus (see the file comment), or null when it ends it. */
@@ -152,6 +170,10 @@ export function focusEffect(step: unknown): FocusEffect | null {
   // `may`), and only a choice of one object by you (a choice by another player, for each player, in turn or at random is no focus)
   const chosen = chosenOne(step);
   if (chosen !== null) return { kind: 'object', on: chosen };
+  // edh-players-4 (CR 608.2c, 701.26a-b): the group "Untap all attacking creatures" / "Tap all creatures your opponents control" worked on is the discourse after it ("They gain first
+  // strike until end of turn."): the step's own mention names it (the handler binds every object it was about under its `as`, effects/handlers/zones-status.ts), as for a group
+  // that counters were put on (lower/mentions.ts#producedBy)
+  if ((op === 'untap' || op === 'tap') && isRec(what) && what['ref'] === 'each' && isRec(what['filter'])) return { kind: 'makes' };
   const refs = workedRefs(step);
   return refs !== null && refs.every((r) => JSON.stringify(r) === JSON.stringify(refs[0])) ? { kind: 'object', on: refs[0]! } : null;
 }
@@ -204,18 +226,27 @@ export function notPutZone(step: unknown): string | undefined {
 export function keptFocus(step: unknown): FocusEffect | null {
   let cur: unknown = step;
   let depth = 0;
+  let onlyMay = true;
   for (;;) {
     if (!isRec(cur) || cur['guard'] !== undefined) return null;
     const list = cur['op'] === 'if' && cur['else'] === undefined ? cur['then'] : cur['op'] === 'may' && cur['otherwise'] === undefined ? cur['do'] : undefined;
     if (list === undefined) break;
     if (!Array.isArray(list) || list.length === 0) return null;
+    if (cur['op'] !== 'may') onlyMay = false;
     cur = list[list.length - 1];
     depth++;
   }
   if (depth === 0) return null;
+  // edh-c-37 (CR 701.20e, 608.2c; Kinship, Ink Dissolver): "You may look at the top card of your library. If it shares a creature type with ~, ..." the card looked at is what
+  // the next sentence's "it" names (the look made it; the option not taken binds the name to nothing, effects/handlers/control.ts#declinedNames); only a look inside `may`s
+  if (onlyMay && looksAtOneCard(cur) && isRec(cur) && cur['guard'] === undefined) return { kind: 'makes' };
   // r3-dig (CR 701.20a, 608.2c): the card(s) "you may reveal cards from the top of your library until you reveal a creature card" stopped at, named by the step's `as`;
   // the option not taken binds that name to nothing (effects/handlers/control.ts#declinedNames), so "that card" then names nothing
   if (isRec(cur) && cur['op'] === 'revealUntil' && cur['guard'] === undefined && typeof cur['as'] === 'string') return { kind: 'object', on: { ref: 'bound', name: cur['as'] } };
+  // edh-next-138 (CR 608.2c, 111.1; Baral and Kari Zev): "If you don't, create First Mate Ragavan, a legendary 2/1 red Monkey Pirate creature token. It gains haste until end of turn.": the
+  // token(s) an `if` on "if you do" / "if you don't" created (the step's own mention, named by its `as`) are what the next sentence's pronoun names; the branch not taken binds that name to nothing
+  // (effects/handlers/control.ts#ifHandler, bindUnrun), so the instruction then works on nothing. Only that condition, only directly in its branch
+  if (depth === 1 && isRec(step) && step['op'] === 'if' && isRec(step['cond']) && step['cond']['cond'] === 'did' && isRec(cur) && cur['op'] === 'createToken' && cur['guard'] === undefined) return { kind: 'makes' };
   const fx = focusEffect(cur);
   return fx !== null && fx.kind === 'object' && fx.on['ref'] === 'bound' ? fx : null;
 }
@@ -248,6 +279,38 @@ export function grantedGroup(step: unknown): Rec | null {
 }
 
 /**
+ * edh-next-31 (CR 608.2c, 120.3; Thundermaw Hellkite and its ruling of 2017-11-17: "If the damage that would be dealt to a creature with flying is prevented, that creature will
+ * still be tapped"): the `to` of a `damage` step that deals damage to a described group whose members cannot change by the damage (a description by card types, controller or
+ * a keyword: damage marks the creature, SBA destroy it only after the ability has resolved), "~ deals 1 damage to each creature with flying your opponents control. Tap those
+ * creatures." names the same group again. Null for anything else. Shared by the parser (lower/mentions.ts) and the renderer (render/steps.ts).
+ */
+export function damagedGroup(step: unknown): Rec | null {
+  if (!isRec(step) || step['op'] !== 'damage' || !isRec(step['to']) || step['to']['ref'] !== 'each' || !isRec(step['to']['filter'])) return null;
+  const filter = step['to']['filter'];
+  if (!Object.keys(filter).every((k) => filter[k] === undefined || STATIC_FILTER_FIELDS.has(k) || k === 'keyword' || k === 'colors')) return null;
+  if (filter['zone'] !== undefined && filter['zone'] !== 'battlefield') return null;
+  return step['to'];
+}
+
+/**
+ * edh-replace-6 (CR 611.2c, 608.2c; Mutational Advantage): the `affects` of the only continuous effect of an `effect` step that is a described group whose description
+ * CAN change by what happens next ("Permanents you control with counters on them gain hexproof and indestructible until end of turn. Prevent all damage that would be dealt
+ * to those permanents this turn."): the set is locked as the effect begins (CR 611.2c), so a later "those permanents" / "them" names the objects the step bound under its
+ * `as` (effects/handlers/lasting.ts), never the description read again (that is `grantedGroup`, which takes the descriptions nothing can change). Layer 6 and 7c effects
+ * only. Null for anything else, a description `grantedGroup` already takes included. Shared by the parser (lower/mentions.ts) and the renderer (render/steps-lasting.ts).
+ */
+export function lockedGroup(step: unknown): Rec | null {
+  if (!isRec(step) || grantedGroup(step) !== null) return null;
+  const effects = step['effects'];
+  if (step['op'] !== 'effect' || !Array.isArray(effects) || effects.length !== 1) return null;
+  const e = effects[0];
+  if (!isRec(e) || e['s'] !== 'continuous' || !isRec(e['affects']) || e['affects']['ref'] !== 'each' || !isRec(e['affects']['filter'])) return null;
+  const mods = e['mods'];
+  if (!Array.isArray(mods) || mods.length === 0 || !mods.every((m) => isRec(m) && (m['layer'] === 6 || m['layer'] === '7c'))) return null;
+  return e['affects'];
+}
+
+/**
  * Standard round 4, r4-refs (CR 608.2c, 121.1): the group a draw of one card per object counts ("Draw a card for each creature you control with a +1/+1 counter on
  * it."), as `{ref:'each', filter}`, when the description names permanents only (no zone other than the battlefield): drawing changes none of them, so "Those
  * creatures gain indestructible until end of turn." names the same group again. Null for anything else. Shared by the parser (lower/mentions.ts) and the
@@ -270,6 +333,8 @@ export function drawnPerObject(step: unknown): Rec | null {
  */
 export function controlledGroup(step: unknown): Rec | null {
   if (!isRec(step)) return null;
+  const swapped = swappedGroups(step);
+  if (swapped !== null) return swapped;
   const effects = step['effects'];
   if (step['op'] !== 'effect' || !Array.isArray(effects) || effects.length !== 1) return null;
   const e = effects[0];
@@ -277,4 +342,29 @@ export function controlledGroup(step: unknown): Rec | null {
   const mods = e['mods'];
   if (!Array.isArray(mods) || mods.length === 0 || !mods.every((m) => isRec(m) && m['layer'] === 2 && m['controller'] !== undefined)) return null;
   return e['affects'];
+}
+
+/**
+ * edh-next-125 (CR 611.2c, 613.1b; Reins of Power): "You and that opponent each gain control of all creatures the other controls until end of turn": exactly two control changes of
+ * groups of the same card types, each group given to the other's controller (you take the player's, the player takes yours); the objects both took, as one group of those types
+ * (`{ref:'each', filter:{types}}`, for the nouns that name them afterwards: "Those creatures gain haste"). Null for anything else.
+ */
+export function swappedGroups(step: unknown): Rec | null {
+  if (!isRec(step) || step['op'] !== 'effect') return null;
+  const effects = step['effects'];
+  if (!Array.isArray(effects) || effects.length !== 2) return null;
+  const parts = effects.map((e) => {
+    if (!isRec(e) || e['s'] !== 'continuous' || Object.keys(e).length !== 3 || !isRec(e['affects']) || e['affects']['ref'] !== 'each' || !isRec(e['affects']['filter'])) return null;
+    const f = e['affects']['filter'] as Rec;
+    const mods = e['mods'];
+    if (!Array.isArray(mods) || mods.length !== 1 || !isRec(mods[0]) || mods[0]['layer'] !== 2 || Object.keys(mods[0]).length !== 2) return null;
+    if (Object.keys(f).sort().join() !== 'controller,types') return null;
+    return { types: JSON.stringify(f['types']), from: JSON.stringify(f['controller']), to: JSON.stringify(mods[0]['controller']), filterTypes: f['types'] };
+  });
+  const [a, b] = parts;
+  if (!a || !b || a.types !== b.types) return null;
+  const you = JSON.stringify({ ref: 'you' });
+  const one = (x: typeof a, y: typeof a): boolean => x.to === you && y.from === '"you"' && x.from === y.to && x.from !== '"you"' && x.from !== you;
+  if (!one(a, b)) return null;
+  return { ref: 'each', filter: { types: a.filterTypes } };
 }

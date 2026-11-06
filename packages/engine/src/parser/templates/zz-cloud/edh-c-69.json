@@ -1,0 +1,116 @@
+[
+  {
+    "id": "eff.edhv69.durFirst.cantBeBlockedBy.powerOrSubtypes",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 611.2a",
+      "CR 509.1b",
+      "CR 101.2"
+    ],
+    "pattern": "{d:Dur} , {o:Obj} can't be blocked by creatures with power {n:Qty} or less and/or {s:PluralSubtype}",
+    "build": {
+      "op": "effect",
+      "duration": "$d",
+      "effects": [
+        {
+          "s": "restrict",
+          "subject": "$o",
+          "mode": "cant",
+          "action": "beBlockedBy",
+          "other": {
+            "anyOf": [
+              {
+                "types": [
+                  "Creature"
+                ],
+                "power": {
+                  "op": "<=",
+                  "value": "$n"
+                }
+              },
+              {
+                "subtypes": "$s"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "subject": "object",
+    "consumes": [
+      "can't"
+    ],
+    "examples": [
+      {
+        "text": "Until end of turn, target creature can't be blocked by creatures with power 3 or less and/or Walls."
+      },
+      {
+        "text": "Until end of turn, target creature can't be blocked by creatures with power 1 or less and/or Elves."
+      }
+    ],
+    "counterExamples": [
+      "Target creature can't be blocked by creatures with power 3 or less and/or Walls.",
+      "Until end of turn, target creature can't be blocked by creatures with power 3 or less or Walls.",
+      "Until end of turn, target creature can't be blocked by creatures with power 3 or less."
+    ]
+  },
+  {
+    "id": "eff.edhv69.player.lookTopOwnLibrary.putBack",
+    "kind": "effect",
+    "since": 9,
+    "status": "stable",
+    "cr": [
+      "CR 401.4",
+      "CR 701.20e",
+      "CR 608.2d"
+    ],
+    "pattern": "{p:Player} look[s] at the top {n:Qty} cards of your library , then put[s] them back in any order",
+    "build": [
+      {
+        "op": "look",
+        "who": "$p",
+        "at": {
+          "ref": "topCards",
+          "player": {
+            "ref": "you"
+          },
+          "count": "$n"
+        },
+        "as": "viewed"
+      },
+      {
+        "op": "move",
+        "what": {
+          "ref": "bound",
+          "name": "viewed"
+        },
+        "to": {
+          "zone": "library",
+          "position": "top",
+          "order": "chosen",
+          "arrangedBy": "$p"
+        }
+      }
+    ],
+    "subject": "player",
+    "consumes": [
+      "then"
+    ],
+    "examples": [
+      {
+        "text": "Target opponent looks at the top three cards of your library, then puts them back in any order."
+      },
+      {
+        "text": "Target player looks at the top two cards of your library, then puts them back in any order."
+      }
+    ],
+    "counterExamples": [
+      "Target opponent looks at the top three cards of your library, then puts them on the bottom in any order.",
+      "Target opponent looks at the top three cards of their library, then puts them back in any order.",
+      "Target opponent looks at the top three cards of your library, then puts them back in a random order.",
+      "Each opponent looks at the top two cards of your library, then puts them back in any order."
+    ]
+  }
+]
